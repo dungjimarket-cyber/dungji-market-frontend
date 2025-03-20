@@ -1,0 +1,107 @@
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import apiClient from '@/lib/axios';
+
+export default function ProfileSection() {
+  const { data: session, update } = useSession();
+  const [email, setEmail] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleEmailUpdate = async () => {
+    try {
+      const response = await apiClient.patch('/api/auth/profile/', {
+        email: email,
+      });
+      
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          email: response.data.email,
+        },
+      });
+
+      setIsEditing(false);
+      setError('');
+    } catch (error: any) {
+      setError(error.response?.data?.error || '이메일 업데이트 중 오류가 발생했습니다.');
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4">내 정보</h2>
+      <div className="flex items-start space-x-4">
+        {session?.user?.image && (
+          <div className="relative w-24 h-24">
+            <Image
+              src={session.user.image}
+              alt="Profile"
+              fill
+              className="rounded-full object-cover"
+            />
+          </div>
+        )}
+        <div className="flex-1">
+          <p className="text-gray-600 mb-2">
+            <span className="font-semibold">이름:</span> {session?.user?.name}
+          </p>
+          <div className="mb-2">
+            <span className="font-semibold text-gray-600">이메일:</span>
+            {isEditing ? (
+              <div className="mt-2 space-y-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md"
+                  placeholder="새로운 이메일 주소"
+                />
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleEmailUpdate}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    저장
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setError('');
+                    }}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <span>{session?.user?.email || '이메일 미등록'}</span>
+                {session?.user?.email === undefined && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="text-blue-500 hover:text-blue-600 text-sm"
+                  >
+                    이메일 등록
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          <p className="text-gray-600">
+            <span className="font-semibold">로그인 방식:</span>{' '}
+            {session?.user?.provider === 'kakao' ? '카카오' : '구글'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
