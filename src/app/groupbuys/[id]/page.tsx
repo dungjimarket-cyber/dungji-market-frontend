@@ -1,6 +1,16 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import Image from 'next/image';
+
+interface GroupBuyProduct {
+  id: number;
+  name: string;
+  description: string;
+  base_price: number;
+  image_url: string;
+  category_name: string;
+}
 
 interface GroupBuy {
   id: number;
@@ -12,24 +22,42 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
-  product: {
-    id: number;
-    name: string;
-    description: string;
-    base_price: number;
-    image_url: string;
-    category_name: string;
-  };
+  product: GroupBuyProduct;
 }
 
-async function getGroupBuy(id: string) {
-  const res = await fetch(`http://localhost:8000/api/groupbuys/${id}/`, { next: { revalidate: 60 } });
-  if (!res.ok) return null;
+const BASE_API = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000';
+
+async function getGroupBuy(id: string): Promise<GroupBuy | null> {
+  const res = await fetch(`${BASE_API}/api/groupbuys/${id}/`, { next: { revalidate: 60 } });
+  if (!res.ok) {
+    console.error(`Failed to fetch group buy with id: ${id}`);
+    return null;
+  }
   return res.json();
 }
 
-export default async function GroupBuyPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+function GroupBuyActionButton({
+  isRecruiting,
+  isFull,
+}: {
+  isRecruiting: boolean;
+  isFull: boolean;
+}) {
+  return (
+    <Button size="lg" disabled={!isRecruiting || isFull}>
+      {!isRecruiting ? '종료된 공구' : isFull ? '인원 마감' : '참여하기'}
+    </Button>
+  );
+}
+
+export default async function GroupBuyPage({ params, searchParams }: PageProps) {
+  const { id } = await params;
+  const query = searchParams ? await searchParams : {};
   const groupBuy = await getGroupBuy(id);
 
   if (!groupBuy) {
@@ -43,8 +71,12 @@ export default async function GroupBuyPage({ params }: { params: { id: string } 
     );
   }
 
-  const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
+  const progress = groupBuy.max_participants
+    ? (groupBuy.current_participants / groupBuy.max_participants) * 100
+    : 0;
   const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
+  const isRecruiting = groupBuy.status === 'recruiting';
+  const isFull = remainingSpots === 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -68,13 +100,13 @@ export default async function GroupBuyPage({ params }: { params: { id: string } 
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <img
+            <Image
               src={groupBuy.product.image_url || '/placeholder.png'}
               alt={groupBuy.product.name}
-              className="w-full h-64 object-cover rounded-lg"
+              className="object-cover rounded-lg"
+              width={800}
+              height={256}
             />
-          </div>
           <div>
             <h3 className="font-semibold mb-2">상품 설명</h3>
             <p className="text-gray-600">{groupBuy.description || groupBuy.product.description}</p>
@@ -90,18 +122,9 @@ export default async function GroupBuyPage({ params }: { params: { id: string } 
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-500">공구가</p>
-              <p className="text-2xl font-bold">{groupBuy.product.base_price.toLocaleString()}원</p>
+              <p className="text-2xl font-bold">{new Intl.NumberFormat('ko-KR').format(groupBuy.product.base_price)}원</p>
             </div>
-            <Button 
-              size="lg"
-              disabled={groupBuy.status !== 'recruiting' || remainingSpots === 0}
-            >
-              {groupBuy.status === 'recruiting'
-                ? remainingSpots > 0
-                  ? '참여하기'
-                  : '인원 마감'
-                : '종료된 공구'}
-            </Button>
+            <GroupBuyActionButton isRecruiting={isRecruiting} isFull={isFull} />
           </div>
         </CardContent>
       </Card>

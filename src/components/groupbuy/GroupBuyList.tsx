@@ -50,7 +50,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
         
         setGroupBuys(data);
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError('공동구매 목록을 불러오는데 실패했습니다.');
         setLoading(false);
       }

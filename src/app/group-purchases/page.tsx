@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
@@ -69,13 +70,13 @@ export default async function GroupPurchasesPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="aspect-w-16 aspect-h-9 mb-4">
-                      <img
+                      <Image
                         src={groupBuy.product.image_url || '/placeholder.png'}
                         alt={groupBuy.product.name}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                    </div>
+                        width={800}
+                        height={450}
+                        className="object-cover rounded-lg"
+                      />                  
                     <div className="space-y-4">
                       <div>
                         <Progress value={progress} className="h-2" />

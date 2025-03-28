@@ -101,7 +101,6 @@ export const authOptions: AuthOptions = {
             email: user.email || `${user.id}@${account.provider}.user`,
             profile_image: user.image,
             name: user.name,
-            profile_image: user.image
           }, {
             headers: {
               'X-API-KEY': process.env.BACKEND_API_KEY
@@ -110,8 +109,6 @@ export const authOptions: AuthOptions = {
           
           if (response.data) {
             user.accessToken = response.data.jwt.access;
-            user.sns_id = user.id;
-            user.sns_type = account.provider;
             return true;
           }
         } catch (error) {

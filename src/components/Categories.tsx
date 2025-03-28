@@ -17,21 +17,23 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await apiClient.get('http://localhost:8000/api/categories/');
-        setCategories(response.data);
-      } catch (err) {
-        console.error('Failed to fetch categories:', err);
-        setError('카테고리를 불러오는데 실패했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+    // ...existing code...
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const response = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL}/categories/`);
+          setCategories(response.data);
+        } catch (err) {
+          console.error('Failed to fetch categories:', err);
+          setError('카테고리를 불러오는데 실패했습니다.');
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchCategories();
+    }, []);
+  // ...existing code...
 
   if (loading) {
     return (

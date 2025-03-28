@@ -5,6 +5,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/axios';
+import type { DefaultUser } from 'next-auth';
+
+function isExtendedUser(user: DefaultUser | undefined): user is DefaultUser & { provider: string } {
+  return typeof (user as any)?.provider === 'string';
+}
 
 export default function ProfileSection() {
   const { data: session, update } = useSession();
@@ -98,7 +103,7 @@ export default function ProfileSection() {
           </div>
           <p className="text-gray-600">
             <span className="font-semibold">로그인 방식:</span>{' '}
-            {session?.user?.provider === 'kakao' ? '카카오' : '구글'}
+            {isExtendedUser(session?.user) && session.user.provider === 'kakao' ? '카카오' : '구글'}
           </p>
         </div>
       </div>

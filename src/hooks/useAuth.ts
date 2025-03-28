@@ -1,6 +1,8 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import apiClient from '@/lib/axios';
+import type { DefaultUser } from 'next-auth';
+import type { User } from 'next-auth';
 
 export interface AuthUser {
   id: number;
@@ -9,6 +11,18 @@ export interface AuthUser {
   sns_id?: string;
   sns_type?: string;
   accessToken?: string;
+}
+
+function isExtendedUser(user: User | undefined): user is User & {
+  sns_id?: string;
+  sns_type?: string;
+  accessToken?: string;
+} {
+  return (
+    typeof user === 'object' &&
+    user !== null &&
+    ('sns_id' in user || 'sns_type' in user || 'accessToken' in user)
+  );
 }
 
 export function useAuth() {
@@ -27,12 +41,21 @@ export function useAuth() {
 
           // Get user details from backend
           const response = await apiClient.get('/api/user/');
-          setUser({
-            ...response.data,
-            sns_id: session.user.sns_id,
-            sns_type: session.user.sns_type,
-            accessToken: session.user.accessToken,
-          });
+          if (isExtendedUser(session.user)) {
+            const { sns_id, sns_type, accessToken } = session.user as User & {
+              sns_id?: string;
+              sns_type?: string;
+              accessToken?: string;
+            };
+            setUser({
+              ...response.data,
+              sns_id,
+              sns_type,
+              accessToken,
+            });
+          } else {
+            setUser(response.data);
+          }
         } catch (error) {
           console.error('Error fetching user details:', error);
           setUser(null);

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import GroupBuyFilter, { FilterOptions } from '@/components/GroupBuyFilter';
 import GroupBuyProgress from '@/components/GroupBuyProgress';
@@ -22,7 +23,12 @@ interface Product {
     status: string;
     current_participants: number;
     max_participants: number;
+    end_time: string;
   };
+  status: string;
+  current_participants: number;
+  max_participants: number;
+  end_time: string;
 }
 
 interface Category {
@@ -41,6 +47,11 @@ interface CategoryClientProps {
 }
 
 export default function CategoryClient({ category, products }: CategoryClientProps) {
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    sortBy: 'default',
+    category: category ? category.slug : ''
+  });
+
   if (!category) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -51,11 +62,6 @@ export default function CategoryClient({ category, products }: CategoryClientPro
       </div>
     );
   }
-
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    sortBy: 'default',
-    category: category?.slug
-  });
 
   const sortProducts = (products: Product[]) => {
     return [...products].sort((a, b) => {
@@ -98,12 +104,11 @@ export default function CategoryClient({ category, products }: CategoryClientPro
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {category.subcategories.map((subcat) => (
               <Link 
-                key={subcat.id} 
+                key={subcat.id}
                 href={`/category/${subcat.slug}`}
                 className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <h3 className="font-medium">{subcat.name}</h3>
-                <p className="text-sm text-gray-500">상품 {subcat.product_count}개</p>
               </Link>
             ))}
           </div>
@@ -122,9 +127,9 @@ export default function CategoryClient({ category, products }: CategoryClientPro
             onFilterChange={setFilterOptions}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
+          {sortedProducts.map((product) => (
             <Link key={product.id} href={`/groupbuys/${product.active_groupbuy?.id || ''}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow">
+              <Card className="h-full hover__shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-xl">{product.name}</CardTitle>
                 </CardHeader>
@@ -136,9 +141,11 @@ export default function CategoryClient({ category, products }: CategoryClientPro
                       maxParticipants={product.active_groupbuy.max_participants}
                     />
                   )}
-                  <img
+                  <Image
                     src={product.image_url || '/placeholder.png'}
                     alt={product.name}
+                    width={300}
+                    height={200}
                     className="w-full h-48 object-cover rounded-md"
                   />
                   <p className="mt-4 text-gray-600">{product.description}</p>

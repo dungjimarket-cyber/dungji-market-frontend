@@ -63,11 +63,11 @@ export default function CreateForm() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+  defaultValues: {
       product: '',
-      max_participants: '',
+      max_participants: 2,
       end_time: '',
-      min_participants: '2',
+      min_participants: 2,
     },
   });
 
