@@ -121,7 +121,7 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
           </div>
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500">공구가</p>
+              <p className="text-sm text-gray-500">소비자가</p>
               <p className="text-2xl font-bold">{new Intl.NumberFormat('ko-KR').format(groupBuy.product.base_price)}원</p>
             </div>
             <GroupBuyActionButton isRecruiting={isRecruiting} isFull={isFull} />
