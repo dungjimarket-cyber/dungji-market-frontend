@@ -129,7 +129,7 @@ export default function CreateForm() {
   
       if (!response.ok) throw new Error('Failed to create group purchase');
       router.push('/group-purchases');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create group purchase:', error);
       
       if (error.response?.status === 401) {

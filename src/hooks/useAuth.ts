@@ -32,11 +32,12 @@ export function useAuth() {
     const initializeAuth = async () => {
       if (status === 'authenticated' && session?.user) {
         try {
+          const headers: HeadersInit = {};
           if (session.user.accessToken) {
-            fetch.defaults.headers.common['Authorization'] = `Bearer ${session.user.accessToken}`;
+            headers['Authorization'] = `Bearer ${session.user.accessToken}`;
           }
     
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`, { headers });
           const data = await response.json();
     
           if (isExtendedUser(session.user)) {
@@ -55,8 +56,8 @@ export function useAuth() {
           setUser(null);
         }
       } else if (status === 'unauthenticated') {
-        setUser(null);
-        delete fetch.defaults.headers.common['Authorization'];
+        // User is not authenticated
+        // No need to handle headers as fetch doesn't maintain default headers
       }
       setLoading(false);
     };
