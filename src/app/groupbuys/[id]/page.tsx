@@ -10,6 +10,9 @@ interface GroupBuyProduct {
   base_price: number;
   image_url: string;
   category_name: string;
+  // release_date: string; // Added field
+  // carrier: string; // Added field
+  // plan_price: string; // Added field
 }
 
 interface GroupBuy {
@@ -25,17 +28,17 @@ interface GroupBuy {
   product: GroupBuyProduct;
 }
 
-const BASE_API = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 async function getGroupBuy(id: string): Promise<GroupBuy | null> {
-  const res = await fetch(`${BASE_API}/api/groupbuys/${id}/`, { next: { revalidate: 60 } });
-  if (!res.ok) {
-    console.error(`Failed to fetch group buy with id: ${id}`);
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${id}/`);
+    if (!response.ok) throw new Error('Failed to fetch group buy');
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to fetch group buy with id: ${id}`, error);
     return null;
   }
-  return res.json();
 }
-
 interface PageProps {
   params: Promise<{ id: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

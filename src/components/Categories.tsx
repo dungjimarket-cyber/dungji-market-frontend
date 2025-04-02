@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import apiClient from '@/lib/axios';
 
 interface Category {
   id: string;
@@ -17,23 +16,22 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-    // ...existing code...
-    useEffect(() => {
-      const fetchCategories = async () => {
-        try {
-          const response = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL}/categories/`);
-          setCategories(response.data);
-        } catch (err) {
-          console.error('Failed to fetch categories:', err);
-          setError('카테고리를 불러오는데 실패했습니다.');
-        } finally {
-          setLoading(false);
-        }
-      };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories/`);
+        const data = await response.json();
+        setCategories(data);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+        setError('카테고리를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
   
-      fetchCategories();
-    }, []);
-  // ...existing code...
+    fetchCategories();
+  }, []);
 
   if (loading) {
     return (

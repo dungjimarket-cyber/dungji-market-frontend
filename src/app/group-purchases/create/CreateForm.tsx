@@ -25,7 +25,6 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import apiClient from '@/lib/axios';
 
 interface Product {
   id: number;
@@ -91,15 +90,16 @@ export default function CreateForm() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await apiClient.get('http://localhost:8000/api/products/');
-        setProducts(response.data);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
+        const data = await response.json();
+        setProducts(data);
       } catch (error) {
         console.error('Failed to fetch products:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchProducts();
   }, []);
 
@@ -114,16 +114,22 @@ export default function CreateForm() {
         return;
       }
 
-      const response = await apiClient.post('http://localhost:8000/api/groupbuys/', {
-        product: parseInt(values.product),
-        max_participants: values.max_participants,
-        min_participants: values.min_participants,
-        end_time: new Date(values.end_time).toISOString(),
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product: parseInt(values.product),
+          max_participants: values.max_participants,
+          min_participants: values.min_participants,
+          end_time: new Date(values.end_time).toISOString(),
+        }),
       });
-      
-      console.log('Group buy created:', response.data);
+  
+      if (!response.ok) throw new Error('Failed to create group purchase');
       router.push('/group-purchases');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to create group purchase:', error);
       
       if (error.response?.status === 401) {

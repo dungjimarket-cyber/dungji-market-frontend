@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import apiClient from '@/lib/axios';
 import type { DefaultUser } from 'next-auth';
 
 function isExtendedUser(user: DefaultUser | undefined): user is DefaultUser & { provider: string } {
@@ -20,22 +19,29 @@ export default function ProfileSection() {
 
   const handleEmailUpdate = async () => {
     try {
-      const response = await apiClient.patch('/api/auth/profile/', {
-        email: email,
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
-      
+  
+      if (!response.ok) throw new Error('Failed to update email');
+      const data = await response.json();
+  
       await update({
         ...session,
         user: {
           ...session?.user,
-          email: response.data.email,
+          email: data.email,
         },
       });
-
+  
       setIsEditing(false);
       setError('');
     } catch (error: any) {
-      setError(error.response?.data?.error || '이메일 업데이트 중 오류가 발생했습니다.');
+      setError(error.message || '이메일 업데이트 중 오류가 발생했습니다.');
     }
   };
 

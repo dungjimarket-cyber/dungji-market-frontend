@@ -20,8 +20,17 @@ interface GroupBuy {
 }
 
 async function getGroupBuys() {
-  const res = await fetch('http://localhost:8000/api/groupbuys/', { next: { revalidate: 60 } });
-  if (!res.ok) return [];
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch group buys');
+  }
+
   return res.json();
 }
 

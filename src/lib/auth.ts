@@ -1,4 +1,3 @@
-import apiClient from './axios';
 import { AuthOptions, Session, User } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 import { getServerSession } from 'next-auth';
@@ -68,18 +67,30 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const response = await apiClient.post('/api/auth/login/', {
-            username: credentials.email,
-            password: credentials.password
-          });
-          
-          return {
-            id: response.data.user.id,
-            email: response.data.user.email,
-            name: response.data.user.name,
-            role: response.data.user.role,
-            accessToken: response.data.access,
-          };
+            const response = await fetch('/auth/login/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: credentials.email,
+              password: credentials.password
+            })
+            });
+            
+            if (!response.ok) {
+            throw new Error('Login failed');
+            }
+            
+            const data = await response.json();
+            
+            return {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+            role: data.user.role,
+            accessToken: data.access,
+            };
         } catch (error) {
           console.error('Login error:', error);
           return null;
@@ -95,20 +106,28 @@ export const authOptions: AuthOptions = {
     async signIn({ user, account, profile }) {
       if (account?.provider === 'google' || account?.provider === 'kakao') {
         try {
-          const response = await apiClient.post<SnsLoginResponse>('/api/auth/sns-login/', {
-            sns_id: user.id,
-            sns_type: account.provider,
-            email: user.email || `${user.id}@${account.provider}.user`,
-            profile_image: user.image,
-            name: user.name,
-          }, {
+          const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sns-login/', {
+            method: 'POST',
             headers: {
-              'X-API-KEY': process.env.BACKEND_API_KEY
-            }
+              'Content-Type': 'application/json',
+              'X-API-KEY': process.env.BACKEND_API_KEY!
+            },
+            body: JSON.stringify({
+              sns_id: user.id,
+              sns_type: account.provider,
+              email: user.email || `${user.id}@${account.provider}.user`,
+              profile_image: user.image,
+              name: user.name,
+            })
           });
-          
-          if (response.data) {
-            user.accessToken = response.data.jwt.access;
+
+          if (!response.ok) {
+            throw new Error('SNS login failed');
+          }
+
+          const data: SnsLoginResponse = await response.json();
+          if (data) {
+            user.accessToken = data.jwt.access;
             return true;
           }
         } catch (error) {

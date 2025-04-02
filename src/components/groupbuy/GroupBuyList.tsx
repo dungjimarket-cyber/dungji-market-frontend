@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import apiClient from '@/lib/axios';
 import { formatDate } from '@/lib/utils';
 
 interface GroupBuy {
@@ -28,34 +27,30 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchGroupBuys = async () => {
       try {
-        let url = '/api/groupbuys/';
-        
+        let url = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
+  
         if (type === 'popular') {
-          url = '/api/groupbuys/popular/';
+          url = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/popular/`;
         } else if (type === 'recent') {
-          url = '/api/groupbuys/recent/';
+          url = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/recent/`;
         } else if (type !== 'all') {
-          url = `/api/groupbuys/?status=${type}`;
+          url = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?status=${type}`;
         }
-
-        const response = await apiClient.get(url);
-        let data = response.data;
-        
-        if (limit) {
-          data = data.slice(0, limit);
-        }
-        
-        setGroupBuys(data);
-        setLoading(false);
+  
+        const response = await fetch(url);
+        const data = await response.json();
+  
+        setGroupBuys(limit ? data.slice(0, limit) : data);
       } catch {
         setError('공동구매 목록을 불러오는데 실패했습니다.');
+      } finally {
         setLoading(false);
       }
     };
-
+  
     fetchGroupBuys();
   }, [type, limit]);
 

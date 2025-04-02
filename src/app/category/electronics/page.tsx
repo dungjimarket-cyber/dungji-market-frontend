@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import apiClient from '@/lib/axios';
 import Link from 'next/link';
 
 interface Product {
@@ -23,8 +22,12 @@ export default function ElectronicsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await apiClient.get('/api/products?category=electronics');
-        setProducts(response.data.products || []); // 빈 배열을 기본값으로 설정
+        const response = await fetch('/products?category=electronics');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setProducts(data.products || []); // 빈 배열을 기본값으로 설정
       } catch (err) {
         console.error('Failed to fetch products:', err);
         setError('상품을 불러오는데 실패했습니다.');

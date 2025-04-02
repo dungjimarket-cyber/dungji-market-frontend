@@ -3,7 +3,6 @@
 import { signIn } from 'next-auth/react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { useState } from 'react';
-import apiClient from '@/lib/axios';
 import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
@@ -33,31 +32,39 @@ export default function RegisterPage() {
 
     try {
       // 회원가입 API 호출
-      const response = await apiClient.post('/api/auth/register/', {
+      const response = await fetch('/auth/register/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         email: formData.email,
         password: formData.password,
         name: formData.name,
         role: formData.role,
+      }),
       });
 
-      if (!response.data.success) {
-        throw new Error(response.data.message || '회원가입에 실패했습니다.');
+      const data = await response.json();
+
+      if (!data.success) {
+      throw new Error(data.message || '회원가입에 실패했습니다.');
       }
 
       // 회원가입 성공 후 자동 로그인
       await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        callbackUrl: '/',
+      email: formData.email,
+      password: formData.password,
+      callbackUrl: '/',
       });
     } catch (err: any) {
       console.error('Registration error:', err);
       if (err.response?.data?.message) {
-        setError(err.response.data.message);
+      setError(err.response.data.message);
       } else if (err.message) {
-        setError(err.message);
+      setError(err.message);
       } else {
-        setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     }
   };

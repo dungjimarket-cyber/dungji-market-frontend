@@ -1,7 +1,5 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import apiClient from '@/lib/axios';
-import type { DefaultUser } from 'next-auth';
 import type { User } from 'next-auth';
 
 export interface AuthUser {
@@ -34,27 +32,23 @@ export function useAuth() {
     const initializeAuth = async () => {
       if (status === 'authenticated' && session?.user) {
         try {
-          // Set auth token for all subsequent requests
           if (session.user.accessToken) {
-            apiClient.defaults.headers.common['Authorization'] = `Bearer ${session.user.accessToken}`;
+            fetch.defaults.headers.common['Authorization'] = `Bearer ${session.user.accessToken}`;
           }
-
-          // Get user details from backend
-          const response = await apiClient.get('/api/user/');
+    
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
+          const data = await response.json();
+    
           if (isExtendedUser(session.user)) {
-            const { sns_id, sns_type, accessToken } = session.user as User & {
-              sns_id?: string;
-              sns_type?: string;
-              accessToken?: string;
-            };
+            const { sns_id, sns_type, accessToken } = session.user;
             setUser({
-              ...response.data,
+              ...data,
               sns_id,
               sns_type,
               accessToken,
             });
           } else {
-            setUser(response.data);
+            setUser(data);
           }
         } catch (error) {
           console.error('Error fetching user details:', error);
@@ -62,7 +56,7 @@ export function useAuth() {
         }
       } else if (status === 'unauthenticated') {
         setUser(null);
-        delete apiClient.defaults.headers.common['Authorization'];
+        delete fetch.defaults.headers.common['Authorization'];
       }
       setLoading(false);
     };
