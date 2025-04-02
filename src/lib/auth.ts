@@ -137,6 +137,9 @@ export const authOptions: AuthOptions = {
     async signIn({ user, account, profile }) {
       if (account?.provider === 'google' || account?.provider === 'kakao') {
         try {
+          console.log(`[SNS 로그인] 시도: ${account.provider}, ID: ${user.id}`);
+          
+          // 백엔드에 SNS 로그인 요청 - 정확한 API 경로 사용
           const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sns-login/', {
             method: 'POST',
             headers: {
@@ -153,16 +156,31 @@ export const authOptions: AuthOptions = {
           });
 
           if (!response.ok) {
-            throw new Error('SNS login failed');
+            // 응답 상태에 따른 처리
+            if (response.status === 404) {
+              // 사용자가 존재하지 않는 경우 - 회원가입 페이지로 이동
+              console.log(`[SNS 로그인] 새 사용자 감지: ${user.id}`);
+              // 새 사용자의 경우 회원가입 페이지로 이동하거나 추가 정보를 요청하는 로직 추가 가능
+              return '/register?sns_type=' + account.provider + '&sns_id=' + user.id;
+            } else {
+              throw new Error(`SNS login failed: ${response.status}`);
+            }
           }
 
+          // 성공적으로 응답을 받은 경우
           const data: SnsLoginResponse = await response.json();
+          console.log(`[SNS 로그인] 성공: 사용자 ID ${data.user_id}`);
+          
           if (data) {
+            // 사용자 정보와 토큰 저장
             user.accessToken = data.jwt.access;
+            (user as CustomUser).sns_id = user.id;
+            (user as CustomUser).sns_type = account.provider;
+            (user as CustomUser).role = 'user';
             return true;
           }
         } catch (error) {
-          console.error('SNS login error:', error);
+          console.error('[SNS 로그인] 오류:', error);
           return false;
         }
       }

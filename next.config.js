@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['k.kakaocdn.net', 'lh3.googleusercontent.com','image.shop.kt.com','img.danawa.com'],
+    remotePatterns: [{ hostname: 'k.kakaocdn.net' }, { hostname: 'lh3.googleusercontent.com' }, { hostname: 'image.shop.kt.com' }, { hostname: 'img.danawa.com' }],
   },
 }
 
