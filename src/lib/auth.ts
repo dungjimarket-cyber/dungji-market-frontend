@@ -25,6 +25,14 @@ interface SnsLoginResponse {
 
 
 export const authOptions: AuthOptions = {
+  // 개발 환경에서는 보안 쿠키 사용 안함
+  useSecureCookies: false,
+  
+  // 세션 전략 설정
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30일
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -42,18 +50,41 @@ export const authOptions: AuthOptions = {
     KakaoProvider({
       clientId: process.env.KAKAO_CLIENT_ID!,
       clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+      // 상태 검사 방식 변경 - 쿠키 대신 pkce 사용
+      checks: ['pkce'],
       authorization: {
+        url: 'https://kauth.kakao.com/oauth/authorize',
         params: {
-          scope: 'profile_nickname profile_image'
+          scope: 'profile_nickname profile_image',
+          redirect_uri: 'http://localhost:3000/api/auth/callback/kakao',
+          response_type: 'code'
         }
+      },
+      token: {
+        url: 'https://kauth.kakao.com/oauth/token',
+        params: {
+          grant_type: 'authorization_code',
+          redirect_uri: 'http://localhost:3000/api/auth/callback/kakao'
+        }
+      },
+      userinfo: {
+        url: 'https://kapi.kakao.com/v2/user/me',
+        params: {
+          property_keys: '["kakao_account.profile", "kakao_account.email"]'
+        }
+      },
+      client: {
+        token_endpoint_auth_method: 'client_secret_post'
       },
       profile(profile) {
         return {
           id: profile.id.toString(),
           name: profile.properties?.nickname,
-          email: profile.kakao_account?.email,
+          email: profile.kakao_account?.email || `${profile.id}@kakao.user`,
           image: profile.properties?.profile_image,
           role: 'user',
+          sns_id: profile.id.toString(),
+          sns_type: 'kakao',
         };
       },
     }),
@@ -158,6 +189,7 @@ export const authOptions: AuthOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  // 디버그 모드 활성화
   debug: process.env.NODE_ENV === 'development',
 };
 
