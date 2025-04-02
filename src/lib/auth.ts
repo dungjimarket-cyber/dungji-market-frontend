@@ -56,7 +56,7 @@ export const authOptions: AuthOptions = {
         url: 'https://kauth.kakao.com/oauth/authorize',
         params: {
           scope: 'profile_nickname profile_image',
-          redirect_uri: 'http://localhost:3000/api/auth/callback/kakao',
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/kakao`,
           response_type: 'code'
         }
       },
@@ -64,7 +64,7 @@ export const authOptions: AuthOptions = {
         url: 'https://kauth.kakao.com/oauth/token',
         params: {
           grant_type: 'authorization_code',
-          redirect_uri: 'http://localhost:3000/api/auth/callback/kakao'
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/kakao`
         }
       },
       userinfo: {
