@@ -125,6 +125,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                       <div>
                         <p className="text-sm text-gray-500 mb-1">{groupBuy.product_detail.category_name}</p>
                         <CardTitle className="text-xl">{groupBuy.product_detail.name}</CardTitle>
+                        <p className="text-base font-medium mt-1 text-blue-600">{groupBuy.title}</p>
                       </div>
                       <span className={`px-2 py-1 text-sm rounded-full ${
                         groupBuy.status === 'recruiting'

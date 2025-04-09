@@ -8,6 +8,7 @@ import { Clock } from 'lucide-react';
 interface GroupBuy {
   id: number;
   status: string;
+  title: string;
   current_participants: number;
   max_participants: number;
   start_time: string;
@@ -87,7 +88,7 @@ export default async function GroupPurchasesPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-500 mb-1">{groupBuy.product_detail.category_name}</p>
-                        <CardTitle className="text-xl">{groupBuy.product_detail.name}</CardTitle>
+                        <CardTitle className="text-xl">{groupBuy.title || groupBuy.product_detail.name}</CardTitle>
                       </div>
                       <span className={`px-2 py-1 text-sm rounded-full ${
                         groupBuy.status === 'recruiting'
