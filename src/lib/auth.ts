@@ -25,8 +25,29 @@ interface SnsLoginResponse {
 
 
 export const authOptions: AuthOptions = {
-  // 개발 환경에서는 보안 쿠키 사용 안함
-  useSecureCookies: false,
+  // 쿠키 설정 개선
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    pkceCodeVerifier: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 900, // 15분
+      },
+    },
+  },
   
   // 세션 전략 설정
   session: {
@@ -56,15 +77,13 @@ export const authOptions: AuthOptions = {
         url: 'https://kauth.kakao.com/oauth/authorize',
         params: {
           scope: 'profile_nickname profile_image',
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/kakao`,
           response_type: 'code'
         }
       },
       token: {
         url: 'https://kauth.kakao.com/oauth/token',
         params: {
-          grant_type: 'authorization_code',
-          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/kakao`
+          grant_type: 'authorization_code'
         }
       },
       userinfo: {
