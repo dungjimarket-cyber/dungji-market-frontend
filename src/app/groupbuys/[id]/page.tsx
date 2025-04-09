@@ -1,7 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, AlertTriangle, Info, Share2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface GroupBuyProduct {
   id: number;
@@ -10,9 +14,12 @@ interface GroupBuyProduct {
   base_price: number;
   image_url: string;
   category_name: string;
-  // release_date: string; // Added field
-  // carrier: string; // Added field
-  // plan_price: string; // Added field
+  carrier: string;
+  registration_type: string;
+  plan_info: string;
+  contract_info: string;
+  total_support_amount: number;
+  release_date?: string;
 }
 
 interface GroupBuy {
@@ -28,6 +35,27 @@ interface GroupBuy {
   product: GroupBuyProduct;
 }
 
+// 총 지원금 마스킹 함수 추가
+function maskSupportAmount(amount: number | undefined): string {
+  if (amount === undefined || amount === null) return '0';
+  const amountStr = amount.toString();
+  if (amountStr.length <= 2) return amountStr;
+  return `${amountStr[0]}${'*'.repeat(amountStr.length - 2)}${amountStr[amountStr.length - 1]}`;
+}
+
+// 남은 시간 계산 함수
+function getRemainingTime(endTime: string): string {
+  const end = new Date(endTime);
+  const now = new Date();
+  const diff = end.getTime() - now.getTime();
+  
+  if (diff <= 0) return '종료됨';
+  
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  return `${hours}:${minutes.toString().padStart(2, '0')}`;
+}
 
 async function getGroupBuy(id: string): Promise<GroupBuy | null> {
   try {
@@ -52,8 +80,8 @@ function GroupBuyActionButton({
   isFull: boolean;
 }) {
   return (
-    <Button size="lg" disabled={!isRecruiting || isFull}>
-      {!isRecruiting ? '종료된 공구' : isFull ? '인원 마감' : '참여하기'}
+    <Button className="w-full py-6 text-lg font-bold" disabled={!isRecruiting || isFull}>
+      {!isRecruiting ? '종료된 공구' : isFull ? '인원 마감' : '공구 참여하기'}
     </Button>
   );
 }
@@ -80,57 +108,125 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
   const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
   const isRecruiting = groupBuy.status === 'recruiting';
   const isFull = remainingSpots === 0;
+  const remainingTime = getRemainingTime(groupBuy.end_time);
+  const maskedSupportAmount = maskSupportAmount(groupBuy.product.total_support_amount || 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Card className="max-w-4xl mx-auto">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-2">{groupBuy.product.category_name}</p>
-              <CardTitle className="text-2xl">{groupBuy.title || groupBuy.product.name}</CardTitle>
-            </div>
-            <span className={`px-3 py-1 rounded-full ${
-              groupBuy.status === 'recruiting'
-                ? 'bg-blue-100 text-blue-800'
-                : groupBuy.status === 'confirmed'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {groupBuy.status === 'recruiting' ? '모집중' :
-               groupBuy.status === 'confirmed' ? '확정' : '종료'}
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="bg-gray-100 min-h-screen pb-8">
+      {/* 헤더 */}
+      <div className="bg-white p-4 sticky top-0 z-10 shadow-sm">
+        <div className="flex items-center">
+          <Link href="/" className="mr-2">
+            <ArrowLeft size={24} />
+          </Link>
+          <h1 className="text-lg font-medium">공구 참여하기</h1>
+        </div>
+        <p className="text-sm text-gray-500 mt-1">공구에 참여하세요</p>
+      </div>
+
+      {/* 메인 컨텐츠 */}
+      <div className="max-w-lg mx-auto">
+        {/* 상품 정보 카드 */}
+        <div className="bg-white p-4 mb-4">
+          {/* 상품 이미지 */}
+          <div className="bg-green-100 p-4 rounded-lg mb-4">
             <Image
               src={groupBuy.product.image_url || '/placeholder.png'}
               alt={groupBuy.product.name}
-              className="object-cover rounded-lg"
-              width={800}
-              height={256}
+              className="object-contain mx-auto"
+              width={300}
+              height={200}
             />
-          <div>
-            <h3 className="font-semibold mb-2">상품 설명</h3>
-            <p className="text-gray-600">{groupBuy.description || groupBuy.product.description}</p>
           </div>
-          <div>
-            <h3 className="font-semibold mb-2">공구 진행 상황</h3>
-            <Progress value={progress} className="h-2" />
-            <div className="mt-2 flex justify-between text-sm text-gray-600">
-              <span>{groupBuy.current_participants}명 참여</span>
-              <span>{remainingSpots}자리 남음</span>
+
+          {/* 상품 기본 정보 */}
+          <div className="mb-4">
+            <p className="text-sm text-gray-500 mb-1">출시일: {groupBuy.product.release_date || '2024년 1월'}</p>
+            <h2 className="text-xl font-bold mb-2">{groupBuy.title || groupBuy.product.name}</h2>
+            
+            <div className="flex items-center mb-2">
+              <Share2 size={16} className="text-green-500 mr-1" />
+              <button className="text-green-500 text-sm">공유하기</button>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium text-red-500">통신사: {groupBuy.product.carrier || 'SK텔레콤'}</p>
+                <p className="text-sm font-medium text-blue-500">유형: {groupBuy.product.registration_type || '번호이동'}</p>
+                <p className="text-sm font-medium">요금제: {groupBuy.product.plan_info || '5만원대'}</p>
+              </div>
             </div>
           </div>
-          <div className="flex justify-between items-center">
+
+          {/* 출고가 및 계약 정보 */}
+          <div className="mb-4">
+            <p className="text-sm text-gray-500">출고가</p>
+            <p className="text-2xl font-bold mb-2">
+              ₩{new Intl.NumberFormat('ko-KR').format(groupBuy.product.base_price)}원
+            </p>
+            <p className="text-sm text-gray-700">{groupBuy.product.contract_info || '2년 약정 기본 상품입니다'}</p>
+          </div>
+
+          {/* 총 지원금 정보 */}
+          <div className="mb-4">
+            <p className="text-sm font-medium">총 지원금(공시지원금+추가지원금)</p>
+            <p className="text-lg font-bold text-red-500">{maskedSupportAmount || '0'}원</p>
+            <p className="text-xs text-gray-500">*유심서비스나 카드결제를 제외한 순수 지원금입니다.</p>
+          </div>
+        </div>
+
+        {/* 공구 참여 정보 카드 */}
+        <div className="bg-white p-4 mb-4">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <p className="text-sm text-gray-500">소비자가</p>
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('ko-KR').format(groupBuy.product.base_price)}원</p>
+              <p className="text-sm text-gray-500">공구 참여인원</p>
+              <p className="font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}명</p>
             </div>
-            <GroupBuyActionButton isRecruiting={isRecruiting} isFull={isFull} />
+            <div>
+              <p className="text-sm text-gray-500">남은 시간</p>
+              <p className="font-bold text-red-500">{remainingTime}</p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* 진행 상황 바 */}
+          <Progress value={progress} className="h-2 mb-2" />
+          
+          {/* 총 입찰 건수 */}
+          <div className="flex justify-between items-center text-sm mb-4">
+            <p>총 입찰 건수</p>
+            <p className="font-bold">{groupBuy.current_participants * 2 || 23}건</p>
+          </div>
+
+          {/* 현재 최고가 */}
+          <div className="flex justify-between items-center text-sm">
+            <p>현재 최고가</p>
+            <p className="font-bold">{maskedSupportAmount || '0'}원</p>
+          </div>
+        </div>
+
+        {/* 알림 메시지 */}
+        <Alert className="bg-blue-50 border-blue-200 mb-4">
+          <Info className="h-4 w-4 text-blue-500" />
+          <AlertDescription className="text-sm text-blue-700">
+            입찰가를 제외한 입찰 금액은 비공개 입니다.
+          </AlertDescription>
+        </Alert>
+
+        {/* 가이드라인 */}
+        <Alert className="bg-yellow-50 border-yellow-200 mb-4">
+          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <AlertDescription className="text-sm text-yellow-700">
+            <Link href="/guidelines" className="underline">
+              공동 구매 가이드라인
+            </Link>
+          </AlertDescription>
+        </Alert>
+
+        {/* 참여 버튼 */}
+        <div className="px-4">
+          <GroupBuyActionButton isRecruiting={isRecruiting} isFull={isFull} />
+        </div>
+      </div>
     </div>
   );
 }
