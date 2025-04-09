@@ -16,6 +16,12 @@ interface SnsLoginResponse {
   user_id: number;
   username: string;
   email: string;
+  profile_image?: string;
+  phone_number?: string;
+  sns_type?: string;
+  sns_id?: string;
+  access: string;
+  refresh: string;
   jwt: {
     refresh: string;
     access: string;
@@ -157,8 +163,29 @@ export const authOptions: AuthOptions = {
       if (account?.provider === 'google' || account?.provider === 'kakao') {
         try {
           console.log(`[SNS 로그인] 시도: ${account.provider}, ID: ${user.id}`);
+          console.log('[SNS 로그인] 프로필 데이터:', profile);
+          console.log('[SNS 로그인] 사용자 데이터:', user);
+          
+          // 카카오 프로필 정보 처리
+          if (account.provider === 'kakao' && profile) {
+            // @ts-ignore - 카카오 프로필 구조에 맞게 처리
+            const kakaoAccount = profile.kakao_account;
+            if (kakaoAccount?.profile) {
+              user.name = kakaoAccount.profile.nickname || user.name;
+              user.image = kakaoAccount.profile.profile_image_url || user.image;
+              console.log('[SNS 로그인] 카카오 프로필 처리 완료:', user.name, user.image);
+            }
+          }
           
           // 백엔드에 SNS 로그인 요청 - 정확한 API 경로 사용
+          console.log('[SNS 로그인] 백엔드로 전송할 데이터:', {
+            sns_id: user.id,
+            sns_type: account.provider,
+            email: user.email || `${user.id}@${account.provider}.user`,
+            profile_image: user.image,
+            name: user.name,
+          });
+          
           const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/sns-login/', {
             method: 'POST',
             headers: {
@@ -170,7 +197,7 @@ export const authOptions: AuthOptions = {
               sns_type: account.provider,
               email: user.email || `${user.id}@${account.provider}.user`,
               profile_image: user.image,
-              name: user.name,
+              name: user.name, // 카카오에서 가져온 닉네임 전송
             })
           });
 
@@ -196,6 +223,19 @@ export const authOptions: AuthOptions = {
             (user as CustomUser).sns_id = user.id;
             (user as CustomUser).sns_type = account.provider;
             (user as CustomUser).role = 'user';
+            
+            // 백엔드에서 받은 프로필 이미지 정보 저장
+            if (data.profile_image) {
+              console.log('[SNS 로그인] 백엔드에서 받은 프로필 이미지:', data.profile_image);
+              user.image = data.profile_image;
+            }
+            
+            // 백엔드에서 받은 사용자 이름 정보 저장
+            if (data.username) {
+              console.log('[SNS 로그인] 백엔드에서 받은 사용자 이름:', data.username);
+              user.name = data.username;
+            }
+            
             return true;
           }
         } catch (error) {
@@ -211,6 +251,8 @@ export const authOptions: AuthOptions = {
         token.role = (user as CustomUser).role || 'user';
         token.sns_id = (user as CustomUser).sns_id;
         token.sns_type = (user as CustomUser).sns_type;
+        // 프로필 이미지 정보 추가
+        token.profile_image = user.image;
       }
       return token;
     },
@@ -219,6 +261,8 @@ export const authOptions: AuthOptions = {
         (session.user as CustomUser).accessToken = token.accessToken as string;
         (session.user as CustomUser).role = token.role as string;
         (session.user as CustomUser).sns_id = token.sns_id as string;
+        // 프로필 이미지 정보 추가
+        session.user.image = token.profile_image as string;
         (session.user as CustomUser).sns_type = token.sns_type as string;
         (session.user as any).provider = token.sns_type as string;
       }
