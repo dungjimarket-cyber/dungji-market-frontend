@@ -10,6 +10,8 @@ interface GroupBuy {
   status: string;
   current_participants: number;
   max_participants: number;
+  start_time: string;
+  end_time: string;
   product: {
     id: number;
     name: string;
