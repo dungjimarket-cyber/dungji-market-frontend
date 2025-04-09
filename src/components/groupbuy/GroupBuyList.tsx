@@ -7,6 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Clock } from 'lucide-react';
 
+interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  base_price: number;
+  image_url?: string;
+  category_name?: string;
+  carrier?: string;
+  registration_type?: string;
+  plan_info?: string;
+  contract_info?: string;
+  total_support_amount?: number;
+  release_date?: string;
+}
+
 interface GroupBuy {
   id: number;
   title: string;
@@ -18,18 +33,8 @@ interface GroupBuy {
   current_participants: number;
   min_participants: number;
   max_participants: number;
-  product: {
-    id: number;
-    name: string;
-    description?: string;
-    base_price: number;
-    image_url?: string;
-    category_name?: string;
-    carrier?: string;
-    registration_type?: string;
-    plan_info?: string;
-    contract_info?: string;
-  };
+  product: number; // product ID
+  product_detail?: Product; // 상세 제품 정보
 }
 
 interface GroupBuyListProps {
@@ -110,7 +115,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">{groupBuy.product?.category_name || '휴대폰'}</p>
+                    <p className="text-sm text-gray-500 mb-1">{groupBuy.product_detail?.category_name || '휴대폰'}</p>
                     <CardTitle className="text-xl">{groupBuy.title || groupBuy.product_name}</CardTitle>
                   </div>
                   <span className={`px-2 py-1 text-sm rounded-full ${
@@ -127,8 +132,8 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               </CardHeader>
               <CardContent>
                 <Image
-                  src={groupBuy.product?.image_url || '/placeholder.png'}
-                  alt={groupBuy.product?.name || groupBuy.product_name}
+                  src={groupBuy.product_detail?.image_url || '/placeholder.png'}
+                  alt={groupBuy.product_detail?.name || groupBuy.product_name}
                   width={200}
                   height={200}
                   className="object-cover rounded-lg"
@@ -153,18 +158,18 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                   <div className="mt-2 space-y-2">
                     <div className="flex flex-col">
                       <div className="flex space-x-2 text-sm">
-                        <span className="font-medium text-red-500">통신사: {groupBuy.product?.carrier || 'SK텔레콤'}</span>
-                        <span className="font-medium text-blue-500">유형: {groupBuy.product?.registration_type || '번호이동'}</span>
+                        <span className="font-medium text-red-500">통신사: {groupBuy.product_detail?.carrier || 'SK텔레콤'}</span>
+                        <span className="font-medium text-blue-500">유형: {groupBuy.product_detail?.registration_type || '번호이동'}</span>
                       </div>
-                      <p className="text-sm font-medium">요금제: {groupBuy.product?.plan_info || '5만원대'}</p>
+                      <p className="text-sm font-medium">요금제: {groupBuy.product_detail?.plan_info || '5만원대'}</p>
                     </div>
                     <div className="flex justify-between items-center pt-2">
                       <div>
                         <p className="text-sm text-gray-500">출고가</p>
-                        <p className="text-xl font-bold">{groupBuy.product?.base_price?.toLocaleString() || '1,200,000'}원</p>
+                        <p className="text-xl font-bold">{groupBuy.product_detail?.base_price?.toLocaleString() || '1,200,000'}원</p>
                       </div>
                       <div className="text-sm text-gray-600">
-                        {groupBuy.product?.contract_info || '2년 약정'}
+                        {groupBuy.product_detail?.contract_info || '2년 약정'}
                       </div>
                     </div>
                   </div>

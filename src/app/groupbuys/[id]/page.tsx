@@ -32,7 +32,8 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
-  product: GroupBuyProduct;
+  product: number; // product ID
+  product_detail: GroupBuyProduct; // 상세 제품 정보
 }
 
 // 총 지원금 마스킹 함수 추가
@@ -109,7 +110,7 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
   const isRecruiting = groupBuy.status === 'recruiting';
   const isFull = remainingSpots === 0;
   const remainingTime = getRemainingTime(groupBuy.end_time);
-  const maskedSupportAmount = maskSupportAmount(groupBuy.product.total_support_amount || 0);
+  const maskedSupportAmount = maskSupportAmount(groupBuy.product_detail.total_support_amount || 0);
 
   return (
     <div className="bg-gray-100 min-h-screen pb-8">
@@ -131,29 +132,33 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
           {/* 상품 이미지 */}
           <div className="bg-green-100 p-4 rounded-lg mb-4">
             <Image
-              src={groupBuy.product.image_url || '/placeholder.png'}
-              alt={groupBuy.product.name}
-              className="object-contain mx-auto"
-              width={300}
-              height={200}
+              src={groupBuy.product_detail.image_url || '/placeholder.png'}
+              alt={groupBuy.product_detail.name}
+              width={400}
+              height={400}
+              className="object-cover rounded-lg"
             />
           </div>
 
           {/* 상품 기본 정보 */}
           <div className="mb-4">
-            <p className="text-sm text-gray-500 mb-1">출시일: {groupBuy.product.release_date || '2024년 1월'}</p>
-            <h2 className="text-xl font-bold mb-2">{groupBuy.title || groupBuy.product.name}</h2>
+            <p className="text-sm text-gray-500 mb-1">출시일: {groupBuy.product_detail.release_date || '2024년 1월'}</p>
+            <h2 className="text-xl font-bold mb-2">{groupBuy.title || groupBuy.product_detail.name}</h2>
             
             <div className="flex items-center mb-2">
               <Share2 size={16} className="text-green-500 mr-1" />
               <button className="text-green-500 text-sm">공유하기</button>
             </div>
 
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-red-500">통신사: {groupBuy.product.carrier || 'SK텔레콤'}</p>
-                <p className="text-sm font-medium text-blue-500">유형: {groupBuy.product.registration_type || '번호이동'}</p>
-                <p className="text-sm font-medium">요금제: {groupBuy.product.plan_info || '5만원대'}</p>
+            <div className="flex flex-col md:flex-row gap-4 md:gap-8 mt-4">
+              <div className="flex gap-2 items-center">
+                <span className="font-medium text-red-500">통신사: {groupBuy.product_detail.carrier}</span>
+              </div>
+              <div className="flex gap-2 items-center">
+                <span className="font-medium text-blue-500">유형: {groupBuy.product_detail.registration_type}</span>
+              </div>
+              <div className="flex gap-2 items-center">
+                <span className="font-medium">요금제: {groupBuy.product_detail.plan_info}</span>
               </div>
             </div>
           </div>
@@ -162,9 +167,9 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
           <div className="mb-4">
             <p className="text-sm text-gray-500">출고가</p>
             <p className="text-2xl font-bold mb-2">
-              ₩{new Intl.NumberFormat('ko-KR').format(groupBuy.product.base_price)}원
+              ₩{new Intl.NumberFormat('ko-KR').format(groupBuy.product_detail.base_price)}원
             </p>
-            <p className="text-sm text-gray-700">{groupBuy.product.contract_info || '2년 약정 기본 상품입니다'}</p>
+            <p className="text-sm text-gray-700">{groupBuy.product_detail.contract_info || '2년 약정 기본 상품입니다'}</p>
           </div>
 
           {/* 총 지원금 정보 */}
@@ -178,6 +183,14 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
         {/* 공구 참여 정보 카드 */}
         <div className="bg-white p-4 mb-4">
           <div className="flex justify-between items-center mb-4">
+            <div>
+              <CardTitle className="text-2xl">{groupBuy.title || groupBuy.product_detail.name}</CardTitle>
+              <p className="text-gray-600">{groupBuy.description || groupBuy.product_detail.description}</p>
+              
+              {groupBuy.product_detail.release_date && (
+                <div className="text-sm text-gray-500">출시일: {new Date(groupBuy.product_detail.release_date).toLocaleDateString('ko-KR')}</div>
+              )}
+            </div>
             <div>
               <p className="text-sm text-gray-500">공구 참여인원</p>
               <p className="font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}명</p>
