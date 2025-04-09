@@ -130,7 +130,7 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
         {/* 상품 정보 카드 */}
         <div className="bg-white p-4 mb-4">
           {/* 상품 이미지 */}
-          <div className="bg-green-100 p-4 rounded-lg mb-4">
+          <div className="bg-white p-4 rounded-lg mb-4">
             <Image
               src={groupBuy.product_detail.image_url || '/placeholder.png'}
               alt={groupBuy.product_detail.name}
