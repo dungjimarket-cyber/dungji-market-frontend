@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import AuthButtons from '@/components/auth/AuthButtons';
 import Providers from './Providers';
 import { Toaster } from "@/components/ui/toaster";
+import MobileNavbar from '@/components/common/MobileNavbar';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,8 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen bg-background font-sans antialiased">
+    <html lang="ko">
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen relative`}>
         <Providers session={session}>
           <Toaster />
           <header className="sticky top-0 z-50 w-full border-b bg-white">
@@ -64,9 +65,12 @@ export default async function RootLayout({
             </div>
           </header>
 
-          <main className="flex-1">
+          <main className="flex-1 pb-16 md:pb-0">
             {children}
           </main>
+          
+          {/* 모바일 화면에서만 표시되는 하단 네비게이션 */}
+          <MobileNavbar />
         </Providers>
       </body>
     </html>

@@ -3,16 +3,38 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { FaHome, FaShoppingCart, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // 화면 크기 변경 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // 초기 로드 시 체크
+    checkMobile();
+    
+    // 리사이즈 이벤트 리스너 추가
+    window.addEventListener('resize', checkMobile);
+    
+    // 클린업 함수
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
   
   // 디버깅용 코드
   console.log('세션 데이터:', session);
   console.log('사용자 정보:', session?.user);
   console.log('프로필 이미지:', session?.user?.image);
 
-  return (
+  // 상단 네비게이션 (데스크톱)
+  const DesktopNavbar = () => (
     <nav className="bg-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
@@ -82,5 +104,76 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+  );
+
+  // 하단 네비게이션 (모바일)
+  const MobileNavbar = () => (
+    <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 w-full">
+      <div className="flex justify-around items-center h-16 max-w-screen-lg mx-auto px-2">
+        <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+          <FaHome className="text-xl mb-1" />
+          <span className="text-xs">홈</span>
+        </Link>
+        
+        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+          <FaShoppingCart className="text-xl mb-1" />
+          <span className="text-xs">공구 목록</span>
+        </Link>
+        
+        {session ? (
+          <>
+            <Link href="/my-page" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+              <FaUser className="text-xl mb-1" />
+              <span className="text-xs">마이페이지</span>
+            </Link>
+            
+            <button onClick={() => signOut()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2 bg-transparent border-0">
+              <FaSignOutAlt className="text-xl mb-1" />
+              <span className="text-xs">로그아웃</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => signIn()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2 bg-transparent border-0">
+              <FaSignInAlt className="text-xl mb-1" />
+              <span className="text-xs">로그인</span>
+            </button>
+            
+            <Link href="/register" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+              <FaUserPlus className="text-xl mb-1" />
+              <span className="text-xs">회원가입</span>
+            </Link>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+
+  // 모바일 화면에서 하단 네비게이션 여백 추가
+  const MobileNavbarSpacer = () => (
+    <div className="h-16 w-full"></div>
+  );
+
+  return (
+    <>
+      {isMobile ? (
+        <>
+          {/* 모바일 화면에서는 상단에 로고만 표시 */}
+          <div className="bg-white shadow-lg p-4 sticky top-0 z-10">
+            <Link href="/" className="flex items-center justify-center">
+              <span className="text-xl font-bold text-gray-800">둥지마켓</span>
+            </Link>
+          </div>
+          
+          {/* 하단 네비게이션 */}
+          <MobileNavbar />
+          
+          {/* 페이지 컨텐츠에 하단 네비게이션 높이만큼 여백 추가 */}
+          <div className="pb-16"></div>
+        </>
+      ) : (
+        <DesktopNavbar />
+      )}
+    </>
   );
 }
