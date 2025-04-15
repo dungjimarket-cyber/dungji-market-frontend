@@ -247,12 +247,21 @@ export const authOptions: AuthOptions = {
     },
     async jwt({ token, user, account }) {
       if (user && account) {
+        // 사용자 정보와 토큰 저장
         token.accessToken = (user as CustomUser).accessToken;
         token.role = (user as CustomUser).role || 'user';
         token.sns_id = (user as CustomUser).sns_id;
         token.sns_type = (user as CustomUser).sns_type;
         // 프로필 이미지 정보 추가
         token.profile_image = user.image;
+        
+        console.log('[JWT 토큰 생성] 사용자 정보:', { 
+          accessToken: token.accessToken, 
+          role: token.role,
+          sns_id: token.sns_id,
+          sns_type: token.sns_type,
+          profile_image: token.profile_image
+        });
       }
       return token;
     },
@@ -264,13 +273,20 @@ export const authOptions: AuthOptions = {
         // 프로필 이미지 정보 추가
         session.user.image = token.profile_image as string;
         (session.user as CustomUser).sns_type = token.sns_type as string;
-        (session.user as any).provider = token.sns_type as string;
+        
+        // 세션 데이터 로그
+        console.log('[SESSION 생성] 세션 데이터:', { 
+          accessToken: (session.user as CustomUser).accessToken,
+          role: (session.user as CustomUser).role,
+          sns_id: (session.user as CustomUser).sns_id,
+          image: session.user.image,
+          sns_type: (session.user as CustomUser).sns_type
+        });
       }
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  // 디버그 모드 활성화
+  // ...
   debug: process.env.NODE_ENV === 'development',
 };
 

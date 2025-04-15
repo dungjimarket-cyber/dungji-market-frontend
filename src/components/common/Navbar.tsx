@@ -158,11 +158,24 @@ export default function Navbar() {
     <>
       {isMobile ? (
         <>
-          {/* 모바일 화면에서는 상단에 로고만 표시 */}
+          {/* 모바일 화면에서는 상단에 로고와 간단한 네비게이션 */}
           <div className="bg-white shadow-lg p-4 sticky top-0 z-10">
-            <Link href="/" className="flex items-center justify-center">
-              <span className="text-xl font-bold text-gray-800">둥지마켓</span>
-            </Link>
+            <div className="flex justify-between items-center">
+              <Link href="/" className="flex items-center">
+                <span className="text-xl font-bold text-gray-800">둥지마켓</span>
+              </Link>
+              <div className="flex items-center space-x-4">
+                <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
+                  공구 목록
+                </Link>
+                {session && (
+                  <Link href="/my-page" className="text-gray-600 hover:text-gray-900">
+                    마이페이지
+                  </Link>
+                )}
+                {/* 모바일에서는 로그인/회원가입 버튼 숨김 */}
+              </div>
+            </div>
           </div>
           
           {/* 하단 네비게이션 */}

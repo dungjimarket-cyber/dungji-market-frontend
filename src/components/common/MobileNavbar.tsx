@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { FaHome, FaShoppingCart, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
+import { FaSearch,FaHome, FaShoppingCart, FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 
 export default function MobileNavbar() {
   const { data: session } = useSession();
@@ -14,7 +14,10 @@ export default function MobileNavbar() {
           <FaHome className="text-xl mb-1" />
           <span className="text-xs">홈</span>
         </Link>
-        
+        <Link href="/search" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+          <FaSearch className="text-xl mb-1" />
+          <span className="text-xs">검색</span>
+        </Link>
         <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
           <FaShoppingCart className="text-xl mb-1" />
           <span className="text-xs">공구 목록</span>

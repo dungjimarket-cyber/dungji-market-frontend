@@ -87,7 +87,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {groupBuys.map((groupBuy) => {
         const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
         const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
@@ -115,8 +115,8 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">{groupBuy.product_detail?.category_name || '휴대폰'}</p>
-                    <CardTitle className="text-xl">{groupBuy.title || groupBuy.product_name}</CardTitle>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_detail?.category_name || '휴대폰'}</p>
+                    <CardTitle className="text-base sm:text-lg md:text-xl">{groupBuy.title || groupBuy.product_name}</CardTitle>
                   </div>
                   <span className={`px-2 py-1 text-sm rounded-full ${
                     groupBuy.status === 'recruiting'
@@ -141,34 +141,34 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                 <div className="space-y-4 mt-4">
                   <div>
                     <Progress value={progress} className="h-2" />
-                    <div className="mt-2 flex justify-between text-sm text-gray-600">
+                    <div className="mt-2 flex justify-between text-xs sm:text-sm text-gray-600">
                       <span>{groupBuy.current_participants}명 참여중</span>
                       <span>{remainingSpots}자리 남음</span>
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-sm">
+                    <div className="mt-2 flex items-center justify-between text-xs sm:text-sm">
                       <div className="flex items-center text-red-500">
-                        <Clock size={14} className="mr-1" />
+                        <Clock size={12} className="mr-1" />
                         <span>
-                          {timeDiff > 0 ? `${days}일 ${hours}시간 ${minutes}분` : '종료됨'}
+                          {timeDiff > 0 ? `${days}일 ${hours}시간` : '종료됨'}
                         </span>
                       </div>
-                      <span className="text-gray-500">{formattedEndDate} 마감</span>
+                      <span className="text-gray-500">{formattedEndDate}</span>
                     </div>
                   </div>
                   <div className="mt-2 space-y-2">
                     <div className="flex flex-col">
-                      <div className="flex space-x-2 text-sm">
+                      <div className="flex space-x-2 text-xs sm:text-sm">
                         <span className="font-medium text-red-500">통신사: {groupBuy.product_detail?.carrier || 'SK텔레콤'}</span>
                         <span className="font-medium text-blue-500">유형: {groupBuy.product_detail?.registration_type || '번호이동'}</span>
                       </div>
-                      <p className="text-sm font-medium">요금제: {groupBuy.product_detail?.plan_info || '5만원대'}</p>
+                      <p className="text-xs sm:text-sm font-medium">요금제: {groupBuy.product_detail?.plan_info || '5만원대'}</p>
                     </div>
                     <div className="flex justify-between items-center pt-2">
                       <div>
-                        <p className="text-sm text-gray-500">출고가</p>
-                        <p className="text-xl font-bold">{groupBuy.product_detail?.base_price?.toLocaleString() || '1,200,000'}원</p>
+                        <p className="text-xs sm:text-sm text-gray-500">출고가</p>
+                        <p className="text-lg sm:text-xl font-bold">{groupBuy.product_detail?.base_price?.toLocaleString() || '1,200,000'}원</p>
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-xs sm:text-sm text-gray-600">
                         {groupBuy.product_detail?.contract_info || '2년 약정'}
                       </div>
                     </div>
