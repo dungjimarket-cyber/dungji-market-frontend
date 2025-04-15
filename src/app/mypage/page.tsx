@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import ProfileSection from '@/components/mypage/ProfileSection';
+import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
 
 export default async function MyPage() {
   const session = await getServerSession(authOptions);
@@ -18,8 +19,7 @@ export default async function MyPage() {
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">참여중인 공동구매</h2>
-          {/* TODO: Add participating group purchases list */}
-          <p className="text-gray-500">참여중인 공동구매가 없습니다.</p>
+          <ParticipatingGroupBuys />
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">

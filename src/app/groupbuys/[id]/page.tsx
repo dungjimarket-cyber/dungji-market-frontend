@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, AlertTriangle, Info, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import GroupBuyActionButton from '@/components/groupbuy/GroupBuyActionButton';
+import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 
 interface GroupBuyProduct {
   id: number;
@@ -44,19 +45,7 @@ function maskSupportAmount(amount: number | undefined): string {
   return `${amountStr[0]}${'*'.repeat(amountStr.length - 2)}${amountStr[amountStr.length - 1]}`;
 }
 
-// 남은 시간 계산 함수
-function getRemainingTime(endTime: string): string {
-  const end = new Date(endTime);
-  const now = new Date();
-  const diff = end.getTime() - now.getTime();
-  
-  if (diff <= 0) return '종료됨';
-  
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
-  return `${hours}:${minutes.toString().padStart(2, '0')}`;
-}
+// 남은 시간 계산 함수는 이제 lib/groupbuy-utils.ts에서 가져옵니다.
 
 async function getGroupBuy(id: string): Promise<GroupBuy | null> {
   try {
@@ -73,19 +62,7 @@ interface PageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-function GroupBuyActionButton({
-  isRecruiting,
-  isFull,
-}: {
-  isRecruiting: boolean;
-  isFull: boolean;
-}) {
-  return (
-    <Button className="w-full py-6 text-lg font-bold" disabled={!isRecruiting || isFull}>
-      {!isRecruiting ? '종료된 공구' : isFull ? '인원 마감' : '공구 참여하기'}
-    </Button>
-  );
-}
+// 서버 컴포넌트에서 클라이언트 컴포넌트로 변경했으므로 이 함수는 제거
 
 export default async function GroupBuyPage({ params, searchParams }: PageProps) {
   const { id } = await params;
@@ -107,7 +84,10 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
     ? (groupBuy.current_participants / groupBuy.max_participants) * 100
     : 0;
   const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
-  const isRecruiting = groupBuy.status === 'recruiting';
+  
+  // 공구 상태를 동적으로 계산
+  const calculatedStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+  const isRecruiting = calculatedStatus === 'recruiting';
   const isFull = remainingSpots === 0;
   const remainingTime = getRemainingTime(groupBuy.end_time);
   const maskedSupportAmount = maskSupportAmount(groupBuy.product_detail.total_support_amount || 0);
@@ -237,7 +217,21 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
 
         {/* 참여 버튼 */}
         <div className="px-4">
-          <GroupBuyActionButton isRecruiting={isRecruiting} isFull={isFull} />
+          <GroupBuyActionButton 
+            isRecruiting={isRecruiting} 
+            isFull={isFull} 
+            groupBuy={{
+              id: Number(id),
+              title: groupBuy.title,
+              product_detail: {
+                name: groupBuy.product_detail.name,
+                image_url: groupBuy.product_detail.image_url,
+                carrier: groupBuy.product_detail.carrier,
+                registration_type: groupBuy.product_detail.registration_type,
+                base_price: groupBuy.product_detail.base_price
+              }
+            }}
+          />
         </div>
       </div>
     </div>

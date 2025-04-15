@@ -44,7 +44,7 @@ const formSchema = z.object({
       .transform(val => parseInt(val, 10)),
     z.number()
   ])
-    .refine(val => val >= 2 && val <= 5, '최대 참여 인원은 2~5명 사이여야 합니다'),
+    .refine(val => val >= 1 && val <= 100, '최대 참여 인원은 1~100명 사이여야 합니다'),
   end_time_option: z.string().optional(),
   end_time: z.string()
     .min(1, '마감일시를 입력해주세요')
@@ -61,7 +61,7 @@ const formSchema = z.object({
       .transform(val => parseInt(val, 10)),
     z.number()
   ])
-    .refine(val => val >= 2, '최소 참여 인원은 2명 이상이어야 합니다')
+    .refine(val => val >=1, '최소 참여 인원은 1명 이상이어야 합니다')
 });
 
 export default function CreateForm() {
@@ -75,10 +75,10 @@ export default function CreateForm() {
     defaultValues: {
       product: '',
       title: '',
-      max_participants: 2,
-      end_time_option: 'custom',
+      max_participants: 10,
+      min_participants: 1,
       end_time: '',
-      min_participants: 2,
+      end_time_option: '24hours',
     },
   });
 
@@ -161,13 +161,38 @@ export default function CreateForm() {
       }
 
       // 요청 데이터 준비
+      // 마감 시간 계산
+      let endTimeValue;
+      
+      // 옵션이 선택되었고 custom이 아닌 경우 현재 시간 기준으로 계산
+      if (values.end_time_option && values.end_time_option !== 'custom') {
+        const now = new Date();
+        let hours = 24;
+        
+        if (values.end_time_option === '6hours') hours = 6;
+        else if (values.end_time_option === '12hours') hours = 12;
+        else if (values.end_time_option === '24hours') hours = 24;
+        
+        // 현재 시간에 설정한 시간을 더함
+        const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
+        endTimeValue = endTime.toISOString();
+        console.log('계산된 마감 시간 (UTC):', endTimeValue);
+        console.log('계산된 마감 시간 (한국시간):', endTime.toString());
+      } else {
+        // 직접 입력한 경우 ISO 문자열로 변환
+        const inputDate = new Date(values.end_time);
+        endTimeValue = inputDate.toISOString();
+        console.log('직접 입력한 마감 시간 (UTC):', endTimeValue);
+        console.log('직접 입력한 마감 시간 (한국시간):', inputDate.toString());
+      }
+      
       const requestData = {
         product: parseInt(values.product),
         title: values.title || `${products.find(p => p.id === parseInt(values.product))?.name} 공구`,
         creator: 1,  // 현재 로그인한 사용자 ID를 사용 (백엔드에서 현재 사용자로 자동 설정되도록 수정 필요)
         max_participants: values.max_participants,
         min_participants: values.min_participants,
-        end_time: new Date(values.end_time).toISOString(),
+        end_time: endTimeValue,
       };
       
       // API URL 준비
@@ -353,11 +378,15 @@ export default function CreateForm() {
                   <FormControl>
                     <Input
                       type="number"
-                      min="2"
-                      placeholder="최소 2명 이상"
+                      min="1"
+                      max="100"
+                      placeholder="최소 1명 이상"
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>
+                    공구에 참여할 최소 인원을 설정하세요 (1명 이상)
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -372,11 +401,15 @@ export default function CreateForm() {
                   <FormControl>
                     <Input
                       type="number"
-                      min="2"
-                      placeholder="최소 2명 이상"
+                      min="1"
+                      max="100"
+                      placeholder="최대 100명 이하"
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>
+                    공구에 참여할 최대 인원을 설정하세요 (100명 이하)
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -395,14 +428,26 @@ export default function CreateForm() {
                       // 선택한 옵션에 따라 마감 시간 자동 설정
                       if (value !== 'custom') {
                         const now = new Date();
-                        let hours = 24;
+                        let hoursToAdd = 24;
                         
-                        if (value === '6hours') hours = 6;
-                        else if (value === '12hours') hours = 12;
-                        else if (value === '24hours') hours = 24;
+                        if (value === '6hours') hoursToAdd = 6;
+                        else if (value === '12hours') hoursToAdd = 12;
+                        else if (value === '24hours') hoursToAdd = 24;
                         
-                        const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
-                        form.setValue('end_time', endTime.toISOString().slice(0, 16));
+                        // 현재 시간에 설정한 시간을 더함
+                        const endTime = new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
+                        
+                        // 로컬 시간 형식으로 변환 (YYYY-MM-DDTHH:MM)
+                        const year = endTime.getFullYear();
+                        const month = String(endTime.getMonth() + 1).padStart(2, '0');
+                        const day = String(endTime.getDate()).padStart(2, '0');
+                        const hourStr = String(endTime.getHours()).padStart(2, '0');
+                        const minutes = String(endTime.getMinutes()).padStart(2, '0');
+                        
+                        const localDateTimeString = `${year}-${month}-${day}T${hourStr}:${minutes}`;
+                        form.setValue('end_time', localDateTimeString);
+                        
+                        console.log('자동 설정된 마감 시간:', localDateTimeString);
                       }
                     }}
                     defaultValue={field.value}

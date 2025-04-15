@@ -58,7 +58,7 @@ export const authOptions: AuthOptions = {
   // 세션 전략 설정
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30일
+    maxAge: 365 * 10 * 24 * 60 * 60, // 10년 (사실상 무한)
   },
   providers: [
     GoogleProvider({
@@ -246,6 +246,12 @@ export const authOptions: AuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
+      // 유저 로그인 시 백엔드에서 받은 jwt 구조를 token에 저장
+      if (user && user.jwt) {
+        token.jwt = user.jwt;
+        token.accessToken = user.jwt.access; // 호환성 위해 추가
+      }
+      return token;
       if (user && account) {
         // 사용자 정보와 토큰 저장
         token.accessToken = (user as CustomUser).accessToken;
@@ -266,6 +272,21 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
+      // jwt 구조를 session과 session.user에 모두 저장
+      if (token.jwt) {
+        session.jwt = token.jwt;
+        if (session.user) {
+          session.user.jwt = token.jwt;
+        }
+      }
+      // accessToken도 호환성 위해 추가
+      if (token.accessToken) {
+        session.accessToken = token.accessToken;
+        if (session.user) {
+          session.user.accessToken = token.accessToken;
+        }
+      }
+      return session;
       if (session.user) {
         (session.user as CustomUser).accessToken = token.accessToken as string;
         (session.user as CustomUser).role = token.role as string;

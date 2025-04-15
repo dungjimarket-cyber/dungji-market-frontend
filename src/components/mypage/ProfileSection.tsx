@@ -10,8 +10,19 @@ function isExtendedUser(user: DefaultUser | undefined): user is DefaultUser & { 
   return typeof (user as any)?.provider === 'string';
 }
 
+function getLoginProviderLabel(user: any) {
+  const type = user?.sns_type || user?.provider;
+  if (type === 'kakao') return '카카오';
+  if (type === 'google') return '구글';
+  if (type === 'naver') return '네이버';
+  if (type === 'apple') return '애플';
+  if (type === 'email') return '이메일';
+  if (!type) return '직접 가입';
+  return type;
+}
+
 export default function ProfileSection() {
-  const { data: session, update } = useSession();
+  const { data: session, update, status } = useSession();
   const [email, setEmail] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
@@ -45,8 +56,9 @@ export default function ProfileSection() {
     }
   };
 
+  if (status === "loading") return null;
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4">내 정보</h2>
       <div className="flex items-start space-x-4">
         {session?.user?.image && (
@@ -109,7 +121,7 @@ export default function ProfileSection() {
           </div>
           <p className="text-gray-600">
             <span className="font-semibold">로그인 방식:</span>{' '}
-            {isExtendedUser(session?.user) && session.user.provider === 'kakao' ? '카카오' : '구글'}
+            {getLoginProviderLabel(session?.user)}
           </p>
         </div>
       </div>

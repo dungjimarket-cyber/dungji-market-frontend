@@ -73,7 +73,7 @@ export function ProductCard({
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Link href={`/products/${id}`} className="w-full">
+        <Link href={`/groupbuys/${id}`} className="w-full">
           <Button className="w-full">
             공구 참여하기
           </Button>

@@ -17,7 +17,7 @@ export const tokenUtils = {
         return null;
       }
       
-      const accessToken = (session.user as any).accessToken;
+      const accessToken = session.jwt?.access || session.user?.jwt?.access || (session.user as any).accessToken;
       if (!accessToken) {
         console.error('액세스 토큰이 없습니다:', session);
         return null;
