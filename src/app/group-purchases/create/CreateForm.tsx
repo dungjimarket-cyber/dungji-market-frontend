@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useSession, getSession } from 'next-auth/react';
+import { useSession, Session } from 'next-auth/react';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -121,10 +121,16 @@ interface FormData {
   end_time_option: string;
   end_time: string;
   
+  // 카테고리 식별용 필드 (UI에 표시되지 않음)
+  product_category?: string;
+  
   // 통신 상품 관련 필드
   telecom?: string;
+  telecom_carrier?: string; // 통신사
+  telecom_plan?: string;    // 요금제
   purchase_type?: string;
   plan_price?: string;
+  subscription_type?: string; // 가입유형
   
   // 가전 제품 관련 필드
   manufacturer?: string;
@@ -135,9 +141,7 @@ interface FormData {
   
   // 구독 상품 관련 필드
   billing_cycle?: string;
-  
-  // 카테고리 식별용 필드 (UI에 표시되지 않음)
-  product_category?: string;
+  payment_cycle?: string;    // 결제 주기
 }
 
 /**
@@ -216,7 +220,11 @@ const getCategoryIcon = (categoryType?: string) => {
  * 공구 등록 폼 컴포넌트
  */
 export default function CreateForm() {
-  const { data: session, status } = useSession();
+  // status의 타입을 명시적으로 지정합니다
+  const { data: session, status } = useSession() as {
+    data: Session | null;
+    status: 'loading' | 'authenticated' | 'unauthenticated';
+  };
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -421,31 +429,46 @@ export default function CreateForm() {
         creator: userId                    // 필수 필드, 현재 로그인한 사용자 ID
       };
       
-      // 로그인 상태 확인 - status가 authenticated이면서 userId가 없는 경우만 오류
-      // status가 loading인 경우는 로그인 체크를 건너뛬
+      // 로그인 상태 확인
       console.log('제출 시 세션 상태:', status);
       console.log('제출 시 사용자 ID:', userId);
       
-      if (status === 'authenticated' && !userId) {
-        toast({
-          variant: 'destructive',
-          title: '사용자 정보 오류',
-          description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
-        });
-        router.push('/login?callbackUrl=/group-purchases/create');
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (status === 'unauthenticated') {
-        toast({
-          variant: 'destructive',
-          title: '로그인 필요',
-          description: '공구 등록을 위해서는 로그인이 필요합니다.',
-        });
-        router.push('/login?callbackUrl=/group-purchases/create');
-        setIsSubmitting(false);
-        return;
+      // 세션 상태에 따른 처리
+      switch(status) {
+        case 'loading':
+          // 세션 로딩 중에는 처리를 지연
+          toast({
+            title: '로그인 정보 확인 중',
+            description: '잠시만 기다려주세요...',
+          });
+          setTimeout(() => setIsSubmitting(false), 1500);
+          return;
+          
+        case 'authenticated':
+          // 로그인은 되었지만 ID가 없는 경우
+          if (!userId) {
+            toast({
+              variant: 'destructive',
+              title: '사용자 정보 오류',
+              description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
+            });
+            router.push('/login?callbackUrl=/group-purchases/create');
+            setIsSubmitting(false);
+            return;
+          }
+          // 로그인 완료 및 ID 있음 - 정상 처리 계속
+          break;
+          
+        case 'unauthenticated':
+          // 로그인되지 않은 경우
+          toast({
+            variant: 'destructive',
+            title: '로그인 필요',
+            description: '공구 등록을 위해서는 로그인이 필요합니다.',
+          });
+          router.push('/login?callbackUrl=/group-purchases/create');
+          setIsSubmitting(false);
+          return;
       }
       
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
