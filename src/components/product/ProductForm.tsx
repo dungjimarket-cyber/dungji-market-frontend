@@ -442,19 +442,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
             }
 
             const fieldValue = formData.custom_values?.[field.name];
-            let value = '';
-            
-            if (fieldValue) {
-              if (field.type === 'text' || field.type === 'select') {
-                value = fieldValue.text_value || '';
-              } else if (field.type === 'number') {
-                value = fieldValue.number_value || '';
-              } else if (field.type === 'boolean') {
-                value = fieldValue.boolean_value || false;
-              } else if (field.type === 'date') {
-                value = fieldValue.date_value || '';
-              }
-            }
+            // 필드 타입별 값 추출
+            const textValue = fieldValue?.text_value || '';
+            const numberValue = fieldValue?.number_value?.toString() || '';
+            const booleanValue = fieldValue?.boolean_value === true;
+            const dateValue = fieldValue?.date_value || '';
             
             return (
               <div key={index} className="form-group">
@@ -468,7 +460,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
                     type="text"
                     id={field.name}
                     name={field.name}
-                    value={value}
+                    value={textValue}
                     onChange={(e) => handleCustomFieldChange(e, field)}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                     required={field.required}
@@ -480,7 +472,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
                     type="number"
                     id={field.name}
                     name={field.name}
-                    value={value}
+                    value={numberValue}
                     onChange={(e) => handleCustomFieldChange(e, field)}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                     required={field.required}
@@ -493,7 +485,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
                       type="checkbox"
                       id={field.name}
                       name={field.name}
-                      checked={value as boolean}
+                      checked={booleanValue}
                       onChange={(e) => handleCustomFieldChange(e, field)}
                       className="mr-2"
                       required={field.required}
@@ -508,7 +500,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
                   <select
                     id={field.name}
                     name={field.name}
-                    value={value}
+                    value={textValue}
                     onChange={(e) => handleCustomFieldChange(e, field)}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                     required={field.required}
@@ -527,7 +519,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
                     type="date"
                     id={field.name}
                     name={field.name}
-                    value={value}
+                    value={dateValue}
                     onChange={(e) => handleCustomFieldChange(e, field)}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                     required={field.required}

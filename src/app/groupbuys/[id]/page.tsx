@@ -11,15 +11,17 @@ import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTim
 interface GroupBuyProduct {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   base_price: number;
-  image_url: string;
-  category_name: string;
-  carrier: string;
-  registration_type: string;
-  plan_info: string;
-  contract_info: string;
-  total_support_amount: number;
+  image_url?: string;
+  category_name?: string;
+  // 카테고리별 특수 필드(통신 상품)
+  carrier?: string;
+  registration_type?: string;
+  plan_info?: string;
+  contract_info?: string;
+  total_support_amount?: number;
+  // 기타 필드
   release_date?: string;
 }
 
