@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useSession, Session } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -116,6 +117,7 @@ const formSchema = z.object({
 interface FormData {
   product: string;
   title: string;
+  description?: string;      // 공구 설명 필드 추가
   min_participants: number;
   max_participants: number;
   end_time_option: string;
@@ -135,6 +137,7 @@ interface FormData {
   // 가전 제품 관련 필드
   manufacturer?: string;
   warranty?: string;
+  warranty_period?: string;   // 보증기간
   
   // 렌탈 상품 관련 필드
   rental_period?: string;
@@ -256,19 +259,15 @@ export default function CreateForm() {
   }, [status, router]);
 
   useEffect(() => {
-    const validateSession = async () => {
-      const session = await getSession();
-      console.log('공구 등록 페이지 세션 확인:', session);
-      
-      if (!session || status === 'unauthenticated') {
-        router.push('/login?callbackUrl=/group-purchases/create');
-      }
-    };
+    // useSession 후크의 데이터를 활용하여 세션 검증
+    console.log('공구 등록 페이지 세션 확인:', session);
     
-    if (status !== 'loading') {
-      validateSession();
+    // status가 'unauthenticated'일 때만 로그인 페이지로 리디렉션
+    // status가 'loading'인 경우는 기다림
+    if (status === 'unauthenticated') {
+      router.push('/login?callbackUrl=/group-purchases/create');
     }
-  }, [router, status]);
+  }, [router, status, session]);
 
   useEffect(() => {
     console.log('현재 세션 상태:', status);
@@ -312,6 +311,9 @@ export default function CreateForm() {
    */
   const onSubmit = async (values: FormData) => {
     console.log('폼 제출 시작:', values);
+    
+    // 요청 데이터를 함수 전체에서 사용할 수 있도록 초기화
+    let apiRequestData: Record<string, any> = {};
     
     // 필수 필드 값 유효성 추가 확인
     if (!values.product) {
@@ -406,7 +408,7 @@ export default function CreateForm() {
       // description은 반드시 문자열로 설정
       const safeDescription = description || values.title.trim() || '공구 설명';
       // product_details는 값이 있는 항목만 포함하도록 필터링
-      const cleanProductDetails = {};
+      const cleanProductDetails: Record<string, any> = {};
       Object.entries(productDetails).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           cleanProductDetails[key] = value;
@@ -417,7 +419,7 @@ export default function CreateForm() {
       const userId = session?.user?.id;
       
       // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
-      const requestData = {
+      apiRequestData = {
         product: productId,                 // 필수 필드, 수치
         title: values.title.trim(),         // 필수 필드, 문자열
         description: safeDescription,       // 선택 필드, 문자열
@@ -473,7 +475,7 @@ export default function CreateForm() {
       
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
       console.log('공구 등록 API URL:', apiUrl);
-      console.log('공구 등록 요청 데이터:', JSON.stringify(requestData, null, 2));
+      console.log('공구 등록 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
       
       // 디버깅을 위한 요청 데이터 로깅
       console.log('===== 요청 형식 및 베어된 값 확인 =====');
@@ -511,7 +513,7 @@ export default function CreateForm() {
       
       // tokenUtils를 사용하여 인증된 API 요청 수행
       console.log('API 요청 발송:', apiUrl);
-      console.log('JSON.stringify 결과:', JSON.stringify(requestData));
+      console.log('JSON.stringify 결과:', JSON.stringify(apiRequestData));
       
       const result = await tokenUtils.fetchWithAuth(apiUrl, {
         method: 'POST',
@@ -519,7 +521,7 @@ export default function CreateForm() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(apiRequestData),
       });
       
       console.log('공구 등록 응답:', result);
@@ -561,7 +563,7 @@ export default function CreateForm() {
           const responseText = await error.response.text();
           console.error('원래 응답 데이터:', responseText);
           console.error('원래 헤더:', error.response.status, error.response.headers);
-          console.error('오류 발생 요청 데이터:', JSON.stringify(requestData, null, 2));
+          console.error('오류 발생 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
           
           // JSON으로 파싱 시도
           let errorData;
