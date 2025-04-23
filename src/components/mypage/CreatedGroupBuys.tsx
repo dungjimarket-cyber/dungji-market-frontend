@@ -31,21 +31,20 @@ interface GroupBuy {
   remaining_seconds?: number;
 }
 
-export default function ParticipatingGroupBuys() {
+export default function CreatedGroupBuys() {
   const { data: session, status } = useSession();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // 세션 로딩 상태일 때는 로딩 표시
-  // 세션 로딩 상태 처리 - status는 "authenticated", "unauthenticated", "loading" 중 하나
   if (status === "loading") return <p className="text-gray-500">로딩 중...</p>;
 
   useEffect(() => {
     /**
-     * 참여중인 공구 목록을 가져오는 함수
+     * 내가 만든 공구 목록을 가져오는 함수
      */
-    const fetchParticipatingGroupBuys = async () => {
+    const fetchCreatedGroupBuys = async () => {
       try {
         setLoading(true);
         setError('');
@@ -70,10 +69,10 @@ export default function ParticipatingGroupBuys() {
           return;
         }
         
-        // 백엔드 API 호출 - 정확한 API 엔드포인트 사용, 캐시 처리 방지
-        console.log('참여 중인 공구 API 호출, 토큰:', accessToken.substring(0, 10) + '...');
+        // 백엔드 API 호출 - 내가 생성한 공구 목록 API
+        console.log('내가 만든 공구 API 호출, 토큰:', accessToken.substring(0, 10) + '...');
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/joined_groupbuys/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/my_groupbuys/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -92,23 +91,23 @@ export default function ParticipatingGroupBuys() {
             }
             throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
           }
-          throw new Error('참여중인 공구 목록을 가져오는데 실패했습니다.');
+          throw new Error('내가 만든 공구 목록을 가져오는데 실패했습니다.');
         }
 
         // 성공 처리
         const data = await response.json();
-        console.log('가져온 참여중인 공구 데이터:', data);
+        console.log('가져온 내가 만든 공구 데이터:', data);
         setGroupBuys(data);
       } catch (err) {
-        console.error('참여중인 공구 목록 가져오기 오류:', err);
-        setError(err instanceof Error ? err.message : '참여중인 공구 목록을 가져오는데 실패했습니다.');
+        console.error('내가 만든 공구 목록 가져오기 오류:', err);
+        setError(err instanceof Error ? err.message : '내가 만든 공구 목록을 가져오는데 실패했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
     // 초기 로딩 시 API 호출
-    fetchParticipatingGroupBuys();
+    fetchCreatedGroupBuys();
   }, [session]);
 
   if (loading) {
@@ -120,7 +119,7 @@ export default function ParticipatingGroupBuys() {
   }
 
   if (groupBuys.length === 0) {
-    return <p className="text-gray-500">참여중인 공동구매가 없습니다.</p>;
+    return <p className="text-gray-500">내가 만든 공동구매가 없습니다.</p>;
   }
 
   return (

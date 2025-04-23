@@ -6,11 +6,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSession, getSession } from 'next-auth/react';
 import { toast } from '@/components/ui/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 import { tokenUtils } from '@/lib/tokenUtils';
-import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from "@/components/ui/switch";
+import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import {
@@ -46,68 +46,98 @@ interface Product {
 }
 
 /**
- * 폼 유효성 검증 스키마
+ * 공구 등록 폼의 유효성 검증 스키마
  * 카테고리별 필드 유효성 검증 로직 포함
  */
 const formSchema = z.object({
-  product: z.string().min(1, {
-    message: '상품을 선택해주세요',
-  }),
-  title: z.string().min(3, {
-    message: '제목은 최소 3글자 이상이어야 합니다',
-  }),
-  description: z.string().optional(),
+  product: z.string().min(1, '상품을 선택해주세요'),
+  title: z.string().min(1, '공구 제목을 입력해주세요').max(50, '제목은 최대 50자까지 입력 가능합니다'),
   min_participants: z.union([
-    z.string().transform(val => parseInt(val, 10) || 1),
+    z.string().transform(val => val ? parseInt(val, 10) : 1),
     z.number(),
-  ]).refine(val => val >= 1 && val <= 10, {
-    message: '최소 참여 인원은 1~10명 사이여야 합니다',
-  }),
+    z.undefined().transform(() => 1)
+  ]).default(1),
   max_participants: z.union([
-    z.string().transform(val => parseInt(val, 10) || 5),
-    z.number(),
-  ]).refine(val => val >= 1 && val <= 10, {
-    message: '최대 참여 인원은 1~10명 사이여야 합니다',
-  }),
-  end_time_option: z.union([
-    z.enum(['slider', 'custom']),
-    z.string().transform(val => val === '24hours' ? 'slider' : 'custom'),
-  ]),
+    z.string().min(1, '최대 참여 인원을 입력해주세요').transform(val => parseInt(val, 10)),
+    z.number()
+  ]).refine(val => val >= 1 && val <= 10, '최대 참여 인원은 1~10명 사이여야 합니다'),
+  end_time_option: z.string().default('24hours'),
   end_time: z.string().optional(),
-  customHours: z.union([
-    z.string().transform(val => parseInt(val, 10) || 24),
-    z.number().optional(),
-  ]),
-  sliderHours: z.union([
-    z.string().transform(val => parseInt(val, 10) || 24),
-    z.number(),
-  ]).refine(val => val >= 6 && val <= 48, {
-    message: '마감 시간은 6~48시간 사이여야 합니다',
-  }).default(24),
-  region_type: z.enum(['local', 'online']).default('local'),
-  region: z.string().optional(),
   
-  // 카테고리별 필드
-  telecom_carrier: z.string().optional(),
-  telecom_plan: z.string().optional(),
-  subscription_type: z.string().optional(),
-  contract_period: z.string().optional(),
-  rental_period: z.string().optional(),
-  manufacturer: z.string().optional(),
-  warranty_period: z.string().optional(),
-  payment_cycle: z.string().optional(),
+  // 통신 상품 관련 필드
+  telecom: z.string().optional()
+    .superRefine((val, ctx) => {
+      // 통신 카테고리일 때만 필수 검증
+      if (ctx.path[0] === 'telecom' && ctx.data.product_category === 'telecom' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '통신사를 선택해주세요',
+        });
+      }
+    }),
+  purchase_type: z.string().optional()
+    .superRefine((val, ctx) => {
+      if (ctx.path[0] === 'purchase_type' && ctx.data.product_category === 'telecom' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '가입유형을 선택해주세요',
+        });
+      }
+    }),
+  plan_price: z.string().optional()
+    .superRefine((val, ctx) => {
+      if (ctx.path[0] === 'plan_price' && ctx.data.product_category === 'telecom' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '요금제를 선택해주세요',
+        });
+      }
+    }),
   
+  // 가전 제품 관련 필드
+  manufacturer: z.string().optional()
+    .superRefine((val, ctx) => {
+      if (ctx.path[0] === 'manufacturer' && ctx.data.product_category === 'electronics' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '제조사를 입력해주세요',
+        });
+      }
+    }),
+  warranty: z.string().optional()
+    .superRefine((val, ctx) => {
+      if (ctx.path[0] === 'warranty' && ctx.data.product_category === 'electronics' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '보증 기간을 입력해주세요',
+        });
+      }
+    }),
+  
+  // 렌탈 상품 관련 필드
+  rental_period: z.string().optional()
+    .superRefine((val, ctx) => {
+      if (ctx.path[0] === 'rental_period' && ctx.data.product_category === 'rental' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '렌탈 기간을 선택해주세요',
+        });
+      }
+    }),
+  
+  // 구독 상품 관련 필드
+  billing_cycle: z.string().optional()
+    .superRefine((val, ctx) => {
+      if (ctx.path[0] === 'billing_cycle' && ctx.data.product_category === 'subscription' && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '결제 주기를 선택해주세요',
+        });
+      }
+    }),
+    
   // 카테고리 식별용 필드 (UI에 표시되지 않음)
   product_category: z.string().optional()
-}).refine(data => {
-  // 최소 참여 인원은 최대 참여 인원보다 클 수 없음
-  if (data.min_participants && data.max_participants) {
-    return data.min_participants <= data.max_participants;
-  }
-  return true;
-}, {
-  message: '최소 참여 인원은 최대 참여 인원보다 클 수 없습니다',
-  path: ['min_participants'],
 });
 
 /**
@@ -222,7 +252,7 @@ export default function CreateForm() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [endTimeOption, setEndTimeOption] = useState<string>('24hours');
-  const [sliderHours, setSliderHours] = useState<number>(24);
+  const [sliderHours, setSliderHours] = useState<number>(7);
   const [regionType, setRegionType] = useState<'local'|'nationwide'>('local');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
@@ -263,71 +293,48 @@ export default function CreateForm() {
   }, [router, status]);
 
   useEffect(() => {
-    console.log('현재 세션 상태:', status);
-    console.log('세션 데이터:', session);
-    console.log('사용자 ID:', session?.user?.id);
-    
     const fetchProducts = async () => {
       try {
-        const tokenResponse = await tokenUtils.fetchWithAuth(
-          `${process.env.NEXT_PUBLIC_API_URL}/products/`,
-          {
-            method: 'GET'
-          }
-        );
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/products/`;
+        console.log('상품 목록 API URL:', apiUrl);
         
-        if (tokenResponse && Array.isArray(tokenResponse)) {
-          setProducts(tokenResponse);
-        }
+        const data = await tokenUtils.fetchWithAuth<Product[]>(apiUrl);
+        console.log('상품 목록 데이터:', data);
+        setProducts(data);
       } catch (error) {
-        console.error('상품 데이터 가져오기 오류:', error);
-        toast({
-          variant: 'destructive',
-          title: '상품 로드 오류',
-          description: '상품 정보를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        });
+        console.error('상품 목록 가져오기 실패:', error);
         
-        // 토큰 만료 오류라면 로그인 페이지로 이동
-        if (error instanceof Error && error.message.includes('401')) {
+        if (error instanceof Error && (
+            error.message.includes('token_not_valid') || 
+            error.message.includes('Token is invalid or expired'))) {
+          toast({
+            variant: 'destructive',
+            title: '세션이 만료되었습니다',
+            description: '다시 로그인해주세요.'
+          });
           router.push('/login?callbackUrl=/group-purchases/create');
+          return;
         }
+        
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchProducts();
   }, []);
 
-  /**
-   * 폼 제출 핸들러 
-   */
   const onSubmit = async (values: FormData) => {
-    console.log('폼 제출 시작:', values);
-    
-    // 필수 필드 값 유효성 추가 확인
-    if (!values.product) {
-      toast({
-        title: "오류",
-        description: "상품을 선택해주세요",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsSubmitting(true);
     
     try {
-      // 최소/최대 참여자 수 검증
       if (values.min_participants > values.max_participants) {
         toast({
           variant: 'destructive',
           title: '참여 인원 오류',
           description: '최소 참여 인원은 최대 참여 인원보다 클 수 없습니다'
-        });
-        return;
-      }
-      
+
       // 로그인 확인
       if (!session || !session.user) {
         toast({
@@ -347,7 +354,7 @@ export default function CreateForm() {
       if (values.end_time_option === 'custom') {
         endTimeValue = values.end_time;
       } else if (values.end_time_option === 'slider') {
-        // 슬라이더로 설정한 시간
+        // 슬라이더 선택한 경우
         const endDate = new Date();
         endDate.setHours(endDate.getHours() + sliderHours);
         endTimeValue = endDate.toISOString();
@@ -369,14 +376,14 @@ export default function CreateForm() {
       // 선택된 상품의 카테고리에 따라 다른 세부 정보 추가
       if (!selectedProduct || selectedProduct.category?.detail_type === 'telecom' || !selectedProduct.category?.detail_type) {
         productDetails = {
-          telecom_carrier: values.telecom_carrier,
-          telecom_plan: values.telecom_plan,
-          subscription_type: values.subscription_type
+          telecom: values.telecom,
+          purchase_type: values.purchase_type,
+          plan_price: values.plan_price
         };
       } else if (selectedProduct.category?.detail_type === 'electronics') {
         productDetails = {
           manufacturer: values.manufacturer,
-          warranty_period: values.warranty_period
+          warranty: values.warranty
         };
       } else if (selectedProduct.category?.detail_type === 'rental') {
         productDetails = {
@@ -384,143 +391,62 @@ export default function CreateForm() {
         };
       } else if (selectedProduct.category?.detail_type === 'subscription') {
         productDetails = {
-          payment_cycle: values.payment_cycle
+          billing_cycle: values.billing_cycle
         };
       }
       
-      // 필수 필드 추가 - description 필드 (빈 값이면 제목으로 설정)
-      const description = values.description?.trim() || values.title.trim();
-      
-      // 수치 필드는 반드시 수치로 변환
-      const minPart = typeof minParticipants === 'string' ? parseInt(minParticipants, 10) : minParticipants;
-      const maxPart = typeof maxParticipants === 'string' ? parseInt(maxParticipants, 10) : maxParticipants;
-      
-      // description은 반드시 문자열로 설정
-      const safeDescription = description || values.title.trim() || '공구 설명';
-      // product_details는 값이 있는 항목만 포함하도록 필터링
-      const cleanProductDetails = {};
-      Object.entries(productDetails).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          cleanProductDetails[key] = value;
-        }
-      });
-      
-      // 현재 로그인한 사용자 ID 가져오기 (로그인 검사는 API 요청 직전에 수행)
-      const userId = session?.user?.id;
-      
-      // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
+      // 백엔드 API에 맞게 요청 데이터 구조화
       const requestData = {
-        product: productId,                 // 필수 필드, 수치
-        title: values.title.trim(),         // 필수 필드, 문자열
-        description: safeDescription,       // 선택 필드, 문자열
-        min_participants: minPart,          // 필수 필드, 수치, 최소 1
-        max_participants: maxPart,          // 필수 필드, 수치, 최소 1
-        end_time: endTimeValue,             // 필수 필드, 날짜/시간 문자열
-        region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
-        product_details: cleanProductDetails, // 선택 필드, JSON 오브젝트
-        creator: userId                    // 필수 필드, 현재 로그인한 사용자 ID
+        product: productId,
+        title: values.title.trim(),
+        min_participants: minParticipants,
+        max_participants: maxParticipants,
+        end_time: endTimeValue,
+        region_type: regionType,
+        product_details: productDetails
       };
-      
-      // 로그인 상태 확인 - status가 authenticated이면서 userId가 없는 경우만 오류
-      // status가 loading인 경우는 로그인 체크를 건너뛬
-      console.log('제출 시 세션 상태:', status);
-      console.log('제출 시 사용자 ID:', userId);
-      
-      if (status === 'authenticated' && !userId) {
-        toast({
-          variant: 'destructive',
-          title: '사용자 정보 오류',
-          description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
-        });
-        router.push('/login?callbackUrl=/group-purchases/create');
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (status === 'unauthenticated') {
-        toast({
-          variant: 'destructive',
-          title: '로그인 필요',
-          description: '공구 등록을 위해서는 로그인이 필요합니다.',
-        });
-        router.push('/login?callbackUrl=/group-purchases/create');
-        setIsSubmitting(false);
-        return;
-      }
       
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
       console.log('공구 등록 API URL:', apiUrl);
-      console.log('공구 등록 요청 데이터:', JSON.stringify(requestData, null, 2));
-      
-      // 디버깅을 위한 요청 데이터 로깅
-      console.log('===== 요청 형식 및 베어된 값 확인 =====');
-      console.log('product (productId):', productId, typeof productId);
-      console.log('title:', values.title.trim(), typeof values.title);
-      console.log('description:', safeDescription, typeof safeDescription);
-      console.log('min_participants:', minPart, typeof minPart);
-      console.log('max_participants:', maxPart, typeof maxPart);
-      console.log('end_time:', endTimeValue, typeof endTimeValue);
-      console.log('region_type:', regionType || 'local');
-      console.log('product_details:', JSON.stringify(cleanProductDetails));
-      
-      // 필수 필드 값 검증 
-      if (!productId || productId <= 0) {
-        toast({
-          variant: 'destructive',
-          title: '상품 오류',
-          description: '유효한 상품을 선택해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (!endTimeValue) {
-        toast({
-          variant: 'destructive',
-          title: '시간 설정 오류',
-          description: '마감 시간을 설정해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      console.log('=====================');
+      console.log('공구 등록 요청 데이터:', requestData);
       
       // tokenUtils를 사용하여 인증된 API 요청 수행
-      console.log('API 요청 발송:', apiUrl);
-      console.log('JSON.stringify 결과:', JSON.stringify(requestData));
-      
       const result = await tokenUtils.fetchWithAuth(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
         body: JSON.stringify(requestData),
       });
       
-      console.log('공구 등록 응답:', result);
-      
       console.log('공구 등록 성공:', result);
       
-      // 성공 Toast 메시지 (단순 텍스트로 변경하여 하이드레이션 문제 해결)
+      // 성공 Toast 메시지에 마이페이지로 이동하는 버튼 추가
       toast({
         variant: 'default',
-        title: '공구 등록 성공',
-        description: '공구가 성공적으로 등록되었습니다. 잠시 후 마이페이지로 이동합니다.',
-        className: "border-green-200 bg-green-50"
-      });
-      
-      // 두 번째 토스트 메시지로 이동 버튼 안내
-      toast({
-        variant: 'default',
-        title: '이동 옵션',
-        description: '마이페이지 또는 공구 목록으로 이동하시겠습니까?',
-        action: (
-          <ToastAction altText="마이페이지" onClick={() => router.push('/mypage')}>
-            마이페이지
-          </ToastAction>
+        title: (
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <span>공구 등록 성공</span>
+          </div>
         ),
+        description: (
+          <div className="flex flex-col space-y-2">
+            <span>공구가 성공적으로 등록되었습니다!</span>
+            <div className="flex gap-2 mt-1">
+              <button 
+                onClick={() => router.push('/mypage')} 
+                className="px-3 py-1 bg-blue-100 text-blue-600 rounded-md text-xs hover:bg-blue-200 transition-colors"
+              >
+                마이페이지로 이동
+              </button>
+              <button 
+                onClick={() => router.push('/group-purchases')} 
+                className="px-3 py-1 bg-gray-100 text-gray-600 rounded-md text-xs hover:bg-gray-200 transition-colors"
+              >
+                진행중인 공구 보기
+              </button>
+            </div>
+          </div>
+        ),
+        className: "border-green-200 bg-green-50"
       });
 
       // 마이페이지로 자동 리다이렉트 (3초 후)
@@ -530,56 +456,18 @@ export default function CreateForm() {
       
     } catch (error: any) {
       console.error('공구 등록 실패:', error);
-      
-      // 오류 응답 내용 상세 로깅
-      if (error.response) {
-        try {
-          // 응답 원본 확인
-          const responseText = await error.response.text();
-          console.error('원래 응답 데이터:', responseText);
-          console.error('원래 헤더:', error.response.status, error.response.headers);
-          console.error('오류 발생 요청 데이터:', JSON.stringify(requestData, null, 2));
-          
-          // JSON으로 파싱 시도
-          let errorData;
-          try {
-            errorData = JSON.parse(responseText);
-            console.error('백엔드 오류 상세:', errorData);
-            
-            // 필드별 오류 메시지 표시
-            if (typeof errorData === 'object') {
-              const errorMessages = Object.entries(errorData)
-                .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-                .join('\n');
-              
-              toast({
-                variant: 'destructive',
-                title: '공구 등록 실패',
-                description: errorMessages || '서버에서 오류가 발생했습니다.',
-              });
-              return;
-            }
-          } catch (parseError) {
-            console.error('JSON 파싱 실패:', parseError);
-            // 응답이 JSON이 아닌 경우
-            toast({
-              variant: 'destructive',
-              title: '공구 등록 실패',
-              description: responseText || '서버 오류가 발생했습니다.',
-            });
-            return;
-          }
-        } catch (responseError) {
-          console.error('응답 읽기 실패:', responseError);
-        }
-      }
       setIsSubmitting(false);
       
       // 인증 오류 처리
       if (error.message === 'Not authenticated' || error.message === 'No access token available') {
         toast({
           variant: 'destructive',
-          title: '로그인 필요',
+          title: (
+            <div className="flex items-center gap-2">
+              <AlertCircleIcon className="h-5 w-5" />
+              <span>로그인 필요</span>
+            </div>
+          ),
           description: '세션이 만료되었습니다. 다시 로그인해주세요.'
         });
         router.push('/login');
@@ -595,7 +483,12 @@ export default function CreateForm() {
           
           toast({
             variant: "destructive",
-            title: '입력 오류',
+            title: (
+              <div className="flex items-center gap-2">
+                <AlertCircleIcon className="h-5 w-5" />
+                <span>입력 오류</span>
+              </div>
+            ),
             description: errorMessage,
           });
           
@@ -614,7 +507,12 @@ export default function CreateForm() {
         if (error.response?.status === 401) {
           toast({
             variant: "destructive",
-            title: '인증 오류',
+            title: (
+              <div className="flex items-center gap-2">
+                <AlertCircleIcon className="h-5 w-5" />
+                <span>인증 오류</span>
+              </div>
+            ),
             description: "로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.",
           });
           
@@ -628,7 +526,12 @@ export default function CreateForm() {
         if (error.response?.status === 403) {
           toast({
             variant: "destructive",
-            title: '권한 오류',
+            title: (
+              <div className="flex items-center gap-2">
+                <AlertCircleIcon className="h-5 w-5" />
+                <span>권한 오류</span>
+              </div>
+            ),
             description: "이 작업을 수행할 권한이 없습니다.",
           });
           return;
@@ -637,7 +540,12 @@ export default function CreateForm() {
         if (error.response?.status === 500) {
           toast({
             variant: "destructive",
-            title: '서버 오류',
+            title: (
+              <div className="flex items-center gap-2">
+                <AlertCircleIcon className="h-5 w-5" />
+                <span>서버 오류</span>
+              </div>
+            ),
             description: "서버에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
           });
           return;
@@ -647,7 +555,12 @@ export default function CreateForm() {
       // 기본 오류 처리
       toast({
         variant: 'destructive',
-        title: '공구 등록 실패',
+        title: (
+          <div className="flex items-center gap-2">
+            <AlertCircleIcon className="h-5 w-5" />
+            <span>공구 등록 실패</span>
+          </div>
+        ),
         description: '공구 등록 중 오류가 발생했습니다. 다시 시도해주세요.'
       });
     } finally {
@@ -665,34 +578,29 @@ export default function CreateForm() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-5 mb-10">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-2xl font-bold text-center mb-1">공구 등록하기</CardTitle>
-        <CardDescription className="text-center text-gray-500">
-          새로운 공동구매를 시작하세요
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2">
+          {selectedProduct ? (
+            <>
+              {selectedProduct.category?.detail_type === 'telecom' && <SmartphoneIcon className="h-6 w-6 text-blue-500" />}
+              {selectedProduct.category?.detail_type === 'electronics' && <TvIcon className="h-6 w-6 text-green-500" />}
+              {selectedProduct.category?.detail_type === 'rental' && <BoxIcon className="h-6 w-6 text-orange-500" />}
+              {selectedProduct.category?.detail_type === 'subscription' && <CreditCardIcon className="h-6 w-6 text-purple-500" />}
+              {!selectedProduct.category?.detail_type && <SmartphoneIcon className="h-6 w-6 text-blue-500" />}
+              {selectedProduct.category_name || '상품'} 공동구매
+            </>
+          ) : (
+            '상품 공동구매'
+          )}
+        </CardTitle>
+        <CardDescription>
+          공동구매를 통해 더 좋은 조건으로 구매하세요
         </CardDescription>
-        {/* 폼 유효성 검증 오류 표시 */}
-        {Object.keys(form.formState.errors).length > 0 && (
-          <div className="mt-3 p-3 bg-red-50 rounded-md border border-red-200">
-            <p className="text-red-600 font-medium text-sm mb-1">입력 정보를 확인해주세요:</p>
-            <ul className="text-xs text-red-500 list-disc pl-4">
-              {Object.entries(form.formState.errors).map(([field, error]) => (
-                <li key={field}>{field}: {error?.message?.toString() || '유효하지 않은 값'}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form 
-            onSubmit={form.handleSubmit((data) => {
-              // 폼 제출 이벤트 관리
-              console.log('폼 제출 처리:', data);
-              onSubmit(data);
-            })} 
-            className="space-y-6"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-6">
               <h3 className="text-lg font-medium">기기 선택</h3>
               <FormField
@@ -1032,20 +940,23 @@ export default function CreateForm() {
                   <FormItem className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="w-full">
-                        <Slider
-                          min={6}
-                          max={48}
-                          step={1}
-                          value={[sliderHours]}
-                          onValueChange={(values) => {
-                            const hours = values[0];
+                        <input
+                          type="range"
+                          min="6"
+                          max="48"
+                          step="1"
+                          value={sliderHours}
+                          className="w-full accent-blue-500"
+                          onChange={(e) => {
+                            const hours = parseInt(e.target.value, 10);
                             setSliderHours(hours);
                             const now = new Date();
                             const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
-                            form.setValue('end_time_option', 'slider');
-                            setEndTimeOption('slider');
+                            const customOption = 'custom';
+                            field.onChange(customOption);
+                            form.setValue('end_time', endTime.toISOString().slice(0, 16));
+                            setEndTimeOption(customOption);
                           }}
-                          className="w-full"
                         />
                       </div>
                       <div className="ml-4 font-medium text-blue-500">{sliderHours}시간</div>
@@ -1126,8 +1037,8 @@ export default function CreateForm() {
 
             <Button 
               type="submit" 
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 rounded-lg font-medium text-lg cursor-pointer" 
-              disabled={isSubmitting || form.formState.isSubmitting}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 rounded-lg font-medium text-lg" 
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>

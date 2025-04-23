@@ -220,6 +220,7 @@ export const authOptions: AuthOptions = {
           if (data) {
             // 사용자 정보와 토큰 저장
             user.accessToken = data.jwt.access;
+            user.id = String(data.user_id); // 백엔드에서 받은 user_id 저장
             (user as CustomUser).sns_id = user.id;
             (user as CustomUser).sns_type = account.provider;
             (user as CustomUser).role = 'user';
@@ -236,6 +237,12 @@ export const authOptions: AuthOptions = {
               user.name = data.username;
             }
             
+            // 로컬 스토리지에 SNS 로그인 응답 저장 (세션 생성 필요 시 사용)
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('dungji_sns_login_response', JSON.stringify(data));
+              console.log('[SNS 로그인] 사용자 ID 저장:', data.user_id);
+            }
+            
             return true;
           }
         } catch (error) {
@@ -245,65 +252,104 @@ export const authOptions: AuthOptions = {
       }
       return true;
     },
+    /**
+     * JWT 토큰 처리 콜백
+     * 사용자 로그인 시 토큰 정보를 저장하고 로컬 스토리지에도 저장
+     */
     async jwt({ token, user, account }) {
-      // 유저 로그인 시 백엔드에서 받은 jwt 구조를 token에 저장
-      if (user && user.jwt) {
-        token.jwt = user.jwt;
-        token.accessToken = user.jwt.access; // 호환성 위해 추가
-      }
-      return token;
-      if (user && account) {
-        // 사용자 정보와 토큰 저장
-        token.accessToken = (user as CustomUser).accessToken;
-        token.role = (user as CustomUser).role || 'user';
-        token.sns_id = (user as CustomUser).sns_id;
-        token.sns_type = (user as CustomUser).sns_type;
-        // 프로필 이미지 정보 추가
-        token.profile_image = user.image;
+      // 사용자 정보가 있는 경우
+      if (user) {
+        // 1. 백엔드에서 제공한 JWT 정보 처리 (직접 로그인 및 SNS 로그인 모두 적용)
+        if (user.jwt) {
+          token.jwt = user.jwt;
+          token.accessToken = user.jwt.access; // 호환성을 위해 추가
+          
+          // 클라이언트 사이드일 경우 로컬 스토리지에 토큰 저장
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('dungji_auth_token', user.jwt.access);
+            console.log('로컬 스토리지에 토큰이 저장되었습니다.');
+          }
+        }
         
-        console.log('[JWT 토큰 생성] 사용자 정보:', { 
-          accessToken: token.accessToken, 
-          role: token.role,
-          sns_id: token.sns_id,
-          sns_type: token.sns_type,
-          profile_image: token.profile_image
-        });
+        // 2. SNS 로그인 관련 정보 처리
+        if (account) {
+          // 사용자 SNS 정보 저장
+          token.accessToken = token.accessToken || (user as CustomUser).accessToken;
+          token.role = (user as CustomUser).role || 'user';
+          token.sns_id = (user as CustomUser).sns_id;
+          token.sns_type = (user as CustomUser).sns_type;
+          token.profile_image = user.image;
+          
+          console.log('[JWT 콜백] 사용자 정보:', { 
+            accessToken: token.accessToken?.substring(0, 10) + '...', 
+            role: token.role,
+            sns_id: token.sns_id,
+            sns_type: token.sns_type
+          });
+        }
       }
+      
       return token;
     },
+    /**
+     * 세션 처리 콜백
+     * JWT 토큰에서 정보를 추출하여 세션에 저장
+     */
     async session({ session, token }: { session: Session; token: JWT }) {
-      // jwt 구조를 session과 session.user에 모두 저장
+      // 1. JWT 토큰 정보 세션에 저장
       if (token.jwt) {
         session.jwt = token.jwt;
         if (session.user) {
           session.user.jwt = token.jwt;
         }
       }
-      // accessToken도 호환성 위해 추가
+      
+      // 2. 토큰 관련 정보 저장
       if (token.accessToken) {
         session.accessToken = token.accessToken;
         if (session.user) {
           session.user.accessToken = token.accessToken;
         }
       }
-      return session;
+      
+      // 3. SNS 관련 정보 추가
       if (session.user) {
-        (session.user as CustomUser).accessToken = token.accessToken as string;
-        (session.user as CustomUser).role = token.role as string;
-        (session.user as CustomUser).sns_id = token.sns_id as string;
-        // 프로필 이미지 정보 추가
-        session.user.image = token.profile_image as string;
-        (session.user as CustomUser).sns_type = token.sns_type as string;
+        // 사용자 ID 설정 - 백엔드에서 받은 user_id 사용
+        if (token.sub) {
+          session.user.id = token.sub as string;
+        } else if (token.jwt && typeof window !== 'undefined') {
+          // 로컬 스토리지에서 받아온 SNS 로그인 응답에서 user_id 값 추출
+          try {
+            const snsLoginData = localStorage.getItem('dungji_sns_login_response');
+            if (snsLoginData) {
+              const parsedData = JSON.parse(snsLoginData);
+              if (parsedData && parsedData.user_id) {
+                session.user.id = String(parsedData.user_id);
+                console.log('[세션] 저장된 사용자 ID 설정:', session.user.id);
+              }
+            }
+          } catch (error) {
+            console.error('[세션] 로컬 스토리지에서 사용자 ID 가져오기 오류:', error);
+          }
+        }
         
-        // 세션 데이터 로그
-        console.log('[SESSION 생성] 세션 데이터:', { 
-          accessToken: (session.user as CustomUser).accessToken,
-          role: (session.user as CustomUser).role,
-          sns_id: (session.user as CustomUser).sns_id,
-          image: session.user.image,
-          sns_type: (session.user as CustomUser).sns_type
-        });
+        // SNS 사용자 정보 설정
+        if (token.role) (session.user as CustomUser).role = token.role as string;
+        if (token.sns_id) (session.user as CustomUser).sns_id = token.sns_id as string;
+        if (token.sns_type) (session.user as CustomUser).sns_type = token.sns_type as string;
+        
+        // 프로필 이미지 정보 설정
+        if (token.profile_image) session.user.image = token.profile_image as string;
+        
+        // 로컬 스토리지에 토큰 재저장 (초기화 이후 세션이 로드될 때 유지)
+        if (typeof window !== 'undefined' && session.jwt?.access) {
+          localStorage.setItem('dungji_auth_token', session.jwt.access);
+        }
+        
+        console.log('[SESSION 콜백] 세션 생성 완료');
+        console.log('[세션 디버깅] 세션 사용자:', session.user);
       }
+      
       return session;
     },
   },

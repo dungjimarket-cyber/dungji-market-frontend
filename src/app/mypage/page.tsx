@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import ProfileSection from '@/components/mypage/ProfileSection';
 import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
+import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
 
 export default async function MyPage() {
   const session = await getServerSession(authOptions);
@@ -16,6 +17,11 @@ export default async function MyPage() {
       <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
       <div className="space-y-6">
         <ProfileSection />
+        
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">내가 만든 공구</h2>
+          <CreatedGroupBuys />
+        </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">참여중인 공동구매</h2>

@@ -31,7 +31,12 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  /**
+   * 공구 참여 처리를 수행하는 함수
+   * 로그인 상태를 확인하고 로컬 스토리지 또는 세션에서 토큰을 가져와 API 호출
+   */
   const handleJoin = async () => {
+    // 로그인 상태 확인
     if (!session) {
       toast({
         title: '로그인 필요',
@@ -45,16 +50,27 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
       setLoading(true);
       setError('');
       
-      // 백엔드 API를 호출하여 공구 참여 처리
-      // JWT 토큰 가져오기 (session.jwt.access 또는 session.user.jwt.access)
-      const accessToken = session?.jwt?.access || session?.user?.jwt?.access;
+      // 토큰 가져오기 (로컬 스토리지 우선, 없으면 세션에서 가져오기)
+      let accessToken = null;
       
-      if (!accessToken) {
-        throw new Error('JWT 토큰을 찾을 수 없습니다. 다시 로그인해주세요.');
+      // 1. 로컬 스토리지에서 토큰 확인
+      if (typeof window !== 'undefined') {
+        accessToken = localStorage.getItem('dungji_auth_token');
       }
       
-      console.log('JWT 토큰 확인:', accessToken.substring(0, 10) + '...');
+      // 2. 로컬 스토리지에 없으면 세션에서 확인
+      if (!accessToken) {
+        accessToken = session?.jwt?.access || session?.user?.jwt?.access;
+      }
       
+      // 토큰이 없는 경우 오류 처리
+      if (!accessToken) {
+        throw new Error('인증 토큰을 찾을 수 없습니다. 다시 로그인해주세요.');
+      }
+      
+      console.log('인증 토큰 확인:', accessToken.substring(0, 10) + '...');
+      
+      // API 요청
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/join/`, {
         method: 'POST',
         headers: {
@@ -63,13 +79,36 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
         }
       });
       
+      // 오류 처리
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '공구 참여에 실패했습니다.');
+        // 401 인증 오류
+        if (response.status === 401) {
+          // 로컬 스토리지에서 만료된 토큰 삭제
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('dungji_auth_token');
+          }
+          
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        
+        // 기타 오류 응답 처리
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.detail || '공구 참여에 실패했습니다.');
+        } catch (parseError) {
+          throw new Error(`공구 참여 실패: HTTP ${response.status}`);
+        }
       }
       
+      // 성공 처리
       const data = await response.json();
       console.log('공구 참여 성공:', data);
+      
+      toast({
+        title: '공구 참여 성공',
+        description: '성공적으로 공구에 참여했습니다!',
+        variant: 'default'
+      });
       
       // 성공 시 다음 단계로 이동
       setStep('success');

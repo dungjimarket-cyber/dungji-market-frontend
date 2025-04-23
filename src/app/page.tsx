@@ -14,11 +14,25 @@ export default async function Home() {
         <p className="text-lg text-gray-600 mb-8">
           함께 모여 더 좋은 가격으로 구매하세요.
         </p>
+        <div className="flex gap-4 mb-6">
+          <Link
+            href="/group-purchases/create"
+            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+          >
+            공구 등록하기
+          </Link>
+          <Link
+            href="/group-purchases"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            진행중인 공구 보기
+          </Link>
+        </div>
         {!session && (
           <div className="flex gap-4">
             <Link
               href="/register"
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
             >
               회원가입하기
             </Link>
