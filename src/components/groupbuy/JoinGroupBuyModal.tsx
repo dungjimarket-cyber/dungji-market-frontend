@@ -14,9 +14,9 @@ interface JoinGroupBuyModalProps {
   groupBuy: {
     id: number;
     title: string;
-    product_detail: {
+    product_details: {
       name: string;
-      image_url: string;
+      image_url?: string;
       carrier?: string;
       registration_type?: string;
       base_price: number;
@@ -110,21 +110,21 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
             </DialogHeader>
             <div className="flex flex-col items-center p-4">
               <Image 
-                src={groupBuy.product_detail.image_url || '/placeholder.png'} 
-                alt={groupBuy.product_detail.name} 
+                src={groupBuy.product_details.image_url || '/placeholder.png'} 
+                alt={groupBuy.product_details.name} 
                 width={200} 
                 height={200} 
                 className="rounded-md mb-4"
               />
-              <h3 className="text-lg font-bold">{groupBuy.title || groupBuy.product_detail.name}</h3>
+              <h3 className="text-lg font-bold">{groupBuy.title || groupBuy.product_details.name}</h3>
               <p className="text-gray-600 mb-2">
-                통신사: {groupBuy.product_detail.carrier || 'SK텔레콤'}
+                통신사: {groupBuy.product_details.carrier || 'SK텔레콤'}
               </p>
               <p className="text-gray-600 mb-2">
-                유형: {groupBuy.product_detail.registration_type || '번호이동'}
+                유형: {groupBuy.product_details.registration_type || '번호이동'}
               </p>
               <p className="text-xl font-bold mt-2">
-                {groupBuy.product_detail.base_price.toLocaleString()}원
+                {groupBuy.product_details.base_price.toLocaleString()}원
               </p>
             </div>
             <DialogFooter className="sm:justify-between">

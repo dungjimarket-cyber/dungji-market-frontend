@@ -10,7 +10,7 @@ interface GroupBuyActionButtonProps {
   groupBuy: {
     id: number;
     title: string;
-    product_detail: {
+    product_details: {
       name: string;
       image_url: string;
       carrier?: string;

@@ -24,7 +24,7 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
-  product_detail: {
+  product_details: {
     id: number;
     name: string;
     description: string;
@@ -84,13 +84,13 @@ export default function GroupPurchasesPage() {
     }
 
     // 카테고리 필터
-    if (categoryFilter !== 'all' && groupBuy.product_detail.category_name !== categoryFilter) {
+    if (categoryFilter !== 'all' && groupBuy.product_details?.category_name !== categoryFilter) {
       return false;
     }
 
     // 가격 필터
     if (priceFilter !== 'all') {
-      const price = groupBuy.product_detail.base_price;
+      const price = groupBuy.product_details?.base_price || 0;
       if (priceFilter === 'low' && price > 500000) return false;
       if (priceFilter === 'medium' && (price <= 500000 || price > 1000000)) return false;
       if (priceFilter === 'high' && price <= 1000000) return false;
@@ -100,7 +100,7 @@ export default function GroupPurchasesPage() {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       const titleMatch = groupBuy.title?.toLowerCase().includes(searchLower);
-      const productNameMatch = groupBuy.product_detail.name.toLowerCase().includes(searchLower);
+      const productNameMatch = groupBuy.product_details?.name.toLowerCase().includes(searchLower) || '';
       return titleMatch || productNameMatch;
     }
 
@@ -108,7 +108,7 @@ export default function GroupPurchasesPage() {
   });
 
   // 카테고리 목록 추출
-  const categories = Array.from(new Set(groupBuys.map(gb => gb.product_detail.category_name)));
+  const categories = Array.from(new Set(groupBuys.map(gb => gb.product_details?.category_name || '')));
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -400,8 +400,8 @@ export default function GroupPurchasesPage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-500 mb-1">{groupBuy.product_detail.category_name}</p>
-                        <CardTitle className="text-xl">{groupBuy.title || groupBuy.product_detail.name}</CardTitle>
+                        <p className="text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || ''}</p>
+                        <CardTitle className="text-xl">{groupBuy.title || groupBuy.product_details?.name}</CardTitle>
                       </div>
                       <span className={`px-2 py-1 text-sm rounded-full ${
                         groupBuy.status === 'recruiting'
@@ -417,8 +417,8 @@ export default function GroupPurchasesPage() {
                   </CardHeader>
                   <CardContent>
                       <Image
-                        src={groupBuy.product_detail.image_url || '/placeholder.png'}
-                        alt={groupBuy.product_detail.name}
+                        src={groupBuy.product_details?.image_url || '/placeholder.png'}
+                        alt={groupBuy.product_details?.name || ''}
                         width={800}
                         height={450}
                         className="object-cover rounded-lg"
@@ -443,18 +443,18 @@ export default function GroupPurchasesPage() {
                       <div className="mt-2 space-y-2">
                         <div className="flex flex-col">
                           <div className="flex space-x-2 text-sm">
-                            <span className="font-medium text-red-500">통신사: {groupBuy.product_detail.carrier || 'SK텔레콤'}</span>
-                            <span className="font-medium text-blue-500">유형: {groupBuy.product_detail.registration_type || '번호이동'}</span>
+                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
+                            <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
                           </div>
-                          <p className="text-sm font-medium">요금제: {groupBuy.product_detail.plan_info || '5만원대'}</p>
+                          <p className="text-sm font-medium">요금제: {groupBuy.product_details?.plan_info || '5만원대'}</p>
                         </div>
                         <div className="flex justify-between items-center pt-2">
                           <div>
                             <p className="text-sm text-gray-500">출고가</p>
-                            <p className="text-xl font-bold">{groupBuy.product_detail.base_price?.toLocaleString() || '0'}원</p>
+                            <p className="text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</p>
                           </div>
                           <div className="text-sm text-gray-600">
-                            {groupBuy.product_detail.contract_info || '2년 약정'}
+                            {groupBuy.product_details?.contract_info || '2년 약정'}
                           </div>
                         </div>
                       </div>

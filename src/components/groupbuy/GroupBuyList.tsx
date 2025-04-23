@@ -36,7 +36,7 @@ interface GroupBuy {
   min_participants: number;
   max_participants: number;
   product: number; // product ID
-  product_detail?: Product; // 상세 제품 정보
+  product_details?: Product; // 상세 제품 정보
 }
 
 interface GroupBuyListProps {
@@ -129,7 +129,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_detail?.category_name || '휴대폰'}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || '휴대폰'}</p>
                     <CardTitle className="text-base sm:text-lg md:text-xl">{groupBuy.title || groupBuy.product_name}</CardTitle>
                   </div>
                   {/* 공구 상태를 동적으로 계산하여 표시 */}
@@ -140,8 +140,8 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               </CardHeader>
               <CardContent>
                 <Image
-                  src={groupBuy.product_detail?.image_url || '/placeholder.png'}
-                  alt={groupBuy.product_detail?.name || groupBuy.product_name}
+                  src={groupBuy.product_details?.image_url || '/placeholder.png'}
+                  alt={groupBuy.product_details?.name || groupBuy.product_name}
                   width={200}
                   height={200}
                   className="object-cover rounded-lg"
@@ -166,18 +166,18 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                   <div className="mt-2 space-y-2">
                     <div className="flex flex-col">
                       <div className="flex space-x-2 text-xs sm:text-sm">
-                        <span className="font-medium text-red-500">통신사: {groupBuy.product_detail?.carrier || 'SK텔레콤'}</span>
-                        <span className="font-medium text-blue-500">유형: {groupBuy.product_detail?.registration_type || '번호이동'}</span>
+                        <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
+                        <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
                       </div>
-                      <p className="text-xs sm:text-sm font-medium">요금제: {groupBuy.product_detail?.plan_info || '5만원대'}</p>
+                      <p className="text-xs sm:text-sm font-medium">요금제: {groupBuy.product_details?.plan_info || '5만원대'}</p>
                     </div>
                     <div className="flex justify-between items-center pt-2">
                       <div>
                         <p className="text-xs sm:text-sm text-gray-500">출고가</p>
-                        <p className="text-lg sm:text-xl font-bold">{groupBuy.product_detail?.base_price?.toLocaleString() || '1,200,000'}원</p>
+                        <p className="text-lg sm:text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '1,200,000'}원</p>
                       </div>
                       <div className="text-xs sm:text-sm text-gray-600">
-                        {groupBuy.product_detail?.contract_info || '2년 약정'}
+                        {groupBuy.product_details?.contract_info || '2년 약정'}
                       </div>
                     </div>
                   </div>
@@ -196,12 +196,12 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
           groupBuy={{
             id: selectedGroupBuy.id,
             title: selectedGroupBuy.title,
-            product_detail: {
+            product_details: {
               name: selectedGroupBuy.product_name,
-              image_url: selectedGroupBuy.product_detail?.image_url || '/placeholder.png',
-              carrier: selectedGroupBuy.product_detail?.carrier || '',
-              registration_type: selectedGroupBuy.product_detail?.registration_type || '',
-              base_price: selectedGroupBuy.product_detail?.base_price || 0
+              image_url: selectedGroupBuy.product_details?.image_url || '/placeholder.png',
+              carrier: selectedGroupBuy.product_details?.carrier || '',
+              registration_type: selectedGroupBuy.product_details?.registration_type || '',
+              base_price: selectedGroupBuy.product_details?.base_price || 0
             }
           }} 
         />
