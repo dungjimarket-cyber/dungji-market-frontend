@@ -6,6 +6,8 @@ import { ArrowLeft, AlertTriangle, Info, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import GroupBuyActionButton from '@/components/groupbuy/GroupBuyActionButton';
+import { WishButton } from '@/components/ui/WishButton';
+import ReviewList from '@/components/review/ReviewList';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 
 interface GroupBuyProduct {
@@ -127,9 +129,12 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
             <p className="text-sm text-gray-500 mb-1">출시일: {groupBuy.product_details?.release_date || '2024년 1월'}</p>
             <h2 className="text-xl font-bold mb-2">{groupBuy.title || groupBuy.product_details?.name}</h2>
             
-            <div className="flex items-center mb-2">
-              <Share2 size={16} className="text-green-500 mr-1" />
-              <button className="text-green-500 text-sm">공유하기</button>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <Share2 size={16} className="text-green-500 mr-1" />
+                <button className="text-green-500 text-sm">공유하기</button>
+              </div>
+              <WishButton groupbuyId={groupBuy.id} showCount={true} />
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 md:gap-8 mt-4">
@@ -234,6 +239,13 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
               }
             }}
           />
+        </div>
+        
+        {/* 리뷰 섹션 */}
+        <div className="bg-white p-4 mt-6 mb-4">
+          <h2 className="text-xl font-bold mb-4">리뷰 및 평점</h2>
+          <Separator className="mb-4" />
+          <ReviewList groupbuyId={Number(id)} />
         </div>
       </div>
     </div>
