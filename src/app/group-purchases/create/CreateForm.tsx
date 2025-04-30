@@ -772,7 +772,7 @@ export default function CreateForm() {
                         <SelectContent>
                           {products.map((product) => (
                             <SelectItem key={product.id} value={product.id.toString()}>
-                              {product.name}
+                              {product.name} <span className="text-gray-500 ml-1">(출고가: {product.base_price.toLocaleString()}원)</span>
                             </SelectItem>
                           ))}
                         </SelectContent>

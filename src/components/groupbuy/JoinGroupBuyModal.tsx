@@ -128,9 +128,17 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
   const handleFinalConfirm = () => {
     // 최종 확인 단계
     setStep('final');
+    
+    // 페이지 리로드
+    window.location.reload();
   };
 
   const handleClose = () => {
+    // 성공 단계에서 닫을 때는 페이지 리로드
+    if (step === 'success') {
+      window.location.reload();
+    }
+    
     setStep('confirm'); // 모달 닫을 때 초기 상태로 리셋
     onClose();
   };

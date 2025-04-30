@@ -5,6 +5,7 @@ import { ArrowLeft, AlertTriangle, Info, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import GroupBuyActionButton from '@/components/groupbuy/GroupBuyActionButton';
+import GroupBuyActionButtons from '@/components/groupbuy/GroupBuyActionButtons';
 import { WishButton } from '@/components/ui/WishButton';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 import { getServerSession } from 'next-auth';
@@ -46,6 +47,12 @@ interface GroupBuy {
   creator_name: string; // 판매자(생성자) 이름
 }
 
+interface ParticipationStatus {
+  is_participating: boolean;
+  has_bids: boolean;
+  can_leave: boolean;
+}
+
 // 총 지원금 마스킹 함수 추가
 function maskSupportAmount(amount: number | undefined): string {
   if (amount === undefined || amount === null) return '0';
@@ -63,6 +70,31 @@ async function getGroupBuy(id: string): Promise<GroupBuy | null> {
     return await response.json();
   } catch (error) {
     console.error(`Failed to fetch group buy with id: ${id}`, error);
+    return null;
+  }
+}
+
+async function getParticipationStatus(id: string, token?: string): Promise<ParticipationStatus | null> {
+  try {
+    // 토큰이 없으면 기본 상태 반환
+    if (!token) {
+      return {
+        is_participating: false,
+        has_bids: false,
+        can_leave: false
+      };
+    }
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${id}/check_participation/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Failed to fetch participation status');
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to fetch participation status for group buy with id: ${id}`, error);
     return null;
   }
 }
@@ -84,6 +116,10 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
   const userId = session?.user?.id ? Number(session.user.id) : null;
   const creatorId = groupBuy?.creator ? Number(groupBuy.creator) : null;
   const isCreator = userId !== null && creatorId !== null && userId === creatorId;
+  
+  // 참여 상태 확인
+  const token = session?.jwt?.access || '';
+  const participationStatus = await getParticipationStatus(id, token);
 
   if (!groupBuy) {
     return (
@@ -145,8 +181,8 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
             
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <Share2 size={16} className="text-green-500 mr-1" />
-                <button className="text-green-500 text-sm">공유하기</button>
+                <Info size={16} className="text-green-500 mr-1" />
+                <span className="text-green-500 text-sm">공유하기</span>
               </div>
               <WishButton groupbuyId={groupBuy.id} showCount={true} />
             </div>
@@ -256,7 +292,12 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
           />
         </div>
         
-        {/* 리뷰 섹션 제거 - 공구 시스템에서 리뷰는 적절하지 않음 */}
+        {/* 공유하기 버튼 및 탈퇴 버튼 - 클라이언트 컴포넌트로 분리 */}
+        <GroupBuyActionButtons 
+          groupBuyId={id} 
+          token={token} 
+          participationStatus={participationStatus || undefined} 
+        />
       </div>
     </div>
   );
