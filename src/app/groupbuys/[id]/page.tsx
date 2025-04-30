@@ -10,48 +10,7 @@ import { WishButton } from '@/components/ui/WishButton';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-interface TelecomDetail {
-  carrier: string;
-  registration_type: string;
-  plan_info: string;
-  contract_info: string;
-}
-
-interface GroupBuyProduct {
-  id: number;
-  name: string;
-  description?: string;
-  base_price: number;
-  image_url?: string;
-  category_name?: string;
-  // 카테고리별 특수 필드(통신 상품)
-  telecom_detail?: TelecomDetail;
-  // 기타 필드
-  release_date?: string;
-}
-
-interface GroupBuy {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  current_participants: number;
-  min_participants: number;
-  max_participants: number;
-  start_time: string;
-  end_time: string;
-  product: number; // product ID
-  product_details: GroupBuyProduct; // 상세 제품 정보
-  creator: number; // 판매자(생성자) ID
-  creator_name: string; // 판매자(생성자) 이름
-}
-
-interface ParticipationStatus {
-  is_participating: boolean;
-  has_bids: boolean;
-  can_leave: boolean;
-}
+import { GroupBuy, GroupBuyProduct, ParticipationStatus, TelecomDetail } from '@/types/groupbuy';
 
 // 총 지원금 마스킹 함수 추가
 function maskSupportAmount(amount: number | undefined): string {
@@ -189,13 +148,37 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
 
             <div className="flex flex-col md:flex-row gap-4 md:gap-8 mt-4">
               <div className="flex gap-2 items-center">
-                <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_detail?.carrier || 'SK텔레콤'}</span>
+                <span className="font-medium text-red-500">통신사: {
+                  // 공구에 명시적으로 저장된 통신사 정보를 우선 사용
+                  groupBuy.telecom_carrier || 
+                  // 없으면 상품 정보에서 가져옴
+                  groupBuy.product_details?.telecom_detail?.carrier || 
+                  'SKT'
+                }</span>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.telecom_detail?.registration_type || '번호이동'}</span>
+                <span className="font-medium text-blue-500">유형: {
+                  // 공구에 명시적으로 저장된 가입유형 정보를 우선 사용
+                  groupBuy.subscription_type === 'new' ? '신규가입' :
+                  groupBuy.subscription_type === 'transfer' ? '번호이동' :
+                  groupBuy.subscription_type === 'change' ? '기기변경' :
+                  // 없으면 상품 정보에서 가져옴
+                  groupBuy.product_details?.telecom_detail?.registration_type || 
+                  '기기변경'
+                }</span>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="font-medium">요금제: {groupBuy.product_details?.telecom_detail?.plan_info || '5G 프리미엄'}</span>
+                <span className="font-medium">요금제: {
+                  // 공구에 명시적으로 저장된 요금제 정보를 우선 사용
+                  groupBuy.plan_info === '5G_basic' ? '5G 기본(3만원대)' :
+                  groupBuy.plan_info === '5G_standard' ? '5G 일반(5만원대)' :
+                  groupBuy.plan_info === '5G_premium' ? '5G 프리미엄(7만원대)' :
+                  groupBuy.plan_info === '5G_special' ? '5G 특별(9만원대)' :
+                  groupBuy.plan_info === '5G_platinum' ? '5G 플래티넘(10만원대)' :
+                  // 없으면 상품 정보에서 가져옴
+                  groupBuy.product_details?.telecom_detail?.plan_info || 
+                  '5G 일반(5만원대)'
+                }</span>
               </div>
             </div>
           </div>

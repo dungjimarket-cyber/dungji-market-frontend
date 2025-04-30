@@ -383,6 +383,7 @@ export default function CreateForm() {
           telecom_plan: values.telecom_plan,
           subscription_type: values.subscription_type
         };
+        console.log('통신사 정보 전송:', productDetails);
       } else if (selectedProduct.category?.detail_type === 'electronics') {
         productDetails = {
           manufacturer: values.manufacturer,
@@ -549,8 +550,11 @@ export default function CreateForm() {
       });
 
       // 마이페이지로 자동 리다이렉트 (3초 후)
+      // 로딩 상태는 유지하면서 리다이렉트
       setTimeout(() => {
         router.push('/mypage');
+        // 리다이렉트 후에도 로딩 상태 유지 (페이지 이동이 완료될 때까지)
+        // setIsSubmitting(false)를 호출하지 않음
       }, 3000);
       
     } catch (error: any) {
@@ -690,7 +694,19 @@ export default function CreateForm() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-5 mb-10">
+    <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">
+      {/* 로딩 오버레이 */}
+      {isSubmitting && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-lg">
+          <Loader2 className="h-16 w-16 animate-spin text-blue-500 mb-4" />
+          <p className="text-xl font-bold text-blue-700">공구 등록 중...</p>
+          <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
+          <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
+            <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+          </div>
+        </div>
+      )}
+      
       <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold text-center mb-1">공구 등록하기</CardTitle>
         <CardDescription className="text-center text-gray-500">
@@ -743,22 +759,22 @@ export default function CreateForm() {
                             form.setValue('rental_period', '');
                             form.setValue('billing_cycle', '');
                           } else if (categoryType === 'electronics') {
-                            form.setValue('telecom', '');
-                            form.setValue('purchase_type', '');
-                            form.setValue('plan_price', '');
+                            form.setValue('telecom_carrier', '');
+                            form.setValue('subscription_type', '');
+                            form.setValue('telecom_plan', '');
                             form.setValue('rental_period', '');
                             form.setValue('billing_cycle', '');
                           } else if (categoryType === 'rental') {
-                            form.setValue('telecom', '');
-                            form.setValue('purchase_type', '');
-                            form.setValue('plan_price', '');
+                            form.setValue('telecom_carrier', '');
+                            form.setValue('subscription_type', '');
+                            form.setValue('telecom_plan', '');
                             form.setValue('manufacturer', '');
                             form.setValue('warranty', '');
                             form.setValue('billing_cycle', '');
                           } else if (categoryType === 'subscription') {
-                            form.setValue('telecom', '');
-                            form.setValue('purchase_type', '');
-                            form.setValue('plan_price', '');
+                            form.setValue('telecom_carrier', '');
+                            form.setValue('subscription_type', '');
+                            form.setValue('telecom_plan', '');
                             form.setValue('manufacturer', '');
                             form.setValue('warranty', '');
                             form.setValue('rental_period', '');
@@ -831,7 +847,7 @@ export default function CreateForm() {
                     <>
                       <FormField
                         control={form.control}
-                        name="telecom"
+                        name="telecom_carrier"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -840,9 +856,10 @@ export default function CreateForm() {
                                   <SelectValue placeholder="통신사 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="sk">SK</SelectItem>
-                                  <SelectItem value="kt">KT</SelectItem>
-                                  <SelectItem value="lg">LG</SelectItem>
+                                  <SelectItem value="SKT">SK</SelectItem>
+                                  <SelectItem value="KT">KT</SelectItem>
+                                  <SelectItem value="LGU">LG</SelectItem>
+                                  <SelectItem value="MVNO">알뜰폰</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
@@ -852,7 +869,7 @@ export default function CreateForm() {
                       
                       <FormField
                         control={form.control}
-                        name="purchase_type"
+                        name="subscription_type"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -861,9 +878,9 @@ export default function CreateForm() {
                                   <SelectValue placeholder="가입유형 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="기기변경">기기변경</SelectItem>
-                                  <SelectItem value="번호이동">번호이동</SelectItem>
-                                  <SelectItem value="신규가입">신규가입</SelectItem>
+                                  <SelectItem value="change">기기변경</SelectItem>
+                                  <SelectItem value="transfer">번호이동</SelectItem>
+                                  <SelectItem value="new">신규가입</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
@@ -873,7 +890,7 @@ export default function CreateForm() {
                       
                       <FormField
                         control={form.control}
-                        name="plan_price"
+                        name="telecom_plan"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -882,10 +899,11 @@ export default function CreateForm() {
                                   <SelectValue placeholder="요금제 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="5만원대">5만원대</SelectItem>
-                                  <SelectItem value="6만원대">6만원대</SelectItem>
-                                  <SelectItem value="7만원대">7만원대</SelectItem>
-                                  <SelectItem value="8만원대">8만원대</SelectItem>
+                                  <SelectItem value="5G_basic">3만원대</SelectItem>
+                                  <SelectItem value="5G_standard">5만원대</SelectItem>
+                                  <SelectItem value="5G_premium">7만원대</SelectItem>
+                                  <SelectItem value="5G_special">9만원대</SelectItem>
+                                  <SelectItem value="5G_platinum">10만원대</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
@@ -1151,12 +1169,12 @@ export default function CreateForm() {
 
             <Button 
               type="submit" 
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 rounded-lg font-medium text-lg cursor-pointer" 
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 rounded-lg font-bold text-lg cursor-pointer" 
               disabled={isSubmitting || form.formState.isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                   등록 중...
                 </>
               ) : (

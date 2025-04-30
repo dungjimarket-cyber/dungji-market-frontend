@@ -29,6 +29,11 @@ interface GroupBuy {
   product_details: Product;
   calculated_status?: string;
   remaining_seconds?: number;
+  
+  // 통신 관련 공구 정보 (명시적 필드)
+  telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
+  subscription_type?: string; // 가입유형 (new, transfer, change)
+  plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
 }
 
 export default function CreatedGroupBuys() {
@@ -36,6 +41,8 @@ export default function CreatedGroupBuys() {
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortBy, setSortBy] = useState<'created_at' | 'end_time' | 'participants'>('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 최신순이 기본
 
   // 세션 로딩 상태일 때는 로딩 표시
   if (status === "loading") return <p className="text-gray-500">로딩 중...</p>;
@@ -118,13 +125,56 @@ export default function CreatedGroupBuys() {
     return <p className="text-red-500">{error}</p>;
   }
 
+  // 정렬 함수
+  const sortGroupBuys = (groupBuys: GroupBuy[]) => {
+    return [...groupBuys].sort((a, b) => {
+      if (sortBy === 'created_at') {
+        // 생성일 기준 정렬 (최신 ID가 더 큰 값)
+        return sortOrder === 'desc' ? b.id - a.id : a.id - b.id;
+      } else if (sortBy === 'end_time') {
+        // 마감일 기준 정렬
+        const dateA = new Date(a.end_time).getTime();
+        const dateB = new Date(b.end_time).getTime();
+        return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+      } else {
+        // 참여자 수 기준 정렬
+        return sortOrder === 'desc' 
+          ? b.current_participants - a.current_participants 
+          : a.current_participants - b.current_participants;
+      }
+    });
+  };
+
+  const sortedGroupBuys = sortGroupBuys(groupBuys);
+
   if (groupBuys.length === 0) {
     return <p className="text-gray-500">내가 만든 공동구매가 없습니다.</p>;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {groupBuys.map((groupBuy) => {
+    <div>
+      <div className="flex justify-end mb-4 gap-2">
+        <select 
+          className="px-2 py-1 border rounded text-sm"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as 'created_at' | 'end_time' | 'participants')}
+        >
+          <option value="created_at">등록일 순</option>
+          <option value="end_time">마감일 순</option>
+          <option value="participants">참여자 수</option>
+        </select>
+        <select
+          className="px-2 py-1 border rounded text-sm"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+        >
+          <option value="desc">내림차순</option>
+          <option value="asc">오름차순</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sortedGroupBuys.map((groupBuy) => {
         const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
         
         // 백엔드에서 계산된 상태 사용 또는 프론트엔드에서 계산
@@ -174,8 +224,29 @@ export default function CreatedGroupBuys() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{groupBuy.product_details?.name}</p>
                     <div className="flex items-center text-xs text-gray-500 mt-1">
-                      <span className="mr-2">{groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
-                      <span>{groupBuy.product_details?.registration_type || '번호이동'}</span>
+                      <span className="mr-2">{
+                        // 공구의 명시적 필드 우선 사용
+                        groupBuy.telecom_carrier || 
+                        groupBuy.product_details?.carrier || 
+                        'SKT'
+                      }</span>
+                      <span>{
+                        // 가입유형 표시
+                        groupBuy.subscription_type === 'new' ? '신규가입' :
+                        groupBuy.subscription_type === 'transfer' ? '번호이동' :
+                        groupBuy.subscription_type === 'change' ? '기기변경' :
+                        groupBuy.product_details?.registration_type || 
+                        '번호이동'
+                      }</span>
+                      <span className="ml-2">{
+                        // 요금제 표시
+                        groupBuy.plan_info === '5G_basic' ? '3만원대' :
+                        groupBuy.plan_info === '5G_standard' ? '5만원대' :
+                        groupBuy.plan_info === '5G_premium' ? '7만원대' :
+                        groupBuy.plan_info === '5G_special' ? '9만원대' :
+                        groupBuy.plan_info === '5G_platinum' ? '10만원대' :
+                        '5만원대'
+                      }</span>
                     </div>
                     <p className="text-sm font-bold mt-1">
                       {groupBuy.product_details?.base_price?.toLocaleString() || '0'}원
@@ -200,6 +271,7 @@ export default function CreatedGroupBuys() {
           </Link>
         );
       })}
+      </div>
     </div>
   );
 }
