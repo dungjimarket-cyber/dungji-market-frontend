@@ -14,8 +14,8 @@ interface GroupBuyActionButtonProps {
     product_details: {
       name: string;
       image_url: string;
-      carrier?: string;
-      registration_type?: string;
+      carrier?: string; // telecom_detail에서 가져온 값
+      registration_type?: string; // telecom_detail에서 가져온 값
       base_price: number;
     };
   };

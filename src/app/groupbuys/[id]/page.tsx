@@ -10,6 +10,13 @@ import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTim
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+interface TelecomDetail {
+  carrier: string;
+  registration_type: string;
+  plan_info: string;
+  contract_info: string;
+}
+
 interface GroupBuyProduct {
   id: number;
   name: string;
@@ -18,11 +25,7 @@ interface GroupBuyProduct {
   image_url?: string;
   category_name?: string;
   // 카테고리별 특수 필드(통신 상품)
-  carrier?: string;
-  registration_type?: string;
-  plan_info?: string;
-  contract_info?: string;
-  total_support_amount?: number;
+  telecom_detail?: TelecomDetail;
   // 기타 필드
   release_date?: string;
 }
@@ -103,7 +106,9 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
   const isRecruiting = calculatedStatus === 'recruiting';
   const isFull = remainingSpots === 0;
   const remainingTime = getRemainingTime(groupBuy.end_time);
-  const maskedSupportAmount = maskSupportAmount(groupBuy.product_details?.total_support_amount || 0);
+  // 지원금은 입찰 시 사용자가 제안하는 금액으로, 공구에 입찰된 최고 지원금을 표시
+  // 실제로는 Bid 모델에서 가져와야 하지만, 현재는 임의의 값을 사용
+  const maskedSupportAmount = maskSupportAmount(300000); // 임의의 값으로 대체
 
   return (
     <div className="bg-gray-100 min-h-screen pb-8">
@@ -148,13 +153,13 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
 
             <div className="flex flex-col md:flex-row gap-4 md:gap-8 mt-4">
               <div className="flex gap-2 items-center">
-                <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
+                <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_detail?.carrier || 'SK텔레콤'}</span>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
+                <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.telecom_detail?.registration_type || '번호이동'}</span>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="font-medium">요금제: {groupBuy.product_details?.plan_info || '5G 프리미엄'}</span>
+                <span className="font-medium">요금제: {groupBuy.product_details?.telecom_detail?.plan_info || '5G 프리미엄'}</span>
               </div>
             </div>
           </div>
@@ -165,7 +170,7 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
             <p className="text-2xl font-bold mb-2">
               ₩{new Intl.NumberFormat('ko-KR').format(groupBuy.product_details?.base_price || 0)}원
             </p>
-            <p className="text-sm text-gray-700">{groupBuy.product_details?.contract_info || '2년 약정 기본 상품입니다'}</p>
+            <p className="text-sm text-gray-700">{groupBuy.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
           </div>
 
           {/* 총 지원금 정보 */}
@@ -243,8 +248,8 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
               product_details: {
                 name: groupBuy.product_details?.name || '',
                 image_url: groupBuy.product_details?.image_url || '/placeholder.png',
-                carrier: groupBuy.product_details?.carrier || 'SK텔레콤',
-                registration_type: groupBuy.product_details?.registration_type || '번호이동',
+                carrier: groupBuy.product_details?.telecom_detail?.carrier || 'SK텔레콤',
+                registration_type: groupBuy.product_details?.telecom_detail?.registration_type || '번호이동',
                 base_price: groupBuy.product_details?.base_price || 0
               }
             }}
