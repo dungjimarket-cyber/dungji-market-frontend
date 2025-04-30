@@ -1,14 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, AlertTriangle, Info, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import GroupBuyActionButton from '@/components/groupbuy/GroupBuyActionButton';
 import { WishButton } from '@/components/ui/WishButton';
-import ReviewList from '@/components/review/ReviewList';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 interface GroupBuyProduct {
   id: number;
@@ -39,6 +39,8 @@ interface GroupBuy {
   end_time: string;
   product: number; // product ID
   product_details: GroupBuyProduct; // 상세 제품 정보
+  creator: number; // 판매자(생성자) ID
+  creator_name: string; // 판매자(생성자) 이름
 }
 
 // 총 지원금 마스킹 함수 추가
@@ -72,6 +74,13 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
   const { id } = await params;
   const query = searchParams ? await searchParams : {};
   const groupBuy = await getGroupBuy(id);
+  
+  // 현재 로그인한 사용자 정보 가져오기
+  const session = await getServerSession(authOptions);
+  // 사용자 ID와 공구 생성자 ID를 숫자로 변환하여 비교
+  const userId = session?.user?.id ? Number(session.user.id) : null;
+  const creatorId = groupBuy?.creator ? Number(groupBuy.creator) : null;
+  const isCreator = userId !== null && creatorId !== null && userId === creatorId;
 
   if (!groupBuy) {
     return (
@@ -226,7 +235,8 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
         <div className="px-4">
           <GroupBuyActionButton 
             isRecruiting={isRecruiting} 
-            isFull={isFull} 
+            isFull={isFull}
+            isCreator={isCreator} 
             groupBuy={{
               id: Number(id),
               title: groupBuy.title,
@@ -241,12 +251,7 @@ export default async function GroupBuyPage({ params, searchParams }: PageProps) 
           />
         </div>
         
-        {/* 리뷰 섹션 */}
-        <div className="bg-white p-4 mt-6 mb-4">
-          <h2 className="text-xl font-bold mb-4">리뷰 및 평점</h2>
-          <Separator className="mb-4" />
-          <ReviewList groupbuyId={Number(id)} />
-        </div>
+        {/* 리뷰 섹션 제거 - 공구 시스템에서 리뷰는 적절하지 않음 */}
       </div>
     </div>
   );
