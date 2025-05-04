@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { decodeJwtToken } from '@/lib/auth';
 
 // 공구 상태 계산 함수
 function calculateGroupBuyStatus(status: string, endTime: string): string {
@@ -99,12 +98,22 @@ export async function PATCH(
     const paramsData = await params;
     id = paramsData.id;
     
-    const session = await getServerSession(authOptions);
-    
-    // 인증 확인
-    if (!session) {
+    // Authorization 헤더에서 토큰 추출
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+    
+    const token = authHeader.split(' ')[1];
+    const decodedToken = decodeJwtToken(token);
+    
+    // 토큰 유효성 검사
+    if (!decodedToken || !decodedToken.user_id) {
+      return NextResponse.json(
+        { error: '유효하지 않은 인증 토큰입니다.' },
         { status: 401 }
       );
     }

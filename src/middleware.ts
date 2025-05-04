@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   // Handle CORS for API routes
@@ -22,10 +21,33 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Check authentication for protected routes
-  const token = await getToken({ req: request });
-  const isAuthenticated = !!token;
-  const isSeller = token?.role === 'SELLER';
+  /**
+   * JWT 토큰 인증 처리
+   * 쿠키에서 JWT 토큰을 추출하고 인증 상태 확인
+   */
+  // 쿠키에서 JWT 토큰 추출
+  const accessToken = request.cookies.get('accessToken')?.value;
+  const isAuthenticated = !!accessToken;
+  
+  // 판매자 역할 확인
+  let isSeller = false;
+  
+  if (accessToken) {
+    try {
+      // JWT 토큰 디코딩 (단순히 페이로드 부분만 추출)
+      const tokenParts = accessToken.split('.');
+      if (tokenParts.length === 3) {
+        // Base64url 디코딩 (Node.js 환경에서는 atob 대신 Buffer 사용)
+        const base64Payload = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = Buffer.from(base64Payload, 'base64').toString('utf8');
+        const payload = JSON.parse(jsonPayload);
+        // 판매자 역할 확인
+        isSeller = payload.roles?.includes('seller') || false;
+      }
+    } catch (error) {
+      console.error('JWT 토큰 디코딩 오류:', error);
+    }
+  }
 
   // Protected routes that require authentication
   if (request.nextUrl.pathname.startsWith('/mypage') && !isAuthenticated) {

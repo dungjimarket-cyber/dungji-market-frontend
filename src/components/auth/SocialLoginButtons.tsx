@@ -1,38 +1,35 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function SocialLoginButtons() {
+/**
+ * useSearchParams를 사용하는 내부 컴포넌트
+ * Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 분리하고 Suspense로 감싸야 함
+ */
+function SocialLoginButtonsContent() {
   const [loading, setLoading] = useState<string>('');
   const searchParams = useSearchParams();
+  const router = useRouter();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-  const handleSocialLogin = async (provider: 'google' | 'kakao') => {
+  /**
+   * 소셜 로그인 처리 함수
+   * @param provider - 소셜 로그인 제공자 ('google' 또는 'kakao')
+   */
+  const handleSocialLogin = (provider: 'google' | 'kakao') => {
     try {
       setLoading(provider);
-      const result = await signIn(provider, {
-        callbackUrl,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        toast({
-          variant: 'destructive',
-          title: '로그인 실패',
-          description: '로그인 중 오류가 발생했습니다. 다시 시도해주세요.',
-        });
-      } else if (!result?.ok) {
-        toast({
-          variant: 'destructive',
-          title: '로그인 실패',
-          description: '알 수 없는 오류가 발생했습니다. 다시 시도해주세요.',
-        });
-      }
+      
+      // Django 백엔드의 소셜 로그인 URL로 리디렉션
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const socialLoginUrl = `${backendUrl}/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(callbackUrl))}`;
+      
+      // 소셜 로그인 URL로 리디렉션
+      window.location.href = socialLoginUrl;
     } catch (error) {
       console.error(`${provider} login error:`, error);
       toast({
@@ -40,7 +37,6 @@ export default function SocialLoginButtons() {
         title: '로그인 실패',
         description: '로그인 중 오류가 발생했습니다. 다시 시도해주세요.',
       });
-    } finally {
       setLoading('');
     }
   };
@@ -85,5 +81,19 @@ export default function SocialLoginButtons() {
         카카오로 계속하기
       </button>
     </div>
+  );
+}
+
+/**
+ * 소셜 로그인 버튼 컴포넌트
+ * JWT 기반 인증을 위해 Django 백엔드의 소셜 로그인 엔드포인트로 연결합니다.
+ */
+export default function SocialLoginButtons() {
+  return (
+    <Suspense fallback={<div className="flex flex-col gap-4 w-full items-center justify-center">
+      <Loader2 className="h-5 w-5 animate-spin" />
+    </div>}>
+      <SocialLoginButtonsContent />
+    </Suspense>
   );
 }

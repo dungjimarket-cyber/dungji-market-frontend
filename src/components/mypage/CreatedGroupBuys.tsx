@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Clock } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 
 interface Product {
@@ -36,43 +36,35 @@ interface GroupBuy {
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
 }
 
+/**
+ * 내가 생성한 공구 목록 컴포넌트
+ */
 export default function CreatedGroupBuys() {
-  const { data: session, status } = useSession();
+  const { isAuthenticated, isLoading, accessToken, user } = useAuth();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'created_at' | 'end_time' | 'participants'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 최신순이 기본
 
-  // 세션 로딩 상태일 때는 로딩 표시
-  if (status === "loading") return <p className="text-gray-500">로딩 중...</p>;
+  // 인증 로딩 상태일 때는 로딩 표시
+  if (isLoading) return <p className="text-gray-500">로딩 중...</p>;
 
   useEffect(() => {
     /**
      * 내가 만든 공구 목록을 가져오는 함수
+     * JWT 토큰을 사용하여 인증서를 전송합니다.
      */
     const fetchCreatedGroupBuys = async () => {
       try {
         setLoading(true);
         setError('');
         
-        // 1. 로컬 스토리지에서 토큰 확인
-        let accessToken = null;
-        if (typeof window !== 'undefined') {
-          accessToken = localStorage.getItem('dungji_auth_token');
-        }
-        
-        // 2. 로컬 스토리지에 없으면 세션에서 가져오기
-        if (!accessToken && session) {
-          accessToken = session?.jwt?.access || 
-                        session?.user?.jwt?.access || 
-                        session?.accessToken;
-        }
-        
-        // 토큰이 없는 경우 처리
-        if (!accessToken) {
-          console.error('토큰을 찾을 수 없습니다.');
-          setError('로그인이 필요합니다. 세션이 만료되었을 수 있습니다.');
+        // 인증 상태 확인
+        if (!isAuthenticated || !accessToken) {
+          console.error('인증되지 않은 상태입니다.');
+          setError('로그인이 필요합니다.');
+          setLoading(false);
           return;
         }
         
@@ -92,11 +84,7 @@ export default function CreatedGroupBuys() {
         if (!response.ok) {
           // 401 인증 오류
           if (response.status === 401) {
-            // 로컬 스토리지에서 만료된 토큰 삭제
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('dungji_auth_token');
-            }
-            throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+            throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
           }
           throw new Error('내가 만든 공구 목록을 가져오는데 실패했습니다.');
         }
@@ -115,7 +103,7 @@ export default function CreatedGroupBuys() {
 
     // 초기 로딩 시 API 호출
     fetchCreatedGroupBuys();
-  }, [session]);
+  }, [isAuthenticated, accessToken]);
 
   if (loading) {
     return <p className="text-gray-500">로딩 중...</p>;

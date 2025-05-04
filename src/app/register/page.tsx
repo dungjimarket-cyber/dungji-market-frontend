@@ -1,12 +1,14 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
-export default function RegisterPage() {
+// Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 Suspense로 감싼야 함
+function RegisterPageContent() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -15,57 +17,77 @@ export default function RegisterPage() {
     role: 'user', // 'user' or 'seller'
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * 회원가입 폼 제출 처리 함수
+   * 회원가입 후 JWT 기반 로그인 진행
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
+      setIsLoading(false);
       return;
     }
 
     try {
+      // 백엔드 API URL 가져오기
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      
       // 회원가입 API 호출
-      const response = await fetch('/auth/register/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        role: formData.role,
-      }),
+      const response = await fetch(`${backendUrl}/api/auth/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          role: formData.role,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '회원가입에 실패했습니다.');
+      }
 
       const data = await response.json();
 
       if (!data.success) {
-      throw new Error(data.message || '회원가입에 실패했습니다.');
+        throw new Error(data.message || '회원가입에 실패했습니다.');
       }
 
-      // 회원가입 성공 후 자동 로그인
-      await signIn('credentials', {
-      email: formData.email,
-      password: formData.password,
-      callbackUrl: '/',
-      });
+      // 회원가입 성공 후 JWT 기반 로그인 진행
+      const loginSuccess = await login(formData.email, formData.password);
+      
+      if (loginSuccess) {
+        // 로그인 성공 시 홈페이지로 이동
+        router.push('/');
+      } else {
+        throw new Error('자동 로그인에 실패했습니다. 로그인 페이지로 이동합니다.');
+      }
     } catch (err: any) {
       console.error('Registration error:', err);
       if (err.response?.data?.message) {
-      setError(err.response.data.message);
+        setError(err.response.data.message);
       } else if (err.message) {
-      setError(err.message);
+        setError(err.message);
       } else {
-      setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+        setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -181,5 +203,14 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Suspense를 사용하여 컴포넌트 래핑
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen">로딩 중...</div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

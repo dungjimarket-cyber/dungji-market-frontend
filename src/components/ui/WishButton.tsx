@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { checkWishStatus, toggleWish } from '@/lib/wishlist-service';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface WishButtonProps {
  * <WishButton groupbuyId={5} showCount={true} />
  */
 export function WishButton({ groupbuyId, className = '', showCount = false, count = 0 }: WishButtonProps) {
-  const { status } = useSession();
+  const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [isWished, setIsWished] = useState<boolean>(false);
   const [wishCount, setWishCount] = useState<number>(count);
@@ -32,7 +32,7 @@ export function WishButton({ groupbuyId, className = '', showCount = false, coun
    * 찜하기 상태를 확인하는 함수
    */
   const checkWished = async (): Promise<void> => {
-    if (status !== 'authenticated') return;
+    if (!isAuthenticated) return;
     
     try {
       const response = await checkWishStatus(groupbuyId);
@@ -46,7 +46,7 @@ export function WishButton({ groupbuyId, className = '', showCount = false, coun
    * 찜하기 토글 함수
    */
   const handleToggleWish = async (): Promise<void> => {
-    if (status !== 'authenticated') {
+    if (!isAuthenticated) {
       toast({
         variant: 'destructive',
         title: '로그인이 필요합니다',
@@ -83,7 +83,7 @@ export function WishButton({ groupbuyId, className = '', showCount = false, coun
 
   useEffect(() => {
     checkWished();
-  }, [groupbuyId, status]);
+  }, [groupbuyId, isAuthenticated]);
 
   return (
     <Button

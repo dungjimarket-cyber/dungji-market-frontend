@@ -4,7 +4,7 @@
  * 리뷰 목록 표시 컴포넌트
  */
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 import { getGroupbuyReviews, deleteReview, reportReview } from '@/lib/review-service';
 import StarRating from '../ui/StarRating';
 import { Button } from '../ui/button';
@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import ReviewForm from './ReviewForm';
 import { toast } from 'sonner';
@@ -54,7 +54,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
   groupbuyId,
   showReviewForm = true,
 }) => {
-  const { data: session } = useSession();
+  const { user, isAuthenticated, accessToken } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState<number>(0);
   const [reviewCount, setReviewCount] = useState<number>(0);
@@ -141,9 +141,9 @@ const ReviewList: React.FC<ReviewListProps> = ({
   }, [groupbuyId]);
 
   // 내가 이미 리뷰를 작성했는지 확인
-  // review.user는 number 타입, session.user.id는 string 타입이므로 문자열로 변환하여 비교
-  const myReview = session?.user?.id ? reviews.find(review => String(review.user) === String(session.user.id)) : null;
-  const canWriteReview = !myReview && showReviewForm && !!session;
+  // review.user는 number 타입, user.id는 다른 타입일 수 있으므로 문자열로 변환하여 비교
+  const myReview = user?.id ? reviews.find(review => String(review.user) === String(user.id)) : null;
+  const canWriteReview = !myReview && showReviewForm && isAuthenticated;
 
   // 날짜 형식 변환 함수
   const formatDate = (dateString: string): string => {
@@ -271,7 +271,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {session?.user?.id && String(session.user.id) === String(review.user) ? (
+                      {user?.id && String(user.id) === String(review.user) ? (
                         <>
                           <DropdownMenuItem onClick={() => handleEditReview(review)}>
                             <Pencil className="mr-2 h-4 w-4" />

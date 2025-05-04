@@ -1,13 +1,15 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import type { DefaultUser } from 'next-auth';
 
-function isExtendedUser(user: DefaultUser | undefined): user is DefaultUser & { provider: string } {
-  return typeof (user as any)?.provider === 'string';
+/**
+ * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
+ */
+function isExtendedUser(user: any): user is { provider: string } {
+  return typeof user?.provider === 'string';
 }
 
 function getLoginProviderLabel(user: any) {
@@ -21,34 +23,69 @@ function getLoginProviderLabel(user: any) {
   return type;
 }
 
+/**
+ * 사용자 프로필 섹션 컴포넌트
+ * 마이페이지에 표시되는 사용자 정보 섹션
+ */
+
+// 사용자 타입 정의 확장 (프로필 원활한 표시를 위한 필드 포함)
+interface ExtendedUser {
+  id?: number;
+  email?: string;
+  username?: string;
+  name?: string;
+  image?: string;
+  roles?: string[];
+}
+
 export default function ProfileSection() {
-  const { data: session, update, status } = useSession();
+  const { user: authUser, accessToken, isAuthenticated, isLoading } = useAuth();
+  // 확장된 타입으로 사용자 정보를 처리
+  const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  
+  // 이메일 필드 초기화
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }, [user?.email]);
 
+  /**
+   * 이메일 주소 업데이트 함수
+   * JWT 토큰을 활용하여 사용자 프로필 업데이트
+   */
   const handleEmailUpdate = async () => {
+    if (!accessToken) {
+      setError('로그인이 필요합니다.');
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ email }),
       });
   
-      if (!response.ok) throw new Error('Failed to update email');
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        throw new Error('이메일 업데이트에 실패했습니다.');
+      }
+      
       const data = await response.json();
-  
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          email: data.email,
-        },
-      });
-  
+      
+      // 업데이트 성공 - 새로고침을 통해 새 정보 적용
+      router.refresh();
+      
       setIsEditing(false);
       setError('');
     } catch (error: any) {
@@ -56,15 +93,15 @@ export default function ProfileSection() {
     }
   };
 
-  if (status === "loading") return null;
+  if (isLoading) return null;
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4">내 정보</h2>
       <div className="flex items-start space-x-4">
-        {session?.user?.image && (
+        {user?.image && (
           <div className="relative w-24 h-24">
             <Image
-              src={session.user.image}
+              src={user.image}
               alt="Profile"
               fill
               className="rounded-full object-cover"
@@ -73,7 +110,7 @@ export default function ProfileSection() {
         )}
         <div className="flex-1">
           <p className="text-gray-600 mb-2">
-            <span className="font-semibold">이름:</span> {session?.user?.name}
+            <span className="font-semibold">이름:</span> {user?.name || user?.username}
           </p>
           <div className="mb-2">
             <span className="font-semibold text-gray-600">이메일:</span>
@@ -107,8 +144,8 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <span>{session?.user?.email || '이메일 미등록'}</span>
-                {session?.user?.email === undefined && (
+                <span>{user?.email || '이메일 미등록'}</span>
+                {!user?.email && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-blue-500 hover:text-blue-600 text-sm"
@@ -121,7 +158,7 @@ export default function ProfileSection() {
           </div>
           <p className="text-gray-600">
             <span className="font-semibold">로그인 방식:</span>{' '}
-            {getLoginProviderLabel(session?.user)}
+            {getLoginProviderLabel(user)}
           </p>
         </div>
       </div>

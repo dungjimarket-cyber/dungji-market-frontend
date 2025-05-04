@@ -1,39 +1,21 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import ProfileSection from '@/components/mypage/ProfileSection';
-import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
-import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
+import MyPageClient from './MyPageClient';
 
+/**
+ * 마이페이지 컴포넌트
+ * 사용자 프로필 및 참여 중인 공구 등을 보여줍니다.
+ */
 export default async function MyPage() {
-  const session = await getServerSession(authOptions);
+  // 쿠키에서 JWT 토큰 확인
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
 
-  if (!session) {
+  // 토큰이 없으면 로그인 페이지로 리디렉션
+  if (!accessToken) {
     redirect('/login');
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
-      <div className="space-y-6">
-        <ProfileSection />
-        
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">내가 만든 공구</h2>
-          <CreatedGroupBuys />
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">참여중인 공동구매</h2>
-          <ParticipatingGroupBuys />
-        </div>
+  return <MyPageClient />;
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">주문 내역</h2>
-          {/* TODO: Add order history */}
-          <p className="text-gray-500">주문 내역이 없습니다.</p>
-        </div>
-      </div>
-    </div>
-  );
 }

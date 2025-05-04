@@ -41,21 +41,48 @@ export const getMyReviews = async () => {
 /**
  * 리뷰를 작성합니다.
  * @param data - 리뷰 데이터 (groupbuy, rating, content, is_purchased)
+ * @param token - 인증을 위한 JWT 토큰
  * @returns 생성된 리뷰 정보
  */
-export const createReview = async (data: {
-  groupbuy: number | string;
-  rating: number;
-  content: string;
-  is_purchased?: boolean;
-}) => {
+export const createReview = async (
+  data: {
+    groupbuy: number | string;
+    rating: number;
+    content: string;
+    is_purchased?: boolean;
+  },
+  token?: string
+) => {
   try {
-    const response = await tokenUtils.fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/reviews/`, {
+    // AccessToken이 인자로 전달되지 않은 경우 tokenUtils에서 가져오기
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      // token이 없으면 tokenUtils 사용
+      return await tokenUtils.fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/reviews/`, 
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      );
+    }
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/`, {
       method: 'POST',
+      headers,
       body: JSON.stringify(data),
     });
     
-    return response;
+    if (!response.ok) {
+      throw new Error(`리뷰 작성 오류: ${response.status}`);
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error('리뷰 작성 오류:', error);
     throw error;
@@ -66,6 +93,7 @@ export const createReview = async (data: {
  * 리뷰를 수정합니다.
  * @param reviewId - 수정할 리뷰 ID
  * @param data - 수정할 리뷰 데이터 (rating, content, is_purchased)
+ * @param token - 인증을 위한 JWT 토큰
  * @returns 수정된 리뷰 정보
  */
 export const updateReview = async (
@@ -74,15 +102,39 @@ export const updateReview = async (
     rating?: number;
     content?: string;
     is_purchased?: boolean;
-  }
+  },
+  token?: string
 ) => {
   try {
-    const response = await tokenUtils.fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${reviewId}/`, {
+    // AccessToken이 인자로 전달되지 않은 경우 tokenUtils에서 가져오기
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      // token이 없으면 tokenUtils 사용
+      return await tokenUtils.fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/reviews/${reviewId}/`, 
+        {
+          method: 'PATCH',
+          body: JSON.stringify(data),
+        }
+      );
+    }
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${reviewId}/`, {
       method: 'PATCH',
+      headers,
       body: JSON.stringify(data),
     });
     
-    return response;
+    if (!response.ok) {
+      throw new Error(`리뷰 수정 오류: ${response.status}`);
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error('리뷰 수정 오류:', error);
     throw error;

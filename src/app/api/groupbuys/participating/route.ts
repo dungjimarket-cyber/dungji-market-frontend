@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { decodeJwtToken } from '@/lib/auth';
 
 // 공구 상태 계산 함수
 function calculateGroupBuyStatus(status: string, endTime: string): string {
@@ -29,17 +28,27 @@ function calculateGroupBuyStatus(status: string, endTime: string): string {
 // 사용자가 참여 중인 공구 목록 가져오기
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // 인증 확인
-    if (!session) {
+    // Authorization 헤더에서 토큰 추출
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
         { status: 401 }
       );
     }
     
-    const userId = session.user.id;
+    const token = authHeader.split(' ')[1];
+    const decodedToken = decodeJwtToken(token);
+    
+    // 토큰 유효성 검사
+    if (!decodedToken || !decodedToken.user_id) {
+      return NextResponse.json(
+        { error: '유효하지 않은 인증 토큰입니다.' },
+        { status: 401 }
+      );
+    }
+    
+    const userId = decodedToken.user_id;
     
     // 실제 환경에서는 데이터베이스에서 사용자가 참여 중인 공구 조회
     // 여기서는 예시 데이터 사용

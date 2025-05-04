@@ -1,11 +1,15 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
 import Categories from '@/components/Categories';
 import Link from 'next/link';
 import GroupBuyList from '@/components/groupbuy/GroupBuyList';
 
+/**
+ * 메인 홈페이지 컴포넌트
+ */
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  // 쿠키에서 JWT 토큰 확인
+  const cookieStore = await cookies();
+  const isAuthenticated = !!cookieStore.get('accessToken')?.value;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -28,7 +32,7 @@ export default async function Home() {
             진행중인 공구 보기
           </Link>
         </div>
-        {!session && (
+        {!isAuthenticated && (
           <div className="flex gap-4">
             <Link
               href="/register"

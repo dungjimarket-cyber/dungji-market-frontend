@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from 'next/link';
-import Image from 'next/image';
 import "./globals.css";
-import { authOptions } from '@/lib/auth';
-import { getServerSession } from 'next-auth';
-import AuthButtons from '@/components/auth/AuthButtons';
 import Providers from './Providers';
 import { Toaster } from "@/components/ui/toaster";
 import DesktopNavbar from '@/components/common/DesktopNavbar';
@@ -26,17 +21,19 @@ export const metadata: Metadata = {
   description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = typeof window === 'undefined' ? await getServerSession(authOptions) : null;
-
+  /**
+   * 최상위 레이아웃 컴포넌트
+   * 전체 앱 구조를 정의하고 인증 프로바이더를 설정합니다.
+   */
   return (
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen relative`}>
-        <Providers session={session ?? undefined}>
+        <Providers>
           <Toaster />
           <DesktopNavbar />
           <main className="flex-1 pb-16 md:pb-0">

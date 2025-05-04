@@ -4,7 +4,7 @@
  * 리뷰 작성 및 수정 폼 컴포넌트
  */
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 import { createReview, updateReview } from '@/lib/review-service';
 import StarRating from '../ui/StarRating';
 import { Button } from '../ui/button';
@@ -56,7 +56,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onComplete,
   onCancel,
 }) => {
-  const { data: session, status } = useSession();
+  const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   const [rating, setRating] = useState<number>(initialRating);
   const [content, setContent] = useState<string>(initialContent);
   const [isPurchased, setIsPurchased] = useState<boolean>(initialIsPurchased);
@@ -70,7 +70,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!session) {
+    if (!isAuthenticated || !accessToken) {
       toast.error('로그인이 필요합니다.');
       return;
     }

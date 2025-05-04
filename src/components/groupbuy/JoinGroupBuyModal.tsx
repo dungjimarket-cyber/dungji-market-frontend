@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 interface JoinGroupBuyModalProps {
@@ -24,8 +24,12 @@ interface JoinGroupBuyModalProps {
   };
 }
 
+/**
+ * 공구 참여 모달 컴포넌트
+ * 사용자가 공구에 참여하기 전 확인 및 참여 처리를 담당합니다.
+ */
 export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGroupBuyModalProps) {
-  const { data: session, status } = useSession();
+  const { isAuthenticated, accessToken, user } = useAuth();
   const { toast } = useToast();
   const [step, setStep] = useState<'confirm' | 'success' | 'final'>('confirm');
   const [loading, setLoading] = useState(false);
@@ -33,11 +37,11 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
 
   /**
    * 공구 참여 처리를 수행하는 함수
-   * 로그인 상태를 확인하고 로컬 스토리지 또는 세션에서 토큰을 가져와 API 호출
+   * 로그인 상태와 JWT 토큰을 확인하고 API 호출
    */
   const handleJoin = async () => {
     // 로그인 상태 확인
-    if (!session) {
+    if (!isAuthenticated || !accessToken) {
       toast({
         title: '로그인 필요',
         description: '공구에 참여하려면 로그인이 필요합니다.',
@@ -46,24 +50,14 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
       return;
     }
     
+    // 로딩 상태 설정
+    setLoading(true);
+    
     try {
       setLoading(true);
       setError('');
       
-      // 토큰 가져오기 (로컬 스토리지 우선, 없으면 세션에서 가져오기)
-      let accessToken = null;
-      
-      // 1. 로컬 스토리지에서 토큰 확인
-      if (typeof window !== 'undefined') {
-        accessToken = localStorage.getItem('dungji_auth_token');
-      }
-      
-      // 2. 로컬 스토리지에 없으면 세션에서 확인
-      if (!accessToken) {
-        accessToken = session?.jwt?.access || session?.user?.jwt?.access;
-      }
-      
-      // 토큰이 없는 경우 오류 처리
+      // 토큰이 없는 경우 오류 처리 (이미 위에서 확인했지만 중복 체크)
       if (!accessToken) {
         throw new Error('인증 토큰을 찾을 수 없습니다. 다시 로그인해주세요.');
       }
@@ -134,16 +128,15 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
   };
 
   const handleClose = () => {
-    // 성공 단계에서 닫을 때는 페이지 리로드
-    if (step === 'success') {
-      window.location.reload();
+    if (loading) {
+      return;
     }
     
     setStep('confirm'); // 모달 닫을 때 초기 상태로 리셋
     onClose();
   };
 
-  if (status === "loading") return null;
+  if (loading) return null;
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">

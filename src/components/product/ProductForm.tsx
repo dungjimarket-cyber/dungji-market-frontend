@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { Product, CategoryFields, CustomField } from '@/types/product';
+
+const API_URL = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')}`;
 
 interface ProductFormProps {
   initialData?: Product;
@@ -43,10 +46,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories/');
-        if (!response.ok) throw new Error('카테고리 로드 실패');
-        const data = await response.json();
-        setCategories(data);
+        const response = await axios.get(`${API_URL}/categories/`);
+        setCategories(response.data);
       } catch (err) {
         setError('카테고리를 불러오는데 실패했습니다');
       } finally {

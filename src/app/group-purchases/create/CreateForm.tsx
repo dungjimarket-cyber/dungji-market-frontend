@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useSession } from 'next-auth/react';
-import type { Session } from 'next-auth';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -221,13 +220,11 @@ const getCategoryIcon = (categoryType?: string) => {
 
 /**
  * 공구 등록 폼 컴포넌트
+ * JWT 기반 인증을 사용하여 판매자 권한 확인 및 데이터 처리
  */
 export default function CreateForm() {
-  // status의 타입을 명시적으로 지정합니다
-  const { data: session, status } = useSession() as {
-    data: Session | null;
-    status: 'loading' | 'authenticated' | 'unauthenticated';
-  };
+  // JWT 기반 인증 컨텍스트 사용
+  const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -253,26 +250,27 @@ export default function CreateForm() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    // 인증 상태 확인 및 리디렉션
+    if (!isLoading && !isAuthenticated) {
       router.push('/login?callbackUrl=/group-purchases/create');
     }
-  }, [status, router]);
+  }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
-    // useSession 후크의 데이터를 활용하여 세션 검증
-    console.log('공구 등록 페이지 세션 확인:', session);
+    // JWT 기반 인증 상태 확인
+    console.log('공구 등록 페이지 인증 상태:', isAuthenticated);
+    console.log('사용자 데이터:', user);
     
-    // status가 'unauthenticated'일 때만 로그인 페이지로 리디렉션
-    // status가 'loading'인 경우는 기다림
-    if (status === 'unauthenticated') {
+    // 비인증 상태일 때 로그인 페이지로 리디렉션
+    if (!isLoading && !isAuthenticated) {
       router.push('/login?callbackUrl=/group-purchases/create');
     }
-  }, [router, status, session]);
+  }, [router, isLoading, isAuthenticated, user]);
 
   useEffect(() => {
-    console.log('현재 세션 상태:', status);
-    console.log('세션 데이터:', session);
-    console.log('사용자 ID:', session?.user?.id);
+    console.log('현재 인증 상태:', isAuthenticated ? '인증됨' : '비인증');
+    console.log('사용자 데이터:', user);
+    console.log('사용자 ID:', user?.id);
     
     const fetchProducts = async () => {
       try {
@@ -339,7 +337,7 @@ export default function CreateForm() {
       }
       
       // 로그인 확인
-      if (!session || !session.user) {
+      if (!isAuthenticated || !user) {
         toast({
           variant: "destructive",
           title: "로그인이 필요합니다",
@@ -417,7 +415,7 @@ export default function CreateForm() {
       });
       
       // 현재 로그인한 사용자 ID 가져오기 (로그인 검사는 API 요청 직전에 수행)
-      const userId = session?.user?.id;
+      const userId = user?.id;
       
       // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
       apiRequestData = {

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API_URL = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')}`;
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
@@ -48,7 +51,7 @@ export default function SearchPage() {
     const fetchAllGroupBuys = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
+        const res = await fetch(`${API_URL}/groupbuys/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

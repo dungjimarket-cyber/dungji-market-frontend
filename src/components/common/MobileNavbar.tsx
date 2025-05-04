@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { FaSearch, FaHome, FaShoppingCart, FaUser } from 'react-icons/fa';
 
+/**
+ * 모바일용 하단 네비게이션 바 컴포넌트
+ */
 export default function MobileNavbar() {
-  const { data: session } = useSession();
+  const { isAuthenticated } = useAuth();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 w-full">
@@ -19,7 +22,7 @@ export default function MobileNavbar() {
           <span className="text-xs">검색</span>
         </Link>
         <Link 
-          href={session ? "/group-purchases/create" : "/auth/signin"} 
+          href={isAuthenticated ? "/group-purchases/create" : "/login"} 
           className="flex flex-col items-center justify-center w-1/5 py-2"
         >
           <button className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md mb-1">
@@ -32,7 +35,7 @@ export default function MobileNavbar() {
           <span className="text-xs">공구</span>
         </Link>
         <Link 
-          href={session ? "/mypage" : "/auth/signin"} 
+          href={isAuthenticated ? "/mypage" : "/login"} 
           className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2"
         >
           <FaUser className="text-xl mb-1" />

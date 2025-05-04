@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { decodeJwtToken } from '@/lib/auth';
 
 // Next.js 15에서 params는 Promise 타입이 되었습니다
 type Params = Promise<{ id: string }>;
@@ -13,18 +12,28 @@ export async function POST(
   // params는 Promise이미로 await 필요
   const { id } = await params;
   try {
-    const session = await getServerSession(authOptions);
-    
-    // 인증 확인
-    if (!session) {
+    // Authorization 헤더에서 토큰 추출
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
         { status: 401 }
       );
     }
     
+    const token = authHeader.split(' ')[1];
+    const decodedToken = decodeJwtToken(token);
+    
+    // 토큰 유효성 검사
+    if (!decodedToken || !decodedToken.user_id) {
+      return NextResponse.json(
+        { error: '유효하지 않은 인증 토큰입니다.' },
+        { status: 401 }
+      );
+    }
+    
     const groupBuyId = id; // params에서 이미 추출한 id 사용
-    const userId = session.user?.id;
+    const userId = decodedToken.user_id;
     
     // 실제 환경에서는 데이터베이스에서 공구 정보 조회
     // 여기서는 예시 데이터 사용

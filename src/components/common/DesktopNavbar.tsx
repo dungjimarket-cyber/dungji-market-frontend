@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import AuthButtons from '@/components/auth/AuthButtons';
 
+/**
+ * 데스크탑용 상단 네비게이션 바 컴포넌트
+ */
 export default function DesktopNavbar() {
-  const { data: session } = useSession();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <nav className="hidden md:block bg-white shadow-lg">
@@ -32,7 +35,7 @@ export default function DesktopNavbar() {
             </Link>
           </div>
 
-          <AuthButtons isAuthenticated={!!session} />
+          <AuthButtons isAuthenticated={isAuthenticated} />
         </div>
       </div>
     </nav>
