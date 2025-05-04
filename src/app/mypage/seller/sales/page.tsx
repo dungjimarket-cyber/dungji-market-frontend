@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,13 +17,82 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, Search, Phone, Calendar } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+// Skeleton 컴포넌트 인라인 정의
+const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-gray-200", className)}
+      {...props}
+    />
+  );
+};
 
 /**
  * 판매 확정 목록 페이지 컴포넌트
  */
 export default function SalesListPage() {
+  return (
+    <Suspense fallback={<SalesListSkeleton />}>
+      <SalesListClient />
+    </Suspense>
+  );
+}
+
+/**
+ * 판매 목록 로딩 스켈레톤 컴포넌트
+ */
+function SalesListSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center mb-6">
+        <Link href="/mypage/seller" className="mr-2">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">판매 확정 목록</h1>
+      </div>
+
+      <div className="mb-6 flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-2/3">
+          <Skeleton className="h-12 w-full" />
+        </div>
+        <div className="w-full md:w-1/3">
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+
+      {[1, 2, 3].map((i) => (
+        <Card key={i} className="mb-4">
+          <CardContent className="p-4">
+            <Skeleton className="h-6 mb-2 w-1/3" />
+            <Skeleton className="h-4 mb-2 w-1/2" />
+            <div className="flex justify-between mt-4">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/**
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 판매 목록 클라이언트 컴포넌트
+ */
+function SalesListClient() {
   const [sales, setSales] = useState<SaleConfirmation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -270,30 +339,4 @@ function SaleCard({ sale }: SaleCardProps) {
   );
 }
 
-/**
- * 판매 목록 로딩 스켈레톤
- */
-function SalesListSkeleton() {
-  return (
-    <div className="space-y-4">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Card key={i}>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Skeleton className="mr-4 w-16 h-16 rounded-md" />
-              <div className="flex-1">
-                <Skeleton className="h-5 w-48 mb-2" />
-                <Skeleton className="h-4 w-64 mb-2" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <div className="flex flex-col items-end">
-                <Skeleton className="h-6 w-32 mb-2" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
+

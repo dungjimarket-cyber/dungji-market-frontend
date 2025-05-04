@@ -22,11 +22,15 @@ async function getGroupBuy(id: string): Promise<GroupBuy | null> {
 /**
  * 그룹 구매 상세 페이지 서버 컴포넌트
  */
-type GroupBuyPageProps = {
-  params: { id: string } | Promise<{ id: string }>;
-};
+export interface PageParams {
+  id: string;
+}
 
-export default async function GroupBuyPage({ params }: GroupBuyPageProps) {
+/**
+ * Next.js 15.1.6에서는 params가 Promise로 설정되어야 함
+ */
+export default async function GroupBuyPage({ params }: { params: Promise<PageParams> }) {
+  // params를 Promise로 처리
   const { id } = await params;
   const groupBuy = await getGroupBuy(id);
   

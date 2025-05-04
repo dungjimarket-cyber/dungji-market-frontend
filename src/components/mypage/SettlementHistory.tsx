@@ -80,7 +80,6 @@ export default function SettlementHistory() {
   const dummySettlements: SettlementData[] = [
     {
       id: 1,
-      groupbuy: 101,
       groupbuy_id: 101,
       groupbuy_title: "갤럭시 S23 공동구매",
       product_name: "갤럭시 S23 Ultra",
@@ -94,7 +93,6 @@ export default function SettlementHistory() {
     },
     {
       id: 2,
-      groupbuy: 102,
       groupbuy_id: 102,
       groupbuy_title: "아이폰 15 공동구매",
       product_name: "아이폰 15 Pro",

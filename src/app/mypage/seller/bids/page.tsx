@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSellerBids } from '@/lib/api/sellerService';
@@ -16,13 +16,73 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Search, Calendar } from 'lucide-react';
-import { formatDate, formatNumberWithCommas } from '@/lib/utils';
+import { formatDate, formatNumberWithCommas, cn } from '@/lib/utils';
 import { tokenUtils } from '@/lib/tokenUtils';
+
+// Skeleton 컴포넌트 인라인 정의
+const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-gray-200", className)}
+      {...props}
+    />
+  );
+};
 
 /**
  * 셀러 입찰 목록 페이지 컴포넌트
  */
 export default function SellerBidsPage() {
+  return (
+    <Suspense fallback={<BidsListSkeleton />}>
+      <BidsListClient />
+    </Suspense>
+  );
+}
+
+/**
+ * 입찰 목록 로딩 스켈레톤 컴포넌트
+ */
+function BidsListSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center mb-6">
+        <Link href="/mypage/seller" className="mr-2">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">입찰 목록</h1>
+      </div>
+      
+      <div className="mb-6 flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-2/3">
+          <Skeleton className="h-12 w-full" />
+        </div>
+        <div className="w-full md:w-1/3">
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+      
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="mb-4 p-4 border rounded-lg bg-white">
+          <Skeleton className="h-6 mb-2 w-1/3" />
+          <Skeleton className="h-4 mb-2 w-1/2" />
+          <Skeleton className="h-4 mb-2 w-1/4" />
+          <div className="flex justify-between mt-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-20" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 입찰 목록 클라이언트 컴포넌트
+ */
+function BidsListClient() {
   const [bids, setBids] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -232,39 +292,7 @@ export default function SellerBidsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center mb-6">
-          <Link href="/mypage/seller" className="mr-2">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold">입찰 목록</h1>
-        </div>
-        
-        <div className="mb-6 flex flex-col md:flex-row gap-4">
-          <div className="w-full md:w-2/3">
-            <div className="h-12 w-full bg-gray-200 animate-pulse rounded-md"></div>
-          </div>
-          <div className="w-full md:w-1/3">
-            <div className="h-12 w-full bg-gray-200 animate-pulse rounded-md"></div>
-          </div>
-        </div>
-        
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="mb-4 p-4 border rounded-lg bg-white">
-            <div className="h-6 bg-gray-200 animate-pulse rounded mb-2 w-1/3"></div>
-            <div className="h-4 bg-gray-200 animate-pulse rounded mb-2 w-1/2"></div>
-            <div className="h-4 bg-gray-200 animate-pulse rounded mb-2 w-1/4"></div>
-            <div className="flex justify-between mt-4">
-              <div className="h-6 bg-gray-200 animate-pulse rounded w-24"></div>
-              <div className="h-6 bg-gray-200 animate-pulse rounded w-20"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <BidsListSkeleton />;
   }
 
   return (

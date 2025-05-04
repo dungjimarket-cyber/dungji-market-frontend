@@ -225,6 +225,8 @@ const getCategoryIcon = (categoryType?: string) => {
 export default function CreateForm() {
   // JWT 기반 인증 컨텍스트 사용
   const { user, isAuthenticated, isLoading, accessToken } = useAuth();
+  // 인증 상태를 NextAuth와 호환되는 status 변수로 변환
+  const status = isLoading ? 'loading' : isAuthenticated ? 'authenticated' : 'unauthenticated';
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

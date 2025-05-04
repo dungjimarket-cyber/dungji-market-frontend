@@ -1,13 +1,45 @@
 'use client';
 
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginSkeleton />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+/**
+ * 로그인 페이지 스켈레톤 컴포넌트
+ */
+function LoginSkeleton() {
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="mx-auto w-full max-w-md space-y-6 rounded-lg border p-8 shadow-md">
+        <div className="space-y-2">
+          <div className="h-6 w-1/2 animate-pulse rounded-md bg-gray-200"></div>
+          <div className="h-4 w-full animate-pulse rounded-md bg-gray-200"></div>
+        </div>
+        <div className="space-y-4">
+          <div className="h-10 w-full animate-pulse rounded-md bg-gray-200"></div>
+          <div className="h-10 w-full animate-pulse rounded-md bg-gray-200"></div>
+          <div className="h-10 w-full animate-pulse rounded-md bg-gray-200"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 로그인 폼 컴포넌트
+ */
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
