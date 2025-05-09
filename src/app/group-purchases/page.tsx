@@ -66,7 +66,7 @@ export default function GroupPurchasesPage() {
         const data = await res.json();
         // 진행중 상태 우선 정렬
 const ongoingStatuses = ['recruiting', 'bidding', 'voting'];
-data.sort((a, b) => {
+data.sort((a: GroupBuy, b: GroupBuy) => {
   const aOngoing = ongoingStatuses.includes(a.status);
   const bOngoing = ongoingStatuses.includes(b.status);
   if (aOngoing && !bOngoing) return -1;
