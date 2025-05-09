@@ -34,7 +34,7 @@ function FindUsernameForm({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/auth/find-username/` : 'http://localhost:8000/api/auth/find-username/'}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/find-username/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -44,7 +44,9 @@ function FindUsernameForm({ onClose }: { onClose: () => void }) {
         setResult(data.username);
       } else {
         const err = await res.json();
-        toast({ title: '오류', description: err.email || '아이디 찾기에 실패했습니다.', variant: 'destructive' });
+        // 백엔드에서 email 필드에 대한 오류 배열로 반환할 경우 처리
+        const errorMessage = Array.isArray(err.email) ? err.email[0] : err.email || '아이디 찾기에 실패했습니다.';
+        toast({ title: '알림', description: errorMessage, variant: 'destructive' });
       }
     } catch (e) {
       toast({ title: '오류', description: '서버와 연결할 수 없습니다.', variant: 'destructive' });
@@ -89,7 +91,24 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }) {
         setSent(true);
       } else {
         const err = await res.json();
-        toast({ title: '오류', description: err.non_field_errors || err.email || err.username || '비밀번호 재설정에 실패했습니다.', variant: 'destructive' });
+        // 백엔드에서 반환하는 오류 메시지 처리
+        let errorMessage = '비밀번호 재설정에 실패했습니다.';
+        
+        if (err.non_field_errors && Array.isArray(err.non_field_errors)) {
+          errorMessage = err.non_field_errors[0];
+        } else if (err.non_field_errors) {
+          errorMessage = err.non_field_errors;
+        } else if (err.email && Array.isArray(err.email)) {
+          errorMessage = err.email[0];
+        } else if (err.email) {
+          errorMessage = err.email;
+        } else if (err.username && Array.isArray(err.username)) {
+          errorMessage = err.username[0];
+        } else if (err.username) {
+          errorMessage = err.username;
+        }
+        
+        toast({ title: '알림', description: errorMessage, variant: 'destructive' });
       }
     } catch (e) {
       toast({ title: '오류', description: '서버와 연결할 수 없습니다.', variant: 'destructive' });
