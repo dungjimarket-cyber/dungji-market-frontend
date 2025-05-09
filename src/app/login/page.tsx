@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import FindAccountModals from '@/components/auth/FindAccountModals';
 
 export default function LoginPage() {
   return (
@@ -40,6 +41,7 @@ function LoginSkeleton() {
  * 로그인 폼 컴포넌트
  */
 function LoginForm() {
+  const [findModalOpen, setFindModalOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

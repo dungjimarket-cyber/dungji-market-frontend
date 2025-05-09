@@ -4,9 +4,11 @@ import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import FindAccountModals from '@/components/auth/FindAccountModals';
 
 // Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 Suspense로 감싼야 함
 function RegisterPageContent() {
+  const [findModalOpen, setFindModalOpen] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -200,6 +202,16 @@ function RegisterPageContent() {
               </button>
             </div>
           </form>
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              className="text-xs text-blue-600 hover:underline"
+              onClick={() => setFindModalOpen(true)}
+            >
+              아이디/비밀번호 찾기
+            </button>
+          </div>
+          <FindAccountModals open={findModalOpen} onOpenChange={setFindModalOpen} />
         </div>
       </div>
     </div>
