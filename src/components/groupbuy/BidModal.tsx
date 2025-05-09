@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { createBid } from '@/lib/api/bidService';
+import { createBid, getSellerBids, cancelBid } from '@/lib/api/bidService';
 import { 
   Dialog, 
   DialogContent, 
@@ -54,6 +54,8 @@ export default function BidModal({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [bidType, setBidType] = useState<'price' | 'support'>('price');
+  const [existingBid, setExistingBid] = useState<{id: number, amount: number} | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
   
   // 마감된 경우 모달 자체에서 방어
   if (isClosed) {
@@ -74,13 +76,46 @@ export default function BidModal({
     );
   }
   
-  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<BidFormData>({
+  const { register, handleSubmit, watch, formState: { errors }, reset, setValue } = useForm<BidFormData>({
     defaultValues: {
       bidType: 'price',
-      amount: 0,
+      amount: undefined, // 디폴트 0 제거
       message: ''
     }
   });
+  
+  // 현재 공구에 대한 판매자의 기존 입찰 확인
+  useEffect(() => {
+    const checkExistingBid = async () => {
+      try {
+        // 판매자의 입찰 목록 조회
+        const bids = await getSellerBids();
+        // 현재 공구에 대한 대기 중인 입찰이 있는지 확인
+        const existing = bids.find(bid => 
+          bid.groupbuy === groupBuyId && 
+          bid.status === 'pending'
+        );
+        
+        if (existing) {
+          setExistingBid({
+            id: existing.id,
+            amount: existing.amount
+          });
+          // 기존 입찰 정보로 폼 초기화
+          setValue('bidType', existing.bid_type);
+          setValue('amount', existing.amount);
+          setValue('message', existing.message || '');
+          setBidType(existing.bid_type);
+        }
+      } catch (error) {
+        console.error('기존 입찰 확인 중 오류:', error);
+      }
+    };
+    
+    if (isOpen && groupBuyId) {
+      checkExistingBid();
+    }
+  }, [isOpen, groupBuyId, setValue]);
 
   // 입찰 유형 변경 핸들러
   const handleBidTypeChange = (value: 'price' | 'support') => {
@@ -92,7 +127,7 @@ export default function BidModal({
     setLoading(true);
     
     try {
-      await createBid({
+      const result = await createBid({
         groupbuy_id: groupBuyId,
         bid_type: data.bidType,
         amount: data.amount,
@@ -100,8 +135,12 @@ export default function BidModal({
       });
 
       toast({
-        title: '입찰이 성공적으로 등록되었습니다',
-        description: '입찰 내역은 마이페이지에서 확인할 수 있습니다.',
+        title: result.is_updated 
+          ? '입찰이 성공적으로 수정되었습니다' 
+          : '입찰이 성공적으로 등록되었습니다',
+        description: result.is_updated
+          ? '기존 입찰 정보가 새로운 금액으로 업데이트되었습니다.'
+          : '입찰 내역은 마이페이지에서 확인할 수 있습니다.',
         variant: 'default'
       });
       reset();
@@ -131,6 +170,57 @@ export default function BidModal({
         </DialogHeader>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-2">
+          {/* 입찰 취소 버튼 - 기존 입찰이 있는 경우에만 표시 */}
+          {existingBid && (
+            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
+              <p className="text-amber-800 text-sm font-medium">
+                이미 이 공구에 입찰하셨습니다. 새로운 금액으로 입찰하시거나 입찰을 취소하실 수 있습니다.
+              </p>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  if (!existingBid?.id) return;
+                  
+                  if (!confirm('입찰을 취소하시겠습니까?')) return;
+                  
+                  try {
+                    setCancelLoading(true);
+                    await cancelBid(existingBid.id);
+                    toast({
+                      title: '입찰 취소 완료',
+                      description: '입찰이 성공적으로 취소되었습니다.',
+                      variant: 'default'
+                    });
+                    setExistingBid(null);
+                    reset();
+                    onBidSuccess();
+                    onClose();
+                  } catch (error: any) {
+                    toast({
+                      title: '입찰 취소 실패',
+                      description: error.response?.data?.detail || '입찰 취소 중 오류가 발생했습니다.',
+                      variant: 'destructive'
+                    });
+                  } finally {
+                    setCancelLoading(false);
+                  }
+                }}
+                disabled={cancelLoading}
+                className="mt-2 w-full"
+              >
+                {cancelLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    취소 중...
+                  </>
+                ) : (
+                  '입찰 취소하기'
+                )}
+              </Button>
+            </div>
+          )}
           {/* 공구 정보 요약 */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="grid grid-cols-2 gap-2 text-sm">

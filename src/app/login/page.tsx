@@ -178,12 +178,33 @@ function LoginForm() {
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                로그인
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    로그인 중...
+                  </>
+                ) : (
+                  '로그인'
+                )}
+              </button>
+            </div>
+            
+            {/* 아이디/비밀번호 찾기 링크 */}
+            <div className="text-center mt-4">
+              <button 
+                type="button" 
+                onClick={() => setFindModalOpen(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                아이디/비밀번호 찾기
               </button>
             </div>
           </form>
         </div>
       </div>
+      
+      {/* 아이디/비밀번호 찾기 모달 */}
+      <FindAccountModals open={findModalOpen} onOpenChange={setFindModalOpen} />
     </div>
   );
 }

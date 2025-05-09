@@ -112,7 +112,29 @@ export const getGroupBuyBids = async (groupBuyId: number): Promise<BidData[]> =>
  *   message: '좋은 조건으로 제공해 드리겠습니다.'
  * });
  */
-export const createBid = async (data: CreateBidRequest): Promise<BidData> => {
+/**
+ * 입찰 취소
+ * @param bidId 취소하려는 입찰 ID
+ * @returns 취소 성공 여부
+ * @example
+ * try {
+ *   await cancelBid(123);
+ *   console.log('입찰이 취소되었습니다.');
+ * } catch (error) {
+ *   console.error('입찰 취소 오류:', error);
+ * }
+ */
+export const cancelBid = async (bidId: number): Promise<void> => {
+  try {
+    const headers = await getAxiosAuthHeaders();
+    await axios.delete(`${API_URL}/bids/${bidId}/cancel/`, { headers });
+  } catch (error) {
+    console.error('입찰 취소 오류:', error);
+    throw error;
+  }
+};
+
+export const createBid = async (data: CreateBidRequest): Promise<BidData & { is_updated?: boolean }> => {
   try {
     const headers = await getAxiosAuthHeaders();
     const token = await tokenUtils.getAccessToken();
