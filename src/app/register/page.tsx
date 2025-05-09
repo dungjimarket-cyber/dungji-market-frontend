@@ -44,7 +44,7 @@ function RegisterPageContent() {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
       // 회원가입 API 호출
-      const response = await fetch(`${backendUrl}/api/auth/register/`, {
+      const response = await fetch(`${backendUrl}/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
