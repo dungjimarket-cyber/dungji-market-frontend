@@ -64,7 +64,16 @@ export default function GroupPurchasesPage() {
         }
 
         const data = await res.json();
-        setGroupBuys(data);
+        // 진행중 상태 우선 정렬
+const ongoingStatuses = ['recruiting', 'bidding', 'voting'];
+data.sort((a, b) => {
+  const aOngoing = ongoingStatuses.includes(a.status);
+  const bOngoing = ongoingStatuses.includes(b.status);
+  if (aOngoing && !bOngoing) return -1;
+  if (!aOngoing && bOngoing) return 1;
+  return 0;
+});
+setGroupBuys(data);
       } catch (error) {
         console.error('Error fetching group buys:', error);
         setError('공동구매 목록을 불러오는데 실패했습니다.');
