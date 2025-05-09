@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 
 /**
@@ -11,13 +11,13 @@ export function FindAccountModals({ open, onOpenChange }: { open: boolean; onOpe
   const [tab, setTab] = useState<'username'|'password'>('username');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <div className="w-full max-w-xs p-6 bg-white rounded-lg shadow-lg">
+      <DialogContent className="w-full max-w-xs p-6 bg-white rounded-lg shadow-lg">
         <div className="flex mb-4 border-b">
           <button className={`flex-1 py-2 text-sm font-semibold ${tab==='username' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`} onClick={()=>setTab('username')}>아이디 찾기</button>
           <button className={`flex-1 py-2 text-sm font-semibold ${tab==='password' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`} onClick={()=>setTab('password')}>비밀번호 찾기</button>
         </div>
         {tab==='username' ? <FindUsernameForm onClose={()=>onOpenChange(false)} /> : <ResetPasswordForm onClose={()=>onOpenChange(false)} />}
-      </div>
+      </DialogContent>
     </Dialog>
   );
 }
@@ -34,7 +34,7 @@ function FindUsernameForm({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/find-username/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/find-username/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -80,7 +80,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setSent(false);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/reset-password/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/reset-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username }),
