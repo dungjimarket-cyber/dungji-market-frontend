@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 
 /**
@@ -12,6 +12,11 @@ export function FindAccountModals({ open, onOpenChange }: { open: boolean; onOpe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full max-w-xs p-6 bg-white rounded-lg shadow-lg">
+        <DialogHeader>
+          <DialogTitle className="text-center text-lg font-bold">
+            {tab === 'username' ? '아이디 찾기' : '비밀번호 찾기'}
+          </DialogTitle>
+        </DialogHeader>
         <div className="flex mb-4 border-b">
           <button className={`flex-1 py-2 text-sm font-semibold ${tab==='username' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`} onClick={()=>setTab('username')}>아이디 찾기</button>
           <button className={`flex-1 py-2 text-sm font-semibold ${tab==='password' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`} onClick={()=>setTab('password')}>비밀번호 찾기</button>
