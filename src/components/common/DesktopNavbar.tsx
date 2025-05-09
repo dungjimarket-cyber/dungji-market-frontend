@@ -23,10 +23,7 @@ export default function DesktopNavbar() {
           <div className="flex space-x-8">
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
               공구둘러보기
-            </Link>
-            <Link href="/ongoing" className="text-gray-600 hover:text-gray-900">
-              진행중인 공구
-            </Link>
+            </Link>          
             <Link href="/completed" className="text-gray-600 hover:text-gray-900">
               완료된 공구
             </Link>

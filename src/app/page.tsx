@@ -29,7 +29,7 @@ export default async function Home() {
             href="/group-purchases"
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
           >
-            진행중인 공구 보기
+            공구 둘러보기
           </Link>
         </div>
         {!isAuthenticated && (
