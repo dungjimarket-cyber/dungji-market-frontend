@@ -60,22 +60,22 @@ export default function GroupBuyActionButton({
     }
   };
 
+  if (isSeller) return null;
+
   return (
     <>
       <Button 
-        className={`w-full py-6 text-lg font-bold ${isSeller ? 'bg-green-500 hover:bg-green-600' : ''}`} 
-        disabled={(!isRecruiting && !isSeller) || (isFull && !isSeller) || isCreator}
+        className="w-full py-6 text-lg font-bold" 
+        disabled={!isRecruiting || isFull || isCreator}
         onClick={handleClick}
       >
-        {isCreator 
-          ? '내가 만든 공구' 
-          : isSeller
-            ? '입찰 기록 보기'
-            : !isRecruiting 
-              ? '종료된 공구' 
-              : isFull 
-                ? '인원 마감' 
-                : '공구 참여하기'}
+        {isCreator
+          ? '내가 만든 공구'
+          : !isRecruiting
+            ? '종료된 공구'
+            : isFull
+              ? '인원 마감'
+              : '공구 참여하기'}
       </Button>
 
       {/* 공구 참여 모달 */}
