@@ -45,8 +45,10 @@ function RegisterPageContent() {
       // 백엔드 API URL 가져오기
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       
+      console.log(`회원가입 요청 URL: ${backendUrl}/register/`);
+      
       // 회원가입 API 호출
-      const response = await fetch(`${backendUrl}/auth/register/`, {
+      const response = await fetch(`${backendUrl}/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,14 +63,12 @@ function RegisterPageContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '회원가입에 실패했습니다.');
+        console.error('회원가입 오류:', errorData);
+        throw new Error(errorData.error || '회원가입에 실패했습니다.');
       }
 
       const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || '회원가입에 실패했습니다.');
-      }
+      console.log('회원가입 응답:', data);
 
       // 회원가입 성공 후 JWT 기반 로그인 진행
       const loginSuccess = await login(formData.email, formData.password);
