@@ -127,9 +127,13 @@ export const getGroupBuyBids = async (groupBuyId: number): Promise<BidData[]> =>
 export const cancelBid = async (bidId: number): Promise<void> => {
   try {
     const headers = await getAxiosAuthHeaders();
-    await axios.delete(`${API_URL}/bids/${bidId}/cancel/`, { headers });
-  } catch (error) {
+    const url = `${API_URL}/bids/${bidId}/cancel/`;
+    console.log(`입찰 취소 요청 URL: ${url}`);
+    await axios.delete(url, { headers });
+    console.log(`입찰 ${bidId} 취소 요청 완료`);
+  } catch (error: any) {
     console.error('입찰 취소 오류:', error);
+    console.error('상세 오류:', error.response?.data || error.message);
     throw error;
   }
 };
