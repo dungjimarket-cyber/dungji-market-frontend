@@ -29,6 +29,7 @@ interface BidModalProps {
   currentParticipants: number;
   onBidSuccess: () => void;
   isClosed?: boolean; // 추가: 마감 여부
+  productCategory?: string; // 제품 카테고리 추가
 }
 
 interface BidFormData {
@@ -49,11 +50,14 @@ export default function BidModal({
   minParticipants,
   currentParticipants,
   onBidSuccess,
-  isClosed = false
+  isClosed = false,
+  productCategory = 'electronics' // 기본값은 가전제품으로 설정
 }: BidModalProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [bidType, setBidType] = useState<'price' | 'support'>('price');
+  // 휴대폰 제품(telecom)은 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
+  const defaultBidType = productCategory === 'telecom' ? 'support' : 'price';
+  const [bidType, setBidType] = useState<'price' | 'support'>(defaultBidType);
   const [existingBid, setExistingBid] = useState<{id: number, amount: number} | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   
@@ -78,7 +82,7 @@ export default function BidModal({
   
   const { register, handleSubmit, watch, formState: { errors }, reset, setValue } = useForm<BidFormData>({
     defaultValues: {
-      bidType: 'price',
+      bidType: defaultBidType, // 제품 카테고리에 따라 기본값 설정
       amount: undefined, // 디폴트 0 제거
       message: ''
     }
@@ -263,30 +267,44 @@ export default function BidModal({
               {bidType === 'price' ? '판매 가격' : '지원금'} (원)
             </Label>
             <Input
-              id="amount"
+              {...register('amount', { 
+                required: '금액을 입력해주세요', 
+                min: { value: 1000, message: '최소 1,000원 이상 입력해주세요' },
+                max: { value: 10000000, message: '최대 1천만원까지 입력 가능합니다' }
+              })}
               type="number"
               placeholder={bidType === 'price' ? '판매 가격을 입력하세요' : '지원금을 입력하세요'}
-              {...register('amount', { 
-                required: '금액을 입력해 주세요',
-                min: {
-                  value: 1,
-                  message: '금액은 1원 이상이어야 합니다'
+              className="mt-1"
+              onChange={(e) => {
+                // 숫자 입력 시 자동으로 콤마 표시 (UI에만 적용)
+                const value = e.target.value;
+                if (value) {
+                  const numericValue = parseInt(value.replace(/,/g, ''));
+                  if (!isNaN(numericValue)) {
+                    // 입력 필드 옆에 포맷된 금액 표시를 위해 data-formatted 속성 설정
+                    e.target.setAttribute('data-formatted', numericValue.toLocaleString() + '원');
+                  }
                 }
-              })}
+              }}
             />
+            {watch('amount') && (
+              <div className="text-sm text-blue-600 font-medium mt-1">
+                {parseInt(watch('amount').toString()).toLocaleString()}원
+              </div>
+            )}
             {errors.amount && (
               <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>
             )}
             
             {bidType === 'price' && (
-              <p className="text-sm text-gray-500 mt-1">
-                목표가격보다 낮게 입찰할수록 선정 가능성이 높아집니다.
-              </p>
+              <div className="text-gray-500 text-sm mt-1">
+                앞자리를 제외한 입찰가는 비공개입니다.
+              </div>
             )}
             {bidType === 'support' && (
-              <p className="text-sm text-gray-500 mt-1">
-                지원금은 공구 참여자 전체에게 제공되며, 금액이 높을수록 선정 가능성이 높아집니다.
-              </p>
+              <div className="text-gray-500 text-sm mt-1">
+                앞자리를 제외한 입찰가는 비공개입니다.
+              </div>
             )}
           </div>
           

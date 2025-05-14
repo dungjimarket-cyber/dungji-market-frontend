@@ -47,6 +47,10 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
         description: '공구에 참여하려면 로그인이 필요합니다.',
         variant: 'destructive'
       });
+      
+      // 로그인 페이지로 리다이렉트 (현재 URL을 callbackUrl로 설정)
+      const currentPath = window.location.pathname;
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(currentPath)}`;
       return;
     }
     
