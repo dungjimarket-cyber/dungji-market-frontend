@@ -46,7 +46,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isEdit = false }
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_URL}/categories/`);
+        // 관리자용 페이지이미로 show_all=true 파라미터를 추가하여 모든 카테고리(서비스 포함) 가져오기
+        const response = await axios.get(`${API_URL}/categories/?show_all=true`);
         setCategories(response.data);
       } catch (err) {
         setError('카테고리를 불러오는데 실패했습니다');
