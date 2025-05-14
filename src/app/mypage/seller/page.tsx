@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/useAuth';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,7 +19,8 @@ import {
   Package,
   BadgeCheck,
   User,
-  Settings
+  Settings,
+  LogOut
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -30,6 +32,14 @@ export default function SellerMyPage() {
   const [profile, setProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { logout } = useAuth();
+  const router = useRouter();
+  
+  // 로그아웃 처리 함수
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   useEffect(() => {
     // 로그인 여부 확인
@@ -63,12 +73,23 @@ export default function SellerMyPage() {
   return (
     <div className="container py-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">마이 페이지</h1>
-        <Link href="/mypage/seller/settings">
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5" />
+        <h1 className="text-2xl font-bold">판매자 마이페이지</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="flex items-center text-red-600 hover:text-red-800 border-red-200 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            로그아웃
           </Button>
-        </Link>
+          <Link href="/mypage/seller/settings">
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {profile ? (

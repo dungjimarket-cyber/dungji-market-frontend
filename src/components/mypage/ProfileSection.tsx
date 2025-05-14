@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { LogOut } from 'lucide-react';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -39,7 +40,7 @@ interface ExtendedUser {
 }
 
 export default function ProfileSection() {
-  const { user: authUser, accessToken, isAuthenticated, isLoading } = useAuth();
+  const { user: authUser, accessToken, isAuthenticated, isLoading, logout } = useAuth();
   // 확장된 타입으로 사용자 정보를 처리
   const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
@@ -57,6 +58,17 @@ export default function ProfileSection() {
   /**
    * 이메일 주소 업데이트 함수
    * JWT 토큰을 활용하여 사용자 프로필 업데이트
+   */
+  /**
+   * 로그아웃 처리 함수
+   */
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  /**
+   * 이메일 주소 업데이트 함수
    */
   const handleEmailUpdate = async () => {
     if (!accessToken) {
@@ -160,6 +172,15 @@ export default function ProfileSection() {
             <span className="font-semibold">로그인 방식:</span>{' '}
             {getLoginProviderLabel(user)}
           </p>
+          
+          {/* 로그아웃 버튼 추가 */}
+          <button
+            onClick={handleLogout}
+            className="mt-4 flex items-center text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-full text-sm transition-colors duration-200"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            로그아웃
+          </button>
         </div>
       </div>
     </div>

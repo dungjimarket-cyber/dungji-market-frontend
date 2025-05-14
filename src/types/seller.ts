@@ -12,6 +12,12 @@ export interface SellerProfile {
   completedSales: number;
   remainingBids: number;
   hasUnlimitedBids: boolean;
+  // 판매자 설정 페이지에 필요한 추가 필드
+  description?: string;
+  phone?: string;
+  address?: string;
+  email?: string;
+  notificationEnabled?: boolean;
 }
 
 /**

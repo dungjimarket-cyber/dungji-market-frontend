@@ -32,31 +32,24 @@ export default function MyPageClient() {
       console.log('마이페이지 인증 상태:', {
         isAuthenticated,
         user,
-        email: user?.email
+        email: user?.email,
+        role: user?.role
       });
       
       if (isAuthenticated && user) {
-        // 판매회원 여부 확인 (역할 정보 확인)
-        const hasSellerRole = await tokenUtils.hasRole('seller');
-        const isSellerByRole = user.role === 'seller';
-        const hasSellerInRoles = Array.isArray(user.roles) && user.roles.includes('seller');
-        
-        // 역할 정보만으로 판매회원 확인
-        const isSeller = isSellerByRole || hasSellerRole || hasSellerInRoles;
+        // 판매회원 여부 확인 - user.role 값만 사용
+        // 다른 방식(tokenUtils.hasRole 등)으로 확인하는 방식 삭제
+        const isSeller = user.role === 'seller';
         
         console.log('판매회원 확인 결과:', {
-          isSellerByRole,
-          hasSellerRole,
-          hasSellerInRoles,
-          userRole: user.role,
-          userRoles: user.roles,
-          result: isSeller
+          role: user.role,
+          isSeller: isSeller
         });
         
-        // 역할 정보를 토대로만 판매회원 확인
+        // 역할 정보 저장
         setIsSeller(isSeller);
         
-        // 판매자인 경우 자동으로 판매자 페이지로 리디렉션
+        // 판매자인 경우에만 판매자 페이지로 리디렉션
         if (isSeller && !redirecting) {
           console.log('판매자 확인됨: 판매자 마이페이지로 리디렉션');
           setRedirecting(true);

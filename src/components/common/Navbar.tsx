@@ -8,6 +8,8 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   // 화면 크기 변경 감지 및 클라이언트 마운트 체크
   useEffect(() => {
@@ -21,11 +23,120 @@ export default function Navbar() {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
+  
+  // 로그인 상태 확인 - NextAuth와 localStorage 모두 검사
+  useEffect(() => {
+    if (!mounted) return;
+    
+    const checkAuthentication = () => {
+      // 1. NextAuth 세션 확인
+      const nextAuthAuthenticated = status === 'authenticated' && !!session?.user;
+      
+      // 2. 다양한 저장소에서 토큰 확인
+      let accessToken = null;
+      let localUser = null;
+      let nextAuthToken = null;
+      
+      try {
+        // 로컬스토리지에서 토큰 확인
+        accessToken = localStorage.getItem('accessToken') || 
+                      localStorage.getItem('dungji_auth_token') || 
+                      localStorage.getItem('auth.token');
+        
+        // NextAuth 형식의 토큰도 확인
+        nextAuthToken = localStorage.getItem('next-auth.session-token');
+        
+        // 세션 스토리지에서도 확인
+        const sessionToken = sessionStorage.getItem('next-auth.session-token');
+        
+        // 쿠키에서도 확인
+        const getCookie = (name: string) => {
+          const cookies = document.cookie.split(';');
+          for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) return value;
+          }
+          return null;
+        };
+        
+        const cookieToken = getCookie('accessToken') || getCookie('dungji_auth_token');
+        
+        // 사용자 정보 가져오기
+        const userStr = localStorage.getItem('user') || 
+                        localStorage.getItem('auth.user') || 
+                        sessionStorage.getItem('next-auth.session');
+                        
+        if (userStr) {
+          try {
+            localUser = JSON.parse(userStr);
+          } catch (e) {
+            console.error('사용자 정보 파싱 오류:', e);
+          }
+        }
+        
+        // 최종 토큰 결정 (어떤 소스에서든 하나라도 있으면 인증됨)
+        const finalToken = accessToken || nextAuthToken || sessionToken || cookieToken;
+        
+        // 토큰이 있으면 모든 저장소에 중복 저장하여 안정성 확보
+        if (finalToken) {
+          localStorage.setItem('accessToken', finalToken);
+          localStorage.setItem('dungji_auth_token', finalToken);
+          localStorage.setItem('auth.token', finalToken);
+          localStorage.setItem('auth.status', 'authenticated');
+          
+          // NextAuth 형식으로도 저장
+          localStorage.setItem('next-auth.session-token', finalToken);
+          sessionStorage.setItem('next-auth.session-token', finalToken);
+        }
+      } catch (e) {
+        console.error('저장소 접근 오류:', e);
+      }
+      
+      // 로컬 인증 상태 확인
+      const localAuthenticated = !!accessToken || !!nextAuthToken;
+      
+      // 최종 인증 상태 결정 - 둘 중 하나라도 통과하면 인증된 것으로 간주
+      const authenticated = nextAuthAuthenticated || localAuthenticated;
+      
+      setIsAuthenticated(authenticated);
+      
+      // 사용자 정보 설정 - NextAuth 세션 우선, 없으면 로컬 사용자 정보 사용
+      if (session?.user) {
+        setUserInfo(session.user);
+      } else if (localUser) {
+        // 로컬 사용자 정보가 있으면 사용
+        const user = localUser.user || localUser;
+        setUserInfo(user);
+      }
+    };
+    
+    checkAuthentication();
+    
+    // 스토리지 변경 및 화면 포커스 이벤트 감지
+    const handleStorageChange = () => {
+      checkAuthentication();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleStorageChange);
+    window.addEventListener('visibilitychange', handleStorageChange);
+    
+    // 주기적으로 인증 상태 확인 (5초마다)
+    const intervalId = setInterval(checkAuthentication, 5000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleStorageChange);
+      window.removeEventListener('visibilitychange', handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, [mounted, session, status]);
 
   // 디버깅용 코드
   console.log('세션 데이터:', session);
   console.log('사용자 정보:', session?.user);
-  console.log('프로필 이미지:', session?.user?.image);
+  console.log('로컬 사용자 정보:', userInfo);
+  console.log('최종 인증 상태:', isAuthenticated);
 
   // hydration mismatch 방지: 클라이언트 마운트 전에는 아무것도 렌더하지 않음
   if (!mounted) return null;
@@ -63,7 +174,7 @@ export default function Navbar() {
                       <span className="mr-2">+</span>공구 등록
                     </button>
                   </Link>
-                  {session ? (
+                  {(session || isAuthenticated) ? (
                     <>
                       <Link href="/my-page" className="text-gray-600 hover:text-gray-900">
                         마이페이지
@@ -75,16 +186,16 @@ export default function Navbar() {
                         로그아웃
                       </button>
                       {/* 닉네임 표시 */}
-                      {session.user?.name && (
+                      {(session?.user?.name || userInfo?.name) && (
                         <span className="text-gray-700 font-medium">
-                          {session.user.name}
+                          {session?.user?.name || userInfo?.name}
                         </span>
                       )}
                       {/* 프로필 이미지 */}
                       <div className="relative w-8 h-8 overflow-hidden rounded-full border border-gray-200 bg-gray-200">
-                        {session.user?.image ? (
+                        {(session?.user?.image || userInfo?.profile_image) ? (
                           <Image 
-                            src={session.user.image}
+                            src={session?.user?.image || userInfo?.profile_image}
                             alt="프로필 이미지"
                             width={32}
                             height={32}
@@ -93,7 +204,7 @@ export default function Navbar() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-xs font-bold">
-                            {session.user?.name?.[0] || 'U'}
+                            {(session?.user?.name?.[0] || userInfo?.name?.[0] || 'U')}
                           </div>
                         )}
                       </div>
@@ -137,7 +248,7 @@ export default function Navbar() {
           <span className="text-xs">공구 목록</span>
         </Link>
         
-        {session ? (
+        {(session || isAuthenticated) ? (
           <>
             <Link href="/my-page" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
               <FaUser className="text-xl mb-1" />

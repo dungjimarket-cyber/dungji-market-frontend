@@ -1,21 +1,17 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
+
 import MyPageClient from './MyPageClient';
+import RequireAuth from '@/components/auth/RequireAuth';
 
 /**
  * 마이페이지 컴포넌트
  * 사용자 프로필 및 참여 중인 공구 등을 보여줍니다.
+ * 클라이언트 컴포넌트로 변경하고 RequireAuth를 적용하여 로그인 상태를 유지합니다.
  */
-export default async function MyPage() {
-  // 쿠키에서 JWT 토큰 확인
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value;
-
-  // 토큰이 없으면 로그인 페이지로 리디렉션
-  if (!accessToken) {
-    redirect('/login');
-  }
-
-  return <MyPageClient />;
-
+export default function MyPage() {
+  return (
+    <RequireAuth>
+      <MyPageClient />
+    </RequireAuth>
+  );
 }
