@@ -19,7 +19,8 @@ export default function Categories() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // show_services=false 파라미터를 추가하여 서비스가 아닌 카테고리만 가져오도록 설정
+        // show_services=false 파라미터를 추가하여 휴대폰 카테고리만 가져오도록 설정
+        // 데이터베이스에서 휴대폰은 is_service=true로 설정되어 있음
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories/?show_services=false`);
         const data = await response.json();
         setCategories(data);
