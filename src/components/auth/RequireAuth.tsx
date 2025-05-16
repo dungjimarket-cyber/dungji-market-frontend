@@ -2,7 +2,7 @@
 
 import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, getSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 
 interface RequireAuthProps {
@@ -12,7 +12,9 @@ interface RequireAuthProps {
 
 /**
  * 인증이 필요한 페이지를 보호하는 컴포넌트
- * NextAuth 세션 또는 로컬 스토리지 토큰을 확인하여 인증 여부 결정
+ * NextAuth 세션 및 로컬스토리지 토큰을 사용하여 인증 여부 결정
+ * @param children 보호할 컴포넌트
+ * @param redirectToLogin 인증 실패 시 로그인 페이지로 리다이렉트 여부
  */
 export default function RequireAuth({ 
   children, 
@@ -23,34 +25,35 @@ export default function RequireAuth({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // 인증 상태 확인
   useEffect(() => {
-    // 세션 상태 확인
-    const checkSession = async () => {
-      try {
-        // NextAuth 세션 확인
-        const session = await getSession();
+    const checkAuth = async () => {
+      // NextAuth 세션이 로딩 중인 경우
+      if (status === 'loading') {
+        return;
+      }
+
+      // NextAuth 세션으로 인증 성공
+      if (status === 'authenticated' && session) {
+        console.log('✅ NextAuth 세션 인증 성공:', session.user);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // NextAuth 세션은 없지만 로컬스토리지에 토큰이 있는지 확인
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('dungji_auth_token');
         
-        if (session) {
-          console.log('✅ NextAuth 세션 확인 성공:', session);
-          // NextAuth 세션이 있으면 인증됨으로 처리
+        if (token) {
+          console.log('✅ 로컬스토리지 토큰 확인 성공');
           setIsAuthenticated(true);
           setIsLoading(false);
           return;
         }
         
-        // NextAuth 세션이 없으면 로컬스토리지 확인
-        if (typeof window !== 'undefined') {
-          // 다양한 저장소에서 토큰 확인 (우선순위 순)
-          const accessToken = localStorage.getItem('accessToken');
-          const dungjiToken = localStorage.getItem('dungji_auth_token');
-          const authToken = localStorage.getItem('auth.token');
-          const nextAuthToken = localStorage.getItem('next-auth.session-token');
-          
-          // 세션 스토리지도 확인
-          const sessionToken = sessionStorage.getItem('next-auth.session-token');
-          
-          // 쿠키에서도 확인
-          const getCookie = (name: string) => {
+        // 쿠키에서 확인
+        const getCookie = (name: string): string | null => {
             const cookies = document.cookie.split(';');
             for (let cookie of cookies) {
               const [key, value] = cookie.trim().split('=');
@@ -59,114 +62,30 @@ export default function RequireAuth({
             return null;
           };
           
-          const cookieToken = getCookie('accessToken') || getCookie('dungji_auth_token');
+        const cookieToken = getCookie('dungji_auth_token');
           
-          // 모든 가능한 소스에서 토큰 확인
-          const tokenToUse = accessToken || dungjiToken || authToken || nextAuthToken || sessionToken || cookieToken;
-          
-          if (tokenToUse) {
-            console.log('✅ 다양한 저장소에서 토큰 복원 성공');
-            
-            // 모든 토큰 저장소에 중복 저장하여 안정성 확보
-            localStorage.setItem('accessToken', tokenToUse);
-            localStorage.setItem('dungji_auth_token', tokenToUse);
-            localStorage.setItem('auth.token', tokenToUse);
-            localStorage.setItem('auth.status', 'authenticated');
-            
-            // NextAuth 형식으로도 저장
-            try {
-              localStorage.setItem('next-auth.session-token', tokenToUse);
-              sessionStorage.setItem('next-auth.session-token', tokenToUse);
-              
-              // 쿠키에도 저장 (서버 컴포넌트와 호환성 유지)
-              document.cookie = `accessToken=${tokenToUse}; path=/; max-age=86400; SameSite=Lax`;
-            } catch (e) {
-              console.error('토큰 복제 저장 오류:', e);
-            }
-            
-            // 사용자 정보 확인 및 저장
-            try {
-              // 여러 소스에서 사용자 정보 확인
-              const storedUser = localStorage.getItem('auth.user') || 
-                                localStorage.getItem('user') || 
-                                sessionStorage.getItem('next-auth.session');
-              
-              if (storedUser) {
-                const userInfo = JSON.parse(storedUser);
-                
-                // 세션 데이터 형식으로 저장
-                const fakeSession = {
-                  user: {
-                    name: userInfo.name || (userInfo.user ? userInfo.user.name : '') || '',
-                    email: userInfo.email || (userInfo.user ? userInfo.user.email : '') || '',
-                    id: userInfo.id || (userInfo.user ? userInfo.user.id : '') || '',
-                    role: userInfo.role || (userInfo.user ? userInfo.user.role : '') || 'user',
-                    image: userInfo.image || (userInfo.user ? userInfo.user.image : '') || ''
-                  },
-                  expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-                };
-                
-                // 세션 정보 중복 저장
-                localStorage.setItem('next-auth.session', JSON.stringify(fakeSession));
-                sessionStorage.setItem('next-auth.session', JSON.stringify(fakeSession));
-                
-                // 세션 변경 이벤트 발생
-                window.dispatchEvent(new Event('storage'));
-              }
-            } catch (e) {
-              console.error('사용자 정보 복원 오류:', e);
-            }
-            
-            // 세션 상태 업데이트
+        if (cookieToken) {
+          console.log('✅ 쿠키 토큰 확인 성공');
+          localStorage.setItem('dungji_auth_token', cookieToken);
             setIsAuthenticated(true);
             setIsLoading(false);
             return;
           }
         }
         
-        // 인증 실패 처리
-        console.log('⚠️ 인증 정보를 찾을 수 없음');
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        
-        // 리다이렉트
+      // 인증 실패 시 로그인 페이지로 리다이렉트
         if (redirectToLogin) {
-          router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname));
-        }
-      } catch (error) {
-        console.error('인증 확인 오류:', error);
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        
-        if (redirectToLogin) {
-          router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname));
-        }
+        console.log('⚠️ 인증 실패, 로그인 페이지로 리다이렉트');
+        const callbackUrl = encodeURIComponent(window.location.pathname);
+        router.push(`/login?callbackUrl=${callbackUrl}`);
       }
-    };
-    
-    checkSession();
-    
-    // 스토리지 이벤트 리스너 추가 - 다른 탭에서 로그인/로그아웃 시 자동 반영
-    const handleStorageChange = () => {
-      checkSession();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [router, redirectToLogin]);
-
-  // NextAuth 세션 상태에 따른 처리
-  useEffect(() => {
-    if (status === 'authenticated' && session) {
-      setIsAuthenticated(true);
+      
+      setIsAuthenticated(false);
       setIsLoading(false);
-    } else if (status === 'unauthenticated') {
-      // NextAuth에서 인증되지 않았을 때 로컬 스토리지 확인은 위의 useEffect에서 처리
-    }
-  }, [session, status]);
+    };
+
+    checkAuth();
+  }, [session, status, router, redirectToLogin]);
 
   // 로딩 중 표시
   if (isLoading) {
@@ -178,6 +97,6 @@ export default function RequireAuth({
     );
   }
 
-  // 인증된 경우에만 자식 컴포넌트 렌더링
+  // 인증에 성공한 경우에만 자식 컴포넌트 렌더링
   return isAuthenticated ? <>{children}</> : null;
 }

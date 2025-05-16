@@ -252,20 +252,25 @@ export default function CreateForm() {
   });
 
   useEffect(() => {
-    // 인증 상태 확인 및 리디렉션
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login?callbackUrl=/group-purchases/create');
+    // 인증 상태 및 사용자 역할 확인
+    if (isLoading) {
+      return; // 로딩 중에는 아무 작업도 수행하지 않음
     }
-  }, [isLoading, isAuthenticated, router]);
-
-  useEffect(() => {
-    // JWT 기반 인증 상태 확인
-    console.log('공구 등록 페이지 인증 상태:', isAuthenticated);
-    console.log('사용자 데이터:', user);
     
     // 비인증 상태일 때 로그인 페이지로 리디렉션
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated) {
       router.push('/login?callbackUrl=/group-purchases/create');
+      return;
+    }
+    
+    // 판매자(seller) 계정은 공구 등록 불가
+    if (user?.role === 'seller' || (user?.roles && user.roles.includes('seller'))) {
+      toast({
+        title: "접근 제한",
+        description: "판매자 계정은 공구 등록이 불가능합니다.",
+        variant: "destructive",
+      });
+      router.push('/'); // 홈페이지로 리디렉션
     }
   }, [router, isLoading, isAuthenticated, user]);
 

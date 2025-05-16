@@ -32,14 +32,20 @@ function SocialLoginButtonsContent() {
         ? backendUrl.slice(0, -4) // '/api'를 제거
         : backendUrl;
       
+      // 클라이언트가 제어하는 리디렉트 URI 생성 (가동환경에 맞게 자동 설정)
+      const callbackPath = '/api/auth/callback/kakao';
+      const currentHost = window.location.origin;
+      const redirectUri = `${currentHost}${callbackPath}`;
+      
       // 소셜 로그인 URL 구성 (백엔드의 새 엔드포인트에 맞게 수정)
-      const socialLoginUrl = `${apiUrl}/api/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(callbackUrl))}`;
+      const socialLoginUrl = `${apiUrl}/api/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(callbackUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      
+      // 디버그 정보 출력
       console.log(`소셜 로그인 URL: ${socialLoginUrl}`);
       console.log(`소셜 로그인 제공자: ${provider}`);
       console.log(`콜백 URL: ${callbackUrl}`);
       console.log(`API URL: ${apiUrl}`);
-      
-      // 디버그 정보 추가
+      console.log(`리디렉트 URI: ${redirectUri}`);
       console.log(`전체 리디렉션 URL: ${socialLoginUrl}`);
       
       // 소셜 로그인 URL로 리디렉션

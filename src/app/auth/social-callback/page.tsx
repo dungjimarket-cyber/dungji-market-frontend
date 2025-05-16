@@ -187,14 +187,26 @@ function SocialCallbackContent() {
             // 마지막 스토리지 업데이트
             localStorage.setItem('__auth_time', Date.now().toString());
             
+            // 로컬 스토리지에 저장된 원래 URL 확인 (공구 등록 화면 등)
+            const originalUrl = typeof window !== 'undefined' ? 
+              localStorage.getItem('dungji_redirect_url') : null;
+            
+            // 원래 URL이 있으면 그곳으로, 아니면 콜백 URL 또는 홈으로 리다이렉트
+            const redirectUrl = originalUrl || callbackUrl || '/';
+            console.log('최종 리다이렉트 URL:', redirectUrl);
+            
+            // 저장된 리다이렉트 URL 삭제 (일회성 사용)
+            if (originalUrl) localStorage.removeItem('dungji_redirect_url');
+            
             // 페이지 전환
-            router.push(callbackUrl);
+            router.push(redirectUrl);
           } catch (redirectError) {
             console.error('리다이렉트 오류:', redirectError);
             // 오류 발생시 단순 리다이렉트로 대체
-            window.location.href = callbackUrl;
+            const fallbackUrl = localStorage.getItem('dungji_redirect_url') || callbackUrl || '/';
+            window.location.href = fallbackUrl;
           }
-        }, 1500); // 1.5초 후 리다이렉트
+        }, 1000); // 1초 후 리다이렉트
         
       } catch (error) {
         console.error('소셜 로그인 콜백 처리 오류:', error);
