@@ -34,8 +34,19 @@ function SocialLoginButtonsContent() {
       
       // 클라이언트가 제어하는 리디렉트 URI 생성 (가동환경에 맞게 자동 설정)
       const callbackPath = '/api/auth/callback/kakao';
+      
+      // 카카오 개발자 콘솔에 등록된 정확한 리디렉트 URI 사용
+      // www 없는 버전 우선 사용 (도메인 연결 시 주의)
       const currentHost = window.location.origin;
-      const redirectUri = `${currentHost}${callbackPath}`;
+      let redirectUri;
+      
+      if (currentHost.includes('dungjimarket.com')) {
+        // 프로덕션에서는 www 없는 버전 사용 (개발자 콘솔에 등록된 것과 정확히 일치)
+        redirectUri = 'https://dungjimarket.com/api/auth/callback/kakao';
+      } else {
+        // 개발 환경에서는 localhost 사용
+        redirectUri = 'http://localhost:3000/api/auth/callback/kakao';
+      }
       
       // 소셜 로그인 URL 구성 (백엔드의 새 엔드포인트에 맞게 수정)
       const socialLoginUrl = `${apiUrl}/api/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(callbackUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
