@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { signOut } from 'next-auth/react';
 
 /**
  * 사용자 정보 타입 정의
@@ -22,7 +23,7 @@ type AuthContextType = {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 // 인증 컨텍스트 생성
@@ -39,155 +40,138 @@ const decodeJwtPayload = (token: string): any | null => {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     return JSON.parse(atob(base64));
   } catch (error) {
-    console.error('JWT 디코딩 오류:', error);
+    console.error('JWT 토큰 디코딩 오류:', error);
     return null;
   }
 };
 
 /**
- * 전역 인증 상태를 제공하는 Provider 컴포넌트
- * 
- * @example
- * ```tsx
- * // _app.tsx 또는 layout.tsx에서 사용
- * <AuthProvider>
- *   <Component {...pageProps} />
- * </AuthProvider>
- * ```
+ * 인증 프로바이더 컴포넌트
+ * 애플리케이션에 인증 상태와 관련 기능을 제공
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // 초기 로딩시 로컬 스토리지에서 토큰 및 사용자 정보 복원
   useEffect(() => {
-    // 브라우저 환경에서만 localStorage 접근
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('accessToken');
-      const refresh = localStorage.getItem('refreshToken');
-      
-      if (token) {
-        setAccessToken(token);
-        
-        // JWT에서 사용자 정보 추출
-        const payload = decodeJwtPayload(token);
-        if (payload) {
-          // JWT 페이로드에 따라 사용자 정보 설정
-          const userId = payload.user_id || '0';
-          const email = payload.email || '';
+    const initializeAuth = () => {
+      try {
+        if (typeof window !== 'undefined') {
+          // 토큰 확인
+          const storedToken = localStorage.getItem('dungji_auth_token') || 
+                              localStorage.getItem('accessToken');
           
-          // 역할 정보 처리: roles 배열 또는 role 값
-          let role = '';
-          let roles: string[] = [];
-          
-          // roles 배열이 있는 경우 (우선)
-          if (Array.isArray(payload.roles) && payload.roles.length > 0) {
-            roles = payload.roles;
-            role = payload.roles[0]; // 첫 번째 역할을 기본 역할로 사용
-          } 
-          // role 문자열이 있는 경우
-          else if (payload.role && typeof payload.role === 'string') {
-            role = payload.role;
-            roles = [payload.role];
+          if (storedToken) {
+            setAccessToken(storedToken);
+            
+            // 리프레시 토큰이 있는 경우 설정
+            const storedRefreshToken = localStorage.getItem('refreshToken');
+            if (storedRefreshToken) {
+              setRefreshToken(storedRefreshToken);
+            }
+            
+            // 저장된 사용자 정보 확인
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+              try {
+                const parsedUser = JSON.parse(storedUser);
+                setUser(parsedUser);
+              } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+              }
+            } else {
+              // 사용자 정보가 없지만 토큰이 있는 경우 토큰에서 정보 추출
+              const payload = decodeJwtPayload(storedToken);
+              if (payload) {
+                const userId = payload.user_id || payload.sub;
+                const email = payload.email || '';
+                const role = payload.role || 'user';
+                
+                setUser({
+                  id: userId.toString(),
+                  email,
+                  role,
+                  roles: [role]
+                });
+              }
+            }
           }
-          // 테스트 계정 인식
-          else if (email.toLowerCase() === 'seller@test.com') {
-            role = 'seller';
-            roles = ['seller'];
-          }
-          // 기본값
-          else {
-            role = 'user';
-            roles = ['user'];
-          }
-          
-          // 사용자 정보 설정
-          setUser({
-            id: userId.toString(),
-            email,
-            role,
-            roles
-          });
         }
-      }
-      
-      if (refresh) {
-        setRefreshToken(refresh);
+      } catch (error) {
+        console.error('인증 상태 초기화 오류:', error);
       }
       
       setIsLoading(false);
-    }
+    };
+    
+    initializeAuth();
   }, []);
 
   /**
-   * 사용자 로그인 처리 함수
-   * 
+   * 로그인 처리 함수
    * @param email 사용자 이메일
    * @param password 사용자 비밀번호
-   * @returns 로그인 성공 여부
-   * 
-   * @example
-   * ```tsx
-   * const { login } = useAuth();
-   * 
-   * const handleLogin = async () => {
-   *   const success = await login('user@example.com', 'password123');
-   *   if (success) {
-   *     // 로그인 성공 처리
-   *   }
-   * };
-   * ```
+   * @returns 로그인 성공 여부 (boolean)
    */
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
     try {
-      // 백엔드 로그인 API 호출
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/login/`;
-      console.log('로그인 요청 URL:', apiUrl);
+      // API 엔드포인트 URL
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/login/`;
       
+      // API 요청
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          username: email, // 백엔드가 username 필드 기대
-          password 
-        })
+        body: JSON.stringify({ username: email, password }),
       });
       
+      // 응답 확인
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || '로그인 요청 실패');
+        throw new Error(`로그인 실패: ${response.status}`);
       }
       
+      // 응답 데이터 추출
       const data = await response.json();
-      console.log('백엔드 로그인 API 응답:', data);
+      
+      // 토큰 추출 및 저장
+      const token = data.access || data.token || data.jwt?.access;
+      const refreshTokenValue = data.refresh || data.refreshToken || data.jwt?.refresh;
+      
+      if (!token) {
+        throw new Error('토큰이 응답에 포함되어 있지 않습니다.');
+      }
       
       // 토큰 저장
-      const access = data.access || '';
-      const refresh = data.refresh || '';
+      setAccessToken(token);
+      if (refreshTokenValue) {
+        setRefreshToken(refreshTokenValue);
+      }
       
-      // localStorage에 토큰 저장 (클라이언트 사이드)
-      localStorage.setItem('accessToken', access);
-      localStorage.setItem('refreshToken', refresh);
-      localStorage.setItem('dungji_auth_token', access); // 기존 코드와의 호환성 유지
+      // 로컬 스토리지에 토큰 저장
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', token);
+        localStorage.setItem('dungji_auth_token', token);
+        
+        if (refreshTokenValue) {
+          localStorage.setItem('refreshToken', refreshTokenValue);
+        }
+      }
       
-      // 쿠키에도 토큰 저장 (서버 컴포넌트에서 사용)
-      document.cookie = `accessToken=${access}; path=/; max-age=86400; SameSite=Lax`;  // 1일 만료
-      document.cookie = `refreshToken=${refresh}; path=/; max-age=604800; SameSite=Lax`; // 7일 만료
+      // JWT 페이로드 추출
+      const payload = decodeJwtPayload(token);
       
-      setAccessToken(access);
-      setRefreshToken(refresh);
-      
-      // 사용자 정보 설정 (JWT에서 추출)
-      const payload = decodeJwtPayload(access);
-      console.log('JWT 토큰 페이로드:', payload);
-      
-      // 사용자 ID 추출 (다양한 필드명 고려)
-      const userId = payload?.user_id || payload?.id || payload?.sub || '0';
+      // 사용자 ID 추출
+      const userId = payload?.user_id || payload?.sub || '';
+      if (!userId) {
+        throw new Error('사용자 ID를 토큰에서 찾을 수 없습니다.');
+      }
       
       // 역할 정보 추출 - 백엔드와 일치하도록 수정
       // 역할 확인 방법 강화
@@ -250,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * 사용자 로그아웃 처리 함수
+   * localStorage, sessionStorage, 쿠키에서 모든 사용자 관련 데이터를 제거합니다.
    * 
    * @example
    * ```tsx
@@ -261,27 +246,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * };
    * ```
    */
-  /**
-   * 사용자 로그아웃 처리 함수
-   * localStorage와 쿠키에서 토큰을 제거합니다.
-   */
-  const logout = () => {
-    // 브라우저 환경에서만 실행
-    if (typeof window !== 'undefined') {
-      // localStorage에서 토큰 제거
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('dungji_auth_token');
+  const logout = useCallback(async () => {
+    try {
+      if (typeof window !== 'undefined') {
+        // 모든 인증 관련 로컬 스토리지 클리어
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('dungji_auth_token');
+        localStorage.removeItem('auth.token');
+        localStorage.removeItem('auth.status');
+        localStorage.removeItem('auth.user');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('isSeller');
+        localStorage.removeItem('__auth_time');
+        localStorage.removeItem('dungji_redirect_url');
+        
+        // 추가로 생성된 수 있는 로컬 스토리지 클리어
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('auth.') || key.includes('token') || key.includes('Token')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+
+      // NextAuth 세션 삭제
+      await signOut({ redirect: false });
       
-      // 쿠키에서 토큰 제거 (만료 시간을 과거 시간으로 설정)
-      document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
-      document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      // 사용자 상태 삭제
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+      
+      // 세션 변경 이벤트 발생
+      typeof window !== 'undefined' && window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
     }
-    
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

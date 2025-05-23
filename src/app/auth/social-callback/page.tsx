@@ -71,38 +71,69 @@ function SocialCallbackContent() {
         
         console.log('추출된 사용자 정보:', { userId, userEmail, userRole });
         
-        // 1. 로컬스토리지에 토큰 저장
+        // 1. 로컬스토리지에 토큰 저장 - 강화된 방식
         try {
-          // tokenUtils 사용
-          tokenUtils.saveToken(accessToken);
+          console.log('토큰 저장 시작 - 값 확인:', { 
+            accessToken: accessToken ? (accessToken.substring(0, 15) + '...') : 'null', 
+            hasRefreshToken: !!refreshToken,
+            userId,
+            userRole 
+          });
           
-          // 다양한 저장소에 중복 저장하여 안정성 확보
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('dungji_auth_token', accessToken);
-          localStorage.setItem('auth.token', accessToken);
-          localStorage.setItem('auth.status', 'authenticated');
-          
-          if (refreshToken) {
-            localStorage.setItem('refreshToken', refreshToken);
+          // window 객체 사용 - 로컬스토리지 직접 접근
+          if (typeof window !== 'undefined' && window.localStorage) {
+            // tokenUtils 사용
+            tokenUtils.saveToken(accessToken);
+            
+            // 각 키를 각기 저장하여 오류 시 다음 키 저장 계속 진행
+            try { window.localStorage.setItem('accessToken', accessToken); } catch (e) { console.error(e); }
+            try { window.localStorage.setItem('dungji_auth_token', accessToken); } catch (e) { console.error(e); }
+            try { window.localStorage.setItem('auth.token', accessToken); } catch (e) { console.error(e); }
+            try { window.localStorage.setItem('auth.status', 'authenticated'); } catch (e) { console.error(e); }
+            
+            if (refreshToken) {
+              try { window.localStorage.setItem('refreshToken', refreshToken); } catch (e) { console.error(e); }
+            }
+            
+            // 사용자 정보 저장
+            const authUser = {
+              id: userId,
+              email: userEmail,
+              role: userRole, 
+              name: tokenData.name || tokenData.user_name || '',
+              token: accessToken
+            };
+            
+            const userJson = JSON.stringify(authUser);
+            try { window.localStorage.setItem('auth.user', userJson); } catch (e) { console.error(e); }
+            try { window.localStorage.setItem('user', userJson); } catch (e) { console.error(e); }
+            try { window.localStorage.setItem('userRole', userRole); } catch (e) { console.error(e); }
+            try { window.localStorage.setItem('isSeller', userRole === 'seller' ? 'true' : 'false'); } catch (e) { console.error(e); }
+            
+            // 검증 - 30ms 후 저장 완료 확인
+            setTimeout(() => {
+              const savedToken = window.localStorage.getItem('dungji_auth_token');
+              const savedUser = window.localStorage.getItem('user');
+              console.log('저장 후 확인:', { 
+                hasToken: !!savedToken, 
+                hasUser: !!savedUser,
+                userRole: window.localStorage.getItem('userRole')
+              });
+            }, 30);
+            
+            console.log('✅ 로컬스토리지에 토큰 및 사용자 정보 저장 완료');
+          } else {
+            console.warn('인증 정보 저장 불가: window 혹은 localStorage 없음');
           }
-          
-          // 사용자 정보 저장
-          const authUser = {
-            id: userId,
-            email: userEmail,
-            role: userRole, 
-            name: tokenData.name || tokenData.user_name || '',
-            token: accessToken
-          };
-          
-          localStorage.setItem('auth.user', JSON.stringify(authUser));
-          localStorage.setItem('user', JSON.stringify(authUser));
-          localStorage.setItem('userRole', userRole);
-          
-          console.log('✅ 로컬스토리지에 토큰 및 사용자 정보 저장 완료');
-        } catch (storageError) {
+        } catch (error) {
+          // 오류를 Error 타입으로 처리
+          const storageError = error as Error;
           console.error('로컬스토리지 저장 오류:', storageError);
-          // 오류가 발생해도 계속 진행
+          console.error('오류 상세정보:', {
+            name: storageError?.name || 'UnknownError',
+            message: storageError?.message || '알 수 없는 오류',
+            stack: storageError?.stack ? storageError.stack.substring(0, 150) : '스택 없음'
+          });
         }
         
         // 2. NextAuth 세션 설정
@@ -173,41 +204,82 @@ function SocialCallbackContent() {
           // 여기서 실패해도 계속 진행
         }
         
-        // 3. 리다이렉트 준비
-        setStatus('인증 완료! 리다이렉트 준비 중...');
+        // 3. 리다이렉트 전 로컬 스토리지 저장 확인 및 추가 작업
+        setStatus('로그인 성공! 리다이렉트 준비 중...');
         
-        // 리다이렉트 전 마지막 설정
-        setTimeout(() => {
-          try {
-            // 세션 변경 이벤트 여러번 발생시키기
-            window.dispatchEvent(new Event('storage'));
-            window.dispatchEvent(new Event('visibilitychange'));
-            window.dispatchEvent(new Event('focus'));
+        try {
+          if (typeof window !== 'undefined') {
+            // 토큰 저장 최종 확인 (만약 누락되었다면 다시 시도)
+            const savedToken = localStorage.getItem('dungji_auth_token');
+            if (!savedToken && accessToken) {
+              console.log('토큰이 저장되지 않았습니다. 마지막 시도로 다시 저장합니다.');
+              
+              // 모든 토큰 저장
+              localStorage.setItem('dungji_auth_token', accessToken);
+              localStorage.setItem('accessToken', accessToken);
+              localStorage.setItem('auth.token', accessToken);
+              localStorage.setItem('auth.status', 'authenticated');
+              
+              if (refreshToken) {
+                localStorage.setItem('refreshToken', refreshToken);
+              }
+              
+              // 사용자 정보 저장
+              const authUser = {
+                id: userId,
+                email: userEmail,
+                role: userRole,
+                token: accessToken
+              };
+              
+              localStorage.setItem('auth.user', JSON.stringify(authUser));
+              localStorage.setItem('user', JSON.stringify(authUser));
+              localStorage.setItem('userRole', userRole);
+              localStorage.setItem('isSeller', userRole === 'seller' ? 'true' : 'false');
+            }
             
-            // 마지막 스토리지 업데이트
+            // 안정적인 저장을 위한 추가 확인
             localStorage.setItem('__auth_time', Date.now().toString());
             
-            // 로컬 스토리지에 저장된 원래 URL 확인 (공구 등록 화면 등)
-            const originalUrl = typeof window !== 'undefined' ? 
-              localStorage.getItem('dungji_redirect_url') : null;
-            
-            // 원래 URL이 있으면 그곳으로, 아니면 콜백 URL 또는 홈으로 리다이렉트
-            const redirectUrl = originalUrl || callbackUrl || '/';
-            console.log('최종 리다이렉트 URL:', redirectUrl);
-            
-            // 저장된 리다이렉트 URL 삭제 (일회성 사용)
-            if (originalUrl) localStorage.removeItem('dungji_redirect_url');
-            
-            // 페이지 전환
-            router.push(redirectUrl);
-          } catch (redirectError) {
-            console.error('리다이렉트 오류:', redirectError);
-            // 오류 발생시 단순 리다이렉트로 대체
-            const fallbackUrl = localStorage.getItem('dungji_redirect_url') || callbackUrl || '/';
-            window.location.href = fallbackUrl;
+            // 알림 및 세션 리프레시 이벤트 발생
+            window.dispatchEvent(new Event('storage'));
           }
-        }, 1000); // 1초 후 리다이렉트
+          
+          // 쿠키에도 저장 (백업)
+          document.cookie = `dungji_auth_token=${accessToken}; path=/; max-age=86400`;
+        } catch (storageError) {
+          console.error('리다이렉트 전 스토리지 작업 오류:', storageError);
+          // 오류가 나도 리다이렉트는 계속 진행
+        }
         
+        // 토큰 저장 및 세션 설정을 위한 짧은 지연
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 4. 최종 리다이렉트
+        try {
+          // 로컬 스토리지에 저장된 원래 URL 확인 (공구 등록 화면 등)
+          const originalUrl = typeof window !== 'undefined' ? 
+            localStorage.getItem('dungji_redirect_url') : null;
+          
+          // 원래 URL이 있으면 그곳으로, 아니면 콜백 URL 또는 홈으로 리다이렉트
+          const redirectUrl = originalUrl || callbackUrl || '/';
+          console.log('최종 리다이렉트 URL:', redirectUrl);
+          
+          // 저장된 리다이렉트 URL 삭제 (일회성 사용)
+          if (originalUrl && typeof window !== 'undefined') {
+            localStorage.removeItem('dungji_redirect_url');
+          }
+          
+          // 페이지 전환
+          router.push(redirectUrl);
+        } catch (redirectError) {
+          console.error('리다이렉트 오류:', redirectError);
+          // 오류 발생시 단순 리다이렉트로 대체
+          const fallbackUrl = typeof window !== 'undefined' ? 
+            (localStorage.getItem('dungji_redirect_url') || callbackUrl || '/') : 
+            (callbackUrl || '/');
+          window.location.href = fallbackUrl;
+        }
       } catch (error) {
         console.error('소셜 로그인 콜백 처리 오류:', error);
         setError('로그인 처리 중 오류가 발생했습니다.');

@@ -82,11 +82,77 @@ export default function RequireAuth({
           return null;
         };
           
-        const cookieToken = getCookie('dungji_auth_token');
+        // 모든 가능한 토큰 이름 확인
+        const cookieTokens = {
+          dungji: getCookie('dungji_auth_token'),
+          access: getCookie('accessToken'),
+          refresh: getCookie('refreshToken')
+        };
+        
+        // 토큰 중 하나라도 있는지 확인
+        const mainToken = cookieTokens.dungji || cookieTokens.access || null;
           
-        if (cookieToken) {
+        if (mainToken) {
           console.log('✅ 쿠키 토큰 확인 성공');
-          localStorage.setItem('dungji_auth_token', cookieToken);
+          
+          // 1. 토큰 저장
+          localStorage.setItem('dungji_auth_token', mainToken);
+          localStorage.setItem('accessToken', mainToken);
+          localStorage.setItem('auth.token', mainToken);
+          localStorage.setItem('auth.status', 'authenticated');
+          
+          if (cookieTokens.refresh) {
+            localStorage.setItem('refreshToken', cookieTokens.refresh);
+          }
+          
+          // 2. JWT 토큰 디코딩하여 사용자 정보 추출
+          try {
+            const parseJwt = (token: string) => {
+              try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(base64));
+              } catch (err) {
+                console.error('JWT 토큰 파싱 오류:', err);
+                return null;
+              }
+            };
+            
+            const tokenData = parseJwt(mainToken);
+            console.log('토큰 데이터:', tokenData);
+            
+            if (tokenData) {
+              // 사용자 ID 추출
+              const userId = tokenData.user_id || tokenData.sub || '';
+              
+              // 이메일 추출
+              let userEmail = tokenData.email || '';
+              if (!userEmail && tokenData.sns_id) {
+                userEmail = `${tokenData.sns_id}@kakao.user`;
+              }
+              
+              // 역할 추출
+              const userRole = tokenData.role || 'user';
+              
+              // 사용자 정보 저장
+              const authUser = {
+                id: userId,
+                email: userEmail,
+                role: userRole,
+                token: mainToken
+              };
+              
+              localStorage.setItem('auth.user', JSON.stringify(authUser));
+              localStorage.setItem('user', JSON.stringify(authUser));
+              localStorage.setItem('userRole', userRole);
+              localStorage.setItem('isSeller', userRole === 'seller' ? 'true' : 'false');
+              
+              console.log('✅ 사용자 정보 저장 완료:', { userRole, isSeller: userRole === 'seller' });
+            }
+          } catch (error) {
+            console.error('토큰에서 사용자 정보 추출 중 오류:', error);
+          }
+          
           setIsAuthenticated(true);
           setIsLoading(false);
           authCheckCompletedRef.current = true;
@@ -99,6 +165,12 @@ export default function RequireAuth({
         // 인증 실패 시 로그인 페이지로 리다이렉트
         if (redirectToLogin) {
           console.log('⚠️ 인증 실패, 로그인 페이지로 리다이렉트');
+          
+          // 현재 페이지 URL 저장 (인증 후 돌아오기 위해)
+          const currentPath = window.location.pathname + window.location.search;
+          localStorage.setItem('dungji_redirect_url', currentPath);
+          console.log('현재 페이지 URL 저장:', currentPath);
+          
           const callbackUrl = encodeURIComponent(window.location.pathname);
           router.push(`/login?callbackUrl=${callbackUrl}`);
         }
