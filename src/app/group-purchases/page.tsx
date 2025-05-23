@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
+import { RoleButton } from '@/components/auth/RoleButton';
 import { Clock, Filter, ChevronDown, Check, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -123,12 +124,13 @@ setGroupBuys(data);
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <h1 className="text-3xl font-bold mb-4 md:mb-0">공동구매 둘러보기</h1>
-        <Link href="/group-purchases/create">
+        {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 */}
+        <RoleButton href="/group-purchases/create" disableForRoles={['seller']}>
           <Button>
             <span className="mr-2">+</span>
             공구 등록
           </Button>
-        </Link>
+        </RoleButton>
       </div>
       
       {/* 모바일 필터 버튼 */}

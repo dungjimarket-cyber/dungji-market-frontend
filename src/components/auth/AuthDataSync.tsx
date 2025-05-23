@@ -140,7 +140,8 @@ export default function AuthDataSync() {
     
     if (mainToken) {
       console.log('쿠키에서 토큰을 발견했습니다. 로컬 스토리지로 동기화합니다.');
-      saveAuthData(mainToken, refreshToken);
+      // refreshToken이 null인 경우 undefined로 변환하여 호환성 유지
+      saveAuthData(mainToken, refreshToken || undefined);
       
       // 사용자 정보가 있는지 확인하고 이벤트 발생
       setTimeout(() => {

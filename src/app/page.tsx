@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import Categories from '@/components/Categories';
 import Link from 'next/link';
 import GroupBuyList from '@/components/groupbuy/GroupBuyList';
+import { RoleButton } from '@/components/auth/RoleButton';
 
 /**
  * 메인 홈페이지 컴포넌트
@@ -19,12 +20,14 @@ export default async function Home() {
           함께 모여 더 좋은 가격으로 구매하세요.
         </p>
         <div className="flex gap-4 mb-6">
-          <Link
+          {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
+          <RoleButton 
             href="/group-purchases/create"
             className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+            disableForRoles={['seller']}
           >
             공구 등록하기
-          </Link>
+          </RoleButton>
           <Link
             href="/group-purchases"
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"

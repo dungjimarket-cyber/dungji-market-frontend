@@ -20,7 +20,25 @@ function SocialLoginButtonsContent() {
    * 소셜 로그인 처리 함수
    * @param provider - 소셜 로그인 제공자 ('google' 또는 'kakao')
    */
-  const handleSocialLogin = (provider: 'google' | 'kakao') => {
+  const handleSocialLogin = (provider: string, callbackUrl: string = '/') => {
+    // 기본 redirectUrl 설정 (로그인 후 돌아갈 경로)
+    let redirectUrl = callbackUrl;
+    
+    if (typeof window !== 'undefined') {
+      // 로그인 페이지에서 전달된 callbackUrl 파라미터 추출
+      const searchParams = new URLSearchParams(window.location.search);
+      const targetCallbackUrl = searchParams.get('callbackUrl');
+      
+      // URL 파라미터로 전달된 값이 있으면 사용
+      if (targetCallbackUrl) {
+        redirectUrl = targetCallbackUrl;
+      }
+      
+      // 목적지 URL 저장
+      localStorage.setItem('dungji_redirect_url', redirectUrl);
+      console.log('소셜 로그인 목적지 URL 저장:', redirectUrl);
+    }
+
     try {
       setLoading(provider);
       
@@ -55,12 +73,12 @@ function SocialLoginButtonsContent() {
       }
       
       // 소셜 로그인 URL 구성 (백엔드의 새 엔드포인트에 맞게 수정)
-      const socialLoginUrl = `${apiUrl}/api/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(callbackUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      const socialLoginUrl = `${apiUrl}/api/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(redirectUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       // 디버그 정보 출력
       console.log(`소셜 로그인 URL: ${socialLoginUrl}`);
       console.log(`소셜 로그인 제공자: ${provider}`);
-      console.log(`콜백 URL: ${callbackUrl}`);
+      console.log(`콜백 URL: ${redirectUrl}`);
       console.log(`API URL: ${apiUrl}`);
       console.log(`리디렉트 URI: ${redirectUri}`);
       console.log(`전체 리디렉션 URL: ${socialLoginUrl}`);

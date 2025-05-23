@@ -136,6 +136,7 @@ export default function Navbar() {
   console.log('세션 데이터:', session);
   console.log('사용자 정보:', session?.user);
   console.log('로컬 사용자 정보:', userInfo);
+  console.log('사용자 역할:', userInfo?.role);
   console.log('최종 인증 상태:', isAuthenticated);
 
   // hydration mismatch 방지: 클라이언트 마운트 전에는 아무것도 렌더하지 않음
@@ -160,23 +161,31 @@ export default function Navbar() {
                 공구 목록
               </Link>
               {isMobile ? (
-                // 모바일: 오른쪽 상단에 공구 등록 버튼만
-                <Link href="/group-purchases/create">
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-md">
-                    <span className="mr-2">+</span>공구 등록
-                  </button>
-                </Link>
-              ) : (
-                // 데스크톱: 기존 네비게이션 모두 노출
-                <>
+                // 모바일: 사용자 역할에 따라 공구 등록 버튼 표시
+                (userInfo?.role !== 'seller' && (
                   <Link href="/group-purchases/create">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-md">
                       <span className="mr-2">+</span>공구 등록
                     </button>
                   </Link>
+                ))
+              ) : (
+                // 데스크톱: 기존 네비게이션 모두 노출
+                <>
+                  {/* 판매자가 아닌 경우에만 공구 등록 버튼 표시 */}
+                  {userInfo?.role !== 'seller' && (
+                    <Link href="/group-purchases/create">
+                      <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <span className="mr-2">+</span>공구 등록
+                      </button>
+                    </Link>
+                  )}
                   {(session || isAuthenticated) ? (
                     <>
-                      <Link href="/my-page" className="text-gray-600 hover:text-gray-900">
+                      <Link 
+                        href={userInfo?.role === 'seller' ? "/mypage/seller" : "/mypage"} 
+                        className="text-gray-600 hover:text-gray-900"
+                      >
                         마이페이지
                       </Link>
                       <button
@@ -238,36 +247,44 @@ export default function Navbar() {
   const MobileNavbar = () => (
     <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 w-full">
       <div className="flex justify-around items-center h-16 max-w-screen-lg mx-auto px-2">
-        <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+        <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
           <FaHome className="text-xl mb-1" />
           <span className="text-xs">홈</span>
         </Link>
         
-        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
           <FaShoppingCart className="text-xl mb-1" />
           <span className="text-xs">공구 목록</span>
         </Link>
         
+        {/* 판매자가 아닌 경우에만 공구 등록 버튼 표시 */}
+        {userInfo?.role !== 'seller' && (
+          <Link href="/group-purchases/create" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
+            <span className="flex items-center justify-center w-7 h-7 bg-blue-600 text-white rounded-full text-lg mb-1">+</span>
+            <span className="text-xs">공구 등록</span>
+          </Link>
+        )}
+        
         {(session || isAuthenticated) ? (
           <>
-            <Link href="/my-page" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+            <Link href="/my-page" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
               <FaUser className="text-xl mb-1" />
               <span className="text-xs">마이페이지</span>
             </Link>
             
-            <button onClick={() => signOut()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2 bg-transparent border-0">
+            <button onClick={() => signOut()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2 bg-transparent border-0">
               <FaSignOutAlt className="text-xl mb-1" />
               <span className="text-xs">로그아웃</span>
             </button>
           </>
         ) : (
           <>
-            <button onClick={() => signIn()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2 bg-transparent border-0">
+            <button onClick={() => signIn()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2 bg-transparent border-0">
               <FaSignInAlt className="text-xl mb-1" />
               <span className="text-xs">로그인</span>
             </button>
             
-            <Link href="/register" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/4 py-2">
+            <Link href="/register" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
               <FaUserPlus className="text-xl mb-1" />
               <span className="text-xs">회원가입</span>
             </Link>
@@ -296,12 +313,24 @@ export default function Navbar() {
                 <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
                   공구 목록
                 </Link>
-                {session && (
-                  <Link href="/my-page" className="text-gray-600 hover:text-gray-900">
+                {session ? (
+                  <Link 
+                    href={session?.user?.role === 'seller' ? "/mypage/seller" : "/mypage"} 
+                    className="text-gray-600 hover:text-gray-900"
+                  >
                     마이페이지
                   </Link>
+                ) : (
+                  <div className="flex space-x-2">
+                    <Link href="/login" className="text-gray-600 hover:text-blue-500">
+                      로그인
+                    </Link>
+                    <span className="text-gray-400">|</span>
+                    <Link href="/signup" className="text-gray-600 hover:text-blue-500">
+                      회원가입
+                    </Link>
+                  </div>
                 )}
-                {/* 모바일에서는 로그인/회원가입 버튼 숨김 */}
               </div>
             </div>
           </div>
