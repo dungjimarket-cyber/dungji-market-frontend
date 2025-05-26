@@ -1,10 +1,10 @@
 'use client';
 
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import FindAccountModals from '@/components/auth/FindAccountModals';
 
@@ -45,10 +45,27 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorCode, setErrorCode] = useState('');
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login } = useAuth();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
+
+  /**
+   * 오류 메시지 초기화
+   */
+  const clearError = () => {
+    setErrorMessage('');
+    setErrorCode('');
+  };
+
+  /**
+   * 입력 필드 변경 시 오류 메시지 초기화
+   */
+  useEffect(() => {
+    clearError();
+  }, [email, password]);
 
   /**
    * 로그인 양식 제출 처리 함수
@@ -57,35 +74,30 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    clearError();
     
     console.log('로그인 시도:', { email, password: '***' });
     
     try {
       // 사용자 입력 유효성 검사
       if (!email || !email.includes('@')) {
-        toast({
-          variant: 'destructive',
-          title: '입력 오류',
-          description: '유효한 이메일 주소를 입력해주세요.'
-        });
+        setErrorMessage('유효한 이메일 주소를 입력해주세요.');
+        setErrorCode('invalid_email');
         setLoading(false);
         return;
       }
       
       if (!password || password.length < 6) {
-        toast({
-          variant: 'destructive',
-          title: '입력 오류',
-          description: '비밀번호는 6자 이상이어야 합니다.'
-        });
+        setErrorMessage('비밀번호는 6자 이상이어야 합니다.');
+        setErrorCode('invalid_password');
         setLoading(false);
         return;
       }
       
       // AuthContext의 login 함수 호출
-      const success = await login(email, password);
+      const result = await login(email, password);
       
-      if (success) {
+      if (result.success) {
         // 로그인 성공 처리
         toast({
           title: '로그인 성공',
@@ -95,15 +107,23 @@ function LoginForm() {
         // 리디렉션 처리 - Next.js Router 사용
         router.push(callbackUrl);
       } else {
-        // 로그인 실패 처리
+        // 로그인 실패 처리 - 상세 오류 메시지 표시
+        setErrorMessage(result.errorMessage || '로그인에 실패했습니다.');
+        setErrorCode(result.errorCode || 'unknown');
+        
         toast({
           variant: 'destructive',
           title: '로그인 실패',
-          description: '이메일 또는 비밀번호가 일치하지 않습니다.'
+          description: result.errorMessage || '이메일 또는 비밀번호가 일치하지 않습니다.'
         });
       }
     } catch (err) {
       console.error('handleSubmit 오류:', err);
+      
+      // 오류 메시지 설정
+      setErrorMessage('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+      setErrorCode('network_error');
+      
       toast({
         variant: 'destructive',
         title: '로그인 실패',
@@ -150,8 +170,8 @@ function LoginForm() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none rounded-md relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 text-base"
-                  placeholder="이메일 주소를 입력하세요"
+                  className={`appearance-none relative block w-full px-3 py-2 border ${errorCode === 'invalid_email' || errorCode === 'invalid_credentials' ? 'border-red-500' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                  placeholder="이메일 주소"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -164,12 +184,26 @@ function LoginForm() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="appearance-none rounded-md relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 text-base"
-                  placeholder="비밀번호를 입력하세요"
+                  className={`appearance-none relative block w-full px-3 py-2 border ${errorCode === 'invalid_password' || errorCode === 'invalid_credentials' ? 'border-red-500' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                  placeholder="비밀번호"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              
+              {/* 오류 메시지 표시 */}
+              {errorMessage && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">{errorMessage}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>

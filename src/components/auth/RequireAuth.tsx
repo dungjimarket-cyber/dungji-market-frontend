@@ -4,6 +4,7 @@ import { useEffect, useState, ReactNode, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface RequireAuthProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ export default function RequireAuth({
 }: RequireAuthProps) {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { isAuthenticated: authContextAuthenticated } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
@@ -40,6 +42,15 @@ export default function RequireAuth({
       // 확인 시도 횟수 증가
       authCheckAttemptRef.current += 1;
       console.log(`🔍 인증 시도 ${authCheckAttemptRef.current}회`);
+      
+      // AuthContext에서 인증 상태 확인
+      if (authContextAuthenticated) {
+        console.log('✅ AuthContext 인증 성공');
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        authCheckCompletedRef.current = true;
+        return;
+      }
       
       // NextAuth 세션이 로딩 중인 경우
       if (status === 'loading') {

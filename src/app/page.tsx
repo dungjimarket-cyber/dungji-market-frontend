@@ -1,16 +1,25 @@
-import { cookies } from 'next/headers';
+'use client';
+
+import { useEffect, useState } from 'react';
 import Categories from '@/components/Categories';
 import Link from 'next/link';
 import GroupBuyList from '@/components/groupbuy/GroupBuyList';
 import { RoleButton } from '@/components/auth/RoleButton';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * 메인 홈페이지 컴포넌트
  */
-export default async function Home() {
-  // 쿠키에서 JWT 토큰 확인
-  const cookieStore = await cookies();
-  const isAuthenticated = !!cookieStore.get('accessToken')?.value;
+export default function Home() {
+  const { isAuthenticated } = useAuth();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  // 클라이언트 사이드 마운트 전에는 인증 상태를 확인할 수 없음
+  const showAuthButtons = mounted ? !isAuthenticated : true;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -35,7 +44,7 @@ export default async function Home() {
             공구 둘러보기
           </Link>
         </div>
-        {!isAuthenticated && (
+        {showAuthButtons && (
           <div className="flex gap-4">
             <Link
               href="/register"

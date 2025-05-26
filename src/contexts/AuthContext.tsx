@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { signOut } from 'next-auth/react';
+import axios from 'axios';
 
 /**
  * 사용자 정보 타입 정의
@@ -16,14 +17,23 @@ type User = {
 /**
  * 인증 컨텍스트 타입 정의
  */
+// 로그인 결과 타입 정의
+type LoginResult = {
+  success: boolean;
+  error?: string;
+  errorCode?: string;
+  errorMessage?: string;
+};
+
 type AuthContextType = {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
+  refreshTokens: () => Promise<boolean>;
 };
 
 // 인증 컨텍스트 생성
@@ -60,11 +70,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = () => {
       try {
         if (typeof window !== 'undefined') {
-          // 토큰 확인
-          const storedToken = localStorage.getItem('dungji_auth_token') || 
-                              localStorage.getItem('accessToken');
+          console.log('페이지 로드 시 인증 상태 초기화 시작...');
+          
+          // 모든 호환 토큰 키 확인
+          const tokenKeys = ['dungji_auth_token', 'accessToken', 'auth.token'];
+          let storedToken = null;
+          
+          // 가장 먼저 발견된 유효한 토큰 사용
+          for (const key of tokenKeys) {
+            const token = localStorage.getItem(key);
+            if (token) {
+              storedToken = token;
+              console.log(`토큰 발견: ${key}`);
+              break;
+            }
+          }
           
           if (storedToken) {
+            console.log('유효한 토큰 발견: 인증 상태 복원 중...');
             setAccessToken(storedToken);
             
             // 리프레시 토큰이 있는 경우 설정
@@ -73,164 +96,247 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setRefreshToken(storedRefreshToken);
             }
             
-            // 저장된 사용자 정보 확인
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-              try {
-                const parsedUser = JSON.parse(storedUser);
-                setUser(parsedUser);
-              } catch (error) {
-                console.error('사용자 정보 파싱 오류:', error);
+            // 사용자 정보 복원 시도 (user, auth.user 키 확인)
+            let userData = null;
+            const userKeys = ['user', 'auth.user'];
+            
+            for (const key of userKeys) {
+              const userJson = localStorage.getItem(key);
+              if (userJson) {
+                try {
+                  userData = JSON.parse(userJson);
+                  console.log(`사용자 정보 발견: ${key}`);
+                  break;
+                } catch (e) {
+                  console.error(`${key} 파싱 오류:`, e);
+                }
               }
+            }
+            
+            // 사용자 정보가 발견된 경우
+            if (userData) {
+              setUser(userData);
+              console.log('로컬 스토리지에서 사용자 정보 복원 성공', userData.role || 'role 없음');
             } else {
-              // 사용자 정보가 없지만 토큰이 있는 경우 토큰에서 정보 추출
-              const payload = decodeJwtPayload(storedToken);
-              if (payload) {
-                const userId = payload.user_id || payload.sub;
-                const email = payload.email || '';
-                const role = payload.role || 'user';
-                
-                setUser({
-                  id: userId.toString(),
-                  email,
-                  role,
-                  roles: [role]
-                });
+              console.log('사용자 정보 발견 실패, 토큰에서 정보 추출 시도...');
+              
+              // 토큰에서 사용자 정보 추출 시도
+              try {
+                const decoded = decodeJwtPayload(storedToken);
+                if (decoded) {
+                  const userId = decoded.user_id || decoded.sub || '';
+                  const userEmail = decoded.email || '';
+                  const userRole = decoded.role || 'user';
+                  
+                  const extractedUser = {
+                    id: userId,
+                    email: userEmail,
+                    role: userRole,
+                    token: storedToken
+                  };
+                  
+                  // 사용자 정보 설정 및 로컬 스토리지에 저장
+                  setUser(extractedUser);
+                  localStorage.setItem('user', JSON.stringify(extractedUser));
+                  localStorage.setItem('auth.user', JSON.stringify(extractedUser));
+                  localStorage.setItem('userRole', userRole);
+                  console.log('토큰에서 사용자 정보 추출 성공:', userRole);
+                } else {
+                  console.log('로컬 스토리지에서 토큰을 찾을 수 없습니다. 비로그인 상태입니다.');
+                  // 비로그인 상태로 초기화
+                  setUser(null);
+                  setAccessToken(null);
+                  setRefreshToken(null);
+                }
+              } catch (jwtError) {
+                console.error('JWT 파싱 오류:', jwtError);
               }
             }
           }
         }
       } catch (error) {
         console.error('인증 상태 초기화 오류:', error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
+    };
+
+    initializeAuth();
+    
+    // 스토리지 이벤트 리스너 추가 - 다른 컴포넌트에서 인증 상태 변경 시 반영
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key && (
+          event.key.includes('token') || 
+          event.key.includes('auth') || 
+          event.key === 'user' || 
+          event.key === 'userRole'
+        )) {
+        console.log('인증 상태 변경 감지:', event.key);
+        initializeAuth();
+      }
     };
     
-    initializeAuth();
+    // 수동 이벤트 리스너
+    const handleManualStorageChange = () => {
+      console.log('수동 스토리지 이벤트 감지');
+      initializeAuth();
+    };
+    
+    // 이벤트 리스너 등록
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('auth-changed', handleManualStorageChange);
+    }
+    
+    // 클린업 함수
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('auth-changed', handleManualStorageChange);
+      }
+    };
   }, []);
 
   /**
-   * 로그인 처리 함수
-   * @param email 사용자 이메일
-   * @param password 사용자 비밀번호
-   * @returns 로그인 성공 여부 (boolean)
+   * 로그인 함수
+   * @param email 이메일 (실제로는 username으로 전송됨)
+   * @param password 비밀번호
+   * @returns 로그인 결과 객체 {success, error, errorCode, errorMessage}
    */
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
+  const login = useCallback(async (email: string, password: string): Promise<{ 
+    success: boolean; 
+    error?: string; 
+    errorCode?: string;
+    errorMessage?: string;
+  }> => {
     try {
-      // API 엔드포인트 URL
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/login/`;
-      
-      // API 요청
-      const response = await fetch(apiUrl, {
+      setIsLoading(true);
+      console.log('로그인 시도 중...', email);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: email, password }),
+        body: JSON.stringify({
+          username: email, // 백엔드 API는 username 필드 사용
+          password,
+        }),
       });
-      
-      // 응답 확인
+
       if (!response.ok) {
-        throw new Error(`로그인 실패: ${response.status}`);
-      }
-      
-      // 응답 데이터 추출
-      const data = await response.json();
-      
-      // 토큰 추출 및 저장
-      const token = data.access || data.token || data.jwt?.access;
-      const refreshTokenValue = data.refresh || data.refreshToken || data.jwt?.refresh;
-      
-      if (!token) {
-        throw new Error('토큰이 응답에 포함되어 있지 않습니다.');
-      }
-      
-      // 토큰 저장
-      setAccessToken(token);
-      if (refreshTokenValue) {
-        setRefreshToken(refreshTokenValue);
-      }
-      
-      // 로컬 스토리지에 토큰 저장
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', token);
-        localStorage.setItem('dungji_auth_token', token);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('로그인 실패:', response.status, errorData);
         
-        if (refreshTokenValue) {
-          localStorage.setItem('refreshToken', refreshTokenValue);
+        // 백엔드에서 반환하는 에러 메시지 처리
+        let errorMessage = '로그인에 실패했습니다.';
+        let errorCode = 'unknown';
+        
+        // HTTP 상태 코드에 따른 에러 메시지
+        if (response.status === 401) {
+          errorMessage = '이메일 또는 비밀번호가 일치하지 않습니다.';
+          errorCode = 'invalid_credentials';
+        } else if (response.status === 404) {
+          errorMessage = '로그인 서비스를 찾을 수 없습니다. 관리자에게 문의하세요.';
+          errorCode = 'service_unavailable';
+        } else if (response.status === 429) {
+          errorMessage = '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.';
+          errorCode = 'too_many_requests';
+        } else if (response.status >= 500) {
+          errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+          errorCode = 'server_error';
+        }
+        
+        // 백엔드에서 반환한 에러 메시지가 있는 경우 사용
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
+          errorMessage = errorData.non_field_errors[0];
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+        
+        return {
+          success: false,
+          error: `로그인 실패 (${response.status})`,
+          errorCode,
+          errorMessage
+        };
+      }
+
+      const data = await response.json();
+      const { access, refresh } = data;
+      console.log('로그인 성공: 토큰 수신됨');
+
+      // 토큰 저장
+      setAccessToken(access);
+      setRefreshToken(refresh);
+
+      if (typeof window !== 'undefined') {
+        // localStorage에 토큰 저장
+        localStorage.setItem('accessToken', access);
+        localStorage.setItem('dungji_auth_token', access); 
+        localStorage.setItem('auth.token', access);
+        localStorage.setItem('auth.status', 'authenticated');
+        
+        if (refresh) {
+          localStorage.setItem('refreshToken', refresh);
+        }
+        
+        // 쿠키에도 토큰 저장 (서버 컴포넌트에서 인식하기 위함)
+        document.cookie = `accessToken=${access}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `dungji_auth_token=${access}; path=/; max-age=86400; SameSite=Lax`;
+        
+        if (refresh) {
+          document.cookie = `refreshToken=${refresh}; path=/; max-age=86400; SameSite=Lax`;
         }
       }
-      
-      // JWT 페이로드 추출
-      const payload = decodeJwtPayload(token);
-      
-      // 사용자 ID 추출
-      const userId = payload?.user_id || payload?.sub || '';
-      if (!userId) {
-        throw new Error('사용자 ID를 토큰에서 찾을 수 없습니다.');
-      }
-      
-      // 역할 정보 추출 - 백엔드와 일치하도록 수정
-      // 역할 확인 방법 강화
-      let userRole = 'user';
-      
-      // 1. JWT 페이로드에서 역할 확인
-      if (payload?.role) {
-        userRole = payload.role;
-      } else if (payload?.roles && Array.isArray(payload.roles) && payload.roles.includes('seller')) {
-        userRole = 'seller';
-      } 
-      
-      // 2. seller@test.com 계정인지 확인 (외부 API에서 후처리 시)
-      if (email && email.toLowerCase() === 'seller@test.com') {
-        console.log('판매회원 이메일 확인:', email);
-        userRole = 'seller';
-      }
-      
-      // 사용자 이메일 추출
-      const userEmail = payload?.email || email || '';
-      
-      console.log('사용자 정보 추출 결과:', {
-        userId,
-        userEmail,
-        userRole
-      });
-      
-      const userInfo = {
-        id: userId.toString(),
-        email: userEmail,
-        role: userRole,
-        // roles 배열은 호환성을 위해 추가
-        roles: [userRole]
-      };
-      
-      // 로컬 스토리지에 사용자 정보를 저장하여 SSR/CSR 간 상태를 유지
+
+      // 토큰에서 사용자 정보 추출
       try {
-        localStorage.setItem('user', JSON.stringify(userInfo));
-        localStorage.setItem('userRole', userRole);
-        
-        // seller@test.com 계정인 경우 특별 처리
-        if (userEmail.toLowerCase() === 'seller@test.com') {
-          localStorage.setItem('isSeller', 'true');
-          console.log('판매회원 계정 특별 처리:', userEmail);
+        const decoded = decodeJwtPayload(access);
+        if (decoded) {
+          const userId = decoded.user_id;
+          const userEmail = decoded.email || email;
+          const userRole = decoded.role || 'user';
+          
+          const user = {
+            id: userId,
+            email: userEmail,
+            role: userRole
+          };
+          
+          setUser(user);
+          
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('auth.user', JSON.stringify(user));
+            localStorage.setItem('userRole', userRole);
+            localStorage.setItem('isSeller', userRole === 'seller' ? 'true' : 'false');
+            
+            // 인증 상태 변경 이벤트 발생
+            window.dispatchEvent(new Event('storage'));
+            window.dispatchEvent(new Event('auth-changed'));
+            console.log('인증 상태 변경 이벤트 발생됨 - 로그인 성공');
+          }
         }
       } catch (error) {
-        console.error('로컬 스토리지 저장 오류:', error);
+        console.error('토큰 파싱 오류:', error);
       }
-      
-      setUser(userInfo);
-      setIsLoading(false);
-      
-      return true;
+    
     } catch (error) {
       console.error('로그인 오류:', error);
       setIsLoading(false);
-      return false;
+      return {
+        success: false,
+        error: '네트워크 오류',
+        errorCode: 'network_error',
+        errorMessage: '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'
+      };
     }
-  };
+    setIsLoading(false);
+    return { success: true };
+  }, []);
 
   /**
    * 사용자 로그아웃 처리 함수
@@ -248,6 +354,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const logout = useCallback(async () => {
     try {
+      console.log('로그아웃 처리 중...');
+      
+      // 사용자 상태 먼저 삭제 (UI 즉시 반영)
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+      
       if (typeof window !== 'undefined') {
         // 모든 인증 관련 로컬 스토리지 클리어
         localStorage.removeItem('accessToken');
@@ -255,6 +368,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('dungji_auth_token');
         localStorage.removeItem('auth.token');
         localStorage.removeItem('auth.status');
+        
+        // 인증 관련 쿠키도 삭제
+        document.cookie = 'accessToken=; path=/; max-age=0';
+        document.cookie = 'dungji_auth_token=; path=/; max-age=0';
+        document.cookie = 'refreshToken=; path=/; max-age=0';
         localStorage.removeItem('auth.user');
         localStorage.removeItem('user');
         localStorage.removeItem('userRole');
@@ -268,15 +386,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem(key);
           }
         });
+        
+        // 로그아웃 이벤트 발생
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('auth-changed'));
+        console.log('인증 상태 변경 이벤트 발생됨 - 로그아웃');
       }
 
       // NextAuth 세션 삭제
       await signOut({ redirect: false });
-      
-      // 사용자 상태 삭제
-      setUser(null);
-      setAccessToken(null);
-      setRefreshToken(null);
+      console.log('NextAuth 세션 삭제 완료');
       
       // 세션 변경 이벤트 발생
       typeof window !== 'undefined' && window.dispatchEvent(new Event('storage'));
@@ -284,6 +403,112 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('로그아웃 오류:', error);
     }
   }, []);
+
+  /**
+   * 토큰 만료 감지 및 자동 갱신 함수
+   * 401 Unauthorized 오류 발생 시 리프레시 토큰으로 새 액세스 토큰 요청
+   * @returns 토큰 갱신 성공 여부
+   */
+  const refreshTokens = useCallback(async (): Promise<boolean> => {
+    if (!refreshToken) return false;
+    
+    try {
+      console.log('액세스 토큰 갱신 시도...');
+      // 실제 백엔드 엔드포인트 사용
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/refresh/`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`토큰 갱신 실패: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const newAccessToken = data.access;
+      
+      // 새 액세스 토큰 저장
+      setAccessToken(newAccessToken);
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('dungji_auth_token', newAccessToken);
+        localStorage.setItem('accessToken', newAccessToken);
+        localStorage.setItem('auth.token', newAccessToken);
+        localStorage.setItem('auth.status', 'authenticated');
+        
+        // 세션 변경 이벤트 발생
+        window.dispatchEvent(new Event('storage'));
+      }
+      
+      console.log('토큰 갱신 성공');
+      return true;
+    } catch (error) {
+      console.error('토큰 갱신 오류:', error);
+      
+      // 리프레시 토큰도 만료된 경우 로그아웃 처리
+      if (error instanceof Error && error.message.includes('401')) {
+        console.warn('리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.');
+        await logout();
+      }
+      
+      return false;
+    }
+  }, [refreshToken, logout]);
+
+  // Axios 인터셉터 설정 - 401 오류 시 토큰 갱신
+  useEffect(() => {
+    if (typeof window === 'undefined' || !accessToken) return;
+    
+    // 요청 인터셉터
+    const requestInterceptor = axios.interceptors.request.use(
+      config => {
+        if (accessToken && config.headers) {
+          config.headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        return config;
+      },
+      error => Promise.reject(error)
+    );
+    
+    // 응답 인터셉터
+    const responseInterceptor = axios.interceptors.response.use(
+      response => response,
+      async error => {
+        const originalRequest = error.config;
+        
+        // 401 오류이고 재시도하지 않은 요청인 경우
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          
+          try {
+            // 토큰 갱신 시도
+            const refreshed = await refreshTokens();
+            
+            if (refreshed) {
+              // 새 토큰으로 원래 요청 재시도
+              originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+              return axios(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error('토큰 갱신 중 오류:', refreshError);
+          }
+        }
+        
+        return Promise.reject(error);
+      }
+    );
+    
+    // 클린업 함수
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, [accessToken, refreshTokens]);
 
   return (
     <AuthContext.Provider
@@ -294,7 +519,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user && !!accessToken,
         login,
-        logout
+        logout,
+        refreshTokens
       }}
     >
       {children}

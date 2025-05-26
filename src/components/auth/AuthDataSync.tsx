@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import { getUserRole, triggerAuthEvent } from '@/utils/auth';
 
 /**
  * 인증 데이터 동기화 컴포넌트
@@ -52,7 +53,7 @@ export default function AuthDataSync() {
     }
 
     try {
-      // 1. 토큰 저장
+      // 1. 토큰 저장 - 모든 호환 키에 저장
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('dungji_auth_token', accessToken); 
       localStorage.setItem('auth.token', accessToken);
@@ -64,13 +65,19 @@ export default function AuthDataSync() {
 
       // 2. 사용자 정보 저장 (직접 제공된 경우)
       if (userData) {
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('auth.user', JSON.stringify(userData));
+        // 역할 정보 표준화 - 유틸리티 함수 사용
+        const standardRole = getUserRole(userData);
         
-        if (userData.role) {
-          localStorage.setItem('userRole', userData.role);
-          localStorage.setItem('isSeller', userData.role === 'seller' ? 'true' : 'false');
-        }
+        // 표준화된 역할 정보로 사용자 객체 확장
+        const enhancedUserData = {
+          ...userData,
+          role: standardRole
+        };
+        
+        localStorage.setItem('user', JSON.stringify(enhancedUserData));
+        localStorage.setItem('auth.user', JSON.stringify(enhancedUserData));
+        localStorage.setItem('userRole', standardRole);
+        localStorage.setItem('isSeller', standardRole === 'seller' ? 'true' : 'false');
         return true;
       }
 
@@ -86,8 +93,8 @@ export default function AuthDataSync() {
           userEmail = `${tokenData.sns_id}@kakao.user`;
         }
         
-        // 역할 정보 추출
-        const userRole = tokenData.role || 'user';
+        // 역할 정보 추출 - 유틸리티 함수 사용
+        const userRole = getUserRole(tokenData, userEmail);
         
         // 사용자 객체 구성
         const user = {
@@ -106,8 +113,8 @@ export default function AuthDataSync() {
         console.log('✅ 토큰에서 사용자 정보 추출 완료:', { userRole });
       }
       
-      // 저장 완료 알림
-      window.dispatchEvent(new Event('storage'));
+      // 저장 완료 알림 - 유틸리티 함수 사용하여 여러 시점에 이벤트 발생
+      triggerAuthEvent();
       return true;
     } catch (error) {
       console.error('인증 데이터 저장 실패:', error);
@@ -150,9 +157,59 @@ export default function AuthDataSync() {
           hasToken: !!localStorage.getItem('dungji_auth_token'),
           hasUser: !!user 
         });
+        
+        // 토큰은 있지만 사용자 정보가 없는 경우 재시도
+        if (!user && mainToken) {
+          console.log('사용자 정보가 누락되었습니다. 토큰에서 정보 추출 재시도...');
+          saveAuthData(mainToken, refreshToken || undefined);
+        }
       }, 100);
     }
   }, [getCookie, saveAuthData]);
+
+  // 소셜 로그인 후 URL 파라미터 처리
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // URL에서 토큰 파라미터 확인 (소셜 로그인 콜백에서 전달될 수 있음)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenParam = urlParams.get('token');
+    const refreshParam = urlParams.get('refresh_token');
+    
+    if (tokenParam) {
+      console.log('URL 파라미터에서 토큰을 발견했습니다. 저장합니다.');
+      saveAuthData(tokenParam, refreshParam || undefined);
+      
+      // 토큰 파라미터 제거 (보안상 이유로)
+      const cleanUrl = window.location.pathname + 
+                     (urlParams.toString() ? '?' + urlParams.toString() : '');
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [saveAuthData]);
+  
+  // 이벤트 리스너 추가 - 브라우저 탭 간 동기화
+  useEffect(() => {
+    const handleStorageEvent = (event: StorageEvent) => {
+      // 다른 탭에서 인증 상태 변경 감지 시 처리
+      if (event.key?.includes('token') || event.key?.includes('auth')) {
+        console.log('다른 탭에서 인증 상태 변경 감지:', event.key);
+        
+        // 페이지 새로고침 대신 데이터만 동기화
+        const hasToken = localStorage.getItem('dungji_auth_token');
+        if (!hasToken) {
+          console.log('토큰 제거 감지 - 로그아웃 상태로 동기화');
+          // 토큰 관련 모든 항목 제거
+          localStorage.removeItem('user');
+          localStorage.removeItem('auth.user');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('isSeller');
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageEvent);
+    return () => window.removeEventListener('storage', handleStorageEvent);
+  }, []);
 
   // 빈 요소 반환 (렌더링 결과 없음)
   return null;
