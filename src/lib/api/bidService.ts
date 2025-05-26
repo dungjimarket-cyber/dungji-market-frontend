@@ -4,6 +4,7 @@
 
 import axios from 'axios';
 import { tokenUtils } from '@/lib/tokenUtils';
+import { toast } from '@/components/ui/use-toast';
 
 const API_URL = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')}`;
 
@@ -182,6 +183,14 @@ export const createBid = async (data: CreateBidRequest): Promise<BidData & { is_
     console.log('인증 헤더:', headers);
     
     const response = await axios.post(`${API_URL}/bids/`, requestData, { headers });
+    
+    // 입찰 성공 토스트 메시지 표시
+    toast({
+      title: "입찰이 완료되었습니다.",
+      description: "판매자가 확인 후 연락드릴 예정입니다.",
+      variant: "default",
+    });
+    
     return response.data;
   } catch (error: any) {
     console.error('입찰 생성 오류:', error.response?.data);

@@ -23,6 +23,23 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 
+// 입찰 금액 익명화 처리 함수
+const anonymizeAmount = (amount: number, rank: number): string => {
+  // 1~5위까지만 익명화 처리
+  if (rank <= 5) {
+    const amountStr = amount.toString();
+    if (amountStr.length <= 4) { // 1000원 이하일 경우
+      return "XX" + amountStr.slice(-2) + "원";
+    } else {
+      // 앞자리 제외한 후배 자리만 표시 (1자리 이상 제외)
+      const maskedDigits = amountStr.length > 5 ? 2 : 1;
+      return "X".repeat(maskedDigits) + amountStr.slice(maskedDigits) + "원";
+    }
+  }
+  // 5위 이후는 일반 형식으로 표시
+  return formatNumberWithCommas(amount) + "원";
+};
+
 // 여기서는 BidData 인터페이스를 API 서비스에서 가져와 사용합니다
 
 interface BidHistoryModalProps {
@@ -51,7 +68,21 @@ export default function BidHistoryModal({
       
       try {
         const data = await getGroupBuyBids(groupBuyId);
-        setBids(data);
+        // 금액 순으로 정렬 (겹치는 경우 날짜 순)
+        const sortedData = [...data].sort((a, b) => {
+          if (a.bid_type === b.bid_type) {
+            // 같은 입찰 유형인 경우 금액 비교 (가격 입찰은 낮은 순, 지원금 입찰은 높은 순)
+            if (a.bid_type === 'price') {
+              return a.amount - b.amount; // 가격 입찰은 낮은 순으로
+            } else {
+              return b.amount - a.amount; // 지원금 입찰은 높은 순으로
+            }
+          }
+          // 입찰 유형이 다르면 가격 입찰을 우선
+          return a.bid_type === 'price' ? -1 : 1;
+        });
+        
+        setBids(sortedData);
       } catch (error) {
         console.error('입찰 기록 조회 중 오류 발생:', error);
       } finally {
@@ -118,11 +149,19 @@ export default function BidHistoryModal({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bids.map((bid) => (
+                {bids.map((bid, index) => (
                   <TableRow key={bid.id}>
                     <TableCell className="font-medium">{bid.seller_name}</TableCell>
                     <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                    <TableCell>{formatNumberWithCommas(bid.amount)}원</TableCell>
+                    <TableCell>
+                      {/* 순위에 따른 익명화된 금액 표시 */}
+                      {anonymizeAmount(bid.amount, index + 1)}
+                      {index < 5 && (
+                        <Badge variant="outline" className="ml-2 text-xs bg-gray-50">
+                          {index + 1}위
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{formatDate(bid.created_at)}</TableCell>
                     <TableCell>{getStatusBadge(bid.status)}</TableCell>
                     <TableCell>
