@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: '48a8af8c364ef5e225460c2086473554', // process.env.KAKAO_CLIENT_ID
-        redirect_uri: 'http://localhost:3000/api/auth/callback/kakao',
+        redirect_uri: process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao',
         code: code as string,
       }),
     });
