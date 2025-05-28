@@ -116,9 +116,6 @@ export default function SellerMyPage() {
                     {profile.isVip && (
                       <Badge className="bg-blue-500">VIP회원</Badge>
                     )}
-                    <Button className="ml-auto" variant="outline" size="sm">
-                      프로필수정
-                    </Button>
                   </div>
 
                   <div className="flex items-center text-gray-600">
