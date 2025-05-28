@@ -271,14 +271,20 @@ function BidsListClient() {
     router.push(`/mypage/seller/bids?page=1&filter=${value}&search=${encodeURIComponent(searchQuery)}`);
   };
 
+  // 입찰 상태에 따른 텍스트 표시
   const statusText = (status: string) => {
     switch (status) {
-      case 'pending': return '선택 대기중';
-      case 'selected': return '선택됨';
-      case 'confirmed': return '확정됨';
-      case 'rejected': return '거절됨';
+      case 'pending': return '대기중';
+      case 'selected': return '낙찰 선택';
+      case 'confirmed': return '판매 확정';
+      case 'rejected': return '판매 포기';
       default: return '알 수 없음';
     }
+  };
+
+  // 입찰 유형에 따른 표시 문구
+  const getBidTypeText = (bidType: string) => {
+    return bidType === 'support' ? '지원금 입찰' : '가격 입찰';
   };
 
   const statusColor = (status: string) => {
@@ -357,7 +363,7 @@ function BidsListClient() {
                   </h2>
                   <p className="text-sm text-gray-600">
                     상품: {bid.product_name || '상품명 없음'} | 
-                    입찰 유형: {bid.bid_type || '가격 제안'} | 
+                    입찰 유형: {getBidTypeText(bid.bid_type) || '가격 제안'} | 
                     상태: {statusText(bid.status)}
                   </p>
                 </div>
