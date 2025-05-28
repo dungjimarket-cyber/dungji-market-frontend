@@ -18,7 +18,7 @@ function SocialLoginButtonsContent() {
 
   /**
    * 소셜 로그인 처리 함수
-   * @param provider - 소셜 로그인 제공자 ('google' 또는 'kakao')
+   * @param provider - 소셜 로그인 제공자 ('kakao')
    */
   const handleSocialLogin = (provider: string, callbackUrl: string = '/') => {
     // 기본 redirectUrl 설정 (로그인 후 돌아갈 경로)
@@ -98,25 +98,6 @@ function SocialLoginButtonsContent() {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <button
-        onClick={() => handleSocialLogin('google')}
-        disabled={!!loading}
-        className="flex items-center justify-center gap-3 w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading === 'google' ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Image
-            src="/google.svg"
-            alt="Google logo"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />
-        )}
-        Google로 계속하기
-      </button>
-
       <button
         onClick={() => handleSocialLogin('kakao')}
         disabled={!!loading}
