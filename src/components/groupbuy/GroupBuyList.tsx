@@ -103,7 +103,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {groupBuys.map((groupBuy) => {
           const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
           const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
