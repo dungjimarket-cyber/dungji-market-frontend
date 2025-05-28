@@ -454,13 +454,6 @@ setGroupBuys(data);
                         </div>
                       </div>
                       <div className="mt-2 space-y-2">
-                        <div className="flex flex-col">
-                          <div className="flex space-x-2 text-sm">
-                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
-                            <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
-                          </div>
-                          <p className="text-sm font-medium">요금제: {groupBuy.product_details?.plan_info || '5만원대'}</p>
-                        </div>
                         <div className="flex justify-between items-center pt-2">
                           <div>
                             <p className="text-sm text-gray-500">출고가</p>

@@ -171,34 +171,6 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                     </div>
                   </div>
                   <div className="mt-2 space-y-2">
-                    <div className="flex flex-col">
-                      <div className="flex space-x-2 text-xs sm:text-sm">
-                        <span className="font-medium text-red-500">통신사: {
-                          // 공구의 명시적 필드 우선 사용
-                          groupBuy.telecom_carrier || 
-                          groupBuy.product_details?.carrier || 
-                          'SKT'
-                        }</span>
-                        <span className="font-medium text-blue-500">유형: {
-                          // 가입유형 표시
-                          groupBuy.subscription_type === 'new' ? '신규가입' :
-                          groupBuy.subscription_type === 'transfer' ? '번호이동' :
-                          groupBuy.subscription_type === 'change' ? '기기변경' :
-                          groupBuy.product_details?.registration_type || 
-                          '번호이동'
-                        }</span>
-                      </div>
-                      <p className="text-xs sm:text-sm font-medium">요금제: {
-                        // 요금제 표시
-                        groupBuy.plan_info === '5G_basic' ? '5G 기본(3만원대)' :
-                        groupBuy.plan_info === '5G_standard' ? '5G 일반(5만원대)' :
-                        groupBuy.plan_info === '5G_premium' ? '5G 프리미엄(7만원대)' :
-                        groupBuy.plan_info === '5G_special' ? '5G 특별(9만원대)' :
-                        groupBuy.plan_info === '5G_platinum' ? '5G 플래티넘(10만원대)' :
-                        groupBuy.product_details?.plan_info || 
-                        '5G 일반(5만원대)'
-                      }</p>
-                    </div>
                     <div className="flex justify-between items-center pt-2">
                       <div>
                         <p className="text-xs sm:text-sm text-gray-500">출고가</p>
