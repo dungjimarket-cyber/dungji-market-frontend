@@ -358,11 +358,10 @@ function BidsListClient() {
                 <div>
                   <h2 className="text-lg font-medium">
                     <Link href={`/groupbuys/${bid.groupbuy}`} className="hover:text-blue-600">
-                      {bid.groupbuy_title || `공동구매 #${bid.groupbuy}`}
+                      {`${bid.product_name || '상품명 없음'} ${bid.telecom_carrier || ''} ${bid.subscription_type ? (bid.subscription_type === 'new' ? '신규가입' : bid.subscription_type === 'transfer' ? '번호이동' : '기기변경') : ''} ${bid.plan_info ? '요금제 ' + bid.plan_info : ''}`}
                     </Link>
                   </h2>
                   <p className="text-sm text-gray-600">
-                    상품: {bid.product_name || '상품명 없음'} | 
                     입찰 유형: {getBidTypeText(bid.bid_type) || '가격 제안'} | 
                     상태: {statusText(bid.status)}
                   </p>
