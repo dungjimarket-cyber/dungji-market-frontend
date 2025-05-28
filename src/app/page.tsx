@@ -70,15 +70,19 @@ export default function Home() {
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl sm:text-2xl font-semibold mb-4">인기 공동구매</h2>
-          <div className="space-y-4">
-            <GroupBuyList type="popular" limit={4} />
+          <div>
+            <div className="grid grid-cols-2 gap-4">
+              <GroupBuyList type="popular" limit={4} />
+            </div>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl sm:text-2xl font-semibold mb-4">새로운 공동구매</h2>
-          <div className="space-y-4">
-            <GroupBuyList type="recent" limit={4} />
+          <div>
+            <div className="grid grid-cols-2 gap-4">
+              <GroupBuyList type="recent" limit={4} />
+            </div>
           </div>
         </div>
       </section>
