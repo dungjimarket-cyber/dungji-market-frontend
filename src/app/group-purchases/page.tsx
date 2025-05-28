@@ -412,7 +412,9 @@ setGroupBuys(data);
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || ''}</p>
-                        <CardTitle className="text-xl">{groupBuy.title || groupBuy.product_details?.name}</CardTitle>
+                        <CardTitle className="text-xl">
+                          {`${groupBuy.product_name || groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier || ''} ${groupBuy.telecom_detail?.subscription_type === 'new' ? '신규가입' : groupBuy.telecom_detail?.subscription_type === 'transfer' ? '번호이동' : groupBuy.telecom_detail?.subscription_type === 'change' ? '기기변경' : ''} ${groupBuy.telecom_detail?.plan_info ? ('요금제 ' + groupBuy.telecom_detail.plan_info) : ''}`}
+                        </CardTitle>
                       </div>
                       <span className={`px-2 py-1 text-sm rounded-full ${
                         groupBuy.status === 'recruiting'

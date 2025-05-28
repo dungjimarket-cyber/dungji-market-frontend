@@ -404,15 +404,51 @@ export default function CreateForm() {
         };
       }
       
-      // 필수 필드 추가 - description 필드 (빈 값이면 제목으로 설정)
-      const description = values.description?.trim() || values.title.trim();
+      // 자동으로 제목과 설명 생성
+      let generatedTitle = '';
+      let generatedDescription = '';
+      
+      // 상품명 추출
+      const productName = selectedProduct?.name || '';
+      
+      // 통신사 정보 추출
+      const carrier = values.telecom_carrier || '';
+      
+      // 가입유형 표시
+      let subscriptionType = '';
+      if (values.subscription_type === 'new') {
+        subscriptionType = '신규가입';
+      } else if (values.subscription_type === 'transfer') {
+        subscriptionType = '번호이동';
+      } else if (values.subscription_type === 'change') {
+        subscriptionType = '기기변경';
+      }
+      
+      // 요금제 정보 표시
+      let planInfo = '';
+      if (values.telecom_plan === '5G_basic') {
+        planInfo = '요금제 3만원대';
+      } else if (values.telecom_plan === '5G_standard') {
+        planInfo = '요금제 5만원대';
+      } else if (values.telecom_plan === '5G_premium') {
+        planInfo = '요금제 7만원대';
+      } else if (values.telecom_plan === '5G_special') {
+        planInfo = '요금제 9만원대';
+      } else if (values.telecom_plan === '5G_platinum') {
+        planInfo = '요금제 10만원대';
+      }
+      
+      // 제목 자동 생성
+      generatedTitle = `${productName} ${carrier} ${subscriptionType} ${planInfo}`.trim();
+      generatedDescription = `${productName} ${carrier} ${subscriptionType} ${planInfo} 공구입니다.`.trim();
       
       // 수치 필드는 반드시 수치로 변환
       const minPart = typeof minParticipants === 'string' ? parseInt(minParticipants, 10) : minParticipants;
       const maxPart = typeof maxParticipants === 'string' ? parseInt(maxParticipants, 10) : maxParticipants;
       
-      // description은 반드시 문자열로 설정
-      const safeDescription = description || values.title.trim() || '공구 설명';
+      // 자동 생성된 제목과 설명 사용
+      const safeTitle = generatedTitle || '자동 생성 공구';
+      const safeDescription = generatedDescription || '공구 설명';
       // product_details는 값이 있는 항목만 포함하도록 필터링
       const cleanProductDetails: Record<string, any> = {};
       Object.entries(productDetails).forEach(([key, value]) => {
@@ -427,8 +463,8 @@ export default function CreateForm() {
       // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
       apiRequestData = {
         product: productId,                 // 필수 필드, 수치
-        title: values.title.trim(),         // 필수 필드, 문자열
-        description: safeDescription,       // 선택 필드, 문자열
+        title: safeTitle,                   // 필수 필드, 문자열 (자동 생성된 제목)
+        description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
         min_participants: minPart,          // 필수 필드, 수치, 최소 1
         max_participants: maxPart,          // 필수 필드, 수치, 최소 1
         end_time: endTimeValue,             // 필수 필드, 날짜/시간 문자열
@@ -1007,22 +1043,13 @@ export default function CreateForm() {
               </div>
             )}
 
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>공구 제목</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="공구 제목을 입력하세요"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* 제목 필드 자동 생성으로 대체 */}
+            <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
+              <h3 className="text-md font-medium mb-2">공구 제목 자동 생성</h3>
+              <p className="text-sm text-gray-600">
+                상품명, 통신사, 가입유형, 요금제 정보를 기반으로 자동 생성됩니다.  
+              </p>
+            </div>
 
             <div className="space-y-6">
               <h3 className="text-lg font-medium">참여 인원</h3>
@@ -1086,12 +1113,44 @@ export default function CreateForm() {
                           step={1}
                           value={[sliderHours]}
                           onValueChange={(values) => {
-                            const hours = values[0];
-                            setSliderHours(hours);
-                            const now = new Date();
-                            const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
-                            form.setValue('end_time_option', 'slider');
-                            setEndTimeOption('slider');
+                            let telecom_plan = form.getValues('telecom_plan');
+      
+      // 대기 시간 값 계산
+      let endTimeValue;
+      
+      // 슬라이더 값을 사용하는 경우
+      const now = new Date();
+      const hours = sliderHours;
+      const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
+      endTimeValue = endTime.toISOString();
+      
+      // 백엔드로 보낼 데이터 객체 초기화
+      let apiRequestData: any = {};
+      
+      try {
+        // 상품 ID 추출
+        const productId = parseInt(values.product, 10);
+      
+      } catch (error) {
+        console.error(error);
+      }
+      
+      // 폼 제출 시 제목과 설명을 자동으로 생성
+      const title = `${selectedProduct.name} ${telecom_plan} ${hours}시간`;
+      const description = `${selectedProduct.name} ${telecom_plan} ${hours}시간 공구입니다.`;
+      
+      form.setValue('title', title);
+      form.setValue('description', description);
+      
+      console.log('제목:', title);
+      console.log('설명:', description);
+      
+      const hours = values[0];
+      setSliderHours(hours);
+      const now = new Date();
+      const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
+      form.setValue('end_time_option', 'slider');
+      setEndTimeOption('slider');
                           }}
                           className="w-full"
                         />

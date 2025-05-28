@@ -283,20 +283,23 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         <div className="bg-white p-4 mb-4">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <CardTitle className="text-2xl">{groupBuy.title || groupBuy.product_details?.name}</CardTitle>
-              <p className="text-gray-600">{groupBuy.description || groupBuy.product_details?.description}</p>
+              <CardTitle className="text-2xl">
+                {`${groupBuy.product_name || groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier || ''} ${groupBuy.telecom_detail?.subscription_type === 'new' ? '신규가입' : groupBuy.telecom_detail?.subscription_type === 'transfer' ? '번호이동' : groupBuy.telecom_detail?.subscription_type === 'change' ? '기기변경' : ''} ${groupBuy.telecom_detail?.plan_info ? ('요금제 ' + groupBuy.telecom_detail.plan_info) : ''}`}
+              </CardTitle>
               
               {groupBuy.product_details?.release_date && (
                 <div className="text-sm text-gray-500">출시일: {new Date(groupBuy.product_details.release_date).toLocaleDateString('ko-KR')}</div>
               )}
             </div>
-            <div>
-              <p className="text-sm text-gray-500">공구 참여인원</p>
-              <p className="font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}명</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">남은 시간</p>
-              <p className="font-bold text-red-500">{remainingTime}</p>
+            <div className="flex flex-col">
+              <div>
+                <p className="text-sm text-gray-500">공구 참여인원</p>
+                <p className="font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}명</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">남은 시간</p>
+                <p className="font-bold text-red-500">{remainingTime}</p>
+              </div>
             </div>
           </div>
 
