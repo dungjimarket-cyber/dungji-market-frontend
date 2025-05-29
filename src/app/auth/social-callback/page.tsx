@@ -96,12 +96,22 @@ function SocialCallbackContent() {
             }
             
             // 사용자 정보 저장
+            // URL에서 소셜 로그인 타입 추출
+            const provider = window.location.pathname.includes('kakao') ? 'kakao' : 
+                           window.location.pathname.includes('google') ? 'google' : 
+                           window.location.pathname.includes('naver') ? 'naver' : 
+                           tokenData.provider || tokenData.sns_type || null;
+                           
+            console.log('소셜 로그인 제공자 추출:', { provider, pathname: window.location.pathname });
+            
             const authUser = {
               id: userId,
               email: userEmail,
               role: userRole, 
               name: tokenData.name || tokenData.user_name || '',
-              token: accessToken
+              token: accessToken,
+              sns_type: provider, // 소셜 로그인 타입 추가
+              provider: provider  // 호환성을 위해 provider 필드도 추가
             };
             
             const userJson = JSON.stringify(authUser);

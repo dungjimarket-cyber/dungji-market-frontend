@@ -10,6 +10,10 @@ import axios from 'axios';
 type User = {
   id: string;
   email: string;
+  username?: string; // 닉네임 추가
+  nickname?: string; // 대체 닉네임 필드
+  name?: string; // 실명
+  image?: string; // 프로필 이미지
   role?: string;
   roles?: string[];
 };
@@ -27,6 +31,7 @@ type LoginResult = {
 
 type AuthContextType = {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
@@ -67,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 초기 로딩시 로컬 스토리지에서 토큰 및 사용자 정보 복원
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
         if (typeof window !== 'undefined') {
           console.log('페이지 로드 시 인증 상태 초기화 시작...');
@@ -96,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setRefreshToken(storedRefreshToken);
             }
             
-            // 사용자 정보 복원 시도 (user, auth.user 키 확인)
+            // 1. 먼저 로컬 스토리지에서 사용자 정보 복원 시도
             let userData = null;
             const userKeys = ['user', 'auth.user'];
             
@@ -113,45 +118,123 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             }
             
-            // 사용자 정보가 발견된 경우
-            if (userData) {
-              setUser(userData);
-              console.log('로컬 스토리지에서 사용자 정보 복원 성공', userData.role || 'role 없음');
-            } else {
-              console.log('사용자 정보 발견 실패, 토큰에서 정보 추출 시도...');
+            // 2. 백엔드에서 최신 프로필 정보 가져오기 시도
+            try {
+              console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
+              const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`;
+              const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${storedToken}`,
+                },
+              });
               
-              // 토큰에서 사용자 정보 추출 시도
-              try {
-                const decoded = decodeJwtPayload(storedToken);
-                if (decoded) {
-                  const userId = decoded.user_id || decoded.sub || '';
-                  const userEmail = decoded.email || '';
-                  const userRole = decoded.role || 'user';
-                  
-                  const extractedUser = {
-                    id: userId,
-                    email: userEmail,
-                    role: userRole,
-                    token: storedToken
+              if (response.ok) {
+                const profileData = await response.json();
+                console.log('백엔드에서 프로필 정보 가져오기 성공:', profileData);
+                
+                // 기존 로컬 데이터와 병합
+                if (userData) {
+                  userData = {
+                    ...userData,
+                    username: profileData.username,
+                    sns_type: profileData.sns_type,
+                    provider: profileData.sns_type, // 호환성을 위해 provider 필드도 설정
                   };
-                  
-                  // 사용자 정보 설정 및 로컬 스토리지에 저장
-                  setUser(extractedUser);
-                  localStorage.setItem('user', JSON.stringify(extractedUser));
-                  localStorage.setItem('auth.user', JSON.stringify(extractedUser));
-                  localStorage.setItem('userRole', userRole);
-                  console.log('토큰에서 사용자 정보 추출 성공:', userRole);
+                  console.log('사용자 정보 업데이트 완료:', userData);
                 } else {
-                  console.log('로컬 스토리지에서 토큰을 찾을 수 없습니다. 비로그인 상태입니다.');
-                  // 비로그인 상태로 초기화
-                  setUser(null);
-                  setAccessToken(null);
-                  setRefreshToken(null);
+                  // 로컬 스토리지에 사용자 정보가 없는 경우
+                  const decoded = decodeJwtPayload(storedToken);
+                  userData = {
+                    id: profileData.id || decoded?.user_id || '',
+                    email: profileData.email || '',
+                    username: profileData.username || '',
+                    role: decoded?.role || 'user',
+                    token: storedToken,
+                    sns_type: profileData.sns_type,
+                    provider: profileData.sns_type,
+                  };
+                  console.log('새 사용자 정보 생성:', userData);
                 }
-              } catch (jwtError) {
-                console.error('JWT 파싱 오류:', jwtError);
+                
+                // 로컬 스토리지에 업데이트된 정보 저장
+                const userJson = JSON.stringify(userData);
+                localStorage.setItem('user', userJson);
+                localStorage.setItem('auth.user', userJson);
+                localStorage.setItem('userRole', userData.role || 'user');
+                
+                // 상태 업데이트
+                setUser(userData);
+              } else {
+                console.warn('프로필 정보 가져오기 실패:', response.status);
+                
+                // 백엔드 요청 실패시 로컬 데이터만 사용
+                if (userData) {
+                  setUser(userData);
+                  console.log('로컬 스토리지에서 사용자 정보 복원 성공', userData.role || 'role 없음');
+                } else {
+                  // 로컬 데이터도 없는 경우 토큰에서 추출
+                  console.log('사용자 정보 발견 실패, 토큰에서 정보 추출 시도...');
+                  
+                  const decoded = decodeJwtPayload(storedToken);
+                  if (decoded) {
+                    const userId = decoded.user_id || decoded.sub || '';
+                    const userEmail = decoded.email || '';
+                    const userRole = decoded.role || 'user';
+                    
+                    const extractedUser = {
+                      id: userId,
+                      email: userEmail,
+                      role: userRole,
+                      token: storedToken
+                    };
+                    
+                    // 사용자 정보 설정 및 로컬 스토리지에 저장
+                    setUser(extractedUser);
+                    localStorage.setItem('user', JSON.stringify(extractedUser));
+                    localStorage.setItem('auth.user', JSON.stringify(extractedUser));
+                    localStorage.setItem('userRole', userRole);
+                    console.log('토큰에서 사용자 정보 추출 성공:', userRole);
+                  }
+                }
+              }
+            } catch (apiError) {
+              console.error('API 호출 오류:', apiError);
+              // API 호출 실패시 기존 로직으로 폴백
+              if (userData) {
+                setUser(userData);
+              } else {
+                // 토큰에서 정보 추출 시도
+                try {
+                  const decoded = decodeJwtPayload(storedToken);
+                  if (decoded) {
+                    const userId = decoded.user_id || decoded.sub || '';
+                    const userEmail = decoded.email || '';
+                    const userRole = decoded.role || 'user';
+                    
+                    const extractedUser = {
+                      id: userId,
+                      email: userEmail,
+                      role: userRole,
+                      token: storedToken
+                    };
+                    
+                    setUser(extractedUser);
+                    localStorage.setItem('user', JSON.stringify(extractedUser));
+                    localStorage.setItem('auth.user', JSON.stringify(extractedUser));
+                    localStorage.setItem('userRole', userRole);
+                  }
+                } catch (jwtError) {
+                  console.error('JWT 파싱 오류:', jwtError);
+                }
               }
             }
+          } else {
+            console.log('로컬 스토리지에서 토큰을 찾을 수 없습니다. 비로그인 상태입니다.');
+            // 비로그인 상태로 초기화
+            setUser(null);
+            setAccessToken(null);
+            setRefreshToken(null);
           }
         }
       } catch (error) {
@@ -514,6 +597,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         accessToken,
         refreshToken,
         isLoading,

@@ -33,27 +33,93 @@ function getLoginProviderLabel(user: any) {
 interface ExtendedUser {
   id?: number;
   email?: string;
-  username?: string;
-  name?: string;
+  username?: string;  // 사용자 닉네임
+  nickname?: string;  // 대체 닉네임 필드
+  name?: string;      // 실명
   image?: string;
   roles?: string[];
 }
 
 export default function ProfileSection() {
-  const { user: authUser, accessToken, isAuthenticated, isLoading, logout } = useAuth();
+  const { user: authUser, setUser, accessToken, isAuthenticated, isLoading, logout } = useAuth();
   // 확장된 타입으로 사용자 정보를 처리
   const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
+  const [nickname, setNickname] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [editField, setEditField] = useState<'email' | 'nickname' | null>(null);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
   
-  // 이메일 필드 초기화
+  // 컴포넌트 마운트시 백엔드에서 최신 프로필 정보 가져오기
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (accessToken) {
+        try {
+          console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          
+          if (response.ok) {
+            const profileData = await response.json();
+            console.log('백엔드에서 가져온 프로필 정보:', profileData);
+            
+            // 이메일과 닉네임 상태 업데이트
+            setEmail(profileData.email || '');
+            setNickname(profileData.username || '');
+            
+            // AuthContext와 로컬스토리지 업데이트
+            if (setUser && authUser) {
+              // authUser 사용 (user가 아님) - 원본 AuthContext의 사용자 객체
+              const updatedUser = {
+                ...authUser,
+                email: profileData.email,
+                username: profileData.username,
+                sns_type: profileData.sns_type,
+              };
+              
+              // AuthContext 업데이트
+              setUser(updatedUser as any); // 타입 캐스팅 추가
+              
+              // 로컬스토리지 업데이트
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+              localStorage.setItem('auth.user', JSON.stringify(updatedUser));
+              
+              console.log('사용자 정보 업데이트 완료:', updatedUser);
+            }
+          } else {
+            console.error('프로필 정보 가져오기 실패:', response.status);
+          }
+        } catch (error) {
+          console.error('프로필 정보 가져오기 오류:', error);
+        }
+      }
+    };
+    
+    fetchProfileData();
+  }, [accessToken, setUser, user]);
+  
+  // 이메일 및 닉네임 필드 초기화 (선택적 백업 용도)
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
     }
-  }, [user?.email]);
+    
+    // 닉네임 초기화 - username 또는 nickname 또는 이메일 앞부분 사용
+    if (user?.username) {
+      setNickname(user.username);
+    } else if (user?.nickname) {
+      setNickname(user.nickname);
+    } else if (user?.email) {
+      // 닉네임이 없는 경우 이메일 앞부분을 기본 닉네임으로 사용
+      const defaultNickname = user.email.split('@')[0];
+      setNickname(defaultNickname);
+    }
+  }, [user?.email, user?.username, user?.nickname]);
 
   /**
    * 이메일 주소 업데이트 함수
@@ -68,12 +134,26 @@ export default function ProfileSection() {
   };
 
   /**
-   * 이메일 주소 업데이트 함수
+   * 프로필 정보 업데이트 함수 (이메일 또는 닉네임)
    */
-  const handleEmailUpdate = async () => {
+  const handleProfileUpdate = async () => {
     if (!accessToken) {
       setError('로그인이 필요합니다.');
       return;
+    }
+
+    // 업데이트할 필드 확인
+    if (!editField) {
+      setError('업데이트할 필드를 선택해주세요.');
+      return;
+    }
+
+    // 업데이트할 데이터 객체 준비
+    const updateData: {email?: string, username?: string} = {};
+    if (editField === 'email') {
+      updateData.email = email;
+    } else if (editField === 'nickname') {
+      updateData.username = nickname; // 백엔드에서는 username 필드 사용
     }
 
     try {
@@ -83,105 +163,191 @@ export default function ProfileSection() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(updateData),
       });
   
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
         }
-        throw new Error('이메일 업데이트에 실패했습니다.');
+        const errorData = await response.json();
+        setError(errorData.error || '프로필 업데이트에 실패했습니다.');
+        return;
       }
-      
-      const data = await response.json();
-      
-      // 업데이트 성공 - 새로고침을 통해 새 정보 적용
-      router.refresh();
-      
+
+      setSuccessMessage('프로필이 성공적으로 업데이트되었습니다.');
+
+      // 최신 프로필 정보 GET
+      const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setEmail(profileData.email);
+        setNickname(profileData.username);
+        // AuthContext 및 로컬스토리지 동기화
+        setUser && setUser((prev: any) => ({
+          ...prev,
+          email: profileData.email,
+          username: profileData.username,
+          sns_type: profileData.sns_type,
+          provider: profileData.sns_type,
+        }));
+        localStorage.setItem('user', JSON.stringify({
+          ...authUser,
+          email: profileData.email,
+          username: profileData.username,
+          sns_type: profileData.sns_type,
+          provider: profileData.sns_type,
+        }));
+      }
       setIsEditing(false);
+      setEditField(null);
       setError('');
-    } catch (error: any) {
-      setError(error.message || '이메일 업데이트 중 오류가 발생했습니다.');
+      
+    } catch (err: any) {
+      setError(err.message || '업데이트 중 오류가 발생했습니다.');
     }
   };
 
   if (isLoading) return null;
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4">내 정보</h2>
-      <div className="flex items-start space-x-4">
-        {user?.image && (
-          <div className="relative w-24 h-24">
-            <Image
-              src={user.image}
-              alt="Profile"
-              fill
-              className="rounded-full object-cover"
-            />
-          </div>
-        )}
-        <div className="flex-1">
-          <p className="text-gray-600 mb-2">
-            <span className="font-semibold">이름:</span> {user?.name || user?.username}
-          </p>
-          <div className="mb-2">
-            <span className="font-semibold text-gray-600">이메일:</span>
-            {isEditing ? (
-              <div className="mt-2 space-y-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md"
-                  placeholder="새로운 이메일 주소"
-                />
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleEmailUpdate}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  >
-                    저장
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setError('');
-                    }}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-                  >
-                    취소
-                  </button>
-                </div>
-              </div>
+    <div className="bg-white p-6 rounded-lg shadow mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">사용자 정보</h2>
+        <button
+          onClick={handleLogout}
+          className="flex items-center text-red-500 hover:text-red-700 text-sm transition-colors"
+        >
+          <LogOut className="w-4 h-4 mr-1" />
+          로그아웃
+        </button>
+      </div>
+      
+      <div className="flex flex-col gap-4">
+        {/* 닉네임 정보 */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
+          <div className="flex-1">
+            <p className="text-sm text-gray-500">닉네임</p>
+            {isEditing && editField === 'nickname' ? (
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                className="p-2 border rounded w-full"
+                placeholder="사용할 닉네임을 입력하세요"
+              />
             ) : (
-              <div className="flex items-center space-x-2">
-                <span>{user?.email || '이메일 미등록'}</span>
-                {!user?.email && (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="text-blue-500 hover:text-blue-600 text-sm"
-                  >
-                    이메일 등록
-                  </button>
-                )}
-              </div>
+              <p className="font-medium">{nickname || '닉네임이 설정되지 않았습니다'}</p>
             )}
           </div>
-          <p className="text-gray-600">
-            <span className="font-semibold">로그인 방식:</span>{' '}
-            {getLoginProviderLabel(user)}
-          </p>
           
-          {/* 로그아웃 버튼 추가 */}
-          <button
-            onClick={handleLogout}
-            className="mt-4 flex items-center text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-full text-sm transition-colors duration-200"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            로그아웃
-          </button>
+          <div>
+            {isEditing && editField === 'nickname' ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleProfileUpdate}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditField(null);
+                    setNickname(user?.username || user?.nickname || (user?.email ? user.email.split('@')[0] : ''));
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                >
+                  취소
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditField('nickname');
+                }}
+                className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm whitespace-nowrap"
+              >
+                닉네임 수정
+              </button>
+            )}
+          </div>
         </div>
+        
+        {/* 이메일 정보 */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
+          <div className="flex-1">
+            <p className="text-sm text-gray-500">이메일</p>
+            {isEditing && editField === 'email' ? (
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="p-2 border rounded w-full"
+              />
+            ) : (
+              <p className="font-medium">{user?.email || '이메일 정보가 없습니다'}</p>
+            )}
+          </div>
+          
+          <div>
+            {isEditing && editField === 'email' ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleProfileUpdate}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditField(null);
+                    setEmail(user?.email || '');
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                >
+                  취소
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditField('email');
+                }}
+                className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm whitespace-nowrap"
+              >
+                이메일 수정
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {/* 로그인 방식 */}
+        <div>
+          <p className="text-sm text-gray-500">로그인 방식</p>
+          <p className="font-medium">{getLoginProviderLabel(user)}</p>
+        </div>
+        
+        {/* 성공 메시지 */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded text-sm mt-2">
+            {successMessage}
+          </div>
+        )}
+        
+        {/* 오류 메시지 */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm mt-2">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );
