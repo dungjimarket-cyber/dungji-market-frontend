@@ -12,7 +12,7 @@ import GroupBuyActionButtons from '@/components/groupbuy/GroupBuyActionButtons';
 import BidModal from '@/components/groupbuy/BidModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import { WishButton } from '@/components/ui/WishButton';
-import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
+import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
 import { useAuth } from '@/hooks/useAuth';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useState, useEffect } from 'react';
@@ -284,7 +284,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           <div className="flex justify-between items-center mb-4">
             <div>
               <CardTitle className="text-2xl">
-                {`${groupBuy.product_name || groupBuy.product_details?.name || '상품명 없음'}`}
+                {formatGroupBuyTitle(groupBuy, false)}
               </CardTitle>
               
               {groupBuy.product_details?.release_date && (

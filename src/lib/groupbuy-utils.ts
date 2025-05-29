@@ -2,6 +2,8 @@
  * 공구 상태를 계산하는 유틸리티 함수들
  */
 
+import { GroupBuy } from '@/types/groupbuy';
+
 /**
  * 공구의 실제 상태를 계산합니다.
  * 백엔드에서 받은 상태와 마감 시간을 고려하여 실제 상태를 결정합니다.
@@ -10,22 +12,16 @@
  * @param endTime 공구 마감 시간
  * @returns 실제 공구 상태
  */
-export function calculateGroupBuyStatus(status: string, endTime: string): string {
+export function calculateGroupBuyStatus(status: string, endTimeStr: string): string {
+  if (status !== 'recruiting') {
+    return status;
+  }
+  
   const now = new Date();
-  const end = new Date(endTime);
-  
-  // 이미 종료된 상태라면 그대로 반환
-  if (status === 'completed') {
-    return 'completed';
-  }
-  
-  // 확정된 상태라면 그대로 반환
-  if (status === 'confirmed') {
-    return 'confirmed';
-  }
+  const endTime = new Date(endTimeStr);
   
   // 모집 중이지만 마감 시간이 지났다면 'expired' 상태로 변경
-  if (status === 'recruiting' && end < now) {
+  if (status === 'recruiting' && endTime < now) {
     return 'expired';
   }
   
@@ -73,6 +69,124 @@ export function getStatusClass(status: string): string {
     default:
       return 'bg-gray-100 text-gray-800';
   }
+}
+
+/**
+ * 가입유형을 표시하는 유틸리티 함수
+ * @param groupBuy 공구 정보
+ * @returns 가입유형 텍스트
+ */
+export function getSubscriptionTypeText(groupBuy: any): string {
+  // 다양한 소스에서 가입유형 정보를 처리하기 위한 로직
+  
+  // 1. 직접 registration_type에서 처리
+  const directType = groupBuy.product_details?.registration_type;
+  
+  // 2. telecom_detail에서 처리
+  const telecomType = groupBuy.product_details?.telecom_detail?.registration_type;
+  
+  // 3. attributes 속성에서 처리 (추가 가능성)
+  const attributesType = groupBuy.product_details?.attributes?.registration_type;
+  
+  // 4. 상품 속성에서 처리 (추가 가능성)
+  const productType = groupBuy.product?.registration_type;
+  
+  // 가장 우선순위가 높은 값을 사용
+  const registrationType = directType || telecomType || attributesType || productType;
+  
+  // 디버깅: 로그로 어떤 소스에서 가져왔는지 확인 (console.log 사용은 개발 환경에서만)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[getSubscriptionTypeText] 가입유형 데이터 확인:', { 
+      directType, 
+      telecomType, 
+      attributesType,
+      productType,
+      groupBuy: JSON.stringify(groupBuy)
+    });
+  }
+  
+  // 가입유형 결과 반환
+  if (registrationType) {
+    // 백엔드의 Product 모델에 정의된 가입유형에 맞게 변환 (대소문자 구분 없이 처리)
+    const typeUpper = registrationType.toUpperCase();
+    
+    if (typeUpper === 'MNP' || typeUpper === 'TRANSFER') return '번호이동';
+    if (typeUpper === 'NEW') return '신규가입';
+    if (typeUpper === 'CHANGE') return '기기변경';
+    
+    // 추가: 이미 한글로 된 가입유형이 전달되었을 수 있음
+    if (registrationType === '번호이동' || 
+        registrationType === '신규가입' || 
+        registrationType === '기기변경') {
+      return registrationType;
+    }
+    
+    // 그 외의 값은 그대로 반환 (이미 표시용 텍스트일 수 있음)
+    return registrationType;
+  }
+  
+  return '';
+}
+
+/**
+ * 공구 타이틀을 표준 형식으로 포맷팅하는 함수
+ * @param groupBuy 공구 정보
+ * @param includeDetails 통신사, 가입유형, 요금제 정보를 포함할지 여부 (목록에서는 true, 상세페이지에서는 false)
+ * @returns 포맷팅된 타이틀
+ */
+export function formatGroupBuyTitle(groupBuy: any, includeDetails: boolean = true): string {
+  // 다양한 GroupBuy 객체 구조를 처리하기 위해 any 타입 사용
+  
+  // 상품명: product_name 또는 product_details.name 사용
+  const productName = groupBuy.product_name || groupBuy.product_details?.name || '상품명 없음';
+  
+  // 상세 정보를 포함하지 않으면 상품명만 반환
+  if (!includeDetails) {
+    return productName;
+  }
+  
+  // 통신사 정보 처리
+  let carrier = '';
+  // 1. 직접 carrier 속성
+  if (groupBuy.product_details?.carrier) {
+    carrier = groupBuy.product_details.carrier;
+  } 
+  // 2. telecom_detail 내부 carrier
+  else if (groupBuy.product_details?.telecom_detail?.carrier) {
+    carrier = groupBuy.product_details.telecom_detail.carrier;
+  }
+  // 3. 속성에서 처리 가능성
+  else if (groupBuy.product_details?.attributes?.carrier) {
+    carrier = groupBuy.product_details.attributes.carrier;
+  }
+  
+  // 가입유형: getSubscriptionTypeText 함수로 계산 (확장된 로직)
+  const subscriptionType = getSubscriptionTypeText(groupBuy);
+  
+  // 요금제 정보 처리
+  let planInfo = '';
+  // 1. 직접 plan_info 속성
+  const planInfoRaw = groupBuy.product_details?.plan_info || 
+                    groupBuy.product_details?.telecom_detail?.plan_info ||
+                    groupBuy.product_details?.attributes?.plan_info;
+  
+  if (planInfoRaw) {
+    planInfo = `요금제 ${planInfoRaw}`;
+  }
+  
+  // 디버깅: 출력되는 정보 확인 (개발 환경에서만)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[formatGroupBuyTitle] 타이틀 정보:', {
+      productName,
+      carrier,
+      subscriptionType,
+      planInfo,
+      components: [productName, carrier, subscriptionType, planInfo].filter(Boolean)
+    });
+  }
+  
+  // 필터링하여 빈 문자열은 제외하고 조합
+  return [productName, carrier, subscriptionType, planInfo].filter(Boolean).join(' ');
 }
 
 /**

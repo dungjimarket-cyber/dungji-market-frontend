@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
+import { calculateGroupBuyStatus, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
 import { RoleButton } from '@/components/auth/RoleButton';
 import { Clock, Filter, ChevronDown, Check, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -430,7 +431,7 @@ setGroupBuys(data);
                       <div>
                         <p className="text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || ''}</p>
                         <CardTitle className="text-xl">
-                          {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${getSubscriptionTypeText(groupBuy)} ${groupBuy.product_details?.plan_info ? ('요금제 ' + groupBuy.product_details.plan_info) : ''}`}
+                          {formatGroupBuyTitle(groupBuy)}
                         </CardTitle>
                       </div>
                       <span className={`px-2 py-1 text-sm rounded-full ${

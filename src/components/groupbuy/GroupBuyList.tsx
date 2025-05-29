@@ -6,25 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
+import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
 import JoinGroupBuyModal from './JoinGroupBuyModal';
 
-/**
- * 가입유형을 표시하는 유틸리티 함수
- * @param groupBuy 공구 정보
- * @returns 가입유형 텍스트
- */
-function getSubscriptionTypeText(groupBuy: GroupBuy): string {
-  // product_details.registration_type을 통해 가입유형 표시
-  if (groupBuy.product_details?.registration_type) {
-    if (groupBuy.product_details.registration_type === 'MNP') return '번호이동';
-    if (groupBuy.product_details.registration_type === 'NEW') return '신규가입';
-    if (groupBuy.product_details.registration_type === 'CHANGE') return '기기변경';
-    return groupBuy.product_details.registration_type;
-  }
-  
-  return '';
-}
+// 공통 유틸리튰는 lib/groupbuy-utils.ts에서 import하여 사용
 
 interface Product {
   id: number;
@@ -153,7 +138,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                   <div>
                     <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || '휴대폰'}</p>
                     <CardTitle className="text-base sm:text-lg md:text-xl">
-                      {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${getSubscriptionTypeText(groupBuy)} ${groupBuy.product_details?.plan_info ? ('요금제 ' + groupBuy.product_details.plan_info) : ''}`}
+                      {formatGroupBuyTitle(groupBuy)}
                     </CardTitle>
                   </div>
                   {/* 공구 상태를 동적으로 계산하여 표시 */}

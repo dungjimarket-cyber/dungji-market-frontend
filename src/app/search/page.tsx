@@ -11,7 +11,9 @@ import Link from 'next/link';
 import { Clock, Search as SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { formatPrice } from '@/lib/utils';
 import { GroupBuy } from '@/types/groupbuy';
+import { formatGroupBuyTitle, getRemainingTime } from '@/lib/groupbuy-utils';
 
 interface Product {
   id: number;
@@ -159,7 +161,7 @@ export default function SearchPage() {
                       <div>
                         <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || '휴대폰'}</p>
                         <CardTitle className="text-base sm:text-lg md:text-xl">
-                          {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${groupBuy.product_details?.registration_type || ''} ${groupBuy.product_details?.plan_info ? ('요금제 ' + groupBuy.product_details.plan_info) : ''}`}
+                          {formatGroupBuyTitle(groupBuy)}
                         </CardTitle>
                       </div>
                       <span className={`px-2 py-1 text-xs sm:text-sm rounded-full ${
