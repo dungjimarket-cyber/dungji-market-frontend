@@ -9,6 +9,7 @@ interface GroupBuyActionButtonProps {
   isFull: boolean;
   isCreator?: boolean; // 자신이 만든 공구인지 여부
   isSeller?: boolean; // 판매회원(셀러) 여부
+  isParticipating?: boolean; // 이미 참여한 공구인지 여부
   groupBuy: {
     id: number;
     title: string;
@@ -27,6 +28,7 @@ export default function GroupBuyActionButton({
   isFull,
   isCreator = false,
   isSeller = false,
+  isParticipating = false,
   groupBuy
 }: GroupBuyActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,6 +39,7 @@ export default function GroupBuyActionButton({
     isFull,
     isCreator,
     isSeller,
+    isParticipating,
     groupBuyId: groupBuy.id
   });
 
@@ -60,7 +63,8 @@ export default function GroupBuyActionButton({
     }
   };
 
-  if (isSeller) return null;
+  // 판매회원이거나 이미 참여한 공구인 경우 버튼 표시하지 않음
+  if (isSeller || isParticipating) return null;
 
   return (
     <>

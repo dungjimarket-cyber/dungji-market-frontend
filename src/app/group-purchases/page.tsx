@@ -65,6 +65,12 @@ export default function GroupPurchasesPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // 추가 필터 상태 변수
+  const [manufacturerFilter, setManufacturerFilter] = useState('all');
+  const [carrierFilter, setCarrierFilter] = useState('all');
+  const [registrationTypeFilter, setRegistrationTypeFilter] = useState('all');
+  const [planPriceFilter, setPlanPriceFilter] = useState('all');
 
   // 공구 목록 가져오기
   useEffect(() => {
@@ -122,6 +128,67 @@ setGroupBuys(data);
       if (priceFilter === 'low' && price > 500000) return false;
       if (priceFilter === 'medium' && (price <= 500000 || price > 1000000)) return false;
       if (priceFilter === 'high' && price <= 1000000) return false;
+    }
+    
+    // 제조사 필터
+    if (manufacturerFilter !== 'all') {
+      const productName = groupBuy.product_details?.name || '';
+      const description = groupBuy.product_details?.description || '';
+      const allText = productName + ' ' + description;
+      
+      if (manufacturerFilter === 'samsung' && !allText.toLowerCase().includes('삼성')) {
+        return false;
+      }
+      if (manufacturerFilter === 'apple' && !allText.toLowerCase().includes('애플')) {
+        return false;
+      }
+    }
+    
+    // 통신사 필터
+    if (carrierFilter !== 'all') {
+      const carrier = groupBuy.product_details?.carrier || '';
+      if (carrierFilter === 'skt' && carrier !== 'SKT' && !carrier.toLowerCase().includes('skt')) {
+        return false;
+      }
+      if (carrierFilter === 'kt' && carrier !== 'KT' && !carrier.toLowerCase().includes('kt')) {
+        return false;
+      }
+      if (carrierFilter === 'lgu+' && carrier !== 'LG U+' && !carrier.toLowerCase().includes('lg') && !carrier.toLowerCase().includes('lgu+')) {
+        return false;
+      }
+    }
+    
+    // 구매방식 필터
+    if (registrationTypeFilter !== 'all') {
+      const regType = groupBuy.product_details?.registration_type || '';
+      if (registrationTypeFilter === 'new' && regType !== 'NEW') {
+        return false;
+      }
+      if (registrationTypeFilter === 'mnp' && regType !== 'MNP') {
+        return false;
+      }
+      if (registrationTypeFilter === 'change' && regType !== 'CHANGE') {
+        return false;
+      }
+    }
+    
+    // 요금제 필터
+    if (planPriceFilter !== 'all') {
+      const planInfo = groupBuy.product_details?.plan_info || '';
+      // 요금제 정보에서 가격 추출
+      let planPrice = 0;
+      const priceMatch = planInfo.match(/([0-9]+)만원/); // 예: "5만원대" 매칭
+      
+      if (priceMatch && priceMatch[1]) {
+        planPrice = parseInt(priceMatch[1], 10);
+      }
+      
+      if (planPriceFilter === '5' && planPrice !== 5) return false;
+      if (planPriceFilter === '6' && planPrice !== 6) return false;
+      if (planPriceFilter === '7' && planPrice !== 7) return false;
+      if (planPriceFilter === '8' && planPrice !== 8) return false;
+      if (planPriceFilter === '9' && planPrice !== 9) return false;
+      if (planPriceFilter === '10+' && planPrice < 10) return false;
     }
 
     // 검색어 필터
@@ -234,6 +301,106 @@ setGroupBuys(data);
                 </RadioGroup>
               </div>
               
+              {/* 제조사 필터 */}
+              <div className="border-b pb-4">
+                <h3 className="font-medium mb-3">제조사</h3>
+                <RadioGroup value={manufacturerFilter} onValueChange={setManufacturerFilter} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="manufacturer-all" />
+                    <Label htmlFor="manufacturer-all">전체</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="samsung" id="manufacturer-samsung" />
+                    <Label htmlFor="manufacturer-samsung">삼성</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="apple" id="manufacturer-apple" />
+                    <Label htmlFor="manufacturer-apple">애플</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              {/* 통신사 필터 */}
+              <div className="border-b pb-4">
+                <h3 className="font-medium mb-3">통신사</h3>
+                <RadioGroup value={carrierFilter} onValueChange={setCarrierFilter} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="carrier-all" />
+                    <Label htmlFor="carrier-all">전체</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="skt" id="carrier-skt" />
+                    <Label htmlFor="carrier-skt">SKT</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="kt" id="carrier-kt" />
+                    <Label htmlFor="carrier-kt">KT</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="lgu+" id="carrier-lgu" />
+                    <Label htmlFor="carrier-lgu">LG U+</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              {/* 구매방식 필터 */}
+              <div className="border-b pb-4">
+                <h3 className="font-medium mb-3">구매방식</h3>
+                <RadioGroup value={registrationTypeFilter} onValueChange={setRegistrationTypeFilter} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="regtype-all" />
+                    <Label htmlFor="regtype-all">전체</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="new" id="regtype-new" />
+                    <Label htmlFor="regtype-new">신규가입</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mnp" id="regtype-mnp" />
+                    <Label htmlFor="regtype-mnp">번호이동</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="change" id="regtype-change" />
+                    <Label htmlFor="regtype-change">기기변경</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              {/* 요금제 필터 */}
+              <div className="border-b pb-4">
+                <h3 className="font-medium mb-3">요금제</h3>
+                <RadioGroup value={planPriceFilter} onValueChange={setPlanPriceFilter} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="plan-all" />
+                    <Label htmlFor="plan-all">전체</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="5" id="plan-5" />
+                    <Label htmlFor="plan-5">5만원대</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="6" id="plan-6" />
+                    <Label htmlFor="plan-6">6만원대</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="7" id="plan-7" />
+                    <Label htmlFor="plan-7">7만원대</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="8" id="plan-8" />
+                    <Label htmlFor="plan-8">8만원대</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="9" id="plan-9" />
+                    <Label htmlFor="plan-9">9만원대</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="10+" id="plan-10-plus" />
+                    <Label htmlFor="plan-10-plus">10만원 이상</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
               {/* 검색 필터 */}
               <div>
                 <h3 className="font-medium mb-3">검색</h3>
@@ -253,6 +420,10 @@ setGroupBuys(data);
                   setStatusFilter('all');
                   setCategoryFilter('all');
                   setPriceFilter('all');
+                  setManufacturerFilter('all');
+                  setCarrierFilter('all');
+                  setRegistrationTypeFilter('all');
+                  setPlanPriceFilter('all');
                   setSearchTerm('');
                 }}
               >
@@ -326,14 +497,106 @@ setGroupBuys(data);
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">검색</label>
-            <Input 
-              type="text" 
-              placeholder="제목 또는 상품명 검색" 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">제조사</label>
+            <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="제조사 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="samsung">삼성</SelectItem>
+                <SelectItem value="apple">애플</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">통신사</label>
+            <Select value={carrierFilter} onValueChange={setCarrierFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="통신사 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="skt">SKT</SelectItem>
+                <SelectItem value="kt">KT</SelectItem>
+                <SelectItem value="lgu+">LG U+</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">구매방식</label>
+            <Select value={registrationTypeFilter} onValueChange={setRegistrationTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="구매방식 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="new">신규가입</SelectItem>
+                <SelectItem value="mnp">번호이동</SelectItem>
+                <SelectItem value="change">기기변경</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">요금제</label>
+            <Select value={planPriceFilter} onValueChange={setPlanPriceFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="요금제 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="5">5만원대</SelectItem>
+                <SelectItem value="6">6만원대</SelectItem>
+                <SelectItem value="7">7만원대</SelectItem>
+                <SelectItem value="8">8만원대</SelectItem>
+                <SelectItem value="9">9만원대</SelectItem>
+                <SelectItem value="10+">10만원 이상</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">검색</label>
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="제목 또는 상품명 검색"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pr-10"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between mt-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              setStatusFilter('all');
+              setCategoryFilter('all');
+              setPriceFilter('all');
+              setManufacturerFilter('all');
+              setCarrierFilter('all');
+              setRegistrationTypeFilter('all');
+              setPlanPriceFilter('all');
+              setSearchTerm('');
+            }}
+            className="text-xs h-7"
+          >
+            초기화
+          </Button>
         </div>
       </div>
       

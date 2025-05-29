@@ -333,7 +333,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         <Alert className="bg-blue-50 border-blue-200 mb-4">
           <Info className="h-4 w-4 text-blue-500" />
           <AlertDescription className="text-sm text-blue-700">
-            입찰가를 제외한 입찰 금액은 비공개 입니다.
+          앞자리를 제외한 입찰가는 비공개입니다
           </AlertDescription>
         </Alert>
 
@@ -407,25 +407,29 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           </div>
         )}
         
-        {/* 참여 버튼 */}
+        {/* 참여 버튼 - 이미 참여한 경우 표시하지 않음 */}
         <div className="px-4">
-          <GroupBuyActionButton 
-            isRecruiting={!!isRecruiting} 
-            isFull={!!isFull}
-            isCreator={!!isCreator}
-            isSeller={!!isSeller}
-            groupBuy={{
-              id: Number(id),
-              title: groupBuy.title,
-              product_details: {
-                name: groupBuy.product_details?.name || '',
-                image_url: groupBuy.product_details?.image_url || '/placeholder.png',
-                carrier: groupBuy.product_details?.telecom_detail?.carrier || 'SK텔레콤',
-                registration_type: groupBuy.product_details?.telecom_detail?.registration_type || '번호이동',
-                base_price: groupBuy.product_details?.base_price || 0
-              }
-            }}
-          />
+          {/* participationStatus가 null이 아니고 is_participating이 true인 경우에는 버튼 표시하지 않음 */}
+          {(!participationStatus || !participationStatus.is_participating) && (
+            <GroupBuyActionButton 
+              isRecruiting={!!isRecruiting} 
+              isFull={!!isFull}
+              isCreator={!!isCreator}
+              isSeller={!!isSeller}
+              isParticipating={participationStatus?.is_participating || false}
+              groupBuy={{
+                id: Number(id),
+                title: groupBuy.title,
+                product_details: {
+                  name: groupBuy.product_details?.name || '',
+                  image_url: groupBuy.product_details?.image_url || '/placeholder.png',
+                  carrier: groupBuy.product_details?.telecom_detail?.carrier || 'SK텔레콤',
+                  registration_type: groupBuy.product_details?.telecom_detail?.registration_type || '번호이동',
+                  base_price: groupBuy.product_details?.base_price || 0
+                }
+              }}
+            />
+          )}
         </div>
         
         {/* 공유하기 버튼 및 탈퇴 버튼 - 클라이언트 컴포넌트로 분리 */}
