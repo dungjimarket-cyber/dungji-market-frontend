@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { Clock, Search as SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { GroupBuy } from '@/types/groupbuy';
 
 interface Product {
   id: number;
@@ -25,18 +26,21 @@ interface Product {
   contract_info?: string;
 }
 
-interface GroupBuy {
-  id: number;
-  title: string;
-  status: string;
-  current_participants: number;
-  max_participants: number;
-  min_participants: number;
-  start_time: string;
-  end_time: string;
-  product: number;
-  product_detail: Product;
-  product_name?: string;
+/**
+ * 가입유형을 표시하는 유틸리티 함수
+ * @param groupBuy 공구 정보
+ * @returns 가입유형 텍스트
+ */
+function getSubscriptionTypeText(groupBuy: GroupBuy): string {
+  // product_details.registration_type을 통해 가입유형 표시
+  if (groupBuy.product_details?.registration_type) {
+    if (groupBuy.product_details.registration_type === 'MNP') return '번호이동';
+    if (groupBuy.product_details.registration_type === 'NEW') return '신규가입';
+    if (groupBuy.product_details.registration_type === 'CHANGE') return '기기변경';
+    return groupBuy.product_details.registration_type;
+  }
+  
+  return '';
 }
 
 export default function SearchPage() {
@@ -85,7 +89,7 @@ export default function SearchPage() {
     const term = searchTerm.toLowerCase();
     const results = allGroupBuys.filter(groupBuy => {
       const titleMatch = groupBuy.title?.toLowerCase().includes(term);
-      const productNameMatch = groupBuy.product_detail?.name.toLowerCase().includes(term);
+      const productNameMatch = groupBuy.product_details?.name.toLowerCase().includes(term);
       return titleMatch || productNameMatch;
     });
 
@@ -153,9 +157,9 @@ export default function SearchPage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_detail?.category_name || '휴대폰'}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || '휴대폰'}</p>
                         <CardTitle className="text-base sm:text-lg md:text-xl">
-                          {`${groupBuy.product_name || groupBuy.product_detail?.name || '상품명 없음'} ${groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_detail?.carrier || ''} ${groupBuy.telecom_detail?.subscription_type === 'new' ? '신규가입' : groupBuy.telecom_detail?.subscription_type === 'transfer' ? '번호이동' : groupBuy.telecom_detail?.subscription_type === 'change' ? '기기변경' : ''} ${groupBuy.telecom_detail?.plan_info ? ('요금제 ' + groupBuy.telecom_detail.plan_info) : ''}`}
+                          {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${groupBuy.product_details?.registration_type || ''} ${groupBuy.product_details?.plan_info ? ('요금제 ' + groupBuy.product_details.plan_info) : ''}`}
                         </CardTitle>
                       </div>
                       <span className={`px-2 py-1 text-xs sm:text-sm rounded-full ${
@@ -172,8 +176,8 @@ export default function SearchPage() {
                   </CardHeader>
                   <CardContent>
                     <Image
-                      src={groupBuy.product_detail?.image_url || '/placeholder.png'}
-                      alt={groupBuy.product_detail?.name || groupBuy.title}
+                      src={groupBuy.product_details?.image_url || '/placeholder.png'}
+                      alt={groupBuy.product_details?.name || groupBuy.title}
                       width={200}
                       height={200}
                       className="object-cover rounded-lg"
@@ -198,18 +202,18 @@ export default function SearchPage() {
                       <div className="mt-2 space-y-2">
                         <div className="flex flex-col">
                           <div className="flex space-x-2 text-xs sm:text-sm">
-                            <span className="font-medium text-red-500">통신사: {groupBuy.product_detail?.carrier || 'SK텔레콤'}</span>
-                            <span className="font-medium text-blue-500">유형: {groupBuy.product_detail?.registration_type || '번호이동'}</span>
+                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
+                            <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
                           </div>
-                          <p className="text-xs sm:text-sm font-medium">요금제: {groupBuy.product_detail?.plan_info || '5만원대'}</p>
+                          <p className="text-xs sm:text-sm font-medium">요금제: {groupBuy.product_details?.plan_info || '5만원대'}</p>
                         </div>
                         <div className="flex justify-between items-center pt-2">
                           <div>
                             <p className="text-xs sm:text-sm text-gray-500">출고가</p>
-                            <p className="text-lg sm:text-xl font-bold">{groupBuy.product_detail?.base_price?.toLocaleString() || '1,200,000'}원</p>
+                            <p className="text-lg sm:text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '1,200,000'}원</p>
                           </div>
                           <div className="text-xs sm:text-sm text-gray-600">
-                            {groupBuy.product_detail?.contract_info || '2년 약정'}
+                            {groupBuy.product_details?.contract_info || '2년 약정'}
                           </div>
                         </div>
                       </div>

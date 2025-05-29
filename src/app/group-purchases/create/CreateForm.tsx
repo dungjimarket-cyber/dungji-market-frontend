@@ -1113,44 +1113,31 @@ export default function CreateForm() {
                           step={1}
                           value={[sliderHours]}
                           onValueChange={(values) => {
-                            let telecom_plan = form.getValues('telecom_plan');
-      
-      // 대기 시간 값 계산
-      let endTimeValue;
-      
-      // 슬라이더 값을 사용하는 경우
-      const now = new Date();
-      const hours = sliderHours;
-      const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
-      endTimeValue = endTime.toISOString();
-      
-      // 백엔드로 보낼 데이터 객체 초기화
-      let apiRequestData: any = {};
-      
-      try {
-        // 상품 ID 추출
-        const productId = parseInt(values.product, 10);
-      
-      } catch (error) {
-        console.error(error);
-      }
-      
-      // 폼 제출 시 제목과 설명을 자동으로 생성
-      const title = `${selectedProduct.name} ${telecom_plan} ${hours}시간`;
-      const description = `${selectedProduct.name} ${telecom_plan} ${hours}시간 공구입니다.`;
-      
-      form.setValue('title', title);
-      form.setValue('description', description);
-      
-      console.log('제목:', title);
-      console.log('설명:', description);
-      
-      const sliderValue = values[0];
-      setSliderHours(sliderValue);
-      const now = new Date();
-      const endTime = new Date(now.getTime() + sliderValue * 60 * 60 * 1000);
-      form.setValue('end_time_option', 'slider');
-      setEndTimeOption('slider');
+                            // 슬라이더 값만 처리
+                            const sliderValue = values[0];
+                            setSliderHours(sliderValue);
+                            form.setValue('end_time_option', 'slider');
+                            setEndTimeOption('slider');
+                            
+                            // 슬라이더 값에 따른 종료 시간 설정
+                            const currentTime = new Date();
+                            const newEndTime = new Date(currentTime.getTime() + sliderValue * 60 * 60 * 1000);
+                            form.setValue('end_time', newEndTime.toISOString());
+                            
+                            // 제품이 선택되어 있을 경우에만 제목/설명 업데이트
+                            const telecom_plan = form.getValues('telecom_plan') || '';
+                            const product = selectedProduct;
+                            
+                            if (product) {
+                              const title = `${product.name} ${telecom_plan} ${sliderValue}시간`;
+                              const description = `${product.name} ${telecom_plan} ${sliderValue}시간 공구입니다.`;
+                              
+                              form.setValue('title', title);
+                              form.setValue('description', description);
+                              
+                              console.log('제목:', title);
+                              console.log('설명:', description);
+                            }
                           }}
                           className="w-full"
                         />

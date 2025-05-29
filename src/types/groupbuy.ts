@@ -10,6 +10,14 @@ export interface GroupBuyProduct {
   base_price: number;
   category_name?: string;
   image_url?: string;
+  
+  // 통신 관련 필드 (타입 호환을 위해 추가)
+  carrier?: string;
+  registration_type?: string;
+  plan_info?: string;
+  contract_info?: string;
+  
+  // 상세 객체 참조
   telecom_detail?: TelecomDetail;
   electronics_detail?: ElectronicsDetail;
   rental_detail?: RentalDetail;
@@ -54,6 +62,7 @@ export interface GroupBuy {
   end_time: string;
   product: number; // product ID
   product_details: GroupBuyProduct; // 상세 제품 정보
+  product_name?: string; // 상품명 백업 필드
   creator: number; // 판매자(생성자) ID
   creator_name: string; // 판매자(생성자) 이름
   region_type?: string; // 지역 유형 (local, nationwide)
@@ -62,6 +71,14 @@ export interface GroupBuy {
   telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
   subscription_type?: string; // 가입유형 (new, transfer, change)
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
+  
+  // 통신 상세 정보 (중첩 객체)
+  telecom_detail?: {
+    telecom_carrier: string;
+    subscription_type: string;
+    plan_info: string;
+    contract_period?: string;
+  };
 }
 
 // 참여 상태 정보

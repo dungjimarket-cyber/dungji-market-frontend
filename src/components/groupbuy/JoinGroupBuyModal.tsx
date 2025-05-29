@@ -8,6 +8,23 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
+/**
+ * 가입유형을 표시하는 유틸리티 함수
+ * @param groupBuy 공구 정보
+ * @returns 가입유형 텍스트
+ */
+function getSubscriptionTypeText(groupBuy: any): string {
+  // product_details.registration_type을 통해 가입유형 표시
+  if (groupBuy.product_details?.registration_type) {
+    if (groupBuy.product_details.registration_type === 'MNP') return '번호이동';
+    if (groupBuy.product_details.registration_type === 'NEW') return '신규가입';
+    if (groupBuy.product_details.registration_type === 'CHANGE') return '기기변경';
+    return groupBuy.product_details.registration_type;
+  }
+  
+  return '';
+}
+
 interface JoinGroupBuyModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -161,7 +178,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
                 className="rounded-md mb-4"
               />
               <h3 className="text-lg font-bold">
-                {`${groupBuy.product_name || groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier || ''} ${groupBuy.telecom_detail?.subscription_type === 'new' ? '신규가입' : groupBuy.telecom_detail?.subscription_type === 'transfer' ? '번호이동' : groupBuy.telecom_detail?.subscription_type === 'change' ? '기기변경' : ''} ${groupBuy.telecom_detail?.plan_info ? ('요금제 ' + groupBuy.telecom_detail.plan_info) : ''}`}
+                {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${getSubscriptionTypeText(groupBuy)}`}
               </h3>
               <p className="text-gray-600 mb-2">
                 통신사: {groupBuy.product_details.carrier || 'SK텔레콤'}
