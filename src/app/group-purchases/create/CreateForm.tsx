@@ -1145,10 +1145,10 @@ export default function CreateForm() {
       console.log('제목:', title);
       console.log('설명:', description);
       
-      const hours = values[0];
-      setSliderHours(hours);
+      const sliderValue = values[0];
+      setSliderHours(sliderValue);
       const now = new Date();
-      const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
+      const endTime = new Date(now.getTime() + sliderValue * 60 * 60 * 1000);
       form.setValue('end_time_option', 'slider');
       setEndTimeOption('slider');
                           }}
