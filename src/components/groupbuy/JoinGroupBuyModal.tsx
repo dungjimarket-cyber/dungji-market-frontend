@@ -85,13 +85,21 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
       
       console.log('인증 토큰 확인:', accessToken.substring(0, 10) + '...');
       
-      // API 요청
+      // 사용자 닉네임 정보 추출
+      let username = '';
+      if (user) {
+        username = user.username || user.nickname || (user.email ? user.email.split('@')[0] : '');
+        console.log('공구 참여 시 닉네임 정보:', { username, user });
+      }
+      
+      // API 요청 - 닉네임 정보 포함
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/join/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
-        }
+        },
+        body: JSON.stringify({ username }) // 닉네임 정보 포함
       });
       
       // 오류 처리

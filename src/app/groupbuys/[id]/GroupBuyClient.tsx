@@ -287,6 +287,16 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 {formatGroupBuyTitle(groupBuy, false)}
               </CardTitle>
               
+              {/* 방장(생성자) 정보 표시 */}
+              <div className="flex items-center mt-1 mb-1">
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+                  방장
+                </span>
+                <span className="ml-2 text-sm">
+                  {groupBuy.creator_name || '익명'}
+                </span>
+              </div>
+              
               {groupBuy.product_details?.release_date && (
                 <div className="text-sm text-gray-500">출시일: {new Date(groupBuy.product_details.release_date).toLocaleDateString('ko-KR')}</div>
               )}
