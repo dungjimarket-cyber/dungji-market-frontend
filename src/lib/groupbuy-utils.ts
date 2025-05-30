@@ -178,15 +178,15 @@ export function formatGroupBuyTitle(groupBuy: any, includeDetails: boolean = tru
   if (process.env.NODE_ENV === 'development') {
     console.log('[formatGroupBuyTitle] 타이틀 정보:', {
       productName,
+      subscriptionType, // 순서 변경: 가입유형을 통신사 앞으로
       carrier,
-      subscriptionType,
       planInfo,
-      components: [productName, carrier, subscriptionType, planInfo].filter(Boolean)
+      components: [productName, subscriptionType, carrier, planInfo].filter(Boolean)
     });
   }
   
-  // 필터링하여 빈 문자열은 제외하고 조합
-  return [productName, carrier, subscriptionType, planInfo].filter(Boolean).join(' ');
+  // 필터링하여 빈 문자열은 제외하고 조합 (순서 변경: 제품+가입유형+통신사+요금제)
+  return [productName, subscriptionType, carrier, planInfo].filter(Boolean).join(' ');
 }
 
 /**
