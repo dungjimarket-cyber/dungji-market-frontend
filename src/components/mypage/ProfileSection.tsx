@@ -101,7 +101,7 @@ export default function ProfileSection() {
     };
     
     fetchProfileData();
-  }, [accessToken, setUser, user]);
+  }, [accessToken, setUser]); // user 의존성 제거
   
   // 이메일 및 닉네임 필드 초기화 (선택적 백업 용도)
   useEffect(() => {
