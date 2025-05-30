@@ -26,11 +26,128 @@ import { Loader2, Store, BarChart, History, Package, ShoppingBag, ChevronRight }
  */
 export default function MyPageClient() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   const [isSeller, setIsSeller] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
+  
+  // 각 섹션의 데이터 카운트 상태 관리
+  const [participatingCount, setParticipatingCount] = useState(0);
+  const [pendingSelectionCount, setPendingSelectionCount] = useState(0);
+  const [sellerActivityCount, setSellerActivityCount] = useState(0);
+  const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
 
+  // 참여중인 공구 개수 가져오기
+  useEffect(() => {
+    const fetchParticipatingCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/joined_groupbuys/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setParticipatingCount(data.length);
+        }
+      } catch (error) {
+        console.error('참여중인 공구 개수 조회 오류:', error);
+      }
+    };
+    
+    // 최종 선택 대기중인 상품 개수 가져오기 (API 가정)
+    const fetchPendingSelectionCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/pending_selection/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setPendingSelectionCount(data.length);
+        }
+      } catch (error) {
+        console.error('최종 선택 대기중 개수 조회 오류:', error);
+        // API가 아직 없다면 임시값 설정
+        setPendingSelectionCount(0);
+      }
+    };
+    
+    // 판매자 활동 개수 가져오기 (판매자만 실행)
+    const fetchSellerActivityCount = async () => {
+      if (!isAuthenticated || !accessToken || !isSeller) return;
+      
+      try {
+        // 입찰 관리에서 데이터 개수 가져오기
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/bids/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setSellerActivityCount(data.length);
+        }
+      } catch (error) {
+        console.error('판매자 활동 개수 조회 오류:', error);
+        // API가 아직 없다면 임시값 설정
+        setSellerActivityCount(0);
+      }
+    };
+    
+    // 구매 진행중인 상품 개수 가져오기 (판매자만 실행)
+    const fetchPurchaseInProgressCount = async () => {
+      if (!isAuthenticated || !accessToken || !isSeller) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/settlements/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setPurchaseInProgressCount(data.length);
+        }
+      } catch (error) {
+        console.error('구매 진행중 개수 조회 오류:', error);
+        // API가 아직 없다면 임시값 설정
+        setPurchaseInProgressCount(0);
+      }
+    };
+    
+    if (isAuthenticated && accessToken) {
+      fetchParticipatingCount();
+      fetchPendingSelectionCount();
+      
+      if (isSeller) {
+        fetchSellerActivityCount();
+        fetchPurchaseInProgressCount();
+      }
+    }
+  }, [isAuthenticated, accessToken, isSeller]);
+  
   useEffect(() => {
     // 사용자 역할 확인
     const checkSellerRole = async () => {
@@ -96,7 +213,7 @@ export default function MyPageClient() {
                     <span className="font-medium">참여중인 공구</span>
                   </div>
                   <div className="flex items-center text-blue-600">
-                    <span className="mr-1 text-sm">3</span>
+                    <span className="mr-1 text-sm">{participatingCount}</span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-blue-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -115,7 +232,7 @@ export default function MyPageClient() {
                     <span className="font-medium">최종 선택 대기중</span>
                   </div>
                   <div className="flex items-center text-amber-600">
-                    <span className="mr-1 text-sm">2</span>
+                    <span className="mr-1 text-sm">{pendingSelectionCount}</span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-amber-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -140,7 +257,7 @@ export default function MyPageClient() {
                         <span className="font-medium">판매자 활동 대기중</span>
                       </div>
                       <div className="flex items-center text-green-600">
-                        <span className="mr-1 text-sm">1</span>
+                        <span className="mr-1 text-sm">{sellerActivityCount}</span>
                         <ChevronRight className="h-4 w-4 shrink-0 text-green-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                       </div>
                     </div>
@@ -158,7 +275,7 @@ export default function MyPageClient() {
                         <span className="font-medium">구매 진행중</span>
                       </div>
                       <div className="flex items-center text-purple-600">
-                        <span className="mr-1 text-sm">1</span>
+                        <span className="mr-1 text-sm">{purchaseInProgressCount}</span>
                         <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                       </div>
                     </div>
