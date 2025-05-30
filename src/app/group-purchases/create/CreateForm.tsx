@@ -7,8 +7,17 @@ import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
-import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2 } from "lucide-react";
+import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,9 +62,8 @@ const formSchema = z.object({
   product: z.string().min(1, {
     message: '상품을 선택해주세요',
   }),
-  title: z.string().min(3, {
-    message: '제목은 최소 3글자 이상이어야 합니다',
-  }),
+  title: z.string().optional().default(''),
+  // 제목은 자동 생성되도록 설정되어 있으므로 optional로 변경
   description: z.string().optional(),
   min_participants: z.union([
     z.string().transform(val => parseInt(val, 10) || 1),
@@ -235,6 +243,17 @@ export default function CreateForm() {
   const [sliderHours, setSliderHours] = useState<number>(24);
   const [regionType, setRegionType] = useState<'local'|'nationwide'>('local');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  // 알림 다이얼로그 상태
+  const [dialogState, setDialogState] = useState<{
+    open: boolean;
+    title?: string;
+    message?: string;
+    primaryActionLabel?: string;
+    primaryAction?: () => void;
+    secondaryActionLabel?: string;
+    secondaryAction?: () => void;
+  }>({ open: false });
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -515,6 +534,94 @@ export default function CreateForm() {
           return;
       }
       
+      // 동일 상품으로 이미 생성한 공구가 있는지 확인
+      try {
+        console.log('중복 공구 확인 시작 - 상품 ID:', productId, '타입:', typeof productId);
+        
+        const checkUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/my_groupbuys/`;
+        console.log('기존 공구 확인 URL:', checkUrl);
+        
+        const existingGroupBuys = await tokenUtils.fetchWithAuth(checkUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        console.log('기존 공구 출력:', JSON.stringify(existingGroupBuys, null, 2));
+        
+        // 중요: 현재 상품과 동일한 상품을 사용한 공구가 있는지 확인
+        if (existingGroupBuys && Array.isArray(existingGroupBuys)) {
+          // 확인용 로그 추가
+          console.log(`현재 선택된 상품 ID: ${productId} (${typeof productId})`);
+          console.log('기존 공구 목록 개수:', existingGroupBuys.length);
+          
+          // 확인을 위해 모든 공구의 상품 ID를 출력
+          existingGroupBuys.forEach((gb, idx) => {
+            console.log(`공구[${idx}] - 상품 ID: ${gb.product} (${typeof gb.product}), 상품명: ${gb.product_name}, 상태: ${gb.status}`);
+          });
+          
+          // 주의: 같은 상품 ID를 가진 공구 찾기 (status 값 고려)
+          const activeStatuses = ['recruiting', 'confirmed', 'pending']; // 활성 상태로 간주되는 상태들
+          
+          // 문자열과 숫자 모두 처리하기 위해 확실하게 숫자로 변환하여 비교
+          const duplicateGroupBuy = existingGroupBuys.find(gb => {
+            const gbProductId = typeof gb.product === 'string' ? parseInt(gb.product) : Number(gb.product);
+            const isActive = activeStatuses.includes(gb.status);
+            
+            console.log(`비교: 기존 공구 상품 ID ${gbProductId} vs 현재 상품 ID ${productId}, 상태: ${gb.status}, 활성여부: ${isActive}`);
+            
+            // 동일한 상품이고 활성 상태일 경우에만 중복으로 간주
+            return gbProductId === productId && isActive;
+          });
+          
+          console.log('중복 공구 검출 결과:', duplicateGroupBuy);
+          
+          // 중복 공구가 감지된 경우
+          if (duplicateGroupBuy) {
+            // 중요: 중복 공구 상세 정보 로그
+            console.error('중복 공구 발견! 등록 불가 - ID:', duplicateGroupBuy.id, 
+                          '상품:', duplicateGroupBuy.product_name, 
+                          '상태:', duplicateGroupBuy.status);
+            
+            // 상품명 추출 - selectedProduct가 없을 경우 duplicateGroupBuy의 상품명 사용
+            const selectedProductName = selectedProduct?.name || duplicateGroupBuy.product_name || '현재 상품';
+            
+            // 사용자에게 모달 표시 - 토스트보다 더 눈에 띄고 사라지지 않음
+            setDialogState({
+              open: true,
+              title: '중복 공구 등록 불가',
+              message: `이미 동일한 상품(${selectedProductName})으로 진행 중인 공구가 있습니다. 상태: ${duplicateGroupBuy.status === 'recruiting' ? '모집중' : duplicateGroupBuy.status}`,
+              primaryActionLabel: '기존 공구 확인',
+              primaryAction: () => {
+                router.push(`/groupbuys/${duplicateGroupBuy.id}`);
+                setDialogState({ open: false });
+              },
+              secondaryActionLabel: '다른 상품 선택',
+              secondaryAction: () => {
+                form.setValue('product', '');
+                setDialogState({ open: false });
+              }
+            });
+            
+            // 추가로 토스트 메시지도 표시 - 중요하고 눈에 띄게 표시
+            toast({
+              variant: 'destructive',
+              title: '중복 공구 등록 불가',
+              description: `이미 ${selectedProductName} 상품으로 진행 중인 공구가 있습니다.`,
+              duration: 60000, // 1분 동안 표시
+              className: "font-bold border-red-400 bg-red-50"
+            });
+            
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('기존 공구 확인 중 오류:', err);
+        // 오류가 발생해도 일단 계속 진행
+      }
+      
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
       console.log('공구 등록 API URL:', apiUrl);
       console.log('공구 등록 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
@@ -566,37 +673,47 @@ export default function CreateForm() {
         body: JSON.stringify(apiRequestData),
       });
       
-      console.log('공구 등록 응답:', result);
+      console.log('공구 등록 응답 성공:', result);
       
-      console.log('공구 등록 성공:', result);
+      // API 응답에서 공구 ID 추출
+      // 백엔드 API 응답 형식에 맞게 타입 안전하게 처리
+      const createdGroupBuyId = typeof result === 'object' && result ? 
+        (result as any).id || (result as any).groupbuy_id : undefined;
       
-      // 성공 Toast 메시지 (단순 텍스트로 변경하여 하이드레이션 문제 해결)
+      // 로딩 상태 해제
+      setIsSubmitting(false);
+      
+      // 동작이 요구되는 성공 메시지 - 창이 사라지지 않음
       toast({
         variant: 'default',
-        title: '공구 등록 성공',
-        description: '공구가 성공적으로 등록되었습니다. 잠시 후 마이페이지로 이동합니다.',
-        className: "border-green-200 bg-green-50"
-      });
-      
-      // 두 번째 토스트 메시지로 이동 버튼 안내
-      toast({
-        variant: 'default',
-        title: '이동 옵션',
-        description: '마이페이지 또는 공구 목록으로 이동하시겠습니까?',
-        action: (
-          <ToastAction altText="마이페이지" onClick={() => router.push('/mypage')}>
-            마이페이지
-          </ToastAction>
+        title: '공구 등록 성공!',
+        description: (
+          <div className="flex flex-col space-y-2">
+            <p>공구가 성공적으로 등록되었습니다.</p>
+            <div className="flex space-x-2 pt-2">
+              {createdGroupBuyId && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-blue-50 border-blue-200 hover:bg-blue-100"
+                  onClick={() => router.push(`/groupbuys/${createdGroupBuyId}`)}
+                >
+                  등록된 공구 보기
+                </Button>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => router.push('/mypage')}
+              >
+                마이페이지로 이동
+              </Button>
+            </div>
+          </div>
         ),
+        className: "border-green-200 bg-green-50",
+        duration: 10000, // 10초 동안 표시
       });
-
-      // 마이페이지로 자동 리다이렉트 (3초 후)
-      // 로딩 상태는 유지하면서 리다이렉트
-      setTimeout(() => {
-        router.push('/mypage');
-        // 리다이렉트 후에도 로딩 상태 유지 (페이지 이동이 완료될 때까지)
-        // setIsSubmitting(false)를 호출하지 않음
-      }, 3000);
       
     } catch (error: any) {
       console.error('공구 등록 실패:', error);
@@ -616,7 +733,45 @@ export default function CreateForm() {
             errorData = JSON.parse(responseText);
             console.error('백엔드 오류 상세:', errorData);
             
-            // 필드별 오류 메시지 표시
+            // 중복 공구 생성 오류 확인
+            if (typeof errorData === 'object' && errorData.non_field_errors && 
+                Array.isArray(errorData.non_field_errors) && 
+                errorData.non_field_errors.some((msg: string) => msg.includes('unique') || msg.includes('동일한 상품'))) {
+              
+              // 제품 ID 추출
+              const productId = apiRequestData.product;
+              const selectedProductName = selectedProduct?.name || '현재 상품';
+              
+              // 중복 공구 오류 전용 알림 표시
+              toast({
+                variant: 'destructive',
+                title: '중복 공구 등록 불가',
+                description: `이미 동일한 상품(${selectedProductName})으로 진행 중인 공구가 있습니다.`,
+              });
+              
+              // 해결 방법 안내
+              toast({
+                variant: 'default',
+                title: '문제 해결 방법',
+                description: '다음 중 한 가지 방법을 시도해보세요:',
+              });
+              
+              toast({
+                variant: 'default',
+                title: '방법 1: 세부 정보 변경',
+                description: '통신사, 가입유형, 요금제 정보를 변경하여 다른 조건의 공구로 등록해보세요.',
+              });
+              
+              toast({
+                variant: 'default',
+                title: '방법 2: 다른 상품 선택',
+                description: '다른 상품을 선택하여 공구를 생성하세요.',
+              });
+              
+              return;
+            }
+            
+            // 일반 필드별 오류 메시지 표시
             if (typeof errorData === 'object') {
               const errorMessages = Object.entries(errorData)
                 .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
@@ -734,21 +889,61 @@ export default function CreateForm() {
     );
   }
 
+  // 중복 공구 알림 다이얼로그 구성
+  const duplicateGroupBuyDialog = (
+    <Dialog open={dialogState.open} onOpenChange={(open) => setDialogState({ ...dialogState, open })}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-red-600">
+            <AlertTriangleIcon className="h-5 w-5" />
+            {dialogState.title || '알림'}
+          </DialogTitle>
+          <DialogDescription className="pt-2 text-base">
+            {dialogState.message || '작업을 계속할 수 없습니다.'}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-start flex gap-2 mt-4">
+          {dialogState.primaryAction && (
+            <Button 
+              variant="default" 
+              onClick={dialogState.primaryAction}
+            >
+              {dialogState.primaryActionLabel || '확인'}
+            </Button>
+          )}
+          {dialogState.secondaryAction && (
+            <Button 
+              variant="outline" 
+              onClick={dialogState.secondaryAction}
+            >
+              {dialogState.secondaryActionLabel || '취소'}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+  
+  // 로딩 오버레이 구성
+  const loadingOverlay = isSubmitting && (
+    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-lg">
+      <Loader2 className="h-16 w-16 animate-spin text-blue-500 mb-4" />
+      <p className="text-xl font-bold text-blue-700">공구 등록 중...</p>
+      <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
+      <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
+        <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+      </div>
+    </div>
+  );
+  
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">
-      {/* 로딩 오버레이 */}
-      {isSubmitting && (
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-lg">
-          <Loader2 className="h-16 w-16 animate-spin text-blue-500 mb-4" />
-          <p className="text-xl font-bold text-blue-700">공구 등록 중...</p>
-          <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
-          <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '100%' }}></div>
-          </div>
-        </div>
-      )}
+    <div className="container">
+      {duplicateGroupBuyDialog}
       
-      <CardHeader className="pb-4">
+      <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">
+        {loadingOverlay}
+        
+        <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold text-center mb-1">공구 등록하기</CardTitle>
         <CardDescription className="text-center text-gray-500">
           새로운 공동구매를 시작하세요
@@ -1236,5 +1431,6 @@ export default function CreateForm() {
         </Form>
       </CardContent>
     </Card>
+    </div>
   );
 }
