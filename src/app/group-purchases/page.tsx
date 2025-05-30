@@ -18,6 +18,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
+// 전역 타입 사용을 검토하세요.
+import type { GroupBuy as GlobalGroupBuy } from '@/types/groupbuy';
+
 interface GroupBuy {
   id: number;
   status: string;
@@ -37,6 +40,22 @@ interface GroupBuy {
     registration_type?: string;
     plan_info?: string;
     contract_info?: string;
+  };
+  
+  // 통신 상세 정보
+  telecom_detail?: {
+    telecom_carrier: string;
+    subscription_type: string;
+    plan_info: string;
+    contract_period?: string;
+  };
+  
+  // 가전제품 상세 정보
+  electronics_detail?: {
+    manufacturer: string;
+    warranty_period?: string;
+    power_consumption?: string;
+    dimensions?: string;
   };
 }
 
@@ -112,6 +131,8 @@ setGroupBuys(data);
 
   // 필터링된 공구 목록
   const filteredGroupBuys = groupBuys.filter((groupBuy) => {
+    // console.log('필터링 디버깅:', { groupBuy });
+    
     // 상태 필터
     if (statusFilter !== 'all' && groupBuy.status !== statusFilter) {
       return false;
@@ -130,57 +151,128 @@ setGroupBuys(data);
       if (priceFilter === 'high' && price <= 1000000) return false;
     }
     
-    // 제조사 필터
+    // 제조사 필터 - product_details와 telecom_detail 모두 확인
     if (manufacturerFilter !== 'all') {
+      // 기본 제품 정보에서 확인
       const productName = groupBuy.product_details?.name || '';
       const description = groupBuy.product_details?.description || '';
-      const allText = productName + ' ' + description;
       
-      if (manufacturerFilter === 'samsung' && !allText.toLowerCase().includes('삼성')) {
+      // telecom_detail이 있는 경우 추가 정보 확인
+      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
+      
+      // 전자제품 상세 정보가 있는 경우 제조사 확인 
+      const electronicsDetails = groupBuy.electronics_detail || {} as GroupBuy['electronics_detail'];
+      const manufacturer = electronicsDetails?.manufacturer || '';
+      
+      const allText = productName + ' ' + description + ' ' + manufacturer;
+      
+      if (manufacturerFilter === 'samsung' && 
+          !allText.toLowerCase().includes('삼성') && 
+          !allText.toLowerCase().includes('samsung')) {
         return false;
       }
-      if (manufacturerFilter === 'apple' && !allText.toLowerCase().includes('애플')) {
+      if (manufacturerFilter === 'apple' && 
+          !allText.toLowerCase().includes('애플') && 
+          !allText.toLowerCase().includes('apple') && 
+          !allText.toLowerCase().includes('아이폰') && 
+          !allText.toLowerCase().includes('iphone')) {
         return false;
       }
     }
     
-    // 통신사 필터
+    // 통신사 필터 - product_details.telecom_detail과 groupBuy.telecom_detail 모두 확인
     if (carrierFilter !== 'all') {
-      const carrier = groupBuy.product_details?.carrier || '';
-      if (carrierFilter === 'skt' && carrier !== 'SKT' && !carrier.toLowerCase().includes('skt')) {
+      // 제품 상세 정보에서 통신사 확인
+      const productCarrier = groupBuy.product_details?.carrier || '';
+      
+      // 통신 상세 정보에서 통신사 확인 (GroupBuyTelecomDetail 모델)
+      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
+      const telecomCarrier = telecomDetails?.telecom_carrier || '';
+      
+      // 둘 중 하나라도 일치하면 통과
+      const allCarrierInfo = productCarrier + ' ' + telecomCarrier;
+      
+      if (carrierFilter === 'skt' && 
+          !allCarrierInfo.includes('SKT') && 
+          !allCarrierInfo.toLowerCase().includes('skt') && 
+          !allCarrierInfo.includes('SK텔레콤')) {
         return false;
       }
-      if (carrierFilter === 'kt' && carrier !== 'KT' && !carrier.toLowerCase().includes('kt')) {
+      if (carrierFilter === 'kt' && 
+          !allCarrierInfo.includes('KT') && 
+          !allCarrierInfo.toLowerCase().includes('kt')) {
         return false;
       }
-      if (carrierFilter === 'lgu+' && carrier !== 'LG U+' && !carrier.toLowerCase().includes('lg') && !carrier.toLowerCase().includes('lgu+')) {
+      if (carrierFilter === 'lgu+' && 
+          !allCarrierInfo.includes('LG U+') && 
+          !allCarrierInfo.includes('LGU') && 
+          !allCarrierInfo.toLowerCase().includes('lg') && 
+          !allCarrierInfo.toLowerCase().includes('lgu+')) {
         return false;
       }
     }
     
-    // 구매방식 필터
+    // 구매방식 필터 - product_details와 telecom_detail 모두 확인
     if (registrationTypeFilter !== 'all') {
-      const regType = groupBuy.product_details?.registration_type || '';
-      if (registrationTypeFilter === 'new' && regType !== 'NEW') {
+      // 제품 상세 정보에서 가입 유형 확인
+      const productRegType = groupBuy.product_details?.registration_type || '';
+      
+      // 통신 상세 정보에서 가입 유형 확인
+      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
+      const telecomSubType = telecomDetails?.subscription_type || '';
+      
+      // 둘 중 하나라도 일치하면 통과
+      const allRegTypeInfo = productRegType + ' ' + telecomSubType;
+      
+      if (registrationTypeFilter === 'new' && 
+          !allRegTypeInfo.includes('NEW') && 
+          !allRegTypeInfo.includes('new') && 
+          !allRegTypeInfo.includes('신규가입')) {
         return false;
       }
-      if (registrationTypeFilter === 'mnp' && regType !== 'MNP') {
+      if (registrationTypeFilter === 'mnp' && 
+          !allRegTypeInfo.includes('MNP') && 
+          !allRegTypeInfo.includes('transfer') && 
+          !allRegTypeInfo.includes('번호이동')) {
         return false;
       }
-      if (registrationTypeFilter === 'change' && regType !== 'CHANGE') {
+      if (registrationTypeFilter === 'change' && 
+          !allRegTypeInfo.includes('CHANGE') && 
+          !allRegTypeInfo.includes('change') && 
+          !allRegTypeInfo.includes('기기변경')) {
         return false;
       }
     }
     
     // 요금제 필터
     if (planPriceFilter !== 'all') {
-      const planInfo = groupBuy.product_details?.plan_info || '';
+      // 제품 상세 정보에서 요금제 확인
+      const productPlanInfo = groupBuy.product_details?.plan_info || '';
+      
+      // 통신 상세 정보에서 요금제 확인
+      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
+      const telecomPlanInfo = telecomDetails?.plan_info || '';
+      
+      // 모든 요금제 정보 합치기
+      const allPlanInfo = productPlanInfo + ' ' + telecomPlanInfo;
+      
       // 요금제 정보에서 가격 추출
       let planPrice = 0;
-      const priceMatch = planInfo.match(/([0-9]+)만원/); // 예: "5만원대" 매칭
       
-      if (priceMatch && priceMatch[1]) {
-        planPrice = parseInt(priceMatch[1], 10);
+      // 다양한 형식의 요금제 정보에서 숫자 추출 시도
+      // '5만원대', '5만원', '50000원', '5만 요금제' 등의 형식 지원
+      const priceMatches = allPlanInfo.match(/([0-9]+)만원대?|([0-9]+)만/); 
+      if (priceMatches && (priceMatches[1] || priceMatches[2])) {
+        planPrice = parseInt(priceMatches[1] || priceMatches[2], 10);
+      } else {
+        // 직접적인 숫자 표현이 없다면 문자열 비교로 확인
+        const planInfoLower = allPlanInfo.toLowerCase();
+        if (planInfoLower.includes('5만') || planInfoLower.includes('5만원')) planPrice = 5;
+        if (planInfoLower.includes('6만') || planInfoLower.includes('6만원')) planPrice = 6;
+        if (planInfoLower.includes('7만') || planInfoLower.includes('7만원')) planPrice = 7;
+        if (planInfoLower.includes('8만') || planInfoLower.includes('8만원')) planPrice = 8;
+        if (planInfoLower.includes('9만') || planInfoLower.includes('9만원')) planPrice = 9;
+        if (planInfoLower.includes('10만') || planInfoLower.includes('10만원')) planPrice = 10;
       }
       
       if (planPriceFilter === '5' && planPrice !== 5) return false;

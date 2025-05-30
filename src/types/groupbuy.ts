@@ -79,6 +79,14 @@ export interface GroupBuy {
     plan_info: string;
     contract_period?: string;
   };
+  
+  // 가전제품 상세 정보
+  electronics_detail?: {
+    manufacturer: string;
+    warranty_period?: string;
+    power_consumption?: string;
+    dimensions?: string;
+  };
 }
 
 // 참여 상태 정보
