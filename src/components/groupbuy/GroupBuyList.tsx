@@ -134,17 +134,17 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               onClick={() => handleGroupBuyClick(groupBuy)}
             >
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || '휴대폰'}</p>
-                    <CardTitle className="text-base sm:text-lg md:text-xl">
-                      {formatGroupBuyTitle(groupBuy)}
-                    </CardTitle>
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs sm:text-sm text-gray-500">{groupBuy.product_details?.category_name || '휴대폰'}</p>
+                    {/* 공구 상태를 동적으로 계산하여 표시 */}
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
+                      {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
+                    </span>
                   </div>
-                  {/* 공구 상태를 동적으로 계산하여 표시 */}
-                  <span className={`px-2 py-1 text-sm rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
-                    {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
-                  </span>
+                  <CardTitle className="text-base sm:text-lg md:text-xl">
+                    {formatGroupBuyTitle(groupBuy)}
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>

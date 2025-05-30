@@ -782,23 +782,23 @@ setGroupBuys(data);
               <Link key={groupBuy.id} href={`/groupbuys/${groupBuy.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow">
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-500 mb-1">{groupBuy.product_details?.category_name || ''}</p>
-                        <CardTitle className="text-xl">
-                          {formatGroupBuyTitle(groupBuy)}
-                        </CardTitle>
+                    <div className="flex flex-col">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs sm:text-sm text-gray-500">{groupBuy.product_details?.category_name || '휴대폰'}</p>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          groupBuy.status === 'recruiting'
+                            ? 'bg-blue-100 text-blue-800'
+                            : groupBuy.status === 'confirmed'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {groupBuy.status === 'recruiting' ? '모집중' :
+                           groupBuy.status === 'confirmed' ? '확정' : '종료'}
+                        </span>
                       </div>
-                      <span className={`px-2 py-1 text-sm rounded-full ${
-                        groupBuy.status === 'recruiting'
-                          ? 'bg-blue-100 text-blue-800'
-                          : groupBuy.status === 'confirmed'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {groupBuy.status === 'recruiting' ? '모집중' :
-                         groupBuy.status === 'confirmed' ? '확정' : '종료'}
-                      </span>
+                      <CardTitle className="text-base sm:text-lg md:text-xl">
+                        {formatGroupBuyTitle(groupBuy)}
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>

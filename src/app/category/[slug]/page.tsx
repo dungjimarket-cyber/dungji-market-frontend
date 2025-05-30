@@ -127,16 +127,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                         <CardTitle className="text-xl">{groupBuy.product_details?.name || '상품명 없음'}</CardTitle>
                         <p className="text-base font-medium mt-1 text-blue-600">{groupBuy.title}</p>
                       </div>
-                      <span className={`px-2 py-1 text-sm rounded-full ${
-                        groupBuy.status === 'recruiting'
-                          ? 'bg-blue-100 text-blue-800'
-                          : groupBuy.status === 'confirmed'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {groupBuy.status === 'recruiting' ? '모집중' :
-                         groupBuy.status === 'confirmed' ? '확정' : '종료'}
-                      </span>
+                      
                     </div>
                   </CardHeader>
                   <CardContent>

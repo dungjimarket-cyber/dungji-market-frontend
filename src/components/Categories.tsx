@@ -63,7 +63,9 @@ export default function Categories() {
           asChild
         >
           <Link href={`/category/${category.slug}`}>
-            <span className="text-2xl">{category.emoji || '💼'}</span>
+            <span className="text-2xl">
+              {category.slug === '01' ? '📱' : (category.emoji || '💼')}
+            </span>
             <span className="font-medium">{category.name}</span>
           </Link>
         </Button>
