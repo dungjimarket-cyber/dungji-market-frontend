@@ -10,8 +10,13 @@ import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
 import BidManagement from '@/components/mypage/BidManagement';
 import SettlementHistory from '@/components/mypage/SettlementHistory';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Store, BarChart, History } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Loader2, Store, BarChart, History, Package, ShoppingBag, ChevronRight } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -80,41 +85,91 @@ export default function MyPageClient() {
         <div className="space-y-6">
           <ProfileSection />
           
-          {/* 사용자 역할에 따른 탭 메뉴 */}
-          <Tabs defaultValue="participating">
-            <TabsList className="flex flex-wrap">
-              <TabsTrigger value="participating">참여중인 공구</TabsTrigger>
-              
-              {/* 판매자만 '입찰 관리'와 '정산 내역' 탭 표시 */}
-              {isSeller && (
-                <>
-                  <TabsTrigger value="bids">
-                    <Store className="w-4 h-4 mr-1" /> 입찰 관리
-                  </TabsTrigger>
-                  <TabsTrigger value="settlements">
-                    <BarChart className="w-4 h-4 mr-1" /> 정산 내역
-                  </TabsTrigger>
-                </>
-              )}
-            </TabsList>
-            
-            <TabsContent value="participating">
-              <ParticipatingGroupBuys />
-            </TabsContent>
-            
-            {/* 판매자만 표시 */}
+          {/* 아코디언 스타일 메뉴 */}
+          <Accordion type="single" collapsible className="w-full">
+            {/* 참여중인 공구 */}
+            <AccordionItem value="participating">
+              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Package className="w-5 h-5 mr-2 text-blue-500" />
+                    <span className="font-medium">참여중인 공구</span>
+                  </div>
+                  <div className="flex items-center text-blue-600">
+                    <span className="mr-1 text-sm">3</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-blue-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <ParticipatingGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 최종 선택 대기중 */}
+            <AccordionItem value="pending">
+              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <ShoppingBag className="w-5 h-5 mr-2 text-amber-500" />
+                    <span className="font-medium">최종 선택 대기중</span>
+                  </div>
+                  <div className="flex items-center text-amber-600">
+                    <span className="mr-1 text-sm">2</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-amber-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-gray-500 text-center">최종 선택 대기중인 상품이 표시됩니다.</p>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 판매자 활동 (판매자만 표시) */}
             {isSeller && (
               <>
-                <TabsContent value="bids">
-                  <BidManagement />
-                </TabsContent>
-                
-                <TabsContent value="settlements">
-                  <SettlementHistory />
-                </TabsContent>
+                <AccordionItem value="bids">
+                  <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <Store className="w-5 h-5 mr-2 text-green-500" />
+                        <span className="font-medium">판매자 활동 대기중</span>
+                      </div>
+                      <div className="flex items-center text-green-600">
+                        <span className="mr-1 text-sm">1</span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-green-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4">
+                    <BidManagement />
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="settlements">
+                  <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <BarChart className="w-5 h-5 mr-2 text-purple-500" />
+                        <span className="font-medium">구매 진행중</span>
+                      </div>
+                      <div className="flex items-center text-purple-600">
+                        <span className="mr-1 text-sm">1</span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4">
+                    <SettlementHistory />
+                  </AccordionContent>
+                </AccordionItem>
               </>
             )}
-          </Tabs>
+          </Accordion>
         </div>
       ) : (
         <div className="flex justify-center items-center h-[50vh]">
