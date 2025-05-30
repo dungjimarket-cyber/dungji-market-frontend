@@ -295,6 +295,14 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 <span className="ml-2 text-sm">
                   {groupBuy.creator_name || '익명'}
                 </span>
+                
+                {/* 참여중 표시 배지 */}
+                {participationStatus?.is_participating && (
+                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full flex items-center">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                    참여중
+                  </span>
+                )}
               </div>
               
               {groupBuy.product_details?.release_date && (
