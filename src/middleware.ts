@@ -66,6 +66,7 @@ export const config = {
   matcher: [
     '/api/:path*',
     '/mypage/:path*',
-    '/seller-dashboard/:path*'
+    '/seller-dashboard/:path*',
+    '/group-purchases/create'
   ],
 };

@@ -276,14 +276,8 @@ export default function CreateForm() {
       return; // 로딩 중에는 아무 작업도 수행하지 않음
     }
     
-    // 비인증 상태일 때 로그인 페이지로 리디렉션
-    if (!isAuthenticated) {
-      router.push('/login?callbackUrl=/group-purchases/create');
-      return;
-    }
-    
     // 판매자(seller) 계정은 공구 등록 불가
-    if (user?.role === 'seller' || (user?.roles && user.roles.includes('seller'))) {
+    if (isAuthenticated && (user?.role === 'seller' || (user?.roles && user.roles.includes('seller')))) {
       toast({
         title: "접근 제한",
         description: "판매자 계정은 공구 등록이 불가능합니다.",
@@ -291,6 +285,8 @@ export default function CreateForm() {
       });
       router.push('/'); // 홈페이지로 리디렉션
     }
+    
+    // 참고: 비인증 상태는 아래 렌더링 로직에서 처리하므로 여기서는 리다이렉트하지 않음
   }, [router, isLoading, isAuthenticated, user]);
 
   useEffect(() => {
@@ -936,44 +932,117 @@ export default function CreateForm() {
     </div>
   );
   
-  return (
-    <div className="container">
-      {duplicateGroupBuyDialog}
-      
+  // 중복 공구 발견 시 알림 표시 함수
+  const showDuplicateGroupBuyError = (productName: string) => {
+    // 중복 공구 오류 전용 알림 표시
+    toast({
+      variant: 'destructive',
+      title: '중복 공구 등록 불가',
+      description: `이미 동일한 상품(${productName})으로 진행 중인 공구가 있습니다.`,
+    });
+    
+    // 해결 방법 안내
+    toast({
+      variant: 'default',
+      title: '문제 해결 방법',
+      description: '다음 중 한 가지 방법을 시도해보세요:',
+    });
+    
+    toast({
+      variant: 'default',
+      title: '방법 1: 세부 정보 변경',
+      description: '통신사, 가입유형, 요금제 정보를 변경하여 다른 조건의 공구로 등록해보세요.',
+    });
+    
+    toast({
+      variant: 'default',
+      title: '방법 2: 다른 상품 선택',
+      description: '다른 상품을 선택하여 공구를 생성하세요.',
+    });
+  };
+
+
+// 일반 필드별 오류 메시지 표시
+if (typeof errorData === 'object') {
+  const errorMessages = Object.entries(errorData)
+    .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+    .join('\n');
+  
+  toast({
+    variant: 'destructive',
+    title: '공구 등록 실패',
+    description: errorMessages || '서버에서 오류가 발생했습니다.',
+  });
+  return;
+}
+
+// 로그인 안내 컴포넌트
+const LoginPrompt = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-2xl font-bold text-center mb-1">로그인이 필요합니다</CardTitle>
+      <p className="text-center text-gray-500 text-sm">
+        공구를 등록하기 위해서는 로그인이 필요합니다.
+      </p>
+    </CardHeader>
+    <CardContent className="flex flex-col items-center space-y-4">
+      <div className="p-6 text-center">
+        <p className="mb-4">공구 등록은 로그인 후 이용할 수 있습니다.</p>
+        <Button
+          onClick={() => router.push('/login?callbackUrl=/group-purchases/create')}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          로그인 하러 가기
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// 로딩 상태 표시 컴포넌트
+const LoadingState = () => (
+  <Card className="w-full max-w-4xl mx-auto mt-5 mb-10">
+    <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+      <p>잠시만 기다려주세요...</p>
+    </CardContent>
+  </Card>
+);
+
+return (
+  <div className="container">
+    {duplicateGroupBuyDialog}
+    
+    {isSubmitting ? (
+      <Card className="w-full max-w-4xl mx-auto mt-5 mb-10">
+        <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+          <p className="text-xl font-bold text-blue-700">공구 등록 중...</p>
+          <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
+        </CardContent>
+      </Card>
+    ) : isLoading ? (
+      <LoadingState />
+    ) : !isAuthenticated ? (
+      <LoginPrompt />
+    ) : (
       <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">
         {loadingOverlay}
         
         <CardHeader className="pb-4">
-        <CardTitle className="text-2xl font-bold text-center mb-1">공구 등록하기</CardTitle>
-        <CardDescription className="text-center text-gray-500">
-          새로운 공동구매를 시작하세요
-        </CardDescription>
-        {/* 폼 유효성 검증 오류 표시 */}
-        {Object.keys(form.formState.errors).length > 0 && (
-          <div className="mt-3 p-3 bg-red-50 rounded-md border border-red-200">
-            <p className="text-red-600 font-medium text-sm mb-1">입력 정보를 확인해주세요:</p>
-            <ul className="text-xs text-red-500 list-disc pl-4">
-              {Object.entries(form.formState.errors).map(([field, error]) => (
-                <li key={field}>{field}: {error?.message?.toString() || '유효하지 않은 값'}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form 
-            onSubmit={form.handleSubmit((data) => {
-              // 폼 제출 이벤트 관리
-              console.log('폼 제출 처리:', data);
-              onSubmit(data);
-            })} 
-            className="space-y-6"
-          >
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium">기기 선택</h3>
-              <FormField
-                control={form.control}
+          <CardTitle className="text-2xl font-bold text-center mb-1">공구 등록하기</CardTitle>
+          <CardDescription className="text-center text-gray-500">
+            새로운 공동구매를 시작하세요
+          </CardDescription>
+          {/* 폼 유효성 검증 오류 표시 */}
+          {Object.keys(form.formState.errors).length > 0 && (
+            <div className="mt-3 p-3 bg-red-50 rounded-md border border-red-200">
+              <p className="text-red-600 font-medium text-sm mb-1">입력 정보를 확인해주세요:</p>
+              <ul className="text-xs text-red-500 list-disc pl-4">
+                {Object.entries(form.formState.errors).map(([field, error]) => (
+                  <li key={field}>{field}: {error?.message?.toString() || '유효하지 않은 값'}</li>
+                ))}
+              </ul>
                 name="product"
                 render={({ field }) => (
                   <FormItem>
@@ -1095,7 +1164,6 @@ export default function CreateForm() {
                                   <SelectItem value="SKT">SK</SelectItem>
                                   <SelectItem value="KT">KT</SelectItem>
                                   <SelectItem value="LGU">LG</SelectItem>
-                                  <SelectItem value="MVNO">알뜰폰</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
