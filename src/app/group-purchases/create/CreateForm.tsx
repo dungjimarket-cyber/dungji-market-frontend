@@ -488,8 +488,8 @@ export default function CreateForm() {
         max_participants: maxPart,          // 필수 필드, 수치, 최소 1
         end_time: endTimeValue,             // 필수 필드, 날짜/시간 문자열
         region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
-        product_details: cleanProductDetails, // 선택 필드, JSON 오브젝트
-        creator: userId                    // 필수 필드, 현재 로그인한 사용자 ID
+        creator: userId,                    // 필수 필드, 현재 로그인한 사용자 ID
+        telecom_detail: cleanProductDetails // 통신사 정보 (통신사 관련 상품의 경우 필수)
       };
       
       // 로그인 상태 확인
@@ -542,10 +542,7 @@ export default function CreateForm() {
         console.log('기존 공구 확인 URL:', checkUrl);
         
         const existingGroupBuys = await tokenUtils.fetchWithAuth(checkUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
+          method: 'GET'
         });
         
         console.log('기존 공구 출력:', JSON.stringify(existingGroupBuys, null, 2));
@@ -562,7 +559,7 @@ export default function CreateForm() {
           });
           
           // 주의: 같은 상품 ID를 가진 공구 찾기 (status 값 고려)
-          const activeStatuses = ['recruiting', 'confirmed', 'pending']; // 활성 상태로 간주되는 상태들
+          const activeStatuses = ['recruiting', 'bidding', 'voting', 'seller_confirmation']; // 활성 상태로 간주되는 상태들
           
           // 문자열과 숫자 모두 처리하기 위해 확실하게 숫자로 변환하여 비교
           const duplicateGroupBuy = existingGroupBuys.find(gb => {
@@ -584,7 +581,8 @@ export default function CreateForm() {
                           '상품:', duplicateGroupBuy.product_name, 
                           '상태:', duplicateGroupBuy.status);
             
-            // 상품명 추출 - selectedProduct가 없을 경우 duplicateGroupBuy의 상품명 사용
+            // 제품 ID 추출
+            const productId = apiRequestData.product;
             const selectedProductName = selectedProduct?.name || duplicateGroupBuy.product_name || '현재 상품';
             
             // 사용자에게 모달 표시 - 토스트보다 더 눈에 띄고 사라지지 않음
@@ -622,20 +620,34 @@ export default function CreateForm() {
         // 오류가 발생해도 일단 계속 진행
       }
       
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
-      console.log('공구 등록 API URL:', apiUrl);
-      console.log('공구 등록 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
-      
       // 디버깅을 위한 요청 데이터 로깅
       console.log('===== 요청 형식 및 베어된 값 확인 =====');
       console.log('product (productId):', productId, typeof productId);
-      console.log('title:', values.title.trim(), typeof values.title);
+      console.log('title:', safeTitle, typeof safeTitle);
       console.log('description:', safeDescription, typeof safeDescription);
       console.log('min_participants:', minPart, typeof minPart);
       console.log('max_participants:', maxPart, typeof maxPart);
       console.log('end_time:', endTimeValue, typeof endTimeValue);
       console.log('region_type:', regionType || 'local');
-      console.log('product_details:', JSON.stringify(cleanProductDetails));
+      console.log('creator:', userId, typeof userId);
+      
+      // 추가 디버깅: 각 필드의 유효성 검사
+      console.log('===== 필드 유효성 검사 =====');
+      console.log('productId 유효성:', productId && productId > 0);
+      console.log('title 유효성:', safeTitle && safeTitle.length > 0);
+      console.log('min_participants 유효성:', minPart && minPart >= 1);
+      console.log('max_participants 유효성:', maxPart && maxPart >= 1 && maxPart <= 100);
+      console.log('end_time 유효성:', endTimeValue && new Date(endTimeValue) > new Date());
+      console.log('creator 유효성:', userId && (typeof userId === 'number' ? userId > 0 : parseInt(userId.toString()) > 0));
+      console.log('region_type 유효성:', regionType === 'local' || regionType === 'nationwide');
+      
+      // end_time 형식 상세 확인
+      console.log('===== end_time 상세 분석 =====');
+      console.log('endTimeValue 원본:', endTimeValue);
+      console.log('endTimeValue Date 객체:', new Date(endTimeValue));
+      console.log('endTimeValue ISO 문자열:', new Date(endTimeValue).toISOString());
+      console.log('현재 시간:', new Date().toISOString());
+      console.log('시간 차이 (시간):', (new Date(endTimeValue).getTime() - new Date().getTime()) / (1000 * 60 * 60));
       
       // 필수 필드 값 검증 
       if (!productId || productId <= 0) {
@@ -660,220 +672,94 @@ export default function CreateForm() {
       
       console.log('=====================');
       
+      // API URL 설정
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
+      console.log('공구 등록 API URL:', apiUrl);
+      console.log('공구 등록 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
+      
       // tokenUtils를 사용하여 인증된 API 요청 수행
       console.log('API 요청 발송:', apiUrl);
       console.log('JSON.stringify 결과:', JSON.stringify(apiRequestData));
       
-      const result = await tokenUtils.fetchWithAuth(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(apiRequestData),
-      });
-      
-      console.log('공구 등록 응답 성공:', result);
-      
-      // API 응답에서 공구 ID 추출
-      // 백엔드 API 응답 형식에 맞게 타입 안전하게 처리
-      const createdGroupBuyId = typeof result === 'object' && result ? 
-        (result as any).id || (result as any).groupbuy_id : undefined;
-      
-      // 로딩 상태 해제
-      setIsSubmitting(false);
-      
-      // 동작이 요구되는 성공 메시지 - 창이 사라지지 않음
-      toast({
-        variant: 'default',
-        title: '공구 등록 성공!',
-        description: (
-          <div className="flex flex-col space-y-2">
-            <p>공구가 성공적으로 등록되었습니다.</p>
-            <div className="flex space-x-2 pt-2">
-              {createdGroupBuyId && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-blue-50 border-blue-200 hover:bg-blue-100"
-                  onClick={() => router.push(`/groupbuys/${createdGroupBuyId}`)}
-                >
-                  등록된 공구 보기
-                </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => router.push('/mypage')}
-              >
-                마이페이지로 이동
-              </Button>
-            </div>
-          </div>
-        ),
-        className: "border-green-200 bg-green-50",
-        duration: 10000, // 10초 동안 표시
-      });
-      
-    } catch (error: any) {
-      console.error('공구 등록 실패:', error);
-      
-      // 오류 응답 내용 상세 로깅
-      if (error.response) {
-        try {
-          // 응답 원본 확인
-          const responseText = await error.response.text();
-          console.error('원래 응답 데이터:', responseText);
-          console.error('원래 헤더:', error.response.status, error.response.headers);
-          console.error('오류 발생 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
-          
-          // JSON으로 파싱 시도
-          let errorData;
-          try {
-            errorData = JSON.parse(responseText);
-            console.error('백엔드 오류 상세:', errorData);
-            
-            // 중복 공구 생성 오류 확인
-            if (typeof errorData === 'object' && errorData.non_field_errors && 
-                Array.isArray(errorData.non_field_errors) && 
-                errorData.non_field_errors.some((msg: string) => msg.includes('unique') || msg.includes('동일한 상품'))) {
-              
-              // 제품 ID 추출
-              const productId = apiRequestData.product;
-              const selectedProductName = selectedProduct?.name || '현재 상품';
-              
-              // 중복 공구 오류 전용 알림 표시
-              toast({
-                variant: 'destructive',
-                title: '중복 공구 등록 불가',
-                description: `이미 동일한 상품(${selectedProductName})으로 진행 중인 공구가 있습니다.`,
-              });
-              
-              // 해결 방법 안내
-              toast({
-                variant: 'default',
-                title: '문제 해결 방법',
-                description: '다음 중 한 가지 방법을 시도해보세요:',
-              });
-              
-              toast({
-                variant: 'default',
-                title: '방법 1: 세부 정보 변경',
-                description: '통신사, 가입유형, 요금제 정보를 변경하여 다른 조건의 공구로 등록해보세요.',
-              });
-              
-              toast({
-                variant: 'default',
-                title: '방법 2: 다른 상품 선택',
-                description: '다른 상품을 선택하여 공구를 생성하세요.',
-              });
-              
-              return;
-            }
-            
-            // 일반 필드별 오류 메시지 표시
-            if (typeof errorData === 'object') {
-              const errorMessages = Object.entries(errorData)
-                .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-                .join('\n');
-              
-              toast({
-                variant: 'destructive',
-                title: '공구 등록 실패',
-                description: errorMessages || '서버에서 오류가 발생했습니다.',
-              });
-              return;
-            }
-          } catch (parseError) {
-            console.error('JSON 파싱 실패:', parseError);
-            // 응답이 JSON이 아닌 경우
-            toast({
-              variant: 'destructive',
-              title: '공구 등록 실패',
-              description: responseText || '서버 오류가 발생했습니다.',
-            });
-            return;
-          }
-        } catch (responseError) {
-          console.error('응답 읽기 실패:', responseError);
+      try {
+        const result = await tokenUtils.fetchWithAuth(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(apiRequestData),
+        });
+        
+        console.log('공구 등록 응답 성공:', result);
+        
+        // 응답 데이터 상세 로깅
+        console.log('응답 데이터 타입:', typeof result);
+        console.log('응답 데이터 상세:', JSON.stringify(result, null, 2));
+        
+        // API 응답에서 공구 ID 추출
+        // 백엔드 API 응답 형식에 맞게 타입 안전하게 처리
+        const createdGroupBuyId = typeof result === 'object' && result ? 
+          (result as any).id || (result as any).groupbuy_id : undefined;
+        
+        console.log('추출된 공구 ID:', createdGroupBuyId);
+        
+        // 로딩 상태 해제
+        setIsSubmitting(false);
+        
+        // 성공 토스트 메시지 표시
+        toast({
+          variant: 'default',
+          title: '공구 등록 성공!',
+          description: '공구가 성공적으로 등록되었습니다. 공구 목록으로 이동합니다.',
+          className: "border-green-200 bg-green-50",
+          duration: 3000,
+        });
+        
+        // 3초 후 자동으로 공구 목록 페이지로 이동
+        setTimeout(() => {
+          router.push('/group-purchases');
+        }, 1500);
+      } catch (apiError: unknown) {
+        console.error('===== API 요청 실패 상세 정보 =====');
+        console.error('오류 객체:', apiError);
+        console.error('오류 메시지:', (apiError as Error).message);
+        console.error('오류 스택:', (apiError as Error).stack);
+        
+        // 추가 디버깅을 위해 요청 데이터 재출력
+        console.error('실패한 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
+        
+        // 에러 메시지 추출
+        let errorMessage = '공구 등록 중 오류가 발생했습니다.';
+        
+        if (apiError instanceof Error) {
+          // fetchWithAuth에서 던진 사용자 친화적 메시지 사용
+          errorMessage = apiError.message;
         }
-      }
-      setIsSubmitting(false);
-      
-      // 인증 오류 처리
-      if (error.message === 'Not authenticated' || error.message === 'No access token available') {
+        
         toast({
           variant: 'destructive',
-          title: '로그인 필요',
-          description: '세션이 만료되었습니다. 다시 로그인해주세요.'
+          title: '공구 등록 실패',
+          description: errorMessage,
         });
-        router.push('/login');
-        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error('공구 등록 실패:', error);
+      
+      // 에러 메시지 추출
+      let errorMessage = '공구 등록 중 오류가 발생했습니다.';
+      
+      if (error instanceof Error) {
+        // fetchWithAuth에서 던진 사용자 친화적 메시지 사용
+        errorMessage = error.message;
       }
       
-      // 오류 응답 상세 처리
-      if (error.response) {
-        if (error.response?.status === 400) {
-          // 요청 데이터 문제 처리
-          const errorData = error.response.data || {};
-          const errorMessage = errorData.detail || '입력 정보를 확인해주세요.';
-          
-          toast({
-            variant: "destructive",
-            title: '입력 오류',
-            description: errorMessage,
-          });
-          
-          // 필드별 오류 처리
-          if (typeof errorData === 'object') {
-            Object.keys(errorData).forEach(key => {
-              form.setError(key as any, {
-                type: 'manual',
-                message: Array.isArray(errorData[key]) ? errorData[key][0] : errorData[key]
-              });
-            });
-          }
-          return;
-        }
-        
-        if (error.response?.status === 401) {
-          toast({
-            variant: "destructive",
-            title: '인증 오류',
-            description: "로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.",
-          });
-          
-          // 토큰 무효화 후 로그인 페이지로 리디렉션
-          setTimeout(() => {
-            router.push('/login');
-          }, 1500);
-          return;
-        }
-        
-        if (error.response?.status === 403) {
-          toast({
-            variant: "destructive",
-            title: '권한 오류',
-            description: "이 작업을 수행할 권한이 없습니다.",
-          });
-          return;
-        }
-        
-        if (error.response?.status === 500) {
-          toast({
-            variant: "destructive",
-            title: '서버 오류',
-            description: "서버에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-          });
-          return;
-        }
-      }
-      
-      // 기본 오류 처리
       toast({
         variant: 'destructive',
         title: '공구 등록 실패',
-        description: '공구 등록 중 오류가 발생했습니다. 다시 시도해주세요.'
+        description: errorMessage,
       });
     } finally {
       setIsSubmitting(false);
@@ -1383,7 +1269,7 @@ export default function CreateForm() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="6hours">6시간 후 마감</SelectItem>
-                          <SelectItem value="12hours">12시걠4 후 마감</SelectItem>
+                          <SelectItem value="12hours">12시간 후 마감</SelectItem>
                           <SelectItem value="24hours">24시간 후 마감</SelectItem>
                           <SelectItem value="custom">직접 입력</SelectItem>
                         </SelectContent>

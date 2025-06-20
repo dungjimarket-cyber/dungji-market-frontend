@@ -1,25 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import Link from 'next/link';
-import { calculateGroupBuyStatus, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
-import { RoleButton } from '@/components/auth/RoleButton';
-import { Clock, Filter, ChevronDown, Check, X } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { MainHeader } from '@/components/navigation/MainHeader';
+import { BottomNavigation } from '@/components/navigation/BottomNavigation';
+import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
+import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-
-// 전역 타입 사용을 검토하세요.
-import type { GroupBuy as GlobalGroupBuy } from '@/types/groupbuy';
+import { toast } from 'sonner';
 
 interface GroupBuy {
   id: number;
@@ -41,810 +29,250 @@ interface GroupBuy {
     plan_info?: string;
     contract_info?: string;
   };
-  
-  // 통신 상세 정보
   telecom_detail?: {
     telecom_carrier: string;
     subscription_type: string;
     plan_info: string;
     contract_period?: string;
   };
-  
-  // 가전제품 상세 정보
-  electronics_detail?: {
-    manufacturer: string;
-    warranty_period?: string;
-    power_consumption?: string;
-    dimensions?: string;
+  creator: {
+    id: number;
+    username: string;
+    profile_image?: string;
   };
 }
 
 /**
- * 가입유형을 표시하는 유틸리티 함수
- * @param groupBuy 공구 정보
- * @returns 가입유형 텍스트
+ * 공구 둘러보기 메인 페이지 컴포넌트
  */
-function getSubscriptionTypeText(groupBuy: GroupBuy): string {
-  // product_details.registration_type을 통해 가입유형 표시
-  if (groupBuy.product_details?.registration_type) {
-    if (groupBuy.product_details.registration_type === 'MNP') return '번호이동';
-    if (groupBuy.product_details.registration_type === 'NEW') return '신규가입';
-    if (groupBuy.product_details.registration_type === 'CHANGE') return '기기변경';
-    return groupBuy.product_details.registration_type;
-  }
-  
-  return '';
-}
-
-export default function GroupPurchasesPage() {
+function GroupPurchasesPageContent() {
+  const searchParams = useSearchParams();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [statusFilter, setStatusFilter] = useState('recruiting');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [priceFilter, setPriceFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // 추가 필터 상태 변수
-  const [manufacturerFilter, setManufacturerFilter] = useState('all');
-  const [carrierFilter, setCarrierFilter] = useState('all');
-  const [registrationTypeFilter, setRegistrationTypeFilter] = useState('all');
-  const [planPriceFilter, setPlanPriceFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('all');
 
-  // 공구 목록 가져오기
-  useEffect(() => {
-    const fetchGroupBuys = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+  /**
+   * 공구 목록 가져오기 (필터 포함)
+   */
+  const fetchGroupBuys = async (filters?: Record<string, string>) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const params = new URLSearchParams();
+      
+      // 탭별 필터링
+      if (activeTab === 'completed') {
+        params.append('status', 'completed');
+      } else if (activeTab === 'popular') {
+        params.append('sort', 'popular');
+      } else if (activeTab === 'new') {
+        params.append('sort', 'newest');
+      }
+      
+      // 사용자 필터 추가
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value) {
+            params.append(key, value);
+          }
         });
-
-        if (!res.ok) {
-          throw new Error('Failed to fetch group buys');
-        }
-
-        const data = await res.json();
-        // 진행중 상태 우선 정렬
-const ongoingStatuses = ['recruiting', 'bidding', 'voting'];
-data.sort((a: GroupBuy, b: GroupBuy) => {
-  const aOngoing = ongoingStatuses.includes(a.status);
-  const bOngoing = ongoingStatuses.includes(b.status);
-  if (aOngoing && !bOngoing) return -1;
-  if (!aOngoing && bOngoing) return 1;
-  return 0;
-});
-setGroupBuys(data);
-      } catch (error) {
-        console.error('Error fetching group buys:', error);
-        setError('공동구매 목록을 불러오는데 실패했습니다.');
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('공구 목록을 불러오는데 실패했습니다.');
+      }
+      
+      const data = await response.json();
+      setGroupBuys(data);
+    } catch (err) {
+      console.error('공구 목록 로딩 실패:', err);
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      toast.error('공구 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchGroupBuys();
-  }, []);
+  /**
+   * 필터 변경 처리
+   */
+  const handleFiltersChange = (filters: Record<string, string>) => {
+    fetchGroupBuys(filters);
+  };
 
-  // 필터링된 공구 목록
-  const filteredGroupBuys = groupBuys.filter((groupBuy) => {
-    // console.log('필터링 디버깅:', { groupBuy });
+  /**
+   * 탭 변경 처리
+   */
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
     
-    // 상태 필터
-    if (statusFilter !== 'all' && groupBuy.status !== statusFilter) {
-      return false;
-    }
-
-    // 카테고리 필터
-    if (categoryFilter !== 'all' && groupBuy.product_details?.category_name !== categoryFilter) {
-      return false;
-    }
-
-    // 가격 필터
-    if (priceFilter !== 'all') {
-      const price = groupBuy.product_details?.base_price || 0;
-      if (priceFilter === 'low' && price > 500000) return false;
-      if (priceFilter === 'medium' && (price <= 500000 || price > 1000000)) return false;
-      if (priceFilter === 'high' && price <= 1000000) return false;
-    }
+    // URL 쿼리 파라미터에서 필터 추출
+    const filters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange'].includes(key)) {
+        filters[key] = value;
+      }
+    });
     
-    // 제조사 필터 - product_details와 telecom_detail 모두 확인
-    if (manufacturerFilter !== 'all') {
-      // 기본 제품 정보에서 확인
-      const productName = groupBuy.product_details?.name || '';
-      const description = groupBuy.product_details?.description || '';
-      
-      // telecom_detail이 있는 경우 추가 정보 확인
-      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
-      
-      // 전자제품 상세 정보가 있는 경우 제조사 확인 
-      const electronicsDetails = groupBuy.electronics_detail || {} as GroupBuy['electronics_detail'];
-      const manufacturer = electronicsDetails?.manufacturer || '';
-      
-      const allText = productName + ' ' + description + ' ' + manufacturer;
-      
-      if (manufacturerFilter === 'samsung' && 
-          !allText.toLowerCase().includes('삼성') && 
-          !allText.toLowerCase().includes('samsung')) {
-        return false;
-      }
-      if (manufacturerFilter === 'apple' && 
-          !allText.toLowerCase().includes('애플') && 
-          !allText.toLowerCase().includes('apple') && 
-          !allText.toLowerCase().includes('아이폰') && 
-          !allText.toLowerCase().includes('iphone')) {
-        return false;
-      }
-    }
-    
-    // 통신사 필터 - product_details.telecom_detail과 groupBuy.telecom_detail 모두 확인
-    if (carrierFilter !== 'all') {
-      // 제품 상세 정보에서 통신사 확인
-      const productCarrier = groupBuy.product_details?.carrier || '';
-      
-      // 통신 상세 정보에서 통신사 확인 (GroupBuyTelecomDetail 모델)
-      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
-      const telecomCarrier = telecomDetails?.telecom_carrier || '';
-      
-      // 둘 중 하나라도 일치하면 통과
-      const allCarrierInfo = productCarrier + ' ' + telecomCarrier;
-      
-      if (carrierFilter === 'skt' && 
-          !allCarrierInfo.includes('SKT') && 
-          !allCarrierInfo.toLowerCase().includes('skt') && 
-          !allCarrierInfo.includes('SK텔레콤')) {
-        return false;
-      }
-      if (carrierFilter === 'kt' && 
-          !allCarrierInfo.includes('KT') && 
-          !allCarrierInfo.toLowerCase().includes('kt')) {
-        return false;
-      }
-      if (carrierFilter === 'lgu+' && 
-          !allCarrierInfo.includes('LG U+') && 
-          !allCarrierInfo.includes('LGU') && 
-          !allCarrierInfo.toLowerCase().includes('lg') && 
-          !allCarrierInfo.toLowerCase().includes('lgu+')) {
-        return false;
-      }
-    }
-    
-    // 구매방식 필터 - product_details와 telecom_detail 모두 확인
-    if (registrationTypeFilter !== 'all') {
-      // 제품 상세 정보에서 가입 유형 확인
-      const productRegType = groupBuy.product_details?.registration_type || '';
-      
-      // 통신 상세 정보에서 가입 유형 확인
-      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
-      const telecomSubType = telecomDetails?.subscription_type || '';
-      
-      // 둘 중 하나라도 일치하면 통과
-      const allRegTypeInfo = productRegType + ' ' + telecomSubType;
-      
-      if (registrationTypeFilter === 'new' && 
-          !allRegTypeInfo.includes('NEW') && 
-          !allRegTypeInfo.includes('new') && 
-          !allRegTypeInfo.includes('신규가입')) {
-        return false;
-      }
-      if (registrationTypeFilter === 'mnp' && 
-          !allRegTypeInfo.includes('MNP') && 
-          !allRegTypeInfo.includes('transfer') && 
-          !allRegTypeInfo.includes('번호이동')) {
-        return false;
-      }
-      if (registrationTypeFilter === 'change' && 
-          !allRegTypeInfo.includes('CHANGE') && 
-          !allRegTypeInfo.includes('change') && 
-          !allRegTypeInfo.includes('기기변경')) {
-        return false;
-      }
-    }
-    
-    // 요금제 필터
-    if (planPriceFilter !== 'all') {
-      // 제품 상세 정보에서 요금제 확인
-      const productPlanInfo = groupBuy.product_details?.plan_info || '';
-      
-      // 통신 상세 정보에서 요금제 확인
-      const telecomDetails = groupBuy.telecom_detail || {} as GroupBuy['telecom_detail'];
-      const telecomPlanInfo = telecomDetails?.plan_info || '';
-      
-      // 모든 요금제 정보 합치기
-      const allPlanInfo = productPlanInfo + ' ' + telecomPlanInfo;
-      
-      // 요금제 정보에서 가격 추출
-      let planPrice = 0;
-      
-      // 다양한 형식의 요금제 정보에서 숫자 추출 시도
-      // '5만원대', '5만원', '50000원', '5만 요금제' 등의 형식 지원
-      const priceMatches = allPlanInfo.match(/([0-9]+)만원대?|([0-9]+)만/); 
-      if (priceMatches && (priceMatches[1] || priceMatches[2])) {
-        planPrice = parseInt(priceMatches[1] || priceMatches[2], 10);
-      } else {
-        // 직접적인 숫자 표현이 없다면 문자열 비교로 확인
-        const planInfoLower = allPlanInfo.toLowerCase();
-        if (planInfoLower.includes('5만') || planInfoLower.includes('5만원')) planPrice = 5;
-        if (planInfoLower.includes('6만') || planInfoLower.includes('6만원')) planPrice = 6;
-        if (planInfoLower.includes('7만') || planInfoLower.includes('7만원')) planPrice = 7;
-        if (planInfoLower.includes('8만') || planInfoLower.includes('8만원')) planPrice = 8;
-        if (planInfoLower.includes('9만') || planInfoLower.includes('9만원')) planPrice = 9;
-        if (planInfoLower.includes('10만') || planInfoLower.includes('10만원')) planPrice = 10;
-      }
-      
-      if (planPriceFilter === '5' && planPrice !== 5) return false;
-      if (planPriceFilter === '6' && planPrice !== 6) return false;
-      if (planPriceFilter === '7' && planPrice !== 7) return false;
-      if (planPriceFilter === '8' && planPrice !== 8) return false;
-      if (planPriceFilter === '9' && planPrice !== 9) return false;
-      if (planPriceFilter === '10+' && planPrice < 10) return false;
-    }
+    fetchGroupBuys(filters);
+  };
 
-    // 검색어 필터
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      const titleMatch = groupBuy.title?.toLowerCase().includes(searchLower);
-      const productNameMatch = groupBuy.product_details?.name.toLowerCase().includes(searchLower) || '';
-      return titleMatch || productNameMatch;
-    }
-
-    return true;
-  });
-
-  // 카테고리 목록 추출
-  const categories = Array.from(new Set(groupBuys.map(gb => gb.product_details?.category_name || '')));
+  /**
+   * 초기 데이터 로딩
+   */
+  useEffect(() => {
+    // URL 쿼리 파라미터에서 필터 추출
+    const filters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange'].includes(key)) {
+        filters[key] = value;
+      }
+    });
+    
+    fetchGroupBuys(filters);
+  }, [activeTab]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <h1 className="text-3xl font-bold mb-4 md:mb-0">공동구매 둘러보기</h1>
-        {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 */}
-        <RoleButton href="/group-purchases/create" disableForRoles={['seller']}>
-          <Button>
-            <span className="mr-2">+</span>
-            공구 등록
-          </Button>
-        </RoleButton>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <MainHeader title="공구 둘러보기" />
       
-      {/* 모바일 필터 버튼 */}
-      <div className="md:hidden flex justify-between items-center mb-4">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter size={16} />
-              필터
-              {(statusFilter !== 'all' || categoryFilter !== 'all' || priceFilter !== 'all' || searchTerm) && (
-                <Badge variant="secondary" className="ml-2">
-                  {[statusFilter !== 'all', categoryFilter !== 'all', priceFilter !== 'all', !!searchTerm].filter(Boolean).length}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
-            <SheetHeader className="text-left">
-              <SheetTitle>필터 선택</SheetTitle>
-              <SheetDescription>원하는 필터를 선택하세요</SheetDescription>
-            </SheetHeader>
-            <div className="py-4 space-y-6">
-              {/* 상태 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">상태</h3>
-                <RadioGroup value={statusFilter} onValueChange={setStatusFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="status-all" />
-                    <Label htmlFor="status-all">전체</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="recruiting" id="status-recruiting" />
-                    <Label htmlFor="status-recruiting">모집중</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="confirmed" id="status-confirmed" />
-                    <Label htmlFor="status-confirmed">확정</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="completed" id="status-completed" />
-                    <Label htmlFor="status-completed">종료</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* 카테고리 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">카테고리</h3>
-                <RadioGroup value={categoryFilter} onValueChange={setCategoryFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="category-all" />
-                    <Label htmlFor="category-all">전체</Label>
-                  </div>
-                  {categories.map(category => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <RadioGroupItem value={category} id={`category-${category}`} />
-                      <Label htmlFor={`category-${category}`}>{category}</Label>
-                    </div>
+      <div className="pt-16 pb-20">
+        <div className="max-w-md mx-auto bg-white min-h-screen">
+          {/* 페이지 헤더 */}
+          <div className="px-4 py-6 border-b border-gray-100">
+            <h1 className="text-2xl font-bold text-gray-900">공구 둘러보기</h1>
+            <p className="text-sm text-gray-600 mt-1">다양한 공동구매에 참여해보세요</p>
+          </div>
+
+          {/* 필터 컴포넌트 */}
+          <div className="px-4 py-4">
+            <GroupBuyFilters onFiltersChange={handleFiltersChange} />
+          </div>
+
+          {/* 탭 메뉴 */}
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="px-4">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsTrigger value="all">전체</TabsTrigger>
+              <TabsTrigger value="popular">인기</TabsTrigger>
+              <TabsTrigger value="new">최신</TabsTrigger>
+              <TabsTrigger value="completed">완료</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="space-y-4">
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
                   ))}
-                </RadioGroup>
-              </div>
-              
-              {/* 가격대 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">가격대</h3>
-                <RadioGroup value={priceFilter} onValueChange={setPriceFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="price-all" />
-                    <Label htmlFor="price-all">전체</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="low" id="price-low" />
-                    <Label htmlFor="price-low">50만원 이하</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="medium" id="price-medium" />
-                    <Label htmlFor="price-medium">50만원~100만원</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="high" id="price-high" />
-                    <Label htmlFor="price-high">100만원 이상</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* 제조사 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">제조사</h3>
-                <RadioGroup value={manufacturerFilter} onValueChange={setManufacturerFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="manufacturer-all" />
-                    <Label htmlFor="manufacturer-all">전체</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="samsung" id="manufacturer-samsung" />
-                    <Label htmlFor="manufacturer-samsung">삼성</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="apple" id="manufacturer-apple" />
-                    <Label htmlFor="manufacturer-apple">애플</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* 통신사 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">통신사</h3>
-                <RadioGroup value={carrierFilter} onValueChange={setCarrierFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="carrier-all" />
-                    <Label htmlFor="carrier-all">전체</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="skt" id="carrier-skt" />
-                    <Label htmlFor="carrier-skt">SKT</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="kt" id="carrier-kt" />
-                    <Label htmlFor="carrier-kt">KT</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="lgu+" id="carrier-lgu" />
-                    <Label htmlFor="carrier-lgu">LG U+</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* 구매방식 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">구매방식</h3>
-                <RadioGroup value={registrationTypeFilter} onValueChange={setRegistrationTypeFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="regtype-all" />
-                    <Label htmlFor="regtype-all">전체</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="new" id="regtype-new" />
-                    <Label htmlFor="regtype-new">신규가입</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="mnp" id="regtype-mnp" />
-                    <Label htmlFor="regtype-mnp">번호이동</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="change" id="regtype-change" />
-                    <Label htmlFor="regtype-change">기기변경</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* 요금제 필터 */}
-              <div className="border-b pb-4">
-                <h3 className="font-medium mb-3">요금제</h3>
-                <RadioGroup value={planPriceFilter} onValueChange={setPlanPriceFilter} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="plan-all" />
-                    <Label htmlFor="plan-all">전체</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="5" id="plan-5" />
-                    <Label htmlFor="plan-5">5만원대</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="6" id="plan-6" />
-                    <Label htmlFor="plan-6">6만원대</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="7" id="plan-7" />
-                    <Label htmlFor="plan-7">7만원대</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="8" id="plan-8" />
-                    <Label htmlFor="plan-8">8만원대</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="9" id="plan-9" />
-                    <Label htmlFor="plan-9">9만원대</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="10+" id="plan-10-plus" />
-                    <Label htmlFor="plan-10-plus">10만원 이상</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* 검색 필터 */}
-              <div>
-                <h3 className="font-medium mb-3">검색</h3>
-                <Input 
-                  type="text" 
-                  placeholder="제목 또는 상품명 검색" 
-                  value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
-                  className="w-full"
-                />
-              </div>
-            </div>
-            <SheetFooter className="flex-row justify-between mt-6">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setStatusFilter('all');
-                  setCategoryFilter('all');
-                  setPriceFilter('all');
-                  setManufacturerFilter('all');
-                  setCarrierFilter('all');
-                  setRegistrationTypeFilter('all');
-                  setPlanPriceFilter('all');
-                  setSearchTerm('');
-                }}
-              >
-                초기화
-              </Button>
-              <SheetClose asChild>
-                <Button>적용하기</Button>
-              </SheetClose>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-        
-        <div className="flex items-center gap-2">
-          <Input 
-            type="text" 
-            placeholder="제목 또는 상품명 검색" 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            className="w-full max-w-[200px]"
-          />
-        </div>
-      </div>
-      
-      {/* 데스크톱 필터 영역 */}
-      <div className="hidden md:block bg-white p-4 rounded-lg shadow-sm mb-6">
-        <h2 className="text-lg font-medium mb-4">필터</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">상태</label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="상태 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="recruiting">모집중</SelectItem>
-                <SelectItem value="confirmed">확정</SelectItem>
-                <SelectItem value="completed">종료</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="카테고리 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">가격대</label>
-            <Select value={priceFilter} onValueChange={setPriceFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="가격대 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="low">50만원 이하</SelectItem>
-                <SelectItem value="medium">50만원~100만원</SelectItem>
-                <SelectItem value="high">100만원 이상</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">제조사</label>
-            <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="제조사 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="samsung">삼성</SelectItem>
-                <SelectItem value="apple">애플</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">통신사</label>
-            <Select value={carrierFilter} onValueChange={setCarrierFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="통신사 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="skt">SKT</SelectItem>
-                <SelectItem value="kt">KT</SelectItem>
-                <SelectItem value="lgu+">LG U+</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">구매방식</label>
-            <Select value={registrationTypeFilter} onValueChange={setRegistrationTypeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="구매방식 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="new">신규가입</SelectItem>
-                <SelectItem value="mnp">번호이동</SelectItem>
-                <SelectItem value="change">기기변경</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">요금제</label>
-            <Select value={planPriceFilter} onValueChange={setPlanPriceFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="요금제 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="5">5만원대</SelectItem>
-                <SelectItem value="6">6만원대</SelectItem>
-                <SelectItem value="7">7만원대</SelectItem>
-                <SelectItem value="8">8만원대</SelectItem>
-                <SelectItem value="9">9만원대</SelectItem>
-                <SelectItem value="10+">10만원 이상</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">검색</label>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="제목 또는 상품명 검색"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pr-10"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                >
-                  <X size={16} />
-                </button>
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">{error}</p>
+                </div>
+              ) : groupBuys.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">진행중인 공동구매가 없습니다.</p>
+                </div>
+              ) : (
+                groupBuys.map((groupBuy) => (
+                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                ))
               )}
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-between mt-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => {
-              setStatusFilter('all');
-              setCategoryFilter('all');
-              setPriceFilter('all');
-              setManufacturerFilter('all');
-              setCarrierFilter('all');
-              setRegistrationTypeFilter('all');
-              setPlanPriceFilter('all');
-              setSearchTerm('');
-            }}
-            className="text-xs h-7"
-          >
-            초기화
-          </Button>
+            </TabsContent>
+
+            <TabsContent value="popular" className="space-y-4">
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">{error}</p>
+                </div>
+              ) : groupBuys.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">인기 공동구매가 없습니다.</p>
+                </div>
+              ) : (
+                groupBuys.map((groupBuy) => (
+                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="new" className="space-y-4">
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">{error}</p>
+                </div>
+              ) : groupBuys.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">새로운 공동구매가 없습니다.</p>
+                </div>
+              ) : (
+                groupBuys.map((groupBuy) => (
+                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="completed" className="space-y-4">
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">{error}</p>
+                </div>
+              ) : groupBuys.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">완료된 공동구매가 없습니다.</p>
+                </div>
+              ) : (
+                groupBuys.map((groupBuy) => (
+                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
-      
-      {/* 탭 영역 */}
-      <div className="overflow-x-auto mb-6">
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-4 w-full justify-start">
-            <TabsTrigger value="all" onClick={() => setStatusFilter('all')}>전체</TabsTrigger>
-            <TabsTrigger value="recruiting" onClick={() => setStatusFilter('recruiting')}>모집중</TabsTrigger>
-            <TabsTrigger value="confirmed" onClick={() => setStatusFilter('confirmed')}>확정</TabsTrigger>
-            <TabsTrigger value="completed" onClick={() => setStatusFilter('completed')}>종료</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      
-      {/* 적용된 필터 표시 */}
-      {(statusFilter !== 'all' || categoryFilter !== 'all' || priceFilter !== 'all') && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {statusFilter !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              상태: {statusFilter === 'recruiting' ? '모집중' : statusFilter === 'confirmed' ? '확정' : '종료'}
-              <button onClick={() => setStatusFilter('all')} className="ml-1 hover:text-gray-500">
-                <X size={14} />
-              </button>
-            </Badge>
-          )}
-          {categoryFilter !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              카테고리: {categoryFilter}
-              <button onClick={() => setCategoryFilter('all')} className="ml-1 hover:text-gray-500">
-                <X size={14} />
-              </button>
-            </Badge>
-          )}
-          {priceFilter !== 'all' && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              가격: {priceFilter === 'low' ? '50만원 이하' : priceFilter === 'medium' ? '50~100만원' : '100만원 이상'}
-              <button onClick={() => setPriceFilter('all')} className="ml-1 hover:text-gray-500">
-                <X size={14} />
-              </button>
-            </Badge>
-          )}
-          {(statusFilter !== 'all' || categoryFilter !== 'all' || priceFilter !== 'all') && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => {
-                setStatusFilter('all');
-                setCategoryFilter('all');
-                setPriceFilter('all');
-              }}
-              className="text-xs h-7"
-            >
-              초기화
-            </Button>
-          )}
-        </div>
-      )}
-      
-      {loading ? (
-        <div className="flex justify-center items-center h-40">
-          <p>로딩중...</p>
-        </div>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : filteredGroupBuys.length === 0 ? (
-        <p className="text-gray-500">현재 조건에 맞는 공동구매가 없습니다.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredGroupBuys.map((groupBuy) => {
-            const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
-            const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
-            
-            // 남은 시간 계산
-            const now = new Date();
-            const endTime = new Date(groupBuy.end_time);
-            const timeDiff = endTime.getTime() - now.getTime();
-            
-            // 남은 시간 포맷팅
-            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            // 종료 날짜 포맷팅
-            const year = endTime.getFullYear();
-            const month = endTime.getMonth() + 1;
-            const date = endTime.getDate();
-            const formattedEndDate = `${year}년 ${month}월 ${date}일`;
-            
-            return (
-              <Link key={groupBuy.id} href={`/groupbuys/${groupBuy.id}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex flex-col">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs sm:text-sm text-gray-500">{groupBuy.product_details?.category_name || '휴대폰'}</p>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          groupBuy.status === 'recruiting'
-                            ? 'bg-blue-100 text-blue-800'
-                            : groupBuy.status === 'confirmed'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {groupBuy.status === 'recruiting' ? '모집중' :
-                           groupBuy.status === 'confirmed' ? '확정' : '종료'}
-                        </span>
-                      </div>
-                      <CardTitle className="text-base sm:text-lg md:text-xl">
-                        {formatGroupBuyTitle(groupBuy)}
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                      <Image
-                        src={groupBuy.product_details?.image_url || '/placeholder.png'}
-                        alt={groupBuy.product_details?.name || ''}
-                        width={800}
-                        height={450}
-                        className="object-cover rounded-lg"
-                      />                  
-                    <div className="space-y-4">
-                      <div>
-                        <Progress value={progress} className="h-2" />
-                        <div className="mt-2 flex justify-between text-sm text-gray-600">
-                          <span>{groupBuy.current_participants}명 참여중</span>
-                          <span>{remainingSpots}자리 남음</span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-sm">
-                          <div className="flex items-center text-red-500">
-                            <Clock size={14} className="mr-1" />
-                            <span>
-                              {timeDiff > 0 ? `${days}일 ${hours}시간 ${minutes}분` : '종료됨'}
-                            </span>
-                          </div>
-                          <span className="text-gray-500">{formattedEndDate} 마감</span>
-                        </div>
-                      </div>
-                      <div className="mt-2 space-y-2">
-                        <div className="flex justify-between items-center pt-2">
-                          <div>
-                            <p className="text-sm text-gray-500">출고가</p>
-                            <p className="text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</p>
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {groupBuy.product_details?.contract_info || '2년 약정'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+
+      <BottomNavigation />
     </div>
+  );
+}
+
+/**
+ * 공구 둘러보기 메인 페이지
+ */
+export default function GroupPurchasesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <MainHeader title="공구 둘러보기" />
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+        <BottomNavigation />
+      </div>
+    }>
+      <GroupPurchasesPageContent />
+    </Suspense>
   );
 }

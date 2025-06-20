@@ -1,4 +1,15 @@
 // src/pages/category/[slug].tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import Link from 'next/link';
+import { Clock } from 'lucide-react';
+import { CategoryMenuFilters } from '@/components/filters/CategoryMenuFilters';
 
 interface Product {
   id: number;
@@ -40,6 +51,9 @@ interface PageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
+/**
+ * 카테고리 정보 가져오기
+ */
 async function getCategory(slug: string): Promise<Category | null> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories/${slug}/`, {
     next: { revalidate: 60 }
@@ -48,6 +62,9 @@ async function getCategory(slug: string): Promise<Category | null> {
   return res.json();
 }
 
+/**
+ * 상품 목록 가져오기
+ */
 async function getProducts(slug: string): Promise<Product[]> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/?category=${slug}`, {
     next: { revalidate: 60 }
@@ -55,31 +72,104 @@ async function getProducts(slug: string): Promise<Product[]> {
   if (!res.ok) return [];
   return res.json();
 }
-// 카테고리별 공동구매 목록 가져오기
-async function getGroupBuysByCategory(slug: string): Promise<any[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?category=${slug}`, {
+
+/**
+ * 카테고리별 공동구매 목록 가져오기 (필터 포함)
+ */
+async function getGroupBuysByCategory(slug: string, filters?: Record<string, string>): Promise<any[]> {
+  const params = new URLSearchParams({ category: slug });
+  
+  // 필터 파라미터 추가
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        params.append(key, value);
+      }
+    });
+  }
+  
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`, {
     next: { revalidate: 60 }
   });
   if (!res.ok) return [];
   return res.json();
 }
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import Link from 'next/link';
-import { Clock } from 'lucide-react';
+/**
+ * 카테고리 페이지 컴포넌트
+ */
+export default function CategoryPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const slug = params?.slug as string;
+  
+  const [category, setCategory] = useState<Category | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [groupBuys, setGroupBuys] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-// 페이지 컴포넌트 수정
-export default async function CategoryPage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
-  const query = searchParams ? await searchParams : {};
-  const [category, products, groupBuys] = await Promise.all([
-    getCategory(slug),
-    getProducts(slug),
-    getGroupBuysByCategory(slug)
-  ]);
+  /**
+   * 데이터 로딩
+   */
+  const loadData = async (filters?: Record<string, string>) => {
+    if (!slug) return;
+    
+    setLoading(true);
+    try {
+      const [categoryData, productsData, groupBuysData] = await Promise.all([
+        getCategory(slug),
+        getProducts(slug),
+        getGroupBuysByCategory(slug, filters)
+      ]);
+      
+      setCategory(categoryData);
+      setProducts(productsData);
+      setGroupBuys(groupBuysData);
+    } catch (error) {
+      console.error('데이터 로딩 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 필터 변경 처리
+   */
+  const handleFiltersChange = (filters: Record<string, string>) => {
+    loadData(filters);
+  };
+
+  /**
+   * 초기 데이터 로딩
+   */
+  useEffect(() => {
+    if (slug) {
+      // URL 쿼리 파라미터에서 필터 추출
+      const filters: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+        if (['manufacturer', 'carrier', 'purchaseType', 'priceRange'].includes(key)) {
+          filters[key] = value;
+        }
+      });
+      
+      loadData(filters);
+    }
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -92,6 +182,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           </Button>
         </Link>
       </div>
+      
+      {/* 필터 컴포넌트 */}
+      <CategoryMenuFilters onFiltersChange={handleFiltersChange} />
       
       {groupBuys.length === 0 ? (
         <p className="text-gray-500">이 카테고리에 진행중인 공동구매가 없습니다.</p>

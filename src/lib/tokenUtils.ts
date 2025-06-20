@@ -131,8 +131,45 @@ export const tokenUtils = {
             console.error('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
             window.location.href = '/login';
           }
+          
+          // 400 에러의 경우 상세한 에러 메시지 전달
+          if (response.status === 400) {
+            console.error('API 400 에러 상세:', errorData);
+            
+            // 유니크 제약 조건 에러 처리
+            if (errorData?.non_field_errors) {
+              const uniqueError = errorData.non_field_errors.find((error: any) => 
+                typeof error === 'string' ? 
+                  error.includes('unique') : 
+                  error.string?.includes('unique')
+              );
+              
+              if (uniqueError) {
+                throw new Error('이미 해당 상품으로 공동구매를 생성하셨습니다. 다른 상품을 선택해주세요.');
+              }
+            }
+            
+            // 필드별 validation 에러 처리
+            const fieldErrors = [];
+            for (const [field, errors] of Object.entries(errorData)) {
+              if (field !== 'non_field_errors' && Array.isArray(errors)) {
+                fieldErrors.push(`${field}: ${errors.join(', ')}`);
+              }
+            }
+            
+            if (fieldErrors.length > 0) {
+              throw new Error(`입력 값 오류: ${fieldErrors.join('; ')}`);
+            }
+            
+            // 기타 400 에러
+            throw new Error('요청 데이터에 문제가 있습니다. 입력 내용을 확인해주세요.');
+          }
+          
         } catch (e) {
-          // 응답이 JSON이 아닌 경우
+          // JSON 파싱 실패 시 또는 이미 Error를 throw한 경우
+          if (e instanceof Error && e.message !== `API request failed: ${response.status}`) {
+            throw e; // 위에서 생성한 사용자 친화적 에러 메시지 재전달
+          }
         }
         
         throw new Error(`API request failed: ${response.status}`);
