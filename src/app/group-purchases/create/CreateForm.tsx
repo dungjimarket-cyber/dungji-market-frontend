@@ -429,7 +429,7 @@ export default function CreateForm() {
       if (!selectedProduct || selectedProduct.category?.detail_type === 'telecom' || !selectedProduct.category?.detail_type) {
         productDetails = {
           telecom_carrier: values.telecom_carrier,
-          telecom_plan: values.telecom_plan,
+          plan_info: values.telecom_plan, // 백엔드 API 기대값에 맞게 키 이름 변경 (telecom_plan -> plan_info)
           subscription_type: values.subscription_type
         };
         console.log('통신사 정보 전송:', productDetails);
