@@ -4,6 +4,11 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import { signOut } from 'next-auth/react';
 import axios from 'axios';
 
+// 디버깅 유틸리티 함수
+const logDebug = (message: string, data?: any) => {
+  console.log(`[Auth Debug] ${message}`, data || '');
+};
+
 /**
  * 사용자 정보 타입 정의
  */
@@ -92,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           
           if (storedToken) {
-            console.log('유효한 토큰 발견: 인증 상태 복원 중...');
+            logDebug('유효한 토큰 발견: 인증 상태 복원 중');
             setAccessToken(storedToken);
             
             // 리프레시 토큰이 있는 경우 설정
@@ -110,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               if (userJson) {
                 try {
                   userData = JSON.parse(userJson);
-                  console.log(`사용자 정보 발견: ${key}`);
+                  logDebug(`사용자 정보 발견`, key);
                   break;
                 } catch (e) {
                   console.error(`${key} 파싱 오류:`, e);
@@ -131,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (response.ok) {
                 const profileData = await response.json();
-                console.log('백엔드에서 프로필 정보 가져오기 성공:', profileData);
+                logDebug('백엔드에서 프로필 정보 가져오기 성공', profileData);
                 
                 // 기존 로컬 데이터와 병합
                 if (userData) {
@@ -141,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     sns_type: profileData.sns_type,
                     provider: profileData.sns_type, // 호환성을 위해 provider 필드도 설정
                   };
-                  console.log('사용자 정보 업데이트 완료:', userData);
+                  logDebug('사용자 정보 업데이트 완료', userData);
                 } else {
                   // 로컬 스토리지에 사용자 정보가 없는 경우
                   const decoded = decodeJwtPayload(storedToken);
@@ -154,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     sns_type: profileData.sns_type,
                     provider: profileData.sns_type,
                   };
-                  console.log('새 사용자 정보 생성:', userData);
+                  logDebug('새 사용자 정보 생성', userData);
                 }
                 
                 // 로컬 스토리지에 업데이트된 정보 저장
@@ -230,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             }
           } else {
-            console.log('로컬 스토리지에서 토큰을 찾을 수 없습니다. 비로그인 상태입니다.');
+            logDebug('로컬 스토리지에서 토큰을 찾을 수 없습니다. 비로그인 상태입니다.');
             // 비로그인 상태로 초기화
             setUser(null);
             setAccessToken(null);
@@ -254,14 +259,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           event.key === 'user' || 
           event.key === 'userRole'
         )) {
-        console.log('인증 상태 변경 감지:', event.key);
+        logDebug('인증 상태 변경 감지', event.key);
         initializeAuth();
       }
     };
     
     // 수동 이벤트 리스너
     const handleManualStorageChange = () => {
-      console.log('수동 스토리지 이벤트 감지');
+      logDebug('수동 스토리지 이벤트 감지');
       initializeAuth();
     };
     
@@ -294,7 +299,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }> => {
     try {
       setIsLoading(true);
-      console.log('로그인 시도 중...', email);
+      logDebug('로그인 시도 중', email);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/login/`, {
         method: 'POST',
@@ -349,7 +354,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       const { access, refresh } = data;
-      console.log('로그인 성공: 토큰 수신됨');
+      logDebug('로그인 성공: 토큰 수신됨');
 
       // 토큰 저장
       setAccessToken(access);
@@ -400,7 +405,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // 인증 상태 변경 이벤트 발생
             window.dispatchEvent(new Event('storage'));
             window.dispatchEvent(new Event('auth-changed'));
-            console.log('인증 상태 변경 이벤트 발생됨 - 로그인 성공');
+            logDebug('인증 상태 변경 이벤트 발생됨 - 로그인 성공');
           }
         }
       } catch (error) {
@@ -437,7 +442,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const logout = useCallback(async () => {
     try {
-      console.log('로그아웃 처리 중...');
+      logDebug('로그아웃 처리 중');
       
       // 사용자 상태 먼저 삭제 (UI 즉시 반영)
       setUser(null);
@@ -473,7 +478,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 로그아웃 이벤트 발생
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new Event('auth-changed'));
-        console.log('인증 상태 변경 이벤트 발생됨 - 로그아웃');
+        logDebug('인증 상태 변경 이벤트 발생됨 - 로그아웃');
       }
 
       // NextAuth 세션 삭제
@@ -496,7 +501,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!refreshToken) return false;
     
     try {
-      console.log('액세스 토큰 갱신 시도...');
+      logDebug('액세스 토큰 갱신 시도...');
       // 실제 백엔드 엔드포인트 사용
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/refresh/`;
       
@@ -528,13 +533,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.dispatchEvent(new Event('storage'));
       }
       
-      console.log('토큰 갱신 성공');
+      logDebug('토큰 갱신 성공');
       return true;
     } catch (error) {
-      console.error('토큰 갱신 오류:', error);
+      logDebug('토큰 갱신 오류:', error);
       
       // 리프레시 토큰도 만료된 경우 로그아웃 처리
       if (error instanceof Error && error.message.includes('401')) {
+        logDebug('리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.');
         console.warn('리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.');
         await logout();
       }

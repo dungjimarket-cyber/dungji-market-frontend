@@ -273,12 +273,37 @@ export default function CreateForm() {
   useEffect(() => {
     // 인증 상태 및 사용자 역할 확인
     if (isLoading) {
+      console.log('[CreateForm] 인증 상태 로딩 중...');
       return; // 로딩 중에는 아무 작업도 수행하지 않음
     }
     
+    // 인증 상태 디버깅
+    console.log('[CreateForm] 인증 상태:', { 
+      isAuthenticated, 
+      user, 
+      accessToken: accessToken ? '토큰 있음' : '토큰 없음',
+      tokenLength: accessToken?.length
+    });
+    
+    // 로컬 스토리지에서 직접 토큰 확인 (백업 검사)
+    const localToken = localStorage.getItem('dungji_auth_token') || 
+                       localStorage.getItem('accessToken') || 
+                       localStorage.getItem('auth.token');
+    
     // 비인증 상태일 때 로그인 페이지로 리디렉션
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !localToken) {
+      console.log('[CreateForm] 인증되지 않음, 로그인 페이지로 리디렉션');
       router.push('/login?callbackUrl=/group-purchases/create');
+      return;
+    }
+    
+    // 토큰은 있지만 인증 상태가 false인 경우 (불일치 상태)
+    if (!isAuthenticated && localToken) {
+      console.log('[CreateForm] 토큰은 있지만 인증 상태가 false, 인증 컨텍스트 초기화 시도');
+      // 인증 상태 이벤트 발생시켜 AuthContext 재초기화 유도
+      window.dispatchEvent(new Event('auth-changed'));
+      // 짧은 지연 후 페이지 새로고침 (최후의 수단)
+      setTimeout(() => window.location.reload(), 500);
       return;
     }
     

@@ -19,6 +19,7 @@ interface FilterOptions {
   carriers: string[];
   purchaseTypes: string[];
   priceRanges: string[];
+  sortOptions: string[];
 }
 
 interface GroupBuyFiltersProps {
@@ -39,7 +40,8 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
     manufacturers: ['삼성', '애플', 'LG', '샤오미', '구글'],
     carriers: ['SKT', 'KT', 'LG U+'],
     purchaseTypes: ['신규가입', '번호이동', '기기변경'],
-    priceRanges: ['5만원대', '6만원대', '7만원대', '8만원대', '9만원대', '10만원 이상']
+    priceRanges: ['5만원대', '6만원대', '7만원대', '8만원대', '9만원대', '10만원 이상'],
+    sortOptions: ['최신순', '인기순(참여자많은순)']
   };
 
   // 현재 적용된 필터들
@@ -47,7 +49,8 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
     manufacturer: searchParams.get('manufacturer') || 'all',
     carrier: searchParams.get('carrier') || 'all',
     purchaseType: searchParams.get('purchaseType') || 'all',
-    priceRange: searchParams.get('priceRange') || 'all'
+    priceRange: searchParams.get('priceRange') || 'all',
+    sort: searchParams.get('sort') || '최신순' // 기본값은 최신순
   });
 
   /**
@@ -172,15 +175,35 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
 
         {/* 필터 옵션들 */}
         {isExpanded && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {/* 정렬 옵션 */}
+            <div>
+              <label className="text-sm font-medium mb-1 block">정렬</label>
+              <Select
+                value={filters.sort}
+                onValueChange={(value) => handleFilterChange('sort', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="정렬 방식 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filterOptions.sortOptions.map((sortOption) => (
+                    <SelectItem key={sortOption} value={sortOption}>
+                      {sortOption}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* 제조사 필터 */}
             <div>
-              <label className="block text-sm font-medium mb-2">제조사</label>
+              <label className="text-sm font-medium mb-1 block">제조사</label>
               <Select
                 value={filters.manufacturer}
                 onValueChange={(value) => handleFilterChange('manufacturer', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="제조사 선택" />
                 </SelectTrigger>
                 <SelectContent>

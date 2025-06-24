@@ -74,11 +74,26 @@ function GroupPurchasesPageContent() {
       // 사용자 필터 추가
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
-          if (value) {
-            params.append(key, value);
+          if (value && value !== 'all') {
+            // 정렬 기준 변환 (한글 -> API 파라미터)
+            if (key === 'sort') {
+              if (value === '최신순') {
+                params.append('sort', 'newest');
+              } else if (value === '인기순(참여자많은순)') {
+                params.append('sort', 'popular');
+              } else {
+                // 기본값은 최신순
+                params.append('sort', 'newest');
+              }
+            } else {
+              params.append(key, value);
+            }
           }
         });
       }
+      
+      // 디버깅용 로그
+      console.log('[GroupPurchases] API 호출 파라미터:', params.toString());
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
       

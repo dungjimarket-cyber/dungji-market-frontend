@@ -112,33 +112,54 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    */
   const handleJoinGroupBuy = async () => {
     try {
+      console.log('[GroupPurchaseDetail] 공구 참여 시도:', { groupBuyId: groupBuy.id });
       setIsJoining(true);
+      
       if (!accessToken) {
+        console.log('[GroupPurchaseDetail] 인증 토큰 없음');
         toast.error('로그인이 필요합니다.');
         router.push('/login');
         return;
       }
+      
+      // API URL 구성
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const joinUrl = `${apiBaseUrl}/groupbuys/${groupBuy.id}/join/`;
+      console.log('[GroupPurchaseDetail] 공구 참여 API 호출:', joinUrl);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/join/`, {
+      const res = await fetch(joinUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
+        // 서버 오류 발생 시 자세한 오류 정보를 받기 위해 credentials 추가
+        credentials: 'include',
       });
 
+      console.log('[GroupPurchaseDetail] API 응답 상태:', res.status, res.statusText);
+      
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || '참여에 실패했습니다.');
+        let errorMessage = '참여에 실패했습니다.';
+        try {
+          const errorData = await res.json();
+          console.log('[GroupPurchaseDetail] API 오류 데이터:', errorData);
+          errorMessage = errorData.message || errorData.detail || errorMessage;
+        } catch (jsonError) {
+          console.error('[GroupPurchaseDetail] API 오류 응답 파싱 실패:', jsonError);
+        }
+        throw new Error(errorMessage);
       }
 
+      console.log('[GroupPurchaseDetail] 공구 참여 성공');
       toast.success('공동구매에 참여했습니다!');
       setIsParticipant(true);
-      // 페이지 새로고침하여 최신 데이터 반영
-      window.location.reload();
+      
+      // 페이지 새로고침하여 최신 데이터 반영 (짧은 지연 후)
+      setTimeout(() => window.location.reload(), 1000);
       
     } catch (error) {
-      console.error('Error joining group buy:', error);
+      console.error('[GroupPurchaseDetail] 공구 참여 오류:', error);
       toast.error(error instanceof Error ? error.message : '참여에 실패했습니다.');
     } finally {
       setIsJoining(false);
