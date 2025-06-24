@@ -429,7 +429,7 @@ export default function CreateForm() {
       if (!selectedProduct || selectedProduct.category?.detail_type === 'telecom' || !selectedProduct.category?.detail_type) {
         productDetails = {
           telecom_carrier: values.telecom_carrier,
-          plan_info: values.telecom_plan, // 백엔드 API 기대값에 맞게 키 이름 변경 (telecom_plan -> plan_info)
+          telecom_plan: values.telecom_plan, // 백엔드에서 product_details.telecom_plan을 찾기 때문에 plan_info가 아닌 telecom_plan 사용
           subscription_type: values.subscription_type
         };
         console.log('통신사 정보 전송:', productDetails);
@@ -514,7 +514,7 @@ export default function CreateForm() {
         end_time: endTimeValue,             // 필수 필드, 날짜/시간 문자열
         region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
         creator: userId,                    // 필수 필드, 현재 로그인한 사용자 ID
-        telecom_detail: cleanProductDetails // 통신사 정보 (통신사 관련 상품의 경우 필수)
+        product_details: cleanProductDetails // 백엔드에서 이 키를 사용하여 통신사 정보 추출
       };
       
       // 로그인 상태 확인
