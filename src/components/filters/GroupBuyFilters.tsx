@@ -82,7 +82,8 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
       manufacturer: 'all',
       carrier: 'all',
       purchaseType: 'all',
-      priceRange: 'all'
+      priceRange: 'all',
+      sort: '최신순' // 기본 정렬 값 추가
     };
     setFilters(clearedFilters);
     
