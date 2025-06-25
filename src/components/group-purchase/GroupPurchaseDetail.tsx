@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,6 +69,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [isLeaving, setIsLeaving] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false); // 참여하기 모달 표시 여부
 
   /**
    * 뒤로가기
@@ -408,15 +410,24 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
 
             {/* 버튼 영역 */}
             <button
-              onClick={handleJoinGroupBuy}
-              disabled={isJoining || isCompleted}
+              onClick={() => {
+                if (isAuthenticated) {
+                  setShowJoinModal(true);
+                } else {
+                  toast.error('로그인이 필요합니다.');
+                  router.push('/login');
+                }
+              }}
+              disabled={isJoining || isCompleted || isParticipant}
               className={`w-full py-3 rounded-lg font-medium mb-4 ${
                 isCompleted 
                   ? 'bg-gray-200 text-gray-500' 
+                  : isParticipant
+                  ? 'bg-green-600 text-white'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
-              {isJoining ? '처리 중...' : isCompleted ? '마감된 공구입니다' : '참여하기'}
+              {isJoining ? '처리 중...' : isCompleted ? '마감된 공구입니다' : isParticipant ? '참여 완료' : '참여하기'}
             </button>
 
             <button 
@@ -459,6 +470,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* 참여하기 모달 */}
+      <JoinGroupBuyModal 
+        isOpen={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+        groupBuy={groupBuy}
+      />
     </div>
   );
 }
