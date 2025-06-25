@@ -11,6 +11,7 @@ export interface User {
   name?: string;
   role?: string;
   image?: string;
+  user_type?: string; // 회원 구분 (일반/판매)
 }
 
 /**

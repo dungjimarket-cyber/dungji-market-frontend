@@ -21,6 +21,7 @@ type User = {
   image?: string; // 프로필 이미지
   role?: string;
   roles?: string[];
+  user_type?: string; // 회원 구분 (일반/판매)
 };
 
 /**
