@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react';
+import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
 
 interface GroupBuy {
   id: number;
@@ -147,9 +148,9 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
             {groupBuy.product_details?.name || '상품명 없음'}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {groupBuy.telecom_detail?.subscription_type && (
+            {groupBuy.product_details?.registration_type && (
               <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">
-                {groupBuy.telecom_detail.subscription_type}
+                {getRegistrationTypeText(groupBuy.product_details.registration_type)}
               </span>
             )}
             {groupBuy.telecom_detail?.telecom_carrier && (

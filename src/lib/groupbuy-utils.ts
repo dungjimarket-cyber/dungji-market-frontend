@@ -72,6 +72,26 @@ export function getStatusClass(status: string): string {
 }
 
 /**
+ * 가입유형 코드를 한글로 변환하는 유틸리티 함수
+ * @param registrationType 가입유형 코드 (NEW, MNP, CHANGE 등)
+ * @returns 한글로 변환된 가입유형 텍스트
+ */
+export function getRegistrationTypeText(registrationType: string | undefined): string {
+  if (!registrationType) return '-';
+  
+  switch (registrationType.toUpperCase()) {
+    case 'NEW':
+      return '신규가입';
+    case 'MNP':
+      return '번호이동';
+    case 'CHANGE':
+      return '기기변경';
+    default:
+      return registrationType; // 알 수 없는 유형은 원래 값 반환
+  }
+}
+
+/**
  * 가입유형을 표시하는 유틸리티 함수
  * @param groupBuy 공구 정보
  * @returns 가입유형 텍스트

@@ -38,6 +38,8 @@ interface ExtendedUser {
   name?: string;      // 실명
   image?: string;
   roles?: string[];
+  region?: string;    // 지역 정보
+  user_type?: string; // 회원구분(일반/판매)
 }
 
 export default function ProfileSection() {
@@ -46,8 +48,10 @@ export default function ProfileSection() {
   const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
+  const [region, setRegion] = useState('');
+  const [userType, setUserType] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [editField, setEditField] = useState<'email' | 'nickname' | null>(null);
+  const [editField, setEditField] = useState<'email' | 'nickname' | 'region' | 'user_type' | null>(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
@@ -68,9 +72,11 @@ export default function ProfileSection() {
             const profileData = await response.json();
             console.log('백엔드에서 가져온 프로필 정보:', profileData);
             
-            // 이메일과 닉네임 상태 업데이트
+            // 이메일, 닉네임, 지역, 회원구분 상태 업데이트
             setEmail(profileData.email || '');
             setNickname(profileData.username || '');
+            setRegion(profileData.region || '');
+            setUserType(profileData.user_type || '일반');
             
             // AuthContext와 로컬스토리지 업데이트
             if (setUser && authUser) {
@@ -103,7 +109,7 @@ export default function ProfileSection() {
     fetchProfileData();
   }, [accessToken, setUser]); // user 의존성 제거
   
-  // 이메일 및 닉네임 필드 초기화 (선택적 백업 용도)
+  // 이메일, 닉네임, 지역, 회원구분 필드 초기화 (선택적 백업 용도)
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
@@ -119,7 +125,19 @@ export default function ProfileSection() {
       const defaultNickname = user.email.split('@')[0];
       setNickname(defaultNickname);
     }
-  }, [user?.email, user?.username, user?.nickname]);
+    
+    // 지역 정보 초기화
+    if (user?.region) {
+      setRegion(user.region);
+    }
+    
+    // 회원구분 초기화
+    if (user?.user_type) {
+      setUserType(user.user_type);
+    } else {
+      setUserType('일반');
+    }
+  }, [user?.email, user?.username, user?.nickname, user?.region, user?.user_type]);
 
   /**
    * 이메일 주소 업데이트 함수
@@ -149,11 +167,15 @@ export default function ProfileSection() {
     }
 
     // 업데이트할 데이터 객체 준비
-    const updateData: {email?: string, username?: string} = {};
+    const updateData: {email?: string, username?: string, region?: string, user_type?: string} = {};
     if (editField === 'email') {
       updateData.email = email;
     } else if (editField === 'nickname') {
       updateData.username = nickname; // 백엔드에서는 username 필드 사용
+    } else if (editField === 'region') {
+      updateData.region = region;
+    } else if (editField === 'user_type') {
+      updateData.user_type = userType;
     }
 
     try {
@@ -188,9 +210,11 @@ export default function ProfileSection() {
         const profileData = await profileRes.json();
         console.log('프로필 업데이트 후 백엔드 응답:', profileData);
         
-        // 닉네임 및 이메일 상태 업데이트
+        // 닉네임, 이메일, 지역, 회원구분 상태 업데이트
         setEmail(profileData.email);
         setNickname(profileData.username);
+        setRegion(profileData.region || '');
+        setUserType(profileData.user_type || '일반');
         
         // AuthContext 및 로컬스토리지 동기화
         if (setUser) {
@@ -234,78 +258,36 @@ export default function ProfileSection() {
       </div>
       
       <div className="flex flex-col gap-4">
-        {/* 닉네임 정보 */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">닉네임</p>
-            {isEditing && editField === 'nickname' ? (
-              <input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="p-2 border rounded w-full"
-                placeholder="사용할 닉네임을 입력하세요"
-              />
-            ) : (
-              <p className="font-medium">{nickname || '닉네임이 설정되지 않았습니다'}</p>
-            )}
-          </div>
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">프로필 정보</h3>
           
-          <div>
-            {isEditing && editField === 'nickname' ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleProfileUpdate}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                >
-                  저장
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditing(false);
-                    setEditField(null);
-                    setNickname(user?.username || user?.nickname || (user?.email ? user.email.split('@')[0] : ''));
-                  }}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
-                >
-                  취소
-                </button>
-              </div>
-            ) : (
+          {/* 닉네임 섹션 */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-gray-700">닉네임</label>
               <button
                 onClick={() => {
                   setIsEditing(true);
                   setEditField('nickname');
                 }}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm whitespace-nowrap"
+                className="text-xs text-blue-600 hover:text-blue-800"
               >
-                닉네임 수정
+                수정
               </button>
-            )}
-          </div>
-        </div>
-        
-        {/* 이메일 정보 */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">이메일</p>
-            {isEditing && editField === 'email' ? (
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="p-2 border rounded w-full"
-              />
-            ) : (
-              <p className="font-medium">{user?.email || '이메일 정보가 없습니다'}</p>
-            )}
-          </div>
-          
-          <div>
-            {isEditing && editField === 'email' ? (
-              <div className="flex gap-2">
+            </div>
+            
+            {isEditing && editField === 'nickname' ? (
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  className="flex-1 p-2 border rounded-md mr-2"
+                  placeholder="닉네임을 입력하세요"
+                />
                 <button
                   onClick={handleProfileUpdate}
+                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm"
                   className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                 >
                   저장
