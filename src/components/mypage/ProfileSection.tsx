@@ -186,23 +186,29 @@ export default function ProfileSection() {
       });
       if (profileRes.ok) {
         const profileData = await profileRes.json();
+        console.log('프로필 업데이트 후 백엔드 응답:', profileData);
+        
+        // 닉네임 및 이메일 상태 업데이트
         setEmail(profileData.email);
         setNickname(profileData.username);
+        
         // AuthContext 및 로컬스토리지 동기화
-        setUser && setUser((prev: any) => ({
-          ...prev,
-          email: profileData.email,
-          username: profileData.username,
-          sns_type: profileData.sns_type,
-          provider: profileData.sns_type,
-        }));
-        localStorage.setItem('user', JSON.stringify({
-          ...authUser,
-          email: profileData.email,
-          username: profileData.username,
-          sns_type: profileData.sns_type,
-          provider: profileData.sns_type,
-        }));
+        if (setUser) {
+          const updatedUser = {
+            ...authUser,
+            email: profileData.email,
+            username: profileData.username,
+            sns_type: profileData.sns_type,
+            provider: profileData.sns_type,
+          };
+          
+          console.log('새로운 사용자 정보:', updatedUser);
+          setUser(updatedUser as any);
+          
+          // 로컬스토리지 업데이트
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          localStorage.setItem('auth.user', JSON.stringify(updatedUser));
+        }
       }
       setIsEditing(false);
       setEditField(null);
