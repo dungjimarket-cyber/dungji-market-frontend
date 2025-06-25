@@ -89,18 +89,18 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 메인 배너 이미지 */}
-      <section className="mb-8">
-        <div className="relative w-full overflow-hidden">
-          <img 
-            src="/images/dungji banner1.png" 
-            alt="둥지마켓 메인 배너" 
-            className="w-full h-auto object-cover"
-          />
-        </div>
-      </section>
-      
       <section className="mb-12">
+        <h1 className="text-4xl font-bold mb-6">둥지마켓에 오신 것을 환영합니다!</h1>
+        {/* 메인 배너 이미지 */}
+        <section className="mb-2">
+          <div className="relative w-full overflow-hidden">
+            <img 
+              src="/images/dungji banner1.png" 
+              alt="둥지마켓 메인 배너" 
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        </section>
         <div className="flex gap-4 mb-6">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <RoleButton 
