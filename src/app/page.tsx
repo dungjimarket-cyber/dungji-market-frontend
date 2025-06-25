@@ -101,10 +101,6 @@ export default function Home() {
       </section>
       
       <section className="mb-12">
-        <h1 className="text-4xl font-bold mb-6">둥지마켓에 오신 것을 환영합니다!</h1>
-        <p className="text-lg text-gray-600 mb-8">
-          함께 모여 더 좋은 가격으로 구매하세요.
-        </p>
         <div className="flex gap-4 mb-6">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <RoleButton 
