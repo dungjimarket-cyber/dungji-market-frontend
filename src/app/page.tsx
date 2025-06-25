@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
 import { RoleButton } from '@/components/auth/RoleButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { MobileHeader } from '@/components/navigation/MobileHeader';
 
 /**
  * 메인 홈페이지 컴포넌트
@@ -88,7 +89,13 @@ export default function Home() {
   const showAuthButtons = mounted ? !isAuthenticated : true;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      {/* 모바일 환경에서만 표시되는 헤더 */}
+      <div className="md:hidden">
+        <MobileHeader />
+      </div>
+      
+      <div className="container mx-auto px-4 py-8">
       <section className="mb-12">
         <h1 className="text-4xl font-bold mb-6">둥지마켓에 오신 것을 환영합니다!</h1>
         {/* 메인 배너 이미지 */}
@@ -198,5 +205,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </>
   );
 }
