@@ -91,7 +91,7 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8">
       {/* 메인 배너 이미지 */}
       <section className="mb-8">
-        <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
+        <div className="relative w-full overflow-hidden">
           <img 
             src="/images/dungji banner1.png" 
             alt="둥지마켓 메인 배너" 
