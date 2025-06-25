@@ -248,13 +248,25 @@ export default function ProfileSection() {
     <div className="bg-white p-6 rounded-lg shadow mb-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">사용자 정보</h2>
-        <button
-          onClick={handleLogout}
-          className="flex items-center text-red-500 hover:text-red-700 text-sm transition-colors"
-        >
-          <LogOut className="w-4 h-4 mr-1" />
-          로그아웃
-        </button>
+        <div className="flex flex-col gap-4 mt-6">
+          {/* 판매회원인 경우 입찰권 구매 링크 표시 */}
+          {userType === '판매' && (
+            <button
+              onClick={() => router.push('/bid-tickets')}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            >
+              입찰권 구매하기
+            </button>
+          )}
+          
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            로그아웃
+          </button>
+        </div>
       </div>
       
       <div className="flex flex-col gap-4">
