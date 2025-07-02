@@ -107,7 +107,7 @@ export default function Home() {
             />
             {/* 배너 안쪽 아래쪽에 버튼 이미지 추가 */}
             <div className="absolute bottom-[15%] left-0 right-0 flex justify-center gap-4">
-              <Link href="/seller/register">
+              <Link href="/register">
                 <img 
                   src="/button/seller_register_button.png" 
                   alt="판매회원 가입 버튼" 
