@@ -27,7 +27,7 @@ export default function AuthButtons({ isAuthenticated }: { isAuthenticated: bool
       {isAuthenticated ? (
         <button
           onClick={handleLogout}
-          className="text-gray-600 hover:text-gray-900"
+          className="btn-animated btn-outline"
         >
           로그아웃
         </button>
@@ -35,13 +35,13 @@ export default function AuthButtons({ isAuthenticated }: { isAuthenticated: bool
         <>
           <button
             onClick={handleLogin}
-            className="text-gray-600 hover:text-gray-900"
+            className="btn-animated btn-outline"
           >
             로그인
           </button>
           <Link
             href="/register"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            className="btn-animated btn-outline"
           >
             회원가입
           </Link>

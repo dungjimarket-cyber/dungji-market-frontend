@@ -162,12 +162,6 @@ export default function Home() {
           >
             <span>공구 등록하기</span>
           </RoleButton>
-          <Link
-            href="/group-purchases"
-            className="btn-animated btn-secondary"
-          >
-            <span>공구 둘러보기</span>
-          </Link>
         </div>
       </section>
 

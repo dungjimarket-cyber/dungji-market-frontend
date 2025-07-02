@@ -228,7 +228,7 @@ export default function Navbar() {
                       </button>
                       <Link
                         href="/register"
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                        className="btn-animated btn-outline"
                       >
                         회원가입
                       </Link>
