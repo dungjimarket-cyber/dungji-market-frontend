@@ -4,6 +4,7 @@ import Providers from './Providers';
 import { Toaster } from "@/components/ui/toaster";
 import DesktopNavbar from '@/components/common/DesktopNavbar';
 import MobileNavbar from '@/components/common/MobileNavbar';
+import Footer from '@/components/common/Footer';
 import { Analytics } from "@vercel/analytics/next"
 
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             {children}
           </main>
           <MobileNavbar />
+          <Footer />
           <Analytics />
         </Providers>
       </body>

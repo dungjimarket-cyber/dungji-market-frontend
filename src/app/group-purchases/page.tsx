@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { MainHeader } from '@/components/navigation/MainHeader';
-import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
 import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -156,7 +155,7 @@ function GroupPurchasesPageContent() {
       <MainHeader title="공구 둘러보기" />
       
       <div className="pt-16 pb-20">
-        <div className="max-w-md mx-auto bg-white min-h-screen">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* 페이지 헤더 */}
           <div className="px-4 py-6 border-b border-gray-100">
             <h1 className="text-2xl font-bold text-gray-900">공구 둘러보기</h1>
@@ -177,41 +176,40 @@ function GroupPurchasesPageContent() {
               <TabsTrigger value="completed">완료</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="space-y-4">
-              {loading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
+            <TabsContent value="all" className="mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {loading ? (
+                  [...Array(3)].map((_, i) => (
                     <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                  ))}
-                </div>
-              ) : error ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">{error}</p>
-                </div>
-              ) : groupBuys.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">진행중인 공동구매가 없습니다.</p>
-                </div>
-              ) : (
-                groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
-                ))
-              )}
+                  ))
+                ) : error ? (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-gray-500">{error}</p>
+                  </div>
+                ) : groupBuys.length === 0 ? (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-gray-500">진행중인 공동구매가 없습니다.</p>
+                  </div>
+                ) : (
+                  groupBuys.map((groupBuy) => (
+                    <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                  ))
+                )}
+              </div>
             </TabsContent>
 
-            <TabsContent value="popular" className="space-y-4">
+            <TabsContent value="popular" className="mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {loading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                  ))}
-                </div>
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                ))
               ) : error ? (
-                <div className="text-center py-8">
+                <div className="col-span-full text-center py-8">
                   <p className="text-gray-500">{error}</p>
                 </div>
               ) : groupBuys.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="col-span-full text-center py-8">
                   <p className="text-gray-500">인기 공동구매가 없습니다.</p>
                 </div>
               ) : (
@@ -219,21 +217,21 @@ function GroupPurchasesPageContent() {
                   <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
                 ))
               )}
+              </div>
             </TabsContent>
 
-            <TabsContent value="new" className="space-y-4">
+            <TabsContent value="new" className="mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {loading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                  ))}
-                </div>
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                ))
               ) : error ? (
-                <div className="text-center py-8">
+                <div className="col-span-full text-center py-8">
                   <p className="text-gray-500">{error}</p>
                 </div>
               ) : groupBuys.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="col-span-full text-center py-8">
                   <p className="text-gray-500">새로운 공동구매가 없습니다.</p>
                 </div>
               ) : (
@@ -241,21 +239,21 @@ function GroupPurchasesPageContent() {
                   <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
                 ))
               )}
+              </div>
             </TabsContent>
 
-            <TabsContent value="completed" className="space-y-4">
+            <TabsContent value="completed" className="mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {loading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                  ))}
-                </div>
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                ))
               ) : error ? (
-                <div className="text-center py-8">
+                <div className="col-span-full text-center py-8">
                   <p className="text-gray-500">{error}</p>
                 </div>
               ) : groupBuys.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="col-span-full text-center py-8">
                   <p className="text-gray-500">완료된 공동구매가 없습니다.</p>
                 </div>
               ) : (
@@ -263,12 +261,11 @@ function GroupPurchasesPageContent() {
                   <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
                 ))
               )}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 }
@@ -283,8 +280,7 @@ export default function GroupPurchasesPage() {
         <MainHeader title="공구 둘러보기" />
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-        </div>
-        <BottomNavigation />
+        </div>        
       </div>
     }>
       <GroupPurchasesPageContent />
