@@ -96,37 +96,56 @@ export default function Home() {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-      <section className="mb-12">
-        <Link
-              href="https://dungjimarket-guide-wnop7bf.gamma.site/"
-              className="text-gray-700 px-6 py-3 "
-            >
-              둥지마켓 알아보기
-        </Link>
+      <section className="mb-12">       
         {/* 메인 배너 이미지 */}
         <section className="mb-2">
           <div className="relative w-full overflow-hidden">
             <img 
-              src="/images/dungji banner1.png" 
+              src="/images/dungji-banner.png" 
               alt="둥지마켓 메인 배너" 
               className="w-full h-auto object-cover"
             />
+            {/* 배너 안쪽 아래쪽에 버튼 이미지 추가 */}
+            <div className="absolute bottom-[15%] left-0 right-0 flex justify-center gap-4">
+              <Link href="/seller/register">
+                <img 
+                  src="/button/seller_register_button.png" 
+                  alt="판매회원 가입 버튼" 
+                  className="h-auto hover:opacity-90 transition-opacity w-auto"
+                  style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)' }}
+                />
+              </Link>
+              <Link href="/group-purchases">
+                <img 
+                  src="/button/group-purchases_button.png" 
+                  alt="공구 둘러보기 버튼" 
+                  className="h-auto hover:opacity-90 transition-opacity w-auto"
+                  style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)' }}
+                />
+              </Link>
+            </div>
           </div>
         </section>
         <div className="flex gap-4 mb-6">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
+          <Link
+              href="https://dungjimarket-guide-wnop7bf.gamma.site/"
+              className="btn-animated btn-outline"
+            >
+              <span>둥지마켓 알아보기</span>
+          </Link>
           <RoleButton 
             href="/group-purchases/create"
-            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+            className="btn-animated btn-primary"
             disableForRoles={['seller']}
           >
-            공구 등록하기
+            <span>공구 등록하기</span>
           </RoleButton>
           <Link
             href="/group-purchases"
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+            className="btn-animated btn-secondary"
           >
-            공구 둘러보기
+            <span>공구 둘러보기</span>
           </Link>
         </div>
       </section>
