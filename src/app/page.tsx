@@ -133,7 +133,7 @@ export default function Home() {
               회원가입하기
             </Link>
             <Link
-              href="/about"
+              href="https://dungjimarket-guide-wnop7bf.gamma.site/"
               className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
             >
               둥지마켓 알아보기
