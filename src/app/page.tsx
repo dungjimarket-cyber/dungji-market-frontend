@@ -185,10 +185,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mb-12">
+      {/* <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-6">카테고리</h2>
         <Categories />
-      </section>
+      </section> */}
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
