@@ -4,7 +4,7 @@ import Providers from './Providers';
 import { Toaster } from "@/components/ui/toaster";
 import DesktopNavbar from '@/components/common/DesktopNavbar';
 import MobileNavbar from '@/components/common/MobileNavbar';
-
+import { Analytics } from "@vercel/analytics/next"
 
 
 export const metadata: Metadata = {
@@ -31,6 +31,7 @@ export default function RootLayout({
             {children}
           </main>
           <MobileNavbar />
+          <Analytics />
         </Providers>
       </body>
     </html>
