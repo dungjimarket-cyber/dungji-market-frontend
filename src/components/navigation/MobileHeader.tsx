@@ -16,10 +16,8 @@ export function MobileHeader() {
         {/* 로고 */}
         <Link href="/" className="flex-shrink-0">
           <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
-              둥
-            </div>
-            <span className="ml-1 text-sm font-semibold hidden sm:inline">둥지마켓</span>
+            <Image src="/logo.png" alt="둥지마켓" width={40} height={40} />
+            <span className="text-xl font-bold">둥지마켓</span>
           </div>
         </Link>
         
