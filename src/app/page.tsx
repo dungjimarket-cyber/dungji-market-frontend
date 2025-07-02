@@ -97,7 +97,12 @@ export default function Home() {
       
       <div className="container mx-auto px-4 py-8">
       <section className="mb-12">
-        <h1 className="text-4xl font-bold mb-6">둥지마켓에 오신 것을 환영합니다!</h1>
+        <Link
+              href="https://dungjimarket-guide-wnop7bf.gamma.site/"
+              className="text-gray-700 px-6 py-3 "
+            >
+              둥지마켓 알아보기
+        </Link>
         {/* 메인 배너 이미지 */}
         <section className="mb-2">
           <div className="relative w-full overflow-hidden">
@@ -124,22 +129,6 @@ export default function Home() {
             공구 둘러보기
           </Link>
         </div>
-        {showAuthButtons && (
-          <div className="flex gap-4">
-            <Link
-              href="/register"
-              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              회원가입하기
-            </Link>
-            <Link
-              href="https://dungjimarket-guide-wnop7bf.gamma.site/"
-              className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              둥지마켓 알아보기
-            </Link>
-          </div>
-        )}
       </section>
 
       <section className="mb-12">

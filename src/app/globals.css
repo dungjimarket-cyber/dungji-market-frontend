@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 프리텐다드 폰트 CDN 추가 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
 
 
 @layer base {
