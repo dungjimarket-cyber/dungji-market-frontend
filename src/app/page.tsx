@@ -152,7 +152,7 @@ export default function Home() {
                 <img 
                   src="/button/seller_register_button.png" 
                   alt="판매회원 가입 버튼" 
-                  className="h-auto hover:opacity-90 transition-opacity w-auto"
+                  className="h-auto text-sm hover:opacity-90 transition-opacity w-auto items-center justify-center flex"
                   style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)' }}
                 />
               </Link>
@@ -160,7 +160,7 @@ export default function Home() {
                 <img 
                   src="/button/group-purchases_button.png" 
                   alt="공구 둘러보기 버튼" 
-                  className="h-auto hover:opacity-90 transition-opacity w-auto"
+                  className="h-auto text-sm hover:opacity-90 transition-opacity w-auto items-center justify-center flex"
                   style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)' }}
                 />
               </Link>
@@ -172,13 +172,15 @@ export default function Home() {
           <button
               onClick={() => setShowIframe(!showIframe)}
               className="btn-animated btn-outline"
+              style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)', width: 'min(200px, 14.5vw)' }}
             >
               <span>둥지마켓 알아보기</span>
           </button>
           <RoleButton 
             href="/group-purchases/create"
             className="btn-animated btn-primary"
-            disableForRoles={['seller']}
+            style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)', width: 'min(200px, 14.5vw)' }}
+            disableForRoles={['seller']}            
           >
             <span>공구 등록하기</span>
           </RoleButton>

@@ -41,6 +41,15 @@
 .btn-animated span {
   position: relative;
   z-index: 2;
+  font-size: clamp(0.65rem, 0.8vw + 0.4rem, 0.9rem);
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-height: 2.4em;
 }
 
 /* 버튼 타입별 스타일 */
