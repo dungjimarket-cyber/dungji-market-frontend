@@ -59,6 +59,26 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
   
+  // iframe이 열렸을 때 뒤로가기 버튼 처리
+  useEffect(() => {
+    if (showIframe) {
+      // 현재 상태를 history에 추가
+      window.history.pushState(null, '', window.location.pathname);
+      
+      // popstate 이벤트 리스너 추가 (뒤로가기 버튼 클릭 시 발생)
+      const handlePopState = () => {
+        setShowIframe(false);
+      };
+      
+      window.addEventListener('popstate', handlePopState);
+      
+      // 컴포넌트 언마운트 시 이벤트 리스너 제거
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [showIframe]);
+  
   useEffect(() => {
     setMounted(true);
     
