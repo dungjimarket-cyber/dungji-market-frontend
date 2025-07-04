@@ -6,6 +6,7 @@ import RentalProductInfo from './detail/RentalProductInfo';
 import SubscriptionProductInfo from './detail/SubscriptionProductInfo';
 import StandardProductInfo from './detail/StandardProductInfo';
 import CustomFieldsDisplay from './detail/CustomFieldsDisplay';
+import BusinessInfoSection from './detail/BusinessInfoSection';
 
 interface ProductDetailProps {
   product: ProductDetail;
@@ -70,6 +71,9 @@ const ProductDetailComponent: React.FC<ProductDetailProps> = ({ product }) => {
             <CustomFieldsDisplay values={product.custom_values} />
           </div>
         )}
+        
+        {/* 사업자 정보 및 이용약관 섹션 */}
+        <BusinessInfoSection />
       </div>
     </div>
   );

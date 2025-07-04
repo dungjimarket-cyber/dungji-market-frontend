@@ -249,19 +249,19 @@ export default function Navbar() {
       <div className="flex justify-around items-center h-16 max-w-screen-lg mx-auto px-2">
         <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
           <FaHome className="text-xl mb-1" />
-          <span className="text-xs">홈</span>
+          <span className="text-xs whitespace-normal text-center">홈</span>
         </Link>
         
         <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
           <FaShoppingCart className="text-xl mb-1" />
-          <span className="text-xs">공구 목록</span>
+          <span className="text-xs whitespace-normal text-center leading-tight">공구 목록</span>
         </Link>
         
         {/* 판매자가 아닌 경우에만 공구 등록 버튼 표시 */}
         {userInfo?.role !== 'seller' && (
           <Link href="/group-purchases/create" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
             <span className="flex items-center justify-center w-7 h-7 bg-blue-600 text-white rounded-full text-lg mb-1">+</span>
-            <span className="text-xs">공구 등록</span>
+            <span className="text-xs whitespace-normal text-center leading-tight">공구 등록</span>
           </Link>
         )}
         
@@ -269,24 +269,24 @@ export default function Navbar() {
           <>
             <Link href="/my-page" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
               <FaUser className="text-xl mb-1" />
-              <span className="text-xs">마이페이지</span>
+              <span className="text-xs whitespace-normal text-center leading-tight">마이페이지</span>
             </Link>
             
             <button onClick={() => signOut()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2 bg-transparent border-0">
               <FaSignOutAlt className="text-xl mb-1" />
-              <span className="text-xs">로그아웃</span>
+              <span className="text-xs whitespace-normal text-center leading-tight">로그아웃</span>
             </button>
           </>
         ) : (
           <>
             <button onClick={() => signIn()} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2 bg-transparent border-0">
               <FaSignInAlt className="text-xl mb-1" />
-              <span className="text-xs">로그인</span>
+              <span className="text-xs whitespace-normal text-center leading-tight">로그인</span>
             </button>
             
             <Link href="/register" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
               <FaUserPlus className="text-xl mb-1" />
-              <span className="text-xs">회원가입</span>
+              <span className="text-xs whitespace-normal text-center leading-tight">회원가입</span>
             </Link>
           </>
         )}

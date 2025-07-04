@@ -34,17 +34,10 @@ export function RoleButton({ href, className, children, disableForRoles = [], st
   const [userRole, setUserRole] = useState<string | null>(null);
   const [shouldRender, setShouldRender] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const [sessionError, setSessionError] = useState(false);
   
-  // Try to use session, but handle errors gracefully
-  let session = null;
-  try {
-    const { data } = useSession();
-    session = data;
-  } catch (error) {
-    // If useSession fails, we'll just rely on localStorage
-    setSessionError(true);
-  }
+  // Use session hook properly inside the component function
+  const { data: session } = useSession({ required: false });
+  
 
   useEffect(() => {
     setMounted(true);
@@ -53,8 +46,8 @@ export function RoleButton({ href, className, children, disableForRoles = [], st
     if (typeof window !== 'undefined') {
       // 사용자 역할 확인 함수
       const checkUserRole = () => {
-        // First check session if available and not errored
-        if (!sessionError && session?.user) {
+        // First check session if available
+        if (session?.user) {
           // Use type assertion for the custom user properties
           const user = session.user as CustomUser;
           if (user.role) {
@@ -110,7 +103,7 @@ export function RoleButton({ href, className, children, disableForRoles = [], st
         window.removeEventListener('storage', handleStorageChange);
       };
     }
-  }, [disableForRoles, session, sessionError]);
+  }, [disableForRoles, session]);
 
   // 클라이언트 사이드 마운트 전에는 아무것도 렌더링하지 않음 (Hydration 오류 방지)
   if (!mounted) return null;
@@ -118,8 +111,24 @@ export function RoleButton({ href, className, children, disableForRoles = [], st
   // 역할에 따라 버튼 표시 여부 결정
   if (!shouldRender) return null;
   
+  // Add default styles for responsive text handling
+  const responsiveStyles: React.CSSProperties = {
+    // Allow text to wrap naturally
+    whiteSpace: 'normal',
+    // Ensure text breaks at word boundaries when possible
+    wordBreak: 'break-word',
+    // Prevent overflow with ellipsis
+    overflow: 'hidden',
+    // Combine user-provided styles with our responsive defaults
+    ...style
+  };
+  
   return (
-    <Link href={href} className={className} style={style}>
+    <Link 
+      href={href} 
+      className={`${className || ''} whitespace-normal break-words`}
+      style={responsiveStyles}
+    >
       {children}
     </Link>
   );

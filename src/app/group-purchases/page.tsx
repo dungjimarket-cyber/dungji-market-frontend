@@ -7,6 +7,8 @@ import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard
 import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { getSellerBids } from '@/lib/api/bidService';
 
 interface GroupBuy {
   id: number;
@@ -46,7 +48,10 @@ interface GroupBuy {
  */
 function GroupPurchasesPageContent() {
   const searchParams = useSearchParams();
+  const { user, accessToken } = useAuth();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
+  const [userParticipations, setUserParticipations] = useState<number[]>([]);
+  const [userBids, setUserBids] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -100,7 +105,32 @@ function GroupPurchasesPageContent() {
         throw new Error('공구 목록을 불러오는데 실패했습니다.');
       }
       
-      const data = await response.json();
+      let data = await response.json();
+      
+      // 완료된 공구 필터링 (완료 탭이 아닌 경우에만 적용)
+      if (activeTab !== 'completed') {
+        // 사용자가 참여하거나 입찰한 공구는 완료되어도 보여주고, 그 외의 완료된 공구는 필터링
+        data = data.filter((groupBuy: GroupBuy) => {
+          // 완료되지 않은 공구는 모두 표시
+          if (groupBuy.status !== 'completed') {
+            return true;
+          }
+          
+          // 사용자가 일반회원이고 참여한 공구인 경우 표시
+          if (user?.role !== 'seller' && userParticipations.includes(groupBuy.id)) {
+            return true;
+          }
+          
+          // 사용자가 판매회원이고 입찰한 공구인 경우 표시
+          if (user?.role === 'seller' && userBids.includes(groupBuy.id)) {
+            return true;
+          }
+          
+          // 그 외의 완료된 공구는 필터링
+          return false;
+        });
+      }
+      
       setGroupBuys(data);
     } catch (err) {
       console.error('공구 목록 로딩 실패:', err);
@@ -136,6 +166,46 @@ function GroupPurchasesPageContent() {
   };
 
   /**
+   * 사용자 참여 공구 및 입찰 공구 ID 목록 가져오기
+   */
+  const fetchUserParticipationsAndBids = async () => {
+    if (!accessToken) return;
+    
+    try {
+      // 일반 회원: 참여한 공구 목록 가져오기
+      if (user?.role !== 'seller') {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/participations/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // 참여한 공구 ID 목록 추출
+          const participationIds = data.map((p: any) => p.groupbuy_id);
+          setUserParticipations(participationIds);
+        }
+      }
+      
+      // 판매 회원: 입찰한 공구 목록 가져오기
+      if (user?.role === 'seller') {
+        try {
+          const bids = await getSellerBids();
+          // 입찰한 공구 ID 목록 추출
+          const bidGroupBuyIds = bids.map(bid => bid.groupbuy);
+          setUserBids(bidGroupBuyIds);
+        } catch (error) {
+          console.error('입찰 목록 조회 오류:', error);
+        }
+      }
+    } catch (error) {
+      console.error('사용자 참여/입찰 정보 조회 오류:', error);
+    }
+  };
+
+  /**
    * 초기 데이터 로딩
    */
   useEffect(() => {
@@ -148,7 +218,12 @@ function GroupPurchasesPageContent() {
     });
     
     fetchGroupBuys(filters);
-  }, [activeTab]);
+    
+    // 사용자가 로그인한 경우 참여/입찰 정보 가져오기
+    if (accessToken) {
+      fetchUserParticipationsAndBids();
+    }
+  }, [activeTab, accessToken]);
 
   return (
     <div className="min-h-screen bg-gray-50">

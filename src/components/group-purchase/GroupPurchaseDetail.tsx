@@ -70,6 +70,97 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [isParticipant, setIsParticipant] = useState(false);
   const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false); // 참여하기 모달 표시 여부
+  const [bidAmount, setBidAmount] = useState<number | ''>(groupBuy.highest_bid_amount ? groupBuy.highest_bid_amount + 1000 : '');
+  const [isBidding, setIsBidding] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
+  const [showBidSuccessModal, setShowBidSuccessModal] = useState(false);
+  const [showBidCancelModal, setShowBidCancelModal] = useState(false);
+  const [bidType, setBidType] = useState<'price' | 'subsidy'>(groupBuy.product_details?.category_name?.includes('휴대폰') ? 'subsidy' : 'price'); // 휴대폰은 지원금 입찰, 그 외는 가격 입찰
+  const [hasBid, setHasBid] = useState(false); // 이미 입찰했는지 여부
+  const [bidEndTime, setBidEndTime] = useState<Date | null>(null); // 입찰 마감 시간
+  const [canCancelBid, setCanCancelBid] = useState(false); // 입찰 취소 가능 여부
+  const [topBids, setTopBids] = useState<Array<{id: number, amount: string, is_mine: boolean}>>([]);  // 상위 5개 입찰 정보
+  
+  // 판매회원 여부 확인 - user_type 또는 role 속성 확인
+  const [isSeller, setIsSeller] = useState(false);
+  
+  // 판매회원 여부 확인 및 입찰 정보 가져오기
+  useEffect(() => {
+    // 서버에서 받아온 user 객체에서 확인
+    if (user?.user_type === '판매') {
+      setIsSeller(true);
+    } else {
+      // localStorage에서 확인
+      if (typeof window !== 'undefined') {
+        try {
+          // localStorage에서 사용자 정보 가져오기
+          const userStr = localStorage.getItem('auth.user') || localStorage.getItem('user');
+          if (userStr) {
+            const userData = JSON.parse(userStr);
+            if (userData.role === 'seller') {
+              setIsSeller(true);
+            }
+          }
+          
+          // 추가 확인: isSeller 플래그 확인
+          const isSellerFlag = localStorage.getItem('isSeller');
+          if (isSellerFlag === 'true') {
+            setIsSeller(true);
+          }
+        } catch (error) {
+          console.error('판매회원 여부 확인 오류:', error);
+        }
+      }
+    }
+    
+    // 입찰 정보 가져오기 (실제로는 API 호출 필요)
+    const fetchBidInfo = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        // 실제 API 호출 구현 필요
+        // 임시 데이터로 구현
+        
+        // 입찰 마감 시간 설정 (실제로는 API에서 가져와야 함)
+        const endTime = new Date();
+        endTime.setHours(endTime.getHours() + 24); // 임시로 24시간 후로 설정
+        setBidEndTime(endTime);
+        
+        // 입찰 취소 가능 여부 확인 (입찰 마감 시간 전이면 취소 가능)
+        setCanCancelBid(true);
+        
+        // 입찰 여부 확인 (실제로는 API에서 확인 필요)
+        setHasBid(false);
+        
+        // 상위 5개 입찰 정보 가져오기 (실제로는 API에서 가져와야 함)
+        setTopBids([
+          { id: 1, amount: '**,000', is_mine: false },
+          { id: 2, amount: '**,000', is_mine: false },
+          { id: 3, amount: '**,000', is_mine: true },  // 내 입찰
+          { id: 4, amount: '**,000', is_mine: false },
+          { id: 5, amount: '**,000', is_mine: false },
+        ]);
+      } catch (error) {
+        console.error('입찰 정보 가져오기 오류:', error);
+      }
+    };
+    
+    if (isSeller) {
+      fetchBidInfo();
+    }
+  }, [user, isAuthenticated, accessToken, isSeller]);
+  
+  // 입찰금액 포맷팅 함수
+  const formatCurrency = (value: number | string | '') => {
+    if (value === '') return '';
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return numValue.toLocaleString() + '원';
+  };
+  
+  // 입찰금액 파싱 함수 (콤마, 원 기호 제거)
+  const parseCurrency = (value: string): number => {
+    return parseInt(value.replace(/[^0-9]/g, ''), 10);
+  };
 
   /**
    * 뒤로가기
@@ -120,7 +211,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       if (!accessToken) {
         console.log('[GroupPurchaseDetail] 인증 토큰 없음');
         toast.error('로그인이 필요합니다.');
-        router.push('/login');
+        router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
         return;
       }
       
@@ -135,7 +226,6 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        // 서버 오류 발생 시 자세한 오류 정보를 받기 위해 credentials 추가
         credentials: 'include',
       });
 
@@ -167,7 +257,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       setIsJoining(false);
     }
   };
-
+  
   /**
    * 공구 탈퇴하기
    */
@@ -251,6 +341,157 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     const amountStr = amount.toString();
     if (amountStr.length <= 2) return `${amountStr}원`;
     return `${amountStr[0]}${'*'.repeat(amountStr.length - 2)}${amountStr[amountStr.length - 1]}원`;
+  };
+  
+  // 통화 관련 함수는 위에서 이미 정의되어 있음
+  
+  /**
+   * 입찰하기 버튼 클릭
+   */
+  const handleBidClick = () => {
+    if (!isAuthenticated) {
+      toast.error('로그인이 필요합니다.');
+      // 로그인 페이지로 이동
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      return;
+    }
+    
+    // 입찰금액 파싱 및 검증
+    let amountToCheck = bidAmount;
+    if (typeof amountToCheck === 'string') {
+      amountToCheck = parseCurrency(amountToCheck);
+    }
+    
+    if (typeof amountToCheck !== 'number' || isNaN(amountToCheck) || amountToCheck < (groupBuy.highest_bid_amount || 0) + 1000) {
+      toast.error('입찰금액은 현재 최고 입찰가보다 1,000원 이상 높아야 합니다.');
+      return;
+    }
+    
+    setShowBidModal(true);
+  };
+  
+  /**
+   * 입찰 취소 버튼 클릭
+   */
+  const handleCancelBidClick = () => {
+    if (!canCancelBid) {
+      toast.error('입찰 마감 시간이 지나 취소할 수 없습니다.');
+      return;
+    }
+    
+    setShowBidCancelModal(true);
+  };
+  
+  /**
+   * 입찰 취소 확인
+   */
+  const handleConfirmCancelBid = async () => {
+    if (!accessToken) return;
+    
+    try {
+      // 실제 API 호출 구현 필요
+      // const response = await fetch(`/api/group-purchases/${groupBuy.id}/bid`, {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Authorization': `Bearer ${accessToken}`
+      //   }
+      // });
+      // 
+      // if (!response.ok) throw new Error('입찰 취소 중 오류가 발생했습니다.');
+      
+      // 임시 성공 처리
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('입찰이 취소되었습니다.');
+      setShowBidCancelModal(false);
+      setHasBid(false);
+      
+      // 새로고침하여 최신 정보 가져오기
+      router.refresh();
+    } catch (error) {
+      console.error('입찰 취소 오류:', error);
+      toast.error('입찰 취소 중 오류가 발생했습니다.');
+    }
+  };
+  
+  /**
+   * 입찰 확인
+   */
+  const handleConfirmBid = async () => {
+    if (!accessToken) return;
+    
+    let amountToSubmit = bidAmount;
+    if (typeof amountToSubmit === 'string') {
+      amountToSubmit = parseCurrency(amountToSubmit);
+    }
+    
+    if (typeof amountToSubmit !== 'number' || isNaN(amountToSubmit)) return;
+    
+    setIsBidding(true);
+    
+    try {
+      // 실제 API 호출 구현 필요
+      // const response = await fetch(`/api/group-purchases/${groupBuy.id}/bid`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${accessToken}`
+      //   },
+      //   body: JSON.stringify({ 
+      //     amount: amountToSubmit,
+      //     bid_type: bidType // 'price' 또는 'subsidy'
+      //   })
+      // });
+      // 
+      // if (!response.ok) throw new Error('입찰 중 오류가 발생했습니다.');
+      // const data = await response.json();
+      // const isDuplicate = data.is_duplicate; // 중복 입찰 여부
+      
+      // 임시 성공 처리
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 임시로 중복 입찰 시나리오 구현
+      const isDuplicate = hasBid;
+      
+      setShowBidModal(false);
+      setShowBidSuccessModal(true);
+      setHasBid(true);
+      
+      if (isDuplicate) {
+        toast.success('수정 입찰 되었습니다.');
+      } else {
+        toast.success('입찰이 완료되었습니다.');
+      }
+      
+      // 새로고침하여 최신 정보 가져오기
+      router.refresh();
+    } catch (error) {
+      console.error('입찰 오류:', error);
+      toast.error('입찰 중 오류가 발생했습니다.');
+    } finally {
+      setIsBidding(false);
+    }
+  };
+  
+  /**
+   * 입찰금액 입력 처리
+   */
+  const handleBidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setBidAmount('');
+      return;
+    }
+    
+    // 숫자만 추출
+    const numericValue = value.replace(/[^0-9]/g, '');
+    if (numericValue === '') {
+      setBidAmount('');
+      return;
+    }
+    
+    const parsedValue = parseInt(numericValue, 10);
+    setBidAmount(parsedValue);
   };
 
   const isCompleted = groupBuy.status === 'completed' || groupBuy.status === 'cancelled';
@@ -409,26 +650,116 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
 
             {/* 버튼 영역 */}
-            <button
-              onClick={() => {
-                if (isAuthenticated) {
-                  setShowJoinModal(true);
-                } else {
-                  toast.error('로그인이 필요합니다.');
-                  router.push('/login');
-                }
-              }}
-              disabled={isJoining || isCompleted || isParticipant}
-              className={`w-full py-3 rounded-lg font-medium mb-4 ${
-                isCompleted 
-                  ? 'bg-gray-200 text-gray-500' 
-                  : isParticipant
-                  ? 'bg-green-600 text-white'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              {isJoining ? '처리 중...' : isCompleted ? '마감된 공구입니다' : isParticipant ? '참여 완료' : '참여하기'}
-            </button>
+            {isSeller ? (
+              // 판매회원용 입찰 인터페이스
+              <div className="space-y-4 mb-4">
+                <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                  <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 모드</h3>
+                  <p className="text-sm text-yellow-700">입찰에 참여하여 공구 판매 기회를 얻으세요.</p>
+                </div>
+                
+                {/* 입찰 타입 선택 */}
+                <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                  <div className="text-sm font-medium">입찰 유형:</div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setBidType('price')}
+                      className={`px-3 py-1 text-sm rounded-md ${bidType === 'price' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                      가격 입찰
+                    </button>
+                    <button
+                      onClick={() => setBidType('subsidy')}
+                      className={`px-3 py-1 text-sm rounded-md ${bidType === 'subsidy' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                      지원금 입찰
+                    </button>
+                  </div>
+                </div>
+                
+                {/* 상위 입찰 정보 */}
+                {topBids.length > 0 && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <h4 className="text-sm font-medium mb-2">현재 입찰 현황 (상위 5개)</h4>
+                    <div className="space-y-1">
+                      {topBids.map((bid, index) => (
+                        <div key={bid.id} className="flex justify-between text-sm">
+                          <span className={`${bid.is_mine ? 'font-medium text-blue-600' : ''}`}>
+                            {index + 1}위 {bid.is_mine && '(내 입찰)'}
+                          </span>
+                          <span>{bid.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">앞자리를 제외한 입찰가는 비공개입니다.</p>
+                  </div>
+                )}
+                
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={typeof bidAmount === 'number' ? formatCurrency(bidAmount) : bidAmount}
+                      onChange={(e) => handleBidAmountChange(e)}
+                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      placeholder={`${bidType === 'subsidy' ? '지원금' : '가격'} 입력 (원)`}
+                    />
+                  </div>
+                  <button
+                    onClick={handleBidClick}
+                    disabled={isBidding || isCompleted}
+                    className={`py-2 px-4 rounded-lg font-medium ${
+                      isCompleted 
+                        ? 'bg-gray-200 text-gray-500' 
+                        : isBidding
+                        ? 'bg-gray-400 text-white'
+                        : 'bg-orange-600 text-white hover:bg-orange-700'
+                    }`}
+                  >
+                    {isBidding ? '처리 중...' : '입찰하기'}
+                  </button>
+                </div>
+                
+                {/* 입찰 취소 버튼 */}
+                {hasBid && canCancelBid && (
+                  <button
+                    onClick={handleCancelBidClick}
+                    className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
+                  >
+                    입찰 취소하기
+                  </button>
+                )}
+                
+                <div className="text-xs text-gray-500">
+                  <p>• 입찰 시 입찰권 1개가 소모됩니다.</p>
+                  <p>• 최소 입찰 단위는 1,000원입니다.</p>
+                  <p>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</p>
+                  <p>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</p>
+                </div>
+              </div>
+            ) : (
+              // 일반회원용 참여 버튼
+              <button
+                onClick={() => {
+                  if (isAuthenticated) {
+                    setShowJoinModal(true);
+                  } else {
+                    toast.error('로그인이 필요합니다.');
+                    router.push('/login');
+                  }
+                }}
+                disabled={isJoining || isCompleted || isParticipant}
+                className={`w-full py-3 rounded-lg font-medium mb-4 ${
+                  isCompleted 
+                    ? 'bg-gray-200 text-gray-500' 
+                    : isParticipant
+                    ? 'bg-green-600 text-white'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {isJoining ? '처리 중...' : isCompleted ? '마감된 공구입니다' : isParticipant ? '참여 완료' : '참여하기'}
+              </button>
+            )}
 
             <button 
               onClick={handleShare}
@@ -477,6 +808,77 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         onClose={() => setShowJoinModal(false)}
         groupBuy={groupBuy}
       />
+      
+      {/* 입찰하기 모달 */}
+      <AlertDialog open={showBidModal} onOpenChange={setShowBidModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>입찰 확인</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p className="mb-4">
+              {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원으로 입찰하시겠습니까?
+              {hasBid && <span className="block mt-2 text-orange-600">이미 입찰하셨습니다. 기존 입찰금액이 수정됩니다.</span>}
+            </p>
+            <div className="bg-gray-50 p-3 rounded-lg mb-4">
+              <p className="font-medium">입찰 정보</p>
+              <p className="text-sm mt-1">입찰 금액: {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</p>
+              <p className="text-sm">입찰 유형: {bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</p>
+            </div>
+            <p className="text-sm text-yellow-600">입찰 시 입찰권 1개가 소모됩니다. 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</p>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBidding}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmBid}
+              disabled={isBidding}
+            >
+              {isBidding ? '처리 중...' : '입찰하기'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* 입찰 성공 모달 */}
+      <AlertDialog open={showBidSuccessModal} onOpenChange={setShowBidSuccessModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>입찰 완료</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p className="mb-4">입찰이 성공적으로 완료되었습니다.</p>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="font-medium">입찰 정보</p>
+              <p className="text-sm mt-1">입찰 금액: {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</p>
+              <p className="text-sm">입찰 유형: {bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</p>
+            </div>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogAction>확인</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* 입찰 취소 모달 */}
+      <AlertDialog open={showBidCancelModal} onOpenChange={setShowBidCancelModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>입찰 취소</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p>입찰을 취소하시겠습니까?</p>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>닫기</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmCancelBid}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              취소하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

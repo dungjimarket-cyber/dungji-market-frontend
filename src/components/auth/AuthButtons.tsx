@@ -23,11 +23,11 @@ export default function AuthButtons({ isAuthenticated }: { isAuthenticated: bool
   };
   
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center space-x-2 sm:space-x-4">
       {isAuthenticated ? (
         <button
           onClick={handleLogout}
-          className="btn-animated btn-outline"
+          className="btn-animated btn-outline whitespace-normal text-xs sm:text-sm md:text-base px-2 py-1 sm:px-4 sm:py-2"
         >
           로그아웃
         </button>
@@ -35,13 +35,13 @@ export default function AuthButtons({ isAuthenticated }: { isAuthenticated: bool
         <>
           <button
             onClick={handleLogin}
-            className="btn-animated btn-outline"
+            className="btn-animated btn-outline whitespace-normal text-xs sm:text-sm md:text-base px-2 py-1 sm:px-4 sm:py-2"
           >
             로그인
           </button>
           <Link
             href="/register"
-            className="btn-animated btn-outline"
+            className="btn-animated btn-outline whitespace-normal text-xs sm:text-sm md:text-base px-2 py-1 sm:px-4 sm:py-2"
           >
             회원가입
           </Link>
