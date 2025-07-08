@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import axios from 'axios';
 
@@ -45,6 +45,8 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<boolean>;
+  setInactivityTimeout: (minutes: number) => void;
+  clearInactivityTimeout: () => void;
 };
 
 // 인증 컨텍스트 생성
@@ -75,10 +77,105 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  
+  // 자동 로그아웃 관련 상태 및 참조
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [inactivityTimeout, setInactivityTimeoutValue] = useState<number>(1); // 기본값 30분
+  
+  /**
+   * 자동 로그아웃을 위한 타이머 설정 함수
+   * @param minutes 비활성 시간(분)
+   */
+  const setInactivityTimeout = useCallback((minutes: number) => {
+    // 기존 타이머가 있으면 제거
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+    
+    // 새로운 타임아웃 값 저장
+    setInactivityTimeoutValue(minutes);
+    
+    // 사용자가 로그인 상태인 경우에만 타이머 설정
+    if (user && accessToken) {
+      resetInactivityTimer();
+    }
+    
+    // 로컬 스토리지에 타임아웃 설정 저장
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('inactivityTimeout', minutes.toString());
+    }
+  }, [user, accessToken]);
+  
+  /**
+   * 비활성 타이머 초기화 함수
+   */
+  const resetInactivityTimer = useCallback(() => {
+    // 기존 타이머가 있으면 제거
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+    
+    // 사용자가 로그인 상태인 경우에만 새 타이머 설정
+    if (user && accessToken) {
+      inactivityTimerRef.current = setTimeout(async () => {
+        logDebug(`비활성 시간 ${inactivityTimeout}분 경과, 자동 로그아웃 실행`);
+        await logout();
+      }, inactivityTimeout * 60 * 1000); // 분을 밀리초로 변환
+    }
+  }, [inactivityTimeout, user, accessToken]);
+  
+  /**
+   * 비활성 타이머 제거 함수
+   */
+  const clearInactivityTimeout = useCallback(() => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+  }, []);
+  
+  // 사용자 활동 이벤트 리스너 설정
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user || !accessToken) return;
+    
+    // 사용자 활동 감지 이벤트 리스너
+    const handleUserActivity = () => {
+      resetInactivityTimer();
+    };
+    
+    // 다양한 사용자 활동 이벤트에 리스너 등록
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      window.addEventListener(event, handleUserActivity);
+    });
+    
+    // 초기 타이머 설정
+    resetInactivityTimer();
+    
+    // 클린업 함수
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, handleUserActivity);
+      });
+      clearInactivityTimeout();
+    };
+  }, [user, accessToken, resetInactivityTimer, clearInactivityTimeout]);
+  
   // 초기 로딩시 로컬 스토리지에서 토큰 및 사용자 정보 복원
   useEffect(() => {
     const initializeAuth = async () => {
+      // 로컬 스토리지에서 비활성 타임아웃 설정 로드
+      if (typeof window !== 'undefined') {
+        const storedTimeout = localStorage.getItem('inactivityTimeout');
+        if (storedTimeout) {
+          const timeoutValue = parseInt(storedTimeout, 10);
+          if (!isNaN(timeoutValue) && timeoutValue > 0) {
+            setInactivityTimeoutValue(timeoutValue);
+          }
+        }
+      }
       try {
         if (typeof window !== 'undefined') {
           console.log('페이지 로드 시 인증 상태 초기화 시작...');
@@ -611,7 +708,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user && !!accessToken,
         login,
         logout,
-        refreshTokens
+        refreshTokens,
+        setInactivityTimeout,
+        clearInactivityTimeout
       }}
     >
       {children}
