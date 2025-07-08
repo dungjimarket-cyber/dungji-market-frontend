@@ -7,6 +7,7 @@ import { ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus } from 'l
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
+import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,8 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
+  creator_name?: string;
+  host_username?: string;
   product_details: {
     id: number;
     name: string;
@@ -36,12 +39,14 @@ interface GroupBuy {
     category_name: string;
     carrier?: string;
     registration_type?: string;
+    registration_type_korean?: string;
     plan_info?: string;
     contract_info?: string;
   };
   telecom_detail?: {
     telecom_carrier: string;
     subscription_type: string;
+    subscription_type_korean?: string;
     plan_info: string;
     contract_period?: string;
   };
@@ -581,7 +586,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   </div>
                   <div>
                     <span className="text-gray-500">가입유형:</span>{' '}
-                    <span>{groupBuy.telecom_detail?.subscription_type || groupBuy.product_details?.registration_type || '-'}</span>
+                    <span>
+                      {groupBuy.telecom_detail?.subscription_type_korean || 
+                       groupBuy.product_details?.registration_type_korean || 
+                       getRegistrationTypeText(groupBuy.telecom_detail?.subscription_type || groupBuy.product_details?.registration_type)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-500">요금제:</span>{' '}
@@ -638,8 +647,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{groupBuy.creator?.username || '익명'}</p>
-                  <p className="text-xs text-gray-500">공구 생성자</p>
+                  <p className="text-sm font-medium">
+                    {groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}
+                  </p>
+                  <p className="text-xs text-gray-500">공구 방장</p>
                 </div>
               </div>
               

@@ -13,6 +13,8 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
+  creator_name?: string;
+  host_username?: string;
   product_details: {
     id: number;
     name: string;
@@ -22,12 +24,14 @@ interface GroupBuy {
     category_name: string;
     carrier?: string;
     registration_type?: string;
+    registration_type_korean?: string;
     plan_info?: string;
     contract_info?: string;
   };
   telecom_detail?: {
     telecom_carrier: string;
     subscription_type: string;
+    subscription_type_korean?: string;
     plan_info: string;
     contract_period?: string;
   };
@@ -148,9 +152,11 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
             {groupBuy.product_details?.name || '상품명 없음'}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {groupBuy.product_details?.registration_type && (
+            {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
               <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">
-                {getRegistrationTypeText(groupBuy.product_details.registration_type)}
+                {groupBuy.product_details?.registration_type_korean || 
+                 groupBuy.telecom_detail?.subscription_type_korean || 
+                 getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
               </span>
             )}
             {groupBuy.telecom_detail?.telecom_carrier && (
@@ -188,7 +194,7 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
               )}
             </div>
             <div>
-              <p className="text-gray-300 text-sm font-medium">{groupBuy.creator?.username || '알 수 없음'}</p>
+              <p className="text-gray-300 text-sm font-medium">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
               <p className="text-gray-500 text-xs">
                 {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
               </p>

@@ -274,6 +274,7 @@ export default function ProfileSection() {
           <h3 className="text-lg font-semibold mb-4">프로필 정보</h3>
           
           {/* 닉네임 섹션 */}
+          {/* 닉네임 섹션 */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">닉네임</label>
@@ -307,23 +308,65 @@ export default function ProfileSection() {
                   onClick={() => {
                     setIsEditing(false);
                     setEditField(null);
-                    setEmail(user?.email || '');
+                    setNickname(user?.username || '');
                   }}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
                 >
                   취소
                 </button>
               </div>
             ) : (
+              <div className="p-2 bg-gray-50 rounded-md">
+                <span className="font-medium">{nickname || '닉네임 정보 없음'}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* 이메일 섹션 */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-gray-700">이메일</label>
               <button
                 onClick={() => {
                   setIsEditing(true);
                   setEditField('email');
                 }}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm whitespace-nowrap"
+                className="text-xs text-blue-600 hover:text-blue-800"
               >
-                이메일 수정
+                수정
               </button>
+            </div>
+            
+            {isEditing && editField === 'email' ? (
+              <div className="flex items-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 p-2 border rounded-md mr-2"
+                  placeholder="이메일을 입력하세요"
+                />
+                <button
+                  onClick={handleProfileUpdate}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditField(null);
+                    setEmail(user?.email || '');
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                >
+                  취소
+                </button>
+              </div>
+            ) : (
+              <div className="p-2 bg-gray-50 rounded-md">
+                <span className="font-medium">{email || '이메일 정보 없음'}</span>
+              </div>
             )}
           </div>
         </div>

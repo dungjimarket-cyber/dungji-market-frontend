@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
+import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle, getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import JoinGroupBuyModal from './JoinGroupBuyModal';
 
 // 공통 유틸리튰는 lib/groupbuy-utils.ts에서 import하여 사용
@@ -20,6 +20,7 @@ interface Product {
   category_name?: string;
   carrier?: string;
   registration_type?: string;
+  registration_type_korean?: string;
   plan_info?: string;
   contract_info?: string;
   total_support_amount?: number;
@@ -43,7 +44,17 @@ interface GroupBuy {
   // 통신 관련 공구 정보 (명시적 필드)
   telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
   subscription_type?: string; // 가입유형 (new, transfer, change)
+  subscription_type_korean?: string; // 가입유형 한글 (신규가입, 번호이동, 기기변경)
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
+  
+  // 방장(생성자) 정보
+  creator_name?: string;
+  host_username?: string;
+  creator?: {
+    id: number;
+    username: string;
+    profile_image?: string;
+  };
 }
 
 interface GroupBuyListProps {
@@ -181,6 +192,24 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                       <div className="text-xs sm:text-sm text-gray-600">
                         {groupBuy.product_details?.contract_info || '2년 약정'}
                       </div>
+                    </div>
+                    
+                    {/* 방장 이름 및 가입유형 표시 */}
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="flex items-center">
+                        <p className="text-xs text-gray-500 mr-1">방장:</p>
+                        <p className="text-xs font-medium">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
+                      </div>
+                      {(groupBuy.subscription_type_korean || groupBuy.product_details?.registration_type_korean) && (
+                        <div className="flex items-center">
+                          <p className="text-xs text-gray-500 mr-1">가입:</p>
+                          <p className="text-xs">
+                            {groupBuy.subscription_type_korean || 
+                             groupBuy.product_details?.registration_type_korean || 
+                             getRegistrationTypeText(groupBuy.subscription_type || groupBuy.product_details?.registration_type)}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
