@@ -194,17 +194,21 @@ export default function SellerMyPage() {
                   </p>
                 </div>
 
-                <Button className="bg-blue-500 hover:bg-blue-600">
-                  입찰권 살펴보기
-                </Button>
+                <Link href="/mypage/seller/bid-tokens">
+                  <Button className="bg-blue-500 hover:bg-blue-600">
+                    입찰권 살펴보기
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
 
           <div className="flex justify-center">
-            <Button className="w-full max-w-md bg-blue-500 hover:bg-blue-600">
-              입찰권 상비로가기
-            </Button>
+            <Link href="/mypage/seller/bid-tokens" className="w-full max-w-md">
+              <Button className="w-full bg-blue-500 hover:bg-blue-600">
+                입찰권 구매하기
+              </Button>
+            </Link>
           </div>
         </>
       ) : (

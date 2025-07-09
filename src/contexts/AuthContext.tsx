@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // 자동 로그아웃 관련 상태 및 참조
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [inactivityTimeout, setInactivityTimeoutValue] = useState<number>(2); // 기본값 30분
+  const [inactivityTimeout, setInactivityTimeoutValue] = useState<number>(60); // 기본값 60분
   
   /**
    * 자동 로그아웃을 위한 타이머 설정 함수

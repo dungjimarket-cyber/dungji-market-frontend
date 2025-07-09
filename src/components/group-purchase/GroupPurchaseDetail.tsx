@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus } from 'lucide-react';
@@ -89,6 +89,69 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   // 판매회원 여부 확인 - user_type 또는 role 속성 확인
   const [isSeller, setIsSeller] = useState(false);
   
+  // 입찰 정보 가져오기 함수 - useCallback으로 메모이제이션
+  const fetchBidInfo = useCallback(async () => {
+    const groupBuyId = groupBuy?.id;
+    if (!isAuthenticated || !accessToken || !groupBuyId) return;
+    
+    try {
+      // 입찰 정보 API 호출
+      const bidInfoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/bids/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+      });
+      
+      if (!bidInfoResponse.ok) {
+        throw new Error(`입찰 정보 조회 실패: ${bidInfoResponse.status}`);
+      }
+      
+      const bidInfoData = await bidInfoResponse.json();
+      console.log('입찰 정보 조회 결과:', bidInfoData);
+      
+      // 입찰 마감 시간 설정
+      if (bidInfoData.bid_end_time) {
+        setBidEndTime(new Date(bidInfoData.bid_end_time));
+      } else {
+        // API에서 제공하지 않을 경우 그룹 구매 종료 시간 기준으로 설정 (24시간 전)
+        const endTime = new Date(groupBuy?.end_time || '');
+        endTime.setHours(endTime.getHours() - 24); // 그룹 구매 종료 24시간 전으로 설정
+        setBidEndTime(endTime);
+      }
+      
+      // 입찰 취소 가능 여부 확인
+      // 마감 시간이 지나지 않았고, 내 입찰이 있으면 취소 가능
+      const now = new Date();
+      const endTime = new Date(bidInfoData.bid_end_time || groupBuy?.end_time || '');
+      const hasMyBid = bidInfoData.my_bid && bidInfoData.my_bid.id;
+      setCanCancelBid(now < endTime && hasMyBid);
+      
+      // 내 입찰 여부 확인
+      setHasBid(!!bidInfoData.my_bid);
+      
+      // 상위 5개 입찰 정보 가져오기
+      if (bidInfoData.top_bids && Array.isArray(bidInfoData.top_bids)) {
+        setTopBids(bidInfoData.top_bids.map((bid: any) => ({
+          id: bid.id,
+          amount: bid.is_mine ? bid.amount.toLocaleString() : bid.amount.toString().replace(/\d/g, '*'),
+          is_mine: bid.is_mine
+        })).slice(0, 5));
+      }
+    } catch (error) {
+      console.error('입찰 정보 가져오기 오류:', error);
+      
+      // API 오류 시 기본값 설정
+      const endTime = new Date(groupBuy?.end_time || '');
+      endTime.setHours(endTime.getHours() - 24); // 그룹 구매 종료 24시간 전으로 설정
+      setBidEndTime(endTime);
+      setCanCancelBid(false);
+      setHasBid(false);
+      setTopBids([]);
+    }
+  }, [groupBuy, isAuthenticated, accessToken]);
+  
   // 판매회원 여부 확인 및 입찰 정보 가져오기
   useEffect(() => {
     // 서버에서 받아온 user 객체에서 확인
@@ -117,43 +180,14 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         }
       }
     }
-    
-    // 입찰 정보 가져오기 (실제로는 API 호출 필요)
-    const fetchBidInfo = async () => {
-      if (!isAuthenticated || !accessToken) return;
-      
-      try {
-        // 실제 API 호출 구현 필요
-        // 임시 데이터로 구현
-        
-        // 입찰 마감 시간 설정 (실제로는 API에서 가져와야 함)
-        const endTime = new Date();
-        endTime.setHours(endTime.getHours() + 24); // 임시로 24시간 후로 설정
-        setBidEndTime(endTime);
-        
-        // 입찰 취소 가능 여부 확인 (입찰 마감 시간 전이면 취소 가능)
-        setCanCancelBid(true);
-        
-        // 입찰 여부 확인 (실제로는 API에서 확인 필요)
-        setHasBid(false);
-        
-        // 상위 5개 입찰 정보 가져오기 (실제로는 API에서 가져와야 함)
-        setTopBids([
-          { id: 1, amount: '**,000', is_mine: false },
-          { id: 2, amount: '**,000', is_mine: false },
-          { id: 3, amount: '**,000', is_mine: true },  // 내 입찰
-          { id: 4, amount: '**,000', is_mine: false },
-          { id: 5, amount: '**,000', is_mine: false },
-        ]);
-      } catch (error) {
-        console.error('입찰 정보 가져오기 오류:', error);
-      }
-    };
-    
-    if (isSeller) {
+  }, [user]);
+  
+  // 입찰 정보 가져오기
+  useEffect(() => {
+    if (isSeller && groupBuy?.id) {
       fetchBidInfo();
     }
-  }, [user, isAuthenticated, accessToken, isSeller]);
+  }, [isSeller, groupBuy, isAuthenticated, accessToken, fetchBidInfo]);
   
   // 입찰금액 포맷팅 함수
   const formatCurrency = (value: number | string | '') => {
@@ -391,25 +425,30 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    * 입찰 취소 확인
    */
   const handleConfirmCancelBid = async () => {
-    if (!accessToken) return;
+    if (!accessToken || !groupBuy?.id) return;
     
     try {
-      // 실제 API 호출 구현 필요
-      // const response = await fetch(`/api/group-purchases/${groupBuy.id}/bid`, {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Authorization': `Bearer ${accessToken}`
-      //   }
-      // });
-      // 
-      // if (!response.ok) throw new Error('입찰 취소 중 오류가 발생했습니다.');
+      // 실제 API 호출 구현
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/bid/cancel/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      // 임시 성공 처리
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.detail || '입찰 취소 중 오류가 발생했습니다.';
+        throw new Error(errorMessage);
+      }
       
       toast.success('입찰이 취소되었습니다.');
       setShowBidCancelModal(false);
       setHasBid(false);
+      
+      // 입찰 정보 다시 가져오기
+      fetchBidInfo();
       
       // 새로고침하여 최신 정보 가져오기
       router.refresh();
@@ -423,7 +462,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    * 입찰 확인
    */
   const handleConfirmBid = async () => {
-    if (!accessToken) return;
+    if (!accessToken || !groupBuy?.id) return;
     
     let amountToSubmit = bidAmount;
     if (typeof amountToSubmit === 'string') {
@@ -435,32 +474,35 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     setIsBidding(true);
     
     try {
-      // 실제 API 호출 구현 필요
-      // const response = await fetch(`/api/group-purchases/${groupBuy.id}/bid`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${accessToken}`
-      //   },
-      //   body: JSON.stringify({ 
-      //     amount: amountToSubmit,
-      //     bid_type: bidType // 'price' 또는 'subsidy'
-      //   })
-      // });
-      // 
-      // if (!response.ok) throw new Error('입찰 중 오류가 발생했습니다.');
-      // const data = await response.json();
-      // const isDuplicate = data.is_duplicate; // 중복 입찰 여부
+      // 실제 API 호출 구현
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/bid/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ 
+          amount: amountToSubmit,
+          bid_type: bidType || 'price' // 'price' 또는 'subsidy'
+        })
+      });
       
-      // 임시 성공 처리
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.detail || '입찰 중 오류가 발생했습니다.';
+        throw new Error(errorMessage);
+      }
       
-      // 임시로 중복 입찰 시나리오 구현
-      const isDuplicate = hasBid;
+      const data = await response.json();
+      console.log('입찰 결과:', data);
+      const isDuplicate = data.is_duplicate || false; // 중복 입찰 여부
       
       setShowBidModal(false);
       setShowBidSuccessModal(true);
       setHasBid(true);
+      
+      // 입찰 후 입찰 정보 다시 가져오기
+      fetchBidInfo();
       
       if (isDuplicate) {
         toast.success('수정 입찰 되었습니다.');

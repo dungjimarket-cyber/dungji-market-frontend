@@ -62,7 +62,7 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
   
   const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
   const timeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
-  const isUrgent = timeLeft < 24 * 60 * 60 * 1000 && timeLeft > 0; // 24시간 미만
+  const isUrgent = timeLeft < 3 * 60 * 60 * 1000 && timeLeft > 0; // 3시간 미만
   
   const formatTimeLeft = (ms: number) => {
     if (ms <= 0) return '마감완료';
