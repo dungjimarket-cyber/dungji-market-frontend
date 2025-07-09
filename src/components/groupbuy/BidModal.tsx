@@ -131,12 +131,16 @@ export default function BidModal({
     setLoading(true);
     
     try {
-      const result = await createBid({
+      // 입찰 전송 데이터 로깅
+      const bidData = {
         groupbuy_id: groupBuyId,
         bid_type: data.bidType,
         amount: data.amount,
         message: data.message
-      });
+      };
+      console.log('입찰 전송 데이터:', bidData);
+      
+      const result = await createBid(bidData);
 
       toast({
         title: result.is_updated 
@@ -151,13 +155,77 @@ export default function BidModal({
       onBidSuccess();
       onClose();
     } catch (error: any) {
-      console.error('입찰 등록 중 오류 발생:', error.response?.data);
+      // 상세 오류 로깅
+      console.error('입찰 등록 중 오류 발생:', error);
+      console.error('오류 응답 데이터:', error.response?.data);
+      console.error('오류 상태 코드:', error.response?.status);
       console.error('전체 요청 내용:', error.config?.data);
+      
+      // 에러 메시지 추출 및 가공
+      let errorMessage = '서버 오류가 발생했습니다. 다시 시도해 주세요.';
+      let errorTitle = '입찰 등록에 실패했습니다';
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // 구체적인 오류 메시지가 있는 경우
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+          
+          // 입찰권 관련 오류인지 확인
+          if (errorMessage.includes('입찰권') || errorMessage.includes('사용 가능한 입찰권이 없습니다')) {
+            errorTitle = '입찰권 부족';
+          }
+          
+          // 공구 상태 관련 오류인지 확인
+          if (errorMessage.includes('공구') || errorMessage.includes('상태') || 
+              errorMessage.includes('recruiting') || errorMessage.includes('bidding')) {
+            errorTitle = '유효하지 않은 공구 상태';
+          }
+        }
+        // 입찰권 관련 오류
+        else if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+          errorMessage = errorData.non_field_errors.join(', ');
+        }
+        // 필드별 유효성 오류
+        else if (typeof errorData === 'object') {
+          const fieldErrors = [];
+          for (const [field, errors] of Object.entries(errorData)) {
+            if (Array.isArray(errors)) {
+              fieldErrors.push(`${field}: ${(errors as string[]).join(', ')}`);
+            }
+          }
+          
+          if (fieldErrors.length > 0) {
+            errorMessage = `입력 오류: ${fieldErrors.join('; ')}`;
+          }
+        }
+      }
+      
+      // 네트워크 오류 확인
+      if (!error.response) {
+        errorMessage = '서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.';
+        errorTitle = '네트워크 오류';
+      }
+      
+      // 사용자에게 알림
       toast({
-        title: '입찰 등록에 실패했습니다',
-        description: error.response?.data?.detail || '서버 오류가 발생했습니다. 다시 시도해 주세요.',
+        title: errorTitle,
+        description: errorMessage,
         variant: 'destructive'
       });
+      
+      // 입찰권 부족인 경우 구매 안내
+      if (errorMessage.includes('입찰권') || errorMessage.includes('사용 가능한 입찰권이 없습니다')) {
+        setTimeout(() => {
+          toast({
+            title: '입찰권 구매하기',
+            description: '마이페이지에서 입찰권을 구매하실 수 있습니다.',
+            variant: 'default',
+            action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/mypage/bidtokens'}>이동하기</Button>
+          });
+        }, 1000);
+      }
     } finally {
       setLoading(false);
     }

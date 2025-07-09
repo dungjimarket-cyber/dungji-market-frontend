@@ -1,4 +1,4 @@
-import tokenUtils from './tokenUtils';
+import { tokenUtils } from '@/lib/tokenUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -43,16 +43,12 @@ const bidTokenService = {
    */
   async getBidTokens(): Promise<BidTokenResponse> {
     try {
-      const response = await tokenUtils.fetchWithAuth<BidTokenResponse>(
+      const data = await tokenUtils.fetchWithAuth<BidTokenResponse>(
         `${API_URL}/bid-tokens/`,
         { method: 'GET' }
       );
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch bid tokens');
-      }
-      
-      return response.data;
+      return data;
     } catch (error) {
       console.error('Error fetching bid tokens:', error);
       throw error;
@@ -66,7 +62,7 @@ const bidTokenService = {
    */
   async purchaseBidTokens(data: PurchaseBidTokenRequest): Promise<PurchaseBidTokenResponse> {
     try {
-      const response = await tokenUtils.fetchWithAuth<PurchaseBidTokenResponse>(
+      const responseData = await tokenUtils.fetchWithAuth<PurchaseBidTokenResponse>(
         `${API_URL}/bid-tokens/purchase/`,
         {
           method: 'POST',
@@ -77,16 +73,30 @@ const bidTokenService = {
         }
       );
       
-      if (!response.ok) {
-        throw new Error('Failed to purchase bid tokens');
-      }
-      
-      return response.data;
+      return responseData;
     } catch (error) {
       console.error('Error purchasing bid tokens:', error);
       throw error;
     }
   },
+  
+  /**
+   * 사용 가능한 입찰권이 있는지 확인합니다.
+   * @returns 입찰권 보유 여부
+   */
+  async hasAvailableBidTokens(): Promise<boolean> {
+    try {
+      const tokens = await this.getBidTokens();
+      
+      // 무제한 토큰이 있거나, 일반/프리미엄 토큰 중 하나라도 있으면 입찰 가능
+      return tokens.unlimited_tokens > 0 || tokens.standard_tokens > 0 || tokens.premium_tokens > 0;
+    } catch (error) {
+      console.error('입찰권 확인 중 오류 발생:', error);
+      return false; // 오류 발생 시 기본적으로 입찰 불가능으로 처리
+    }
+  },
 };
+
+
 
 export default bidTokenService;

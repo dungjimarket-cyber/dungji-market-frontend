@@ -1217,7 +1217,6 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      </div>
     </>
   );
 }

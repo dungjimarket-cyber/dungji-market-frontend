@@ -95,7 +95,6 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [myBidId, setMyBidId] = useState<number | null>(null);
   // 내 입찰 순위 저장 (총 N개 중 M위)
   const [myBidRank, setMyBidRank] = useState<{rank: number, total: number} | null>(null);
-  const [showBidCompleteModal, setShowBidCompleteModal] = useState(false); // 입찰 완료 모달 표시 여부
   
   // 입찰 정보 가져오기 함수 - useCallback으로 메모이제이션
   const fetchBidInfo = useCallback(async () => {
@@ -1217,7 +1216,6 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      </div>
     </>
   );
 }

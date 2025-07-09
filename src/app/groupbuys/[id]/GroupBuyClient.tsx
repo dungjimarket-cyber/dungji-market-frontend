@@ -18,7 +18,8 @@ import { tokenUtils } from '@/lib/tokenUtils';
 import { useState, useEffect } from 'react';
 import { GroupBuy, ParticipationStatus } from '@/types/groupbuy';
 import { useToast } from '@/components/ui/use-toast';
-import { getGroupBuyBids } from '@/lib/api/bidService';
+import { getGroupBuyBids, getSellerBids } from '@/lib/api/bidService';
+import bidTokenService from '@/lib/bid-token-service';
 
 // 총 지원금 마스킹 함수
 function maskSupportAmount(amount: number | undefined): string {
@@ -43,10 +44,12 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   
   // 입찰 관련 상태
   const [isBidModalOpen, setIsBidModalOpen] = useState(false);
+  const [hasBidTokens, setHasBidTokens] = useState<boolean | null>(null); // null = loading
   const [isBidHistoryModalOpen, setIsBidHistoryModalOpen] = useState(false);
   const [hasBid, setHasBid] = useState(false);
   const [bidData, setBidData] = useState<any[]>([]);
   const [isLoadingBids, setIsLoadingBids] = useState(false);
+  const [isValidBidStatus, setIsValidBidStatus] = useState(true); // 입찰 가능한 공구 상태인지 확인
   
   // 판매회원(셀러) 여부 확인
   const [isSeller, setIsSeller] = useState(false);
@@ -173,7 +176,59 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     fetchParticipationStatus();
   }, [id, isAuthenticated, accessToken, user]);
   
-    /**
+  useEffect(() => {
+    if (isSeller && groupBuy && groupBuy.id) {
+      checkSellerBid();
+      checkBidTokens();
+    }
+  }, [isSeller, groupBuy?.id]);
+  
+  // 판매자 입찰권 보유 여부 확인
+  const checkBidTokens = async () => {
+    if (!isSeller) {
+      setHasBidTokens(false);
+      return;
+    }
+
+    try {
+      const hasTokens = await bidTokenService.hasAvailableBidTokens();
+      setHasBidTokens(hasTokens);
+    } catch (error) {
+      console.error('입찰권 확인 중 오류:', error);
+      setHasBidTokens(false);
+    }
+  };
+  
+  // 판매자가 현재 공구에 입찰 이력이 있는지 확인
+  const checkSellerBid = async () => {
+    if (!isSeller || !groupBuy?.id) {
+      setHasBid(false);
+      return;
+    }
+
+    try {
+      setIsLoadingBids(true);
+      // 판매자의 입찰 목록 조회
+      const bids = await getSellerBids();
+      
+      // 현재 공구에 대한 입찰이 있는지 확인
+      const existingBid = bids.find((bid: any) => 
+        bid.groupbuy === groupBuy.id && 
+        bid.status === 'pending'
+      );
+      
+      setHasBid(!!existingBid);
+      setBidData(bids.filter((bid: any) => bid.groupbuy === groupBuy.id));
+    } catch (error) {
+      console.error('입찰 이력 확인 중 오류:', error);
+      setHasBid(false);
+      setBidData([]);
+    } finally {
+      setIsLoadingBids(false);
+    }
+  };
+
+  /**
    * 판매자가 해당 공구에 입찰했는지 확인
    */
   const checkSellerBidStatus = async (groupBuyId: number) => {
@@ -364,8 +419,10 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
             <div className="flex justify-between mb-4">
               <div className="relative w-full">
                 <Button 
-                  className={`w-full ${isClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'} font-bold py-2 px-4 transition-colors duration-300`}
+                  variant="default" 
+                  className="bg-green-600 hover:bg-green-700 w-full mb-2"
                   onClick={() => {
+                    // 마감된 공구인 경우 입찰 불가 토스트 메시지 표시
                     if (isClosed) {
                       toast({
                         variant: 'destructive',
@@ -377,23 +434,46 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                       });
                       return;
                     }
+                    
+                    // 입찰권이 없는 경우 입찰 불가 메시지 표시
+                    if (hasBidTokens === false) {
+                      toast({
+                        variant: 'destructive',
+                        title: '입찰권 없음',
+                        description: '사용 가능한 입찰권이 없습니다. 입찰권을 구매하신 후 다시 시도해주세요.'
+                      });
+                      return;
+                    }
+                    
+                    // 입찰 불가능한 공구 상태인 경우
+                    if (!isValidBidStatus) {
+                      toast({
+                        variant: 'destructive',
+                        title: '입찰 불가',
+                        description: '모집 중이거나 입찰 중인 공구만 입찰할 수 있습니다.'
+                      });
+                      return;
+                    }
+                    
                     setIsBidModalOpen(true);
                   }}
-                  disabled={isClosed}
+                  disabled={isClosed || hasBidTokens === false || !isValidBidStatus}
                 >
                   <PlusCircle className="w-4 h-4 mr-1" /> 입찰하기
                 </Button>
-                {isClosed && (
+                {(isClosed || hasBidTokens === false || !isValidBidStatus) && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md">
-                    <p className="text-white text-sm font-semibold text-center">
-                      입찰 불가
-                      <br />
-                      <span className="text-xs font-normal">
-                        {calculatedStatus === 'expired' && '공구 기간이 마감되었습니다.'}
-                        {calculatedStatus === 'completed' && '공구가 완료되었습니다.'}
-                        {isFull && '공구 인원이 다 차었습니다.'}
-                      </span>
-                    </p>
+                      <p className="text-white text-sm font-semibold text-center">
+                        입찰 불가
+                        <br />
+                        <span className="text-xs font-normal">
+                          {calculatedStatus === 'expired' && '공구 기간이 마감되었습니다.'}
+                          {calculatedStatus === 'completed' && '공구가 완료되었습니다.'}
+                          {isFull && '공구 인원이 다 차었습니다.'}
+                          {hasBidTokens === false && '입찰권이 없습니다.'}
+                          {!isValidBidStatus && '입찰 불가능한 상태입니다.'}
+                        </span>
+                      </p>
                   </div>
                 )}
               </div>
