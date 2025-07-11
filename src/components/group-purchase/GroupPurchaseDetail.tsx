@@ -38,6 +38,7 @@ interface GroupBuy {
     base_price: number;
     image_url: string;
     category_name: string;
+    category_detail_type?: string; // 카테고리 상세 타입 (telecom, electronics, rental 등)
     carrier?: string;
     registration_type?: string;
     registration_type_korean?: string;
@@ -83,7 +84,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [showBidCancelModal, setShowBidCancelModal] = useState(false);
   const [showBidHistoryModal, setShowBidHistoryModal] = useState(false);
   const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
-  const [bidType, setBidType] = useState<'price' | 'support'>(groupBuy.product_details?.category_name?.includes('휴대폰') ? 'support' : 'price'); // 휴대폰은 지원금 입찰, 그 외는 가격 입찰
+  // 과제 조건: 휴대폰(category_id=1)은 지원금 입찰, 그 외는 가격 입찰로 처리
+  const categoryId = groupBuy.product_details?.category_id || 0;
+  const categoryName = groupBuy.product_details?.category_name || '';
+  const isTelecom = categoryId === 1 || categoryName === '휴대폰';
+  const [bidType, setBidType] = useState<'price' | 'support'>(
+    isTelecom ? 'support' : 'price'
+  ); // 휴대폰은 지원금 입찰, 그 외는 가격 입찰
   const [hasBid, setHasBid] = useState(false); // 이미 입찰했는지 여부
   const [bidEndTime, setBidEndTime] = useState<Date | null>(null); // 입찰 마감 시간
   const [canCancelBid, setCanCancelBid] = useState(false); // 입찰 취소 가능 여부
@@ -863,23 +870,12 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   </div>
                 )}
                 
-                {/* 입찰 타입 선택 */}
+                {/* 입찰 타입 표시 - 카테고리별로 하나만 표시 */}
                 {!hasBid && (
                   <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
                     <div className="text-sm font-medium">입찰 유형:</div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => setBidType('price')}
-                        className={`px-3 py-1 text-sm rounded-md ${bidType === 'price' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                      >
-                        가격 입찰
-                      </button>
-                      <button
-                        onClick={() => setBidType('support')}
-                        className={`px-3 py-1 text-sm rounded-md ${bidType === 'support' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                      >
-                        지원금 입찰
-                      </button>
+                    <div className="text-sm font-medium px-3 py-1 bg-blue-600 text-white rounded-md">
+                      {isTelecom ? '지원금 입찰' : '가격 입찰'}
                     </div>
                   </div>
                 )}

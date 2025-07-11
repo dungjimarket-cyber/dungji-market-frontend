@@ -55,8 +55,9 @@ export default function BidModal({
 }: BidModalProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  // 휴대폰 제품(telecom)은 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
-  const defaultBidType = productCategory === 'telecom' ? 'support' : 'price';
+  // 휴대폰 카테고리(category_id=1 또는 category_name='휴대폰')는 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
+  const isTelecom = productCategory === '휴대폰' || productCategory === '1';
+  const defaultBidType = isTelecom ? 'support' : 'price';
   const [bidType, setBidType] = useState<'price' | 'support'>(defaultBidType);
   const [existingBid, setExistingBid] = useState<{id: number, amount: number} | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
@@ -308,25 +309,29 @@ export default function BidModal({
           {/* 입찰 유형 선택 */}
           <div className="space-y-2">
             <Label>입찰 유형</Label>
-            <RadioGroup 
-              defaultValue="price"
-              className="flex flex-col space-y-1"
-              value={bidType}
-              onValueChange={handleBidTypeChange}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="price" id="price" {...register('bidType')} />
-                <Label htmlFor="price" className="font-normal">
-                  가격 입찰 - 제품을 판매할 가격을 제안합니다
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="support" id="support" {...register('bidType')} />
-                <Label htmlFor="support" className="font-normal">
-                  지원금 입찰 - 공구 참여자들에게 제공할 지원금을 제안합니다
-                </Label>
-              </div>
-            </RadioGroup>
+            <div className="p-2 bg-gray-50 rounded-md border border-gray-200">
+              {isTelecom ? (
+                // 통신/렌탈 카테고리: 지원금 입찰만 표시
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="hidden" 
+                    value="support" 
+                    {...register('bidType')} 
+                  />
+                  <p className="text-sm font-medium">지원금 입찰 - 공구 참여자들에게 제공할 지원금을 제안합니다</p>
+                </div>
+              ) : (
+                // 그 외 카테고리: 가격 입찰만 표시
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="hidden" 
+                    value="price" 
+                    {...register('bidType')} 
+                  />
+                  <p className="text-sm font-medium">가격 입찰 - 제품을 판매할 가격을 제안합니다</p>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* 금액 입력 */}
