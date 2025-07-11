@@ -132,6 +132,11 @@ interface FormData {
   end_time_option: string;
   end_time: string;
   
+  // 지역 관련 필드
+  region_type: string;
+  region?: string;          // 지역 코드
+  region_name?: string;     // 지역 이름
+  
   // 카테고리 식별용 필드 (UI에 표시되지 않음)
   product_category?: string;
   
@@ -275,7 +280,10 @@ export default function CreateForm() {
       end_time: '',
       telecom: '',
       purchase_type: '',
-      plan_price: ''
+      plan_price: '',
+      region: '',
+      region_name: '',
+      region_type: 'local'
     },
   });
 
