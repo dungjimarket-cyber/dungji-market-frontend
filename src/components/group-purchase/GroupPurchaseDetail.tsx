@@ -906,7 +906,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                               <span className={`${bid.is_mine ? 'font-medium text-blue-600' : ''}`}>
                                 {index + 1}위 {bid.is_mine && '(내 입찰)'}
                               </span>
-                              <span>{bid.amount}</span>
+                              <span>
+                                {bid.is_mine 
+                                  ? `${bid.amount.toLocaleString()}원` 
+                                  : `${Math.floor(bid.amount / 10000)}**,***원`}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -1098,11 +1102,19 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                       <tr key={bid.id} className={bid.is_mine ? 'bg-green-50 font-bold' : ''}>
                         <td className="px-4 py-2 border-b text-center">{idx + 1}</td>
                         <td className="px-4 py-2 border-b text-center">{bid.bid_type === 'price' ? '가격 입찰' : '지원금 입찰'}</td>
-                        <td className="px-4 py-2 border-b text-center">{bid.amount.toLocaleString()}원</td>
                         <td className="px-4 py-2 border-b text-center">
-                          {bid.bid_type === 'price' ? 
-                            bid.amount.toLocaleString() : 
-                            (groupBuy.product_details?.base_price - bid.amount).toLocaleString()}원
+                          {bid.is_mine 
+                            ? `${bid.amount.toLocaleString()}원`
+                            : `${Math.floor(bid.amount / 10000)}**,***원`}
+                        </td>
+                        <td className="px-4 py-2 border-b text-center">
+                          {bid.bid_type === 'price' 
+                            ? (bid.is_mine 
+                                ? `${bid.amount.toLocaleString()}원`
+                                : `${Math.floor(bid.amount / 10000)}**,***원`)
+                            : (bid.is_mine
+                                ? `${(groupBuy.product_details?.base_price - bid.amount).toLocaleString()}원`
+                                : `${Math.floor((groupBuy.product_details?.base_price - bid.amount) / 10000)}**,***원`)}
                         </td>
                         <td className="px-4 py-2 border-b text-center">{bid.is_mine ? '나' : '-'}</td>
                       </tr>
