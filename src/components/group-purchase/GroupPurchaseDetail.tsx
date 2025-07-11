@@ -621,9 +621,64 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       
       // 새로고침하여 최신 정보 가져오기
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error('입찰 오류:', error);
-      toast.error('입찰 중 오류가 발생했습니다.');
+      
+      // 에러 메시지 추출 시도
+      let errorMessage = '입찰 중 오류가 발생했습니다.';
+      let errorData = {};
+      
+      try {
+        // 에러가 JSON 문자열로 반환된 경우
+        if (typeof error.message === 'string' && error.message.startsWith('{')) {
+          errorData = JSON.parse(error.message);
+          if (errorData.detail) {
+            errorMessage = errorData.detail;
+          }
+        } 
+        // 에러 객체에 response.data가 있는 경우
+        else if (error.response?.data) {
+          errorData = error.response.data;
+          if (errorData.detail) {
+            errorMessage = errorData.detail;
+          }
+        }
+      } catch (parseError) {
+        console.error('에러 파싱 실패:', parseError);
+      }
+      
+      // 입찰권 부족 관련 오류인지 확인
+      const isBidTokenError = 
+        typeof errorMessage === 'string' && 
+        (errorMessage.includes('입찰권') || 
+         errorMessage.includes('사용 가능한 입찰권이 없습니다') ||
+         errorMessage.includes('구매') ||
+         errorMessage.includes('다시 시도해주세요'));
+      
+      // 오류 알림 표시
+      toast.error(isBidTokenError ? '입찰권 부족' : '입찰 실패', {
+        description: errorMessage,
+      });
+      
+      // 입찰권 부족 오류인 경우 추가 안내 표시
+      if (isBidTokenError) {
+        setTimeout(() => {
+          toast({
+            title: '입찰권 구매하기',
+            description: (
+              <div className="flex flex-col">
+                <p>입찰권을 구매하시면 더 많은 공구에 입찰할 수 있습니다.</p>
+                <Button
+                  className="mt-2"
+                  onClick={() => router.push('/mypage/seller/bid-tokens')}
+                >
+                  입찰권 구매 페이지로 이동
+                </Button>
+              </div>
+            ),
+          });
+        }, 1000);
+      }
     } finally {
       setIsBidding(false);
     }
