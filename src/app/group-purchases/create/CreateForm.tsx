@@ -131,6 +131,8 @@ interface FormData {
   max_participants: number;
   end_time_option: string;
   end_time: string;
+  sliderHours?: number;      // 슬라이더로 선택한 시간(시간)
+  customHours?: number;      // 사용자 지정 시간(시간)
   
   // 지역 관련 필드
   region_type: string;
@@ -269,6 +271,13 @@ export default function CreateForm() {
     secondaryAction?: () => void;
   }>({ open: false });
   
+  // 공구 제목 자동 생성 함수
+  const generateTitle = () => {
+    const productName = selectedProduct?.name || '공동구매';
+    const regionText = selectedRegion?.name ? `[${selectedRegion.name}]` : '';
+    return `${regionText} ${productName} 공동구매`;
+  };
+  
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -283,7 +292,9 @@ export default function CreateForm() {
       plan_price: '',
       region: '',
       region_name: '',
-      region_type: 'local'
+      region_type: 'local',
+      sliderHours: 24,
+      customHours: 24
     },
   });
 
@@ -429,6 +440,14 @@ export default function CreateForm() {
     form.setValue('region_name', region.name);
   };
 
+  // 참가자 수 관련 상태 변수
+  const [minParticipants, setMinParticipants] = useState<number>(1);
+  const [maxParticipants, setMaxParticipants] = useState<number>(10);
+  // 마감 시간 관련 상태 변수
+  const [endTimeValue, setEndTimeValue] = useState<string>('');
+  // 상품 ID 관련 상태 변수
+  const [productId, setProductId] = useState<number | null>(null);
+
   /**
    * 폼 제출 핸들러 
    */
@@ -437,6 +456,7 @@ export default function CreateForm() {
     
     // 요청 데이터를 함수 전체에서 사용할 수 있도록 초기화
     let apiRequestData: Record<string, any> = {};
+    let productDetails: Record<string, any> = {}; // 상품 세부 정보 객체 선언
     
     // 필수 필드 값 유효성 추가 확인
     if (!values.product) {
@@ -448,6 +468,10 @@ export default function CreateForm() {
       return;
     }
     
+    // 상품 ID 설정 - 문자열에서 숫자로 변환
+    const currentProductId = parseInt(values.product, 10);
+    setProductId(currentProductId);
+    
     setIsSubmitting(true);
     
     try {
@@ -458,6 +482,7 @@ export default function CreateForm() {
           title: '참여 인원 오류',
           description: '최소 참여 인원은 최대 참여 인원보다 클 수 없습니다'
         });
+        setIsSubmitting(false);
         return;
       }
       
@@ -469,11 +494,9 @@ export default function CreateForm() {
           description: "공구 등록을 위해 로그인이 필요합니다.",
         });
         router.push('/login?callbackUrl=/group-purchases/create');
+        setIsSubmitting(false);
         return;
       }
-
-      // 상품 ID 추출
-      const productId = parseInt(values.product);
       
       // 마감 시간 계산
       const currentDate = new Date();
@@ -496,30 +519,30 @@ export default function CreateForm() {
         max_participants: values.max_participants,
         end_time: endTime.toISOString(),
         description: values.description || '',
-        region: regionType === 'local' ? (selectedRegion?.code || null) : null,
-        region_name: regionType === 'local' ? (selectedRegion?.name || null) : null,
+        region: values.region_type === 'local' ? (values.region || null) : null,
+        region_name: values.region_type === 'local' ? (values.region_name || null) : null,
       };
       
       // 선택된 상품의 카테고리에 따라 다른 세부 정보 추가
       if (!selectedProduct || selectedProduct.category?.detail_type === 'telecom' || !selectedProduct.category?.detail_type) {
         productDetails = {
-          telecom_carrier: values.telecom_carrier,
-          telecom_plan: values.telecom_plan, // 백엔드에서 product_details.telecom_plan을 찾기 때문에 plan_info가 아닌 telecom_plan 사용
-          subscription_type: values.subscription_type
+          telecom_carrier: values.telecom_carrier || '',
+          telecom_plan: values.telecom_plan || '', // 백엔드에서 product_details.telecom_plan을 찾기 때문에 plan_info가 아닌 telecom_plan 사용
+          subscription_type: values.subscription_type || ''
         };
         console.log('통신사 정보 전송:', productDetails);
       } else if (selectedProduct.category?.detail_type === 'electronics') {
         productDetails = {
-          manufacturer: values.manufacturer,
-          warranty_period: values.warranty_period
+          manufacturer: values.manufacturer || '',
+          warranty_period: values.warranty_period || ''
         };
       } else if (selectedProduct.category?.detail_type === 'rental') {
         productDetails = {
-          rental_period: values.rental_period
+          rental_period: values.rental_period || ''
         };
       } else if (selectedProduct.category?.detail_type === 'subscription') {
         productDetails = {
-          payment_cycle: values.payment_cycle
+          payment_cycle: values.payment_cycle || ''
         };
       }
       
@@ -581,7 +604,7 @@ export default function CreateForm() {
       
       // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
       apiRequestData = {
-        product: productId,                 // 필수 필드, 수치
+        product: currentProductId,           // 필수 필드, 수치
         title: safeTitle,                   // 필수 필드, 문자열 (자동 생성된 제목)
         description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
         min_participants: minPart,          // 필수 필드, 수치, 최소 1
@@ -636,7 +659,7 @@ export default function CreateForm() {
       
       // 동일 상품으로 이미 생성한 공구가 있는지 확인
       try {
-        console.log('중복 공구 확인 시작 - 상품 ID:', productId, '타입:', typeof productId);
+        console.log('중복 공구 확인 시작 - 상품 ID:', currentProductId, '타입:', typeof currentProductId);
         
         const checkUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/my_groupbuys/`;
         console.log('기존 공구 확인 URL:', checkUrl);
@@ -650,7 +673,7 @@ export default function CreateForm() {
         // 중요: 현재 상품과 동일한 상품을 사용한 공구가 있는지 확인
         if (existingGroupBuys && Array.isArray(existingGroupBuys)) {
           // 확인용 로그 추가
-          console.log(`현재 선택된 상품 ID: ${productId} (${typeof productId})`);
+          console.log(`현재 선택된 상품 ID: ${currentProductId} (${typeof currentProductId})`);
           console.log('기존 공구 목록 개수:', existingGroupBuys.length);
           
           // 확인을 위해 모든 공구의 상품 ID를 출력
@@ -666,10 +689,10 @@ export default function CreateForm() {
             const gbProductId = typeof gb.product === 'string' ? parseInt(gb.product) : Number(gb.product);
             const isActive = activeStatuses.includes(gb.status);
             
-            console.log(`비교: 기존 공구 상품 ID ${gbProductId} vs 현재 상품 ID ${productId}, 상태: ${gb.status}, 활성여부: ${isActive}`);
+            console.log(`비교: 기존 공구 상품 ID ${gbProductId} vs 현재 상품 ID ${currentProductId}, 상태: ${gb.status}, 활성여부: ${isActive}`);
             
             // 동일한 상품이고 활성 상태일 경우에만 중복으로 간주
-            return gbProductId === productId && isActive;
+            return gbProductId === currentProductId && isActive;
           });
           
           console.log('중복 공구 검출 결과:', duplicateGroupBuy);
@@ -681,8 +704,8 @@ export default function CreateForm() {
                           '상품:', duplicateGroupBuy.product_name, 
                           '상태:', duplicateGroupBuy.status);
             
-            // 제품 ID 추출
-            const productId = apiRequestData.product;
+            // 제품 ID 사용
+            // currentProductId 변수를 사용하여 일관성 유지
             const selectedProductName = selectedProduct?.name || duplicateGroupBuy.product_name || '현재 상품';
             
             // 사용자에게 모달 표시 - 토스트보다 더 눈에 띄고 사라지지 않음
@@ -722,7 +745,7 @@ export default function CreateForm() {
       
       // 디버깅을 위한 요청 데이터 로깅
       console.log('===== 요청 형식 및 베어된 값 확인 =====');
-      console.log('product (productId):', productId, typeof productId);
+      console.log('product (productId):', currentProductId, typeof currentProductId);
       console.log('title:', safeTitle, typeof safeTitle);
       console.log('description:', safeDescription, typeof safeDescription);
       console.log('min_participants:', minPart, typeof minPart);
@@ -733,7 +756,7 @@ export default function CreateForm() {
       
       // 추가 디버깅: 각 필드의 유효성 검사
       console.log('===== 필드 유효성 검사 =====');
-      console.log('productId 유효성:', productId && productId > 0);
+      console.log('productId 유효성:', currentProductId && currentProductId > 0);
       console.log('title 유효성:', safeTitle && safeTitle.length > 0);
       console.log('min_participants 유효성:', minPart && minPart >= 1);
       console.log('max_participants 유효성:', maxPart && maxPart >= 1 && maxPart <= 100);
@@ -750,7 +773,7 @@ export default function CreateForm() {
       console.log('시간 차이 (시간):', (new Date(endTimeValue).getTime() - new Date().getTime()) / (1000 * 60 * 60));
       
       // 필수 필드 값 검증 
-      if (!productId || productId <= 0) {
+      if (!currentProductId || currentProductId <= 0) {
         toast({
           variant: 'destructive',
           title: '상품 오류',
