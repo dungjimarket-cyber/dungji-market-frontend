@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react';
 import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
+import { useState, useEffect } from 'react';
 
 interface GroupBuy {
   id: number;
@@ -61,8 +62,13 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
   const isRecruiting = groupBuy.status === 'recruiting';
   
   const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
-  const timeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
-  const isUrgent = timeLeft < 3 * 60 * 60 * 1000 && timeLeft > 0; // 3시간 미만
+  
+  // 실시간 타이머 상태 추가
+  const [currentTimeLeft, setCurrentTimeLeft] = useState<number>(
+    new Date(groupBuy.end_time).getTime() - Date.now()
+  );
+  const [timeLeftText, setTimeLeftText] = useState<string>('');
+  const isUrgent = currentTimeLeft < 3 * 60 * 60 * 1000 && currentTimeLeft > 0; // 3시간 미만
   
   const formatTimeLeft = (ms: number) => {
     if (ms <= 0) return '마감완료';
@@ -77,6 +83,22 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
     }
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
+  
+  // 실시간 타이머 업데이트
+  useEffect(() => {
+    // 초기 타이머 설정
+    setTimeLeftText(formatTimeLeft(currentTimeLeft));
+    
+    // 1초마다 타이머 갱신
+    const timerInterval = setInterval(() => {
+      const newTimeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
+      setCurrentTimeLeft(newTimeLeft);
+      setTimeLeftText(formatTimeLeft(newTimeLeft));
+    }, 1000);
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => clearInterval(timerInterval);
+  }, [groupBuy.end_time]);
 
   const getStatusColor = () => {
     if (isCompleted) return 'text-gray-500';
@@ -216,7 +238,7 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
           <div className="flex items-center gap-2">
             <Clock className={`w-5 h-5 ${getStatusColor()}`} />
             <span className={`font-medium ${getStatusColor()}`}>
-              {formatTimeLeft(timeLeft)}
+              {timeLeftText || formatTimeLeft(currentTimeLeft)}
             </span>
           </div>
           <div className={`text-sm ${isUrgent ? 'text-red-400' : isCompleted ? 'text-gray-500' : 'text-green-400'}`}>

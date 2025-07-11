@@ -435,17 +435,42 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   /**
    * 남은 시간 계산
    */
-  const getRemainingTime = () => {
+  const [remainingTimeText, setRemainingTimeText] = useState<string>('');
+  
+  const calculateRemainingTime = () => {
     const timeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
     if (timeLeft <= 0) return '마감';
     
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
     const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
     
     if (days > 0) {
       return `${days}일 ${hours}시간`;
+    } else if (hours > 0) {
+      return `${hours}시간 ${minutes}분`;
+    } else {
+      return `${minutes}분 ${seconds}초`;
     }
-    return `${hours}시간`;
+  };
+  
+  // 실시간 타이머 구현
+  useEffect(() => {
+    // 초기 타이머 설정
+    setRemainingTimeText(calculateRemainingTime());
+    
+    // 1초마다 타이머 갱신
+    const timerInterval = setInterval(() => {
+      setRemainingTimeText(calculateRemainingTime());
+    }, 1000);
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => clearInterval(timerInterval);
+  }, [groupBuy.end_time]);
+  
+  const getRemainingTime = () => {
+    return remainingTimeText;
   };
 
   /**
@@ -625,8 +650,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       console.error('입찰 오류:', error);
       
       // 에러 메시지 추출 시도
-      let errorMessage = '입찰 중 오류가 발생했습니다.';
-      let errorData = {};
+      let errorMessage = '입찰 시 오류가 발생했습니다.';
+      let errorData: { detail?: string; code?: string } = {};
+      let isBidTokenError = false;
       
       try {
         // 에러가 JSON 문자열로 반환된 경우
@@ -648,11 +674,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       }
       
       // 입찰권 부족 관련 오류인지 확인
-      const isBidTokenError = 
+      isBidTokenError = 
         typeof errorMessage === 'string' && 
         (errorMessage.includes('입찰권') || 
          errorMessage.includes('사용 가능한 입찰권이 없습니다') ||
-         errorMessage.includes('구매') ||
+         errorMessage.includes('구매') || 
          errorMessage.includes('다시 시도해주세요'));
       
       // 오류 알림 표시
@@ -663,20 +689,15 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       // 입찰권 부족 오류인 경우 추가 안내 표시
       if (isBidTokenError) {
         setTimeout(() => {
-          toast({
-            title: '입찰권 구매하기',
-            description: (
-              <div className="flex flex-col">
-                <p>입찰권을 구매하시면 더 많은 공구에 입찰할 수 있습니다.</p>
-                <Button
-                  className="mt-2"
-                  onClick={() => router.push('/mypage/seller/bid-tokens')}
-                >
-                  입찰권 구매 페이지로 이동
-                </Button>
-              </div>
-            ),
-          });
+          toast(
+            "입찰권을 구매하시면 더 많은 공구에 입찰할 수 있습니다.",
+            {
+              action: {
+                label: "입찰권 구매하기",
+                onClick: () => router.push('/mypage/seller/bid-tokens'),
+              },
+            }
+          );
         }, 1000);
       }
     } finally {
