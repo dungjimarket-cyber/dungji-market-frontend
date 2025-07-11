@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
-import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon } from "lucide-react";
+import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon, MapPinIcon, SearchIcon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
+import { getRegions, searchRegionsByName, Region } from '@/lib/api/regionService';
 
 interface Product {
   id: number;
@@ -94,6 +95,7 @@ const formSchema = z.object({
   }).default(24),
   region_type: z.enum(['local', 'online']).default('local'),
   region: z.string().optional(),
+  region_name: z.string().optional(),
   
   // 카테고리별 필드
   telecom_carrier: z.string().optional(),
@@ -244,6 +246,13 @@ export default function CreateForm() {
   const [regionType, setRegionType] = useState<'local'|'nationwide'>('local');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
+  // 지역 선택 관련 상태
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Region[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  
   // 알림 다이얼로그 상태
   const [dialogState, setDialogState] = useState<{
     open: boolean;
@@ -352,8 +361,65 @@ export default function CreateForm() {
       }
     };
 
+    const fetchRegions = async () => {
+      try {
+        // 최상위 지역(시/도) 데이터 가져오기
+        const rootRegions = await getRegions({ root_only: true });
+        setRegions(rootRegions);
+      } catch (error) {
+        console.error('지역 데이터 가져오기 오류:', error);
+        toast({
+          variant: 'destructive',
+          title: '지역 정보 로드 오류',
+          description: '지역 정보를 불러오는 중 오류가 발생했습니다.',
+        });
+      }
+    };
+
     fetchProducts();
+    fetchRegions();
   }, []);
+  
+  /**
+   * 지역 검색 핸들러
+   */
+  const handleRegionSearch = async (term: string) => {
+    setSearchTerm(term);
+    
+    if (term.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const results = await searchRegionsByName(term);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('지역 검색 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '지역 검색 오류',
+        description: '지역 검색 중 오류가 발생했습니다.',
+      });
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  /**
+   * 지역 선택 핸들러
+   */
+  const handleRegionSelect = (region: Region) => {
+    setSelectedRegion(region);
+    setSearchTerm(region.name);
+    setSearchResults([]);
+    
+    // 폼 데이터에 지역 정보 설정
+    form.setValue('region', region.code);
+    form.setValue('region_name', region.name);
+  };
 
   /**
    * 폼 제출 핸들러 
@@ -401,29 +467,30 @@ export default function CreateForm() {
       // 상품 ID 추출
       const productId = parseInt(values.product);
       
-      // 마감시간 계산
-      let endTimeValue: string;
-      if (values.end_time_option === 'custom') {
-        endTimeValue = values.end_time;
-      } else if (values.end_time_option === 'slider') {
-        // 슬라이더로 설정한 시간
-        const endDate = new Date();
-        endDate.setHours(endDate.getHours() + sliderHours);
-        endTimeValue = endDate.toISOString();
-      } else {
-        // 기본 옵션 (6, 12, 24, 48시간)
-        const hoursToAdd = parseInt(values.end_time_option.replace('hours', ''), 10);
-        const endDate = new Date();
-        endDate.setHours(endDate.getHours() + hoursToAdd);
-        endTimeValue = endDate.toISOString();
+      // 마감 시간 계산
+      const currentDate = new Date();
+      let endTime = new Date(currentDate);
+      
+      if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
+        // 슬라이더 값(시간)을 현재 시간에 더함
+        const hoursToAdd = values.sliderHours || sliderHours;
+        endTime.setHours(currentDate.getHours() + hoursToAdd);
+      } else if (values.end_time_option === 'custom' && values.end_time) {
+        // 사용자 지정 날짜/시간 사용
+        endTime = new Date(values.end_time);
       }
       
-      // 최소, 최대 참여자 수 처리
-      const minParticipants = values.min_participants;
-      const maxParticipants = values.max_participants;
-      
-      // 카테고리별 상품 세부 정보 구성
-      let productDetails = {};
+      // API 요청 데이터 구성
+      apiRequestData = {
+        product: parseInt(values.product),
+        title: generateTitle(), // 자동 생성된 제목 사용
+        min_participants: values.min_participants,
+        max_participants: values.max_participants,
+        end_time: endTime.toISOString(),
+        description: values.description || '',
+        region: regionType === 'local' ? (selectedRegion?.code || null) : null,
+        region_name: regionType === 'local' ? (selectedRegion?.name || null) : null,
+      };
       
       // 선택된 상품의 카테고리에 따라 다른 세부 정보 추가
       if (!selectedProduct || selectedProduct.category?.detail_type === 'telecom' || !selectedProduct.category?.detail_type) {
@@ -960,11 +1027,97 @@ export default function CreateForm() {
                 <button
                   type="button"
                   className={`py-3 rounded-full font-medium transition-colors ${regionType === 'nationwide' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  onClick={() => setRegionType('nationwide')}
+                  onClick={() => {
+                    setRegionType('nationwide');
+                    setSelectedRegion(null);
+                    form.setValue('region', '');
+                    form.setValue('region_name', '');
+                  }}
                 >
                   전국(비대면)
                 </button>
               </div>
+              
+              {/* 지역 선택 UI - 지역 타입이 'local'일 때만 표시 */}
+              {regionType === 'local' && (
+                <div className="mt-4 space-y-4">
+                  <div className="relative">
+                    <div className="flex items-center">
+                      <MapPinIcon className="h-5 w-5 text-gray-500 absolute left-3" />
+                      <Input
+                        type="text"
+                        placeholder="지역명을 검색하세요 (예: 서울, 강남구)"
+                        className="pl-10 pr-4 py-2 bg-gray-50"
+                        value={searchTerm}
+                        onChange={(e) => handleRegionSearch(e.target.value)}
+                      />
+                    </div>
+                    
+                    {/* 지역 검색 결과 */}
+                    {searchTerm.length >= 2 && searchResults.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {isSearching ? (
+                          <div className="p-3 text-center text-gray-500">
+                            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                            <p className="text-sm mt-1">검색 중...</p>
+                          </div>
+                        ) : (
+                          <ul className="py-1">
+                            {searchResults.map((region) => (
+                              <li 
+                                key={region.code}
+                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                                onClick={() => handleRegionSelect(region)}
+                              >
+                                <div>
+                                  <span className="font-medium">{region.name}</span>
+                                  <span className="text-xs text-gray-500 ml-2">{region.full_name}</span>
+                                </div>
+                                <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                                  {region.level === 1 ? '시/도' : region.level === 2 ? '시/군/구' : '읍/면/동'}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* 선택된 지역 표시 */}
+                  {selectedRegion && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-100 rounded-md flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-blue-800">{selectedRegion.name}</p>
+                        <p className="text-xs text-blue-600">{selectedRegion.full_name}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-blue-600 hover:text-blue-800"
+                        onClick={() => {
+                          setSelectedRegion(null);
+                          setSearchTerm('');
+                          form.setValue('region', '');
+                          form.setValue('region_name', '');
+                        }}
+                      >
+                        변경
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* 지역 선택 안내 메시지 */}
+                  {!selectedRegion && (
+                    <div className="mt-2 p-3 bg-amber-50 border border-amber-100 rounded-md">
+                      <p className="text-sm text-amber-700">
+                        <AlertCircleIcon className="h-4 w-4 inline-block mr-1" />
+                        지역을 선택하면 해당 지역에 사는 사람들에게 공구가 노출됩니다.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             {/* 카테고리별 다이나믹 폼 필드 */}
