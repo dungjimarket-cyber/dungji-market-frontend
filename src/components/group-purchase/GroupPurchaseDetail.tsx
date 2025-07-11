@@ -84,10 +84,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [showBidCancelModal, setShowBidCancelModal] = useState(false);
   const [showBidHistoryModal, setShowBidHistoryModal] = useState(false);
   const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
-  // 과제 조건: 휴대폰(category_id=1)은 지원금 입찰, 그 외는 가격 입찰로 처리
-  const categoryId = groupBuy.product_details?.category_id || 0;
+  // 과제 조건: 휴대폰 카테고리는 지원금 입찰, 그 외는 가격 입찰로 처리
   const categoryName = groupBuy.product_details?.category_name || '';
-  const isTelecom = categoryId === 1 || categoryName === '휴대폰';
+  const isTelecom = categoryName === '휴대폰';
   const [bidType, setBidType] = useState<'price' | 'support'>(
     isTelecom ? 'support' : 'price'
   ); // 휴대폰은 지원금 입찰, 그 외는 가격 입찰
@@ -909,7 +908,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                               <span>
                                 {bid.is_mine 
                                   ? `${bid.amount.toLocaleString()}원` 
-                                  : `${Math.floor(bid.amount / 10000)}**,***원`}
+                                  : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`}
                               </span>
                             </div>
                           ))}
@@ -929,6 +928,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                       className="w-full p-2 border border-gray-300 rounded-lg"
                       placeholder={`${bidType === 'support' ? '지원금' : '가격'} 입력 (원)`}
                     />
+                    
+                    {/* 입찰 유형별 안내 문구 */}
+                    {bidType === 'support' && (
+                      <div className="text-gray-500 text-sm mt-2 p-2 bg-blue-50 border border-blue-100 rounded-md">
+                        <p>카드 제휴할인이나 증정품을 제외한 순수 현금지원금입니다 (공시지원금+추가지원금)</p>
+                      </div>
+                    )}
+                    <div className="text-gray-500 text-sm mt-2">
+                      앞자리를 제외한 입찰가는 비공개입니다.
+                    </div>
                   </div>
                   <button
                     onClick={handleBidClick}
@@ -1105,16 +1114,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                         <td className="px-4 py-2 border-b text-center">
                           {bid.is_mine 
                             ? `${bid.amount.toLocaleString()}원`
-                            : `${Math.floor(bid.amount / 10000)}**,***원`}
+                            : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`}
                         </td>
                         <td className="px-4 py-2 border-b text-center">
                           {bid.bid_type === 'price' 
                             ? (bid.is_mine 
                                 ? `${bid.amount.toLocaleString()}원`
-                                : `${Math.floor(bid.amount / 10000)}**,***원`)
+                                : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`)
                             : (bid.is_mine
                                 ? `${(groupBuy.product_details?.base_price - bid.amount).toLocaleString()}원`
-                                : `${Math.floor((groupBuy.product_details?.base_price - bid.amount) / 10000)}**,***원`)}
+                                : `${String(groupBuy.product_details?.base_price - bid.amount)[0]}${'*'.repeat(String(Math.floor(groupBuy.product_details?.base_price - bid.amount)).length - 1)},***원`)}
                         </td>
                         <td className="px-4 py-2 border-b text-center">{bid.is_mine ? '나' : '-'}</td>
                       </tr>

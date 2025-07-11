@@ -369,16 +369,17 @@ export default function BidModal({
               <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>
             )}
             
-            {bidType === 'price' && (
-              <div className="text-gray-500 text-sm mt-1">
+            {/* 입찰 유형별 안내 문구 */}
+            <div className="space-y-2 mt-2">
+              {bidType === 'support' && (
+                <div className="text-gray-500 text-sm p-2 bg-blue-50 border border-blue-100 rounded-md">
+                  <p>카드 제휴할인이나 증정품을 제외한 순수 현금지원금입니다 (공시지원금+추가지원금)</p>
+                </div>
+              )}
+              <div className="text-gray-500 text-sm">
                 앞자리를 제외한 입찰가는 비공개입니다.
               </div>
-            )}
-            {bidType === 'support' && (
-              <div className="text-gray-500 text-sm mt-1">
-                앞자리를 제외한 입찰가는 비공개입니다.
-              </div>
-            )}
+            </div>
           </div>
           
           {/* 메시지 입력 (선택사항) */}
