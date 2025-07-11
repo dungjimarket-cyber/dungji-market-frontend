@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import { createBid, getSellerBids, cancelBid } from '@/lib/api/bidService';
 import { 
   Dialog, 
@@ -53,6 +54,7 @@ export default function BidModal({
   isClosed = false,
   productCategory = 'electronics' // 기본값은 가전제품으로 설정
 }: BidModalProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   // 휴대폰 카테고리(category_id=1 또는 category_name='휴대폰')는 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
@@ -174,7 +176,10 @@ export default function BidModal({
           errorMessage = errorData.detail;
           
           // 입찰권 관련 오류인지 확인
-          if (errorMessage.includes('입찰권') || errorMessage.includes('사용 가능한 입찰권이 없습니다')) {
+          if (errorMessage.includes('입찰권') || 
+              errorMessage.includes('사용 가능한 입찰권이 없습니다') ||
+              errorMessage.includes('구매') ||
+              errorMessage.includes('다시 시도해주세요')) {
             errorTitle = '입찰권 부족';
           }
           
@@ -217,13 +222,25 @@ export default function BidModal({
       });
       
       // 입찰권 부족인 경우 구매 안내
-      if (errorMessage.includes('입찰권') || errorMessage.includes('사용 가능한 입찰권이 없습니다')) {
+      if (errorMessage.includes('입찰권') || 
+          errorMessage.includes('사용 가능한 입찰권이 없습니다') ||
+          errorMessage.includes('구매') ||
+          errorMessage.includes('다시 시도해주세요')) {
         setTimeout(() => {
           toast({
             title: '입찰권 구매하기',
-            description: '마이페이지에서 입찰권을 구매하실 수 있습니다.',
+            description: (
+              <div className="flex flex-col">
+                <p>입찰권을 구매하시면 더 많은 공구에 입찰할 수 있습니다.</p>
+                <Button
+                  className="mt-2"
+                  onClick={() => router.push('/mypage/seller/bid-tokens')}
+                >
+                  입찰권 구매 페이지로 이동
+                </Button>
+              </div>
+            ),
             variant: 'default',
-            action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/mypage/bidtokens'}>이동하기</Button>
           });
         }, 1000);
       }

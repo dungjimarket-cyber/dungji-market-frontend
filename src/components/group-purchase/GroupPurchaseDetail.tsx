@@ -631,6 +631,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   
   /**
    * 입찰금액 입력 처리
+   * 1,000원 단위로 입력을 제한하고 1,000원 단위가 아닌 경우 자동으로 반올림함
    */
   const handleBidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -647,7 +648,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     }
     
     const parsedValue = parseInt(numericValue, 10);
-    setBidAmount(parsedValue);
+    
+    // 1,000원 단위로 반올림 처리
+    const roundedValue = Math.round(parsedValue / 1000) * 1000;
+    
+    setBidAmount(roundedValue);
   };
 
   const isCompleted = groupBuy.status === 'completed' || groupBuy.status === 'cancelled';
