@@ -1,0 +1,69 @@
+import { tokenUtils } from '../tokenUtils';
+
+/**
+ * 인증이 필요한 API 요청을 수행합니다.
+ * 
+ * @param url - API 엔드포인트 URL
+ * @param options - fetch 옵션
+ * @returns 응답 객체
+ * 
+ * @example
+ * ```ts
+ * const response = await fetchWithAuth('/api/notifications/');
+ * const data = await response.json();
+ * ```
+ */
+export const fetchWithAuth = async (
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> => {
+  try {
+    const headers = await tokenUtils.getAuthHeaders();
+    
+    // API URL 설정
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+    
+    const response = await fetch(fullUrl, {
+      ...options,
+      headers: {
+        ...headers,
+        ...(options.headers || {}),
+      },
+    });
+    
+    if (!response.ok) {
+      // 응답 본문 텍스트로 받아서 확인
+      const responseText = await response.text();
+      
+      // JSON으로 파싱 시도
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+        
+        // 토큰 만료 오류인 경우
+        if (response.status === 401 && 
+            errorData?.code === 'token_not_valid' && 
+            typeof window !== 'undefined') {
+          console.error('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
+          window.location.href = '/login';
+        }
+      } catch (e) {
+        // JSON 파싱 실패 시 원본 텍스트 사용
+        console.error('API 응답 파싱 실패:', e);
+      }
+      
+      // 에러 응답 반환
+      throw new Error(
+        errorData?.detail || 
+        errorData?.message || 
+        '요청 처리 중 오류가 발생했습니다.'
+      );
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('API 요청 실패:', error);
+    throw error;
+  }
+};

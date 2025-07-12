@@ -1,15 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthButtons from '@/components/auth/AuthButtons';
+import NotificationBell from '@/components/notification/NotificationBell';
+import NotificationDropdown from '@/components/notification/NotificationDropdown';
 
 /**
  * 데스크탑용 상단 네비게이션 바 컴포넌트
  */
 export default function DesktopNavbar() {
   const { isAuthenticated, user } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   return (
     <nav className="hidden md:block bg-white shadow-lg">
@@ -32,7 +36,18 @@ export default function DesktopNavbar() {
             </Link>
           </div>
 
-          <AuthButtons isAuthenticated={isAuthenticated} />
+          <div className="flex items-center space-x-4">
+            {isAuthenticated && (
+              <div className="relative">
+                <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
+                <NotificationDropdown 
+                  isOpen={showNotifications} 
+                  onClose={() => setShowNotifications(false)} 
+                />
+              </div>
+            )}
+            <AuthButtons isAuthenticated={isAuthenticated} />
+          </div>
         </div>
       </div>
     </nav>

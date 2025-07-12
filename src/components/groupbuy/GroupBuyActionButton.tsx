@@ -10,6 +10,7 @@ interface GroupBuyActionButtonProps {
   isCreator?: boolean; // 자신이 만든 공구인지 여부
   isSeller?: boolean; // 판매회원(셀러) 여부
   isParticipating?: boolean; // 이미 참여한 공구인지 여부
+  hasSellerMembers?: boolean; // 판매회원이 1명 이상 있는지 여부
   groupBuy: {
     id: number;
     title: string;
@@ -29,6 +30,7 @@ export default function GroupBuyActionButton({
   isCreator = false,
   isSeller = false,
   isParticipating = false,
+  hasSellerMembers = false,
   groupBuy
 }: GroupBuyActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,6 +42,7 @@ export default function GroupBuyActionButton({
     isCreator,
     isSeller,
     isParticipating,
+    hasSellerMembers,
     groupBuyId: groupBuy.id
   });
 
@@ -70,7 +73,7 @@ export default function GroupBuyActionButton({
     <>
       <Button 
         className="w-full py-6 text-lg font-bold" 
-        disabled={!isRecruiting || isFull || isCreator}
+        disabled={!isRecruiting || isFull || isCreator || !hasSellerMembers}
         onClick={handleClick}
       >
         {isCreator
@@ -79,7 +82,9 @@ export default function GroupBuyActionButton({
             ? '종료된 공구'
             : isFull
               ? '인원 마감'
-              : '공구 참여하기'}
+              : !hasSellerMembers
+                ? '판매회원 없음'
+                : '공구 참여하기'}
       </Button>
 
       {/* 공구 참여 모달 */}

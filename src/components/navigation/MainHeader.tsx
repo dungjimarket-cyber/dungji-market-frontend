@@ -1,7 +1,10 @@
 'use client';
 
-import { ArrowLeft, Bell } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import NotificationBell from '../notification/NotificationBell';
+import NotificationDropdown from '../notification/NotificationDropdown';
 
 interface MainHeaderProps {
   title: string;
@@ -24,6 +27,7 @@ export function MainHeader({
   onBack 
 }: MainHeaderProps) {
   const router = useRouter();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleBack = () => {
     if (onBack) {
@@ -53,9 +57,15 @@ export function MainHeader({
       </div>
       
       {showNotification && (
-        <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-          <Bell className="w-5 h-5" />
-        </button>
+        <div className="relative">
+          <div className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
+          </div>
+          <NotificationDropdown 
+            isOpen={showNotifications} 
+            onClose={() => setShowNotifications(false)} 
+          />
+        </div>
       )}
     </header>
   );

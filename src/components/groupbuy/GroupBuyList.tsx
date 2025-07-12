@@ -153,19 +153,21 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                       {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
                     </span>
                   </div>
-                  <CardTitle className="text-base sm:text-lg md:text-xl">
+                  <CardTitle className="text-base sm:text-lg md:text-xl line-clamp-2 h-14 overflow-hidden">
                     {formatGroupBuyTitle(groupBuy)}
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <Image
-                  src={groupBuy.product_details?.image_url || '/placeholder.png'}
-                  alt={groupBuy.product_details?.name || groupBuy.product_name}
-                  width={200}
-                  height={200}
-                  className="object-cover rounded-lg"
-                />
+                <div className="h-48 flex items-center justify-center overflow-hidden">
+                  <Image
+                    src={groupBuy.product_details?.image_url || '/placeholder.png'}
+                    alt={groupBuy.product_details?.name || groupBuy.product_name}
+                    width={200}
+                    height={200}
+                    className="object-cover rounded-lg"
+                  />
+                </div>
                 <div className="space-y-4 mt-4">
                   <div>
                     <Progress value={progress} className="h-2" />
@@ -183,13 +185,13 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                       <span className="text-gray-500">{formattedEndDate}</span>
                     </div>
                   </div>
-                  <div className="mt-2 space-y-2">
+                  <div className="mt-2 space-y-2 h-24">
                     <div className="flex justify-between items-center pt-2">
                       <div>
                         <p className="text-xs sm:text-sm text-gray-500">출고가</p>
-                        <p className="text-lg sm:text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '1,200,000'}원</p>
+                        <p className="text-lg sm:text-xl font-bold truncate">{groupBuy.product_details?.base_price?.toLocaleString() || '1,200,000'}원</p>
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-600">
+                      <div className="text-xs sm:text-sm text-gray-600 truncate max-w-[100px]">
                         {groupBuy.product_details?.contract_info || '2년 약정'}
                       </div>
                     </div>
@@ -198,12 +200,12 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                     <div className="flex justify-between items-center pt-2">
                       <div className="flex items-center">
                         <p className="text-xs text-gray-500 mr-1">방장:</p>
-                        <p className="text-xs font-medium">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
+                        <p className="text-xs font-medium truncate max-w-[100px]">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
                       </div>
                       {(groupBuy.subscription_type_korean || groupBuy.product_details?.registration_type_korean) && (
                         <div className="flex items-center">
                           <p className="text-xs text-gray-500 mr-1">가입:</p>
-                          <p className="text-xs">
+                          <p className="text-xs truncate max-w-[80px]">
                             {groupBuy.subscription_type_korean || 
                              groupBuy.product_details?.registration_type_korean || 
                              getRegistrationTypeText(groupBuy.subscription_type || groupBuy.product_details?.registration_type)}

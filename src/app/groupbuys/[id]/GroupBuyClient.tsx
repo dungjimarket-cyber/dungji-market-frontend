@@ -50,6 +50,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   const [bidData, setBidData] = useState<any[]>([]);
   const [isLoadingBids, setIsLoadingBids] = useState(false);
   const [isValidBidStatus, setIsValidBidStatus] = useState(true); // 입찰 가능한 공구 상태인지 확인
+  const [sellerCount, setSellerCount] = useState(0); // 판매자 회원 수 추적
   
   // 판매회원(셀러) 여부 확인
   const [isSeller, setIsSeller] = useState(false);
@@ -177,9 +178,14 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   }, [id, isAuthenticated, accessToken, user]);
   
   useEffect(() => {
-    if (isSeller && groupBuy && groupBuy.id) {
-      checkSellerBid();
-      checkBidTokens();
+    if (groupBuy && groupBuy.id) {
+      // 판매자 수 확인
+      checkSellerCount(groupBuy.id);
+      
+      if (isSeller) {
+        checkSellerBid();
+        checkBidTokens();
+      }
     }
   }, [isSeller, groupBuy?.id]);
   
@@ -250,6 +256,36 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       }
     } catch (error) {
       console.error('입찰 상태 확인 오류:', error);
+    } finally {
+      setIsLoadingBids(false);
+    }
+  };
+  
+  /**
+   * 해당 공구에 참여한 판매자 수 확인
+   */
+  const checkSellerCount = async (groupBuyId: number) => {
+    try {
+      setIsLoadingBids(true);
+      const bids = await getGroupBuyBids(groupBuyId);
+      
+      // 판매자 ID를 Set으로 수집하여 중복 제거 (한 판매자가 여러 번 입찰할 수 있으므로)
+      const uniqueSellerIds = new Set();
+      
+      bids.forEach(bid => {
+        if (bid.seller_id) {
+          uniqueSellerIds.add(Number(bid.seller_id));
+        } else if (bid.seller) {
+          uniqueSellerIds.add(Number(bid.seller));
+        }
+      });
+      
+      // 판매자 수 업데이트
+      setSellerCount(uniqueSellerIds.size);
+      console.log('판매자 수 확인:', uniqueSellerIds.size);
+    } catch (error) {
+      console.error('판매자 수 확인 오류:', error);
+      setSellerCount(0);
     } finally {
       setIsLoadingBids(false);
     }
@@ -505,6 +541,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               isCreator={!!isCreator}
               isSeller={!!isSeller}
               isParticipating={participationStatus?.is_participating || false}
+              hasSellerMembers={sellerCount > 0}
               groupBuy={{
                 id: Number(id),
                 title: groupBuy.title,

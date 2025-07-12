@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
+import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 
 /**
  * 모바일용 하단 네비게이션 바 컴포넌트
@@ -95,10 +96,14 @@ export default function MobileNavbar() {
             </>
           )}
         </Link>
-        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
-          <FaShoppingCart className="text-xl mb-1" />
-          <span className="text-xs">공구</span>
-        </Link>
+        {isAuthenticated ? (
+          <MobileNotificationButton />
+        ) : (
+          <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
+            <FaShoppingCart className="text-xl mb-1" />
+            <span className="text-xs">공구</span>
+          </Link>
+        )}
         {isAuthenticated ? (
           <Link 
             href={isSeller ? "/mypage/seller" : "/mypage"} 

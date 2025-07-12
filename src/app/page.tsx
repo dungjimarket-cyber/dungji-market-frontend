@@ -167,19 +167,31 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-wrap gap-4 mb-6">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <button
               onClick={() => setShowIframe(!showIframe)}
-              className="btn-animated btn-outline"
-              style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)', width: 'min(200px, 14.5vw)' }}
+              className="btn-animated btn-outline whitespace-nowrap px-3 sm:px-4"
+              style={{
+                minHeight: '48px',
+                height: 'min(64px, 4.5vw)', 
+                width: 'auto',
+                minWidth: '120px',
+                fontSize: 'clamp(0.75rem, 2.5vw, 1rem)'
+              }}
             >
               <span>둥지마켓 알아보기</span>
           </button>
           <RoleButton 
             href="/group-purchases/create"
-            className="btn-animated btn-primary"
-            style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)', width: 'min(200px, 14.5vw)' }}
+            className="btn-animated btn-primary whitespace-nowrap px-3 sm:px-4"
+            style={{
+              minHeight: '48px',
+              height: 'min(64px, 4.5vw)', 
+              width: 'auto',
+              minWidth: '120px',
+              fontSize: 'clamp(0.75rem, 2.5vw, 1rem)'
+            }}
             disableForRoles={['seller']}            
           >
             <span>공구 등록하기</span>
