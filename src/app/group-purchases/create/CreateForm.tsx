@@ -511,6 +511,11 @@ export default function CreateForm() {
         endTime = new Date(values.end_time);
       }
       
+      // 계산된 마감 시간을 ISO 문자열로 변환하여 endTimeValue 상태 업데이트
+      const calculatedEndTimeIso = endTime.toISOString();
+      console.log('계산된 마감 시간 ISO 문자열:', calculatedEndTimeIso);
+      setEndTimeValue(calculatedEndTimeIso); // 상태 업데이트
+      
       // API 요청 데이터 구성
       apiRequestData = {
         product: parseInt(values.product),
@@ -767,10 +772,54 @@ export default function CreateForm() {
       // end_time 형식 상세 확인
       console.log('===== end_time 상세 분석 =====');
       console.log('endTimeValue 원본:', endTimeValue);
-      console.log('endTimeValue Date 객체:', new Date(endTimeValue));
-      console.log('endTimeValue ISO 문자열:', new Date(endTimeValue).toISOString());
-      console.log('현재 시간:', new Date().toISOString());
-      console.log('시간 차이 (시간):', (new Date(endTimeValue).getTime() - new Date().getTime()) / (1000 * 60 * 60));
+      
+      // 빈 문자열 처리
+      if (!endTimeValue || endTimeValue.trim() === '') {
+        console.error('마감 시간이 설정되지 않았습니다.');
+        toast({
+          variant: 'destructive',
+          title: '마감 시간 오류',
+          description: '마감 시간을 설정해주세요.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // 유효한 날짜인지 확인
+      const endTimeDate = new Date(endTimeValue);
+      console.log('endTimeValue Date 객체:', endTimeDate);
+      
+      // 유효하지 않은 날짜 처리
+      if (isNaN(endTimeDate.getTime())) {
+        console.error('유효하지 않은 날짜/시간 형식:', endTimeValue);
+        toast({
+          variant: 'destructive',
+          title: '날짜/시간 형식 오류',
+          description: '유효한 마감 시간을 설정해주세요.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      try {
+        // 안전하게 ISO 문자열 변환 시도
+        const isoString = endTimeDate.toISOString();
+        console.log('endTimeValue ISO 문자열:', isoString);
+        console.log('현재 시간:', new Date().toISOString());
+        console.log('시간 차이 (시간):', (endTimeDate.getTime() - new Date().getTime()) / (1000 * 60 * 60));
+        
+        // API 요청 데이터의 end_time 값을 유효한 ISO 문자열로 업데이트
+        apiRequestData.end_time = isoString;
+      } catch (error) {
+        console.error('날짜/시간 변환 오류:', error);
+        toast({
+          variant: 'destructive',
+          title: '날짜/시간 변환 오류',
+          description: '마감 시간 형식이 올바르지 않습니다. 다시 설정해주세요.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
       // 필수 필드 값 검증 
       if (!currentProductId || currentProductId <= 0) {
