@@ -219,6 +219,25 @@ export const tokenUtils = {
    * 사용자 역할을 확인합니다. JWT 토큰, 로컬 스토리지 등 여러 소스에서 확인
    * 백엔드의 JWT 토큰에 role 필드가 없는 경우를 고려함
    */
+  /**
+   * JWT 토큰에서 사용자 ID를 추출합니다.
+   */
+  getUserIdFromToken: (): number | null => {
+    try {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+        if (!token) return null;
+        
+        const decoded = tokenUtils.decodeToken(token);
+        return decoded?.id || null;
+      }
+      return null;
+    } catch (error) {
+      console.error('토큰에서 사용자 ID 추출 오류:', error);
+      return null;
+    }
+  },
+
   hasRole: async (role: string): Promise<boolean> => {
     // 1. JWT 토큰에서 역할 확인
     const token = await tokenUtils.getAccessToken();

@@ -35,8 +35,20 @@ export function RoleButton({ href, className, children, disableForRoles = [], st
   const [shouldRender, setShouldRender] = useState(true);
   const [mounted, setMounted] = useState(false);
   
-  // Use session hook properly inside the component function
-  const { data: session } = useSession({ required: false });
+  // 세션 훅 사용 시 오류 방지를 위한 상태 변수
+  const [isSessionAvailable, setIsSessionAvailable] = useState(false);
+  const [sessionData, setSessionData] = useState<any>(null);
+  
+  // 안전하게 세션 데이터 가져오기
+  let session: any = null;
+  try {
+    // useSession 훅 직접 사용 (SessionProvider가 있는 경우에만 작동)
+    const { data } = useSession({ required: false });
+    session = data;
+  } catch (error) {
+    // SessionProvider가 없는 경우 조용히 실패
+    console.error('SessionProvider 없이 useSession이 호출됨:', error);
+  }
   
 
   useEffect(() => {
@@ -72,6 +84,21 @@ export function RoleButton({ href, className, children, disableForRoles = [], st
           if (sessionStr) {
             const sessionData = JSON.parse(sessionStr);
             if (sessionData.user?.role) return sessionData.user.role;
+          }
+          
+          // dungji_auth_token 확인
+          const authToken = localStorage.getItem('dungji_auth_token');
+          if (authToken) {
+            try {
+              // JWT 토큰에서 역할 정보 추출 시도
+              const tokenParts = authToken.split('.');
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                if (payload.role) return payload.role;
+              }
+            } catch (e) {
+              console.error('JWT 토큰 파싱 오류:', e);
+            }
           }
         } catch (error) {
           console.error('사용자 역할 추출 오류:', error);

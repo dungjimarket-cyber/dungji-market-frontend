@@ -41,6 +41,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { getRegions, searchRegionsByName, Region } from '@/lib/api/regionService';
+import { getSession } from 'next-auth/react';
 
 interface Product {
   id: number;
@@ -93,9 +94,21 @@ const formSchema = z.object({
   ]).refine(val => val >= 6 && val <= 48, {
     message: '마감 시간은 6~48시간 사이여야 합니다',
   }).default(24),
-  region_type: z.enum(['local', 'online']).default('local'),
+  region_type: z.enum(['local', 'nationwide']).default('local'),
   region: z.string().optional(),
   region_name: z.string().optional(),
+  
+  // 다중 지역 선택을 위한 필드
+  selected_regions: z.array(
+    z.object({
+      code: z.string(),
+      name: z.string(),
+      full_name: z.string().optional(),
+      level: z.number().optional()
+    })
+  ).max(3, {
+    message: '공구 지역은 최대 3곳까지 선택 가능합니다',
+  }).optional().default([]),
   
   // 카테고리별 필드
   telecom_carrier: z.string().optional(),
@@ -136,8 +149,16 @@ interface FormData {
   
   // 지역 관련 필드
   region_type: string;
-  region?: string;          // 지역 코드
-  region_name?: string;     // 지역 이름
+  region?: string;          // 지역 코드 (단일 지역 호환용)
+  region_name?: string;     // 지역 이름 (단일 지역 호환용)
+  
+  // 다중 지역 선택을 위한 필드
+  selected_regions?: {
+    code: string;
+    name: string;
+    full_name?: string;
+    level?: number;
+  }[];
   
   // 카테고리 식별용 필드 (UI에 표시되지 않음)
   product_category?: string;
@@ -155,7 +176,7 @@ interface FormData {
   warranty?: string;
   warranty_period?: string;   // 보증기간
   
-  // 렌탈 상품 관련 필드
+  // 렌털 상품 관련 필드
   rental_period?: string;
   
   // 구독 상품 관련 필드
@@ -250,15 +271,19 @@ export default function CreateForm() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [endTimeOption, setEndTimeOption] = useState<string>('24hours');
   const [sliderHours, setSliderHours] = useState<number>(24);
+  const [customHours, setCustomHours] = useState<number>(24);
+  const [endTimeValue, setEndTimeValue] = useState<string>('');
   const [regionType, setRegionType] = useState<'local'|'nationwide'>('local');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   // 지역 선택 관련 상태
   const [regions, setRegions] = useState<Region[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null); // 단일 지역 호환용
+  const [selectedRegions, setSelectedRegions] = useState<Region[]>([]); // 다중 지역 선택용
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Region[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [regionError, setRegionError] = useState<string>('');
   
   // 알림 다이얼로그 상태
   const [dialogState, setDialogState] = useState<{
@@ -428,105 +453,185 @@ export default function CreateForm() {
   };
   
   /**
-   * 지역 선택 핸들러
+   * 지역 선택 핸들러 - 다중 지역 선택 지원
    */
   const handleRegionSelect = (region: Region) => {
-    setSelectedRegion(region);
-    setSearchTerm(region.name);
-    setSearchResults([]);
+    // 이미 선택된 지역인지 확인
+    const isAlreadySelected = selectedRegions.some(r => r.code === region.code);
     
-    // 폼 데이터에 지역 정보 설정
-    form.setValue('region', region.code);
-    form.setValue('region_name', region.name);
-  };
-
-  // 참가자 수 관련 상태 변수
-  const [minParticipants, setMinParticipants] = useState<number>(1);
-  const [maxParticipants, setMaxParticipants] = useState<number>(10);
-  // 마감 시간 관련 상태 변수
-  const [endTimeValue, setEndTimeValue] = useState<string>('');
-  // 상품 ID 관련 상태 변수
-  const [productId, setProductId] = useState<number | null>(null);
-
-  /**
-   * 폼 제출 핸들러 
-   */
-  const onSubmit = async (values: FormData) => {
-    console.log('폼 제출 시작:', values);
-    
-    // 요청 데이터를 함수 전체에서 사용할 수 있도록 초기화
-    let apiRequestData: Record<string, any> = {};
-    let productDetails: Record<string, any> = {}; // 상품 세부 정보 객체 선언
-    
-    // 필수 필드 값 유효성 추가 확인
-    if (!values.product) {
+    if (isAlreadySelected) {
       toast({
-        title: "오류",
-        description: "상품을 선택해주세요",
-        variant: "destructive"
+        variant: 'default',
+        title: '이미 선택된 지역',
+        description: `${region.name} 지역은 이미 선택되었습니다.`,
+      });
+      setSearchTerm('');
+      setSearchResults([]);
+      return;
+    }
+    
+    // 최대 3개 지역 제한 확인
+    if (selectedRegions.length >= 3) {
+      setRegionError('공구 지역은 최대 3곳까지만 선택 가능합니다.');
+      toast({
+        variant: 'destructive',
+        title: '지역 선택 제한',
+        description: '공구 지역은 최대 3곳까지만 선택 가능합니다.',
+      });
+      setSearchTerm('');
+      setSearchResults([]);
+      return;
+    }
+    
+    // 시/군/구 레벨의 지역만 선택 가능
+    if (region.level !== 2) {
+      toast({
+        variant: 'default',
+        title: '지역 선택 안내',
+        description: '시/군/구 레벨의 지역만 선택 가능합니다.',
       });
       return;
     }
     
-    // 상품 ID 설정 - 문자열에서 숫자로 변환
-    const currentProductId = parseInt(values.product, 10);
-    setProductId(currentProductId);
+    // 새 지역 추가
+    const updatedRegions = [...selectedRegions, region];
+    setSelectedRegions(updatedRegions);
     
-    setIsSubmitting(true);
+    // 호환성을 위해 첫 번째 지역은 기존 필드에도 설정
+    if (updatedRegions.length === 1) {
+      setSelectedRegion(region);
+      form.setValue('region', region.code);
+      form.setValue('region_name', region.name);
+    }
     
-    try {
-      // 최소/최대 참여자 수 검증
-      if (values.min_participants > values.max_participants) {
-        toast({
-          variant: 'destructive',
-          title: '참여 인원 오류',
-          description: '최소 참여 인원은 최대 참여 인원보다 클 수 없습니다'
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // 로그인 확인
-      if (!isAuthenticated || !user) {
-        toast({
-          variant: "destructive",
-          title: "로그인이 필요합니다",
-          description: "공구 등록을 위해 로그인이 필요합니다.",
-        });
-        router.push('/login?callbackUrl=/group-purchases/create');
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // 마감 시간 계산
-      const currentDate = new Date();
-      let endTime = new Date(currentDate);
-      
-      if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
-        // 슬라이더 값(시간)을 현재 시간에 더함
-        const hoursToAdd = values.sliderHours || sliderHours;
-        endTime.setHours(currentDate.getHours() + hoursToAdd);
-      } else if (values.end_time_option === 'custom' && values.end_time) {
-        // 사용자 지정 날짜/시간 사용
-        endTime = new Date(values.end_time);
-      }
-      
-      // 계산된 마감 시간을 ISO 문자열로 변환하여 endTimeValue 상태 업데이트
-      const calculatedEndTimeIso = endTime.toISOString();
-      console.log('계산된 마감 시간 ISO 문자열:', calculatedEndTimeIso);
-      setEndTimeValue(calculatedEndTimeIso); // 상태 업데이트
-      
-      // API 요청 데이터 구성
-      apiRequestData = {
-        product: parseInt(values.product),
-        title: generateTitle(), // 자동 생성된 제목 사용
-        min_participants: values.min_participants,
-        max_participants: values.max_participants,
-        end_time: endTime.toISOString(),
-        description: values.description || '',
-        region: values.region_type === 'local' ? (values.region || null) : null,
-        region_name: values.region_type === 'local' ? (values.region_name || null) : null,
-      };
+    // 다중 지역 필드 업데이트
+    form.setValue('selected_regions', updatedRegions);
+    
+    // 검색창 초기화
+    setSearchTerm('');
+    setSearchResults([]);
+    setRegionError('');
+  };
+  
+  /**
+   * 선택된 지역 삭제 핸들러
+   */
+  const handleRemoveRegion = (regionCode: string) => {
+    const updatedRegions = selectedRegions.filter(r => r.code !== regionCode);
+    setSelectedRegions(updatedRegions);
+
+    // 호환성을 위해 기존 필드 업데이트
+    if (updatedRegions.length === 0) {
+      setSelectedRegion(null);
+      form.setValue('region', '');
+      form.setValue('region_name', '');
+    } else {
+      // 첫 번째 지역을 대표 지역으로 설정
+      setSelectedRegion(updatedRegions[0]);
+      form.setValue('region', updatedRegions[0].code);
+      form.setValue('region_name', updatedRegions[0].name);
+    }
+
+    // 다중 지역 필드 업데이트
+    form.setValue('selected_regions', updatedRegions);
+
+    // 지역 선택 에러 메시지 초기화
+    if (updatedRegions.length < 3) {
+      setRegionError('');
+    }
+  };
+
+/**
+ * 폼 제출 핸들러
+ */
+const onSubmit = async (values: FormData) => {
+  console.log('폼 제출 시작 - 값:', values);
+  setIsSubmitting(true);
+
+  // API 요청 데이터 및 상품 세부 정보 변수 선언
+  let apiRequestData: Record<string, any> = {};
+  let productDetails: Record<string, any> = {};
+
+  try {
+    // 사용자 인증 상태 확인
+    const session = await getSession();
+    console.log('세션 정보:', session);
+
+    // 로컬 스토리지에서 토큰 확인
+    const token = localStorage.getItem('dungji_auth_token');
+    console.log('토큰 존재 여부:', !!token);
+
+    // 사용자 ID 가져오기
+    const userId = session?.user?.id || tokenUtils.getUserIdFromToken();
+    console.log('사용자 ID:', userId);
+
+    // 사용자 인증 상태 처리
+    if (!userId && !token) {
+      console.error('인증되지 않음, 로그인 페이지로 리디렉션');
+      toast({
+        variant: 'destructive',
+        title: '로그인 필요',
+        description: '공구 등록을 위해서는 로그인이 필요합니다.',
+      });
+      router.push('/login?callbackUrl=/group-purchases/create');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // 로그인되었지만 ID가 없는 경우 오류 처리
+    if (!userId) {
+      console.error('인증되었지만 사용자 ID가 없음');
+      toast({
+        variant: 'destructive',
+        title: '사용자 정보 오류',
+        description: '사용자 정보를 가져오는 데 실패했습니다. 다시 로그인해주세요.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 마감 시간 계산
+    const currentDate = new Date();
+    let endTime = new Date(currentDate);
+    
+    if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
+      // 슬라이더 값(시간)을 현재 시간에 더함
+      const hoursToAdd = values.sliderHours || sliderHours;
+      endTime.setHours(currentDate.getHours() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24));
+    } else if (values.end_time_option === 'custom' && values.end_time) {
+      // 사용자 지정 날짜/시간 사용
+      endTime = new Date(values.end_time);
+    }
+    
+    // 계산된 마감 시간을 ISO 문자열로 변환하여 endTimeValue 상태 업데이트
+    const calculatedEndTimeIso = endTime.toISOString();
+    console.log('계산된 마감 시간 ISO 문자열:', calculatedEndTimeIso);
+    setEndTimeValue(calculatedEndTimeIso); // 상태 업데이트
+    
+    // 현재 선택된 상품 ID 확인
+    const currentProductId = parseInt(values.product);
+    
+    // API 요청 데이터 구성
+    apiRequestData = {
+      product: currentProductId,
+      title: generateTitle(), // 자동 생성된 제목 사용
+      min_participants: values.min_participants,
+      max_participants: values.max_participants,
+      end_time: endTime.toISOString(),
+      description: values.description || '',
+      // 다중 지역 지원
+      region_type: regionType,
+      // 후방 호환성을 위해 기존 region, region_name 필드 유지
+      region: regionType === 'local' ? (selectedRegions.length > 0 ? selectedRegions[0].code : null) : null,
+      region_name: regionType === 'local' ? (selectedRegions.length > 0 ? selectedRegions[0].name : null) : null,
+      // 다중 지역 정보를 regions 배열로 전송
+      regions: regionType === 'local' ? selectedRegions.map(region => ({
+        code: region.code,
+        name: region.name,
+        full_name: region.full_name || region.name,
+        level: region.level || 2
+      })) : [],
+    };
       
       // 선택된 상품의 카테고리에 따라 다른 세부 정보 추가
       if (!selectedProduct || selectedProduct.category?.detail_type === 'telecom' || !selectedProduct.category?.detail_type) {
@@ -552,50 +657,17 @@ export default function CreateForm() {
       }
       
       // 자동으로 제목과 설명 생성
-      let generatedTitle = '';
-      let generatedDescription = '';
-      
-      // 상품명 추출
-      const productName = selectedProduct?.name || '';
-      
-      // 통신사 정보 추출
-      const carrier = values.telecom_carrier || '';
-      
-      // 가입유형 표시
-      let subscriptionType = '';
-      if (values.subscription_type === 'new') {
-        subscriptionType = '신규가입';
-      } else if (values.subscription_type === 'transfer') {
-        subscriptionType = '번호이동';
-      } else if (values.subscription_type === 'change') {
-        subscriptionType = '기기변경';
-      }
-      
-      // 요금제 정보 표시
-      let planInfo = '';
-      if (values.telecom_plan === '5G_basic') {
-        planInfo = '요금제 3만원대';
-      } else if (values.telecom_plan === '5G_standard') {
-        planInfo = '요금제 5만원대';
-      } else if (values.telecom_plan === '5G_premium') {
-        planInfo = '요금제 7만원대';
-      } else if (values.telecom_plan === '5G_special') {
-        planInfo = '요금제 9만원대';
-      } else if (values.telecom_plan === '5G_platinum') {
-        planInfo = '요금제 10만원대';
-      }
-      
-      // 제목 자동 생성
-      generatedTitle = `${productName} ${carrier} ${subscriptionType} ${planInfo}`.trim();
-      generatedDescription = `${productName} ${carrier} ${subscriptionType} ${planInfo} 공구입니다.`.trim();
+      const generatedTitle = generateTitle();
+      const generatedDescription = `${generatedTitle} 공구입니다.`.trim();
       
       // 수치 필드는 반드시 수치로 변환
-      const minPart = typeof minParticipants === 'string' ? parseInt(minParticipants, 10) : minParticipants;
-      const maxPart = typeof maxParticipants === 'string' ? parseInt(maxParticipants, 10) : maxParticipants;
+      const minPart = typeof values.min_participants === 'string' ? parseInt(values.min_participants, 10) : values.min_participants;
+      const maxPart = typeof values.max_participants === 'string' ? parseInt(values.max_participants, 10) : values.max_participants;
       
       // 자동 생성된 제목과 설명 사용
       const safeTitle = generatedTitle || '자동 생성 공구';
       const safeDescription = generatedDescription || '공구 설명';
+      
       // product_details는 값이 있는 항목만 포함하도록 필터링
       const cleanProductDetails: Record<string, any> = {};
       Object.entries(productDetails).forEach(([key, value]) => {
@@ -604,9 +676,6 @@ export default function CreateForm() {
         }
       });
       
-      // 현재 로그인한 사용자 ID 가져오기 (로그인 검사는 API 요청 직전에 수행)
-      const userId = user?.id;
-      
       // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
       apiRequestData = {
         product: currentProductId,           // 필수 필드, 수치
@@ -614,52 +683,29 @@ export default function CreateForm() {
         description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
         min_participants: minPart,          // 필수 필드, 수치, 최소 1
         max_participants: maxPart,          // 필수 필드, 수치, 최소 1
-        end_time: endTimeValue,             // 필수 필드, 날짜/시간 문자열
+        end_time: calculatedEndTimeIso,     // 필수 필드, 날짜/시간 문자열
         region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
         creator: userId,                    // 필수 필드, 현재 로그인한 사용자 ID
-        product_details: cleanProductDetails // 백엔드에서 이 키를 사용하여 통신사 정보 추출
+        product_details: cleanProductDetails, // 백엔드에서 이 키를 사용하여 통신사 정보 추출
+        // 다중 지역 정보를 regions 배열로 전송
+        regions: regionType === 'local' ? selectedRegions.map(region => ({
+          code: region.code,
+          name: region.name,
+          full_name: region.full_name || region.name,
+          level: region.level || 2
+        })) : []
       };
       
-      // 로그인 상태 확인
-      console.log('제출 시 세션 상태:', status);
-      console.log('제출 시 사용자 ID:', userId);
-      
-      // 세션 상태에 따른 처리
-      switch(status) {
-        case 'loading':
-          // 세션 로딩 중에는 처리를 지연
-          toast({
-            title: '로그인 정보 확인 중',
-            description: '잠시만 기다려주세요...',
-          });
-          setTimeout(() => setIsSubmitting(false), 1500);
-          return;
-          
-        case 'authenticated':
-          // 로그인은 되었지만 ID가 없는 경우
-          if (!userId) {
-            toast({
-              variant: 'destructive',
-              title: '사용자 정보 오류',
-              description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
-            });
-            router.push('/login?callbackUrl=/group-purchases/create');
-            setIsSubmitting(false);
-            return;
-          }
-          // 로그인 완료 및 ID 있음 - 정상 처리 계속
-          break;
-          
-        case 'unauthenticated':
-          // 로그인되지 않은 경우
-          toast({
-            variant: 'destructive',
-            title: '로그인 필요',
-            description: '공구 등록을 위해서는 로그인이 필요합니다.',
-          });
-          router.push('/login?callbackUrl=/group-purchases/create');
-          setIsSubmitting(false);
-          return;
+      if (status === 'unauthenticated') {
+        // 로그인되지 않은 경우
+        toast({
+          variant: 'destructive',
+          title: '로그인 필요',
+          description: '공구 등록을 위해서는 로그인이 필요합니다.',
+        });
+        router.push('/login?callbackUrl=/group-purchases/create');
+        setIsSubmitting(false);
+        return;
       }
       
       // 동일 상품으로 이미 생성한 공구가 있는지 확인
@@ -789,101 +835,24 @@ export default function CreateForm() {
       const endTimeDate = new Date(endTimeValue);
       console.log('endTimeValue Date 객체:', endTimeDate);
       
-      // 유효하지 않은 날짜 처리
-      if (isNaN(endTimeDate.getTime())) {
-        console.error('유효하지 않은 날짜/시간 형식:', endTimeValue);
-        toast({
-          variant: 'destructive',
-          title: '날짜/시간 형식 오류',
-          description: '유효한 마감 시간을 설정해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
+      // 공구 등록 API 요청 실행
       try {
-        // 안전하게 ISO 문자열 변환 시도
-        const isoString = endTimeDate.toISOString();
-        console.log('endTimeValue ISO 문자열:', isoString);
-        console.log('현재 시간:', new Date().toISOString());
-        console.log('시간 차이 (시간):', (endTimeDate.getTime() - new Date().getTime()) / (1000 * 60 * 60));
+        console.log('공구 등록 API 요청 시작:', JSON.stringify(apiRequestData, null, 2));
         
-        // API 요청 데이터의 end_time 값을 유효한 ISO 문자열로 업데이트
-        apiRequestData.end_time = isoString;
-      } catch (error) {
-        console.error('날짜/시간 변환 오류:', error);
-        toast({
-          variant: 'destructive',
-          title: '날짜/시간 변환 오류',
-          description: '마감 시간 형식이 올바르지 않습니다. 다시 설정해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // 필수 필드 값 검증 
-      if (!currentProductId || currentProductId <= 0) {
-        toast({
-          variant: 'destructive',
-          title: '상품 오류',
-          description: '유효한 상품을 선택해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (!endTimeValue) {
-        toast({
-          variant: 'destructive',
-          title: '시간 설정 오류',
-          description: '마감 시간을 설정해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      console.log('=====================');
-      
-      // API URL 설정
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
-      console.log('공구 등록 API URL:', apiUrl);
-      console.log('공구 등록 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
-      
-      // tokenUtils를 사용하여 인증된 API 요청 수행
-      console.log('API 요청 발송:', apiUrl);
-      console.log('JSON.stringify 결과:', JSON.stringify(apiRequestData));
-      
-      try {
-        const result = await tokenUtils.fetchWithAuth(apiUrl, {
+        const response = await tokenUtils.fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
           },
           body: JSON.stringify(apiRequestData),
         });
         
-        console.log('공구 등록 응답 성공:', result);
+        console.log('공구 등록 성공:', response);
         
-        // 응답 데이터 상세 로깅
-        console.log('응답 데이터 타입:', typeof result);
-        console.log('응답 데이터 상세:', JSON.stringify(result, null, 2));
-        
-        // API 응답에서 공구 ID 추출
-        // 백엔드 API 응답 형식에 맞게 타입 안전하게 처리
-        const createdGroupBuyId = typeof result === 'object' && result ? 
-          (result as any).id || (result as any).groupbuy_id : undefined;
-        
-        console.log('추출된 공구 ID:', createdGroupBuyId);
-        
-        // 로딩 상태 해제
-        setIsSubmitting(false);
-        
-        // 성공 토스트 메시지 표시
+        // 성공 메시지 표시
         toast({
-          variant: 'default',
-          title: '공구 등록 성공!',
-          description: '공구가 성공적으로 등록되었습니다. 공구 목록으로 이동합니다.',
+          title: '공구 등록 성공',
+          description: '공구가 성공적으로 등록되었습니다.',
           className: "border-green-200 bg-green-50",
           duration: 3000,
         });
@@ -1164,38 +1133,56 @@ export default function CreateForm() {
                     )}
                   </div>
                   
-                  {/* 선택된 지역 표시 */}
-                  {selectedRegion && (
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-100 rounded-md flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-blue-800">{selectedRegion.name}</p>
-                        <p className="text-xs text-blue-600">{selectedRegion.full_name}</p>
+                  {/* 선택된 지역 표시 - 다중 선택 */}
+                  <div className="mt-2">
+                    {selectedRegions.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium">선택된 지역 ({selectedRegions.length}/3)</p>
+                          {regionError && (
+                            <p className="text-xs text-red-600">{regionError}</p>
+                          )}
+                        </div>
+                        {selectedRegions.map((region) => (
+                          <div 
+                            key={region.code} 
+                            className="p-3 bg-blue-50 border border-blue-100 rounded-md flex items-center justify-between"
+                          >
+                            <div>
+                              <p className="font-medium text-blue-800">{region.name}</p>
+                              <p className="text-xs text-blue-600">{region.full_name}</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-blue-600 hover:text-blue-800"
+                              onClick={() => handleRemoveRegion(region.code)}
+                            >
+                              삭제
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-blue-600 hover:text-blue-800"
-                        onClick={() => {
-                          setSelectedRegion(null);
-                          setSearchTerm('');
-                          form.setValue('region', '');
-                          form.setValue('region_name', '');
-                        }}
-                      >
-                        변경
-                      </Button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="p-3 bg-amber-50 border border-amber-100 rounded-md">
+                        <p className="text-sm text-amber-700">
+                          <AlertCircleIcon className="h-4 w-4 inline-block mr-1" />
+                          지역을 선택하면 해당 지역에 사는 사람들에게 공구가 노출됩니다.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   
                   {/* 지역 선택 안내 메시지 */}
-                  {!selectedRegion && (
-                    <div className="mt-2 p-3 bg-amber-50 border border-amber-100 rounded-md">
-                      <p className="text-sm text-amber-700">
-                        <AlertCircleIcon className="h-4 w-4 inline-block mr-1" />
-                        지역을 선택하면 해당 지역에 사는 사람들에게 공구가 노출됩니다.
-                      </p>
-                    </div>
-                  )}
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                    <p className="text-sm text-gray-700">
+                      <CheckCircle2 className="h-4 w-4 inline-block mr-1 text-green-600" />
+                      공구 지역은 최대 3곳까지 선택 가능합니다.
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      선택한 지역의 판매회원만 입찰이 가능합니다.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -1464,12 +1451,9 @@ export default function CreateForm() {
                             form.setValue('end_time', newEndTime.toISOString());
                             
                             // 제품이 선택되어 있을 경우에만 제목/설명 업데이트
-                            const telecom_plan = form.getValues('telecom_plan') || '';
-                            const product = selectedProduct;
-                            
-                            if (product) {
-                              const title = `${product.name} ${telecom_plan} ${sliderValue}시간`;
-                              const description = `${product.name} ${telecom_plan} ${sliderValue}시간 공구입니다.`;
+                            if (selectedProduct) {
+                              const title = generateTitle();
+                              const description = `${title} 공구입니다.`;
                               
                               form.setValue('title', title);
                               form.setValue('description', description);
