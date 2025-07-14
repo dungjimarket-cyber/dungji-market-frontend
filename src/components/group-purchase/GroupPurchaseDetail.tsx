@@ -675,6 +675,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       setShowBidSuccessModal(true);
       setHasBid(true);
       
+      // 입찰 금액 즉시 업데이트 (UI 반영을 위해)
+      if (typeof amountToSubmit === 'number') {
+        setMyBidAmount(amountToSubmit);
+      }
+      
       // 입찰 후 입찰 정보 다시 가져오기
       fetchBidInfo();
       
@@ -937,29 +942,47 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
 
             {/* 내 입찰 정보 영역 - 입찰한 경우에만 표시 */}
             {hasBid && myBidAmount && (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
-                <h3 className="font-medium text-blue-800 mb-2">나의 입찰 정보</h3>
-                <div className="grid grid-cols-2 gap-y-2 text-sm mb-3">
+              <div className="p-4 bg-blue-100 rounded-lg border-l-4 border-blue-500 mb-4 shadow-sm">
+                <div className="flex items-center mb-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <h3 className="font-medium text-blue-800 text-lg">나의 입찰 정보</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-y-3 text-sm mb-3">
                   <div>
-                    <span className="text-gray-600">입찰 유형:</span>{' '}
-                    <span className="font-medium">{bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</span>
+                    <span className="text-gray-600 block mb-1">입찰 유형</span>
+                    <span className="font-medium text-blue-800 bg-blue-50 px-2 py-1 rounded">{bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">입찰 금액:</span>{' '}
-                    <span className="font-medium">{typeof myBidAmount === 'number' ? myBidAmount.toLocaleString() : 0}원</span>
+                    <span className="text-gray-600 block mb-1">입찰 금액</span>
+                    <span className="font-medium text-blue-800 bg-blue-50 px-2 py-1 rounded">{typeof myBidAmount === 'number' ? myBidAmount.toLocaleString() : 0}원</span>
                   </div>
+                  
                   {myBidRank && (
-                    <div className="col-span-2">
-                      <span className="text-gray-600">내 순위:</span>{' '}
-                      <span className="font-medium">
-                        {myBidRank.rank > 0 ? 
-                          `${myBidRank.rank}위 / 총 ${myBidRank.total}명` : 
-                          `순위 정보 없음 (총 ${myBidRank.total}명 참여)`}
-                      </span>
+                    <div className="col-span-2 mt-2">
+                      <span className="text-gray-600 block mb-1">입찰 순위</span>
+                      <div className="flex items-center">
+                        <span className="font-medium text-blue-800 bg-blue-50 px-2 py-1 rounded flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          전체 {myBidRank.total}개 중 <span className="text-red-600 font-bold mx-1">{myBidRank.rank}위</span>
+                        </span>
+                        {myBidRank.rank === 1 && (
+                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">현재 최고 입찰자</span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-                <div className="flex space-x-2">
+                
+                <div className="mt-3">
+                  <span className="text-gray-500 text-sm">요금제: </span>
+                  <span className="text-sm">{groupBuy.telecom_detail?.plan_info || groupBuy.product_details?.plan_info || '-'}</span>
+                </div>
+                
+                <div className="flex space-x-2 mt-3">
                   <button
                     onClick={() => setShowBidModal(true)}
                     className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
@@ -1262,21 +1285,21 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     <tr><td colSpan={3} className="text-center py-4 text-gray-400">입찰 내역이 없습니다.</td></tr>
                   ) : (
                     topBids.map((bid, idx) => (
-                      <tr key={bid.id} className={bid.is_mine ? 'bg-green-50 font-bold' : ''}>
+                      <tr key={bid.id} className={bid.is_mine ? 'bg-blue-100 font-bold border-l-4 border-blue-500' : ''}>
                         <td className="px-4 py-2 border-b text-center">{idx + 1}</td>
                         <td className="px-4 py-2 border-b text-center">{bid.bid_type === 'price' ? '가격 입찰' : '지원금 입찰'}</td>
                         <td className="px-4 py-2 border-b text-center">
                           {bid.is_mine 
-                            ? `${bid.amount.toLocaleString()}원`
+                            ? <span className="text-blue-600">{bid.amount.toLocaleString()}원 <span className="ml-1 text-xs bg-blue-100 px-1 py-0.5 rounded">내 입찰</span></span>
                             : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`}
                         </td>
                         <td className="px-4 py-2 border-b text-center">
                           {bid.bid_type === 'price' 
                             ? (bid.is_mine 
-                                ? `${bid.amount.toLocaleString()}원`
+                                ? <span className="text-blue-600">{bid.amount.toLocaleString()}원</span>
                                 : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`)
                             : (bid.is_mine
-                                ? `${(groupBuy.product_details?.base_price - bid.amount).toLocaleString()}원`
+                                ? <span className="text-blue-600">{(groupBuy.product_details?.base_price - bid.amount).toLocaleString()}원</span>
                                 : `${String(groupBuy.product_details?.base_price - bid.amount)[0]}${'*'.repeat(String(Math.floor(groupBuy.product_details?.base_price - bid.amount)).length - 1)},***원`)}
                         </td>
                         <td className="px-4 py-2 border-b text-center">{bid.is_mine ? '나' : '-'}</td>
