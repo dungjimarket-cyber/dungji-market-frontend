@@ -96,12 +96,22 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [hasBid, setHasBid] = useState(false); // 이미 입찰했는지 여부
   const [bidEndTime, setBidEndTime] = useState<Date | null>(null); // 입찰 마감 시간
   const [canCancelBid, setCanCancelBid] = useState(false); // 입찰 취소 가능 여부
-  const [topBids, setTopBids] = useState<Array<{id: number, amount: number, is_mine: boolean, bid_type: 'price' | 'support'}>>([]);  // 상위 5개 입찰 정보
+  type Bid = {
+    id: number;
+    amount: number;
+    is_mine: boolean;
+    bid_type: 'price' | 'support';
+    profile_image?: string;
+    username?: string;
+  };
+  const [topBids, setTopBids] = useState<Array<Bid>>([]);  // 상위 5개 입찰 정보
   
   // 판매회원 여부 확인 - user_type 또는 role 속성 확인
   const [isSeller, setIsSeller] = useState(false);
   // 자신이 생성한 공구인지 확인하는 상태 추가
   const [isCreator, setIsCreator] = useState(false);
+  // 현재 사용자 프로필 정보
+  const [userProfile, setUserProfile] = useState<{ username?: string, profile_image?: string } | null>(null);
   // 현재 사용자의 입찰 ID 저장
   const [myBidId, setMyBidId] = useState<number | null>(null);
   // 내 입찰 순위 저장 (총 N개 중 M위)
@@ -114,13 +124,21 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     if (!isAuthenticated || !accessToken || !groupBuyId) return;
     
     try {
-      // 현재 사용자 ID 가져오기
+      // 현재 사용자 ID 및 프로필 정보 가져오기
       let currentUserId = null;
+      let currentUserProfile = null;
+      
       if (user?.id) {
         currentUserId = user.id;
+        // 사용자 프로필 정보 저장 (username은 카카오 로그인의 경우 닉네임 포함)
+        setUserProfile({
+          username: user.username || user.name,
+          profile_image: user.image || (user as any).profile_image
+        });
         console.log('현재 사용자 ID (user 객체):', currentUserId);
+        console.log('현재 사용자 프로필:', { username: user.username || user.name, profile_image: user.image || (user as any).profile_image });
       } else {
-        // 백업: 프로필 API에서 사용자 ID 가져오기
+        // 백업: 프로필 API에서 사용자 ID 및 프로필 정보 가져오기
         try {
           const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
             headers: {
@@ -129,9 +147,15 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           });
           
           if (profileResponse.ok) {
-            const userProfile = await profileResponse.json();
-            currentUserId = userProfile.id;
+            const userProfileData = await profileResponse.json();
+            currentUserId = userProfileData.id;
+            currentUserProfile = {
+              username: userProfileData.username || userProfileData.name,
+              profile_image: userProfileData.profile_image || userProfileData.image
+            };
+            setUserProfile(currentUserProfile);
             console.log('현재 사용자 ID (프로필 API):', currentUserId);
+            console.log('현재 사용자 프로필 (프로필 API):', currentUserProfile);
           }
         } catch (profileError) {
           console.error('프로필 정보 가져오기 오류:', profileError);
@@ -139,7 +163,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       }
       
       // 입찰 정보 API 호출
-      const bidInfoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/bids/`, {
+      const bidInfoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/bids/?include_user_info=true`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -157,15 +181,19 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       // API 응답이 배열인 경우 객체로 변환
       let bidInfoData = rawData;
       if (Array.isArray(rawData)) {
-        // 각 입찰에 is_mine 플래그 추가/확인 (사용자 ID 기반)
+        // 각 입찰에 is_mine 플래그 추가/확인 및 사용자 정보 처리 (사용자 ID 기반)
         const bidsWithMineFlag = rawData.map(bid => {
           // 기존 is_mine 플래그 유지하면서 사용자 ID로 추가 확인
           const isMine = bid.is_mine === true || 
                         (currentUserId && bid.seller && bid.seller.toString() === currentUserId.toString());
           
+          // 사용자 정보 처리 - username과 profile_image 확인
+          // 카카오 로그인 사용자의 경우 username에 카카오 닉네임이 저장됨
           return {
             ...bid,
-            is_mine: isMine
+            is_mine: isMine,
+            username: bid.seller_username || bid.username || '익명',
+            profile_image: bid.seller_profile_image || bid.profile_image
           };
         });
         
@@ -173,7 +201,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           id: b.id, 
           seller: b.seller, 
           is_mine: b.is_mine,
-          amount: b.amount
+          amount: b.amount,
+          username: b.username,
+          profile_image: b.profile_image
         })));
         
         // 최종 가격 기준으로 정렬 (base_price - 지원금 또는 입찰가)
@@ -187,13 +217,39 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           return aFinalPrice - bFinalPrice; // 낮은 가격이 더 높은 순위
         });
         
+        // 정렬된 입찰에 프로필 이미지와 사용자명이 포함되어 있는지 한 번 더 확인
+        const processedBids: Bid[] = sortedBids.map(bid => ({
+          id: bid.id,
+          amount: bid.amount,
+          is_mine: bid.is_mine || false,
+          bid_type: bid.bid_type || 'price',
+          profile_image: bid.profile_image || bid.seller_profile_image || '',
+          username: bid.username || bid.seller_username || '익명'
+        }));
+        
         // 내 입찰 찾기 (is_mine 플래그 기준)
-        const myBid = sortedBids.find(bid => bid.is_mine === true);
+        const myBid = processedBids.find(bid => bid.is_mine === true);
         console.log('내 입찰 찾기 결과:', myBid);
+        
+        if (myBid) {
+          setMyBidAmount(myBid.amount);
+          setMyBidId(myBid.id);
+          setHasBid(true);
+          // 입찰 취소 가능 여부 추가 설정
+          setCanCancelBid((sortedBids.find(b => b.id === myBid.id)?.can_cancel) || false);
+        } else {
+          setHasBid(false);
+          setMyBidAmount(null);
+          setMyBidId(null);
+          setCanCancelBid(false);
+        }
+        
+        // 상위 5개 입찰만 화면에 표시 (프로필 이미지와 사용자명이 포함된 가공된 입찰 데이터 사용)
+        setTopBids(processedBids.slice(0, 5));
         
         bidInfoData = {
           my_bid: myBid || null,
-          top_bids: sortedBids.slice(0, 5), // 상위 5개 입찰만 사용
+          top_bids: processedBids.slice(0, 5), // 상위 5개 입찰만 사용
           all_bids_count: rawData.length,
           bid_end_time: groupBuy?.end_time // 기본값 사용
         };
@@ -1031,19 +1087,29 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               <div className="flex items-center">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-2">
                   {groupBuy.creator?.profile_image ? (
-                    <Image 
-                      src={groupBuy.creator.profile_image} 
-                      alt="프로필" 
-                      width={32} 
-                      height={32} 
-                    />
+                    <>
+                      <Image 
+                        src={groupBuy.creator.profile_image} 
+                        alt="프로필" 
+                        width={32} 
+                        height={32} 
+                        unoptimized={true}
+                        onError={(e) => {
+                          // 이미지 로드 오류 시 기본 아이콘으로 대체
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.parentElement?.querySelector('span')?.classList.remove('hidden');
+                        }}
+                      />
+                      <span className="text-xs hidden">👤</span>
+                    </>
                   ) : (
                     <span className="text-xs">👤</span>
                   )}
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}
+                    {groupBuy.creator?.username || groupBuy.host_username || groupBuy.creator_name || '익명'}
                   </p>
                   <p className="text-xs text-gray-500">공구 방장</p>
                 </div>
@@ -1405,6 +1471,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               <thead>
                 <tr className="bg-gray-100">
                   <th className="px-4 py-2 border-b">순위</th>
+                  <th className="px-4 py-2 border-b">입찰자</th>
                   <th className="px-4 py-2 border-b">입찰 유형</th>
                   <th className="px-4 py-2 border-b">입찰 금액</th>
                   <th className="px-4 py-2 border-b">최종 가격</th>
@@ -1418,6 +1485,35 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   topBids.map((bid, idx) => (
                     <tr key={bid.id} className={bid.is_mine ? 'bg-blue-100 font-bold border-l-4 border-blue-500' : ''}>
                       <td className="px-4 py-2 border-b text-center">{idx + 1}</td>
+                      <td className="px-4 py-2 border-b">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                            {bid.profile_image ? (
+                              <>
+                                <Image 
+                                  src={bid.profile_image} 
+                                  alt="프로필" 
+                                  width={32} 
+                                  height={32} 
+                                  unoptimized={true}
+                                  onError={(e) => {
+                                    // 이미지 로드 오류 시 기본 아이콘으로 대체
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.parentElement?.querySelector('span')?.classList.remove('hidden');
+                                  }}
+                                />
+                                <span className="text-xs hidden">👤</span>
+                              </>
+                            ) : (
+                              <span className="text-xs">👤</span>
+                            )}
+                          </div>
+                          <span className="text-sm font-medium">
+                            {bid.username || '익명'}
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-4 py-2 border-b text-center">{bid.bid_type === 'price' ? '가격 입찰' : '지원금 입찰'}</td>
                       <td className="px-4 py-2 border-b text-center">
                         {bid.is_mine 

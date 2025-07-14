@@ -167,35 +167,53 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex justify-center items-center gap-5 mb-8 mt-4">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
-          <button
-              onClick={() => setShowIframe(!showIframe)}
-              className="btn-animated btn-outline whitespace-nowrap px-3 sm:px-4"
-              style={{
-                minHeight: '48px',
-                height: 'min(64px, 4.5vw)', 
-                width: 'auto',
-                minWidth: '120px',
-                fontSize: 'clamp(0.75rem, 2.5vw, 1rem)'
-              }}
-            >
-              <span>둥지마켓 알아보기</span>
-          </button>
           <RoleButton 
             href="/group-purchases/create"
-            className="btn-animated btn-primary whitespace-nowrap px-3 sm:px-4"
+            className="btn-animated btn-primary whitespace-nowrap px-5 sm:px-6 shadow-md hover:shadow-lg transition-all"
             style={{
-              minHeight: '48px',
+              minHeight: '52px',
               height: 'min(64px, 4.5vw)', 
               width: 'auto',
-              minWidth: '120px',
-              fontSize: 'clamp(0.75rem, 2.5vw, 1rem)'
+              minWidth: '140px',
+              fontSize: 'clamp(0.85rem, 2.5vw, 1.1rem)',
+              borderRadius: '8px'
             }}
             disableForRoles={['seller']}            
           >
             <span>공구 등록하기</span>
           </RoleButton>
+          
+          <Link 
+            href="/group-purchases"
+            className="btn-animated btn-secondary whitespace-nowrap px-5 sm:px-6 shadow-md hover:shadow-lg transition-all flex items-center justify-center"
+            style={{
+              minHeight: '52px',
+              height: 'min(64px, 4.5vw)', 
+              width: 'auto',
+              minWidth: '140px',
+              fontSize: 'clamp(0.85rem, 2.5vw, 1.1rem)',
+              borderRadius: '8px'
+            }}
+          >
+            <span>공구 둘러보기</span>
+          </Link>
+          
+          <button
+            onClick={() => setShowIframe(!showIframe)}
+            className="btn-animated btn-outline whitespace-nowrap px-5 sm:px-6 hover:bg-gray-50 transition-all"
+            style={{
+              minHeight: '52px',
+              height: 'min(64px, 4.5vw)', 
+              width: 'auto',
+              minWidth: '140px',
+              fontSize: 'clamp(0.85rem, 2.5vw, 1.1rem)',
+              borderRadius: '8px'
+            }}
+          >
+            <span>둥지마켓 알아보기</span>
+          </button>
         </div>
       </section>
 
