@@ -4,11 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus } from 'lucide-react';
+import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus, Edit, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,7 @@ interface GroupBuy {
   start_time: string;
   end_time: string;
   creator_name?: string;
+  host_id?: number;
   host_username?: string;
   product_details: {
     id: number;
@@ -97,6 +99,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   
   // 판매회원 여부 확인 - user_type 또는 role 속성 확인
   const [isSeller, setIsSeller] = useState(false);
+  // 자신이 생성한 공구인지 확인하는 상태 추가
+  const [isCreator, setIsCreator] = useState(false);
   // 현재 사용자의 입찰 ID 저장
   const [myBidId, setMyBidId] = useState<number | null>(null);
   // 내 입찰 순위 저장 (총 N개 중 M위)
@@ -265,6 +269,42 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     }
   }, [isSeller, groupBuy, isAuthenticated, accessToken, fetchBidInfo]);
   
+  // 자신이 생성한 공구인지 확인
+  useEffect(() => {
+    // 디버깅: groupBuy 객체 구조 확인 (개발용)
+    console.log('groupBuy 객체 구조:', {
+      groupBuy,
+      creator: groupBuy?.creator,
+      host_id: groupBuy?.host_id,
+      host_username: groupBuy?.host_username,
+      creator_name: groupBuy?.creator_name
+    });
+    
+    if (isAuthenticated && user?.id && groupBuy) {
+      // 두 값을 모두 문자열로 변환하여 비교
+      const userId = String(user.id);
+      
+      // creator가 직접 ID로 전달되는 경우 처리
+      // API 응답에서 groupBuy.creator가 직접 숫자로 전달됨
+      const creatorId = groupBuy.creator ? String(groupBuy.creator) : 
+                       (groupBuy.host_id ? String(groupBuy.host_id) : '');
+      
+      // 디버깅 로그
+      console.log('공구 생성자 체크:', {
+        userId,
+        userIdType: typeof userId,
+        creatorId,
+        creatorIdType: typeof creatorId,
+        creatorSource: groupBuy.creator ? 'creator' : 
+                     (groupBuy.host_id ? 'host_id' : 'not_found'),
+        isMatch: userId === creatorId
+      });
+      
+      // 생성자 여부 업데이트
+      setIsCreator(userId === creatorId && creatorId !== '');
+    }
+  }, [isAuthenticated, user?.id, groupBuy]);
+  
   // 입찰금액 포맷팅 함수
   const formatCurrency = (value: number | string | '') => {
     if (value === '') return '';
@@ -374,7 +414,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   };
   
   /**
-   * 공구 탈퇴하기
+   * 공구 나가기
    */
   const handleLeaveGroupBuy = async () => {
     try {
@@ -393,18 +433,18 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         if (response.status === 401) {
           throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
         }
-        throw new Error('공구 탈퇴에 실패했습니다.');
+        throw new Error('공구 나가기에 실패했습니다.');
       }
 
-      toast.success('공구에서 탈퇴했습니다.');
+      toast.success('공구에서 나갔습니다.');
       setIsParticipant(false);
       setOpenLeaveDialog(false);
       
       // 마이페이지로 이동
       router.push('/mypage');
     } catch (err) {
-      console.error('공구 탈퇴 오류:', err);
-      toast.error(err instanceof Error ? err.message : '공구 탈퇴에 실패했습니다.');
+      console.error('공구 나가기 오류:', err);
+      toast.error(err instanceof Error ? err.message : '공구 나가기에 실패했습니다.');
     } finally {
       setIsLeaving(false);
     }
@@ -708,6 +748,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   /**
    * 입찰금액 입력 처리
    * 입력값을 그대로 받음
+   * 백스페이스 정상 동작을 위해 문자열 형태로 처리
    */
   const handleBidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -723,8 +764,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
     
-    const parsedValue = parseInt(numericValue, 10);
-    setBidAmount(parsedValue);
+    // 문자열 형태로 저장하여 백스페이스 정상 동작 보장
+    setBidAmount(numericValue);
   };
 
   const isCompleted = groupBuy.status === 'completed' || groupBuy.status === 'cancelled';
@@ -1066,6 +1107,42 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               </button>
             )}
 
+            {/* 생성자 전용 수정/관리 UI */}
+            {isCreator && (
+              <div className="bg-white p-4 mb-4 border-2 border-blue-500 rounded-lg">
+                <h3 className="text-lg font-bold text-blue-700 mb-2">공구 관리</h3>
+                <p className="text-sm text-gray-600 mb-4">내가 만든 공구를 관리할 수 있습니다.</p>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="default" 
+                    className="bg-blue-600 hover:bg-blue-700 flex-1"
+                    onClick={() => router.push(`/groupbuys/edit/${groupBuy.id}`)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" /> 공구 수정
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1"
+                    onClick={() => router.push(`/mypage/seller/sales/${groupBuy.id}`)}
+                  >
+                    <Settings className="w-4 h-4 mr-1" /> 관리 페이지
+                  </Button>
+                </div>
+                
+                {/* 참여자가 본인 1명인 경우 특별 안내 */}
+                {groupBuy.current_participants === 1 && (
+                  <Alert className="bg-yellow-50 border-yellow-200 mt-4">
+                    <Info className="h-4 w-4 text-yellow-500" />
+                    <AlertDescription className="text-sm text-yellow-700">
+                      현재 참여자가 본인 1명입니다. 더 많은 참여자를 모집하기 위해 공구를 공유해보세요!
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+            
             <button 
               onClick={handleShare}
               className="w-full py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center mb-4"
@@ -1082,7 +1159,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   disabled={isLeaving}
                 >
                   <UserMinus size={12} />
-                  {isLeaving ? '처리 중...' : '탈퇴하기'}
+                  {isLeaving ? '처리 중...' : '공구 나가기'}
                 </button>
               </div>
             )}
@@ -1093,15 +1170,15 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       <AlertDialog open={openLeaveDialog} onOpenChange={setOpenLeaveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>공구에서 탈퇴하기</AlertDialogTitle>
+            <AlertDialogTitle>공구 나가기</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            정말 이 공구에서 탈퇴하시겠습니까? 탈퇴 후에는 다시 참여할 수 있습니다.
+            정말 이 공구에서 나가시겠습니까? 나간 후에는 다시 참여할 수 있습니다.
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
             <AlertDialogAction onClick={handleLeaveGroupBuy} disabled={isLeaving}>
-              {isLeaving ? '처리 중...' : '탈퇴하기'}
+              {isLeaving ? '처리 중...' : '공구 나가기'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

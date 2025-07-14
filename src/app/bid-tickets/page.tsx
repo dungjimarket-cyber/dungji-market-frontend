@@ -37,24 +37,17 @@ export default function BidTicketsPage() {
   const ticketProducts = [
     {
       id: 1,
-      name: '기본 입찰권',
-      price: 5000,
+      name: '입찰권 단품',
+      price: 1990,
       count: 1,
       description: '단일 공구에 1회 입찰 가능한 기본 입찰권입니다.'
     },
     {
       id: 2,
-      name: '프리미엄 입찰권',
-      price: 12000,
-      count: 3,
-      description: '3회 입찰 가능한 할인 패키지 입찰권입니다.'
-    },
-    {
-      id: 3,
-      name: '프로 입찰권',
-      price: 30000,
-      count: 10,
-      description: '10회 입찰 가능한 프로 판매자용 입찰권입니다.'
+      name: '무제한 구독제(30일)',
+      price: 29900,
+      count: 0, // 무제한이므로 0으로 표시
+      description: '30일 동안 모든 공구에 무제한으로 입찰 가능한 구독제 입찰권입니다.'
     }
   ];
 

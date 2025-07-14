@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, AlertTriangle, Info, Share2, PlusCircle, History } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Info, Share2, PlusCircle, History, Edit, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import GroupBuyActionButton from '@/components/groupbuy/GroupBuyActionButton';
 import GroupBuyActionButtons from '@/components/groupbuy/GroupBuyActionButtons';
 import BidModal from '@/components/groupbuy/BidModal';
@@ -39,6 +40,7 @@ interface GroupBuyClientProps {
 export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator, participationStatus: propParticipationStatus }: GroupBuyClientProps) {
   const { user, isAuthenticated, accessToken } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
   const [participationStatus, setParticipationStatus] = useState<any>(propParticipationStatus || null);
   const [loading, setLoading] = useState(true);
   
@@ -55,8 +57,30 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   // 판매회원(셀러) 여부 확인
   const [isSeller, setIsSeller] = useState(false);
   
-  // 자신이 생성한 공구인지 확인 (기본값 사용 가능)
-  const isCreator = propIsCreator || (user?.id && groupBuy.creator?.toString() === user.id.toString());
+  // 자신이 생성한 공구인지 확인하는 상태 추가
+  const [isCreator, setIsCreator] = useState<boolean>(!!propIsCreator);
+  
+  // 인증 상태가 초기화된 후 생성자 여부 계산
+  useEffect(() => {
+    if (isAuthenticated && user?.id && groupBuy?.creator) {
+      // 두 값을 모두 문자열로 변환하여 비교
+      const userId = String(user.id);
+      const creatorId = String(groupBuy.creator);
+      
+      // 디버깅 로그
+      console.log('공구 생성자 체크:', {
+        propIsCreator,
+        userId,
+        userIdType: typeof userId,
+        creatorId,
+        creatorIdType: typeof creatorId,
+        isMatch: userId === creatorId
+      });
+      
+      // 생성자 여부 업데이트
+      setIsCreator(propIsCreator || userId === creatorId);
+    }
+  }, [isAuthenticated, user?.id, groupBuy?.creator, propIsCreator]);
   
   useEffect(() => {
     // 사용자 권한 확인
@@ -428,6 +452,70 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           </div>
         </div>
 
+        {/* 생성자 전용 수정/관리 UI */}
+        {isCreator && (
+          <div className="bg-white p-4 mb-4 border-2 border-blue-500 rounded-lg">
+            <h3 className="text-lg font-bold text-blue-700 mb-2">공구 관리</h3>
+            <p className="text-sm text-gray-600 mb-4">내가 만든 공구를 관리할 수 있습니다.</p>
+            
+            <div className="flex space-x-2">
+              <Button 
+                variant="default" 
+                className="bg-blue-600 hover:bg-blue-700 flex-1"
+                onClick={() => router.push(`/group-purchases/edit/${id}`)}
+              >
+                <Edit className="w-4 h-4 mr-1" /> 공구 수정
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1"
+                onClick={() => router.push(`/mypage/seller/sales/${id}`)}
+              >
+                <Settings className="w-4 h-4 mr-1" /> 관리 페이지
+              </Button>
+            </div>
+            
+            {/* 참여자가 본인 1명인 경우 특별 안내 */}
+            {groupBuy.current_participants === 1 && (
+              <Alert className="bg-yellow-50 border-yellow-200 mt-4">
+                <Info className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-sm text-yellow-700">
+                  현재 참여자가 본인 1명입니다. 더 많은 참여자를 모집하기 위해 공구를 공유해보세요!
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-yellow-700 hover:bg-yellow-100 mt-2 w-full"
+                    onClick={() => {
+                      // 공유 기능 구현
+                      if (navigator.share) {
+                        navigator.share({
+                          title: formatGroupBuyTitle(groupBuy, false),
+                          text: `${formatGroupBuyTitle(groupBuy, false)} 공구에 참여해보세요!`,
+                          url: window.location.href
+                        })
+                        .catch(error => console.error('공유 오류:', error));
+                      } else {
+                        // 클립보드에 복사
+                        navigator.clipboard.writeText(window.location.href)
+                          .then(() => {
+                            toast({
+                              title: '링크 복사 완료',
+                              description: '공구 링크가 클립보드에 복사되었습니다.'
+                            });
+                          })
+                          .catch(error => console.error('클립보드 복사 오류:', error));
+                      }
+                    }}
+                  >
+                    <Share2 className="w-4 h-4 mr-1" /> 공구 공유하기
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+        
         {/* 알림 메시지 */}
         <Alert className="bg-blue-50 border-blue-200 mb-4">
           <Info className="h-4 w-4 text-blue-500" />
