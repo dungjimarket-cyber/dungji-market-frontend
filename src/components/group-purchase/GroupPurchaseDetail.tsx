@@ -10,6 +10,7 @@ import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -354,7 +355,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const formatCurrency = (value: number | string | '') => {
     if (value === '') return '';
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
-    return numValue.toLocaleString() + '원';
+    return numValue.toLocaleString();
   };
   
   // 입찰금액 파싱 함수 (콤마, 원 기호 제거)
@@ -810,7 +811,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   
   /**
    * 입찰금액 입력 처리
-   * 입력값을 그대로 받음
+   * 숫자만 입력 가능하도록 처리
    * 백스페이스 정상 동작을 위해 문자열 형태로 처리
    */
   const handleBidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -820,7 +821,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
     
-    // 숫자만 추출
+    // 숫자만 추출 (콤마, 원 등 제거)
     const numericValue = value.replace(/[^0-9]/g, '');
     if (numericValue === '') {
       setBidAmount('');
@@ -837,19 +838,20 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     <>
       <div className="relative">
         <div className="min-h-screen bg-white">
-        {/* 헤더 */}
-        <div className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleGoBack}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6 text-gray-700" />
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900">공구 상세</h1>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Bell className="w-6 h-6 text-gray-700" />
-            </button>
+          {/* 헤더 */}
+          <div className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleGoBack}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-gray-700" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-900">공구 상세</h1>
+              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <Bell className="w-6 h-6 text-gray-700" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1118,39 +1120,53 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   </div>
                 )}
                 
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={typeof bidAmount === 'number' ? formatCurrency(bidAmount) : bidAmount}
-                      onChange={(e) => handleBidAmountChange(e)}
-                      className="w-full p-2 border border-gray-300 rounded-lg"
-                      placeholder={`${bidType === 'support' ? '지원금' : '가격'} 입력 (원)`}
-                    />
-                    
-                    {/* 입찰 유형별 안내 문구 */}
-                    {bidType === 'support' && (
-                      <div className="text-gray-500 text-sm mt-2 p-2 bg-blue-50 border border-blue-100 rounded-md">
-                        <p>카드 제휴할인이나 증정품을 제외한 순수 현금지원금입니다 (공시지원금+추가지원금)</p>
-                      </div>
-                    )}
-                    <div className="text-gray-500 text-sm mt-2">
-                      앞자리를 제외한 입찰가는 비공개입니다.
+                <div className="flex flex-col w-full">
+                  {/* 입찰 유형별 안내 문구 - 입력 필드 위로 이동 */}
+                  {bidType === 'support' && (
+                    <div className="text-gray-500 text-sm mb-2 p-2 bg-blue-50 border border-blue-100 rounded-md">
+                      <div>카드 제휴할인이나 증정품을 제외한 순수 현금지원금입니다 (공시지원금+추가지원금)</div>
                     </div>
+                  )}
+                  
+                  <div className="flex items-center space-x-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={typeof bidAmount === 'number' ? formatCurrency(bidAmount) : bidAmount}
+                        onChange={(e) => handleBidAmountChange(e)}
+                        className="w-full p-2 pl-3 pr-10 border border-gray-300 rounded-lg"
+                        placeholder={`${bidType === 'support' ? '지원금' : '가격'} 입력`}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">원</span>
+                    </div>
+                    
+                    <button
+                      onClick={handleBidClick}
+                      disabled={isBidding || isCompleted}
+                      className={`whitespace-nowrap py-2 px-4 rounded-lg font-medium ${
+                        isCompleted 
+                          ? 'bg-gray-200 text-gray-500' 
+                          : isBidding
+                            ? 'bg-gray-400 text-white'
+                            : 'bg-orange-600 text-white hover:bg-orange-700'
+                      }`}
+                    >
+                      {isBidding ? (
+                        <span className="flex items-center">
+                          <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                          입찰 중...
+                        </span>
+                      ) : (
+                        '입찰하기'
+                      )}
+                    </button>
                   </div>
-                  <button
-                    onClick={handleBidClick}
-                    disabled={isBidding || isCompleted}
-                    className={`py-2 px-4 rounded-lg font-medium ${
-                      isCompleted 
-                        ? 'bg-gray-200 text-gray-500' 
-                        : isBidding
-                        ? 'bg-gray-400 text-white'
-                        : 'bg-orange-600 text-white hover:bg-orange-700'
-                    }`}
-                  >
-                    {isBidding ? '처리 중...' : '입찰하기'}
-                  </button>
+                  
+                  <div className="text-gray-500 text-sm mt-2">
+                    앞자리를 제외한 입찰가는 비공개입니다.
+                  </div>
                 </div>
                 
                 {/* 입찰 취소 버튼 */}
@@ -1278,18 +1294,18 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>입찰 확인</AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogDescription>
-            <div className="mb-4">
-              {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원으로 입찰하시겠습니까?
-              {hasBid && <span className="block mt-2 text-orange-600">이미 입찰하셨습니다. 기존 입찰금액이 수정됩니다.</span>}
-            </div>
-            <div className="bg-gray-50 p-3 rounded-lg mb-4">
-              <div className="font-medium">입찰 정보</div>
-              <div className="text-sm mt-1">입찰 금액: {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</div>
-              <div className="text-sm">입찰 유형: {bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</div>
-            </div>
-            <div className="text-sm text-yellow-600">입찰 시 입찰권 1개가 소모됩니다. 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
+          <AlertDialogDescription className="space-y-4">
+            {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원으로 입찰하시겠습니까?
+            {hasBid && <span className="block mt-2 text-orange-600">이미 입찰하셨습니다. 기존 입찰금액이 수정됩니다.</span>}
           </AlertDialogDescription>
+          
+          <div className="bg-gray-50 p-3 rounded-lg mb-4 mt-4">
+            <p className="font-medium">입찰 정보</p>
+            <p className="text-sm mt-1">입찰 금액: {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</p>
+            <p className="text-sm">입찰 유형: {bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</p>
+          </div>
+          
+          <p className="text-sm text-yellow-600 mb-4">입찰 시 입찰권 1개가 소모됩니다. 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</p>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBidding}>취소</AlertDialogCancel>
             <AlertDialogAction
@@ -1324,50 +1340,48 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogTitle>입찰 기록</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">공구의 모든 입찰 내역입니다. 본인의 입찰은 실제 금액이 표시됩니다.</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm border">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2 border-b">순위</th>
-                    <th className="px-4 py-2 border-b">입찰 유형</th>
-                    <th className="px-4 py-2 border-b">입찰 금액</th>
-                    <th className="px-4 py-2 border-b">최종 가격</th>
-                    <th className="px-4 py-2 border-b">본인 여부</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topBids.length === 0 ? (
-                    <tr><td colSpan={3} className="text-center py-4 text-gray-400">입찰 내역이 없습니다.</td></tr>
-                  ) : (
-                    topBids.map((bid, idx) => (
-                      <tr key={bid.id} className={bid.is_mine ? 'bg-blue-100 font-bold border-l-4 border-blue-500' : ''}>
-                        <td className="px-4 py-2 border-b text-center">{idx + 1}</td>
-                        <td className="px-4 py-2 border-b text-center">{bid.bid_type === 'price' ? '가격 입찰' : '지원금 입찰'}</td>
-                        <td className="px-4 py-2 border-b text-center">
-                          {bid.is_mine 
-                            ? <span className="text-blue-600">{bid.amount.toLocaleString()}원 <span className="ml-1 text-xs bg-blue-100 px-1 py-0.5 rounded">내 입찰</span></span>
-                            : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`}
-                        </td>
-                        <td className="px-4 py-2 border-b text-center">
-                          {bid.bid_type === 'price' 
-                            ? (bid.is_mine 
-                                ? <span className="text-blue-600">{bid.amount.toLocaleString()}원</span>
-                                : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`)
-                            : (bid.is_mine
-                                ? <span className="text-blue-600">{(groupBuy.product_details?.base_price - bid.amount).toLocaleString()}원</span>
-                                : `${String(groupBuy.product_details?.base_price - bid.amount)[0]}${'*'.repeat(String(Math.floor(groupBuy.product_details?.base_price - bid.amount)).length - 1)},***원`)}
-                        </td>
-                        <td className="px-4 py-2 border-b text-center">{bid.is_mine ? '나' : '-'}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            공구의 모든 입찰 내역입니다. 본인의 입찰은 실제 금액이 표시됩니다.
           </AlertDialogDescription>
+          
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full text-sm border">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2 border-b">순위</th>
+                  <th className="px-4 py-2 border-b">입찰 유형</th>
+                  <th className="px-4 py-2 border-b">입찰 금액</th>
+                  <th className="px-4 py-2 border-b">최종 가격</th>
+                  <th className="px-4 py-2 border-b">본인 여부</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topBids.length === 0 ? (
+                  <tr><td colSpan={3} className="text-center py-4 text-gray-400">입찰 내역이 없습니다.</td></tr>
+                ) : (
+                  topBids.map((bid, idx) => (
+                    <tr key={bid.id} className={bid.is_mine ? 'bg-blue-100 font-bold border-l-4 border-blue-500' : ''}>
+                      <td className="px-4 py-2 border-b text-center">{idx + 1}</td>
+                      <td className="px-4 py-2 border-b text-center">{bid.bid_type === 'price' ? '가격 입찰' : '지원금 입찰'}</td>
+                      <td className="px-4 py-2 border-b text-center">
+                        {bid.is_mine 
+                          ? <span className="text-blue-600">{bid.amount.toLocaleString()}원 <span className="ml-1 text-xs bg-blue-100 px-1 py-0.5 rounded">내 입찰</span></span>
+                          : `${String(bid.amount)[0]}${'*'.repeat(String(Math.floor(bid.amount)).length - 1)},***원`}
+                      </td>
+                      <td className="px-4 py-2 border-b text-center">
+                        {bid.bid_type === 'price' 
+                          ? bid.amount.toLocaleString()
+                          : (groupBuy.product_details?.base_price - bid.amount).toLocaleString()}
+                        원
+                      </td>
+                      <td className="px-4 py-2 border-b text-center">
+                        {bid.is_mine ? '예' : '아니오'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setShowBidHistoryModal(false)}>
               닫기
@@ -1469,7 +1483,6 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      </div>
     </>
   );
 }
