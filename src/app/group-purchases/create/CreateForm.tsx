@@ -542,6 +542,100 @@ export default function CreateForm() {
   };
 
 /**
+ * 사용자 ID가 확인된 후 폼 제출을 계속하는 함수
+ * 여러 소스에서 사용자 ID를 추출한 후 실제 API 요청을 처리
+ */
+const continueSubmitWithUserId = async (
+  userId: string | number,
+  values: FormData,
+  currentProductId: number,
+  calculatedEndTimeIso: string,
+  safeTitle: string,
+  safeDescription: string,
+  minPart: number,
+  maxPart: number,
+  regionType: string,
+  cleanProductDetails: Record<string, any>,
+  selectedRegions: Region[]
+) => {
+  try {
+    // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
+    const apiRequestData = {
+      product: currentProductId,           // 필수 필드, 수치
+      title: safeTitle,                   // 필수 필드, 문자열 (자동 생성된 제목)
+      description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
+      min_participants: minPart,          // 필수 필드, 수치, 최소 1
+      max_participants: maxPart,          // 필수 필드, 수치, 최소 1
+      end_time: calculatedEndTimeIso,     // 필수 필드, 날짜/시간 문자열
+      region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
+      creator: userId,                    // 필수 필드, 현재 로그인한 사용자 ID
+      product_details: cleanProductDetails, // 백엔드에서 이 키를 사용하여 통신사 정보 추출
+      // 다중 지역 정보를 regions 배열로 전송
+      regions: regionType === 'local' ? selectedRegions.map(region => ({
+        code: region.code,
+        name: region.name,
+        full_name: region.full_name || region.name,
+        level: region.level || 2
+      })) : []
+    };
+    
+    // 최종 API 요청 데이터 로깅
+    console.log('최종 API 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
+    console.log('사용자 ID 확인:', apiRequestData.creator);
+    
+    // 공구 등록 API 요청 실행
+    console.log('공구 등록 API 요청 시작');
+    const response = await tokenUtils.fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiRequestData),
+    });
+    
+    console.log('공구 등록 성공:', response);
+    
+    // 성공 메시지 표시
+    toast({
+      title: '공구 등록 성공',
+      description: '공구가 성공적으로 등록되었습니다.',
+      className: "border-green-200 bg-green-50",
+      duration: 3000,
+    });
+    
+    // 3초 후 자동으로 공구 목록 페이지로 이동
+    setTimeout(() => {
+      router.push('/group-purchases');
+    }, 1500);
+    
+    return true;
+  } catch (apiError: unknown) {
+    console.error('===== API 요청 실패 상세 정보 =====');
+    console.error('오류 객체:', apiError);
+    console.error('오류 메시지:', (apiError as Error).message);
+    console.error('오류 스택:', (apiError as Error).stack);
+    
+    // 에러 메시지 추출
+    let errorMessage = '공구 등록 중 오류가 발생했습니다.';
+    
+    if (apiError instanceof Error) {
+      // fetchWithAuth에서 던진 사용자 친화적 메시지 사용
+      errorMessage = apiError.message;
+    }
+    
+    toast({
+      variant: 'destructive',
+      title: '공구 등록 실패',
+      description: errorMessage,
+    });
+    
+    return false;
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+/**
  * 폼 제출 핸들러
  */
 const onSubmit = async (values: FormData) => {
@@ -553,39 +647,124 @@ const onSubmit = async (values: FormData) => {
   let productDetails: Record<string, any> = {};
 
   try {
-    // 사용자 인증 상태 확인
-    const session = await getSession();
-    console.log('세션 정보:', session);
-
-    // 로컬 스토리지에서 토큰 확인
-    const token = localStorage.getItem('dungji_auth_token');
-    console.log('토큰 존재 여부:', !!token);
-
-    // 사용자 ID 가져오기
-    const userId = session?.user?.id || tokenUtils.getUserIdFromToken();
-    console.log('사용자 ID:', userId);
+    // 사용자 인증 상태 확인 - AuthContext를 우선적으로 사용하고, 필요시 다른 소스에서 추출
+    console.log('인증 상태 확인 시작 - 사용자 ID 추출 시도');
+    
+    // 1. AuthContext에서 사용자 정보 확인 (가장 신뢰할 수 있는 소스)
+    console.log('useAuth 훅 사용자 정보:', user);
+    const authContextUserId = user?.id;
+    console.log('useAuth에서 추출한 사용자 ID:', authContextUserId);
+    
+    // 2. NextAuth 세션에서 사용자 ID 확인 (두 번째 우선순위)
+    let sessionUserId = null;
+    if (!authContextUserId) {
+      const session = await getSession();
+      console.log('NextAuth 세션 정보:', session);
+      sessionUserId = session?.user?.id;
+      console.log('세션에서 추출한 사용자 ID:', sessionUserId);
+    }
+    
+    // 3. 토큰 기반 사용자 ID 추출 (세 번째 우선순위)
+    let tokenUserId = null;
+    if (!authContextUserId && !sessionUserId) {
+      // tokenUtils 사용하여 사용자 ID 추출 시도
+      tokenUserId = tokenUtils.getUserIdFromToken();
+      console.log('토큰에서 추출한 사용자 ID:', tokenUserId);
+    }
+    
+    // 모든 소스에서 찾은 사용자 ID 중 첫 번째 유효한 값 사용
+    const userId = authContextUserId || sessionUserId || tokenUserId;
+    console.log('최종 결정된 사용자 ID:', userId);
 
     // 사용자 인증 상태 처리
-    if (!userId && !token) {
-      console.error('인증되지 않음, 로그인 페이지로 리디렉션');
+    if (!userId) {
+      console.error('인증되지 않음 또는 사용자 ID를 찾을 수 없음');
+      
+      // 마감 시간 계산
+      const currentDate = new Date();
+      let endTime = new Date(currentDate);
+      
+      if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
+        // 슬라이더 값(시간)을 현재 시간에 더함
+        const hoursToAdd = values.sliderHours || sliderHours;
+        endTime.setHours(currentDate.getHours() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24));
+      } else if (values.end_time_option === 'custom' && values.end_time) {
+        // 사용자 지정 날짜/시간 사용
+        endTime = new Date(values.end_time);
+      }
+      
+      // 계산된 마감 시간을 ISO 문자열로 변환하여 endTimeValue 상태 업데이트
+      const calculatedEndTimeIso = endTime.toISOString();
+      console.log('계산된 마감 시간 ISO 문자열:', calculatedEndTimeIso);
+      setEndTimeValue(calculatedEndTimeIso); // 상태 업데이트
+      
+      // 현재 선택된 상품 ID 확인
+      const currentProductId = parseInt(values.product);
+      
+      // 제목과 설명 안전하게 처리
+      const safeTitle = generateTitle();
+      const safeDescription = values.description || '';
+      
+      // 참여자 수 정보
+      const minPart = values.min_participants;
+      const maxPart = values.max_participants;
+      
+      // 상품 상세 정보 준비
+      let cleanProductDetails = {};
+      
+      // 마지막 시도: 백엔드 API에서 프로필 정보 직접 가져오기
+      try {
+        const token = localStorage.getItem('dungji_auth_token') || 
+                     localStorage.getItem('accessToken') || 
+                     localStorage.getItem('auth.token');
+                     
+        if (token) {
+          console.log('백엔드 API에서 프로필 정보 직접 가져오기 시도...');
+          const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`;
+          const profileResponse = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            console.log('백엔드에서 프로필 정보 가져오기 성공:', profileData);
+            
+            if (profileData.id) {
+              console.log('백엔드 API에서 사용자 ID 추출 성공:', profileData.id);
+              // 사용자 ID를 찾았으므로 계속 진행
+              const backendUserId = profileData.id;
+              
+              // 로컬 스토리지에 사용자 정보 업데이트 - AuthContext가 다음에 사용할 수 있도록
+              const userDataToStore = {
+                id: backendUserId,
+                email: profileData.email || '',
+                username: profileData.username || '',
+                role: profileData.role || 'user'
+              };
+              localStorage.setItem('user', JSON.stringify(userDataToStore));
+              localStorage.setItem('auth.user', JSON.stringify(userDataToStore));
+              
+              // 이 ID로 계속 진행
+              return await continueSubmitWithUserId(backendUserId, values, currentProductId, calculatedEndTimeIso, safeTitle, safeDescription, minPart, maxPart, regionType, cleanProductDetails, selectedRegions);
+            }
+          } else {
+            console.error('백엔드 프로필 API 호출 실패:', profileResponse.status);
+          }
+        }
+      } catch (profileError) {
+        console.error('백엔드 프로필 정보 가져오기 오류:', profileError);
+      }
+      
+      // 모든 시도 실패 시 사용자에게 알림
       toast({
         variant: 'destructive',
         title: '로그인 필요',
-        description: '공구 등록을 위해서는 로그인이 필요합니다.',
+        description: '공구 등록을 위해서는 로그인이 필요합니다. 다시 로그인해주세요.',
       });
       router.push('/login?callbackUrl=/group-purchases/create');
-      setIsSubmitting(false);
-      return;
-    }
-    
-    // 로그인되었지만 ID가 없는 경우 오류 처리
-    if (!userId) {
-      console.error('인증되었지만 사용자 ID가 없음');
-      toast({
-        variant: 'destructive',
-        title: '사용자 정보 오류',
-        description: '사용자 정보를 가져오는 데 실패했습니다. 다시 로그인해주세요.',
-      });
       setIsSubmitting(false);
       return;
     }
@@ -676,216 +855,8 @@ const onSubmit = async (values: FormData) => {
         }
       });
       
-      // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
-      apiRequestData = {
-        product: currentProductId,           // 필수 필드, 수치
-        title: safeTitle,                   // 필수 필드, 문자열 (자동 생성된 제목)
-        description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
-        min_participants: minPart,          // 필수 필드, 수치, 최소 1
-        max_participants: maxPart,          // 필수 필드, 수치, 최소 1
-        end_time: calculatedEndTimeIso,     // 필수 필드, 날짜/시간 문자열
-        region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
-        creator: userId,                    // 필수 필드, 현재 로그인한 사용자 ID
-        product_details: cleanProductDetails, // 백엔드에서 이 키를 사용하여 통신사 정보 추출
-        // 다중 지역 정보를 regions 배열로 전송
-        regions: regionType === 'local' ? selectedRegions.map(region => ({
-          code: region.code,
-          name: region.name,
-          full_name: region.full_name || region.name,
-          level: region.level || 2
-        })) : []
-      };
-      
-      if (status === 'unauthenticated') {
-        // 로그인되지 않은 경우
-        toast({
-          variant: 'destructive',
-          title: '로그인 필요',
-          description: '공구 등록을 위해서는 로그인이 필요합니다.',
-        });
-        router.push('/login?callbackUrl=/group-purchases/create');
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // 동일 상품으로 이미 생성한 공구가 있는지 확인
-      try {
-        console.log('중복 공구 확인 시작 - 상품 ID:', currentProductId, '타입:', typeof currentProductId);
-        
-        const checkUrl = `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/my_groupbuys/`;
-        console.log('기존 공구 확인 URL:', checkUrl);
-        
-        const existingGroupBuys = await tokenUtils.fetchWithAuth(checkUrl, {
-          method: 'GET'
-        });
-        
-        console.log('기존 공구 출력:', JSON.stringify(existingGroupBuys, null, 2));
-        
-        // 중요: 현재 상품과 동일한 상품을 사용한 공구가 있는지 확인
-        if (existingGroupBuys && Array.isArray(existingGroupBuys)) {
-          // 확인용 로그 추가
-          console.log(`현재 선택된 상품 ID: ${currentProductId} (${typeof currentProductId})`);
-          console.log('기존 공구 목록 개수:', existingGroupBuys.length);
-          
-          // 확인을 위해 모든 공구의 상품 ID를 출력
-          existingGroupBuys.forEach((gb, idx) => {
-            console.log(`공구[${idx}] - 상품 ID: ${gb.product} (${typeof gb.product}), 상품명: ${gb.product_name}, 상태: ${gb.status}`);
-          });
-          
-          // 주의: 같은 상품 ID를 가진 공구 찾기 (status 값 고려)
-          const activeStatuses = ['recruiting', 'bidding', 'voting', 'seller_confirmation']; // 활성 상태로 간주되는 상태들
-          
-          // 문자열과 숫자 모두 처리하기 위해 확실하게 숫자로 변환하여 비교
-          const duplicateGroupBuy = existingGroupBuys.find(gb => {
-            const gbProductId = typeof gb.product === 'string' ? parseInt(gb.product) : Number(gb.product);
-            const isActive = activeStatuses.includes(gb.status);
-            
-            console.log(`비교: 기존 공구 상품 ID ${gbProductId} vs 현재 상품 ID ${currentProductId}, 상태: ${gb.status}, 활성여부: ${isActive}`);
-            
-            // 동일한 상품이고 활성 상태일 경우에만 중복으로 간주
-            return gbProductId === currentProductId && isActive;
-          });
-          
-          console.log('중복 공구 검출 결과:', duplicateGroupBuy);
-          
-          // 중복 공구가 감지된 경우
-          if (duplicateGroupBuy) {
-            // 중요: 중복 공구 상세 정보 로그
-            console.error('중복 공구 발견! 등록 불가 - ID:', duplicateGroupBuy.id, 
-                          '상품:', duplicateGroupBuy.product_name, 
-                          '상태:', duplicateGroupBuy.status);
-            
-            // 제품 ID 사용
-            // currentProductId 변수를 사용하여 일관성 유지
-            const selectedProductName = selectedProduct?.name || duplicateGroupBuy.product_name || '현재 상품';
-            
-            // 사용자에게 모달 표시 - 토스트보다 더 눈에 띄고 사라지지 않음
-            setDialogState({
-              open: true,
-              title: '중복 공구 등록 불가',
-              message: `이미 동일한 상품(${selectedProductName})으로 진행 중인 공구가 있습니다. 상태: ${duplicateGroupBuy.status === 'recruiting' ? '모집중' : duplicateGroupBuy.status}`,
-              primaryActionLabel: '기존 공구 확인',
-              primaryAction: () => {
-                router.push(`/groupbuys/${duplicateGroupBuy.id}`);
-                setDialogState({ open: false });
-              },
-              secondaryActionLabel: '다른 상품 선택',
-              secondaryAction: () => {
-                form.setValue('product', '');
-                setDialogState({ open: false });
-              }
-            });
-            
-            // 추가로 토스트 메시지도 표시 - 중요하고 눈에 띄게 표시
-            toast({
-              variant: 'destructive',
-              title: '중복 공구 등록 불가',
-              description: `이미 ${selectedProductName} 상품으로 진행 중인 공구가 있습니다.`,
-              duration: 60000, // 1분 동안 표시
-              className: "font-bold border-red-400 bg-red-50"
-            });
-            
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      } catch (err) {
-        console.error('기존 공구 확인 중 오류:', err);
-        // 오류가 발생해도 일단 계속 진행
-      }
-      
-      // 디버깅을 위한 요청 데이터 로깅
-      console.log('===== 요청 형식 및 베어된 값 확인 =====');
-      console.log('product (productId):', currentProductId, typeof currentProductId);
-      console.log('title:', safeTitle, typeof safeTitle);
-      console.log('description:', safeDescription, typeof safeDescription);
-      console.log('min_participants:', minPart, typeof minPart);
-      console.log('max_participants:', maxPart, typeof maxPart);
-      console.log('end_time:', endTimeValue, typeof endTimeValue);
-      console.log('region_type:', regionType || 'local');
-      console.log('creator:', userId, typeof userId);
-      
-      // 추가 디버깅: 각 필드의 유효성 검사
-      console.log('===== 필드 유효성 검사 =====');
-      console.log('productId 유효성:', currentProductId && currentProductId > 0);
-      console.log('title 유효성:', safeTitle && safeTitle.length > 0);
-      console.log('min_participants 유효성:', minPart && minPart >= 1);
-      console.log('max_participants 유효성:', maxPart && maxPart >= 1 && maxPart <= 100);
-      console.log('end_time 유효성:', endTimeValue && new Date(endTimeValue) > new Date());
-      console.log('creator 유효성:', userId && (typeof userId === 'number' ? userId > 0 : parseInt(userId.toString()) > 0));
-      console.log('region_type 유효성:', regionType === 'local' || regionType === 'nationwide');
-      
-      // end_time 형식 상세 확인
-      console.log('===== end_time 상세 분석 =====');
-      console.log('endTimeValue 원본:', endTimeValue);
-      
-      // 빈 문자열 처리
-      if (!endTimeValue || endTimeValue.trim() === '') {
-        console.error('마감 시간이 설정되지 않았습니다.');
-        toast({
-          variant: 'destructive',
-          title: '마감 시간 오류',
-          description: '마감 시간을 설정해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // 유효한 날짜인지 확인
-      const endTimeDate = new Date(endTimeValue);
-      console.log('endTimeValue Date 객체:', endTimeDate);
-      
-      // 공구 등록 API 요청 실행
-      try {
-        console.log('공구 등록 API 요청 시작:', JSON.stringify(apiRequestData, null, 2));
-        
-        const response = await tokenUtils.fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(apiRequestData),
-        });
-        
-        console.log('공구 등록 성공:', response);
-        
-        // 성공 메시지 표시
-        toast({
-          title: '공구 등록 성공',
-          description: '공구가 성공적으로 등록되었습니다.',
-          className: "border-green-200 bg-green-50",
-          duration: 3000,
-        });
-        
-        // 3초 후 자동으로 공구 목록 페이지로 이동
-        setTimeout(() => {
-          router.push('/group-purchases');
-        }, 1500);
-      } catch (apiError: unknown) {
-        console.error('===== API 요청 실패 상세 정보 =====');
-        console.error('오류 객체:', apiError);
-        console.error('오류 메시지:', (apiError as Error).message);
-        console.error('오류 스택:', (apiError as Error).stack);
-        
-        // 추가 디버깅을 위해 요청 데이터 재출력
-        console.error('실패한 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
-        
-        // 에러 메시지 추출
-        let errorMessage = '공구 등록 중 오류가 발생했습니다.';
-        
-        if (apiError instanceof Error) {
-          // fetchWithAuth에서 던진 사용자 친화적 메시지 사용
-          errorMessage = apiError.message;
-        }
-        
-        toast({
-          variant: 'destructive',
-          title: '공구 등록 실패',
-          description: errorMessage,
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
+      // 사용자 ID가 확인되었으므로 API 요청 데이터 구성 및 제출 함수 호출
+      return await continueSubmitWithUserId(userId, values, currentProductId, calculatedEndTimeIso, safeTitle, safeDescription, minPart, maxPart, regionType, cleanProductDetails, selectedRegions);
     } catch (error) {
       console.error('공구 등록 실패:', error);
       
@@ -1226,7 +1197,6 @@ const onSubmit = async (values: FormData) => {
                                   <SelectItem value="SKT">SK</SelectItem>
                                   <SelectItem value="KT">KT</SelectItem>
                                   <SelectItem value="LGU">LG</SelectItem>
-                                  <SelectItem value="MVNO">알뜰폰</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
