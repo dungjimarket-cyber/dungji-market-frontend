@@ -113,6 +113,30 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     if (!isAuthenticated || !accessToken || !groupBuyId) return;
     
     try {
+      // 현재 사용자 ID 가져오기
+      let currentUserId = null;
+      if (user?.id) {
+        currentUserId = user.id;
+        console.log('현재 사용자 ID (user 객체):', currentUserId);
+      } else {
+        // 백업: 프로필 API에서 사용자 ID 가져오기
+        try {
+          const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          
+          if (profileResponse.ok) {
+            const userProfile = await profileResponse.json();
+            currentUserId = userProfile.id;
+            console.log('현재 사용자 ID (프로필 API):', currentUserId);
+          }
+        } catch (profileError) {
+          console.error('프로필 정보 가져오기 오류:', profileError);
+        }
+      }
+      
       // 입찰 정보 API 호출
       const bidInfoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/bids/`, {
         method: 'GET',
@@ -132,9 +156,27 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       // API 응답이 배열인 경우 객체로 변환
       let bidInfoData = rawData;
       if (Array.isArray(rawData)) {
-        // 배열 응답을 처리하여 필요한 형식으로 변환
+        // 각 입찰에 is_mine 플래그 추가/확인 (사용자 ID 기반)
+        const bidsWithMineFlag = rawData.map(bid => {
+          // 기존 is_mine 플래그 유지하면서 사용자 ID로 추가 확인
+          const isMine = bid.is_mine === true || 
+                        (currentUserId && bid.seller && bid.seller.toString() === currentUserId.toString());
+          
+          return {
+            ...bid,
+            is_mine: isMine
+          };
+        });
+        
+        console.log('사용자 ID로 내 입찰 확인:', bidsWithMineFlag.map(b => ({ 
+          id: b.id, 
+          seller: b.seller, 
+          is_mine: b.is_mine,
+          amount: b.amount
+        })));
+        
         // 최종 가격 기준으로 정렬 (base_price - 지원금 또는 입찰가)
-        const sortedBids = [...rawData].sort((a, b) => {
+        const sortedBids = [...bidsWithMineFlag].sort((a, b) => {
           const aFinalPrice = a.bid_type === 'support' ? 
             (groupBuy.product_details?.base_price || 0) - a.amount : 
             a.amount;
@@ -144,7 +186,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           return aFinalPrice - bFinalPrice; // 낮은 가격이 더 높은 순위
         });
         
+        // 내 입찰 찾기 (is_mine 플래그 기준)
         const myBid = sortedBids.find(bid => bid.is_mine === true);
+        console.log('내 입찰 찾기 결과:', myBid);
+        
         bidInfoData = {
           my_bid: myBid || null,
           top_bids: sortedBids.slice(0, 5), // 상위 5개 입찰만 사용
@@ -678,10 +723,23 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       // 입찰 금액 즉시 업데이트 (UI 반영을 위해)
       if (typeof amountToSubmit === 'number') {
         setMyBidAmount(amountToSubmit);
+        
+        // 입찰 ID 저장 (API 응답에서 가져옴)
+        if (data && data.id) {
+          setMyBidId(data.id);
+          
+          // 내 입찰 순위 임시 설정 (정확한 순위는 fetchBidInfo에서 업데이트)
+          setMyBidRank(prev => ({
+            rank: prev?.rank || 1, // 임시로 1위로 설정
+            total: prev?.total || 1
+          }));
+        }
       }
       
-      // 입찰 후 입찰 정보 다시 가져오기
-      fetchBidInfo();
+      // 입찰 후 입찰 정보 다시 가져오기 (약간의 지연을 두어 백엔드 반영 시간 확보)
+      setTimeout(() => {
+        fetchBidInfo();
+      }, 500);
       
       if (isDuplicate) {
         toast.success('수정 입찰 되었습니다.');
@@ -1106,10 +1164,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 )}
                 
                 <div className="text-xs text-gray-500">
-                  <p>• 입찰 시 입찰권 1개가 소모됩니다.</p>
-                  <p>• 최소 입찰 단위는 1,000원입니다.</p>
-                  <p>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</p>
-                  <p>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</p>
+                  <div>• 입찰 시 입찰권 1개가 소모됩니다.</div>
+                  <div>• 최소 입찰 단위는 1,000원입니다.</div>
+                  <div>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
+                  <div>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</div>
                 </div>
               </div>
           ) : (
@@ -1221,16 +1279,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogTitle>입찰 확인</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            <p className="mb-4">
+            <div className="mb-4">
               {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원으로 입찰하시겠습니까?
               {hasBid && <span className="block mt-2 text-orange-600">이미 입찰하셨습니다. 기존 입찰금액이 수정됩니다.</span>}
-            </p>
-            <div className="bg-gray-50 p-3 rounded-lg mb-4">
-              <p className="font-medium">입찰 정보</p>
-              <p className="text-sm mt-1">입찰 금액: {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</p>
-              <p className="text-sm">입찰 유형: {bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</p>
             </div>
-            <p className="text-sm text-yellow-600">입찰 시 입찰권 1개가 소모됩니다. 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</p>
+            <div className="bg-gray-50 p-3 rounded-lg mb-4">
+              <div className="font-medium">입찰 정보</div>
+              <div className="text-sm mt-1">입찰 금액: {typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</div>
+              <div className="text-sm">입찰 유형: {bidType === 'price' ? '가격 입찰' : '지원금 입찰'}</div>
+            </div>
+            <div className="text-sm text-yellow-600">입찰 시 입찰권 1개가 소모됩니다. 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBidding}>취소</AlertDialogCancel>
@@ -1329,7 +1387,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-3">
                 <CheckIcon className="h-6 w-6 text-green-600" />
               </div>
-              <p className="text-lg font-medium">입찰이 성공적으로 완료되었습니다.</p>
+              <div className="text-lg font-medium">입찰이 성공적으로 완료되었습니다.</div>
             </div>
             
             {isSeller && hasBid && myBidAmount !== null && (
@@ -1340,8 +1398,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     <p className="text-sm font-medium text-green-600">입찰 완료</p>
                   </div>
                   <div className="flex justify-between">
-                    <p className="text-sm text-gray-600">입찰 금액:</p>
-                    <p className="text-sm font-medium">{typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</p>
+                    <span className="text-sm text-gray-600">입찰 금액:</span>
+                    <span className="text-sm font-medium">{typeof bidAmount === 'number' ? bidAmount.toLocaleString() : ''}원</span>
                   </div>
                 </div>
               </div>
