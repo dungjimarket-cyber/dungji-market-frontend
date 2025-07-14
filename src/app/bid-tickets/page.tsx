@@ -17,6 +17,7 @@ import BidTicketPurchaseModal from '@/components/bid/BidTicketPurchaseModal';
 /**
  * 입찰권 구매 페이지 컴포넌트
  * 판매회원이 입찰에 참여하기 위한 입찰권을 구매할 수 있는 페이지입니다.
+ * 입찰권은 '입찰권 단품'(1,990원)과 '무제한 구독제(30일)'(29,900원) 두 가지로 구분됩니다.
  * 
  * @returns {JSX.Element} 입찰권 구매 페이지 컴포넌트
  */
@@ -30,16 +31,25 @@ export default function BidTicketsPage() {
     name: string;
     price: number;
     count: number;
+    token_type: 'single' | 'unlimited-subscription';
     description: string;
   } | null>(null);
 
   // 입찰권 상품 목록 (실제로는 API에서 가져와야 함)
-  const ticketProducts = [
+  const ticketProducts: Array<{
+    id: number;
+    name: string;
+    price: number;
+    count: number;
+    token_type: 'single' | 'unlimited-subscription';
+    description: string;
+  }> = [
     {
       id: 1,
       name: '입찰권 단품',
       price: 1990,
       count: 1,
+      token_type: 'single',
       description: '단일 공구에 1회 입찰 가능한 기본 입찰권입니다.'
     },
     {
@@ -47,6 +57,7 @@ export default function BidTicketsPage() {
       name: '무제한 구독제(30일)',
       price: 29900,
       count: 0, // 무제한이므로 0으로 표시
+      token_type: 'unlimited-subscription',
       description: '30일 동안 모든 공구에 무제한으로 입찰 가능한 구독제 입찰권입니다.'
     }
   ];
@@ -96,7 +107,14 @@ export default function BidTicketsPage() {
   }
 
   // 입찰권 구매 모달 열기
-  const handleOpenPurchaseModal = (ticket: typeof ticketProducts[0]) => {
+  const handleOpenPurchaseModal = (ticket: {
+    id: number;
+    name: string;
+    price: number;
+    count: number;
+    token_type: 'single' | 'unlimited-subscription';
+    description: string;
+  }) => {
     setSelectedTicket(ticket);
     setShowPurchaseModal(true);
   };

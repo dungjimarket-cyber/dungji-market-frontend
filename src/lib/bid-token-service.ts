@@ -12,15 +12,15 @@ export interface BidTokenPurchase {
 }
 
 export interface BidTokenResponse {
-  standard_tokens: number;
-  premium_tokens: number;
-  unlimited_tokens: number;
+  single_tokens: number;
+  unlimited_subscription: boolean;
+  unlimited_expires_at: string | null;
   total_tokens: number;
   recent_purchases: BidTokenPurchase[];
 }
 
 export interface PurchaseBidTokenRequest {
-  token_type: 'standard' | 'premium' | 'unlimited';
+  token_type: 'single' | 'unlimited-subscription';
   quantity: number;
 }
 
@@ -35,11 +35,23 @@ export interface PurchaseBidTokenResponse {
 
 /**
  * 입찰권 관련 서비스 함수들을 제공하는 객체
+ * 
+ * 입찰권은 '입찰권 단품'(1,990원)과 '무제한 구독제(30일)'(29,900원) 두 가지로 구분됩니다.
+ * - 입찰권 단품: 1회 입찰 가능한 기본 입찰권
+ * - 무제한 구독제: 30일 동안 모든 공구에 무제한으로 입찰 가능한 구독제 입찰권
  */
 const bidTokenService = {
   /**
    * 입찰권 목록 조회
    * @returns 입찰권 정보 및 최근 구매 내역
+   * @example
+   * // 입찰권 정보 조회
+   * const bidTokens = await bidTokenService.getBidTokens();
+   * console.log(`단품 입찰권: ${bidTokens.single_tokens}개`);
+   * console.log(`무제한 구독: ${bidTokens.unlimited_subscription ? '활성화' : '비활성화'}`);
+   * if (bidTokens.unlimited_subscription) {
+   *   console.log(`만료일: ${bidTokens.unlimited_expires_at}`);
+   * }
    */
   async getBidTokens(): Promise<BidTokenResponse> {
     try {
@@ -59,6 +71,18 @@ const bidTokenService = {
    * 입찰권 구매
    * @param data 구매할 입찰권 정보
    * @returns 구매 결과
+   * @example
+   * // 단품 입찰권 구매
+   * const result = await bidTokenService.purchaseBidTokens({
+   *   token_type: 'single',
+   *   quantity: 5
+   * });
+   * 
+   * // 무제한 구독제 구매
+   * const result = await bidTokenService.purchaseBidTokens({
+   *   token_type: 'unlimited-subscription',
+   *   quantity: 1
+   * });
    */
   async purchaseBidTokens(data: PurchaseBidTokenRequest): Promise<PurchaseBidTokenResponse> {
     try {
@@ -83,13 +107,19 @@ const bidTokenService = {
   /**
    * 사용 가능한 입찰권이 있는지 확인합니다.
    * @returns 입찰권 보유 여부
+   * @example
+   * // 입찰권 보유 여부 확인
+   * const canBid = await bidTokenService.hasAvailableBidTokens();
+   * if (canBid) {
+   *   // 입찰 가능한 경우 처리
+   * }
    */
   async hasAvailableBidTokens(): Promise<boolean> {
     try {
       const tokens = await this.getBidTokens();
       
-      // 무제한 토큰이 있거나, 일반/프리미엄 토큰 중 하나라도 있으면 입찰 가능
-      return tokens.unlimited_tokens > 0 || tokens.standard_tokens > 0 || tokens.premium_tokens > 0;
+      // 무제한 구독이 활성화되어 있거나, 단품 입찰권이 있으면 입찰 가능
+      return tokens.unlimited_subscription || tokens.single_tokens > 0;
     } catch (error) {
       console.error('입찰권 확인 중 오류 발생:', error);
       return false; // 오류 발생 시 기본적으로 입찰 불가능으로 처리

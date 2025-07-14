@@ -764,8 +764,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
     
-    // 문자열 형태로 저장하여 백스페이스 정상 동작 보장
-    setBidAmount(numericValue);
+    // 문자열을 숫자로 변환하여 저장
+    setBidAmount(numericValue === '' ? '' : parseInt(numericValue, 10));
   };
 
   const isCompleted = groupBuy.status === 'completed' || groupBuy.status === 'cancelled';

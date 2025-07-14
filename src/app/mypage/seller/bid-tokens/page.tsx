@@ -23,21 +23,20 @@ export default function BidTokensPage() {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
-  const [tokenType, setTokenType] = useState<'standard' | 'premium' | 'unlimited'>('standard');
+  const [tokenType, setTokenType] = useState<'single' | 'unlimited-subscription'>('single');
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
 
   // 상품 가격 정보 (실제 서비스에서는 서버에서 가져오거나 환경 변수로 설정)
   const priceInfo = {
-    standard: 1000, // 일반 입찰권 가격 (원)
-    premium: 2000,  // 프리미엄 입찰권 가격 (원)
-    unlimited: 20000 // 무제한 입찰권 가격 (원)
+    'single': 1990, // 입찰권 단품 가격 (원)
+    'unlimited-subscription': 29900 // 무제한 구독제(30일) 가격 (원)
   };
 
   // 총 가격 계산
   const calculateTotalPrice = () => {
-    return tokenType === 'unlimited' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
+    return tokenType === 'unlimited-subscription' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
   };
 
   // 입찰권 정보 로드
@@ -69,7 +68,7 @@ export default function BidTokensPage() {
 
   // 입찰권 구매 처리
   const handlePurchase = async () => {
-    if (quantity <= 0 && tokenType !== 'unlimited') {
+    if (quantity <= 0 && tokenType !== 'unlimited-subscription') {
       toast({
         title: '유효하지 않은 수량',
         description: '1개 이상의 입찰권을 선택해주세요.',
@@ -82,7 +81,7 @@ export default function BidTokensPage() {
       setPurchasing(true);
       const purchaseData: PurchaseBidTokenRequest = {
         token_type: tokenType,
-        quantity: tokenType === 'unlimited' ? 1 : quantity
+        quantity: tokenType === 'unlimited-subscription' ? 1 : quantity
       };
 
       const result = await bidTokenService.purchaseBidTokens(purchaseData);
@@ -93,9 +92,8 @@ export default function BidTokensPage() {
       
       toast({
         title: '입찰권 구매 완료',
-        description: `${tokenType === 'unlimited' ? '무제한 입찰권' : 
-                      tokenType === 'premium' ? '프리미엄 입찰권' : '일반 입찰권'} 
-                      ${tokenType === 'unlimited' ? '' : quantity + '개'} 구매가 완료되었습니다.`,
+        description: `${tokenType === 'unlimited-subscription' ? '무제한 구독제(30일)' : '입찰권 단품'} 
+                      ${tokenType !== 'unlimited-subscription' ? quantity + '개' : ''} 구매가 완료되었습니다.`,
         variant: 'default',
       });
       
@@ -114,12 +112,10 @@ export default function BidTokensPage() {
   // 입찰권 유형에 따른 정보 텍스트
   const getTokenTypeInfo = (type: string) => {
     switch(type) {
-      case 'standard':
-        return '일반 입찰권은 공구에 1회 입찰시 사용됩니다.';
-      case 'premium':
-        return '프리미엄 입찰권은 일반보다 입찰 확률이 높습니다.';
-      case 'unlimited':
-        return '무제한 입찰권은 30일간 무제한 입찰이 가능합니다.';
+      case 'single':
+        return '입찰권 단품은 공구에 1회 입찰시 사용됩니다.';
+      case 'unlimited-subscription':
+        return '무제한 구독제는 30일간 모든 공구에 무제한 입찰이 가능합니다.';
       default:
         return '';
     }
@@ -151,24 +147,23 @@ export default function BidTokensPage() {
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Star className="h-4 w-4 mr-2 text-yellow-400" />
-                      일반 입찰권
+                      입찰권 단품
                     </span>
-                    <span className="font-semibold">{bidTokens.standard_tokens}개</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-purple-500" />
-                      프리미엄 입찰권
-                    </span>
-                    <span className="font-semibold">{bidTokens.premium_tokens}개</span>
+                    <span className="font-semibold">{bidTokens.single_tokens}개</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                      무제한 입찰권
+                      무제한 구독제
                     </span>
-                    <span className="font-semibold">{bidTokens.unlimited_tokens}개</span>
+                    <span className="font-semibold">{bidTokens.unlimited_subscription ? '활성화' : '비활성화'}</span>
                   </div>
+                  {bidTokens.unlimited_subscription && bidTokens.unlimited_expires_at && (
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>만료일</span>
+                      <span>{new Date(bidTokens.unlimited_expires_at).toLocaleDateString()}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between items-center font-bold">
                     <span>총 보유 입찰권</span>
@@ -223,57 +218,40 @@ export default function BidTokensPage() {
                   <RadioGroup
                     value={tokenType}
                     onValueChange={(value) => 
-                      setTokenType(value as 'standard' | 'premium' | 'unlimited')}
+                      setTokenType(value as 'single' | 'unlimited-subscription')}
                     className="grid grid-cols-3 gap-4 mt-2"
                   >
                     <div>
                       <RadioGroupItem
-                        value="standard"
-                        id="standard"
+                        value="single"
+                        id="single"
                         className="peer sr-only"
                       />
                       <Label
-                        htmlFor="standard"
+                        htmlFor="single"
                         className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                       >
                         <Star className="mb-2 h-5 w-5 text-yellow-400" />
                         <div className="text-center">
-                          <p className="font-medium">일반</p>
-                          <p className="text-sm text-gray-500">1,000원/개</p>
+                          <p className="font-medium">입찰권 단품</p>
+                          <p className="text-sm text-gray-500">1,990원/개</p>
                         </div>
                       </Label>
                     </div>
                     <div>
                       <RadioGroupItem
-                        value="premium"
-                        id="premium"
+                        value="unlimited-subscription"
+                        id="unlimited-subscription"
                         className="peer sr-only"
                       />
                       <Label
-                        htmlFor="premium"
-                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                      >
-                        <CheckCircle className="mb-2 h-5 w-5 text-purple-500" />
-                        <div className="text-center">
-                          <p className="font-medium">프리미엄</p>
-                          <p className="text-sm text-gray-500">2,000원/개</p>
-                        </div>
-                      </Label>
-                    </div>
-                    <div>
-                      <RadioGroupItem
-                        value="unlimited"
-                        id="unlimited"
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor="unlimited"
+                        htmlFor="unlimited-subscription"
                         className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                       >
                         <Clock className="mb-2 h-5 w-5 text-blue-500" />
                         <div className="text-center">
-                          <p className="font-medium">무제한</p>
-                          <p className="text-sm text-gray-500">20,000원/30일</p>
+                          <p className="font-medium">무제한 구독제</p>
+                          <p className="text-sm text-gray-500">29,900원/30일</p>
                         </div>
                       </Label>
                     </div>
@@ -285,7 +263,7 @@ export default function BidTokensPage() {
                   </p>
                 </div>
 
-                {tokenType !== 'unlimited' && (
+                {tokenType !== 'unlimited-subscription' && (
                   <div>
                     <Label htmlFor="quantity" className="text-base">수량</Label>
                     <div className="flex items-center mt-2">
@@ -325,7 +303,7 @@ export default function BidTokensPage() {
                     <span>{priceInfo[tokenType].toLocaleString()}원</span>
                   </div>
                   
-                  {tokenType !== 'unlimited' && (
+                  {tokenType !== 'unlimited-subscription' && (
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-gray-600">수량</span>
                       <span>{quantity}개</span>
