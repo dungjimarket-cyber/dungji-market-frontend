@@ -709,8 +709,63 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('입찰 오류:', errorData);
-        const errorMessage = errorData.detail || '입찰 중 오류가 발생했습니다.';
-        throw new Error(JSON.stringify(errorData));
+        
+        // 중복 입찰 에러 처리 (unique constraint violation)
+        if (errorData.detail && errorData.detail.includes('unique')) {
+          // 이미 입찰한 경우, 수정 모드로 전환
+          setShowBidModal(false);
+          toast.info('이미 입찰하셨습니다. 기존 입찰을 수정합니다.');
+          
+          // 기존 입찰 금액을 업데이트
+          if (typeof amountToSubmit === 'number') {
+            // 입찰 수정 API 호출 (PUT 요청)
+            try {
+              const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/${myBidId}/`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ 
+                  groupbuy: groupBuy.id,
+                  seller: userId,
+                  amount: amountToSubmit,
+                  bid_type: bidType || 'price'
+                })
+              });
+              
+              if (!updateResponse.ok) {
+                const updateErrorData = await updateResponse.json().catch(() => ({}));
+                throw new Error(updateErrorData.detail || '입찰 수정 중 오류가 발생했습니다.');
+              }
+              
+              const updateData = await updateResponse.json();
+              console.log('입찰 수정 결과:', updateData);
+              
+              setMyBidAmount(amountToSubmit);
+              setShowBidSuccessModal(true);
+              
+              // 입찰 정보 다시 가져오기
+              setTimeout(() => {
+                fetchBidInfo();
+              }, 500);
+              
+              toast.success('입찰이 수정되었습니다.');
+              return;
+            } catch (updateError) {
+              console.error('입찰 수정 오류:', updateError);
+              toast.error('입찰 수정 중 오류가 발생했습니다.');
+              setIsBidding(false);
+              return;
+            }
+          }
+        } else {
+          // 기타 에러 처리
+          const errorMessage = errorData.detail || '입찰 중 오류가 발생했습니다.';
+          toast.error(errorMessage);
+          setIsBidding(false);
+          throw new Error(JSON.stringify(errorData));
+        }
       }
       
       const data = await response.json();
@@ -1158,6 +1213,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                           <Loader2 className="animate-spin w-4 h-4 mr-2" />
                           입찰 중...
                         </span>
+                      ) : hasBid && myBidAmount ? (
+                        '수정하기'
                       ) : (
                         '입찰하기'
                       )}
