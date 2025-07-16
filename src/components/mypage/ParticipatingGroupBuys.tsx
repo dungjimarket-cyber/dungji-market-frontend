@@ -159,7 +159,14 @@ export default function ParticipatingGroupBuys() {
         if (response.status === 401) {
           throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
         }
-        throw new Error('공구 나가기에 실패했습니다.');
+        
+        // 백엔드에서 반환한 상세 에러 메시지 처리
+        const errorData = await response.json();
+        if (errorData && errorData.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('공구 나가기에 실패했습니다.');
+        }
       }
 
       toast({

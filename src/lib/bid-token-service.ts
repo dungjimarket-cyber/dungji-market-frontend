@@ -20,7 +20,7 @@ export interface BidTokenResponse {
 }
 
 export interface PurchaseBidTokenRequest {
-  token_type: 'single' | 'unlimited-subscription';
+  token_type: 'single' | 'unlimited';  // 백엔드 API와 일치하도록 'unlimited'로 수정
   quantity: number;
 }
 
@@ -30,15 +30,15 @@ export interface PurchaseBidTokenResponse {
   quantity: number;
   total_price: number;
   tokens_created: number;
-  expires_at: string;
+  expires_at: string | null;
 }
 
 /**
  * 입찰권 관련 서비스 함수들을 제공하는 객체
  * 
- * 입찰권은 '입찰권 단품'(1,990원)과 '무제한 구독제(30일)'(29,900원) 두 가지로 구분됩니다.
- * - 입찰권 단품: 1회 입찰 가능한 기본 입찰권
- * - 무제한 구독제: 30일 동안 모든 공구에 무제한으로 입찰 가능한 구독제 입찰권
+ * 입찰권은 다음 두 가지로 구분됩니다:
+ * - 입찰권 단품(single): 1,990원, 유효기간 없이 1회 입찰 가능한 입찰권
+ * - 무제한 구독권(unlimited): 29,900원, 30일간 모든 공구에 무제한으로 입찰 가능한 구독제
  */
 const bidTokenService = {
   /**

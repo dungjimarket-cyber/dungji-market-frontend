@@ -10,8 +10,9 @@ export interface SellerProfile {
   pendingSelection: number;
   pendingSales: number;
   completedSales: number;
-  remainingBids: number;
-  hasUnlimitedBids: boolean;
+  remainingBids: number;  // single_tokens 개수
+  hasUnlimitedBids: boolean;  // unlimited_subscription 여부
+  unlimited_expires_at?: string | null;  // 무제한 구독권 만료일
   // 판매자 설정 페이지에 필요한 추가 필드
   description?: string;
   phone?: string;

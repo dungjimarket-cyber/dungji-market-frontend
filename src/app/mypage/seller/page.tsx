@@ -20,16 +20,19 @@ import {
   BadgeCheck,
   User,
   Settings,
-  LogOut
+  LogOut,
+  Ticket
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { tokenUtils } from '@/lib/tokenUtils';
+import bidTokenService, { BidTokenResponse } from '@/lib/bid-token-service';
 
 /**
  * 판매자 마이페이지 컴포넌트
  */
 export default function SellerMyPage() {
   const [profile, setProfile] = useState<SellerProfile | null>(null);
+  const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { logout } = useAuth();
@@ -52,12 +55,26 @@ export default function SellerMyPage() {
         return;
       }
 
-      // 판매자 프로필 정보 가져오기
       try {
-        const data = await getSellerProfile();
-        setProfile(data);
+        // 판매자 프로필 정보 가져오기
+        const profileData = await getSellerProfile();
+        setProfile(profileData);
+        
+        // 입찰권 정보 가져오기
+        const tokenData = await bidTokenService.getBidTokens();
+        setBidTokens(tokenData);
+        
+        // 프로필 데이터에 입찰권 정보 통합
+        if (profileData && tokenData) {
+          setProfile({
+            ...profileData,
+            remainingBids: tokenData.single_tokens,
+            hasUnlimitedBids: tokenData.unlimited_subscription,
+            unlimited_expires_at: tokenData.unlimited_expires_at
+          });
+        }
       } catch (error) {
-        console.error('판매자 프로필 조회 오류:', error);
+        console.error('데이터 조회 오류:', error);
       } finally {
         setLoading(false);
       }
@@ -179,16 +196,28 @@ export default function SellerMyPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="text-lg font-semibold mb-1">남은 입찰권</h3>
-                  <p className="text-2xl font-bold">
-                    {profile.hasUnlimitedBids
-                      ? '무제한'
-                      : `${profile.remainingBids}개`}
-                  </p>
-                  {profile.hasUnlimitedBids && (
-                    <p className="text-sm text-red-500">
-                      무제한 입찰권 사용중 (20일 남음)
+                  <div className="flex items-center gap-2 mb-1">
+                    <Ticket className="h-5 w-5 text-blue-500" />
+                    <p className="text-2xl font-bold">
+                      {profile.hasUnlimitedBids
+                        ? '무제한'
+                        : `${profile.remainingBids}개`}
+                    </p>
+                  </div>
+                  
+                  {!profile.hasUnlimitedBids && profile.remainingBids > 0 && (
+                    <p className="text-sm text-green-600">
+                      단품 입찰권 {profile.remainingBids}개 (유효기간: 무기한)
                     </p>
                   )}
+                  
+                  {profile.hasUnlimitedBids && profile.unlimited_expires_at && (
+                    <p className="text-sm text-blue-600">
+                      무제한 구독권 사용중 (
+                      {new Date(profile.unlimited_expires_at).toLocaleDateString()} 만료)
+                    </p>
+                  )}
+                  
                   <p className="text-xs text-gray-500 mt-1">
                     *무제한 입찰권 이용시 보유한 입찰권은 소진되지 않습니다
                   </p>

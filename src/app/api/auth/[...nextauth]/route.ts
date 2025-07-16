@@ -93,7 +93,14 @@ const authOptions: NextAuthOptions = {
           name: user.name
         };
         token.id = (user as any).id || token.sub;
-        token.role = (user as any).role || 'user';
+        
+        // 관리자 권한 처리 - is_superuser가 true이면 role을 admin으로 설정
+        if ((user as any).is_superuser === true) {
+          token.role = 'admin';
+        } else {
+          token.role = (user as any).role || 'user';
+        }
+        
         token.accessToken = (user as any).accessToken || (user as any).token || '';
         
         // 카카오 로그인 정보 추가 처리

@@ -603,9 +603,10 @@ const continueSubmitWithUserId = async (
       duration: 3000,
     });
     
-    // 3초 후 자동으로 공구 목록 페이지로 이동
+    // 자동으로 공구 목록 페이지로 이동 (로딩 상태 유지)
     setTimeout(() => {
       router.push('/group-purchases');
+      // 페이지 이동 후에만 로딩 상태 해제
     }, 1500);
     
     return true;
@@ -629,10 +630,11 @@ const continueSubmitWithUserId = async (
       description: errorMessage,
     });
     
-    return false;
-  } finally {
+    // 오류 발생 시에만 로딩 상태 해제
     setIsSubmitting(false);
+    return false;
   }
+  // finally 블록 제거 - 성공 시에는 페이지 이동 전까지 로딩 상태 유지
 };
 
 /**
@@ -817,7 +819,8 @@ const onSubmit = async (values: FormData) => {
         productDetails = {
           telecom_carrier: values.telecom_carrier || '',
           telecom_plan: values.telecom_plan || '', // 백엔드에서 product_details.telecom_plan을 찾기 때문에 plan_info가 아닌 telecom_plan 사용
-          subscription_type: values.subscription_type || ''
+          subscription_type: values.subscription_type || '',
+          contract_period: '24개월' // 약정기간 24개월로 고정
         };
         console.log('통신사 정보 전송:', productDetails);
       } else if (selectedProduct.category?.detail_type === 'electronics') {
@@ -1070,6 +1073,11 @@ const onSubmit = async (values: FormData) => {
                         className="pl-10 pr-4 py-2 bg-gray-50"
                         value={searchTerm}
                         onChange={(e) => handleRegionSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                     </div>
                     

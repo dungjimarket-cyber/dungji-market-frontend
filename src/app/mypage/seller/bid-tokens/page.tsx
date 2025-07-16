@@ -23,7 +23,7 @@ export default function BidTokensPage() {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
-  const [tokenType, setTokenType] = useState<'single' | 'unlimited-subscription'>('single');
+  const [tokenType, setTokenType] = useState<'single' | 'unlimited'>('single');
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
@@ -31,12 +31,12 @@ export default function BidTokensPage() {
   // 상품 가격 정보 (실제 서비스에서는 서버에서 가져오거나 환경 변수로 설정)
   const priceInfo = {
     'single': 1990, // 입찰권 단품 가격 (원)
-    'unlimited-subscription': 29900 // 무제한 구독제(30일) 가격 (원)
+    'unlimited': 29900 // 무제한 구독제(30일) 가격 (원)
   };
 
   // 총 가격 계산
   const calculateTotalPrice = () => {
-    return tokenType === 'unlimited-subscription' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
+    return tokenType === 'unlimited' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
   };
 
   // 입찰권 정보 로드
@@ -68,7 +68,7 @@ export default function BidTokensPage() {
 
   // 입찰권 구매 처리
   const handlePurchase = async () => {
-    if (quantity <= 0 && tokenType !== 'unlimited-subscription') {
+    if (quantity <= 0 && tokenType !== 'unlimited') {
       toast({
         title: '유효하지 않은 수량',
         description: '1개 이상의 입찰권을 선택해주세요.',
@@ -81,7 +81,7 @@ export default function BidTokensPage() {
       setPurchasing(true);
       const purchaseData: PurchaseBidTokenRequest = {
         token_type: tokenType,
-        quantity: tokenType === 'unlimited-subscription' ? 1 : quantity
+        quantity: tokenType === 'unlimited' ? 1 : quantity
       };
 
       const result = await bidTokenService.purchaseBidTokens(purchaseData);
@@ -92,8 +92,8 @@ export default function BidTokensPage() {
       
       toast({
         title: '입찰권 구매 완료',
-        description: `${tokenType === 'unlimited-subscription' ? '무제한 구독제(30일)' : '입찰권 단품'} 
-                      ${tokenType !== 'unlimited-subscription' ? quantity + '개' : ''} 구매가 완료되었습니다.`,
+        description: `${tokenType === 'unlimited' ? '무제한 구독제(30일)' : '입찰권 단품'} 
+                      ${tokenType !== 'unlimited' ? quantity + '개' : ''} 구매가 완료되었습니다.`,
         variant: 'default',
       });
       
@@ -114,7 +114,7 @@ export default function BidTokensPage() {
     switch(type) {
       case 'single':
         return '입찰권 단품은 공구에 1회 입찰시 사용됩니다.';
-      case 'unlimited-subscription':
+      case 'unlimited':
         return '무제한 구독제는 30일간 모든 공구에 무제한 입찰이 가능합니다.';
       default:
         return '';
@@ -151,6 +151,12 @@ export default function BidTokensPage() {
                     </span>
                     <span className="font-semibold">{bidTokens.single_tokens}개</span>
                   </div>
+                  {bidTokens.single_tokens > 0 && (
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>유효기간</span>
+                      <span>무기한</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
@@ -225,34 +231,6 @@ export default function BidTokensPage() {
                       <RadioGroupItem
                         value="single"
                         id="single"
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor="single"
-                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                      >
-                        <Star className="mb-2 h-5 w-5 text-yellow-400" />
-                        <div className="text-center">
-                          <p className="font-medium">입찰권 단품</p>
-                          <p className="text-sm text-gray-500">1,990원/개</p>
-                        </div>
-                      </Label>
-                    </div>
-                    <div>
-                      <RadioGroupItem
-                        value="unlimited-subscription"
-                        id="unlimited-subscription"
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor="unlimited-subscription"
-                        className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                      >
-                        <Clock className="mb-2 h-5 w-5 text-blue-500" />
-                        <div className="text-center">
-                          <p className="font-medium">무제한 구독제</p>
-                          <p className="text-sm text-gray-500">29,900원/30일</p>
-                        </div>
                       </Label>
                     </div>
                   </RadioGroup>

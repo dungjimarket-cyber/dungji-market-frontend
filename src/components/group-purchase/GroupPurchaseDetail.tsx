@@ -535,7 +535,14 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         if (response.status === 401) {
           throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
         }
-        throw new Error('공구 나가기에 실패했습니다.');
+        
+        // 백엔드에서 반환한 상세 에러 메시지 처리
+        const errorData = await response.json();
+        if (errorData && errorData.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error('공구 나가기에 실패했습니다.');
+        }
       }
 
       toast.success('공구에서 나갔습니다.');
@@ -970,12 +977,14 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="px-4 py-6">
           {/* 제품 이미지 및 기본 정보 */}
           <div className="mb-6">
-            <div className="relative w-full h-64 mb-4 rounded-2xl overflow-hidden">
+            <div className="relative w-full mb-4 rounded-2xl overflow-hidden aspect-[4/3]">
               <Image
                 src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
                 alt={groupBuy.product_details?.name || '상품 이미지'}
                 fill
-                className="object-cover"
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
               />
             </div>
             
