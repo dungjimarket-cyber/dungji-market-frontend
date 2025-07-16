@@ -199,13 +199,17 @@ export default function SellerMyPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <Ticket className="h-5 w-5 text-blue-500" />
                     <p className="text-2xl font-bold">
-                      {profile.hasUnlimitedBids
+                      {profile.hasUnlimitedBids || (bidTokens && bidTokens.unlimited_subscription)
                         ? '무제한'
                         : `${profile.remainingBids}개`}
                     </p>
                   </div>
                   
-                  {!profile.hasUnlimitedBids && profile.remainingBids > 0 && (
+                  {(profile.hasUnlimitedBids || (bidTokens && bidTokens.unlimited_subscription)) ? (
+                    <p className="text-sm text-blue-600">
+                      *무제한 입찰권 이용시 보유한 입찰권은 소진되지 않습니다
+                    </p>
+                  ) : profile.remainingBids > 0 && (
                     <p className="text-sm text-green-600">
                       단품 입찰권 {profile.remainingBids}개 (유효기간: 무기한)
                     </p>

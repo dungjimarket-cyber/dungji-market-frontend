@@ -504,8 +504,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       toast.success('공동구매에 참여했습니다!');
       setIsParticipant(true);
       
-      // 페이지 새로고침하여 최신 데이터 반영 (짧은 지연 후)
-      setTimeout(() => window.location.reload(), 1000);
+      // 참여인원 즉시 반영
+      if (groupBuy) {
+        setGroupBuy({
+          ...groupBuy,
+          current_participants: groupBuy.current_participants + 1
+        });
+      }
       
     } catch (error) {
       console.error('[GroupPurchaseDetail] 공구 참여 오류:', error);
@@ -651,7 +656,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       const hasTokens = await bidTokenService.hasAvailableBidTokens();
       
       if (!hasTokens) {
-        toast.error('입찰권이 없습니다. 입찰권 구매 페이지로 이동합니다.');
+        toast.error('입찰권이 없습니다. 구매 페이지로 이동합니다');
         router.push('/mypage/seller/bid-tokens');
         return;
       }

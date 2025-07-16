@@ -68,7 +68,7 @@ export default function BidTokensPage() {
 
   // 입찰권 구매 처리
   const handlePurchase = async () => {
-    if (quantity <= 0 && tokenType !== 'unlimited') {
+    if (tokenType === 'single' && quantity <= 0) {
       toast({
         title: '유효하지 않은 수량',
         description: '1개 이상의 입찰권을 선택해주세요.',
@@ -173,7 +173,16 @@ export default function BidTokensPage() {
                   <Separator />
                   <div className="flex justify-between items-center font-bold">
                     <span>총 보유 입찰권</span>
-                    <span>{bidTokens.total_tokens}개</span>
+                    <span>
+                      {bidTokens.unlimited_subscription ? (
+                        <span className="flex items-center">
+                          <span className="text-blue-600 mr-1">무제한</span> 
+                          <span className="text-sm text-gray-500">(구독중)</span>
+                        </span>
+                      ) : (
+                        `${bidTokens.total_tokens}개`
+                      )}
+                    </span>
                   </div>
                 </div>
               )}

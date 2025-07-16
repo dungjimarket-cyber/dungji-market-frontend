@@ -60,6 +60,7 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
   const isBidding = groupBuy.status === 'bidding';
   const isCompleted = groupBuy.status === 'completed';
   const isRecruiting = groupBuy.status === 'recruiting';
+  const isFinalSelection = groupBuy.status === 'final_selection';
   
   const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
   
@@ -148,6 +149,33 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
         
         {/* 상태 배지들 */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
+          {/* 상품 상태 배지 - 항상 표시 */}
+          {isRecruiting && (
+            <div className="flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+              <Users className="w-3 h-3" />
+              <span>모집중</span>
+            </div>
+          )}
+          {isBidding && (
+            <div className="flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+              <Gavel className="w-3 h-3" />
+              <span>입찰중</span>
+            </div>
+          )}
+          {isFinalSelection && (
+            <div className="flex items-center gap-1 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+              <CheckCircle className="w-3 h-3" />
+              <span>최종선택중</span>
+            </div>
+          )}
+          {isCompleted && (
+            <div className="flex items-center gap-1 bg-gray-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+              <CheckCircle className="w-3 h-3" />
+              <span>공구종료</span>
+            </div>
+          )}
+          
+          {/* 추가 정보 배지 */}
           {isHot && (
             <div className="flex items-center gap-1 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               <Flame className="w-3 h-3" />
@@ -158,12 +186,6 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
             <div className="flex items-center gap-1 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               <Sparkles className="w-3 h-3" />
               <span>NEW</span>
-            </div>
-          )}
-          {isBidding && (
-            <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-              <Gavel className="w-3 h-3" />
-              <span>입찰중</span>
             </div>
           )}
         </div>
