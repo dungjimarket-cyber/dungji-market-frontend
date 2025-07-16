@@ -224,14 +224,15 @@ export default function BidTokensPage() {
                   <RadioGroup
                     value={tokenType}
                     onValueChange={(value) => 
-                      setTokenType(value as 'single' | 'unlimited-subscription')}
+                      setTokenType(value as 'single' | 'unlimited')}
                     className="grid grid-cols-3 gap-4 mt-2"
                   >
                     <div>
                       <RadioGroupItem
                         value="single"
                         id="single"
-                      </Label>
+                      />
+                      <Label htmlFor="single">입찰권 단품</Label>
                     </div>
                   </RadioGroup>
 
@@ -241,7 +242,7 @@ export default function BidTokensPage() {
                   </p>
                 </div>
 
-                {tokenType !== 'unlimited-subscription' && (
+                {tokenType !== 'unlimited' && (
                   <div>
                     <Label htmlFor="quantity" className="text-base">수량</Label>
                     <div className="flex items-center mt-2">
@@ -281,7 +282,7 @@ export default function BidTokensPage() {
                     <span>{priceInfo[tokenType].toLocaleString()}원</span>
                   </div>
                   
-                  {tokenType !== 'unlimited-subscription' && (
+                  {tokenType !== 'unlimited' && (
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-gray-600">수량</span>
                       <span>{quantity}개</span>
