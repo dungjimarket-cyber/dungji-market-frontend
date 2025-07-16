@@ -234,6 +234,13 @@ export default function BidTokensPage() {
                       />
                       <Label htmlFor="single">입찰권 단품</Label>
                     </div>
+                    <div>
+                      <RadioGroupItem
+                        value="unlimited"
+                        id="unlimited"
+                      />
+                      <Label htmlFor="unlimited">무제한 구독제(30일)</Label>
+                    </div>
                   </RadioGroup>
 
                   <p className="text-sm text-gray-500 mt-2 flex items-center">

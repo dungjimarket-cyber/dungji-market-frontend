@@ -637,11 +637,27 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   /**
    * 입찰하기 버튼 클릭
    */
-  const handleBidClick = () => {
+  const handleBidClick = async () => {
     if (!isAuthenticated) {
       toast.error('로그인이 필요합니다.');
       // 로그인 페이지로 이동
       router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      return;
+    }
+    
+    // 입찰권 보유 여부 확인
+    try {
+      const bidTokenService = (await import('@/lib/bid-token-service')).default;
+      const hasTokens = await bidTokenService.hasAvailableBidTokens();
+      
+      if (!hasTokens) {
+        toast.error('입찰권이 없습니다. 입찰권 구매 페이지로 이동합니다.');
+        router.push('/mypage/seller/bid-tokens');
+        return;
+      }
+    } catch (error) {
+      console.error('입찰권 확인 오류:', error);
+      toast.error('입찰권 확인 중 오류가 발생했습니다.');
       return;
     }
     
