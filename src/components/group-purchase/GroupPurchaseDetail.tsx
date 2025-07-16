@@ -504,13 +504,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       toast.success('공동구매에 참여했습니다!');
       setIsParticipant(true);
       
-      // 참여인원 즉시 반영
-      if (groupBuy) {
-        setGroupBuy({
-          ...groupBuy,
-          current_participants: groupBuy.current_participants + 1
-        });
-      }
+      // 참여인원 즉시 반영은 상태 업데이트로 처리하지 않고
+      // 페이지 새로고침이나 라우터 리프레시로 처리
+      // 또는 부모 컴포넌트에서 콜백 함수를 props로 받아 처리할 수 있음
+      // 현재는 toast 메시지로 사용자에게 알림만 제공
       
     } catch (error) {
       console.error('[GroupPurchaseDetail] 공구 참여 오류:', error);
