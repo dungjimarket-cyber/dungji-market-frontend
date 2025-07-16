@@ -955,7 +955,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   return (
     <>
       <div className="relative">
-        <div className="min-h-screen bg-white">
+        <div className="bg-white">
           {/* 헤더 */}
           <div className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
             <div className="flex items-center justify-between">
