@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useSession } from 'next-auth/react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { Select } from '@/components/ui/select';
+import Image from 'next/image';
 
 // 입찰권 유형 정의
 const TOKEN_TYPES = [
@@ -41,6 +42,28 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   return response.json();
 };
 
+// 파일 업로드 API 호출 함수
+const uploadFileWithAuth = async (url: string, formData: FormData) => {
+  const token = localStorage.getItem('dungji_auth_token');
+  
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+  };
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.detail || '요청 처리 중 오류가 발생했습니다.');
+  }
+
+  return response.json();
+};
+
 // 관리자 페이지 컴포넌트
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -49,12 +72,17 @@ export default function AdminPage() {
   
   const [groupPurchases, setGroupPurchases] = useState<any[]>([]);
   const [sellers, setSellers] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [bidCount, setBidCount] = useState<number>(1);
   const [selectedSellerId, setSelectedSellerId] = useState<string>('');
   const [selectedTokenType, setSelectedTokenType] = useState<string>('single');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [addingBidPermission, setAddingBidPermission] = useState<boolean>(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // 관리자 권한 확인
   useEffect(() => {
@@ -117,6 +145,10 @@ export default function AdminPage() {
       // 셀러 목록 로드
       const sellersData = await fetchWithAuth('/admin/sellers/');
       setSellers(sellersData);
+      
+      // 상품 목록 로드
+      const productsData = await fetchWithAuth('/products/');
+      setProducts(productsData);
     } catch (error: any) {
       toast({
         title: '데이터 로드 실패',
@@ -214,6 +246,130 @@ export default function AdminPage() {
     }
   };
 
+  // 파일 선택 핸들러
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      
+      // 이미지 미리보기 생성
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 이미지 업로드 핸들러
+  const handleImageUpload = async () => {
+    if (!selectedFile) {
+      toast({
+        title: '파일 선택 필요',
+        description: '업로드할 이미지 파일을 선택해주세요.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      
+      if (selectedProductId) {
+        formData.append('product_id', selectedProductId);
+      }
+      
+      const response = await uploadFileWithAuth('/admin/upload_product_image/', formData);
+      
+      toast({
+        title: '이미지 업로드 성공',
+        description: '상품 이미지가 성공적으로 업로드되었습니다.',
+      });
+      
+      // 상품 목록 갱신
+      if (response.product_updated) {
+        const updatedProducts = products.map(product => 
+          product.id === response.product_id 
+            ? { ...product, image_url: response.image_url } 
+            : product
+        );
+        setProducts(updatedProducts);
+      }
+      
+      // 입력값 초기화
+      setSelectedFile(null);
+      setSelectedProductId('');
+      setImagePreview(null);
+      
+      // 파일 입력 필드 초기화
+      const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    } catch (error: any) {
+      toast({
+        title: '이미지 업로드 실패',
+        description: error.message || '이미지 업로드 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // 특정 상품 이미지 업데이트 핸들러
+  const handleUpdateProductImage = async (productId: string) => {
+    if (!selectedFile) {
+      toast({
+        title: '파일 선택 필요',
+        description: '업로드할 이미지 파일을 선택해주세요.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      
+      const response = await uploadFileWithAuth(`/admin/update_product_image/${productId}/`, formData);
+      
+      toast({
+        title: '이미지 업데이트 성공',
+        description: `${response.product_name} 상품의 이미지가 성공적으로 업데이트되었습니다.`,
+      });
+      
+      // 상품 목록 갱신
+      const updatedProducts = products.map(product => 
+        product.id === response.product_id 
+          ? { ...product, image_url: response.image_url } 
+          : product
+      );
+      setProducts(updatedProducts);
+      
+      // 입력값 초기화
+      setSelectedFile(null);
+      setImagePreview(null);
+      
+      // 파일 입력 필드 초기화
+      const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    } catch (error: any) {
+      toast({
+        title: '이미지 업데이트 실패',
+        description: error.message || '이미지 업데이트 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -231,6 +387,7 @@ export default function AdminPage() {
         <TabsList className="mb-4">
           <TabsTrigger value="group-purchases">공동구매 관리</TabsTrigger>
           <TabsTrigger value="sellers">셀러 관리</TabsTrigger>
+          <TabsTrigger value="products">상품 관리</TabsTrigger>
         </TabsList>
         
         {/* 공동구매 관리 탭 */}
@@ -399,6 +556,165 @@ export default function AdminPage() {
                         <tr>
                           <td colSpan={4} className="py-4 text-center">
                             등록된 셀러가 없습니다.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        {/* 상품 관리 탭 */}
+        <TabsContent value="products">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* 이미지 업로드 카드 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>상품 이미지 업로드</CardTitle>
+                <CardDescription>
+                  상품에 이미지를 업로드하거나 업데이트합니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="product">상품 선택 (선택사항)</Label>
+                    <select
+                      id="product"
+                      className="w-full p-2 border rounded-md"
+                      value={selectedProductId}
+                      onChange={(e) => setSelectedProductId(e.target.value)}
+                    >
+                      <option value="">-- 상품 선택 --</option>
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-sm text-gray-500">
+                      상품을 선택하면 해당 상품의 이미지가 업데이트됩니다. 선택하지 않으면 이미지만 업로드됩니다.
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="image-upload">이미지 파일</Label>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                  {imagePreview && (
+                    <div className="mt-4">
+                      <Label>이미지 미리보기</Label>
+                      <div className="mt-2 border rounded-md overflow-hidden">
+                        <img
+                          src={imagePreview}
+                          alt="미리보기"
+                          className="w-full h-auto max-h-64 object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={handleImageUpload}
+                  disabled={uploadingImage || !selectedFile}
+                >
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      업로드 중...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-1" />
+                      이미지 업로드
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            {/* 상품 목록 카드 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>상품 목록</CardTitle>
+                <CardDescription>
+                  시스템에 등록된 모든 상품 목록입니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">ID</th>
+                        <th className="text-left py-2">이름</th>
+                        <th className="text-left py-2">이미지</th>
+                        <th className="text-left py-2">액션</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.length > 0 ? (
+                        products.map((product) => (
+                          <tr key={product.id} className="border-b hover:bg-gray-50">
+                            <td className="py-2">{product.id}</td>
+                            <td className="py-2">{product.name}</td>
+                            <td className="py-2">
+                              {product.image_url ? (
+                                <div className="w-16 h-16 relative">
+                                  <img
+                                    src={product.image_url}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover rounded-md"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">이미지 없음</span>
+                              )}
+                            </td>
+                            <td className="py-2">
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedProductId(product.id);
+                                    document.getElementById('image-upload')?.click();
+                                  }}
+                                >
+                                  이미지 변경
+                                </Button>
+                                {selectedFile && selectedProductId === product.id && (
+                                  <Button 
+                                    variant="default" 
+                                    size="sm"
+                                    onClick={() => handleUpdateProductImage(product.id)}
+                                    disabled={uploadingImage}
+                                  >
+                                    {uploadingImage ? (
+                                      <>
+                                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                        업로드 중...
+                                      </>
+                                    ) : '업로드'}
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="py-4 text-center">
+                            등록된 상품이 없습니다.
                           </td>
                         </tr>
                       )}
