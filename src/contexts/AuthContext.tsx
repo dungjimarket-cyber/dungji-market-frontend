@@ -6,7 +6,8 @@ import axios from 'axios';
 
 // 디버깅 유틸리티 함수
 const logDebug = (message: string, data?: any) => {
-  console.log(`[Auth Debug] ${message}`, data || '');
+  const isKakaoInAppBrowser = typeof navigator !== 'undefined' && /KAKAOTALK/i.test(navigator.userAgent);
+  console.log(`[Auth Debug${isKakaoInAppBrowser ? ' - Kakao' : ''}] ${message}`, data || '');
 };
 
 /**
@@ -165,7 +166,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // 초기 로딩시 로컬 스토리지에서 토큰 및 사용자 정보 복원
   useEffect(() => {
+    let isInitializing = false;
     const initializeAuth = async () => {
+      // 이미 초기화 중이면 스킵
+      if (isInitializing) {
+        console.log('인증 초기화 이미 진행 중, 스킵합니다.');
+        return;
+      }
+      isInitializing = true;
+      
       // 로컬 스토리지에서 비활성 타임아웃 설정 로드
       if (typeof window !== 'undefined') {
         const storedTimeout = localStorage.getItem('inactivityTimeout');
@@ -222,15 +231,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             
             // 2. 백엔드에서 최신 프로필 정보 가져오기 시도
-            try {
-              console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
-              const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`;
-              const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${storedToken}`,
-                },
-              });
+            // 카카오톡 인앱 브라우저에서는 프로필 API 호출 스킵 (무한 루프 방지)
+            const isKakaoInAppBrowser = /KAKAOTALK/i.test(navigator.userAgent);
+            if (isKakaoInAppBrowser && userData) {
+              logDebug('카카오톡 브라우저에서 로컬 사용자 정보 사용', userData);
+              setUser(userData);
+            } else {
+              try {
+                console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
+                const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`;
+                const response = await fetch(apiUrl, {
+                  method: 'GET',
+                  headers: {
+                    'Authorization': `Bearer ${storedToken}`,
+                  },
+                });
               
               if (response.ok) {
                 const profileData = await response.json();
@@ -332,6 +347,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
               }
             }
+          }
           } else {
             logDebug('로컬 스토리지에서 토큰을 찾을 수 없습니다. 비로그인 상태입니다.');
             // 비로그인 상태로 초기화
@@ -344,13 +360,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('인증 상태 초기화 오류:', error);
       } finally {
         setIsLoading(false);
+        // 초기화 완료 후 플래그 리셋
+        setTimeout(() => {
+          isInitializing = false;
+        }, 500);
       }
     };
 
     initializeAuth();
     
     // 스토리지 이벤트 리스너 추가 - 다른 컴포넌트에서 인증 상태 변경 시 반영
+    let isHandlingStorageChange = false;
     const handleStorageChange = (event: StorageEvent) => {
+      // 카카오톡 인앱 브라우저 감지
+      const isKakaoInAppBrowser = /KAKAOTALK/i.test(navigator.userAgent);
+      
+      // 이미 처리 중이거나 카카오톡 브라우저에서 특정 이벤트는 무시
+      if (isHandlingStorageChange || (isKakaoInAppBrowser && !event.newValue)) {
+        return;
+      }
+      
       if (event.key && (
           event.key.includes('token') || 
           event.key.includes('auth') || 
@@ -358,13 +387,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           event.key === 'userRole'
         )) {
         logDebug('인증 상태 변경 감지', event.key);
+        
+        // 중복 실행 방지
+        isHandlingStorageChange = true;
+        setTimeout(() => {
+          isHandlingStorageChange = false;
+        }, 1000);
+        
         initializeAuth();
       }
     };
     
     // 수동 이벤트 리스너
     const handleManualStorageChange = () => {
+      if (isHandlingStorageChange) return;
+      
       logDebug('수동 스토리지 이벤트 감지');
+      isHandlingStorageChange = true;
+      setTimeout(() => {
+        isHandlingStorageChange = false;
+      }, 1000);
+      
       initializeAuth();
     };
     
