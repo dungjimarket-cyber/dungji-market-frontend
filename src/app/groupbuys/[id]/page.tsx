@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { GroupPurchaseDetail } from '@/components/group-purchase/GroupPurchaseDetail';
+import type { Metadata } from 'next';
 
 interface GroupBuy {
   id: number;
@@ -58,6 +59,59 @@ async function getGroupBuy(id: string): Promise<GroupBuy | null> {
  */
 export interface PageParams {
   id: string;
+}
+
+/**
+ * 동적 메타데이터 생성
+ */
+export async function generateMetadata({ params }: { params: Promise<PageParams> }): Promise<Metadata> {
+  const { id } = await params;
+  const groupBuy = await getGroupBuy(id);
+  
+  if (!groupBuy) {
+    return {
+      title: '둥지마켓 - 공동구매 플랫폼',
+      description: '둥지마켓은 공동구매 플랫폼입니다.',
+    };
+  }
+  
+  const title = `${groupBuy.product_details.name} - 둥지마켓`;
+  const description = `${groupBuy.product_details.name} 공동구매에 참여해보세요! 현재 ${groupBuy.current_participants}명 참여중`;
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://dungji-market.com';
+  const imageUrl = groupBuy.product_details.image_url?.startsWith('http') 
+    ? groupBuy.product_details.image_url 
+    : `${baseUrl}${groupBuy.product_details.image_url || '/logo.png'}`;
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/groupbuys/${id}`,
+      siteName: '둥지마켓',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: groupBuy.product_details.name,
+        },
+      ],
+      locale: 'ko_KR',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+    },
+    other: {
+      'og:price:amount': groupBuy.product_details.base_price.toString(),
+      'og:price:currency': 'KRW',
+    },
+  };
 }
 
 /**

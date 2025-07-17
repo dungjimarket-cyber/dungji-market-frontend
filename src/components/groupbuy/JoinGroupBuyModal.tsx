@@ -120,16 +120,27 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
           const errorData = await response.json();
           
           // 중복 참여 오류 특별 처리
-          if (errorData.error && (errorData.error.includes('이미 참여') || errorData.error.includes('duplicate'))) {
-            setError('이미 동일한 상품의 공구에 참여 중입니다.');
+          if (errorData.error && (
+            errorData.error.includes('이미 참여') || 
+            errorData.error.includes('duplicate') || 
+            errorData.error.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다') ||
+            errorData.error.includes('중복 참여')
+          )) {
+            setError('동일한 상품은 중복참여가 제한됩니다.');
             setStep('error');
             return; // 오류 상태로 전환하고 예외를 발생시키지 않음
           }
           
           throw new Error(errorData.error || errorData.detail || '공구 참여에 실패했습니다.');
         } catch (parseError) {
-          if (parseError instanceof Error && parseError.message.includes('이미 동일한 상품의 공구에 참여 중')) {
-            throw parseError;
+          if (parseError instanceof Error && (
+            parseError.message.includes('이미 동일한 상품의 공구에 참여 중') ||
+            parseError.message.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다') ||
+            parseError.message.includes('중복 참여')
+          )) {
+            setError('동일한 상품은 중복참여가 제한됩니다.');
+            setStep('error');
+            return;
           }
           throw new Error(`공구 참여 실패: HTTP ${response.status}`);
         }

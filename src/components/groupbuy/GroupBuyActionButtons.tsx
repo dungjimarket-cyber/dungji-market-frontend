@@ -64,8 +64,23 @@ export default function GroupBuyActionButtons({
         'Authorization': `Bearer ${token}`
       }
     })
-    .then(response => {
-      if (!response.ok) throw new Error('탈퇴에 실패했습니다.');
+    .then(async response => {
+      if (!response.ok) {
+        // 오류 응답 처리
+        const errorData = await response.json().catch(() => ({}));
+        
+        // 입찰 있어서 탈퇴 불가능한 경우
+        if (errorData.error && (
+          errorData.error.includes('입찰이 있어 탈퇴할 수 없습니다') ||
+          errorData.error.includes('has bids') ||
+          errorData.error.includes('입찰 중')
+        )) {
+          setShowLeaveRestrictionDialog(true);
+          throw new Error('입찰이 진행되어 탈퇴이 불가합니다.');
+        }
+        
+        throw new Error(errorData.error || errorData.detail || '탈퇴에 실패했습니다.');
+      }
       return response.json();
     })
     .then(data => {
@@ -77,7 +92,10 @@ export default function GroupBuyActionButtons({
       setIsLeaving(false);
     })
     .catch(err => {
-      toast.error(err.message || '탈퇴에 실패했습니다.');
+      // 탈퇴 제한 안내 팝업이 표시되는 경우에는 토스트 에러 메시지는 표시하지 않음
+      if (!err.message.includes('입찰이 진행되어 탈퇴이 불가합니다')) {
+        toast.error(err.message || '탈퇴에 실패했습니다.');
+      }
       console.error('탈퇴 오류:', err);
       setIsLeaving(false);
     });

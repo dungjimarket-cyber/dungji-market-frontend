@@ -148,63 +148,46 @@ export default function Home() {
               className="w-full h-auto object-cover"
             />
             {/* 배너 안쪽 아래쪽에 버튼 이미지 추가 */}
-            <div className="absolute bottom-[15%] left-0 right-0 flex justify-center gap-4">
-              <Link href="/register">
+            <div className="absolute bottom-[10%] sm:bottom-[15%] left-0 right-0 flex justify-center gap-2 sm:gap-4 px-4">
+              <Link href="/register" className="flex-1 max-w-[140px] sm:max-w-[160px]">
                 <img 
                   src="/button/seller_register_button.png" 
                   alt="판매회원 가입 버튼" 
-                  className="h-auto text-sm hover:opacity-90 transition-opacity w-auto items-center justify-center flex"
-                  style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)' }}
+                  className="w-full h-auto hover:opacity-90 transition-opacity"
                 />
               </Link>
-              <Link href="/group-purchases">
+              <Link href="/group-purchases" className="flex-1 max-w-[140px] sm:max-w-[160px]">
                 <img 
                   src="/button/group-purchases_button.png" 
                   alt="공구 둘러보기 버튼" 
-                  className="h-auto text-sm hover:opacity-90 transition-opacity w-auto items-center justify-center flex"
-                  style={{ maxHeight: '64px', height: 'min(64px, 4.5vw)' }}
+                  className="w-full h-auto hover:opacity-90 transition-opacity"
                 />
               </Link>
             </div>
           </div>
         </section>
-        <div className="flex justify-center items-center gap-2 mb-8 mt-4">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mb-8 mt-4 px-4">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <RoleButton 
             href="/group-purchases/create"
-            className="btn-animated btn-primary whitespace-nowrap px-5 sm:px-6 shadow-md hover:shadow-lg transition-all"
-            style={{
-              height: 'min(64px, 4.5vw)', 
-              width: 'auto',
-              fontSize: 'clamp(0.7rem, 2vw, 0.95rem)',
-            }}
+            className="btn-animated btn-primary whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
             disableForRoles={['seller']}            
           >
-            <span>공구 등록하기</span>
+            <span className="text-sm sm:text-base">공구 등록하기</span>
           </RoleButton>
           
           <Link 
             href="/group-purchases"
-            className="btn-animated btn-secondary whitespace-nowrap px-5 sm:px-6 shadow-md hover:shadow-lg transition-all flex items-center justify-center"
-            style={{
-              height: 'min(64px, 4.5vw)', 
-              width: 'auto',
-              fontSize: 'clamp(0.7rem, 2vw, 0.95rem)',
-            }}
+            className="btn-animated btn-secondary whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto"
           >
-            <span>공구 둘러보기</span>
+            <span className="text-sm sm:text-base">공구 둘러보기</span>
           </Link>
           
           <button
             onClick={() => setShowIframe(!showIframe)}
-            className="btn-animated btn-outline whitespace-nowrap px-5 sm:px-6 hover:bg-gray-50 transition-all"
-            style={{
-              height: 'min(64px, 4.5vw)', 
-              width: 'auto',
-              fontSize: 'clamp(0.7rem, 2vw, 0.95rem)',
-            }}
+            className="btn-animated btn-outline whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 hover:bg-gray-50 transition-all w-full sm:w-auto"
           >
-            <span>둥지마켓 알아보기</span>
+            <span className="text-sm sm:text-base">둥지마켓 알아보기</span>
           </button>
         </div>
       </section>

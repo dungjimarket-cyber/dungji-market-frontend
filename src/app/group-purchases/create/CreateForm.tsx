@@ -7,6 +7,17 @@ import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
+import { toast as sonnerToast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -256,7 +267,6 @@ const getCategoryIcon = (categoryType?: string) => {
   }
 };
 
-/**
  * 공구 등록 폼 컴포넌트
  * JWT 기반 인증을 사용하여 판매자 권한 확인 및 데이터 처리
  */
@@ -295,6 +305,11 @@ export default function CreateForm() {
     secondaryActionLabel?: string;
     secondaryAction?: () => void;
   }>({ open: false });
+  
+  // 중복 공구 알림 다이얼로그 상태
+  const [showDuplicateProductDialog, setShowDuplicateProductDialog] = useState(false);
+  const [errorDialogTitle, setErrorDialogTitle] = useState('');
+  const [errorDialogMessage, setErrorDialogMessage] = useState('');
   
   // 공구 제목 자동 생성 함수
   const generateTitle = () => {
@@ -618,17 +633,62 @@ const continueSubmitWithUserId = async (
     
     // 에러 메시지 추출
     let errorMessage = '공구 등록 중 오류가 발생했습니다.';
+    let errorTitle = '공구 등록 실패';
     
     if (apiError instanceof Error) {
       // fetchWithAuth에서 던진 사용자 친화적 메시지 사용
       errorMessage = apiError.message;
+      
+      // 중복 상품 공구 참여 불가 메시지 처리
+      if (errorMessage.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다')) {
+        errorTitle = '중복 참여 제한';
+        errorMessage = '동일한 상품은 중복참여가 제한됩니다. 기존 공구가 완료된 후 새로운 공구를 생성해주세요.';
+        
+        // AlertDialog를 통한 오류 표시
+        setErrorDialogTitle(errorTitle);
+        setErrorDialogMessage(errorMessage);
+        setShowDuplicateProductDialog(true);
+        
+        // sonner 토스트도 함께 표시
+        sonnerToast.error(errorMessage, { 
+          id: 'duplicate-product-error',
+          description: '기존 공구가 완료된 후 새로운 공구를 생성해주세요.',
+        });
+        
+        // 기본 toast도 함께 표시
+        toast({
+          variant: 'destructive',
+          title: errorTitle,
+          description: errorMessage,
+        });
+        
+        return false;
+      } else {
+        // 기타 오류는 기본 토스트로 표시
+        toast({
+          variant: 'destructive',
+          title: errorTitle,
+          description: errorMessage,
+        });
+        
+        // sonner 토스트도 함께 표시
+        sonnerToast.error(errorTitle, { 
+          description: errorMessage 
+        });
+      }
+    } else {
+      // 기본 토스트 표시
+      toast({
+        variant: 'destructive',
+        title: errorTitle,
+        description: errorMessage,
+      });
+      
+      // sonner 토스트도 함께 표시
+      sonnerToast.error(errorTitle, { 
+        description: errorMessage 
+      });
     }
-    
-    toast({
-      variant: 'destructive',
-      title: '공구 등록 실패',
-      description: errorMessage,
-    });
     
     // 오류 발생 시에만 로딩 상태 해제
     setIsSubmitting(false);
@@ -883,7 +943,21 @@ const onSubmit = async (values: FormData) => {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="animate-pulse space-y-4">
+      <div className="container mx-auto py-6 space-y-8">
+        {/* 중복 공구 알림 다이얼로그 */}
+        <AlertDialog open={showDuplicateProductDialog} onOpenChange={setShowDuplicateProductDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{errorDialogTitle}</AlertDialogTitle>
+              <AlertDialogDescription className="text-base">
+                {errorDialogMessage}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction>확인</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <div className="h-8 bg-gray-200 rounded w-1/3"></div>
         <div className="h-96 bg-gray-200 rounded"></div>
       </div>

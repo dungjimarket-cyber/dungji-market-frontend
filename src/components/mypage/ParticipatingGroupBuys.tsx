@@ -4,22 +4,11 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Clock, UserMinus } from 'lucide-react';
+import { Clock, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
-import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
@@ -64,12 +53,7 @@ export default function ParticipatingGroupBuys() {
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'created_at' | 'end_time' | 'participants'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 최신순이 기본
-  const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
-  const [showLeaveRestrictionDialog, setShowLeaveRestrictionDialog] = useState(false);
-  const [leaveErrorMessage, setLeaveErrorMessage] = useState<string>('');
-  const [selectedGroupBuy, setSelectedGroupBuy] = useState<GroupBuy | null>(null);
   const [activeTab, setActiveTab] = useState('active'); // 'active' 또는 'completed' 탭 상태
-  const { toast } = useToast();
 
   // 인증 로딩 상태일 때는 로딩 표시
   if (isLoading) return <p className="text-gray-500">로딩 중...</p>;
@@ -158,78 +142,6 @@ export default function ParticipatingGroupBuys() {
   if (groupBuys.length === 0) {
     return <p className="text-gray-500">참여중인 공동구매가 없습니다.</p>;
   }
-
-  /**
-   * 공구 나가기 처리 함수
-   */
-  const handleLeaveGroupBuy = async () => {
-    if (!selectedGroupBuy) return;
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedGroupBuy.id}/leave/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        cache: 'no-store'
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
-        }
-        
-        // 백엔드에서 반환한 상세 에러 메시지 처리
-        const errorData = await response.json();
-        if (errorData && errorData.error) {
-          throw new Error(errorData.error);
-        } else {
-          throw new Error('공구 나가기에 실패했습니다.');
-        }
-      }
-
-      toast({
-        title: '나가기 완료',
-        description: '공구에서 성공적으로 나갔습니다.',
-        variant: 'default',
-      });
-      
-      // 목록에서 해당 공구 제거
-      setGroupBuys(groupBuys.filter((gb) => gb.id !== selectedGroupBuy.id));
-      setOpenLeaveDialog(false);
-      setSelectedGroupBuy(null);
-    } catch (err) {
-      console.error('공구 나가기 오류:', err);
-      
-      // 입찰 진행 중인 경우 특별 처리
-      const errorMessage = err instanceof Error ? err.message : '공구 나가기에 실패했습니다.';
-      
-      if (errorMessage.includes('Cannot leave group buy with active bids') || 
-          errorMessage.includes('입찰이 진행 중인 공구에서는 탈퇴할 수 없습니다')) {
-        setLeaveErrorMessage('입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.');
-        setShowLeaveRestrictionDialog(true);
-      } else {
-        toast({
-          title: '나가기 실패',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      }
-      
-      setOpenLeaveDialog(false);
-    }
-  };
-
-  /**
-   * 나가기 버튼 클릭 처리 (이벤트 전파 방지)
-   */
-  const handleLeaveClick = (e: React.MouseEvent, groupBuy: GroupBuy) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedGroupBuy(groupBuy);
-    setOpenLeaveDialog(true);
-  };
 
   // 그룹바이 카드 렌더링 함수
   const renderGroupBuyCard = (groupBuy: GroupBuy) => {
@@ -322,13 +234,26 @@ export default function ParticipatingGroupBuys() {
                     )}
                   </div>
                 </div>
-                <Button 
-                  className="mt-2 text-xs text-red-500 hover:text-red-700"
-                  onClick={(e) => handleLeaveClick(e, groupBuy)}
-                >
-                  <UserMinus size={12} className="mr-1" />
-                  나가기
-                </Button>
+                {/* 상태에 따라 다른 버튼 표시 */}
+                {['completed'].includes(calculatedStatus) ? (
+                  <Button 
+                    className="mt-2 text-xs"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      // 리뷰 작성 페이지로 이동
+                      window.location.href = `/review/create?groupbuy_id=${groupBuy.id}`;
+                    }}
+                  >
+                    <MessageSquare size={12} className="mr-1" />
+                    후기 작성
+                  </Button>
+                ) : (
+                  <p className="mt-2 text-xs text-gray-500">
+                    나가기는 상세페이지에서 가능합니다
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -395,41 +320,6 @@ export default function ParticipatingGroupBuys() {
           )}
         </TabsContent>
       </Tabs>
-
-      <AlertDialog
-        open={openLeaveDialog}
-        onOpenChange={setOpenLeaveDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>공구에서 나가기</AlertDialogTitle>
-          </AlertDialogHeader>
-          <AlertDialogDescription>
-            정말 공구에서 나가시겠습니까?
-          </AlertDialogDescription>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setOpenLeaveDialog(false)}>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLeaveGroupBuy}>
-              나가기
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* 탈퇴 제한 안내 팝업 */}
-      <AlertDialog open={showLeaveRestrictionDialog} onOpenChange={setShowLeaveRestrictionDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>탈퇴 불가 안내</AlertDialogTitle>
-            <AlertDialogDescription className="text-base">
-              {leaveErrorMessage || '입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction>확인</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

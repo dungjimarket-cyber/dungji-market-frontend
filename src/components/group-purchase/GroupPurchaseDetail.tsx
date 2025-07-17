@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus, Edit, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
-import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
+import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText, getStatusClass } from '@/lib/groupbuy-utils';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
@@ -82,6 +82,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
+  const [currentParticipants, setCurrentParticipants] = useState(groupBuy.current_participants);
   const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
   const [showLeaveRestrictionDialog, setShowLeaveRestrictionDialog] = useState(false);
   const [leaveErrorMessage, setLeaveErrorMessage] = useState<string>('');
@@ -116,6 +117,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [isSeller, setIsSeller] = useState(false);
   // 자신이 생성한 공구인지 확인하는 상태 추가
   const [isCreator, setIsCreator] = useState(false);
+  // 입찰권 부족 팝업 상태
+  const [showNoBidTokenDialog, setShowNoBidTokenDialog] = useState(false);
   // 현재 사용자 프로필 정보
   const [userProfile, setUserProfile] = useState<{ username?: string, profile_image?: string } | null>(null);
   // 현재 사용자의 입찰 ID 저장
@@ -509,11 +512,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       console.log('[GroupPurchaseDetail] 공구 참여 성공');
       toast.success('공동구매에 참여했습니다!');
       setIsParticipant(true);
+      setCurrentParticipants(prev => prev + 1);
       
-      // 참여인원 즉시 반영은 상태 업데이트로 처리하지 않고
-      // 페이지 새로고침이나 라우터 리프레시로 처리
-      // 또는 부모 컴포넌트에서 콜백 함수를 props로 받아 처리할 수 있음
-      // 현재는 toast 메시지로 사용자에게 알림만 제공
+      // 참여인원이 즉시 반영됩니다
       
     } catch (error) {
       console.error('[GroupPurchaseDetail] 공구 참여 오류:', error);
@@ -555,6 +556,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
 
       toast.success('공구에서 나갔습니다.');
       setIsParticipant(false);
+      setCurrentParticipants(prev => Math.max(0, prev - 1));
       setOpenLeaveDialog(false);
       
       // 마이페이지로 이동
@@ -670,8 +672,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       const hasTokens = await bidTokenService.hasAvailableBidTokens();
       
       if (!hasTokens) {
-        toast.error('입찰권이 없습니다. 구매 페이지로 이동합니다');
-        router.push('/mypage/seller/bid-tokens');
+        setShowNoBidTokenDialog(true);
         return;
       }
     } catch (error) {
@@ -943,19 +944,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         description: errorMessage,
       });
       
-      // 입찰권 부족 오류인 경우 추가 안내 표시
+      // 입찰권 부족 오류인 경우 팝업 표시
       if (isBidTokenError) {
-        setTimeout(() => {
-          toast(
-            "입찰권을 구매하시면 더 많은 공구에 입찰할 수 있습니다.",
-            {
-              action: {
-                label: "입찰권 구매하기",
-                onClick: () => router.push('/mypage/seller/bid-tokens'),
-              },
-            }
-          );
-        }, 1000);
+        setShowNoBidTokenDialog(true);
       }
     } finally {
       setIsBidding(false);
@@ -1013,6 +1004,12 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           {/* 제품 이미지 및 기본 정보 */}
           <div className="mb-6">
             <div className="relative w-full mb-4 rounded-2xl overflow-hidden aspect-[4/3]">
+              {/* 상태 표시 배지 - 우측 상단 */}
+              <div className="absolute top-2 right-2 z-10">
+                <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
+                  {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
+                </span>
+              </div>
               <Image
                 src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
                 alt={groupBuy.product_details?.name || '상품 이미지'}
@@ -1060,17 +1057,17 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="flex items-center">
                   <Users className="w-4 h-4 mr-1" />
                   <span className="text-sm">
-                    {groupBuy.current_participants}/{groupBuy.max_participants}명 참여중
+                    {currentParticipants}/{groupBuy.max_participants}명 참여중
                   </span>
                 </div>
                 <span className="text-sm text-blue-600">
-                  {Math.round((groupBuy.current_participants / groupBuy.max_participants) * 100)}%
+                  {Math.round((currentParticipants / groupBuy.max_participants) * 100)}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-blue-600 h-2 rounded-full" 
-                  style={{ width: `${(groupBuy.current_participants / groupBuy.max_participants) * 100}%` }}
+                  style={{ width: `${(currentParticipants / groupBuy.max_participants) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -1334,7 +1331,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                           입찰 중...
                         </span>
                       ) : hasBid && myBidAmount ? (
-                        '수정하기'
+                        '다시입찰하기'
                       ) : (
                         '입찰하기'
                       )}
@@ -1406,7 +1403,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 </div>
                 
                 {/* 참여자가 본인 1명인 경우 특별 안내 */}
-                {groupBuy.current_participants === 1 && (
+                {currentParticipants === 1 && (
                   <Alert className="bg-yellow-50 border-yellow-200 mt-4">
                     <Info className="h-4 w-4 text-yellow-500" />
                     <AlertDescription className="text-sm text-yellow-700">
@@ -1478,6 +1475,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
         groupBuy={groupBuy}
+        onSuccess={() => {
+          setIsParticipant(true);
+          setCurrentParticipants(prev => prev + 1);
+        }}
       />
       
       {/* 입찰하기 모달 */}
@@ -1701,6 +1702,51 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               className="bg-red-600 hover:bg-red-700"
             >
               취소하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* 입찰권 부족 팝업 */}
+      <AlertDialog open={showNoBidTokenDialog} onOpenChange={setShowNoBidTokenDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-orange-500" />
+              입찰권이 부족합니다
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription className="space-y-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <p className="text-sm text-gray-700">
+                입찰에 참여하려면 입찰권이 필요합니다.
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                입찰권 1개당 1회 입찰이 가능하며, 
+                입찰권은 마이페이지에서 구매할 수 있습니다.
+              </p>
+            </div>
+            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+              <div>
+                <p className="text-sm font-medium text-gray-700">현재 보유 입찰권</p>
+                <p className="text-lg font-bold text-orange-600">0개</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500">입찰권 가격</p>
+                <p className="text-sm font-medium">1개당 1,000원</p>
+              </div>
+            </div>
+          </AlertDialogDescription>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel className="flex-1">취소</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowNoBidTokenDialog(false);
+                router.push('/mypage/seller/bid-tokens');
+              }}
+              className="flex-1 bg-orange-500 hover:bg-orange-600"
+            >
+              입찰권 구매하기
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

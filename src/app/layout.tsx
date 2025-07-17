@@ -11,6 +11,29 @@ import { Analytics } from "@vercel/analytics/next"
 export const metadata: Metadata = {
   title: "둥지마켓 - 공동구매 플랫폼",
   description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
+  openGraph: {
+    title: "둥지마켓 - 공동구매 플랫폼",
+    description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
+    url: process.env.NEXTAUTH_URL || 'https://dungji-market.com',
+    siteName: '둥지마켓',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: '둥지마켓 로고',
+      },
+    ],
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "둥지마켓 - 공동구매 플랫폼",
+    description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
+    images: ['/logo.png'],
+  },
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
 };
 
 export default function RootLayout({
