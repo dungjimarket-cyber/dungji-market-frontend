@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -28,6 +28,7 @@ function getSubscriptionTypeText(groupBuy: any): string {
 interface JoinGroupBuyModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void; // 참여 성공 후 호출될 콜백 함수
   groupBuy: {
     id: number;
     title: string;
@@ -45,10 +46,10 @@ interface JoinGroupBuyModalProps {
  * 공구 참여 모달 컴포넌트
  * 사용자가 공구에 참여하기 전 확인 및 참여 처리를 담당합니다.
  */
-export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGroupBuyModalProps) {
+export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy }: JoinGroupBuyModalProps) {
   const { isAuthenticated, accessToken, user } = useAuth();
   const { toast } = useToast();
-  const [step, setStep] = useState<'confirm' | 'success' | 'final'>('confirm');
+  const [step, setStep] = useState<'confirm' | 'success' | 'error'>('confirm');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -117,8 +118,19 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
         // 기타 오류 응답 처리
         try {
           const errorData = await response.json();
+          
+          // 중복 참여 오류 특별 처리
+          if (errorData.error && (errorData.error.includes('이미 참여') || errorData.error.includes('duplicate'))) {
+            setError('이미 동일한 상품의 공구에 참여 중입니다.');
+            setStep('error');
+            return; // 오류 상태로 전환하고 예외를 발생시키지 않음
+          }
+          
           throw new Error(errorData.error || errorData.detail || '공구 참여에 실패했습니다.');
         } catch (parseError) {
+          if (parseError instanceof Error && parseError.message.includes('이미 동일한 상품의 공구에 참여 중')) {
+            throw parseError;
+          }
           throw new Error(`공구 참여 실패: HTTP ${response.status}`);
         }
       }
@@ -133,8 +145,14 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
         variant: 'default'
       });
       
-      // 성공 시 다음 단계로 이동
+      // 성공 시 성공 상태로 변경
       setStep('success');
+      setLoading(false);
+      
+      // 성공 콜백 함수가 있으면 호출
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
       console.error('공구 참여 오류:', err);
       setError(err instanceof Error ? err.message : '공구 참여에 실패했습니다.');
@@ -149,12 +167,28 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
   };
 
   const handleFinalConfirm = () => {
-    // 최종 확인 단계
-    setStep('final');
-    
-    // 페이지 리로드
-    window.location.reload();
+    // 모달 닫기
+    onClose();
+    // 성공 콜백 함수가 있으면 호출
+    if (onSuccess) {
+      onSuccess();
+    }
   };
+  
+  // 참여 성공 후 자동으로 모달 닫기 및 콜백 실행
+  useEffect(() => {
+    if (step === 'success') {
+      // 1초 후 모달 닫기 및 콜백 실행
+      const timer = setTimeout(() => {
+        onClose();
+        if (onSuccess) {
+          onSuccess();
+        }
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [step, onSuccess, onClose]);
 
   const handleClose = () => {
     if (loading) {
@@ -177,6 +211,15 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
                 공구에 참여하시겠습니까?
               </DialogDescription>
             </DialogHeader>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+              <p className="text-sm text-yellow-700">
+                <strong>중요 안내:</strong> 입찰중일 경우 탈퇴가 제한됩니다. 참여하시겠습니까?
+                <br />(입찰건이 없을 경우에는 탈퇴가 가능합니다)
+              </p>
+              <p className="text-sm text-yellow-700 mt-2">
+                <strong>참고:</strong> 동일한 상품에 대한 다른 공구에 이미 참여 중인 경우 참여가 제한됩니다.
+              </p>
+            </div>
             <div className="flex flex-col items-center p-4">
               <Image 
                 src={groupBuy.product_details.image_url || '/placeholder.png'} 
@@ -235,39 +278,31 @@ export default function JoinGroupBuyModal({ isOpen, onClose, groupBuy }: JoinGro
           </>
         )}
 
-        {step === 'final' && (
+        {step === 'error' && (
           <>
             <DialogHeader>
-              <DialogTitle>최종 선택</DialogTitle>
-              <DialogDescription>
-                참여 유형을 선택해주세요
-              </DialogDescription>
+              <DialogTitle className="text-center text-red-600">참여 제한 안내</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 p-4">
-              <Button variant="outline" className="h-auto py-4 flex flex-col">
-                <span className="text-lg font-bold">확정</span>
-                <span className="text-sm text-gray-500">2명</span>
-              </Button>
-              <Button variant="outline" className="h-auto py-4 flex flex-col">
-                <span className="text-lg font-bold">포기</span>
-                <span className="text-sm text-gray-500">1명</span>
-              </Button>
-            </div>
-            <div className="p-4">
-              <p className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded">
-                그룹 확정은 누르시면, 판매자 정보를 확인하실 수 있습니다.
+            <div className="flex flex-col items-center p-6">
+              <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <AlertTriangle className="h-10 w-10 text-red-500" />
+              </div>
+              <p className="text-center text-gray-700 mb-2 font-medium">
+                이미 동일한 상품의 공구에 참여 중입니다.
+              </p>
+              <p className="text-center text-gray-600 mb-4">
+                하나의 상품에 대해 여러 공구에 동시에 참여할 수 없습니다.
               </p>
             </div>
-            <DialogFooter className="sm:justify-between">
+            <DialogFooter className="sm:justify-center">
               <Button variant="outline" onClick={handleClose}>
-                취소
-              </Button>
-              <Button onClick={handleClose}>
-                확정
+                확인
               </Button>
             </DialogFooter>
           </>
         )}
+
+
       </DialogContent>
     </Dialog>
   );

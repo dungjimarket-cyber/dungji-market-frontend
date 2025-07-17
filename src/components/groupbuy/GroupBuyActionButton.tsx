@@ -11,6 +11,7 @@ interface GroupBuyActionButtonProps {
   isSeller?: boolean; // 판매회원(셀러) 여부
   isParticipating?: boolean; // 이미 참여한 공구인지 여부
   hasSellerMembers?: boolean; // 판매회원이 1명 이상 있는지 여부
+  onRefresh?: () => void; // 참여 상태 및 참여자 수 새로고침 함수
   groupBuy: {
     id: number;
     title: string;
@@ -31,9 +32,11 @@ export default function GroupBuyActionButton({
   isSeller = false,
   isParticipating = false,
   hasSellerMembers = false,
+  onRefresh,
   groupBuy
 }: GroupBuyActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 디버깅 로그 추가
   console.log('그룹구매 버튼 상태:', {
@@ -91,6 +94,7 @@ export default function GroupBuyActionButton({
       <JoinGroupBuyModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+        onSuccess={onRefresh} 
         groupBuy={groupBuy} 
       />
     </>

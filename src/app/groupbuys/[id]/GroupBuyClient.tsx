@@ -16,7 +16,7 @@ import { WishButton } from '@/components/ui/WishButton';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
 import { useAuth } from '@/hooks/useAuth';
 import { tokenUtils } from '@/lib/tokenUtils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GroupBuy, ParticipationStatus } from '@/types/groupbuy';
 import { useToast } from '@/components/ui/use-toast';
 import { getGroupBuyBids, getSellerBids } from '@/lib/api/bidService';
@@ -42,7 +42,55 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   const { toast } = useToast();
   const router = useRouter();
   const [participationStatus, setParticipationStatus] = useState<any>(propParticipationStatus || null);
+  const [groupBuyState, setGroupBuyState] = useState<GroupBuy>(groupBuy);
   const [loading, setLoading] = useState(true);
+  
+  // 참여 상태 및 공구 정보 새로고침 함수
+  const refreshParticipationStatus = useCallback(async () => {
+    if (!id || !accessToken) return;
+    
+    try {
+      setLoading(true);
+      // 참여 상태 확인 API 호출
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${id}/check_participation/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('참여 상태 새로고침 결과:', data);
+        setParticipationStatus(data);
+      }
+      
+      // 공구 정보 새로고침 (현재 참여자 수 등 업데이트)
+      const groupBuyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${id}/`);
+      
+      if (groupBuyResponse.ok) {
+        const groupBuyData = await groupBuyResponse.json();
+        
+        // 공구 정보 업데이트 (참여자 수 등)
+        if (groupBuyData) {
+          console.log('공구 정보 새로고침:', {
+            current: groupBuyState.current_participants,
+            new: groupBuyData.current_participants
+          });
+          
+          // 전체 객체를 업데이트하지 않고 필요한 필드만 업데이트
+          setGroupBuyState(prevState => ({
+            ...prevState,
+            current_participants: groupBuyData.current_participants,
+            // 필요한 다른 필드도 업데이트
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('참여 상태 또는 공구 정보 새로고침 오류:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, accessToken, groupBuyState]);
   
   // 입찰 관련 상태
   const [isBidModalOpen, setIsBidModalOpen] = useState(false);
@@ -630,6 +678,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               isSeller={!!isSeller}
               isParticipating={participationStatus?.is_participating || false}
               hasSellerMembers={sellerCount > 0}
+              onRefresh={refreshParticipationStatus}
               groupBuy={{
                 id: Number(id),
                 title: groupBuy.title,
@@ -648,7 +697,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         {/* 공유하기 버튼 및 탈퇴 버튼 - 클라이언트 컴포넌트로 분리 */}
         <GroupBuyActionButtons 
           groupBuyId={id} 
-          token={accessToken || undefined} 
+          token={accessToken || undefined}
+          onRefresh={refreshParticipationStatus} 
           participationStatus={participationStatus || undefined} 
         />
       </div>
