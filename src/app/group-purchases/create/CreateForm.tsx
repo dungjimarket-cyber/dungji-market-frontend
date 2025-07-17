@@ -267,6 +267,7 @@ const getCategoryIcon = (categoryType?: string) => {
   }
 };
 
+/**
  * 공구 등록 폼 컴포넌트
  * JWT 기반 인증을 사용하여 판매자 권한 확인 및 데이터 처리
  */
