@@ -55,6 +55,10 @@ interface GroupBuy {
     username: string;
     profile_image?: string;
   };
+  
+  // 지역 관련 정보
+  region_type?: string; // 지역 유형 (local, nationwide)
+  region?: string; // 지역명 (서울, 부산 등)
 }
 
 interface GroupBuyListProps {
@@ -144,9 +148,16 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               className="h-full hover:shadow-lg transition-shadow cursor-pointer" 
               onClick={() => handleGroupBuyClick(groupBuy)}
             >
-              <CardHeader>
+              <CardHeader className="relative">
+                {/* 공구 상태를 동적으로 계산하여 우측 상단에 표시 */}
+                <div className="absolute top-2 right-2 z-10">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
+                    {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
+                  </span>
+                </div>
+                
                 <div className="flex flex-col">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center mb-1">
                     <div className="flex items-center gap-2">
                       <p className="text-xs sm:text-sm text-gray-500">{groupBuy.product_details?.category_name || '휴대폰'}</p>
                       {/* 지역 정보 표시 */}
@@ -156,10 +167,6 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                         </span>
                       )}
                     </div>
-                    {/* 공구 상태를 동적으로 계산하여 표시 */}
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
-                      {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
-                    </span>
                   </div>
                   <CardTitle className="text-base sm:text-lg md:text-xl line-clamp-2 h-14 overflow-hidden">
                     {formatGroupBuyTitle(groupBuy)}

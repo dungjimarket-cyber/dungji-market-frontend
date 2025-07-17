@@ -66,6 +66,7 @@ export interface GroupBuy {
   creator: number; // 판매자(생성자) ID
   creator_name: string; // 판매자(생성자) 이름
   region_type?: string; // 지역 유형 (local, nationwide)
+  region?: string; // 지역명 (서울, 부산 등)
   
   // 통신 관련 공구 정보 (명시적 필드)
   telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
