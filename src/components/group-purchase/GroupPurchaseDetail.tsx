@@ -79,6 +79,9 @@ interface GroupPurchaseDetailProps {
 export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
+  
+  // 카카오톡 인앱 브라우저 감지
+  const isKakaoInAppBrowser = typeof navigator !== 'undefined' && /KAKAOTALK/i.test(navigator.userAgent);
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
@@ -477,7 +480,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       if (!accessToken) {
         console.log('[GroupPurchaseDetail] 인증 토큰 없음');
         toast.error('로그인이 필요합니다.');
-        router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+        // 카카오톡 브라우저에서는 자동 리다이렉트 비활성화
+        if (!isKakaoInAppBrowser) {
+          router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+        }
         return;
       }
       
@@ -661,8 +667,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const handleBidClick = async () => {
     if (!isAuthenticated) {
       toast.error('로그인이 필요합니다.');
-      // 로그인 페이지로 이동
-      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      // 카카오톡 브라우저에서는 자동 리다이렉트 비활성화
+      if (!isKakaoInAppBrowser) {
+        router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      }
       return;
     }
     
@@ -1368,7 +1376,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     setShowJoinModal(true);
                   } else {
                     toast.error('로그인이 필요합니다.');
-                    router.push('/login');
+                    // 카카오톡 브라우저에서는 자동 리다이렉트 비활성화
+                    if (!isKakaoInAppBrowser) {
+                      router.push('/login');
+                    }
                   }
                 }}
                 disabled={isJoining || isCompleted || isParticipant}

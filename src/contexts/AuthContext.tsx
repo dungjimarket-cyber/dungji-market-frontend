@@ -168,11 +168,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isInitializing = false;
     const initializeAuth = async () => {
+      // 카카오톡 인앱 브라우저 감지
+      const isKakaoInAppBrowser = typeof navigator !== 'undefined' && /KAKAOTALK/i.test(navigator.userAgent);
+      
       // 이미 초기화 중이면 스킵
       if (isInitializing) {
         console.log('인증 초기화 이미 진행 중, 스킵합니다.');
         return;
       }
+      
+      // 카카오톡 브라우저에서 로딩 상태를 더 빠르게 완료하되, 기본 토큰 체크는 수행
+      if (isKakaoInAppBrowser) {
+        console.log('카카오톡 브라우저 감지 - 단순 초기화 모드');
+        try {
+          // 기본 토큰 체크만 수행
+          const tokenKeys = ['dungji_auth_token', 'accessToken', 'auth.token'];
+          let storedToken = null;
+          
+          for (const key of tokenKeys) {
+            const token = localStorage.getItem(key);
+            if (token) {
+              storedToken = token;
+              break;
+            }
+          }
+          
+          if (storedToken) {
+            setAccessToken(storedToken);
+            // 로컬 스토리지에서 사용자 정보 복원
+            const userJson = localStorage.getItem('user') || localStorage.getItem('auth.user');
+            if (userJson) {
+              try {
+                const userData = JSON.parse(userJson);
+                setUser(userData);
+              } catch (e) {
+                console.error('사용자 정보 파싱 오류:', e);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('카카오톡 브라우저 초기화 오류:', error);
+        }
+        setIsLoading(false);
+        return;
+      }
+      
       isInitializing = true;
       
       // 로컬 스토리지에서 비활성 타임아웃 설정 로드
@@ -411,15 +451,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       initializeAuth();
     };
     
-    // 이벤트 리스너 등록
-    if (typeof window !== 'undefined') {
+    // 이벤트 리스너 등록 (카카오톡 브라우저에서는 비활성화)
+    const isKakaoInAppBrowser = typeof navigator !== 'undefined' && /KAKAOTALK/i.test(navigator.userAgent);
+    if (typeof window !== 'undefined' && !isKakaoInAppBrowser) {
       window.addEventListener('storage', handleStorageChange);
       window.addEventListener('auth-changed', handleManualStorageChange);
     }
     
     // 클린업 함수
     return () => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !isKakaoInAppBrowser) {
         window.removeEventListener('storage', handleStorageChange);
         window.removeEventListener('auth-changed', handleManualStorageChange);
       }
