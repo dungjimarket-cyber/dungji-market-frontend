@@ -116,14 +116,27 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
         }
         
         // 기타 오류 응답 처리
+        let responseText = '';
         try {
-          const errorData = await response.json();
+          // 먼저 텍스트로 읽기
+          responseText = await response.text();
+          console.error('Raw response body:', responseText);
+          
+          // JSON으로 파싱 시도
+          let errorData;
+          try {
+            errorData = JSON.parse(responseText);
+          } catch (e) {
+            // JSON 파싱 실패 시 텍스트 그대로 사용
+            throw new Error(`공구 참여 실패: ${responseText || `HTTP ${response.status}`}`);
+          }
           
           // 중복 참여 오류 특별 처리
           if (errorData.error && (
             errorData.error.includes('이미 참여') || 
             errorData.error.includes('duplicate') || 
             errorData.error.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다') ||
+            errorData.error.includes('이미 동일한 상품의 다른 공구에 참여중입니다') ||
             errorData.error.includes('중복 참여')
           )) {
             setError('동일한 상품은 중복참여가 제한됩니다.');
@@ -132,17 +145,18 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
           }
           
           throw new Error(errorData.error || errorData.detail || '공구 참여에 실패했습니다.');
-        } catch (parseError) {
-          if (parseError instanceof Error && (
-            parseError.message.includes('이미 동일한 상품의 공구에 참여 중') ||
-            parseError.message.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다') ||
-            parseError.message.includes('중복 참여')
+        } catch (error) {
+          if (error instanceof Error && (
+            error.message.includes('이미 동일한 상품의 공구에 참여 중') ||
+            error.message.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다') ||
+            error.message.includes('이미 동일한 상품의 다른 공구에 참여중입니다') ||
+            error.message.includes('중복 참여')
           )) {
             setError('동일한 상품은 중복참여가 제한됩니다.');
             setStep('error');
             return;
           }
-          throw new Error(`공구 참여 실패: HTTP ${response.status}`);
+          throw error;
         }
       }
       
