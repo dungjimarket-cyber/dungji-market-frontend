@@ -20,6 +20,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 interface Product {
   id: number;
@@ -46,6 +48,10 @@ interface GroupBuy {
   telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
   subscription_type?: string; // 가입유형 (new, transfer, change)
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
+  
+  // 지역 관련 정보
+  region_type?: string; // 지역 유형 (local, nationwide)
+  region?: string; // 지역명 (서울, 부산 등)
 }
 
 /**
@@ -60,6 +66,7 @@ export default function ParticipatingGroupBuys() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 최신순이 기본
   const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
   const [selectedGroupBuy, setSelectedGroupBuy] = useState<GroupBuy | null>(null);
+  const [activeTab, setActiveTab] = useState('active'); // 'active' 또는 'completed' 탭 상태
   const { toast } = useToast();
 
   // 인증 로딩 상태일 때는 로딩 표시
@@ -132,6 +139,17 @@ export default function ParticipatingGroupBuys() {
       return aValue < bValue ? 1 : -1;
     }
   });
+  
+  // 공구 상태에 따라 필터링
+  const activeGroupBuys = sortedGroupBuys.filter(groupBuy => {
+    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+    return ['recruiting', 'bidding', 'voting', 'selecting'].includes(status);
+  });
+  
+  const completedGroupBuys = sortedGroupBuys.filter(groupBuy => {
+    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+    return ['completed', 'expired', 'canceled'].includes(status);
+  });
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -199,134 +217,170 @@ export default function ParticipatingGroupBuys() {
     setOpenLeaveDialog(true);
   };
 
+  // 그룹바이 카드 렌더링 함수
+  const renderGroupBuyCard = (groupBuy: GroupBuy) => {
+    const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
+    
+    // 백엔드에서 계산된 상태 사용 또는 프론트엔드에서 계산
+    const calculatedStatus = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+    
+    // 남은 시간 계산 (백엔드에서 제공하는 값 사용 또는 직접 계산)
+    let remainingTime;
+    if (groupBuy.remaining_seconds !== undefined) {
+      // 백엔드에서 제공하는 남은 시간 사용
+      const days = Math.floor(groupBuy.remaining_seconds / (60 * 60 * 24));
+      const hours = Math.floor((groupBuy.remaining_seconds % (60 * 60 * 24)) / (60 * 60));
+      const minutes = Math.floor((groupBuy.remaining_seconds % (60 * 60)) / 60);
+      
+      if (days > 0) {
+        remainingTime = `${days}일 ${hours}시간`;
+      } else if (hours > 0) {
+        remainingTime = `${hours}시간 ${minutes}분`;
+      } else {
+        remainingTime = `${minutes}분`;
+      }
+    } else {
+      // 직접 계산
+      remainingTime = getRemainingTime(groupBuy.end_time);
+    }
+    
+    return (
+      <Link href={`/groupbuys/${groupBuy.id}`} key={groupBuy.id}>
+        <Card className="h-full hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
+              <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculatedStatus)}`}>
+                {getStatusText(calculatedStatus)}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <div className="w-20 h-20 relative flex-shrink-0">
+                <Image
+                  src={groupBuy.product_details?.image_url || '/placeholder.png'}
+                  alt={groupBuy.product_details?.name || '상품 이미지'}
+                  fill
+                  className="object-cover rounded"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">{groupBuy.product_details?.name}</p>
+                <div className="flex items-center text-xs text-gray-500 mt-1">
+                  <span className="mr-2">{
+                    // 공구의 명시적 필드 우선 사용
+                    groupBuy.telecom_carrier || 
+                    groupBuy.product_details?.carrier || 
+                    'SKT'
+                  }</span>
+                  <span>{
+                    // 가입유형 표시
+                    groupBuy.subscription_type === 'new' ? '신규가입' :
+                    groupBuy.subscription_type === 'transfer' ? '번호이동' :
+                    groupBuy.subscription_type === 'change' ? '기기변경' :
+                    groupBuy.product_details?.registration_type || 
+                    '번호이동'
+                  }</span>
+                  <span className="ml-2">{
+                    // 요금제 표시
+                    groupBuy.plan_info === '5G_basic' ? '3만원대' :
+                    groupBuy.plan_info === '5G_standard' ? '5만원대' :
+                    groupBuy.plan_info === '5G_premium' ? '7만원대' :
+                    groupBuy.plan_info === '5G_special' ? '9만원대' :
+                    groupBuy.plan_info === '5G_platinum' ? '10만원대' :
+                    '5만원대'
+                  }</span>
+                </div>
+                <p className="text-sm font-bold mt-1">
+                  {groupBuy.product_details?.base_price?.toLocaleString() || '0'}원
+                </p>
+                
+                <div className="mt-2">
+                  <Progress value={progress} className="h-1" />
+                  <div className="flex justify-between text-xs mt-1">
+                    <span>{groupBuy.current_participants}/{groupBuy.max_participants}명</span>
+                    {((groupBuy.remaining_seconds !== undefined && groupBuy.remaining_seconds > 0) || new Date(groupBuy.end_time) > new Date()) && (
+                      <div className="flex items-center text-red-500">
+                        <Clock size={10} className="mr-1" />
+                        <span>{remainingTime}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Button 
+                  className="mt-2 text-xs text-red-500 hover:text-red-700"
+                  onClick={(e) => handleLeaveClick(e, groupBuy)}
+                >
+                  <UserMinus size={12} className="mr-1" />
+                  나가기
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  };
+
   return (
     <div>
-      <div className="flex justify-end mb-4 gap-2">
-        <select 
-          className="px-2 py-1 border rounded text-sm"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'created_at' | 'end_time' | 'participants')}
-        >
-          <option value="created_at">등록일 순</option>
-          <option value="end_time">마감일 순</option>
-          <option value="participants">참여자 수</option>
-        </select>
-        <select
-          className="px-2 py-1 border rounded text-sm"
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-        >
-          <option value="desc">내림차순</option>
-          <option value="asc">오름차순</option>
-        </select>
-      </div>
+      <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="active" className="text-center">
+            진행중인 공구 
+            {activeGroupBuys.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{activeGroupBuys.length}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="text-center">
+            종료된 공구
+            {completedGroupBuys.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{completedGroupBuys.length}</Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {sortedGroupBuys.map((groupBuy) => {
-        const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
-        
-        // 백엔드에서 계산된 상태 사용 또는 프론트엔드에서 계산
-        const calculatedStatus = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
-        
-        // 남은 시간 계산 (백엔드에서 제공하는 값 사용 또는 직접 계산)
-        let remainingTime;
-        if (groupBuy.remaining_seconds !== undefined) {
-          // 백엔드에서 제공하는 남은 시간 사용
-          const days = Math.floor(groupBuy.remaining_seconds / (60 * 60 * 24));
-          const hours = Math.floor((groupBuy.remaining_seconds % (60 * 60 * 24)) / (60 * 60));
-          const minutes = Math.floor((groupBuy.remaining_seconds % (60 * 60)) / 60);
-          
-          if (days > 0) {
-            remainingTime = `${days}일 ${hours}시간`;
-          } else if (hours > 0) {
-            remainingTime = `${hours}시간 ${minutes}분`;
-          } else {
-            remainingTime = `${minutes}분`;
-          }
-        } else {
-          // 직접 계산
-          remainingTime = getRemainingTime(groupBuy.end_time);
-        }
-        
-        return (
-          <Link href={`/groupbuys/${groupBuy.id}`} key={groupBuy.id}>
-            <Card className="h-full hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculatedStatus)}`}>
-                    {getStatusText(calculatedStatus)}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-4">
-                  <div className="w-20 h-20 relative flex-shrink-0">
-                    <Image
-                      src={groupBuy.product_details?.image_url || '/placeholder.png'}
-                      alt={groupBuy.product_details?.name || '상품 이미지'}
-                      fill
-                      className="object-cover rounded"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{groupBuy.product_details?.name}</p>
-                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                      <span className="mr-2">{
-                        // 공구의 명시적 필드 우선 사용
-                        groupBuy.telecom_carrier || 
-                        groupBuy.product_details?.carrier || 
-                        'SKT'
-                      }</span>
-                      <span>{
-                        // 가입유형 표시
-                        groupBuy.subscription_type === 'new' ? '신규가입' :
-                        groupBuy.subscription_type === 'transfer' ? '번호이동' :
-                        groupBuy.subscription_type === 'change' ? '기기변경' :
-                        groupBuy.product_details?.registration_type || 
-                        '번호이동'
-                      }</span>
-                      <span className="ml-2">{
-                        // 요금제 표시
-                        groupBuy.plan_info === '5G_basic' ? '3만원대' :
-                        groupBuy.plan_info === '5G_standard' ? '5만원대' :
-                        groupBuy.plan_info === '5G_premium' ? '7만원대' :
-                        groupBuy.plan_info === '5G_special' ? '9만원대' :
-                        groupBuy.plan_info === '5G_platinum' ? '10만원대' :
-                        '5만원대'
-                      }</span>
-                    </div>
-                    <p className="text-sm font-bold mt-1">
-                      {groupBuy.product_details?.base_price?.toLocaleString() || '0'}원
-                    </p>
-                    
-                    <div className="mt-2">
-                      <Progress value={progress} className="h-1" />
-                      <div className="flex justify-between text-xs mt-1">
-                        <span>{groupBuy.current_participants}/{groupBuy.max_participants}명</span>
-                        {((groupBuy.remaining_seconds !== undefined && groupBuy.remaining_seconds > 0) || new Date(groupBuy.end_time) > new Date()) && (
-                          <div className="flex items-center text-red-500">
-                            <Clock size={10} className="mr-1" />
-                            <span>{remainingTime}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <Button 
-                      className="mt-2 text-xs text-red-500 hover:text-red-700"
-                      onClick={(e) => handleLeaveClick(e, groupBuy)}
-                    >
-                      <UserMinus size={12} className="mr-1" />
-                      나가기
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        );
-      })}
-      </div>
+        <div className="flex justify-end mb-4 gap-2">
+          <select 
+            className="px-2 py-1 border rounded text-sm"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'created_at' | 'end_time' | 'participants')}
+          >
+            <option value="created_at">등록일 순</option>
+            <option value="end_time">마감일 순</option>
+            <option value="participants">참여자 수</option>
+          </select>
+          <select
+            className="px-2 py-1 border rounded text-sm"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+          >
+            <option value="desc">내림차순</option>
+            <option value="asc">오름차순</option>
+          </select>
+        </div>
+
+        <TabsContent value="active" className="mt-0">
+          {activeGroupBuys.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">진행중인 공구가 없습니다.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeGroupBuys.map(renderGroupBuyCard)}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed" className="mt-0">
+          {completedGroupBuys.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">종료된 공구가 없습니다.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {completedGroupBuys.map(renderGroupBuyCard)}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <AlertDialog
         open={openLeaveDialog}
