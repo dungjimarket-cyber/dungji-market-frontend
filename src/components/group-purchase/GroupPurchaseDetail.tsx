@@ -83,6 +83,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [isLeaving, setIsLeaving] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
+  const [showLeaveRestrictionDialog, setShowLeaveRestrictionDialog] = useState(false);
+  const [leaveErrorMessage, setLeaveErrorMessage] = useState<string>('');
   const [showJoinModal, setShowJoinModal] = useState(false); // 참여하기 모달 표시 여부
   const [bidAmount, setBidAmount] = useState<number | ''>(groupBuy.highest_bid_amount ? groupBuy.highest_bid_amount + 1000 : '');
   const [isBidding, setIsBidding] = useState(false);
@@ -559,9 +561,20 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       router.push('/mypage');
     } catch (err) {
       console.error('공구 나가기 오류:', err);
-      toast.error(err instanceof Error ? err.message : '공구 나가기에 실패했습니다.');
+      
+      // 입찰 진행 중인 경우 특별 처리
+      const errorMessage = err instanceof Error ? err.message : '공구 나가기에 실패했습니다.';
+      
+      if (errorMessage.includes('Cannot leave group buy with active bids') || 
+          errorMessage.includes('입찰이 진행 중인 공구에서는 탈퇴할 수 없습니다')) {
+        setLeaveErrorMessage('입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.');
+        setShowLeaveRestrictionDialog(true);
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLeaving(false);
+      setOpenLeaveDialog(false);
     }
   };
 
@@ -1441,6 +1454,21 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogAction onClick={handleLeaveGroupBuy} disabled={isLeaving}>
               {isLeaving ? '처리 중...' : '공구 나가기'}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* 탈퇴 제한 안내 팝업 */}
+      <AlertDialog open={showLeaveRestrictionDialog} onOpenChange={setShowLeaveRestrictionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>탈퇴 불가 안내</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {leaveErrorMessage || '입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>확인</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
