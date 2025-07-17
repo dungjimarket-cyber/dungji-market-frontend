@@ -62,6 +62,10 @@ interface GroupBuy {
   };
   total_bids?: number;
   highest_bid_amount?: number;
+  // 지역 관련 정보
+  region_type?: string; // 지역 유형 (local, nationwide)
+  region?: string; // 지역명 (서울, 부산 등)
+  region_name?: string; // 지역명 (서울특별시, 부산광역시 등)
 }
 
 interface GroupPurchaseDetailProps {
@@ -1022,6 +1026,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   <span>{getRemainingTime()}</span>
                 </div>
               </div>
+              
+              {/* 지역 정보 표시 */}
+              {groupBuy.region_type && (
+                <div className="flex items-center gap-1 text-sm">
+                  <span className="text-gray-500">지역:</span>
+                  <span className="font-medium px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
+                    {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
+                  </span>
+                </div>
+              )}
               
               <div className="text-sm font-medium">
                 {groupBuy.product_details?.base_price?.toLocaleString()}원

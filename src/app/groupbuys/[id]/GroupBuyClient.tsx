@@ -462,7 +462,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 {/* 지역 정보 표시 */}
                 {groupBuy.region_type && (
                   <span className="ml-2 bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded">
-                    {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region || '지역한정'}
+                    {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
                   </span>
                 )}
                 

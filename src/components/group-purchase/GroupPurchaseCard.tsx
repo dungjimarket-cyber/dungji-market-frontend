@@ -41,6 +41,10 @@ interface GroupBuy {
     username: string;
     profile_image?: string;
   };
+  // 지역 관련 정보
+  region_type?: string; // 지역 유형 (local, nationwide)
+  region?: string; // 지역명 (서울, 부산 등)
+  region_name?: string; // 지역명 (서울특별시, 부산광역시 등)
 }
 
 interface GroupPurchaseCardProps {
@@ -196,6 +200,12 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
             {groupBuy.product_details?.name || '상품명 없음'}
           </h3>
           <div className="flex flex-wrap gap-2">
+            {/* 지역 정보 표시 */}
+            {groupBuy.region_type && (
+              <span className="bg-amber-500 text-white px-2 py-1 rounded text-xs">
+                {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
+              </span>
+            )}
             {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
               <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">
                 {groupBuy.product_details?.registration_type_korean || 
