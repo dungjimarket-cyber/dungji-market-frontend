@@ -147,7 +147,15 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
               <CardHeader>
                 <div className="flex flex-col">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs sm:text-sm text-gray-500">{groupBuy.product_details?.category_name || '휴대폰'}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs sm:text-sm text-gray-500">{groupBuy.product_details?.category_name || '휴대폰'}</p>
+                      {/* 지역 정보 표시 */}
+                      {groupBuy.region_type && (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                          {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region || '지역한정'}
+                        </span>
+                      )}
+                    </div>
                     {/* 공구 상태를 동적으로 계산하여 표시 */}
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
                       {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
