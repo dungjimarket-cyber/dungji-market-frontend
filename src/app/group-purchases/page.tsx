@@ -71,6 +71,7 @@ function GroupPurchasesPageContent() {
         params.append('status', 'completed');
       } else if (activeTab === 'popular') {
         params.append('sort', 'popular');
+        params.append('status', 'in_progress'); // 명시적으로 status 파라미터를 전달
       } else if (activeTab === 'new') {
         params.append('sort', 'newest');
       }
@@ -85,6 +86,7 @@ function GroupPurchasesPageContent() {
                 params.append('sort', 'newest');
               } else if (value === '인기순(참여자많은순)') {
                 params.append('sort', 'popular');
+                params.append('status', 'in_progress'); // 명시적으로 status 파라미터를 전달
               } else {
                 // 기본값은 최신순
                 params.append('sort', 'newest');

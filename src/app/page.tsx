@@ -87,6 +87,7 @@ export default function Home() {
       try {
         const [popularResponse, newResponse] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=popular&limit=2`),
+          // 인기순 정렬 시 백엔드에서 최종선택 이전 상태(recruiting, bidding, voting)만 자동 필터링
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=newest&limit=2`)
         ]);
         
