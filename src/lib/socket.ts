@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { useGroupPurchaseStore } from '@/stores/useGroupPurchase';
 
-export const useBiddingSocket = (auctionId: string) => {
+export const useBiddingSocket = (auctionId: string, isAuthenticated: boolean = false) => {
   const ws = useRef<WebSocket | null>(null);
   const { updateBid } = useGroupPurchaseStore();
 
   useEffect(() => {
+    // 인증되지 않은 상태에서는 웹소켓 연결하지 않음
+    if (!isAuthenticated) {
+      return;
+    }
+
     ws.current = new WebSocket(
       `wss://${process.env.NEXT_PUBLIC_WS_URL}/auctions/${auctionId}`
     );
@@ -25,7 +30,7 @@ export const useBiddingSocket = (auctionId: string) => {
     return () => {
       ws.current?.close();
     };
-  }, [auctionId, updateBid]);
+  }, [auctionId, updateBid, isAuthenticated]);
 
   const placeBid = (amount: number) => {
     if (ws.current?.readyState === WebSocket.OPEN) {

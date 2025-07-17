@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { getNotifications } from '@/lib/api/notification';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NotificationBellProps {
   onClick: () => void;
@@ -19,14 +20,24 @@ interface NotificationBellProps {
  */
 const NotificationBell: React.FC<NotificationBellProps> = ({ onClick }) => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    // 로그인하지 않은 경우 알림을 가져오지 않음
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
+
     const fetchNotifications = async () => {
       try {
         const response = await getNotifications();
         setUnreadCount(response.unread_count);
       } catch (error) {
-        console.error('Failed to fetch notifications:', error);
+        // 401 에러는 콘솔에 출력하지 않음 (로그아웃 상태일 수 있음)
+        if (error instanceof Error && !error.message.includes('401')) {
+          console.error('Failed to fetch notifications:', error);
+        }
       }
     };
 
@@ -36,7 +47,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onClick }) => {
     const intervalId = setInterval(fetchNotifications, 30000);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <div className="relative cursor-pointer" onClick={onClick}>

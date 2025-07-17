@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import NotificationBell from '../notification/NotificationBell';
 import NotificationDropdown from '../notification/NotificationDropdown';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MainHeaderProps {
   title: string;
@@ -27,6 +28,7 @@ export function MainHeader({
   onBack 
 }: MainHeaderProps) {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
   const handleBack = () => {
@@ -56,7 +58,7 @@ export function MainHeader({
         </div>
       </div>
       
-      {showNotification && (
+      {showNotification && isAuthenticated && (
         <div className="relative">
           <div className="p-2 hover:bg-white/10 rounded-lg transition-colors">
             <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />

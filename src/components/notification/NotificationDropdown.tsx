@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Check, Bell } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ interface NotificationDropdownProps {
  */
 const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<{
     unread: Notification[];
     read: Notification[];
@@ -43,10 +45,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onC
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isAuthenticated) {
       fetchNotifications();
     }
-  }, [isOpen]);
+  }, [isOpen, isAuthenticated]);
 
   const fetchNotifications = async () => {
     try {

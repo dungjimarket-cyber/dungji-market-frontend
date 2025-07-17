@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import NotificationDropdown from './NotificationDropdown';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * 모바일용 알림 버튼 컴포넌트
@@ -17,6 +18,12 @@ import NotificationDropdown from './NotificationDropdown';
  */
 const MobileNotificationButton: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  // 로그인하지 않은 상태에서는 알림 버튼을 표시하지 않음
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2 relative">

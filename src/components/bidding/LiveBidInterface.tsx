@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useBiddingSocket } from '@/lib/socket';
 import { useGroupPurchaseStore } from '@/stores/useGroupPurchase';
+import { useAuth } from '@/contexts/AuthContext';
 import CountdownTimer from './CountdownTimer';
 
 export default function LiveBidInterface({ auctionId }: { auctionId: string }) {
   const [bidAmount, setBidAmount] = useState('');
-  const { placeBid } = useBiddingSocket(auctionId);
+  const { isAuthenticated } = useAuth();
+  const { placeBid } = useBiddingSocket(auctionId, isAuthenticated);
   const auction = useGroupPurchaseStore(state =>
     state.ongoingPurchases.find(p => p.id === auctionId)
   );
