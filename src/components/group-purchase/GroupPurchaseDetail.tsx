@@ -1487,8 +1487,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         onClose={() => setShowJoinModal(false)}
         groupBuy={groupBuy}
         onSuccess={() => {
-          setIsParticipant(true);
-          setCurrentParticipants(prev => prev + 1);
+          // 이미 참여한 상태가 아닌 경우에만 증가
+          if (!isParticipant) {
+            setIsParticipant(true);
+            setCurrentParticipants(prev => prev + 1);
+          }
         }}
       />
       

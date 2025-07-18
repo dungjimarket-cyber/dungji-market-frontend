@@ -194,26 +194,20 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
   const handleFinalConfirm = () => {
     // 모달 닫기
     onClose();
-    // 성공 콜백 함수가 있으면 호출
-    if (onSuccess) {
-      onSuccess();
-    }
+    // 성공 콜백은 이미 handleJoin에서 호출되었으므로 여기서는 호출하지 않음
   };
   
-  // 참여 성공 후 자동으로 모달 닫기 및 콜백 실행
+  // 참여 성공 후 자동으로 모달 닫기
   useEffect(() => {
     if (step === 'success') {
-      // 1초 후 모달 닫기 및 콜백 실행
+      // 1초 후 모달 닫기 (onSuccess는 이미 handleJoin에서 호출됨)
       const timer = setTimeout(() => {
         onClose();
-        if (onSuccess) {
-          onSuccess();
-        }
       }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [step, onSuccess, onClose]);
+  }, [step, onClose]);
 
   const handleClose = () => {
     if (loading) {
@@ -221,6 +215,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
     }
     
     setStep('confirm'); // 모달 닫을 때 초기 상태로 리셋
+    setError(''); // 에러 메시지 초기화
     onClose();
   };
 
