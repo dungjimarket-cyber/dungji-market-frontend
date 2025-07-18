@@ -1154,7 +1154,8 @@ const onSubmit = async (values: FormData) => {
                         code: `${r.sido}_${r.sigungu}`,
                         name: `${r.sido} ${r.sigungu}`,
                         full_name: r.fullAddress,
-                        level: 2
+                        level: 2,
+                        is_active: true  // 기본값으로 true 설정
                       }));
                       
                       setSelectedRegions(convertedRegions);
