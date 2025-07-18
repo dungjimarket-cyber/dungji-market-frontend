@@ -9,6 +9,7 @@ import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
 import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
 import BidManagement from '@/components/mypage/BidManagement';
 import SettlementHistory from '@/components/mypage/SettlementHistory';
+import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Accordion,
@@ -238,11 +239,7 @@ export default function MyPageClient() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-gray-500 text-center">최종 선택 대기중인 상품이 표시됩니다.</p>
-                  </CardContent>
-                </Card>
+                <PendingSelectionGroupBuys />
               </AccordionContent>
             </AccordionItem>
 
