@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus, Edit, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
@@ -79,6 +79,7 @@ interface GroupPurchaseDetailProps {
 export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
+  const { toast } = useToast();
   
   // 카카오톡 인앱 브라우저 감지 - SSR 안전하게 처리
   const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
@@ -515,7 +516,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       
       if (!accessToken) {
         console.log('[GroupPurchaseDetail] 인증 토큰 없음');
-        toast.error('로그인이 필요합니다.');
+        toast({
+          variant: 'destructive',
+          title: '로그인이 필요합니다.',
+        });
         // 카카오톡 브라우저에서는 자동 리다이렉트 비활성화
         if (!isKakaoInAppBrowser) {
           router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
@@ -552,7 +556,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       }
 
       console.log('[GroupPurchaseDetail] 공구 참여 성공');
-      toast.success('공동구매에 참여했습니다!');
+      toast({
+        title: '공동구매에 참여했습니다!',
+      });
       setIsParticipant(true);
       setCurrentParticipants(prev => prev + 1);
       
@@ -560,7 +566,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       
     } catch (error) {
       console.error('[GroupPurchaseDetail] 공구 참여 오류:', error);
-      toast.error(error instanceof Error ? error.message : '참여에 실패했습니다.');
+      toast({
+        variant: 'destructive',
+        title: '참여 실패',
+        description: error instanceof Error ? error.message : '참여에 실패했습니다.'
+      });
     } finally {
       setIsJoining(false);
     }
@@ -596,7 +606,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         }
       }
 
-      toast.success('공구에서 나갔습니다.');
+      toast({
+        title: '공구에서 나갔습니다.',
+      });
       setIsParticipant(false);
       setCurrentParticipants(prev => Math.max(0, prev - 1));
       setOpenLeaveDialog(false);
@@ -614,7 +626,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         setLeaveErrorMessage('입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.');
         setShowLeaveRestrictionDialog(true);
       } else {
-        toast.error(errorMessage);
+        toast({
+          variant: 'destructive',
+          title: '공구 나가기 실패',
+          description: errorMessage
+        });
       }
     } finally {
       setIsLeaving(false);
@@ -636,11 +652,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       } else {
         // 웹 공유 API가 지원되지 않는 경우 클립보드에 복사
         await navigator.clipboard.writeText(window.location.href);
-        toast.success('링크가 클립보드에 복사되었습니다.');
+        toast({
+          title: '링크가 클립보드에 복사되었습니다.',
+        });
       }
     } catch (error) {
       console.error('Error sharing:', error);
-      toast.error('공유에 실패했습니다.');
+      toast({
+        variant: 'destructive',
+        title: '공유에 실패했습니다.',
+      });
     }
   };
 
@@ -702,7 +723,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    */
   const handleBidClick = async () => {
     if (!isAuthenticated) {
-      toast.error('로그인이 필요합니다.');
+      toast({
+        variant: 'destructive',
+        title: '로그인이 필요합니다.',
+      });
       // 카카오톡 브라우저에서는 자동 리다이렉트 비활성화
       if (!isKakaoInAppBrowser) {
         router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
@@ -721,7 +745,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       }
     } catch (error) {
       console.error('입찰권 확인 오류:', error);
-      toast.error('입찰권 확인 중 오류가 발생했습니다.');
+      toast({
+        variant: 'destructive',
+        title: '입찰권 확인 중 오류가 발생했습니다.',
+      });
       return;
     }
     
@@ -732,7 +759,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     }
     
     if (typeof amountToCheck !== 'number' || isNaN(amountToCheck) || amountToCheck < (groupBuy.highest_bid_amount || 0) + 1000) {
-      toast.error('입찰금액은 현재 최고 입찰가보다 1,000원 이상 높아야 합니다.');
+      toast({
+        variant: 'destructive',
+        title: '입찰금액은 현재 최고 입찰가보다 1,000원 이상 높아야 합니다.',
+      });
       return;
     }
     
@@ -751,7 +781,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     });
     
     if (!canCancelBid) {
-      toast.error('입찰 마감 시간이 지나 취소할 수 없습니다.');
+      toast({
+        variant: 'destructive',
+        title: '입찰 마감 시간이 지나 취소할 수 없습니다.',
+      });
       return;
     }
     
@@ -763,7 +796,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    */
   const handleFinalSelection = async (choice: 'confirm' | 'abandon') => {
     if (!myBidId) {
-      toast.error('입찰 정보를 찾을 수 없습니다.');
+      toast({
+        variant: 'destructive',
+        title: '입찰 정보를 찾을 수 없습니다.',
+      });
       return;
     }
     
@@ -781,7 +817,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         throw new Error('최종선택 처리 중 오류가 발생했습니다.');
       }
       
-      toast.success(choice === 'confirm' ? '구매 확정되었습니다.' : '구매를 포기했습니다.');
+      toast({
+        title: choice === 'confirm' ? '구매 확정되었습니다.' : '구매를 포기했습니다.',
+        description: choice === 'confirm' ? '판매자와 거래를 진행하세요.' : '다음 기회에 참여해주세요.',
+      });
       setShowFinalSelectionModal(false);
       setFinalSelectionChoice(choice);
       
@@ -789,7 +828,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       router.refresh();
     } catch (error) {
       console.error('최종선택 오류:', error);
-      toast.error('최종선택 처리 중 오류가 발생했습니다.');
+      toast({
+        variant: 'destructive',
+        title: '최종선택 처리 중 오류가 발생했습니다.',
+      });
     }
   };
 
@@ -798,7 +840,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    */
   const handleConfirmCancelBid = async () => {
     if (!myBidId) {
-      toast.error('취소할 입찰이 없습니다.');
+      toast({
+        variant: 'destructive',
+        title: '취소할 입찰이 없습니다.',
+      });
       return;
     }
     
@@ -806,7 +851,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       // bidService의 cancelBid 함수 사용
       await cancelBid(myBidId);
       
-      toast.success('입찰이 취소되었습니다.');
+      toast({
+        title: '입찰 취소 완료',
+        description: '입찰이 성공적으로 취소되었습니다.',
+      });
       setShowBidCancelModal(false);
       setHasBid(false);
       setCanCancelBid(false);
@@ -821,7 +869,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     } catch (error: any) {
       console.error('입찰 취소 오류:', error);
       const errorMessage = error.message || '입찰 취소 중 오류가 발생했습니다.';
-      toast.error(errorMessage);
+      toast({
+        variant: 'destructive',
+        title: '입찰 취소 실패',
+        description: errorMessage,
+      });
+      // 에러가 발생해도 모달은 닫기
+      setShowBidCancelModal(false);
     }
   };
   
@@ -891,7 +945,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         if (errorData.detail && errorData.detail.includes('unique')) {
           // 이미 입찰한 경우, 수정 모드로 전환
           setShowBidModal(false);
-          toast.info('이미 입찰하셨습니다. 기존 입찰을 수정합니다.');
+          toast({
+            title: '이미 입찰하셨습니다. 기존 입찰을 수정합니다.',
+            description: '기존 입찰 금액이 변경됩니다.',
+          });
           
           // 기존 입찰 금액을 업데이트
           if (typeof amountToSubmit === 'number') {
@@ -927,11 +984,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 fetchBidInfo();
               }, 500);
               
-              toast.success('입찰이 수정되었습니다.');
+              toast({
+                title: '입찰이 수정되었습니다.',
+              });
               return;
             } catch (updateError) {
               console.error('입찰 수정 오류:', updateError);
-              toast.error('입찰 수정 중 오류가 발생했습니다.');
+              toast({
+                variant: 'destructive',
+                title: '입찰 수정 중 오류가 발생했습니다.',
+              });
               setIsBidding(false);
               return;
             }
@@ -939,7 +1001,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         } else {
           // 기타 에러 처리
           const errorMessage = errorData.detail || '입찰 중 오류가 발생했습니다.';
-          toast.error(errorMessage);
+          toast(errorMessage);
           setIsBidding(false);
           throw new Error(JSON.stringify(errorData));
         }
@@ -975,9 +1037,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       }, 500);
       
       if (isDuplicate) {
-        toast.success('수정 입찰 되었습니다.');
+        toast({
+          title: '수정 입찰 되었습니다.',
+        });
       } else {
-        toast.success('입찰이 완료되었습니다.');
+        toast({
+          title: '입찰이 완료되었습니다.',
+        });
       }
       
       // 새로고침하여 최신 정보 가져오기
@@ -1018,7 +1084,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
          errorMessage.includes('다시 시도해주세요'));
       
       // 오류 알림 표시
-      toast.error(isBidTokenError ? '입찰권 부족' : '입찰 실패', {
+      toast({
+        variant: 'destructive',
+        title: isBidTokenError ? '입찰권 부족' : '입찰 실패',
         description: errorMessage,
       });
       
@@ -1544,7 +1612,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   if (isAuthenticated) {
                     setShowJoinModal(true);
                   } else {
-                    toast.error('로그인이 필요합니다.');
+                    toast({
+          variant: 'destructive',
+          title: '로그인이 필요합니다.',
+        });
                     // 카카오톡 브라우저에서는 자동 리다이렉트 비활성화
                     if (!isKakaoInAppBrowser) {
                       router.push('/login');
