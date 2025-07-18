@@ -77,7 +77,7 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
   
   const title = `${groupBuy.product_details.name} - 둥지마켓`;
   const description = `${groupBuy.product_details.name} 공동구매에 참여해보세요! 현재 ${groupBuy.current_participants}명 참여중`;
-  const baseUrl = process.env.NEXTAUTH_URL || 'https://dungji-market.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://dungji-market.com';
   const imageUrl = groupBuy.product_details.image_url?.startsWith('http') 
     ? groupBuy.product_details.image_url 
     : `${baseUrl}${groupBuy.product_details.image_url || '/logo.png'}`;
@@ -85,6 +85,10 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
   return {
     title,
     description,
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: `/groupbuys/${id}`,
+    },
     openGraph: {
       title,
       description,

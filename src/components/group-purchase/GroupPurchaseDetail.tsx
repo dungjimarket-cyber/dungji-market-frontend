@@ -80,8 +80,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
   
-  // 카카오톡 인앱 브라우저 감지
-  const isKakaoInAppBrowser = typeof navigator !== 'undefined' && /KAKAOTALK/i.test(navigator.userAgent);
+  // 카카오톡 인앱 브라우저 감지 - SSR 안전하게 처리
+  const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
+  
+  useEffect(() => {
+    // 클라이언트 사이드에서만 실행
+    setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
+  }, []);
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
