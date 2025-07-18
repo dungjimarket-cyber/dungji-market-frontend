@@ -50,7 +50,6 @@ export default function PendingSelectionGroupBuys() {
   const { isAuthenticated, isLoading, accessToken } = useAuth();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   // 인증 로딩 상태일 때는 로딩 표시
   if (isLoading) return <p className="text-gray-500">로딩 중...</p>;
@@ -101,7 +100,6 @@ export default function PendingSelectionGroupBuys() {
   }, [accessToken]);
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
   
   if (groupBuys.length === 0) {
     return (

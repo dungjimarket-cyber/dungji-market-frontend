@@ -3,21 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { tokenUtils } from '@/lib/tokenUtils';
 import ProfileSection from '@/components/mypage/ProfileSection';
 import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
 import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
 import BidManagement from '@/components/mypage/BidManagement';
 import SettlementHistory from '@/components/mypage/SettlementHistory';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Store, BarChart, History, Package, ShoppingBag, ChevronRight } from 'lucide-react';
+import { Loader2, Store, BarChart, Package, ShoppingBag, ChevronRight } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트

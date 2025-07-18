@@ -17,9 +17,18 @@ interface Product {
   name: string;
   base_price: number;
   image_url?: string;
-  carrier?: string;
-  registration_type?: string;
-  plan_info?: string;
+  category?: {
+    name: string;
+    detail_type?: string;
+  };
+}
+
+interface TelecomDetail {
+  id?: number;
+  telecom_carrier: string;
+  subscription_type: string;
+  plan_info: string;
+  contract_period?: number;
 }
 
 interface GroupBuy {
@@ -29,18 +38,16 @@ interface GroupBuy {
   current_participants: number;
   max_participants: number;
   end_time: string;
-  product_details: Product;
+  product: Product;
+  product_details?: Product; // 하위 호환성
   calculated_status?: string;
   remaining_seconds?: number;
-  
-  // 통신 관련 공구 정보 (명시적 필드)
-  telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
-  subscription_type?: string; // 가입유형 (new, transfer, change)
-  plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
+  telecom_detail?: TelecomDetail;
   
   // 지역 관련 정보
-  region_type?: string; // 지역 유형 (local, nationwide)
-  region?: string; // 지역명 (서울, 부산 등)
+  region_type?: string;
+  region?: string;
+  region_name?: string;
 }
 
 /**
@@ -170,6 +177,44 @@ export default function ParticipatingGroupBuys() {
       remainingTime = getRemainingTime(groupBuy.end_time);
     }
     
+    // 통신 상품 정보 가져오기
+    const product = groupBuy.product || groupBuy.product_details;
+    const isElectronics = product?.category?.detail_type === 'electronics';
+    const isTelecom = product?.category?.detail_type === 'telecom' || groupBuy.telecom_detail;
+    
+    // 통신사 정보
+    const getCarrierDisplay = (carrier: string) => {
+      switch(carrier) {
+        case 'SKT': return 'SKT';
+        case 'KT': return 'KT';
+        case 'LGU': return 'LG U+';
+        case 'MVNO': return '알뜰폰';
+        default: return carrier;
+      }
+    };
+    
+    // 가입유형 표시
+    const getSubscriptionTypeDisplay = (type: string) => {
+      switch(type) {
+        case 'new': return '신규가입';
+        case 'transfer': return '번호이동';
+        case 'change': return '기기변경';
+        default: return type;
+      }
+    };
+    
+    // 요금제 표시
+    const getPlanDisplay = (plan: string) => {
+      switch(plan) {
+        case '5G_basic': return '3만원대';
+        case '5G_standard': return '5만원대';
+        case '5G_premium': return '7만원대';
+        case '5G_special': return '9만원대';
+        case '5G_platinum': return '10만원대';
+        default: return plan;
+      }
+    };
+    
     return (
       <Link href={`/groupbuys/${groupBuy.id}`} key={groupBuy.id}>
         <Card className="h-full hover:shadow-lg transition-shadow">
@@ -185,41 +230,46 @@ export default function ParticipatingGroupBuys() {
             <div className="flex gap-4">
               <div className="w-20 h-20 relative flex-shrink-0">
                 <Image
-                  src={groupBuy.product_details?.image_url || '/placeholder.png'}
-                  alt={groupBuy.product_details?.name || '상품 이미지'}
+                  src={product?.image_url || '/placeholder.png'}
+                  alt={product?.name || '상품 이미지'}
                   fill
                   className="object-cover rounded"
                 />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">{groupBuy.product_details?.name}</p>
-                <div className="flex items-center text-xs text-gray-500 mt-1">
-                  <span className="mr-2">{
-                    // 공구의 명시적 필드 우선 사용
-                    groupBuy.telecom_carrier || 
-                    groupBuy.product_details?.carrier || 
-                    'SKT'
-                  }</span>
-                  <span>{
-                    // 가입유형 표시
-                    groupBuy.subscription_type === 'new' ? '신규가입' :
-                    groupBuy.subscription_type === 'transfer' ? '번호이동' :
-                    groupBuy.subscription_type === 'change' ? '기기변경' :
-                    groupBuy.product_details?.registration_type || 
-                    '번호이동'
-                  }</span>
-                  <span className="ml-2">{
-                    // 요금제 표시
-                    groupBuy.plan_info === '5G_basic' ? '3만원대' :
-                    groupBuy.plan_info === '5G_standard' ? '5만원대' :
-                    groupBuy.plan_info === '5G_premium' ? '7만원대' :
-                    groupBuy.plan_info === '5G_special' ? '9만원대' :
-                    groupBuy.plan_info === '5G_platinum' ? '10만원대' :
-                    '5만원대'
-                  }</span>
-                </div>
+                <p className="text-sm font-medium">{product?.name}</p>
+                
+                {/* 통신 상품인 경우에만 통신 정보 표시 */}
+                {isTelecom && groupBuy.telecom_detail && (
+                  <div className="flex items-center text-xs text-gray-500 mt-1">
+                    <span className="mr-2">
+                      {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier)}
+                    </span>
+                    <span className="mr-2">
+                      {getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
+                    </span>
+                    <span>
+                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                    </span>
+                  </div>
+                )}
+                
+                {/* 전자제품인 경우 카테고리명 표시 */}
+                {isElectronics && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    <span>{product?.category?.name || '전자제품'}</span>
+                  </div>
+                )}
+                
+                {/* 지역 정보 표시 */}
+                {groupBuy.region_name && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    <span>📍 {groupBuy.region_name}</span>
+                  </div>
+                )}
+                
                 <p className="text-sm font-bold mt-1">
-                  {groupBuy.product_details?.base_price?.toLocaleString() || '0'}원
+                  {product?.base_price?.toLocaleString() || '0'}원
                 </p>
                 
                 <div className="mt-2">
