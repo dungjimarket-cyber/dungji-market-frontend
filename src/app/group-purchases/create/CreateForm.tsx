@@ -1491,12 +1491,11 @@ const onSubmit = async (values: FormData) => {
                             // 현재 시간에 설정한 시간을 더함
                             const endTime = new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
                             
-                            // 로컬 시간 형식으로 변환 (YYYY-MM-DDTHH:MM)
-                            const localDateTimeString = endTime.toISOString().slice(0, 16);
-                            form.setValue('end_time', localDateTimeString);
+                            // ISO 형식으로 변환 (전체 시간대 정보 포함)
+                            form.setValue('end_time', endTime.toISOString());
                             
                             setEndTimeOption(value);
-                            console.log('자동 설정된 마감 시간:', localDateTimeString);
+                            console.log('자동 설정된 마감 시간:', endTime.toISOString());
                           } else {
                             setEndTimeOption(value);
                           }
