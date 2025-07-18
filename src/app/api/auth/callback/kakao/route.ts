@@ -62,9 +62,18 @@ export async function GET(request: Request) {
     const kakaoAccount = userInfo.kakao_account || {};
     const profile = kakaoAccount.profile || {};
     
+    // 카카오 이메일 처리 - PC/모바일에서 다르게 올 수 있음
     const email = kakaoAccount.email || `${kakaoId}@kakao.user`;
     const name = profile.nickname || '';
     const profileImage = profile.profile_image_url || '';
+    
+    console.log('카카오 정보 처리:', {
+      kakaoId,
+      email,
+      emailProvided: kakaoAccount.email ? '제공됨' : '자동생성',
+      name,
+      profileImage: profileImage ? '있음' : '없음'
+    });
     
     // 백엔드에 필요한 형식으로 데이터 전송
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
