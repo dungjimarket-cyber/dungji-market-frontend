@@ -202,6 +202,19 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       let rawData = await bidInfoResponse.json();
       console.log('입찰 정보 원본 응답:', rawData);
       
+      // 내 입찰 상태 확인을 위한 로깅
+      if (Array.isArray(rawData)) {
+        const myBidInResponse = rawData.find((bid: any) => bid.is_mine === true);
+        if (myBidInResponse) {
+          console.log('내 입찰 상태 정보:', {
+            id: myBidInResponse.id,
+            status: myBidInResponse.status,
+            can_cancel: myBidInResponse.can_cancel,
+            amount: myBidInResponse.amount
+          });
+        }
+      }
+      
       // API 응답이 배열인 경우 객체로 변환
       let bidInfoData = rawData;
       if (Array.isArray(rawData)) {
@@ -260,7 +273,17 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           setMyBidId(myBid.id);
           setHasBid(true);
           // 입찰 취소 가능 여부 추가 설정
-          setCanCancelBid((sortedBids.find(b => b.id === myBid.id)?.can_cancel) || false);
+          // can_cancel 필드가 있으면 사용하고, 없으면 상태와 시간 기반으로 판단
+          const bidData = sortedBids.find(b => b.id === myBid.id);
+          const isCancelable = bidData?.can_cancel || 
+            (bidData?.status === 'pending' && (groupBuy?.status === 'bidding' || groupBuy?.status === 'recruiting'));
+          setCanCancelBid(isCancelable);
+          console.log('입찰 취소 가능 여부 설정:', { 
+            bidId: myBid.id, 
+            canCancel: isCancelable,
+            bidStatus: bidData?.status,
+            groupBuyStatus: groupBuy?.status 
+          });
         } else {
           setHasBid(false);
           setMyBidAmount(null);
