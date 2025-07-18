@@ -130,11 +130,30 @@ export const cancelBid = async (bidId: number): Promise<void> => {
     const headers = await getAxiosAuthHeaders();
     const url = `${API_URL}/bids/${bidId}/cancel/`;
     console.log(`입찰 취소 요청 URL: ${url}`);
-    await axios.delete(url, { headers });
+    
+    const response = await axios.delete(url, { headers });
     console.log(`입찰 ${bidId} 취소 요청 완료`);
   } catch (error: any) {
     console.error('입찰 취소 오류:', error);
     console.error('상세 오류:', error.response?.data || error.message);
+    
+    // 더 구체적인 에러 메시지 처리
+    if (error.response?.status === 400) {
+      const errorDetail = error.response.data?.detail || error.response.data?.error;
+      if (errorDetail) {
+        if (errorDetail.includes('확정되거나 거부된')) {
+          throw new Error('이미 확정되거나 거부된 입찰은 취소할 수 없습니다.');
+        } else if (errorDetail.includes('입찰 시간이 종료')) {
+          throw new Error('입찰 시간이 종료되어 취소할 수 없습니다.');
+        }
+        throw new Error(errorDetail);
+      }
+    } else if (error.response?.status === 403) {
+      throw new Error('자신의 입찰만 취소할 수 있습니다.');
+    } else if (error.response?.status === 404) {
+      throw new Error('입찰을 찾을 수 없습니다.');
+    }
+    
     throw error;
   }
 };

@@ -720,6 +720,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    * 입찰 취소 버튼 클릭
    */
   const handleCancelBidClick = () => {
+    console.log('입찰 취소 시도:', {
+      canCancelBid,
+      myBidId,
+      groupBuyStatus: groupBuy?.status,
+      currentTime: new Date().toISOString()
+    });
+    
     if (!canCancelBid) {
       toast.error('입찰 마감 시간이 지나 취소할 수 없습니다.');
       return;
@@ -788,9 +795,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       
       // 새로고침하여 최신 정보 가져오기
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error('입찰 취소 오류:', error);
-      toast.error('입찰 취소 중 오류가 발생했습니다.');
+      const errorMessage = error.message || '입찰 취소 중 오류가 발생했습니다.';
+      toast.error(errorMessage);
     }
   };
   
@@ -1490,7 +1498,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 </div>
                 
                 {/* 입찰 취소 버튼 */}
-                {hasBid && canCancelBid && (
+                {hasBid && canCancelBid && (groupBuy?.status === 'bidding' || groupBuy?.status === 'recruiting') && (
                   <button
                     onClick={handleCancelBidClick}
                     className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
