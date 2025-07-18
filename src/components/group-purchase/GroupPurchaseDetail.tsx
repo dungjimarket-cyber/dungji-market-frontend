@@ -20,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
 interface GroupBuy {
@@ -100,7 +99,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   // 과제 조건: 휴대폰 카테고리는 지원금 입찰, 그 외는 가격 입찰로 처리
   const categoryName = groupBuy.product_details?.category_name || '';
   const isTelecom = categoryName === '휴대폰';
-  const [bidType, setBidType] = useState<'price' | 'support'>(
+  const [bidType] = useState<'price' | 'support'>(
     isTelecom ? 'support' : 'price'
   ); // 휴대폰은 지원금 입찰, 그 외는 가격 입찰
   const [hasBid, setHasBid] = useState(false); // 이미 입찰했는지 여부
@@ -471,6 +470,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
 
   /**
    * 공구 참여하기
+   * @deprecated Currently not used - participation is handled through modal
    */
   const handleJoinGroupBuy = async () => {
     try {
@@ -720,7 +720,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    */
   const handleConfirmCancelBid = async () => {
     if (!accessToken || !myBidId) {
-      alert('취소할 입찰이 없습니다.');
+      toast.error('취소할 입찰이 없습니다.');
       return;
     }
     
