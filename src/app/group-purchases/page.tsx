@@ -98,8 +98,6 @@ function GroupPurchasesPageContent() {
         });
       }
       
-      // 디버깅용 로그
-      console.log('[GroupPurchases] API 호출 파라미터:', params.toString());
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
       
