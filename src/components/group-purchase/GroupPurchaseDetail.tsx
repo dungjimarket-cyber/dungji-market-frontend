@@ -267,7 +267,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         
         // 내 입찰 찾기 (is_mine 플래그 기준)
         const myBid = processedBids.find(bid => bid.is_mine === true);
+        const myBidData = sortedBids.find(b => b.id === myBid?.id);
         console.log('내 입찰 찾기 결과:', myBid);
+        console.log('내 입찰 원본 데이터:', myBidData);
         
         if (myBid) {
           setMyBidAmount(myBid.amount);
@@ -275,15 +277,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           setHasBid(true);
           // 입찰 취소 가능 여부 추가 설정
           // can_cancel 필드가 있으면 사용하고, 없으면 상태와 시간 기반으로 판단
-          const bidData = sortedBids.find(b => b.id === myBid.id);
-          const isCancelable = bidData?.can_cancel || 
-            (bidData?.status === 'pending' && (groupBuy?.status === 'bidding' || groupBuy?.status === 'recruiting'));
+          const isCancelable = myBidData?.can_cancel || 
+            ((myBidData?.status === 'pending' || myBidData?.status === 'ineligible') && 
+             (groupBuy?.status === 'bidding' || groupBuy?.status === 'recruiting'));
           setCanCancelBid(isCancelable);
           console.log('입찰 취소 가능 여부 설정:', { 
             bidId: myBid.id, 
             canCancel: isCancelable,
-            bidStatus: bidData?.status,
-            groupBuyStatus: groupBuy?.status 
+            bidStatus: myBidData?.status,
+            groupBuyStatus: groupBuy?.status,
+            myBidData: myBidData 
           });
         } else {
           setHasBid(false);
