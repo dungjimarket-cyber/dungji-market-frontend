@@ -91,6 +91,7 @@ export default function ParticipatingGroupBuys() {
         }
 
         const data = await response.json();
+        console.log('참여중인 공구 데이터:', data);
         setGroupBuys(data);
       } catch (err) {
         console.error('참여중인 공구 목록 조회 오류:', err);
@@ -177,10 +178,13 @@ export default function ParticipatingGroupBuys() {
       remainingTime = getRemainingTime(groupBuy.end_time);
     }
     
-    // 통신 상품 정보 가져오기
-    const product = groupBuy.product || groupBuy.product_details;
+    // 통신 상품 정보 가져오기 (하위 호환성 유지)
+    const product = groupBuy.product_details || groupBuy.product;
     const isElectronics = product?.category?.detail_type === 'electronics';
-    const isTelecom = product?.category?.detail_type === 'telecom' || groupBuy.telecom_detail;
+    const isTelecom = product?.category?.detail_type === 'telecom' || 
+                      groupBuy.telecom_detail || 
+                      (product as any)?.telecom_carrier || 
+                      (product as any)?.subscription_type;
     
     // 통신사 정보
     const getCarrierDisplay = (carrier: string) => {
@@ -240,17 +244,35 @@ export default function ParticipatingGroupBuys() {
                 <p className="text-sm font-medium">{product?.name}</p>
                 
                 {/* 통신 상품인 경우에만 통신 정보 표시 */}
-                {isTelecom && groupBuy.telecom_detail && (
+                {isTelecom && (
                   <div className="flex items-center text-xs text-gray-500 mt-1">
-                    <span className="mr-2">
-                      {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier)}
-                    </span>
-                    <span className="mr-2">
-                      {getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
-                    </span>
-                    <span>
-                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-                    </span>
+                    {/* telecom_detail이 있으면 우선 사용, 없으면 기존 필드 사용 */}
+                    {groupBuy.telecom_detail ? (
+                      <>
+                        <span className="mr-2">
+                          {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier)}
+                        </span>
+                        <span className="mr-2">
+                          {getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
+                        </span>
+                        <span>
+                          {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {/* 기존 product_details 필드에서 정보 추출 */}
+                        {(product as any)?.telecom_carrier && (
+                          <span className="mr-2">{getCarrierDisplay((product as any).telecom_carrier)}</span>
+                        )}
+                        {(product as any)?.subscription_type && (
+                          <span className="mr-2">{getSubscriptionTypeDisplay((product as any).subscription_type)}</span>
+                        )}
+                        {(product as any)?.plan_info && (
+                          <span>{getPlanDisplay((product as any).plan_info)}</span>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
                 
