@@ -68,6 +68,12 @@ interface Product {
   image_url?: string;
 }
 
+interface CreateFormProps {
+  mode?: 'create' | 'edit';
+  initialData?: any;
+  groupBuyId?: string;
+}
+
 /**
  * 폼 유효성 검증 스키마
  * 카테고리별 필드 유효성 검증 로직 포함
@@ -272,7 +278,7 @@ const getCategoryIcon = (categoryType?: string) => {
  * 공구 등록 폼 컴포넌트
  * JWT 기반 인증을 사용하여 판매자 권한 확인 및 데이터 처리
  */
-export default function CreateForm() {
+export default function CreateForm({ mode = 'create', initialData, groupBuyId }: CreateFormProps = {}) {
   // JWT 기반 인증 컨텍스트 사용
   const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   // 인증 상태를 NextAuth와 호환되는 status 변수로 변환
@@ -440,6 +446,44 @@ export default function CreateForm() {
     fetchProducts();
     fetchRegions();
   }, []);
+
+  // 수정 모드일 때 초기 데이터 설정
+  useEffect(() => {
+    if (mode === 'edit' && initialData) {
+      console.log('초기 데이터 설정:', initialData);
+      
+      // 폼 필드 설정
+      form.setValue('product', initialData.product_id?.toString() || '');
+      form.setValue('title', initialData.title || '');
+      form.setValue('description', initialData.description || '');
+      form.setValue('min_participants', initialData.min_participants || 1);
+      form.setValue('max_participants', initialData.max_participants || 5);
+      
+      // 마감 시간 설정
+      if (initialData.end_time) {
+        form.setValue('end_time', initialData.end_time);
+        form.setValue('end_time_option', 'custom');
+        setEndTimeOption('custom');
+      }
+      
+      // 지역 타입 설정
+      if (initialData.region_type) {
+        setRegionType(initialData.region_type);
+      }
+      
+      // 지역 정보 설정
+      if (initialData.regions && initialData.regions.length > 0) {
+        setSelectedRegions(initialData.regions);
+      }
+      
+      // 통신 상품 정보 설정
+      if (initialData.telecom_detail) {
+        form.setValue('telecom_carrier', initialData.telecom_detail.telecom_carrier);
+        form.setValue('subscription_type', initialData.telecom_detail.subscription_type);
+        form.setValue('plan_info', initialData.telecom_detail.plan_info);
+      }
+    }
+  }, [mode, initialData, form]);
   
   /**
    * 지역 검색 핸들러
@@ -600,29 +644,37 @@ const continueSubmitWithUserId = async (
     console.log('최종 API 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
     console.log('사용자 ID 확인:', apiRequestData.creator);
     
-    // 공구 등록 API 요청 실행
-    console.log('공구 등록 API 요청 시작');
-    const response = await tokenUtils.fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
-      method: 'POST',
+    // 공구 등록/수정 API 요청 실행
+    console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} API 요청 시작`);
+    const apiUrl = mode === 'edit' && groupBuyId 
+      ? `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/`
+      : `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
+    
+    const response = await tokenUtils.fetchWithAuth(apiUrl, {
+      method: mode === 'edit' ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(apiRequestData),
     });
     
-    console.log('공구 등록 성공:', response);
+    console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} 성공:`, response);
     
     // 성공 메시지 표시
     toast({
-      title: '공구 등록 성공',
-      description: '공구가 성공적으로 등록되었습니다.',
+      title: mode === 'edit' ? '공구 수정 성공' : '공구 등록 성공',
+      description: mode === 'edit' ? '공구가 성공적으로 수정되었습니다.' : '공구가 성공적으로 등록되었습니다.',
       className: "border-green-200 bg-green-50",
       duration: 3000,
     });
     
-    // 자동으로 공구 목록 페이지로 이동 (로딩 상태 유지)
+    // 자동으로 상세 페이지 또는 목록 페이지로 이동
     setTimeout(() => {
-      router.push('/group-purchases');
+      if (mode === 'edit' && response?.id) {
+        router.push(`/groupbuys/${response.id}`);
+      } else {
+        router.push('/group-purchases');
+      }
       // 페이지 이동 후에만 로딩 상태 해제
     }, 1500);
     

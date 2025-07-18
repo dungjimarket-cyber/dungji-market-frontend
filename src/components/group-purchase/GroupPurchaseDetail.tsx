@@ -1399,7 +1399,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   <Button 
                     variant="default" 
                     className="bg-blue-600 hover:bg-blue-700 flex-1"
-                    onClick={() => router.push(`/groupbuys/edit/${groupBuy.id}`)}
+                    onClick={() => router.push(`/group-purchases/edit/${groupBuy.id}`)}
                   >
                     <Edit className="w-4 h-4 mr-1" /> 공구 수정
                   </Button>
