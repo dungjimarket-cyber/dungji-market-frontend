@@ -153,6 +153,13 @@ export const tokenUtils = {
             const fieldErrors = [];
             for (const [field, errors] of Object.entries(errorData)) {
               if (field !== 'non_field_errors' && Array.isArray(errors)) {
+                // 중복 상품 체크를 위한 특별 처리
+                const duplicateError = errors.find((error: string) => 
+                  error.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다')
+                );
+                if (duplicateError) {
+                  throw new Error(duplicateError);
+                }
                 fieldErrors.push(`${field}: ${errors.join(', ')}`);
               }
             }

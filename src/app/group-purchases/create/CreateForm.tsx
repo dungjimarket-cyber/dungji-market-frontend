@@ -730,6 +730,8 @@ const continueSubmitWithUserId = async (
     console.error('오류 객체:', apiError);
     console.error('오류 메시지:', (apiError as Error).message);
     console.error('오류 스택:', (apiError as Error).stack);
+    console.error('오류 타입:', typeof apiError);
+    console.error('Error instanceof Error:', apiError instanceof Error);
     
     // 에러 메시지 추출
     let errorMessage = '공구 등록 중 오류가 발생했습니다.';
@@ -740,7 +742,12 @@ const continueSubmitWithUserId = async (
       errorMessage = apiError.message;
       
       // 중복 상품 공구 참여 불가 메시지 처리
+      console.log('에러 메시지 체크:', errorMessage);
+      console.log('중복 체크 결과:', errorMessage.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다'));
+      
       if (errorMessage.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다')) {
+        console.log('중복 상품 에러 감지 - 팝업 표시');
+        
         errorTitle = '중복 상품 등록 제한';
         errorMessage = '동일한 상품은 등록이 제한됩니다.';
         
@@ -1682,6 +1689,23 @@ const onSubmit = async (values: FormData) => {
         </Form>
       </CardContent>
     </Card>
+    
+    {/* 중복 공구 알림 다이얼로그 */}
+    <AlertDialog open={showDuplicateProductDialog} onOpenChange={setShowDuplicateProductDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{errorDialogTitle}</AlertDialogTitle>
+          <AlertDialogDescription className="text-base">
+            {errorDialogMessage}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={() => setShowDuplicateProductDialog(false)}>
+            확인
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </div>
   );
 }

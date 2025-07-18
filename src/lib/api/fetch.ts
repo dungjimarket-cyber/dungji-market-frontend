@@ -53,12 +53,36 @@ export const fetchWithAuth = async (
         console.error('API 응답 파싱 실패:', e);
       }
       
+      // 다양한 형식의 에러 메시지 추출
+      let errorMessage = '요청 처리 중 오류가 발생했습니다.';
+      
+      if (errorData) {
+        // Django REST Framework 형식의 필드별 에러 처리
+        if (errorData.product && typeof errorData.product === 'string') {
+          errorMessage = errorData.product;
+        } else if (errorData.product && Array.isArray(errorData.product)) {
+          errorMessage = errorData.product[0];
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (typeof errorData === 'object') {
+          // 첫 번째 필드의 첫 번째 에러 메시지 사용
+          const firstKey = Object.keys(errorData)[0];
+          if (firstKey && errorData[firstKey]) {
+            if (typeof errorData[firstKey] === 'string') {
+              errorMessage = errorData[firstKey];
+            } else if (Array.isArray(errorData[firstKey]) && errorData[firstKey].length > 0) {
+              errorMessage = errorData[firstKey][0];
+            }
+          }
+        }
+      }
+      
       // 에러 응답 반환
-      throw new Error(
-        errorData?.detail || 
-        errorData?.message || 
-        '요청 처리 중 오류가 발생했습니다.'
-      );
+      throw new Error(errorMessage);
     }
     
     return response;
