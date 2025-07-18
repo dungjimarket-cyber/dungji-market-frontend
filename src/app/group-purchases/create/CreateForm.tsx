@@ -938,6 +938,7 @@ const onSubmit = async (values: FormData) => {
     if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
       // 슬라이더 값(시간)을 현재 시간에 더함
       const hoursToAdd = values.sliderHours || sliderHours;
+      console.log('제출 시 슬라이더 값:', values.sliderHours, '상태 값:', sliderHours, '최종 사용 값:', hoursToAdd);
       endTime = new Date(currentDate.getTime() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24) * 60 * 60 * 1000);
     } else if (values.end_time_option === 'custom' && values.end_time) {
       // 사용자 지정 날짜/시간 사용
@@ -1562,6 +1563,7 @@ const onSubmit = async (values: FormData) => {
                             // 슬라이더 값만 처리
                             const sliderValue = values[0];
                             setSliderHours(sliderValue);
+                            form.setValue('sliderHours', sliderValue); // 중요: form에도 슬라이더 값 설정
                             form.setValue('end_time_option', 'slider');
                             setEndTimeOption('slider');
                             
@@ -1569,6 +1571,9 @@ const onSubmit = async (values: FormData) => {
                             const currentTime = new Date();
                             const newEndTime = new Date(currentTime.getTime() + sliderValue * 60 * 60 * 1000);
                             form.setValue('end_time', newEndTime.toISOString());
+                            
+                            console.log('슬라이더 값 변경:', sliderValue, '시간');
+                            console.log('종료 시간:', newEndTime.toISOString());
                             
                             // 제품이 선택되어 있을 경우에만 제목/설명 업데이트
                             if (selectedProduct) {
