@@ -130,6 +130,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [myBidRank, setMyBidRank] = useState<{rank: number, total: number} | null>(null);
   const [showBidCompleteModal, setShowBidCompleteModal] = useState(false); // 입찰 완료 모달 표시 여부
   
+  // 최종선택 관련 상태
+  const [isInFinalSelection, setIsInFinalSelection] = useState(false); // 최종선택 상태인지
+  const [finalSelectionEndTime, setFinalSelectionEndTime] = useState<Date | null>(null); // 최종선택 마감시간
+  const [showFinalSelectionModal, setShowFinalSelectionModal] = useState(false); // 최종선택 모달
+  const [finalSelectionChoice, setFinalSelectionChoice] = useState<'confirm' | 'abandon' | null>(null); // 선택 상태
+  const [finalSelectionTimeLeft, setFinalSelectionTimeLeft] = useState<string>(''); // 최종선택 남은 시간
+  
   // 입찰 정보 가져오기 함수 - useCallback으로 메모이제이션
   const fetchBidInfo = useCallback(async () => {
     const groupBuyId = groupBuy?.id;
@@ -717,6 +724,41 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   };
   
   /**
+   * 최종선택 처리 함수
+   */
+  const handleFinalSelection = async (choice: 'confirm' | 'abandon') => {
+    if (!myBidId) {
+      toast.error('입찰 정보를 찾을 수 없습니다.');
+      return;
+    }
+    
+    try {
+      const endpoint = choice === 'confirm' ? 'confirm' : 'reject';
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/${myBidId}/${endpoint}/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('최종선택 처리 중 오류가 발생했습니다.');
+      }
+      
+      toast.success(choice === 'confirm' ? '구매 확정되었습니다.' : '구매를 포기했습니다.');
+      setShowFinalSelectionModal(false);
+      setFinalSelectionChoice(choice);
+      
+      // 페이지 새로고침
+      router.refresh();
+    } catch (error) {
+      console.error('최종선택 오류:', error);
+      toast.error('최종선택 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  /**
    * 입찰 취소 확인
    */
   const handleConfirmCancelBid = async () => {
@@ -976,6 +1018,49 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
     setBidAmount(numericValue === '' ? '' : parseInt(numericValue, 10));
   };
 
+  // 최종선택 상태 체크 및 타이머 설정
+  useEffect(() => {
+    if (groupBuy) {
+      const currentStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+      
+      // voting 상태이거나 end_time이 지났고 아직 completed가 아닌 경우
+      if (currentStatus === 'voting' || 
+          (new Date(groupBuy.end_time) < new Date() && groupBuy.status === 'bidding')) {
+        setIsInFinalSelection(true);
+        
+        // 최종선택 마감시간 설정 (공구 종료 후 12시간)
+        const endTime = new Date(groupBuy.end_time);
+        const finalSelectionEnd = new Date(endTime.getTime() + 12 * 60 * 60 * 1000);
+        setFinalSelectionEndTime(finalSelectionEnd);
+      } else {
+        setIsInFinalSelection(false);
+      }
+    }
+  }, [groupBuy]);
+
+  // 최종선택 타이머
+  useEffect(() => {
+    if (isInFinalSelection && finalSelectionEndTime) {
+      const timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const endTime = finalSelectionEndTime.getTime();
+        const timeLeft = endTime - now;
+        
+        if (timeLeft <= 0) {
+          setFinalSelectionTimeLeft('마감됨');
+          clearInterval(timerInterval);
+        } else {
+          const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+          setFinalSelectionTimeLeft(`${hours}시간 ${minutes}분 ${seconds}초`);
+        }
+      }, 1000);
+      
+      return () => clearInterval(timerInterval);
+    }
+  }, [isInFinalSelection, finalSelectionEndTime]);
+
   const isCompleted = groupBuy.status === 'completed' || groupBuy.status === 'cancelled';
 
   return (
@@ -1232,7 +1317,63 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             )}
             
             {/* 버튼 영역 */}
-            {isSeller ? (
+            {isInFinalSelection && (hasBid || isParticipant) ? (
+              // 최종선택 UI
+              <div className="space-y-4 mb-4">
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <h3 className="font-medium text-orange-800 mb-2">🕐 최종선택 진행중</h3>
+                  <p className="text-sm text-orange-700 mb-3">
+                    {isSeller ? '판매 여부를 결정해주세요.' : '구매 여부를 결정해주세요.'}
+                  </p>
+                  {finalSelectionTimeLeft && (
+                    <div className="flex items-center gap-2 text-sm text-orange-700">
+                      <Clock className="w-4 h-4" />
+                      <span className="font-medium">남은 시간: {finalSelectionTimeLeft}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {!finalSelectionChoice && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setFinalSelectionChoice('confirm');
+                        setShowFinalSelectionModal(true);
+                      }}
+                      className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                    >
+                      {isSeller ? '판매 확정' : '구매 확정'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFinalSelectionChoice('abandon');
+                        setShowFinalSelectionModal(true);
+                      }}
+                      className="flex-1 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium"
+                    >
+                      {isSeller ? '판매 포기' : '구매 포기'}
+                    </button>
+                  </div>
+                )}
+                
+                {finalSelectionChoice && (
+                  <div className={`p-4 rounded-lg ${
+                    finalSelectionChoice === 'confirm' 
+                      ? 'bg-green-50 border border-green-200' 
+                      : 'bg-gray-50 border border-gray-200'
+                  }`}>
+                    <p className={`text-sm font-medium ${
+                      finalSelectionChoice === 'confirm' ? 'text-green-800' : 'text-gray-800'
+                    }`}>
+                      {finalSelectionChoice === 'confirm' 
+                        ? (isSeller ? '✅ 판매 확정했습니다' : '✅ 구매 확정했습니다')
+                        : (isSeller ? '❌ 판매를 포기했습니다' : '❌ 구매를 포기했습니다')
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : isSeller ? (
               // 판매회원용 입찰 인터페이스
               <div className="space-y-4 mb-4">
                 {!hasBid && (
@@ -1692,6 +1833,46 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
         </AlertDialogContent>
       </AlertDialog>
       
+      {/* 최종선택 모달 */}
+      <AlertDialog open={showFinalSelectionModal} onOpenChange={setShowFinalSelectionModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {finalSelectionChoice === 'abandon' 
+                ? (isSeller ? '판매 포기 확인' : '구매 포기 확인')
+                : (isSeller ? '판매 확정' : '구매 확정')
+              }
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            {finalSelectionChoice === 'abandon' ? (
+              <div className="space-y-3">
+                <p>정말로 {isSeller ? '판매를' : '구매를'} 포기하시겠습니까?</p>
+                <p className="text-sm text-gray-600">
+                  포기 시 다시 되돌릴 수 없으며, 페널티가 부과될 수 있습니다.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p>{isSeller ? '판매를' : '구매를'} 확정하시겠습니까?</p>
+                <p className="text-sm text-gray-600">
+                  확정 후에는 {isSeller ? '구매자' : '판매자'}와 연락하여 거래를 진행해야 합니다.
+                </p>
+              </div>
+            )}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleFinalSelection(finalSelectionChoice || 'confirm')}
+              className={finalSelectionChoice === 'abandon' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-green-600 hover:bg-green-700'}
+            >
+              {finalSelectionChoice === 'abandon' ? '포기하기' : '확정하기'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* 입찰 취소 모달 */}
       <AlertDialog open={showBidCancelModal} onOpenChange={setShowBidCancelModal}>
         <AlertDialogContent>
