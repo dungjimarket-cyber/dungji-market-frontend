@@ -8,6 +8,8 @@ import { RoleButton } from '@/components/auth/RoleButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { MobileHeader } from '@/components/navigation/MobileHeader';
 import { IoMdClose } from 'react-icons/io';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
 /**
  * 메인 홈페이지 컴포넌트
@@ -53,6 +55,7 @@ interface GroupBuy {
  */
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [popularGroupBuys, setPopularGroupBuys] = useState<GroupBuy[]>([]);
   const [newGroupBuys, setNewGroupBuys] = useState<GroupBuy[]>([]);
@@ -78,6 +81,19 @@ export default function Home() {
       };
     }
   }, [showIframe]);
+  
+  // URL 파라미터에서 에러 메시지 확인
+  useEffect(() => {
+    const error = searchParams.get('error');
+    const message = searchParams.get('message');
+    
+    if (error && message) {
+      toast.error(decodeURIComponent(message));
+      // URL에서 에러 파라미터 제거
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [searchParams]);
   
   useEffect(() => {
     setMounted(true);

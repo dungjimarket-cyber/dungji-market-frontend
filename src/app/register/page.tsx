@@ -181,6 +181,15 @@ function RegisterPageContent() {
         }
       }
       
+      // 디버깅을 위한 로그
+      console.log('회원가입 요청 URL:', `${apiUrl}/api/auth/register/`);
+      console.log('회원가입 데이터:', {
+        nickname: formData.nickname,
+        phone_number: formData.phone.replace(/-/g, ''),
+        role: formData.role,
+        region: formData.region_province && formData.region_city ? `${formData.region_province} ${formData.region_city}` : undefined
+      });
+      
       // 회원가입 API 호출
       const response = await fetch(`${apiUrl}/api/auth/register/`, {
         method: 'POST',
@@ -190,7 +199,29 @@ function RegisterPageContent() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('회원가입 오류:', errorData);
-        throw new Error(errorData.error || '회원가입에 실패했습니다.');
+        
+        // 다양한 에러 형식 처리
+        let errorMessage = '회원가입에 실패했습니다.';
+        
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.phone_number) {
+          errorMessage = Array.isArray(errorData.phone_number) 
+            ? errorData.phone_number[0] 
+            : errorData.phone_number;
+        } else if (errorData.nickname) {
+          errorMessage = Array.isArray(errorData.nickname)
+            ? errorData.nickname[0]
+            : errorData.nickname;
+        } else if (errorData.business_reg_number) {
+          errorMessage = Array.isArray(errorData.business_reg_number)
+            ? errorData.business_reg_number[0]
+            : errorData.business_reg_number;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -198,12 +229,14 @@ function RegisterPageContent() {
 
       // 회원가입 성공 후 JWT 기반 로그인 진행
       // 닉네임을 username으로 사용
-      const loginSuccess = await login(formData.nickname, formData.password);
+      const loginResult = await login(formData.nickname, formData.password);
       
-      if (loginSuccess) {
+      if (loginResult.success) {
         router.push('/');
       } else {
-        throw new Error('자동 로그인에 실패했습니다. 로그인 페이지로 이동합니다.');
+        // 회원가입은 성공했지만 자동 로그인 실패 시 로그인 페이지로 이동
+        console.error('자동 로그인 실패:', loginResult.error);
+        router.push('/login?registered=true');
       }
     } catch (err: any) {
       console.error('Registration error:', err);

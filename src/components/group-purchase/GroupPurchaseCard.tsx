@@ -199,30 +199,30 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
 
         {/* 제품 정보 오버레이 */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-          <h3 className="text-white text-xl font-bold mb-2">
+          <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
             {groupBuy.product_details?.name || '상품명 없음'}
           </h3>
           <div className="flex flex-wrap gap-2">
             {/* 지역 정보 표시 */}
             {groupBuy.region_type && (
               <span className="bg-amber-500 text-white px-2 py-1 rounded text-xs">
-                {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
+                {groupBuy.region_type === 'nationwide' ? '전국' : (groupBuy.region_name || groupBuy.region || '지역한정').slice(0, 10)}
               </span>
             )}
             {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-              <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">
+              <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs truncate max-w-[100px]">
                 {groupBuy.product_details?.registration_type_korean || 
                  groupBuy.telecom_detail?.subscription_type_korean || 
                  getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
               </span>
             )}
             {groupBuy.telecom_detail?.telecom_carrier && (
-              <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs">
+              <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs truncate max-w-[80px]">
                 {groupBuy.telecom_detail.telecom_carrier}
               </span>
             )}
             {groupBuy.telecom_detail?.plan_info && (
-              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs">
+              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs truncate max-w-[100px]">
                 {groupBuy.telecom_detail.plan_info}
               </span>
             )}
@@ -251,7 +251,7 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
               )}
             </div>
             <div>
-              <p className="text-gray-300 text-sm font-medium">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
+              <p className="text-gray-300 text-sm font-medium truncate max-w-[120px]">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
               <p className="text-gray-500 text-xs">
                 {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
               </p>

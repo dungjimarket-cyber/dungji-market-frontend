@@ -84,7 +84,15 @@ export async function GET(request: Request) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('토큰 요청 실패:', errorData);
-      return NextResponse.redirect(new URL(`/?error=auth_error&message=${encodeURIComponent(errorData.error || '인증 오류')}`, request.url));
+      const errorMessage = errorData.error || errorData.detail || '인증 오류';
+      
+      // 카카오 계정 중복 에러인 경우 더 친근한 메시지로 변경
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes('이미') && errorMessage.includes('계정으로 가입')) {
+        userFriendlyMessage = '이미 가입된 계정입니다. 기존에 가입한 방법으로 로그인해주세요.';
+      }
+      
+      return NextResponse.redirect(new URL(`/?error=auth_error&message=${encodeURIComponent(userFriendlyMessage)}`, request.url));
     }
     
     const data = await response.json();

@@ -15,7 +15,7 @@ interface EditGroupBuyFormProps {
 export default function EditGroupBuyForm({ groupBuyId }: EditGroupBuyFormProps) {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [groupBuyData, setGroupBuyData] = useState<any>(null);
+  const [groupBuyData, setGroupBuyData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +27,7 @@ export default function EditGroupBuyForm({ groupBuyId }: EditGroupBuyFormProps) 
         setLoading(true);
         
         // 공구 데이터 가져오기
-        const response = await tokenUtils.fetchWithAuth(
+        const response: any = await tokenUtils.fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/`,
           {
             method: 'GET',
@@ -39,9 +39,14 @@ export default function EditGroupBuyForm({ groupBuyId }: EditGroupBuyFormProps) 
         }
 
         console.log('공구 데이터:', response);
+        console.log('제품 ID:', response.product);
+        console.log('제품 상세 정보:', response.product_info);
+        console.log('지역 정보:', response.regions);
+        console.log('통신 상세:', response.telecom_detail);
 
         // 작성자 확인
-        if (response.creator !== user?.id && response.creator?.id !== user?.id) {
+        const creatorId = typeof response.creator === 'object' ? response.creator?.id : response.creator;
+        if (creatorId !== user?.id) {
           toast({
             title: "권한 없음",
             description: "본인이 작성한 공구만 수정할 수 있습니다.",
@@ -52,7 +57,7 @@ export default function EditGroupBuyForm({ groupBuyId }: EditGroupBuyFormProps) 
         }
 
         // 상태 확인 - 모집중인 공구만 수정 가능
-        if (response.status !== 'recruiting' && response.status !== 'active') {
+        if (response && response.status && response.status !== 'recruiting' && response.status !== 'active') {
           toast({
             title: "수정 불가",
             description: "모집중인 공구만 수정할 수 있습니다.",
@@ -112,9 +117,11 @@ export default function EditGroupBuyForm({ groupBuyId }: EditGroupBuyFormProps) 
     min_participants: groupBuyData.min_participants,
     max_participants: groupBuyData.max_participants,
     end_time: groupBuyData.end_time,
-    product_id: groupBuyData.product?.id || groupBuyData.product_id,
+    product_id: groupBuyData.product_info?.id || groupBuyData.product || groupBuyData.product_id,
+    product: groupBuyData.product_info || null, // product_info 사용
     region_type: groupBuyData.region_type || 'local',
     regions: groupBuyData.regions || [],
+    current_participants: groupBuyData.current_participants || 0, // 참여자 수 추가
     
     // 통신 상품 관련 정보
     telecom_detail: groupBuyData.telecom_detail,

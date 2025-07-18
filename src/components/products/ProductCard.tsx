@@ -51,7 +51,7 @@ export function ProductCard({
       </div>
       <CardHeader className="p-4">
         <div className="flex justify-between items-start">
-          <h3 className="font-semibold text-lg">{title}</h3>
+          <h3 className="font-semibold text-lg line-clamp-2">{title}</h3>
           <Badge variant="secondary" className={statusColor[status]}>
             {statusText[status]}
           </Badge>

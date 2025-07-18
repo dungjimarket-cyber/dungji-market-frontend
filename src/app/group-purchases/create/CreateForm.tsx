@@ -78,8 +78,8 @@ interface CreateFormProps {
  * 폼 유효성 검증 스키마
  * 카테고리별 필드 유효성 검증 로직 포함
  */
-const formSchema = z.object({
-  product: z.string().min(1, {
+const getFormSchema = (mode: string) => z.object({
+  product: mode === 'edit' ? z.string().optional() : z.string().min(1, {
     message: '상품을 선택해주세요',
   }),
   title: z.string().optional().default(''),
@@ -327,7 +327,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   };
   
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(getFormSchema(mode)),
     defaultValues: {
       product: '',
       title: '',
@@ -451,6 +451,10 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   useEffect(() => {
     if (mode === 'edit' && initialData) {
       console.log('초기 데이터 설정:', initialData);
+      console.log('초기 제품 정보:', initialData.product);
+      console.log('초기 제품 ID:', initialData.product_id);
+      console.log('초기 지역 정보:', initialData.regions);
+      console.log('초기 통신 상세:', initialData.telecom_detail);
       
       // 폼 필드 설정
       form.setValue('product', initialData.product_id?.toString() || '');
@@ -459,11 +463,34 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       form.setValue('min_participants', initialData.min_participants || 1);
       form.setValue('max_participants', initialData.max_participants || 5);
       
+      // 제품 정보 설정
+      if (initialData.product) {
+        setSelectedProduct(initialData.product);
+        // products 목록이 로드되었고 product가 있으면 form에도 설정
+        if (products.length > 0) {
+          const productInList = products.find(p => p.id === initialData.product.id);
+          if (productInList) {
+            form.setValue('product', productInList.id.toString());
+          }
+        }
+      }
+      
       // 마감 시간 설정
       if (initialData.end_time) {
         form.setValue('end_time', initialData.end_time);
-        form.setValue('end_time_option', 'custom');
-        setEndTimeOption('custom');
+        form.setValue('end_time_option', 'slider');
+        setEndTimeOption('slider');
+        
+        // 현재 시간과 마감 시간의 차이를 계산하여 슬라이더 값 설정
+        const now = new Date();
+        const endTime = new Date(initialData.end_time);
+        const diffHours = Math.round((endTime.getTime() - now.getTime()) / (1000 * 60 * 60));
+        
+        // 6~48시간 범위 내로 제한
+        const hours = Math.max(6, Math.min(48, diffHours));
+        setSliderHours(hours);
+        form.setValue('sliderHours', hours);
+        console.log('마감까지 남은 시간:', diffHours, '시간 -> 슬라이더 값:', hours);
       }
       
       // 지역 타입 설정
@@ -480,10 +507,21 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       if (initialData.telecom_detail) {
         form.setValue('telecom_carrier', initialData.telecom_detail.telecom_carrier);
         form.setValue('subscription_type', initialData.telecom_detail.subscription_type);
-        form.setValue('plan_info', initialData.telecom_detail.plan_info);
+        
+        // plan_info를 SelectItem value 형식으로 변환
+        const planInfo = initialData.telecom_detail.plan_info;
+        let telecomPlan = '';
+        if (planInfo === '3만원대') telecomPlan = '5G_basic';
+        else if (planInfo === '5만원대') telecomPlan = '5G_standard';
+        else if (planInfo === '7만원대') telecomPlan = '5G_premium';
+        else if (planInfo === '9만원대') telecomPlan = '5G_special';
+        else if (planInfo === '10만원대') telecomPlan = '5G_platinum';
+        
+        form.setValue('telecom_plan', telecomPlan);
+        console.log('변환된 요금제:', planInfo, '->', telecomPlan);
       }
     }
-  }, [mode, initialData, form]);
+  }, [mode, initialData, form, products]);
   
   /**
    * 지역 검색 핸들러
@@ -621,7 +659,7 @@ const continueSubmitWithUserId = async (
 ) => {
   try {
     // 백엔드 API 요구사항에 정확히 맞춘 요청 객체
-    const apiRequestData = {
+    const apiRequestData: any = {
       product: currentProductId,           // 필수 필드, 수치
       title: safeTitle,                   // 필수 필드, 문자열 (자동 생성된 제목)
       description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
@@ -629,7 +667,6 @@ const continueSubmitWithUserId = async (
       max_participants: maxPart,          // 필수 필드, 수치, 최소 1
       end_time: calculatedEndTimeIso,     // 필수 필드, 날짜/시간 문자열
       region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
-      creator: userId,                    // 필수 필드, 현재 로그인한 사용자 ID
       product_details: cleanProductDetails, // 백엔드에서 이 키를 사용하여 통신사 정보 추출
       // 다중 지역 정보를 regions 배열로 전송
       regions: regionType === 'local' ? selectedRegions.map(region => ({
@@ -640,9 +677,16 @@ const continueSubmitWithUserId = async (
       })) : []
     };
     
+    // Only include creator field when creating, not updating
+    if (mode !== 'edit') {
+      apiRequestData.creator = userId; // 필수 필드, 현재 로그인한 사용자 ID
+    }
+    
     // 최종 API 요청 데이터 로깅
     console.log('최종 API 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
-    console.log('사용자 ID 확인:', apiRequestData.creator);
+    if (mode !== 'edit') {
+      console.log('사용자 ID 확인:', apiRequestData.creator);
+    }
     
     // 공구 등록/수정 API 요청 실행
     console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} API 요청 시작`);
@@ -670,7 +714,9 @@ const continueSubmitWithUserId = async (
     
     // 자동으로 상세 페이지 또는 목록 페이지로 이동
     setTimeout(() => {
-      if (mode === 'edit' && response?.id) {
+      if (mode === 'edit' && groupBuyId) {
+        router.push(`/groupbuys/${groupBuyId}`);
+      } else if (response && typeof response === 'object' && 'id' in response) {
         router.push(`/groupbuys/${response.id}`);
       } else {
         router.push('/group-purchases');
@@ -1057,7 +1103,7 @@ const onSubmit = async (values: FormData) => {
   const loadingOverlay = isSubmitting && (
     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-lg">
       <Loader2 className="h-16 w-16 animate-spin text-blue-500 mb-4" />
-      <p className="text-xl font-bold text-blue-700">공구 등록 중...</p>
+      <p className="text-xl font-bold text-blue-700">{mode === 'edit' ? '공구 수정 중...' : '공구 등록 중...'}</p>
       <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
       <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
         <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '100%' }}></div>
@@ -1073,9 +1119,9 @@ const onSubmit = async (values: FormData) => {
         {loadingOverlay}
         
         <CardHeader className="pb-4">
-        <CardTitle className="text-2xl font-bold text-center mb-1">공구 등록하기</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center mb-1">{mode === 'edit' ? '공구 수정하기' : '공구 등록하기'}</CardTitle>
         <CardDescription className="text-center text-gray-500">
-          새로운 공동구매를 시작하세요
+          {mode === 'edit' ? '공구 정보를 수정하세요' : '새로운 공동구매를 시작하세요'}
         </CardDescription>
         {/* 폼 유효성 검증 오류 표시 */}
         {Object.keys(form.formState.errors).length > 0 && (
@@ -1099,6 +1145,20 @@ const onSubmit = async (values: FormData) => {
             })} 
             className="space-y-6"
           >
+            {mode === 'edit' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-blue-800">
+                  <AlertCircleIcon className="inline-block h-4 w-4 mr-2" />
+                  수정 가능한 항목: <strong>지역{initialData?.current_participants > 1 ? '' : ', 참여 인원, 마감 시간'}</strong>만 변경할 수 있습니다.
+                </p>
+                {initialData?.current_participants > 1 && (
+                  <p className="text-sm text-orange-600 mt-2">
+                    <AlertCircleIcon className="inline-block h-4 w-4 mr-2" />
+                    참여자가 있어 참여 인원과 마감 시간은 수정할 수 없습니다.
+                  </p>
+                )}
+              </div>
+            )}
             <div className="space-y-6">
               <h3 className="text-lg font-medium">기기 선택</h3>
               <FormField
@@ -1108,6 +1168,8 @@ const onSubmit = async (values: FormData) => {
                   <FormItem>
                     <FormControl>
                       <Select 
+                        disabled={mode === 'edit'}
+                        value={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
                           const product = products.find(p => p.id.toString() === value);
@@ -1148,7 +1210,9 @@ const onSubmit = async (values: FormData) => {
                         defaultValue={field.value}
                       >
                         <SelectTrigger className="bg-gray-50 h-12">
-                          <SelectValue placeholder="상품을 선택해주세요" />
+                          <SelectValue placeholder="상품을 선택해주세요">
+                            {field.value && selectedProduct ? selectedProduct.name : "상품을 선택해주세요"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {products.map((product) => (
@@ -1268,7 +1332,7 @@ const onSubmit = async (values: FormData) => {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
                                   <SelectValue placeholder="통신사 선택" />
                                 </SelectTrigger>
@@ -1289,7 +1353,7 @@ const onSubmit = async (values: FormData) => {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
                                   <SelectValue placeholder="가입유형 선택" />
                                 </SelectTrigger>
@@ -1310,7 +1374,7 @@ const onSubmit = async (values: FormData) => {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
                                   <SelectValue placeholder="요금제 선택" />
                                 </SelectTrigger>
@@ -1339,7 +1403,7 @@ const onSubmit = async (values: FormData) => {
                           <FormItem>
                             <FormLabel>제조사</FormLabel>
                             <FormControl>
-                              <Input {...field} className="bg-gray-50 h-12" placeholder="제조사" />
+                              <Input {...field} className="bg-gray-50 h-12" placeholder="제조사" disabled={mode === 'edit'} />
                             </FormControl>
                           </FormItem>
                         )}
@@ -1352,7 +1416,7 @@ const onSubmit = async (values: FormData) => {
                           <FormItem>
                             <FormLabel>보증 기간(개월)</FormLabel>
                             <FormControl>
-                              <Input {...field} className="bg-gray-50 h-12" placeholder="12" type="number" />
+                              <Input {...field} className="bg-gray-50 h-12" placeholder="12" type="number" disabled={mode === 'edit'} />
                             </FormControl>
                           </FormItem>
                         )}
@@ -1370,7 +1434,7 @@ const onSubmit = async (values: FormData) => {
                           <FormItem>
                             <FormLabel>렌탈 기간(개월)</FormLabel>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
                                   <SelectValue placeholder="렌탈 기간 선택" />
                                 </SelectTrigger>
@@ -1397,7 +1461,7 @@ const onSubmit = async (values: FormData) => {
                           <FormItem>
                             <FormLabel>결제 주기</FormLabel>
                             <FormControl>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
                                   <SelectValue placeholder="결제 주기 선택" />
                                 </SelectTrigger>
@@ -1420,10 +1484,14 @@ const onSubmit = async (values: FormData) => {
 
             {/* 제목 필드 자동 생성으로 대체 */}
             <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
-              <h3 className="text-md font-medium mb-2">공구 제목 자동 생성</h3>
-              <p className="text-sm text-gray-600">
-                상품명, 통신사, 가입유형, 요금제 정보를 기반으로 자동 생성됩니다.  
-              </p>
+              <h3 className="text-md font-medium mb-2">공구 제목</h3>
+              {mode === 'edit' ? (
+                <p className="text-sm text-gray-800 font-medium">{initialData?.title || '제목 없음'}</p>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  상품명, 통신사, 가입유형, 요금제 정보를 기반으로 자동 생성됩니다.  
+                </p>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -1440,6 +1508,7 @@ const onSubmit = async (values: FormData) => {
                           type="number"
                           min="1"
                           max="10"
+                          disabled={mode === 'edit' && (initialData?.current_participants || 0) > 1}
                           placeholder="2"
                           className="text-center font-medium text-lg"
                           {...field}
@@ -1461,6 +1530,7 @@ const onSubmit = async (values: FormData) => {
                           type="number"
                           min="1"
                           max="10"
+                          disabled={mode === 'edit' && (initialData?.current_participants || 0) > 1}
                           placeholder="10"
                           className="text-center font-medium text-lg"
                           {...field}
@@ -1487,6 +1557,7 @@ const onSubmit = async (values: FormData) => {
                           max={48}
                           step={1}
                           value={[sliderHours]}
+                          disabled={mode === 'edit' && (initialData?.current_participants || 0) > 1}
                           onValueChange={(values) => {
                             // 슬라이더 값만 처리
                             const sliderValue = values[0];
@@ -1597,10 +1668,10 @@ const onSubmit = async (values: FormData) => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                  등록 중...
+                  {mode === 'edit' ? '수정 중...' : '등록 중...'}
                 </>
               ) : (
-                '공구 등록하기'
+                mode === 'edit' ? '공구 수정하기' : '공구 등록하기'
               )}
             </Button>
           </form>
