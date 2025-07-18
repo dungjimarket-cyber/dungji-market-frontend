@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react';
 import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface GroupBuy {
   id: number;
@@ -50,6 +51,8 @@ interface GroupBuy {
 interface GroupPurchaseCardProps {
   groupBuy: GroupBuy;
   onJoin?: (id: number) => void;
+  isParticipant?: boolean; // 참여 여부
+  hasBid?: boolean; // 입찰 여부
 }
 
 /**
@@ -57,8 +60,9 @@ interface GroupPurchaseCardProps {
  * @param groupBuy - 공구 정보
  * @param onJoin - 참여하기 버튼 클릭 핸들러 (사용하지 않음, 상세 페이지로 이동)
  */
-export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
+export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = false }: GroupPurchaseCardProps) {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
   const isNew = new Date(groupBuy.start_time) > new Date(Date.now() - 24 * 60 * 60 * 1000);
   const isBidding = groupBuy.status === 'bidding';
@@ -123,13 +127,42 @@ export function GroupPurchaseCard({ groupBuy }: GroupPurchaseCardProps) {
 
   const getButtonText = () => {
     if (isCompleted) return '마감완료';
-    return '상세보기';
+    
+    // 비로그인
+    if (!isAuthenticated) {
+      return '공구 둘러보기';
+    }
+    
+    // 판매회원
+    if (user?.role === 'seller') {
+      if (hasBid) {
+        return '다시 입찰하기';
+      }
+      return '공구 입찰하기';
+    }
+    
+    // 일반회원
+    if (isParticipant) {
+      return '참여 완료';
+    }
+    return '공구 참여하기';
   };
 
   const getButtonStyle = () => {
     if (isCompleted) {
       return 'bg-gray-500 text-white cursor-not-allowed';
     }
+    
+    // 참여 완료 상태
+    if (isParticipant && user?.role !== 'seller') {
+      return 'bg-blue-600 text-white hover:bg-blue-700';
+    }
+    
+    // 입찰 완료 상태
+    if (hasBid && user?.role === 'seller') {
+      return 'bg-indigo-600 text-white hover:bg-indigo-700';
+    }
+    
     if (isUrgent) {
       return 'bg-gradient-to-r from-purple-600 to-purple-700 text-purple-100 hover:from-purple-700 hover:to-purple-800';
     }

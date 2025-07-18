@@ -1579,9 +1579,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                           입찰 중...
                         </span>
                       ) : hasBid && myBidAmount ? (
-                        '다시입찰하기'
+                        '다시 입찰하기'
                       ) : (
-                        '입찰하기'
+                        '공구 입찰하기'
                       )}
                     </button>
                   </div>
@@ -1628,7 +1628,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 disabled={isJoining || isCompleted || isParticipant}
                 className={`w-full py-3 rounded-lg font-medium mb-4 ${isCompleted ? 'bg-gray-200 text-gray-500' : isParticipant ? 'bg-green-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
               >
-                {isJoining ? '처리 중...' : isCompleted ? '마감된 공구입니다' : isParticipant ? '참여 완료' : '참여하기'}
+                {isJoining ? '처리 중...' : isCompleted ? '마감된 공구입니다' : isParticipant ? '참여 완료' : '공구 참여하기'}
               </button>
             )}
 

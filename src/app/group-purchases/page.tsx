@@ -275,7 +275,12 @@ function GroupPurchasesPageContent() {
                   </div>
                 ) : (
                   groupBuys.map((groupBuy) => (
-                    <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                    <GroupPurchaseCard 
+                      key={groupBuy.id} 
+                      groupBuy={groupBuy}
+                      isParticipant={userParticipations.includes(groupBuy.id)}
+                      hasBid={userBids.includes(groupBuy.id)}
+                    />
                   ))
                 )}
               </div>
@@ -297,7 +302,12 @@ function GroupPurchasesPageContent() {
                 </div>
               ) : (
                 groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                  <GroupPurchaseCard 
+                    key={groupBuy.id} 
+                    groupBuy={groupBuy}
+                    isParticipant={userParticipations.includes(groupBuy.id)}
+                    hasBid={userBids.includes(groupBuy.id)}
+                  />
                 ))
               )}
               </div>
@@ -319,7 +329,12 @@ function GroupPurchasesPageContent() {
                 </div>
               ) : (
                 groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                  <GroupPurchaseCard 
+                    key={groupBuy.id} 
+                    groupBuy={groupBuy}
+                    isParticipant={userParticipations.includes(groupBuy.id)}
+                    hasBid={userBids.includes(groupBuy.id)}
+                  />
                 ))
               )}
               </div>
@@ -341,7 +356,12 @@ function GroupPurchasesPageContent() {
                 </div>
               ) : (
                 groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                  <GroupPurchaseCard 
+                    key={groupBuy.id} 
+                    groupBuy={groupBuy}
+                    isParticipant={userParticipations.includes(groupBuy.id)}
+                    hasBid={userBids.includes(groupBuy.id)}
+                  />
                 ))
               )}
               </div>

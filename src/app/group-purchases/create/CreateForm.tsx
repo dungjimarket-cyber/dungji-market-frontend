@@ -741,8 +741,8 @@ const continueSubmitWithUserId = async (
       
       // 중복 상품 공구 참여 불가 메시지 처리
       if (errorMessage.includes('이미 해당 상품으로 진행 중인 공동구매가 있습니다')) {
-        errorTitle = '중복 참여 제한';
-        errorMessage = '동일한 상품은 중복참여가 제한됩니다. 기존 공구가 완료된 후 새로운 공구를 생성해주세요.';
+        errorTitle = '중복 상품 등록 제한';
+        errorMessage = '동일한 상품은 등록이 제한됩니다.';
         
         // AlertDialog를 통한 오류 표시
         setErrorDialogTitle(errorTitle);
@@ -752,7 +752,6 @@ const continueSubmitWithUserId = async (
         // sonner 토스트도 함께 표시
         sonnerToast.error(errorMessage, { 
           id: 'duplicate-product-error',
-          description: '기존 공구가 완료된 후 새로운 공구를 생성해주세요.',
         });
         
         // 기본 toast도 함께 표시
