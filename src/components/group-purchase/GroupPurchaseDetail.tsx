@@ -8,6 +8,7 @@ import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info,
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText, getStatusClass } from '@/lib/groupbuy-utils';
+import { cancelBid } from '@/lib/api/bidService';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
@@ -719,30 +720,21 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    * 입찰 취소 확인
    */
   const handleConfirmCancelBid = async () => {
-    if (!accessToken || !myBidId) {
+    if (!myBidId) {
       toast.error('취소할 입찰이 없습니다.');
       return;
     }
     
     try {
-      // 실제 API 호출 구현 - BidViewSet의 cancel 액션 사용
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/${myBidId}/cancel/`, {
-        method: 'DELETE',  // 백엔드에서 @action(detail=True, methods=['delete'])
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.detail || '입찰 취소 중 오류가 발생했습니다.';
-        throw new Error(errorMessage);
-      }
+      // bidService의 cancelBid 함수 사용
+      await cancelBid(myBidId);
       
       toast.success('입찰이 취소되었습니다.');
       setShowBidCancelModal(false);
       setHasBid(false);
+      setCanCancelBid(false);
+      setMyBidAmount(null);
+      setMyBidId(null);
       
       // 입찰 정보 다시 가져오기
       fetchBidInfo();

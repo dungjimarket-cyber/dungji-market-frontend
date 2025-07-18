@@ -849,7 +849,7 @@ const onSubmit = async (values: FormData) => {
       if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
         // 슬라이더 값(시간)을 현재 시간에 더함
         const hoursToAdd = values.sliderHours || sliderHours;
-        endTime.setHours(currentDate.getHours() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24));
+        endTime = new Date(currentDate.getTime() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24) * 60 * 60 * 1000);
       } else if (values.end_time_option === 'custom' && values.end_time) {
         // 사용자 지정 날짜/시간 사용
         endTime = new Date(values.end_time);
@@ -938,7 +938,7 @@ const onSubmit = async (values: FormData) => {
     if (values.end_time_option === 'slider' || values.end_time_option === '24hours') {
       // 슬라이더 값(시간)을 현재 시간에 더함
       const hoursToAdd = values.sliderHours || sliderHours;
-      endTime.setHours(currentDate.getHours() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24));
+      endTime = new Date(currentDate.getTime() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24) * 60 * 60 * 1000);
     } else if (values.end_time_option === 'custom' && values.end_time) {
       // 사용자 지정 날짜/시간 사용
       endTime = new Date(values.end_time);
