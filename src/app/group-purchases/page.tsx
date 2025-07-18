@@ -74,6 +74,7 @@ function GroupPurchasesPageContent() {
         params.append('status', 'in_progress'); // 명시적으로 status 파라미터를 전달
       } else if (activeTab === 'new') {
         params.append('sort', 'newest');
+        params.append('status', 'in_progress'); // 진행중인 것만 표시
       }
       
       // 사용자 필터 추가
@@ -84,12 +85,14 @@ function GroupPurchasesPageContent() {
             if (key === 'sort') {
               if (value === '최신순') {
                 params.append('sort', 'newest');
+                params.append('status', 'in_progress'); // 진행중인 것만 표시
               } else if (value === '인기순(참여자많은순)') {
                 params.append('sort', 'popular');
                 params.append('status', 'in_progress'); // 명시적으로 status 파라미터를 전달
               } else {
                 // 기본값은 최신순
                 params.append('sort', 'newest');
+                params.append('status', 'in_progress'); // 진행중인 것만 표시
               }
             } else {
               params.append(key, value);
@@ -111,8 +114,13 @@ function GroupPurchasesPageContent() {
       if (activeTab !== 'completed') {
         // 사용자가 참여하거나 입찰한 공구는 완료되어도 보여주고, 그 외의 완료된 공구는 필터링
         data = data.filter((groupBuy: GroupBuy) => {
-          // 완료되지 않은 공구는 모두 표시
-          if (groupBuy.status !== 'completed') {
+          // 현재 시간과 비교해서 마감된 공구인지 확인
+          const now = new Date();
+          const endTime = new Date(groupBuy.end_time);
+          const isExpired = endTime < now;
+          
+          // 완료되지 않고 마감되지 않은 공구는 모두 표시
+          if (groupBuy.status !== 'completed' && !isExpired && !['final_selection', 'seller_confirmation'].includes(groupBuy.status)) {
             return true;
           }
           
@@ -126,7 +134,7 @@ function GroupPurchasesPageContent() {
             return true;
           }
           
-          // 그 외의 완료된 공구는 필터링
+          // 그 외의 완료된 공구나 마감된 공구는 필터링
           return false;
         });
       }
@@ -246,9 +254,9 @@ function GroupPurchasesPageContent() {
           <Tabs value={activeTab} onValueChange={handleTabChange} className="px-4">
             <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="all">전체</TabsTrigger>
-              <TabsTrigger value="popular">인기</TabsTrigger>
-              <TabsTrigger value="new">최신</TabsTrigger>
-              <TabsTrigger value="completed">완료</TabsTrigger>
+              <TabsTrigger value="popular">인기순</TabsTrigger>
+              <TabsTrigger value="new">최신순</TabsTrigger>
+              <TabsTrigger value="completed">종료</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="mt-2">
