@@ -53,6 +53,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { getRegions, searchRegionsByName, Region } from '@/lib/api/regionService';
 import { getSession } from 'next-auth/react';
+import MultiRegionSelector from '@/components/address/MultiRegionSelector';
 
 interface Product {
   id: number;
@@ -1139,93 +1140,35 @@ const onSubmit = async (values: FormData) => {
               {/* 지역 선택 UI - 지역 타입이 'local'일 때만 표시 */}
               {regionType === 'local' && (
                 <div className="mt-4 space-y-4">
-                  <div className="relative">
-                    <div className="flex items-center">
-                      <MapPinIcon className="h-5 w-5 text-gray-500 absolute left-3" />
-                      <Input
-                        type="text"
-                        placeholder="지역명을 검색하세요 (예: 서울, 강남구)"
-                        className="pl-10 pr-4 py-2 bg-gray-50"
-                        value={searchTerm}
-                        onChange={(e) => handleRegionSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                    </div>
-                    
-                    {/* 지역 검색 결과 */}
-                    {searchTerm.length >= 2 && searchResults.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                        {isSearching ? (
-                          <div className="p-3 text-center text-gray-500">
-                            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
-                            <p className="text-sm mt-1">검색 중...</p>
-                          </div>
-                        ) : (
-                          <ul className="py-1">
-                            {searchResults.map((region) => (
-                              <li 
-                                key={region.code}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
-                                onClick={() => handleRegionSelect(region)}
-                              >
-                                <div>
-                                  <span className="font-medium">{region.name}</span>
-                                  <span className="text-xs text-gray-500 ml-2">{region.full_name}</span>
-                                </div>
-                                <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
-                                  {region.level === 1 ? '시/도' : region.level === 2 ? '시/군/구' : '읍/면/동'}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* 선택된 지역 표시 - 다중 선택 */}
-                  <div className="mt-2">
-                    {selectedRegions.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium">선택된 지역 ({selectedRegions.length}/3)</p>
-                          {regionError && (
-                            <p className="text-xs text-red-600">{regionError}</p>
-                          )}
-                        </div>
-                        {selectedRegions.map((region) => (
-                          <div 
-                            key={region.code} 
-                            className="p-3 bg-blue-50 border border-blue-100 rounded-md flex items-center justify-between"
-                          >
-                            <div>
-                              <p className="font-medium text-blue-800">{region.name}</p>
-                              <p className="text-xs text-blue-600">{region.full_name}</p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 text-blue-600 hover:text-blue-800"
-                              onClick={() => handleRemoveRegion(region.code)}
-                            >
-                              삭제
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-3 bg-amber-50 border border-amber-100 rounded-md">
-                        <p className="text-sm text-amber-700">
-                          <AlertCircleIcon className="h-4 w-4 inline-block mr-1" />
-                          지역을 선택하면 해당 지역에 사는 사람들에게 공구가 노출됩니다.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  <MultiRegionSelector
+                    maxSelections={3}
+                    selectedRegions={selectedRegions.map(r => ({
+                      sido: r.name.split(' ')[0] || '',
+                      sigungu: r.name.split(' ')[1] || '',
+                      fullAddress: r.full_name || r.name,
+                      zonecode: ''
+                    }))}
+                    onSelectionChange={(regions) => {
+                      // 다음 주소 API 데이터를 기존 형식으로 변환
+                      const convertedRegions = regions.map((r, index) => ({
+                        code: `${r.sido}_${r.sigungu}`,
+                        name: `${r.sido} ${r.sigungu}`,
+                        full_name: r.fullAddress,
+                        level: 2
+                      }));
+                      
+                      setSelectedRegions(convertedRegions);
+                      
+                      // 폼 값 업데이트
+                      form.setValue('selected_regions', convertedRegions);
+                      
+                      // 호환성을 위해 첫 번째 지역은 기존 필드에도 설정
+                      if (convertedRegions.length > 0) {
+                        form.setValue('region', convertedRegions[0].code);
+                        form.setValue('region_name', convertedRegions[0].name);
+                      }
+                    }}
+                  />
                   
                   {/* 지역 선택 안내 메시지 */}
                   <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">

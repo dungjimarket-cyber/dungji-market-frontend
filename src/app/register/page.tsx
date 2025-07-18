@@ -1,27 +1,20 @@
 'use client';
 
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Upload, Check, X } from 'lucide-react';
 import FindAccountModals from '@/components/auth/FindAccountModals';
 import Image from 'next/image';
-
-// 지역 데이터 타입
-interface Region {
-  시도명: string;
-  시군구명: string;
-}
+import DaumPostcodeSearch from '@/components/address/DaumPostcodeSearch';
 
 // Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 Suspense로 감싼야 함
 function RegisterPageContent() {
   const [findModalOpen, setFindModalOpen] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [filteredCities, setFilteredCities] = useState<string[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState('');
+  // 지역 관련 상태는 formData에 포함되어 있으므로 별도 상태 불필요
   
   const [formData, setFormData] = useState({
     // 공통 필수 필드
@@ -52,31 +45,6 @@ function RegisterPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [nicknameChecked, setNicknameChecked] = useState(false);
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
-
-  // 지역 데이터 로드
-  useEffect(() => {
-    fetch('/data/korea_regions.json')
-      .then(res => res.json())
-      .then(data => {
-        setRegions(data);
-        // 시도명 중복 제거
-        const provinces = [...new Set(data.map((item: Region) => item.시도명))];
-        console.log('Loaded provinces:', provinces);
-      })
-      .catch(err => console.error('Failed to load regions:', err));
-  }, []);
-
-  // 시도 선택 시 시군구 필터링
-  useEffect(() => {
-    if (formData.region_province) {
-      const cities = regions
-        .filter(r => r.시도명 === formData.region_province)
-        .map(r => r.시군구명);
-      setFilteredCities([...new Set(cities)]);
-    } else {
-      setFilteredCities([]);
-    }
-  }, [formData.region_province, regions]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -251,8 +219,6 @@ function RegisterPageContent() {
     }
   };
 
-  const provinces = [...new Set(regions.map(r => r.시도명))];
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -393,33 +359,25 @@ function RegisterPageContent() {
                   {formData.role === 'seller' ? '사업장 주소지' : '주요 활동지역'} 
                   {formData.role === 'seller' && <span className="text-red-500"> *</span>}
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <select
-                    name="region_province"
-                    className="appearance-none rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={formData.region_province}
-                    onChange={handleChange}
-                    required={formData.role === 'seller'}
-                  >
-                    <option value="">시/도 선택</option>
-                    {provinces.map(province => (
-                      <option key={province} value={province}>{province}</option>
-                    ))}
-                  </select>
-                  <select
-                    name="region_city"
-                    className="appearance-none rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={formData.region_city}
-                    onChange={handleChange}
-                    disabled={!formData.region_province}
-                    required={formData.role === 'seller'}
-                  >
-                    <option value="">시/군/구 선택</option>
-                    {filteredCities.map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
-                </div>
+                <DaumPostcodeSearch 
+                  onComplete={(data) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      region_province: data.sido,
+                      region_city: data.sigungu
+                    }));
+                  }}
+                  buttonText={
+                    formData.region_province && formData.region_city 
+                      ? `${formData.region_province} ${formData.region_city}` 
+                      : "주소 검색"
+                  }
+                />
+                {formData.region_province && formData.region_city && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    선택된 지역: {formData.region_province} {formData.region_city}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 mt-1">예: 경기도 하남시, 서울시 강남구</p>
               </div>
 

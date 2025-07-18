@@ -1731,6 +1731,15 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             </AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription className="space-y-4">
+            <div className="flex justify-center mb-4">
+              <Image 
+                src="/images/bidtoken.png" 
+                alt="입찰권" 
+                width={120} 
+                height={120}
+                className="object-contain"
+              />
+            </div>
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <p className="text-sm text-gray-700">
                 입찰에 참여하려면 입찰권이 필요합니다.
@@ -1747,7 +1756,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-500">입찰권 가격</p>
-                <p className="text-sm font-medium">1개당 1,000원</p>
+                <p className="text-sm font-medium">1개당 1,990원</p>
               </div>
             </div>
           </AlertDialogDescription>
