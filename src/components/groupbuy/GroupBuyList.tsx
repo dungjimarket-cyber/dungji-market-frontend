@@ -150,8 +150,8 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
             >
               <CardHeader className="relative">
                 {/* 공구 상태를 동적으로 계산하여 우측 상단에 표시 */}
-                <div className="absolute top-2 right-2 z-10">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
+                <div className="absolute top-3 right-3 z-10">
+                  <span className={`px-3 py-1.5 text-sm font-medium rounded-full shadow-lg ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
                     {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
                   </span>
                 </div>

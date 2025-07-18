@@ -42,6 +42,7 @@ export function getStatusText(status: string): string {
     case 'bidding':
       return '입찰중';
     case 'voting':
+    case 'final_selection':
       return '최종선택중';
     case 'seller_confirmation':
       return '판매자확정대기';
@@ -69,6 +70,7 @@ export function getStatusClass(status: string): string {
     case 'bidding':
       return 'bg-purple-100 text-purple-800';
     case 'voting':
+    case 'final_selection':
       return 'bg-orange-100 text-orange-800';
     case 'seller_confirmation':
       return 'bg-yellow-100 text-yellow-800';

@@ -1013,8 +1013,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="mb-6">
             <div className="relative w-full mb-4 rounded-2xl overflow-hidden aspect-[4/3]">
               {/* 상태 표시 배지 - 우측 상단 */}
-              <div className="absolute top-2 right-2 z-10">
-                <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
+              <div className="absolute top-4 right-4 z-10">
+                <span className={`px-3 py-1.5 text-sm font-medium rounded-full shadow-lg ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
                   {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
                 </span>
               </div>
