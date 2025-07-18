@@ -163,25 +163,25 @@ export default function SellerMyPage() {
             </CardContent>
           </Card>
 
-          <h2 className="text-xl font-bold mb-4">공구 내역</h2>
+          <h2 className="text-xl font-bold mb-4">입찰내역</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <SummaryCard
-              title="입찰 목록"
+              title="입찰기록"
               count={profile.activeBids}
               icon={<Clock className="h-5 w-5 text-blue-500" />}
               href="/mypage/seller/bids"
             />
             <SummaryCard
-              title="최종 선택 대기중"
+              title="최종선택 대기중"
               count={profile.pendingSelection}
-              icon={<Star className="h-5 w-5 text-yellow-500 mr-1" />}
+              icon={<Star className="h-5 w-5 text-yellow-500" />}
               href="/mypage/seller/bids?filter=pending"
             />
             <SummaryCard
-              title="판매 확정 대기중"
+              title="판매 확정"
               count={profile.pendingSales}
-              icon={<BadgeCheck className="h-5 w-5 text-green-500 mr-2" />}
-              href="/mypage/seller/sales/pending"
+              icon={<BadgeCheck className="h-5 w-5 text-green-500" />}
+              href="/mypage/seller/sales/confirmed"
             />
             <SummaryCard
               title="판매 완료"

@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getSellerBids, confirmBid, rejectBid, BidData } from '@/lib/api/bidService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
 
 // BidData 인터페이스를 API 서비스에서 가져와 사용합니다
 
@@ -99,6 +100,18 @@ export default function BidManagement() {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
+  // 입찰 시간 형식 변환 (YYYY-MM-DD HH:mm:ss)
+  const formatBidTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
   // 입찰 타입에 따른 표시 문구
   const getBidTypeText = (bidType: string) => {
     return bidType === 'support' ? '지원금 입찰' : '가격 입찰';
@@ -142,12 +155,10 @@ export default function BidManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>공구명</TableHead>
-                    <TableHead>상품</TableHead>
+                    <TableHead>상품명</TableHead>
                     <TableHead>입찰 유형</TableHead>
                     <TableHead>입찰 금액</TableHead>
-                    <TableHead>참여자 수</TableHead>
-                    <TableHead>마감일</TableHead>
+                    <TableHead>입찰시간</TableHead>
                     <TableHead>상태</TableHead>
                     <TableHead>작업</TableHead>
                   </TableRow>
@@ -155,12 +166,18 @@ export default function BidManagement() {
                 <TableBody>
                   {pendingBids.length > 0 ? pendingBids.map((bid) => (
                     <TableRow key={bid.id}>
-                      <TableCell className="font-medium">{bid.groupbuy_title}</TableCell>
-                      <TableCell>{bid.product_name}</TableCell>
+                      <TableCell>
+                        <Link 
+                          href={`/groupbuys/${bid.groupbuy}`}
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {bid.product_name}
+                        </Link>
+                        <div className="text-xs text-gray-500">{bid.groupbuy_title}</div>
+                      </TableCell>
                       <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                      <TableCell>{bid.amount.toLocaleString()}원</TableCell>
-                      <TableCell>{bid.participants_count}명</TableCell>
-                      <TableCell>{formatDate(bid.deadline)}</TableCell>
+                      <TableCell className="font-medium">{bid.amount.toLocaleString()}원</TableCell>
+                      <TableCell className="text-sm">{formatBidTime(bid.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(bid.status)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
@@ -183,7 +200,7 @@ export default function BidManagement() {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-4">
+                      <TableCell colSpan={6} className="text-center py-4">
                         대기 중인 입찰이 없습니다.
                       </TableCell>
                     </TableRow>
@@ -199,24 +216,28 @@ export default function BidManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>공구명</TableHead>
-                    <TableHead>상품</TableHead>
+                    <TableHead>상품명</TableHead>
                     <TableHead>입찰 유형</TableHead>
                     <TableHead>입찰 금액</TableHead>
-                    <TableHead>참여자 수</TableHead>
-                    <TableHead>마감일</TableHead>
+                    <TableHead>입찰시간</TableHead>
                     <TableHead>상태</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {confirmedBids.length > 0 ? confirmedBids.map((bid) => (
                     <TableRow key={bid.id}>
-                      <TableCell className="font-medium">{bid.groupbuy_title}</TableCell>
-                      <TableCell>{bid.product_name}</TableCell>
+                      <TableCell>
+                        <Link 
+                          href={`/groupbuys/${bid.groupbuy}`}
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {bid.product_name}
+                        </Link>
+                        <div className="text-xs text-gray-500">{bid.groupbuy_title}</div>
+                      </TableCell>
                       <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                      <TableCell>{bid.amount.toLocaleString()}원</TableCell>
-                      <TableCell>{bid.participants_count}명</TableCell>
-                      <TableCell>{formatDate(bid.deadline)}</TableCell>
+                      <TableCell className="font-medium">{bid.amount.toLocaleString()}원</TableCell>
+                      <TableCell className="text-sm">{formatBidTime(bid.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(bid.status)}</TableCell>
                     </TableRow>
                   )) : (
@@ -237,24 +258,28 @@ export default function BidManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>공구명</TableHead>
-                    <TableHead>상품</TableHead>
+                    <TableHead>상품명</TableHead>
                     <TableHead>입찰 유형</TableHead>
                     <TableHead>입찰 금액</TableHead>
-                    <TableHead>참여자 수</TableHead>
-                    <TableHead>마감일</TableHead>
+                    <TableHead>입찰시간</TableHead>
                     <TableHead>상태</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rejectedBids.length > 0 ? rejectedBids.map((bid) => (
                     <TableRow key={bid.id}>
-                      <TableCell className="font-medium">{bid.groupbuy_title}</TableCell>
-                      <TableCell>{bid.product_name}</TableCell>
+                      <TableCell>
+                        <Link 
+                          href={`/groupbuys/${bid.groupbuy}`}
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {bid.product_name}
+                        </Link>
+                        <div className="text-xs text-gray-500">{bid.groupbuy_title}</div>
+                      </TableCell>
                       <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                      <TableCell>{bid.amount.toLocaleString()}원</TableCell>
-                      <TableCell>{bid.participants_count}명</TableCell>
-                      <TableCell>{formatDate(bid.deadline)}</TableCell>
+                      <TableCell className="font-medium">{bid.amount.toLocaleString()}원</TableCell>
+                      <TableCell className="text-sm">{formatBidTime(bid.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(bid.status)}</TableCell>
                     </TableRow>
                   )) : (
