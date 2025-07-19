@@ -12,6 +12,7 @@ import { cancelBid } from '@/lib/api/bidService';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
+import { ConsentStatusCard } from '@/components/group-purchase/ConsentStatusCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1728,6 +1729,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     </AlertDescription>
                   </Alert>
                 )}
+              </div>
+            )}
+            
+            {/* 동의 현황 표시 - 판매자 확정 대기 상태일 때만 표시 */}
+            {groupBuy?.status === 'seller_confirmation' && accessToken && (
+              <div className="mb-4">
+                <ConsentStatusCard groupBuyId={groupBuy.id} accessToken={accessToken} />
               </div>
             )}
             

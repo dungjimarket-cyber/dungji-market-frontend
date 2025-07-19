@@ -9,6 +9,7 @@ import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
 import BidManagement from '@/components/mypage/BidManagement';
 import SettlementHistory from '@/components/mypage/SettlementHistory';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
+import { ConsentNotification } from '@/components/notification/ConsentNotification';
 import {
   Accordion,
   AccordionContent,
@@ -200,6 +201,9 @@ export default function MyPageClient() {
             {user ? (
         <div className="space-y-6">
           <ProfileSection />
+          
+          {/* 동의 알림 표시 */}
+          <ConsentNotification />
           
           {/* 아코디언 스타일 메뉴 */}
           <Accordion type="single" collapsible className="w-full">

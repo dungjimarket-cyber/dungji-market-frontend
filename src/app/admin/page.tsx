@@ -14,6 +14,7 @@ import { Select } from '@/components/ui/select';
 import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { GroupBuyConsentManager } from '@/components/admin/GroupBuyConsentManager';
 
 // 입찰권 유형 정의
 const TOKEN_TYPES = [
@@ -688,6 +689,11 @@ export default function AdminPage() {
               </div>
             </CardContent>
           </Card>
+          
+          {/* 참여자 동의 관리 */}
+          <div className="mt-6">
+            <GroupBuyConsentManager />
+          </div>
         </TabsContent>
         
         {/* 셀러 관리 탭 */}

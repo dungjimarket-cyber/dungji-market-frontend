@@ -97,3 +97,38 @@ export interface ParticipationStatus {
   has_bids: boolean;
   can_leave: boolean;
 }
+
+// 참여자 동의 관련 타입
+export interface ParticipantConsent {
+  id: number;
+  participation: number;
+  bid: number;
+  status: 'pending' | 'agreed' | 'disagreed' | 'expired';
+  agreed_at: string | null;
+  disagreed_at: string | null;
+  consent_deadline: string;
+  created_at: string;
+  participant_name: string;
+  groupbuy_title: string;
+  bid_amount: number;
+  bid_type: string;
+  remaining_time: string | null;
+}
+
+export interface ConsentStatus {
+  summary: {
+    total: number;
+    agreed: number;
+    disagreed: number;
+    pending: number;
+    expired: number;
+    all_agreed: boolean;
+    can_proceed: boolean;
+  };
+  details: Array<{
+    user: string;
+    status: string;
+    agreed_at: string | null;
+    disagreed_at: string | null;
+  }>;
+}
