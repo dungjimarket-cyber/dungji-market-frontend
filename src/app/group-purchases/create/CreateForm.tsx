@@ -33,6 +33,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { GroupBuySuccessDialog } from '@/components/group-purchase/GroupBuySuccessDialog';
 import {
   Form,
   FormControl,
@@ -318,6 +319,12 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const [showDuplicateProductDialog, setShowDuplicateProductDialog] = useState(false);
   const [errorDialogTitle, setErrorDialogTitle] = useState('');
   const [errorDialogMessage, setErrorDialogMessage] = useState('');
+  
+  // 성공 다이얼로그 상태
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [createdGroupBuyId, setCreatedGroupBuyId] = useState<number | null>(null);
+  const [createdProductName, setCreatedProductName] = useState('');
+  const [createdProductImage, setCreatedProductImage] = useState('');
   
   // 공구 제목 자동 생성 함수
   const generateTitle = () => {
@@ -704,25 +711,43 @@ const continueSubmitWithUserId = async (
     
     console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} 성공:`, response);
     
-    // 성공 메시지 표시
-    toast({
-      title: mode === 'edit' ? '공구 수정 성공' : '공구 등록 성공',
-      description: mode === 'edit' ? '공구가 성공적으로 수정되었습니다.' : '공구가 성공적으로 등록되었습니다.',
-      className: "border-green-200 bg-green-50",
-      duration: 3000,
-    });
-    
-    // 자동으로 상세 페이지 또는 목록 페이지로 이동
-    setTimeout(() => {
-      if (mode === 'edit' && groupBuyId) {
+    if (mode === 'edit') {
+      // 수정 모드일 때는 기존처럼 토스트 메시지 표시 후 이동
+      toast({
+        title: '공구 수정 성공',
+        description: '공구가 성공적으로 수정되었습니다.',
+        className: "border-green-200 bg-green-50",
+        duration: 3000,
+      });
+      
+      setTimeout(() => {
         router.push(`/groupbuys/${groupBuyId}`);
-      } else if (response && typeof response === 'object' && 'id' in response) {
-        router.push(`/groupbuys/${response.id}`);
+      }, 1500);
+    } else {
+      // 생성 모드일 때는 성공 다이얼로그 표시
+      const groupBuyId = response && typeof response === 'object' && 'id' in response ? response.id : null;
+      
+      if (groupBuyId) {
+        // 상품 정보 설정
+        setCreatedGroupBuyId(groupBuyId);
+        setCreatedProductName(selectedProduct?.name || apiRequestData.title || '');
+        setCreatedProductImage(selectedProduct?.image_url || '');
+        setShowSuccessDialog(true);
+        setIsSubmitting(false); // 성공 다이얼로그 표시 시 로딩 상태 해제
       } else {
-        router.push('/group-purchases');
+        // ID를 받지 못한 경우 기존처럼 처리
+        toast({
+          title: '공구 등록 성공',
+          description: '공구가 성공적으로 등록되었습니다.',
+          className: "border-green-200 bg-green-50",
+          duration: 3000,
+        });
+        
+        setTimeout(() => {
+          router.push('/group-purchases');
+        }, 1500);
       }
-      // 페이지 이동 후에만 로딩 상태 해제
-    }, 1500);
+    }
     
     return true;
   } catch (apiError: unknown) {
@@ -1706,6 +1731,17 @@ const onSubmit = async (values: FormData) => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    
+    {/* 공구 생성 성공 다이얼로그 */}
+    {createdGroupBuyId && (
+      <GroupBuySuccessDialog
+        open={showSuccessDialog}
+        onOpenChange={setShowSuccessDialog}
+        groupBuyId={createdGroupBuyId}
+        productName={createdProductName}
+        productImage={createdProductImage}
+      />
+    )}
     </div>
   );
 }
