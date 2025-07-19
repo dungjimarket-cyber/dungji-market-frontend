@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useSession } from 'next-auth/react';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, CheckCircle, XCircle, Building } from 'lucide-react';
 import { Select } from '@/components/ui/select';
 import Image from 'next/image';
+import { Textarea } from '@/components/ui/textarea';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // 입찰권 유형 정의
 const TOKEN_TYPES = [
@@ -73,6 +75,8 @@ export default function AdminPage() {
   const [groupPurchases, setGroupPurchases] = useState<any[]>([]);
   const [sellers, setSellers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [statistics, setStatistics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [bidCount, setBidCount] = useState<number>(1);
   const [selectedSellerId, setSelectedSellerId] = useState<string>('');
@@ -83,6 +87,10 @@ export default function AdminPage() {
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [processingVerification, setProcessingVerification] = useState<string | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedRejectUser, setSelectedRejectUser] = useState<any>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   // 관리자 권한 확인
   useEffect(() => {
@@ -149,6 +157,14 @@ export default function AdminPage() {
       // 상품 목록 로드
       const productsData = await fetchWithAuth('/products/');
       setProducts(productsData);
+      
+      // 사업자 인증 대기 목록 로드
+      const verificationsData = await fetchWithAuth('/admin/pending_business_verifications/');
+      setPendingVerifications(verificationsData.results || []);
+      
+      // 통계 정보 로드
+      const statsData = await fetchWithAuth('/admin/statistics/');
+      setStatistics(statsData);
     } catch (error: any) {
       toast({
         title: '데이터 로드 실패',
@@ -319,6 +335,89 @@ export default function AdminPage() {
     }
   };
 
+  // 사업자 인증 승인 핸들러
+  const handleApproveVerification = async (userId: string) => {
+    setProcessingVerification(userId);
+    try {
+      await fetchWithAuth(`/admin/approve_business_verification/${userId}/`, {
+        method: 'POST',
+      });
+      
+      toast({
+        title: '승인 완료',
+        description: '사업자 인증이 승인되었습니다.',
+      });
+      
+      // 목록에서 제거
+      setPendingVerifications(pendingVerifications.filter(user => user.id !== userId));
+      
+      // 통계 업데이트
+      if (statistics) {
+        setStatistics({
+          ...statistics,
+          users: {
+            ...statistics.users,
+            verified_sellers: statistics.users.verified_sellers + 1,
+            pending_verifications: statistics.users.pending_verifications - 1
+          }
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: '승인 실패',
+        description: error.message || '사업자 인증 승인 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingVerification(null);
+    }
+  };
+
+  // 사업자 인증 거절 핸들러
+  const handleRejectVerification = async () => {
+    if (!selectedRejectUser) return;
+    
+    setProcessingVerification(selectedRejectUser.id);
+    try {
+      await fetchWithAuth(`/admin/reject_business_verification/${selectedRejectUser.id}/`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: rejectionReason || '사업자 정보 확인 불가' }),
+      });
+      
+      toast({
+        title: '거절 완료',
+        description: '사업자 인증이 거절되었습니다.',
+      });
+      
+      // 목록에서 제거
+      setPendingVerifications(pendingVerifications.filter(user => user.id !== selectedRejectUser.id));
+      
+      // 통계 업데이트
+      if (statistics) {
+        setStatistics({
+          ...statistics,
+          users: {
+            ...statistics.users,
+            pending_verifications: statistics.users.pending_verifications - 1
+          }
+        });
+      }
+      
+      // 다이얼로그 닫기 및 초기화
+      setRejectDialogOpen(false);
+      setSelectedRejectUser(null);
+      setRejectionReason('');
+    } catch (error: any) {
+      toast({
+        title: '거절 실패',
+        description: error.message || '사업자 인증 거절 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingVerification(null);
+    }
+  };
+
   // 특정 상품 이미지 업데이트 핸들러
   const handleUpdateProductImage = async (productId: string) => {
     if (!selectedFile) {
@@ -383,12 +482,151 @@ export default function AdminPage() {
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">관리자 대시보드</h1>
       
-      <Tabs defaultValue="group-purchases" className="w-full">
+      {/* 통계 카드들 */}
+      {statistics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">전체 사용자</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statistics.users.total}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                구매자 {statistics.users.buyers} / 판매자 {statistics.users.sellers}
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">인증 대기</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statistics.users.pending_verifications}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                사업자 인증 대기중
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">활성 공구</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statistics.groupbuys.active}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                전체 {statistics.groupbuys.total}개 중
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">입찰 성공률</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{statistics.bids.success_rate}%</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                전체 {statistics.bids.total}건 중 {statistics.bids.successful}건
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      <Tabs defaultValue="verifications" className="w-full">
         <TabsList className="mb-4">
+          <TabsTrigger value="verifications">사업자 인증</TabsTrigger>
           <TabsTrigger value="group-purchases">공동구매 관리</TabsTrigger>
           <TabsTrigger value="sellers">셀러 관리</TabsTrigger>
           <TabsTrigger value="products">상품 관리</TabsTrigger>
         </TabsList>
+        
+        {/* 사업자 인증 관리 탭 */}
+        <TabsContent value="verifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>사업자 인증 대기 목록</CardTitle>
+              <CardDescription>
+                사업자 등록증을 제출한 판매자들의 인증 요청 목록입니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pendingVerifications.length > 0 ? (
+                <div className="space-y-4">
+                  {pendingVerifications.map((user) => (
+                    <div key={user.id} className="border rounded-lg p-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-semibold mb-2">{user.username}</h3>
+                          <div className="space-y-1 text-sm">
+                            <p><span className="text-muted-foreground">이메일:</span> {user.email}</p>
+                            <p><span className="text-muted-foreground">사업자번호:</span> {user.business_reg_number}</p>
+                            <p><span className="text-muted-foreground">가입일:</span> {new Date(user.date_joined).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div>
+                          {user.business_license_image ? (
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-2">사업자등록증</p>
+                              <a 
+                                href={user.business_license_image} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-primary hover:underline"
+                              >
+                                <Building className="h-4 w-4" />
+                                이미지 확인
+                              </a>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">등록증 이미지 없음</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button
+                          size="sm"
+                          onClick={() => handleApproveVerification(user.id)}
+                          disabled={processingVerification === user.id}
+                        >
+                          {processingVerification === user.id ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                              처리중...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              승인
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            setSelectedRejectUser(user);
+                            setRejectDialogOpen(true);
+                          }}
+                          disabled={processingVerification === user.id}
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          거절
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  대기중인 사업자 인증 요청이 없습니다.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
         
         {/* 공동구매 관리 탭 */}
         <TabsContent value="group-purchases">
@@ -726,6 +964,51 @@ export default function AdminPage() {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* 사업자 인증 거절 다이얼로그 */}
+      <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>사업자 인증 거절</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedRejectUser?.username}님의 사업자 인증을 거절하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="rejection-reason">거절 사유</Label>
+            <Textarea
+              id="rejection-reason"
+              placeholder="거절 사유를 입력해주세요 (선택사항)"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="mt-2"
+              rows={4}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setSelectedRejectUser(null);
+              setRejectionReason('');
+            }}>
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRejectVerification}
+              disabled={processingVerification === selectedRejectUser?.id}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {processingVerification === selectedRejectUser?.id ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  처리중...
+                </>
+              ) : (
+                '거절'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
