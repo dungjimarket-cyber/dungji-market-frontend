@@ -18,7 +18,8 @@ import {
   XCircle,
   Clock,
   AlertCircle,
-  Gavel
+  Gavel,
+  RefreshCw
 } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass } from '@/lib/groupbuy-utils';
@@ -32,6 +33,7 @@ interface Participant {
   };
   joined_at: string;
   consent_status?: string;
+  is_leader?: boolean;
 }
 
 interface Bid {
@@ -73,6 +75,7 @@ interface GroupBuyDetail {
 export default function CreatorGroupBuyManagementPage() {
   const [groupBuy, setGroupBuy] = useState<GroupBuyDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const params = useParams();
   const { accessToken, user } = useAuth();
@@ -83,11 +86,15 @@ export default function CreatorGroupBuyManagementPage() {
     fetchGroupBuyDetail();
   }, [id, accessToken]);
 
-  const fetchGroupBuyDetail = async () => {
+  const fetchGroupBuyDetail = async (showRefreshToast = false) => {
     if (!accessToken) return;
 
     try {
-      setLoading(true);
+      if (showRefreshToast) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       
       // 1. 공구 기본 정보 조회
       const groupBuyResponse = await fetch(
@@ -116,9 +123,9 @@ export default function CreatorGroupBuyManagementPage() {
         return;
       }
 
-      // 2. 참여자 정보 조회
+      // 2. 참여자 정보 조회 - groupbuys API의 participants_detail 엔드포인트 사용
       const participantsResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/participations/?groupbuy=${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${id}/participants_detail/`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -128,13 +135,37 @@ export default function CreatorGroupBuyManagementPage() {
 
       let participants: Participant[] = [];
       if (participantsResponse.ok) {
-        const participationsData = await participantsResponse.json();
-        participants = participationsData.map((p: any) => ({
-          id: p.id,
-          user: p.user,
-          joined_at: p.joined_at,
-          consent_status: p.consent_status,
-        }));
+        const participantsData = await participantsResponse.json();
+        participants = participantsData.participants || [];
+      } else {
+        // 대체 방법: 전체 참여 목록에서 필터링
+        try {
+          const allParticipationsResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/participations/`,
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              },
+            }
+          );
+          
+          if (allParticipationsResponse.ok) {
+            const allParticipations = await allParticipationsResponse.json();
+            // groupbuy id로 필터링
+            const filteredParticipations = allParticipations.filter(
+              (p: any) => p.groupbuy === Number(id)
+            );
+            participants = filteredParticipations.map((p: any) => ({
+              id: p.id,
+              user: p.user || { id: 0, username: '알 수 없음', email: '' },
+              joined_at: p.joined_at,
+              consent_status: p.consent_status,
+              is_leader: p.is_leader,
+            }));
+          }
+        } catch (error) {
+          console.error('참여자 정보 조회 실패:', error);
+        }
       }
 
       // 3. 입찰 정보 조회
@@ -166,12 +197,22 @@ export default function CreatorGroupBuyManagementPage() {
         }));
       }
 
-      // 모든 정보를 합쳐서 저장
-      setGroupBuy({
+      // 실제 참여자 수로 current_participants 업데이트
+      const updatedGroupBuyData = {
         ...groupBuyData,
+        current_participants: participants.length, // 실제 참여자 배열의 길이로 설정
         participants,
         bids,
-      });
+      };
+      
+      setGroupBuy(updatedGroupBuyData);
+      
+      if (showRefreshToast) {
+        toast({
+          title: '새로고침 완료',
+          description: '최신 정보로 업데이트되었습니다.',
+        });
+      }
     } catch (error) {
       console.error('공구 상세 조회 오류:', error);
       toast({
@@ -181,6 +222,7 @@ export default function CreatorGroupBuyManagementPage() {
       });
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -234,9 +276,24 @@ export default function CreatorGroupBuyManagementPage() {
           <h1 className="text-2xl font-bold">{groupBuy.title}</h1>
           <p className="text-gray-500">공구 관리</p>
         </div>
-        <Badge className={getStatusClass(calculatedStatus)}>
-          {getStatusText(calculatedStatus)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchGroupBuyDetail(true)}
+            disabled={refreshing}
+          >
+            {refreshing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            새로고침
+          </Button>
+          <Badge className={getStatusClass(calculatedStatus)}>
+            {getStatusText(calculatedStatus)}
+          </Badge>
+        </div>
       </div>
 
       {/* 공구 정보 요약 */}
@@ -311,43 +368,65 @@ export default function CreatorGroupBuyManagementPage() {
             <CardHeader>
               <CardTitle>참여자 목록</CardTitle>
               <CardDescription>
-                공구에 참여한 사용자들의 목록입니다.
+                공구에 참여한 사용자들의 목록입니다. (총 {groupBuy.participants.length}명)
               </CardDescription>
             </CardHeader>
             <CardContent>
               {groupBuy.participants.length > 0 ? (
                 <div className="space-y-2">
-                  {groupBuy.participants.map((participant) => (
+                  {groupBuy.participants.map((participant, index) => (
                     <div
                       key={participant.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                          <Users className="h-5 w-5 text-gray-500" />
+                          {participant.is_leader || participant.user.id === groupBuy.creator ? (
+                            <span className="text-xs font-bold text-blue-600">방장</span>
+                          ) : (
+                            <Users className="h-5 w-5 text-gray-500" />
+                          )}
                         </div>
                         <div>
-                          <p className="font-medium">{participant.user.username}</p>
+                          <p className="font-medium">
+                            {participant.user.username}
+                            {(participant.is_leader || participant.user.id === groupBuy.creator) && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                공구 생성자
+                              </Badge>
+                            )}
+                          </p>
                           <p className="text-sm text-gray-500">
-                            {new Date(participant.joined_at).toLocaleDateString('ko-KR')} 참여
+                            {new Date(participant.joined_at).toLocaleString('ko-KR', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })} 참여
                           </p>
                         </div>
                       </div>
-                      {participant.consent_status && (
-                        <Badge
-                          variant={
-                            participant.consent_status === 'agreed'
-                              ? 'default'
-                              : participant.consent_status === 'disagreed'
-                              ? 'destructive'
-                              : 'secondary'
-                          }
-                        >
-                          {participant.consent_status === 'agreed' && '동의'}
-                          {participant.consent_status === 'disagreed' && '거부'}
-                          {participant.consent_status === 'pending' && '대기중'}
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {participant.consent_status && (
+                          <Badge
+                            variant={
+                              participant.consent_status === 'agreed'
+                                ? 'default'
+                                : participant.consent_status === 'disagreed'
+                                ? 'destructive'
+                                : participant.consent_status === 'pending'
+                                ? 'secondary'
+                                : 'outline'
+                            }
+                          >
+                            {participant.consent_status === 'agreed' && '동의'}
+                            {participant.consent_status === 'disagreed' && '거부'}
+                            {participant.consent_status === 'pending' && '대기중'}
+                            {participant.consent_status === 'expired' && '만료'}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
