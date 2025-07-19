@@ -62,6 +62,7 @@ interface GroupBuyDetail {
   min_participants: number;
   max_participants: number;
   region_name?: string;
+  creator: number; // 공구 생성자 ID
   product_details: {
     name: string;
     base_price: number;
