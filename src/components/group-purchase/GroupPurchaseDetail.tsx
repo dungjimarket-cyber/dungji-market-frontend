@@ -1697,10 +1697,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                   <Button 
                     variant="outline" 
                     className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium"
-                    onClick={() => router.push(`/mypage/seller/sales/${groupBuy.id}`)}
+                    onClick={() => router.push(`/mypage/creator/group-buy/${groupBuy.id}`)}
                   >
                     <Settings className="w-4 h-4 mr-2" /> 
-                    관리 페이지
+                    공구 관리
                   </Button>
                 </div>
                 

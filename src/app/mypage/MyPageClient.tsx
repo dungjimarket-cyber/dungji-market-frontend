@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Store, BarChart, Package, ShoppingBag, ChevronRight } from 'lucide-react';
+import { Loader2, Store, BarChart, Package, ShoppingBag, ChevronRight, PlusCircle } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -36,6 +36,7 @@ export default function MyPageClient() {
   const [pendingSelectionCount, setPendingSelectionCount] = useState(0);
   const [sellerActivityCount, setSellerActivityCount] = useState(0);
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
+  const [createdGroupBuysCount, setCreatedGroupBuysCount] = useState(0);
 
   // 참여중인 공구 개수 가져오기
   useEffect(() => {
@@ -137,9 +138,34 @@ export default function MyPageClient() {
       }
     };
     
+    // 내가 만든 공구 개수 가져오기
+    const fetchCreatedGroupBuysCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/my_groupbuys/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCreatedGroupBuysCount(data.length);
+        }
+      } catch (error) {
+        console.error('내가 만든 공구 개수 조회 오류:', error);
+        setCreatedGroupBuysCount(0);
+      }
+    };
+    
     if (isAuthenticated && accessToken) {
       fetchParticipatingCount();
       fetchPendingSelectionCount();
+      fetchCreatedGroupBuysCount();
       
       if (isSeller) {
         fetchSellerActivityCount();
@@ -242,6 +268,25 @@ export default function MyPageClient() {
               </AccordionTrigger>
               <AccordionContent className="pt-4">
                 <PendingSelectionGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 내가 만든 공구 */}
+            <AccordionItem value="created">
+              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <PlusCircle className="w-5 h-5 mr-2 text-purple-500" />
+                    <span className="font-medium">내가 만든 공구</span>
+                  </div>
+                  <div className="flex items-center text-purple-600">
+                    <span className="mr-1 text-sm">{createdGroupBuysCount}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <CreatedGroupBuys />
               </AccordionContent>
             </AccordionItem>
 

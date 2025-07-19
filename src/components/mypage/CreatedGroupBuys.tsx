@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 import { useToast } from '@/hooks/use-toast';
@@ -62,6 +63,7 @@ export default function CreatedGroupBuys() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedGroupBuy, setSelectedGroupBuy] = useState<GroupBuy | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   // 인증 로딩 상태일 때는 로딩 표시
   if (isLoading) return <p className="text-gray-500">로딩 중...</p>;
@@ -241,29 +243,28 @@ export default function CreatedGroupBuys() {
         
         return (
           <div key={groupBuy.id} className="relative">
-            <Link href={`/groupbuys/${groupBuy.id}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
-                    <div className="flex items-center">
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculatedStatus)}`}>
-                        {getStatusText(calculatedStatus)}
-                      </span>
-                      {groupBuy.current_participants === 1 && (
-                        <Button 
-                          variant="ghost"
-                          size="sm"
-                          className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={(e) => handleDeleteClick(e, groupBuy)}
-                        >
-                          <Trash2 size={16} className="mr-1" />
-                          삭제
-                        </Button>
-                      )}
-                    </div>
+            <Card className="h-full hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
+                  <div className="flex items-center">
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(calculatedStatus)}`}>
+                      {getStatusText(calculatedStatus)}
+                    </span>
+                    {groupBuy.current_participants === 1 && (
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => handleDeleteClick(e, groupBuy)}
+                      >
+                        <Trash2 size={16} className="mr-1" />
+                        삭제
+                      </Button>
+                    )}
                   </div>
-                </CardHeader>
+                </div>
+              </CardHeader>
                 <CardContent>
                   <div className="flex gap-4">
                     <div className="w-20 h-20 relative flex-shrink-0">
@@ -319,9 +320,25 @@ export default function CreatedGroupBuys() {
                       </div>
                     </div>
                   </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => router.push(`/group-purchases/${groupBuy.id}`)}
+                    >
+                      상세보기
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => router.push(`/mypage/creator/group-buy/${groupBuy.id}`)}
+                    >
+                      관리하기
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
-            </Link>
           </div>
         );
       })}
