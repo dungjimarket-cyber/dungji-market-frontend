@@ -37,6 +37,7 @@ interface GroupBuy {
   status: string;
   current_participants: number;
   max_participants: number;
+  start_time: string;
   end_time: string;
   product: Product;
   product_details?: Product; // 하위 호환성
@@ -136,12 +137,12 @@ export default function ParticipatingGroupBuys() {
   
   // 공구 상태에 따라 필터링
   const activeGroupBuys = sortedGroupBuys.filter(groupBuy => {
-    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
     return ['recruiting', 'bidding', 'voting', 'selecting'].includes(status);
   });
   
   const completedGroupBuys = sortedGroupBuys.filter(groupBuy => {
-    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
     return ['completed', 'expired', 'canceled'].includes(status);
   });
 
@@ -156,7 +157,7 @@ export default function ParticipatingGroupBuys() {
     const progress = (groupBuy.current_participants / groupBuy.max_participants) * 100;
     
     // 백엔드에서 계산된 상태 사용 또는 프론트엔드에서 계산
-    const calculatedStatus = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+    const calculatedStatus = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
     
     // 남은 시간 계산 (백엔드에서 제공하는 값 사용 또는 직접 계산)
     let remainingTime;

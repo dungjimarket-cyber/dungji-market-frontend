@@ -387,7 +387,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
   
   // 공구 상태를 동적으로 계산
-  const calculatedStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+  const calculatedStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
   const isRecruiting = calculatedStatus === 'recruiting';
   const isFull = remainingSpots === 0;
   const isClosed = !isRecruiting || isFull;
