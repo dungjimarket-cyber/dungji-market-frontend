@@ -6,12 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 import { toast as sonnerToast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -25,10 +23,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
-import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon, MapPinIcon, SearchIcon } from "lucide-react";
+import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,7 +34,6 @@ import { GroupBuySuccessDialog } from '@/components/group-purchase/GroupBuySucce
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -729,7 +725,7 @@ const continueSubmitWithUserId = async (
       
       if (groupBuyId) {
         // 상품 정보 설정
-        setCreatedGroupBuyId(groupBuyId);
+        setCreatedGroupBuyId(Number(groupBuyId));
         setCreatedProductName(selectedProduct?.name || apiRequestData.title || '');
         setCreatedProductImage(selectedProduct?.image_url || '');
         setShowSuccessDialog(true);

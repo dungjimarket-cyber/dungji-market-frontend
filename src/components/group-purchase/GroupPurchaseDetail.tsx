@@ -616,8 +616,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       setCurrentParticipants(prev => Math.max(0, prev - 1));
       setOpenLeaveDialog(false);
       
-      // 마이페이지로 이동
-      router.push('/mypage');
+      // 공구 목록 페이지로 이동
+      router.push('/group-purchases');
     } catch (err) {
       console.error('공구 나가기 오류:', err);
       
@@ -1128,7 +1128,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   // 최종선택 상태 체크 및 타이머 설정
   useEffect(() => {
     if (groupBuy) {
-      const currentStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time);
+      const currentStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
       
       // voting 상태이거나 end_time이 지났고 아직 completed가 아닌 경우
       if (currentStatus === 'voting' || 
@@ -1198,8 +1198,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="relative w-full mb-4 rounded-2xl overflow-hidden aspect-[4/3]">
               {/* 상태 표시 배지 - 우측 상단 */}
               <div className="absolute top-4 right-4 z-10">
-                <span className={`px-3 py-1.5 text-sm font-medium rounded-full shadow-lg ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}`}>
-                  {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.end_time))}
+                <span className={`px-3 py-1.5 text-sm font-medium rounded-full shadow-lg ${getStatusClass(calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time))}`}>
+                  {getStatusText(calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time))}
                 </span>
               </div>
               <Image
