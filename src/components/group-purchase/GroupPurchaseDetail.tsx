@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus, Edit, Settings } from 'lucide-react';
+import { Check as CheckIcon, ArrowLeft, Bell, Users, Clock, Gavel, Share2, Info, UserMinus, Edit, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText, getStatusClass } from '@/lib/groupbuy-utils';
@@ -93,8 +93,10 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const [isParticipant, setIsParticipant] = useState(false);
   const [currentParticipants, setCurrentParticipants] = useState(groupBuy.current_participants);
   const [openLeaveDialog, setOpenLeaveDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [showLeaveRestrictionDialog, setShowLeaveRestrictionDialog] = useState(false);
   const [leaveErrorMessage, setLeaveErrorMessage] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false); // 참여하기 모달 표시 여부
   const [bidAmount, setBidAmount] = useState<number | ''>(groupBuy.highest_bid_amount ? groupBuy.highest_bid_amount + 1000 : '');
   const [isBidding, setIsBidding] = useState(false);
@@ -474,7 +476,47 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
    * 뒤로가기
    */
   const handleGoBack = () => {
-    router.back();
+    // 공구 목록 페이지로 이동하면서 새로고침을 위한 타임스탬프 추가
+    router.push(`/group-purchases?refresh=${Date.now()}`);
+  };
+
+  /**
+   * 공구 삭제
+   */
+  const handleDeleteGroupBuy = async () => {
+    try {
+      setIsDeleting(true);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('공구 삭제에 실패했습니다.');
+      }
+
+      toast({
+        title: '공구가 삭제되었습니다.',
+        description: '공구 목록 페이지로 이동합니다.',
+      });
+
+      setTimeout(() => {
+        router.push('/group-purchases');
+      }, 1000);
+    } catch (err) {
+      console.error('공구 삭제 오류:', err);
+      toast({
+        variant: 'destructive',
+        title: '공구 삭제 실패',
+        description: err instanceof Error ? err.message : '공구 삭제에 실패했습니다.',
+      });
+    } finally {
+      setIsDeleting(false);
+      setOpenDeleteDialog(false);
+    }
   };
 
   /**
@@ -1634,27 +1676,48 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
 
             {/* 생성자 전용 수정/관리 UI */}
             {isCreator && (
-              <div className="bg-white p-4 mb-4 border-2 border-blue-500 rounded-lg">
-                <h3 className="text-lg font-bold text-blue-700 mb-2">공구 관리</h3>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 mb-4 border border-blue-200 rounded-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-bold text-blue-900">공구 관리</h3>
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">방장 전용</span>
+                </div>
                 <p className="text-sm text-gray-600 mb-4">내가 만든 공구를 관리할 수 있습니다.</p>
                 
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-2 gap-2 mb-3">
                   <Button 
                     variant="default" 
-                    className="bg-blue-600 hover:bg-blue-700 flex-1"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
                     onClick={() => router.push(`/group-purchases/edit/${groupBuy.id}`)}
                   >
-                    <Edit className="w-4 h-4 mr-1" /> 공구 수정
+                    <Edit className="w-4 h-4 mr-2" /> 
+                    공구 수정
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium"
                     onClick={() => router.push(`/mypage/seller/sales/${groupBuy.id}`)}
                   >
-                    <Settings className="w-4 h-4 mr-1" /> 관리 페이지
+                    <Settings className="w-4 h-4 mr-2" /> 
+                    관리 페이지
                   </Button>
                 </div>
+                
+                {/* 공구 삭제 버튼 - 조건부 표시 */}
+                {currentParticipants === 0 && (
+                  <div className="pt-3 border-t border-blue-200">
+                    <button
+                      className="w-full py-2 px-4 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                      onClick={() => setOpenDeleteDialog(true)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      공구 삭제하기
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      참여자가 없는 경우에만 삭제 가능합니다
+                    </p>
+                  </div>
+                )}
                 
                 {/* 참여자가 본인 1명인 경우 특별 안내 */}
                 {currentParticipants === 1 && (
@@ -1677,13 +1740,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             </button>
 
             {isParticipant && (
-              <div className="text-center">
+              <div className="mt-4 pt-4 border-t border-gray-100">
                 <button 
-                  className="text-xs text-red-500 hover:text-red-700 transition-colors flex items-center justify-center gap-1"
+                  className="w-full py-2 px-4 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 group"
                   onClick={() => setOpenLeaveDialog(true)}
                   disabled={isLeaving}
                 >
-                  <UserMinus size={12} />
+                  <UserMinus 
+                    size={16} 
+                    className="group-hover:scale-110 transition-transform duration-200" 
+                  />
                   {isLeaving ? '처리 중...' : '공구 나가기'}
                 </button>
               </div>
@@ -1693,17 +1759,38 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
 
       <AlertDialog open={openLeaveDialog} onOpenChange={setOpenLeaveDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>공구 나가기</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2 text-xl">
+              <UserMinus className="w-5 h-5 text-red-500" />
+              공구 나가기
+            </AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogDescription>
-            정말 이 공구에서 나가시겠습니까? 나간 후에는 다시 참여할 수 있습니다.
+          <AlertDialogDescription className="text-base py-4">
+            <span className="font-semibold text-gray-900">{groupBuy?.product_details?.name}</span> 공구에서 나가시겠습니까?
+            <br /><br />
+            <span className="text-sm text-gray-600">
+              • 나간 후에도 다시 참여할 수 있습니다<br />
+              • 현재 참여자 수가 감소합니다
+            </span>
           </AlertDialogDescription>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLeaveGroupBuy} disabled={isLeaving}>
-              {isLeaving ? '처리 중...' : '공구 나가기'}
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="flex-1">
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleLeaveGroupBuy} 
+              disabled={isLeaving}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isLeaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  처리 중...
+                </>
+              ) : (
+                '공구 나가기'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2053,6 +2140,49 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               className="flex-1 bg-orange-500 hover:bg-orange-600"
             >
               입찰권 구매하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 공구 삭제 확인 다이얼로그 */}
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-xl">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              공구 삭제하기
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription className="text-base py-4">
+            <span className="font-semibold text-gray-900">{groupBuy?.product_details?.name}</span> 공구를 삭제하시겠습니까?
+            <br /><br />
+            <span className="text-sm text-red-600 font-medium">
+              ⚠️ 주의사항
+            </span>
+            <br />
+            <span className="text-sm text-gray-600">
+              • 삭제된 공구는 복구할 수 없습니다<br />
+              • 관련된 모든 데이터가 함께 삭제됩니다
+            </span>
+          </AlertDialogDescription>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="flex-1">
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteGroupBuy} 
+              disabled={isDeleting}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  삭제 중...
+                </>
+              ) : (
+                '공구 삭제'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

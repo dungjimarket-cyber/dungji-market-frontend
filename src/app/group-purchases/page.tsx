@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { MainHeader } from '@/components/navigation/MainHeader';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
 import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
@@ -48,6 +48,7 @@ interface GroupBuy {
  */
 function GroupPurchasesPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user, accessToken } = useAuth();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [userParticipations, setUserParticipations] = useState<number[]>([]);
@@ -176,7 +177,7 @@ function GroupPurchasesPageContent() {
   /**
    * 사용자 참여 공구 및 입찰 공구 ID 목록 가져오기
    */
-  const fetchUserParticipationsAndBids = async () => {
+  const fetchUserParticipationsAndBids = useCallback(async () => {
     if (!accessToken) return;
     
     try {
@@ -211,7 +212,7 @@ function GroupPurchasesPageContent() {
     } catch (error) {
       console.error('사용자 참여/입찰 정보 조회 오류:', error);
     }
-  };
+  }, [accessToken, user?.role]);
 
   /**
    * 초기 데이터 로딩
@@ -219,9 +220,14 @@ function GroupPurchasesPageContent() {
   useEffect(() => {
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
+    let hasRefreshParam = false;
+    
     searchParams.forEach((value, key) => {
       if (['manufacturer', 'carrier', 'purchaseType', 'priceRange'].includes(key)) {
         filters[key] = value;
+      }
+      if (key === 'refresh') {
+        hasRefreshParam = true;
       }
     });
     
@@ -231,7 +237,55 @@ function GroupPurchasesPageContent() {
     if (accessToken) {
       fetchUserParticipationsAndBids();
     }
-  }, [activeTab, accessToken]);
+    
+    // refresh 파라미터가 있으면 URL에서 제거
+    if (hasRefreshParam) {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete('refresh');
+      const newUrl = newSearchParams.toString() ? `?${newSearchParams.toString()}` : '';
+      router.replace(`/group-purchases${newUrl}`);
+    }
+  }, [activeTab, accessToken, fetchUserParticipationsAndBids, searchParams, router]);
+
+  /**
+   * 페이지가 다시 포커스될 때 데이터 새로고침
+   */
+  useEffect(() => {
+    const handleFocus = () => {
+      // 사용자가 로그인한 경우 참여/입찰 정보 다시 가져오기
+      if (accessToken) {
+        console.log('페이지 포커스 감지 - 참여/입찰 정보 새로고침');
+        fetchUserParticipationsAndBids();
+      }
+    };
+
+    // 페이지가 포커스될 때 이벤트 리스너 추가
+    window.addEventListener('focus', handleFocus);
+    
+    // visibility change 이벤트도 추가 (탭 전환 시)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && accessToken) {
+        console.log('페이지 가시성 변경 감지 - 참여/입찰 정보 새로고침');
+        fetchUserParticipationsAndBids();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // popstate 이벤트 리스너 추가 (뒤로가기/앞으로가기)
+    const handlePopState = () => {
+      if (accessToken) {
+        console.log('네비게이션 감지 - 참여/입찰 정보 새로고침');
+        fetchUserParticipationsAndBids();
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [accessToken, fetchUserParticipationsAndBids]);
 
   return (
     <div className="min-h-screen bg-gray-50">
