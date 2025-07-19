@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react';
-import { getRegistrationTypeText } from '@/lib/groupbuy-utils';
+import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -65,10 +65,14 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   const { isAuthenticated, user } = useAuth();
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
   const isNew = new Date(groupBuy.start_time) > new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const isBidding = groupBuy.status === 'bidding';
-  const isCompleted = groupBuy.status === 'completed';
-  const isRecruiting = groupBuy.status === 'recruiting';
-  const isFinalSelection = groupBuy.status === 'final_selection';
+  
+  // 실제 상태를 시간 기반으로 계산
+  const actualStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
+  
+  const isBidding = actualStatus === 'bidding';
+  const isCompleted = actualStatus === 'completed';
+  const isRecruiting = actualStatus === 'recruiting';
+  const isFinalSelection = actualStatus === 'voting' || actualStatus === 'seller_confirmation';
   
   const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
   

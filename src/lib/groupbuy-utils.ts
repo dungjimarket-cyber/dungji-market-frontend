@@ -6,23 +6,39 @@ import { GroupBuy } from '@/types/groupbuy';
 
 /**
  * 공구의 실제 상태를 계산합니다.
- * 백엔드에서 받은 상태와 마감 시간을 고려하여 실제 상태를 결정합니다.
+ * 백엔드에서 받은 상태와 시작/마감 시간을 고려하여 실제 상태를 결정합니다.
  * 
- * @param status 백엔드에서 받은 상태 (recruiting, confirmed, completed 등)
- * @param endTime 공구 마감 시간
+ * @param status 백엔드에서 받은 상태 (recruiting, bidding, voting 등)
+ * @param startTimeStr 공구 시작 시간
+ * @param endTimeStr 공구 마감 시간
  * @returns 실제 공구 상태
  */
-export function calculateGroupBuyStatus(status: string, endTimeStr: string): string {
-  if (status !== 'recruiting') {
+export function calculateGroupBuyStatus(status: string, startTimeStr: string, endTimeStr: string): string {
+  // 이미 완료된 상태들은 그대로 반환
+  if (['completed', 'cancelled', 'seller_confirmation'].includes(status)) {
     return status;
   }
   
   const now = new Date();
+  const startTime = new Date(startTimeStr);
   const endTime = new Date(endTimeStr);
   
-  // 모집 중이지만 마감 시간이 지났다면 'expired' 상태로 변경
-  if (status === 'recruiting' && endTime < now) {
-    return 'expired';
+  // 백엔드가 제대로 상태를 업데이트하지 않는 경우를 위한 시간 기반 상태 계산
+  if (status === 'recruiting') {
+    if (now >= endTime) {
+      // 마감 시간이 지났으면 voting(최종선택중) 상태로
+      return 'voting';
+    } else if (now >= startTime) {
+      // 시작 시간이 지났으면 bidding(입찰중) 상태로
+      return 'bidding';
+    }
+    // 아직 시작 전이면 recruiting 유지
+    return 'recruiting';
+  }
+  
+  // bidding 상태에서 마감 시간이 지났으면 voting으로
+  if (status === 'bidding' && now >= endTime) {
+    return 'voting';
   }
   
   // 그 외의 경우는 원래 상태 유지
