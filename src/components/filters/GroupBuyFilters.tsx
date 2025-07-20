@@ -50,7 +50,7 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
     carrier: searchParams.get('carrier') || 'all',
     purchaseType: searchParams.get('purchaseType') || 'all',
     priceRange: searchParams.get('priceRange') || 'all',
-    sort: searchParams.get('sort') || '최신순' // 기본값은 최신순
+    sort: searchParams.get('sort') || 'all' // 기본값은 all로 변경
   });
 
   /**
@@ -83,7 +83,7 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
       carrier: 'all',
       purchaseType: 'all',
       priceRange: 'all',
-      sort: '최신순' // 기본 정렬 값 추가
+      sort: 'all' // 기본값을 all로 변경
     };
     setFilters(clearedFilters);
     
@@ -188,6 +188,7 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
                   <SelectValue placeholder="정렬 방식 선택" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
                   {filterOptions.sortOptions.map((sortOption) => (
                     <SelectItem key={sortOption} value={sortOption}>
                       {sortOption}

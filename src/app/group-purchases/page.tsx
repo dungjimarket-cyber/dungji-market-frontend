@@ -79,16 +79,28 @@ function GroupPurchasesPageContent() {
     try {
       const params = new URLSearchParams();
       
-      // 탭별 필터링
+      // 기본 상태 설정 - 탭에 따라
       if (activeTab === 'completed') {
-        // 종료 탭: 완료되었거나 마감 시간이 지난 공구들
         params.append('status', 'ended');
-      } else if (activeTab === 'popular') {
-        params.append('sort', 'popular');
-        params.append('status', 'active'); // 진행중인 것만 표시
-      } else if (activeTab === 'new') {
-        params.append('sort', 'newest');
-        params.append('status', 'active'); // 진행중인 것만 표시
+      } else if (activeTab === 'all') {
+        // 전체 탭은 모든 상태 포함
+      } else {
+        // 인기순, 최신순 탭은 진행중인 것만
+        params.append('status', 'active');
+      }
+      
+      // 탭별 기본 정렬 (사용자가 명시적으로 선택하지 않은 경우에만)
+      let hasUserSort = false;
+      if (filters && filters.sort && filters.sort !== 'all') {
+        hasUserSort = true;
+      }
+      
+      if (!hasUserSort) {
+        if (activeTab === 'popular') {
+          params.append('sort', 'popular');
+        } else if (activeTab === 'new') {
+          params.append('sort', 'newest');
+        }
       }
       
       // 사용자 필터 추가
@@ -99,28 +111,44 @@ function GroupPurchasesPageContent() {
             if (key === 'sort') {
               if (value === '최신순') {
                 params.append('sort', 'newest');
-                if (activeTab !== 'completed') {
-                  params.append('status', 'active'); // 진행중인 것만 표시
-                }
               } else if (value === '인기순(참여자많은순)') {
                 params.append('sort', 'popular');
-                if (activeTab !== 'completed') {
-                  params.append('status', 'active'); // 진행중인 것만 표시
-                }
-              } else {
-                // 기본값은 최신순
-                params.append('sort', 'newest');
-                if (activeTab !== 'completed') {
-                  params.append('status', 'active'); // 진행중인 것만 표시
-                }
               }
-            } else {
+            } 
+            // 구매방식 필터 변환
+            else if (key === 'purchaseType') {
+              let subscriptionType = '';
+              if (value === '신규가입') subscriptionType = 'new';
+              else if (value === '번호이동') subscriptionType = 'transfer';
+              else if (value === '기기변경') subscriptionType = 'change';
+              
+              if (subscriptionType) {
+                params.append('subscription_type', subscriptionType);
+              }
+            }
+            // 요금제 필터 변환
+            else if (key === 'priceRange') {
+              params.append('plan_info', value);
+            }
+            // 통신사 필터
+            else if (key === 'carrier') {
+              let carrierCode = value;
+              if (value === 'LG U+') carrierCode = 'LGU';
+              params.append('telecom_carrier', carrierCode);
+            }
+            // 제조사 필터
+            else if (key === 'manufacturer') {
+              params.append('manufacturer', value);
+            }
+            // 나머지 필터들
+            else {
               params.append(key, value);
             }
           }
         });
       }
       
+      console.log('공구 목록 요청 파라미터:', params.toString());
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
       
@@ -156,10 +184,15 @@ function GroupPurchasesPageContent() {
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange'].includes(key)) {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort'].includes(key)) {
         filters[key] = value;
       }
     });
+    
+    // 탭 변경시에는 정렬 필터를 초기화 (사용자가 명시적으로 선택한 경우 제외)
+    if (!filters.sort) {
+      filters.sort = 'all';
+    }
     
     fetchGroupBuys(filters);
   };
@@ -213,7 +246,7 @@ function GroupPurchasesPageContent() {
     let hasRefreshParam = false;
     
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange'].includes(key)) {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort'].includes(key)) {
         filters[key] = value;
       }
       if (key === 'refresh') {
@@ -235,7 +268,7 @@ function GroupPurchasesPageContent() {
       const newUrl = newSearchParams.toString() ? `?${newSearchParams.toString()}` : '';
       router.replace(`/group-purchases${newUrl}`);
     }
-  }, [activeTab, accessToken, fetchUserParticipationsAndBids, searchParams, router]);
+  }, [activeTab, searchParams, accessToken, fetchUserParticipationsAndBids, router]);
 
   /**
    * 페이지가 다시 포커스될 때 데이터 새로고침
