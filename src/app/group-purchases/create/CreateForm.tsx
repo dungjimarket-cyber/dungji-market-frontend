@@ -690,6 +690,7 @@ const continueSubmitWithUserId = async (
     if (mode !== 'edit') {
       console.log('사용자 ID 확인:', apiRequestData.creator);
     }
+    console.log('[regions 데이터 상세]:', apiRequestData.regions);
     
     // 공구 등록/수정 API 요청 실행
     console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} API 요청 시작`);
@@ -995,10 +996,11 @@ const onSubmit = async (values: FormData) => {
       region_name: regionType === 'local' ? (selectedRegions.length > 0 ? selectedRegions[0].name : null) : null,
       // 다중 지역 정보를 regions 배열로 전송
       regions: regionType === 'local' ? selectedRegions.map(region => ({
+        // 이미 변환된 code 사용 (시도_시군구 형식)
         code: region.code,
         name: region.name,
         full_name: region.full_name || region.name,
-        level: region.level || 2
+        level: region.level || 1  // 시/군/구 레벨
       })) : [],
     };
       
