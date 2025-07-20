@@ -69,13 +69,14 @@ function GroupPurchasesPageContent() {
       
       // 탭별 필터링
       if (activeTab === 'completed') {
-        params.append('status', 'completed');
+        // 종료 탭: 완료되었거나 마감 시간이 지난 공구들
+        params.append('status', 'ended');
       } else if (activeTab === 'popular') {
         params.append('sort', 'popular');
-        params.append('status', 'in_progress'); // 명시적으로 status 파라미터를 전달
+        params.append('status', 'active'); // 진행중인 것만 표시
       } else if (activeTab === 'new') {
         params.append('sort', 'newest');
-        params.append('status', 'in_progress'); // 진행중인 것만 표시
+        params.append('status', 'active'); // 진행중인 것만 표시
       }
       
       // 사용자 필터 추가
@@ -86,14 +87,20 @@ function GroupPurchasesPageContent() {
             if (key === 'sort') {
               if (value === '최신순') {
                 params.append('sort', 'newest');
-                params.append('status', 'in_progress'); // 진행중인 것만 표시
+                if (activeTab !== 'completed') {
+                  params.append('status', 'active'); // 진행중인 것만 표시
+                }
               } else if (value === '인기순(참여자많은순)') {
                 params.append('sort', 'popular');
-                params.append('status', 'in_progress'); // 명시적으로 status 파라미터를 전달
+                if (activeTab !== 'completed') {
+                  params.append('status', 'active'); // 진행중인 것만 표시
+                }
               } else {
                 // 기본값은 최신순
                 params.append('sort', 'newest');
-                params.append('status', 'in_progress'); // 진행중인 것만 표시
+                if (activeTab !== 'completed') {
+                  params.append('status', 'active'); // 진행중인 것만 표시
+                }
               }
             } else {
               params.append(key, value);
@@ -110,35 +117,6 @@ function GroupPurchasesPageContent() {
       }
       
       let data = await response.json();
-      
-      // 완료된 공구 필터링 (완료 탭이 아닌 경우에만 적용)
-      if (activeTab !== 'completed') {
-        // 사용자가 참여하거나 입찰한 공구는 완료되어도 보여주고, 그 외의 완료된 공구는 필터링
-        data = data.filter((groupBuy: GroupBuy) => {
-          // 현재 시간과 비교해서 마감된 공구인지 확인
-          const now = new Date();
-          const endTime = new Date(groupBuy.end_time);
-          const isExpired = endTime < now;
-          
-          // 완료되지 않고 마감되지 않은 공구는 모두 표시
-          if (groupBuy.status !== 'completed' && !isExpired && !['final_selection', 'seller_confirmation'].includes(groupBuy.status)) {
-            return true;
-          }
-          
-          // 사용자가 일반회원이고 참여한 공구인 경우 표시
-          if (user?.role !== 'seller' && userParticipations.includes(groupBuy.id)) {
-            return true;
-          }
-          
-          // 사용자가 판매회원이고 입찰한 공구인 경우 표시
-          if (user?.role === 'seller' && userBids.includes(groupBuy.id)) {
-            return true;
-          }
-          
-          // 그 외의 완료된 공구나 마감된 공구는 필터링
-          return false;
-        });
-      }
       
       setGroupBuys(data);
     } catch (err) {

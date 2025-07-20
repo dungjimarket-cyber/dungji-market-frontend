@@ -1,23 +1,31 @@
 'use client';
 
-import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Upload, Check, X } from 'lucide-react';
-import FindAccountModals from '@/components/auth/FindAccountModals';
-import Image from 'next/image';
-import DaumPostcodeSearch from '@/components/address/DaumPostcodeSearch';
+import { Loader2, Mail, Phone, Building, Check, X } from 'lucide-react';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import RegionDropdown from '@/components/address/RegionDropdown';
+import { regions } from '@/lib/regions';
 
-// Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 Suspense로 감싼야 함
+// 회원가입 타입 정의
+type SignupType = 'email' | 'social';
+
+// 회원가입 컨텐츠 컴포넌트
 function RegisterPageContent() {
-  const [findModalOpen, setFindModalOpen] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
-  // 지역 관련 상태는 formData에 포함되어 있으므로 별도 상태 불필요
   
+  // URL 파라미터로 소셜 로그인 정보 받기
+  const socialProvider = searchParams.get('provider');
+  const socialEmail = searchParams.get('email');
+  const socialId = searchParams.get('socialId');
+  
+  const [signupType, setSignupType] = useState<SignupType>(socialProvider ? 'social' : 'email');
   const [formData, setFormData] = useState({
     // 공통 필수 필드
+    email: socialEmail || '', // 이메일 로그인인 경우 아이디로 사용
     nickname: '',
     phone: '',
     password: '',
@@ -27,24 +35,35 @@ function RegisterPageContent() {
     // 선택 필드
     region_province: '',
     region_city: '',
-    profile_image: null as File | null,
     
     // 판매자 전용 필드
     business_name: '',
     business_reg_number: '',
-    business_address: '',
+    business_address_province: '',
+    business_address_city: '',
+    business_address_detail: '',
     is_remote_sales: false,
     business_reg_image: null as File | null,
     
     // 약관 동의
     terms_agreed: false,
     privacy_agreed: false,
+    marketing_agreed: false,
+    
+    // 소셜 로그인 정보
+    social_provider: socialProvider || '',
+    social_id: socialId || '',
   });
   
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [nicknameChecked, setNicknameChecked] = useState(false);
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [showVerificationInput, setShowVerificationInput] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -60,12 +79,54 @@ function RegisterPageContent() {
         setNicknameChecked(false);
         setNicknameAvailable(false);
       }
+      // 이메일이 변경되면 중복 체크 상태 리셋
+      if (name === 'email') {
+        setEmailChecked(false);
+        setEmailAvailable(false);
+      }
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFormData(prev => ({ ...prev, [fieldName]: file }));
+    setFormData(prev => ({ ...prev, business_reg_image: file }));
+  };
+
+  // 이메일 중복 체크
+  const checkEmail = async () => {
+    if (!formData.email) {
+      setError('이메일을 입력해주세요.');
+      return;
+    }
+
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-email/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+      setEmailChecked(true);
+      setEmailAvailable(data.available);
+      
+      if (!data.available) {
+        setError('이미 사용 중인 이메일입니다.');
+      } else {
+        setError('');
+      }
+    } catch (err) {
+      setError('이메일 중복 확인 중 오류가 발생했습니다.');
+    }
   };
 
   // 닉네임 중복 체크
@@ -109,11 +170,62 @@ function RegisterPageContent() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setFormData(prev => ({ ...prev, phone: formatted }));
+    setPhoneVerified(false); // 번호가 변경되면 인증 초기화
   };
 
-  /**
-   * 회원가입 폼 제출 처리 함수
-   */
+  // 휴대폰 인증 요청
+  const requestPhoneVerification = async () => {
+    if (!formData.phone || formData.phone.length < 13) {
+      setError('올바른 휴대폰 번호를 입력해주세요.');
+      return;
+    }
+
+    try {
+      // TODO: 실제 SMS 인증 API 호출
+      console.log('휴대폰 인증 요청:', formData.phone);
+      setShowVerificationInput(true);
+      setError('');
+      // 임시로 인증번호를 콘솔에 출력 (개발용)
+      console.log('인증번호: 123456');
+    } catch (err) {
+      setError('인증번호 발송에 실패했습니다.');
+    }
+  };
+
+  // 인증번호 확인
+  const verifyPhone = async () => {
+    try {
+      // TODO: 실제 인증번호 확인 API 호출
+      if (verificationCode === '123456') { // 임시 코드
+        setPhoneVerified(true);
+        setShowVerificationInput(false);
+        setError('');
+      } else {
+        setError('인증번호가 일치하지 않습니다.');
+      }
+    } catch (err) {
+      setError('인증 확인에 실패했습니다.');
+    }
+  };
+
+  // 지역 선택 핸들러
+  const handleRegionSelect = (province: string, city: string, isBusinessAddress: boolean = false) => {
+    if (isBusinessAddress) {
+      setFormData(prev => ({
+        ...prev,
+        business_address_province: province,
+        business_address_city: city,
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        region_province: province,
+        region_city: city,
+      }));
+    }
+  };
+
+  // 회원가입 폼 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -126,10 +238,31 @@ function RegisterPageContent() {
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+    // 이메일 로그인인 경우 이메일 중복 확인 필요
+    if (signupType === 'email' && (!emailChecked || !emailAvailable)) {
+      setError('이메일 중복 확인을 해주세요.');
       setIsLoading(false);
       return;
+    }
+
+    if (!phoneVerified) {
+      setError('휴대폰 인증을 완료해주세요.');
+      setIsLoading(false);
+      return;
+    }
+
+    // 이메일 로그인인 경우 비밀번호 확인
+    if (signupType === 'email') {
+      if (formData.password !== formData.confirmPassword) {
+        setError('비밀번호가 일치하지 않습니다.');
+        setIsLoading(false);
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError('비밀번호는 6자 이상이어야 합니다.');
+        setIsLoading(false);
+        return;
+      }
     }
 
     if (!formData.terms_agreed || !formData.privacy_agreed) {
@@ -140,7 +273,7 @@ function RegisterPageContent() {
 
     // 판매자인 경우 추가 검증
     if (formData.role === 'seller') {
-      if (!formData.business_reg_number || !formData.business_address) {
+      if (!formData.business_reg_number || !formData.business_address_province || !formData.business_address_city) {
         setError('판매자는 사업자등록번호와 사업장 주소를 입력해야 합니다.');
         setIsLoading(false);
         return;
@@ -148,105 +281,76 @@ function RegisterPageContent() {
     }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const apiUrl = backendUrl.endsWith('/api') 
-        ? backendUrl.slice(0, -4)
-        : backendUrl;
-
-      // FormData 생성 (파일 업로드를 위해)
       const submitData = new FormData();
+      
+      // 공통 필드
       submitData.append('nickname', formData.nickname);
       submitData.append('phone_number', formData.phone.replace(/-/g, ''));
-      submitData.append('password', formData.password);
       submitData.append('role', formData.role);
+      submitData.append('marketing_agreed', formData.marketing_agreed.toString());
+      
+      // 이메일 로그인인 경우
+      if (signupType === 'email') {
+        submitData.append('email', formData.email);
+        submitData.append('username', formData.email); // 이메일을 username으로 사용
+        submitData.append('password', formData.password);
+      } else {
+        // 소셜 로그인인 경우
+        submitData.append('social_provider', formData.social_provider);
+        submitData.append('social_id', formData.social_id);
+        if (formData.email) {
+          submitData.append('email', formData.email);
+        }
+      }
       
       // 선택 필드
       if (formData.region_province && formData.region_city) {
         submitData.append('region', `${formData.region_province} ${formData.region_city}`);
       }
       
-      if (formData.profile_image) {
-        submitData.append('profile_image', formData.profile_image);
-      }
-      
       // 판매자 전용 필드
       if (formData.role === 'seller') {
         submitData.append('business_name', formData.business_name || formData.nickname);
         submitData.append('business_reg_number', formData.business_reg_number);
-        submitData.append('business_address', formData.business_address);
+        submitData.append('business_address', 
+          `${formData.business_address_province} ${formData.business_address_city} ${formData.business_address_detail}`.trim()
+        );
         submitData.append('is_remote_sales_enabled', formData.is_remote_sales.toString());
         
-        if (formData.business_reg_image) {
+        if (formData.is_remote_sales && formData.business_reg_image) {
           submitData.append('business_reg_image', formData.business_reg_image);
         }
       }
       
-      // 디버깅을 위한 로그
-      console.log('회원가입 요청 URL:', `${apiUrl}/api/auth/register/`);
-      console.log('회원가입 데이터:', {
-        nickname: formData.nickname,
-        phone_number: formData.phone.replace(/-/g, ''),
-        role: formData.role,
-        region: formData.region_province && formData.region_city ? `${formData.region_province} ${formData.region_city}` : undefined
-      });
-      
-      // 회원가입 API 호출
-      const response = await fetch(`${apiUrl}/api/auth/register/`, {
+      // API 호출
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register/`, {
         method: 'POST',
         body: submitData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('회원가입 오류:', errorData);
-        
-        // 다양한 에러 형식 처리
-        let errorMessage = '회원가입에 실패했습니다.';
-        
-        if (errorData.error) {
-          errorMessage = errorData.error;
-        } else if (errorData.detail) {
-          errorMessage = errorData.detail;
-        } else if (errorData.phone_number) {
-          errorMessage = Array.isArray(errorData.phone_number) 
-            ? errorData.phone_number[0] 
-            : errorData.phone_number;
-        } else if (errorData.nickname) {
-          errorMessage = Array.isArray(errorData.nickname)
-            ? errorData.nickname[0]
-            : errorData.nickname;
-        } else if (errorData.business_reg_number) {
-          errorMessage = Array.isArray(errorData.business_reg_number)
-            ? errorData.business_reg_number[0]
-            : errorData.business_reg_number;
-        }
-        
-        throw new Error(errorMessage);
+        throw new Error(errorData.error || errorData.detail || '회원가입에 실패했습니다.');
       }
 
       const data = await response.json();
-      console.log('회원가입 응답:', data);
-
-      // 회원가입 성공 후 JWT 기반 로그인 진행
-      // 닉네임을 username으로 사용
-      const loginResult = await login(formData.nickname, formData.password);
       
-      if (loginResult.success) {
-        router.push('/');
+      // 회원가입 성공 후 처리
+      if (signupType === 'email') {
+        // 이메일 로그인인 경우 자동 로그인
+        const loginResult = await login(formData.email, formData.password);
+        if (loginResult.success) {
+          router.push('/');
+        } else {
+          router.push('/login?registered=true');
+        }
       } else {
-        // 회원가입은 성공했지만 자동 로그인 실패 시 로그인 페이지로 이동
-        console.error('자동 로그인 실패:', loginResult.error);
-        router.push('/login?registered=true');
+        // 소셜 로그인인 경우 바로 홈으로
+        router.push('/');
       }
     } catch (err: any) {
       console.error('Registration error:', err);
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else if (err.message) {
-        setError(err.message);
-      } else {
-        setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
-      }
+      setError(err.message || '회원가입 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -260,314 +364,427 @@ function RegisterPageContent() {
             둥지마켓 회원가입
           </h2>
 
-          {/* 회원 유형 선택 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              회원 유형
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, role: 'buyer' }))}
-                className={`p-4 border-2 rounded-lg text-center transition-colors ${
-                  formData.role === 'buyer' 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                <div className="font-semibold">일반회원</div>
-                <div className="text-sm text-gray-500 mt-1">상품 구매 전용</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, role: 'seller' }))}
-                className={`p-4 border-2 rounded-lg text-center transition-colors ${
-                  formData.role === 'seller' 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                <div className="font-semibold">판매회원</div>
-                <div className="text-sm text-gray-500 mt-1">상품 판매 가능</div>
-              </button>
+          {/* 회원가입 방식 선택 (소셜 로그인이 아닌 경우에만 표시) */}
+          {!socialProvider && (
+            <div className="mb-6">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setSignupType('email')}
+                  className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                    signupType === 'email' 
+                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <Mail className="w-6 h-6 mx-auto mb-2" />
+                  <div className="font-semibold">이메일로 가입</div>
+                  <div className="text-sm text-gray-500 mt-1">이메일/비밀번호 사용</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSignupType('social')}
+                  className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                    signupType === 'social' 
+                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="w-6 h-6 mx-auto mb-2 text-2xl">💬</div>
+                  <div className="font-semibold">간편 가입</div>
+                  <div className="text-sm text-gray-500 mt-1">카카오톡으로 가입</div>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="text-red-500 text-sm p-3 rounded bg-red-50">{error}</div>
-            )}
+          {/* 소셜 로그인 버튼 (소셜 가입 선택 시) */}
+          {signupType === 'social' && !socialProvider && (
+            <div className="mb-6">
+              <SocialLoginButtons />
+            </div>
+          )}
 
-            {/* 공통 필수 필드 */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">기본 정보</h3>
-              
-              {/* 닉네임 */}
-              <div>
-                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
-                  {formData.role === 'seller' ? '닉네임 또는 상호명' : '닉네임'} <span className="text-red-500">*</span>
+          {/* 회원가입 폼 (이메일 가입 또는 소셜 정보가 있는 경우) */}
+          {(signupType === 'email' || socialProvider) && (
+            <>
+              {/* 회원 유형 선택 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  회원 유형
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    id="nickname"
-                    name="nickname"
-                    type="text"
-                    required
-                    className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={formData.role === 'seller' ? '상호명을 입력하세요' : '닉네임을 입력하세요'}
-                    value={formData.nickname}
-                    onChange={handleChange}
-                  />
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
-                    onClick={checkNickname}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    onClick={() => setFormData(prev => ({ ...prev, role: 'buyer' }))}
+                    className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                      formData.role === 'buyer' 
+                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
                   >
-                    중복확인
+                    <div className="font-semibold">일반회원</div>
+                    <div className="text-sm text-gray-500 mt-1">상품 구매 전용</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, role: 'seller' }))}
+                    className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                      formData.role === 'seller' 
+                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-semibold">판매회원</div>
+                    <div className="text-sm text-gray-500 mt-1">상품 판매 가능</div>
                   </button>
                 </div>
-                {nicknameChecked && (
-                  <p className={`text-sm mt-1 ${nicknameAvailable ? 'text-green-600' : 'text-red-600'}`}>
-                    {nicknameAvailable ? '✓ 사용 가능한 닉네임입니다.' : '✗ 이미 사용 중인 닉네임입니다.'}
-                  </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="text-red-500 text-sm p-3 rounded bg-red-50">{error}</div>
                 )}
-              </div>
 
-              {/* 휴대폰 번호 */}
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  휴대폰 번호 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="010-0000-0000"
-                  value={formData.phone}
-                  onChange={handlePhoneChange}
-                  maxLength={13}
-                />
-                <p className="text-xs text-gray-500 mt-1">본인 인증 및 낙찰 알림 수신용</p>
-              </div>
+                {/* 공통 필수 필드 */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">기본 정보</h3>
+                  
+                  {/* 이메일 (이메일 로그인인 경우만) */}
+                  {signupType === 'email' && (
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        아이디(이메일) <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="email"
+                          name="email"
+                          type="email"
+                          required
+                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="example@email.com"
+                          value={formData.email}
+                          onChange={handleChange}
+                        />
+                        <button
+                          type="button"
+                          onClick={checkEmail}
+                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          중복확인
+                        </button>
+                      </div>
+                      {emailChecked && (
+                        <p className={`text-sm mt-1 ${emailAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                          {emailAvailable ? '✓ 사용 가능한 이메일입니다.' : '✗ 이미 사용 중인 이메일입니다.'}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-              {/* 비밀번호 */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  비밀번호 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="비밀번호를 입력하세요"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
+                  {/* 비밀번호 (이메일 로그인인 경우만) */}
+                  {signupType === 'email' && (
+                    <>
+                      <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                          비밀번호 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="password"
+                          name="password"
+                          type="password"
+                          required
+                          className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="6자 이상 입력하세요"
+                          value={formData.password}
+                          onChange={handleChange}
+                        />
+                      </div>
 
-              {/* 비밀번호 확인 */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  비밀번호 확인 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="비밀번호를 다시 입력하세요"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
+                      <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                          비밀번호 확인 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type="password"
+                          required
+                          className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="비밀번호를 다시 입력하세요"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </>
+                  )}
 
-              {/* 활동 지역 (선택) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {formData.role === 'seller' ? '사업장 주소지' : '주요 활동지역'} 
-                  {formData.role === 'seller' && <span className="text-red-500"> *</span>}
-                </label>
-                <DaumPostcodeSearch 
-                  onComplete={(data) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      region_province: data.sido,
-                      region_city: data.sigungu
-                    }));
-                  }}
-                  buttonText={
-                    formData.region_province && formData.region_city 
-                      ? `${formData.region_province} ${formData.region_city}` 
-                      : "주소 검색"
-                  }
-                />
-                {formData.region_province && formData.region_city && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    선택된 지역: {formData.region_province} {formData.region_city}
-                  </p>
+                  {/* 닉네임 */}
+                  <div>
+                    <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
+                      {formData.role === 'seller' ? '닉네임 또는 상호명' : '닉네임'} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="nickname"
+                        name="nickname"
+                        type="text"
+                        required
+                        className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder={formData.role === 'seller' ? '상호명을 입력하세요' : '닉네임을 입력하세요'}
+                        value={formData.nickname}
+                        onChange={handleChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={checkNickname}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        중복확인
+                      </button>
+                    </div>
+                    {nicknameChecked && (
+                      <p className={`text-sm mt-1 ${nicknameAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                        {nicknameAvailable ? '✓ 사용 가능한 닉네임입니다.' : '✗ 이미 사용 중인 닉네임입니다.'}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 휴대폰 번호 */}
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      휴대폰 번호 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        required
+                        className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="010-0000-0000"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        maxLength={13}
+                      />
+                      {!phoneVerified && (
+                        <button
+                          type="button"
+                          onClick={requestPhoneVerification}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                          disabled={formData.phone.length < 13}
+                        >
+                          인증요청
+                        </button>
+                      )}
+                    </div>
+                    {phoneVerified && (
+                      <p className="text-sm mt-1 text-green-600">
+                        <Check className="inline w-4 h-4 mr-1" />
+                        휴대폰 인증이 완료되었습니다.
+                      </p>
+                    )}
+                    {showVerificationInput && !phoneVerified && (
+                      <div className="mt-2 flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="인증번호 6자리"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          maxLength={6}
+                        />
+                        <button
+                          type="button"
+                          onClick={verifyPhone}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
+                        >
+                          확인
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">본인 인증 및 낙찰 알림 수신용</p>
+                  </div>
+
+                  {/* 주요 활동지역 (선택) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      주요 활동지역 {formData.role === 'buyer' && '(선택)'}
+                    </label>
+                    <RegionDropdown
+                      selectedProvince={formData.region_province}
+                      selectedCity={formData.region_city}
+                      onSelect={(province, city) => handleRegionSelect(province, city)}
+                      required={formData.role === 'seller'}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      예: 경기도 하남시, 서울시 강남구, 강원도 양양군
+                    </p>
+                  </div>
+                </div>
+
+                {/* 판매자 전용 필드 */}
+                {formData.role === 'seller' && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-medium text-gray-900">사업자 정보</h3>
+                    
+                    {/* 사업자등록번호 */}
+                    <div>
+                      <label htmlFor="business_reg_number" className="block text-sm font-medium text-gray-700 mb-1">
+                        사업자등록번호 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="business_reg_number"
+                        name="business_reg_number"
+                        type="text"
+                        required={formData.role === 'seller'}
+                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="000-00-00000"
+                        value={formData.business_reg_number}
+                        onChange={handleChange}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">사업자 확인용, 거래 사고 방지를 위한 최소한의 인증절차</p>
+                    </div>
+
+                    {/* 사업장 주소 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        사업장 주소/영업활동 지역 <span className="text-red-500">*</span>
+                      </label>
+                      <RegionDropdown
+                        selectedProvince={formData.business_address_province}
+                        selectedCity={formData.business_address_city}
+                        onSelect={(province, city) => handleRegionSelect(province, city, true)}
+                        required
+                      />
+                      <input
+                        name="business_address_detail"
+                        type="text"
+                        className="mt-2 appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="상세 주소를 입력하세요"
+                        value={formData.business_address_detail}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    {/* 비대면 판매가능 영업소 인증 */}
+                    <div className="flex items-start">
+                      <input
+                        id="is_remote_sales"
+                        name="is_remote_sales"
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                        checked={formData.is_remote_sales}
+                        onChange={handleChange}
+                      />
+                      <label htmlFor="is_remote_sales" className="ml-2">
+                        <span className="text-sm font-medium text-gray-700">비대면 판매가능 영업소 인증</span>
+                        <p className="text-xs text-gray-500">체크 시 별도 인증 절차를 통해 비대면 판매자 권한이 부여됩니다.</p>
+                      </label>
+                    </div>
+
+                    {/* 사업자등록증 업로드 (비대면 인증 체크시) */}
+                    {formData.is_remote_sales && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          사업자등록증 업로드
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={handleFileChange}
+                          className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          ※ JPG/PNG 형식의 파일만 업로드 가능 (최대 2MB)<br/>
+                          ※ 인증절차를 위한 서류 확인이 필요합니다.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
-                <p className="text-xs text-gray-500 mt-1">예: 경기도 하남시, 서울시 강남구</p>
-              </div>
 
-              {/* 프로필 이미지 (선택) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  프로필 이미지 또는 브랜드 로고
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, 'profile_image')}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-                <p className="text-xs text-gray-500 mt-1">선택하지 않으면 기본 캐릭터가 자동 부여됩니다</p>
-              </div>
-            </div>
-
-            {/* 판매자 전용 필드 */}
-            {formData.role === 'seller' && (
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="text-lg font-medium text-gray-900">사업자 정보</h3>
-                
-                {/* 사업자등록번호 */}
-                <div>
-                  <label htmlFor="business_reg_number" className="block text-sm font-medium text-gray-700 mb-1">
-                    사업자등록번호 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="business_reg_number"
-                    name="business_reg_number"
-                    type="text"
-                    required={formData.role === 'seller'}
-                    className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="000-00-00000"
-                    value={formData.business_reg_number}
-                    onChange={handleChange}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">사업자 확인용, 거래 사고 방지를 위한 최소한의 인증절차</p>
+                {/* 약관 동의 */}
+                <div className="space-y-3 pt-4 border-t">
+                  <h3 className="text-lg font-medium text-gray-900">약관 동의</h3>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        id="terms_agreed"
+                        name="terms_agreed"
+                        type="checkbox"
+                        required
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        checked={formData.terms_agreed}
+                        onChange={handleChange}
+                      />
+                      <label htmlFor="terms_agreed" className="ml-2 text-sm text-gray-700">
+                        <span className="text-red-500">*</span> (필수) 이용약관에 동의합니다
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <input
+                        id="privacy_agreed"
+                        name="privacy_agreed"
+                        type="checkbox"
+                        required
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        checked={formData.privacy_agreed}
+                        onChange={handleChange}
+                      />
+                      <label htmlFor="privacy_agreed" className="ml-2 text-sm text-gray-700">
+                        <span className="text-red-500">*</span> (필수) 개인정보 수집 및 이용에 동의합니다
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <input
+                        id="marketing_agreed"
+                        name="marketing_agreed"
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        checked={formData.marketing_agreed}
+                        onChange={handleChange}
+                      />
+                      <label htmlFor="marketing_agreed" className="ml-2 text-sm text-gray-700">
+                        (선택) 마케팅 정보 수신에 동의합니다
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 상세 주소 */}
-                <div>
-                  <label htmlFor="business_address" className="block text-sm font-medium text-gray-700 mb-1">
-                    상세 주소 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="business_address"
-                    name="business_address"
-                    type="text"
-                    required={formData.role === 'seller'}
-                    className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="상세 주소를 입력하세요"
-                    value={formData.business_address}
-                    onChange={handleChange}
-                  />
+                {/* 제출 버튼 */}
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" /> 처리중...
+                      </>
+                    ) : (
+                      '회원가입'
+                    )}
+                  </button>
                 </div>
 
-                {/* 전국 비대면 거래 */}
-                <div className="flex items-start">
-                  <input
-                    id="is_remote_sales"
-                    name="is_remote_sales"
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                    checked={formData.is_remote_sales}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="is_remote_sales" className="ml-2">
-                    <span className="text-sm font-medium text-gray-700">전국 비대면 거래 인증 영업소</span>
-                    <p className="text-xs text-gray-500">체크 시 별도 인증 절차를 통해 비대면 판매자 권한이 부여됩니다.</p>
-                  </label>
-                </div>
-
-                {/* 사업자등록증 업로드 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    사업자등록증 업로드
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => handleFileChange(e, 'business_reg_image')}
-                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    ※ JPG/PNG 형식의 파일만 업로드 가능 (최대 2MB)<br/>
-                    ※ 인증된 판매자는 전국 단위 공구 입찰이 가능합니다.
+                {/* 로그인 링크 */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    이미 회원이신가요?{' '}
+                    <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                      로그인하기
+                    </a>
                   </p>
                 </div>
-              </div>
-            )}
-
-            {/* 약관 동의 */}
-            <div className="space-y-3 pt-4 border-t">
-              <h3 className="text-lg font-medium text-gray-900">약관 동의</h3>
-              
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <input
-                    id="terms_agreed"
-                    name="terms_agreed"
-                    type="checkbox"
-                    required
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    checked={formData.terms_agreed}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="terms_agreed" className="ml-2 text-sm text-gray-700">
-                    <span className="text-red-500">*</span> 이용약관에 동의합니다
-                  </label>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    id="privacy_agreed"
-                    name="privacy_agreed"
-                    type="checkbox"
-                    required
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    checked={formData.privacy_agreed}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="privacy_agreed" className="ml-2 text-sm text-gray-700">
-                    <span className="text-red-500">*</span> 개인정보 수집 및 이용에 동의합니다
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* 제출 버튼 */}
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> 처리중...
-                  </>
-                ) : (
-                  '회원가입'
-                )}
-              </button>
-            </div>
-
-            {/* 로그인 링크 */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                이미 회원이신가요?{' '}
-                <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                  로그인하기
-                </a>
-              </p>
-            </div>
-          </form>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -577,9 +794,11 @@ function RegisterPageContent() {
 // Suspense를 사용하여 컴포넌트 래핑
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-    </div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    }>
       <RegisterPageContent />
     </Suspense>
   );

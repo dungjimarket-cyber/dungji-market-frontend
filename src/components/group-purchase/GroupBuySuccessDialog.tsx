@@ -139,15 +139,8 @@ export function GroupBuySuccessDialog({
             </button>
           </div>
 
-          {/* 하단 버튼들 */}
-          <div className="grid grid-cols-2 gap-3 mt-6">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full"
-            >
-              계속 등록하기
-            </Button>
+          {/* 하단 버튼 */}
+          <div className="mt-6">
             <Button
               onClick={handleViewDetail}
               className="w-full bg-purple-600 hover:bg-purple-700"
