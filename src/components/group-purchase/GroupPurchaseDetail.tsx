@@ -1703,7 +1703,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 </div>
                 <p className="text-sm text-gray-600 mb-4">내가 만든 공구를 관리할 수 있습니다.</p>
                 
-                <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="grid grid-cols-1 gap-2 mb-3">
+                  {/* 공구 수정 기능 사용 안함
                   <Button 
                     variant="default" 
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
@@ -1712,10 +1713,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     <Edit className="w-4 h-4 mr-2" /> 
                     공구 수정
                   </Button>
+                  */}
                   
                   <Button 
                     variant="outline" 
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium w-full"
                     onClick={() => router.push(`/mypage/creator/group-buy/${groupBuy.id}`)}
                   >
                     <Settings className="w-4 h-4 mr-2" /> 

@@ -540,6 +540,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
             <p className="text-sm text-gray-600 mb-4">내가 만든 공구를 관리할 수 있습니다.</p>
             
             <div className="flex space-x-2">
+              {/* 공구 수정 기능 사용 안함
               <Button 
                 variant="default" 
                 className="bg-blue-600 hover:bg-blue-700 flex-1"
@@ -547,10 +548,11 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               >
                 <Edit className="w-4 h-4 mr-1" /> 공구 수정
               </Button>
+              */}
               
               <Button 
                 variant="outline" 
-                className="border-blue-600 text-blue-600 hover:bg-blue-50 flex-1"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full"
                 onClick={() => router.push(`/mypage/seller/sales/${id}`)}
               >
                 <Settings className="w-4 h-4 mr-1" /> 관리 페이지
