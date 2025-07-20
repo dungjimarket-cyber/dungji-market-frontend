@@ -1,5 +1,3 @@
-import { apiClient } from './fetch';
-
 export interface SendVerificationCodeRequest {
   phone_number: string;
   purpose?: 'signup' | 'reset_password' | 'change_phone';
@@ -33,9 +31,16 @@ export interface CheckVerificationStatusResponse {
  * 휴대폰 인증 코드 발송
  */
 export async function sendVerificationCode(data: SendVerificationCodeRequest): Promise<SendVerificationCodeResponse> {
-  const response = await apiClient.post('/auth/phone/send-code/', {
-    phone_number: data.phone_number,
-    purpose: data.purpose || 'signup',
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const response = await fetch(`${baseUrl}/api/auth/phone/send-code/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      phone_number: data.phone_number,
+      purpose: data.purpose || 'signup',
+    }),
   });
 
   if (!response.ok) {
@@ -50,10 +55,17 @@ export async function sendVerificationCode(data: SendVerificationCodeRequest): P
  * 인증 코드 확인
  */
 export async function verifyCode(data: VerifyCodeRequest): Promise<VerifyCodeResponse> {
-  const response = await apiClient.post('/auth/phone/verify/', {
-    phone_number: data.phone_number,
-    code: data.code,
-    purpose: data.purpose || 'signup',
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const response = await fetch(`${baseUrl}/api/auth/phone/verify/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      phone_number: data.phone_number,
+      code: data.code,
+      purpose: data.purpose || 'signup',
+    }),
   });
 
   if (!response.ok) {
@@ -76,7 +88,13 @@ export async function checkVerificationStatus(
     purpose,
   });
 
-  const response = await apiClient.get(`/auth/phone/status/?${params.toString()}`);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const response = await fetch(`${baseUrl}/api/auth/phone/status/?${params.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
   if (!response.ok) {
     const error = await response.json();
