@@ -89,6 +89,13 @@ export interface GroupBuy {
     power_consumption?: string;
     dimensions?: string;
   };
+  
+  // 다중 지역 정보
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>;
 }
 
 // 참여 상태 정보

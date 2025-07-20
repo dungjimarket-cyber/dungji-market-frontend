@@ -46,6 +46,11 @@ interface GroupBuy {
   region_type?: string; // 지역 유형 (local, nationwide)
   region?: string; // 지역명 (서울, 부산 등)
   region_name?: string; // 지역명 (서울특별시, 부산광역시 등)
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>; // 다중 지역 정보
 }
 
 interface GroupPurchaseCardProps {
@@ -237,30 +242,35 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
         {/* 제품 정보 오버레이 */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+          {/* 지역 정보를 제목 위에 표시 */}
+          {groupBuy.regions && groupBuy.regions.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {groupBuy.regions.map((region, index) => (
+                <span key={index} className="text-yellow-400 text-sm font-medium">
+                  [{region.name}]
+                </span>
+              ))}
+            </div>
+          )}
           <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
             {groupBuy.product_details?.name || '상품명 없음'}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {/* 지역 정보 표시 */}
-            {groupBuy.region_type && (
-              <span className="bg-amber-500 text-white px-2 py-1 rounded text-xs">
-                {groupBuy.region_type === 'nationwide' ? '전국' : (groupBuy.region_name || groupBuy.region || '지역한정').slice(0, 10)}
+            {/* 통신사, 가입유형, 요금제 순서로 변경하고 크기 키움 */}
+            {groupBuy.telecom_detail?.telecom_carrier && (
+              <span className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                {groupBuy.telecom_detail.telecom_carrier}
               </span>
             )}
             {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-              <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs truncate max-w-[100px]">
+              <span className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
                 {groupBuy.product_details?.registration_type_korean || 
                  groupBuy.telecom_detail?.subscription_type_korean || 
                  getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
               </span>
             )}
-            {groupBuy.telecom_detail?.telecom_carrier && (
-              <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs truncate max-w-[80px]">
-                {groupBuy.telecom_detail.telecom_carrier}
-              </span>
-            )}
             {groupBuy.telecom_detail?.plan_info && (
-              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs truncate max-w-[100px]">
+              <span className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
                 {groupBuy.telecom_detail.plan_info}
               </span>
             )}

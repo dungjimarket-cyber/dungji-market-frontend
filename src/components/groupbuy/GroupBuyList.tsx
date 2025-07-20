@@ -59,6 +59,11 @@ interface GroupBuy {
   // 지역 관련 정보
   region_type?: string; // 지역 유형 (local, nationwide)
   region?: string; // 지역명 (서울, 부산 등)
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>; // 다중 지역 정보
 }
 
 interface GroupBuyListProps {

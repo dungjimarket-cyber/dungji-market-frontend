@@ -27,12 +27,14 @@ interface GroupBuy {
     category_name: string;
     carrier?: string;
     registration_type?: string;
+    registration_type_korean?: string;
     plan_info?: string;
     contract_info?: string;
   };
   telecom_detail?: {
     telecom_carrier: string;
     subscription_type: string;
+    subscription_type_korean?: string;
     plan_info: string;
     contract_period?: string;
   };
@@ -41,6 +43,16 @@ interface GroupBuy {
     username: string;
     profile_image?: string;
   };
+  region_type?: string;
+  region?: string;
+  region_name?: string;
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>;
+  creator_name?: string;
+  host_username?: string;
 }
 
 /**

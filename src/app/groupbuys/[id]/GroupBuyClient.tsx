@@ -13,7 +13,7 @@ import GroupBuyActionButtons from '@/components/groupbuy/GroupBuyActionButtons';
 import BidModal from '@/components/groupbuy/BidModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import { WishButton } from '@/components/ui/WishButton';
-import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle } from '@/lib/groupbuy-utils';
+import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle, getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import { useAuth } from '@/hooks/useAuth';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useState, useEffect, useCallback } from 'react';
@@ -444,6 +444,17 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
 
         {/* 공구 참여 정보 카드 */}
         <div className="bg-white p-4 mb-4">
+          {/* 지역 정보를 제목 위에 표시 */}
+          {groupBuy.regions && groupBuy.regions.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {groupBuy.regions.map((region, index) => (
+                <span key={index} className="text-amber-600 text-sm font-medium">
+                  [{region.name}]
+                </span>
+              ))}
+            </div>
+          )}
+          
           <div className="flex justify-between items-center mb-4">
             <div>
               <CardTitle className="text-2xl">
@@ -459,13 +470,6 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                   {groupBuy.creator_name || '익명'}
                 </span>
                 
-                {/* 지역 정보 표시 */}
-                {groupBuy.region_type && (
-                  <span className="ml-2 bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded">
-                    {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
-                  </span>
-                )}
-                
                 {/* 참여중 표시 배지 */}
                 {participationStatus?.is_participating && (
                   <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full flex items-center">
@@ -475,8 +479,30 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 )}
               </div>
               
+              {/* 통신사, 가입유형, 요금제 정보를 더 크고 명확하게 표시 */}
+              {groupBuy.telecom_detail && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {groupBuy.telecom_detail.telecom_carrier && (
+                    <span className="bg-blue-600 text-white px-4 py-2 rounded-lg text-base font-medium">
+                      {groupBuy.telecom_detail.telecom_carrier}
+                    </span>
+                  )}
+                  {groupBuy.telecom_detail.subscription_type && (
+                    <span className="bg-purple-600 text-white px-4 py-2 rounded-lg text-base font-medium">
+                      {groupBuy.telecom_detail.subscription_type_korean || 
+                       getRegistrationTypeText(groupBuy.telecom_detail.subscription_type)}
+                    </span>
+                  )}
+                  {groupBuy.telecom_detail.plan_info && (
+                    <span className="bg-green-600 text-white px-4 py-2 rounded-lg text-base font-medium">
+                      {groupBuy.telecom_detail.plan_info}
+                    </span>
+                  )}
+                </div>
+              )}
+              
               {groupBuy.product_details?.release_date && (
-                <div className="text-sm text-gray-500">출시일: {new Date(groupBuy.product_details.release_date).toLocaleDateString('ko-KR')}</div>
+                <div className="text-sm text-gray-500 mt-2">출시일: {new Date(groupBuy.product_details.release_date).toLocaleDateString('ko-KR')}</div>
               )}
             </div>
             <div className="flex flex-col">
