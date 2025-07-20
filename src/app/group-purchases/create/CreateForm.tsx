@@ -50,7 +50,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { getRegions, searchRegionsByName, Region } from '@/lib/api/regionService';
 import { getSession } from 'next-auth/react';
-import MultiRegionSelector from '@/components/address/MultiRegionSelector';
+import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 
 interface Product {
   id: number;
@@ -1284,20 +1284,21 @@ const onSubmit = async (values: FormData) => {
               {/* 지역 선택 UI - 지역 타입이 'local'일 때만 표시 */}
               {regionType === 'local' && (
                 <div className="mt-4 space-y-4">
-                  <MultiRegionSelector
+                  <MultiRegionDropdown
                     maxSelections={3}
-                    selectedRegions={selectedRegions.map(r => ({
-                      sido: r.name.split(' ')[0] || '',
-                      sigungu: r.name.split(' ')[1] || '',
-                      fullAddress: r.full_name || r.name,
-                      zonecode: ''
-                    }))}
+                    selectedRegions={selectedRegions.map(r => {
+                      const parts = r.name.split(' ');
+                      return {
+                        province: parts[0] || '',
+                        city: parts.slice(1).join(' ') || ''
+                      };
+                    })}
                     onSelectionChange={(regions) => {
-                      // 다음 주소 API 데이터를 기존 형식으로 변환
-                      const convertedRegions = regions.map((r, index) => ({
-                        code: `${r.sido}_${r.sigungu}`,
-                        name: `${r.sido} ${r.sigungu}`,
-                        full_name: r.fullAddress,
+                      // 드롭다운 선택 데이터를 기존 형식으로 변환
+                      const convertedRegions = regions.map((r) => ({
+                        code: `${r.province}_${r.city}`,
+                        name: `${r.province} ${r.city}`,
+                        full_name: `${r.province} ${r.city}`,
                         level: 2,
                         is_active: true  // 기본값으로 true 설정
                       }));

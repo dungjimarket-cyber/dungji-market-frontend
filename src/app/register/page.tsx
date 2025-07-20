@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Mail, Check } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
+import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
+import { useToast } from '@/components/ui/use-toast';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -15,6 +17,7 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const { toast } = useToast();
   
   // URL 파라미터로 소셜 로그인 정보 받기
   const socialProvider = searchParams.get('provider');
@@ -180,30 +183,51 @@ function RegisterPageContent() {
     }
 
     try {
-      // TODO: 실제 SMS 인증 API 호출
-      console.log('휴대폰 인증 요청:', formData.phone);
+      const response = await sendVerificationCode({
+        phone_number: formData.phone,
+        purpose: 'signup'
+      });
+      
       setShowVerificationInput(true);
       setError('');
-      // 임시로 인증번호를 콘솔에 출력 (개발용)
-      console.log('인증번호: 123456');
-    } catch (err) {
-      setError('인증번호 발송에 실패했습니다.');
+      
+      toast({
+        title: '인증번호 발송',
+        description: response.message,
+      });
+      
+      // 개발 환경에서 인증 코드가 제공되면 콘솔에 출력
+      if (response.code) {
+        console.log('인증번호:', response.code);
+      }
+    } catch (err: any) {
+      setError(err.message || '인증번호 발송에 실패했습니다.');
     }
   };
 
   // 인증번호 확인
   const verifyPhone = async () => {
     try {
-      // TODO: 실제 인증번호 확인 API 호출
-      if (verificationCode === '123456') { // 임시 코드
+      const response = await verifyCode({
+        phone_number: formData.phone,
+        code: verificationCode,
+        purpose: 'signup'
+      });
+      
+      if (response.verified) {
         setPhoneVerified(true);
         setShowVerificationInput(false);
         setError('');
+        
+        toast({
+          title: '인증 완료',
+          description: '휴대폰 인증이 완료되었습니다.',
+        });
       } else {
-        setError('인증번호가 일치하지 않습니다.');
+        setError(response.error || '인증번호가 일치하지 않습니다.');
       }
-    } catch (err) {
-      setError('인증 확인에 실패했습니다.');
+    } catch (err: any) {
+      setError(err.message || '인증 확인에 실패했습니다.');
     }
   };
 
@@ -244,11 +268,12 @@ function RegisterPageContent() {
       return;
     }
 
-    if (!phoneVerified) {
-      setError('휴대폰 인증을 완료해주세요.');
-      setIsLoading(false);
-      return;
-    }
+    // 전화번호 인증 기능 임시 비활성화
+    // if (!phoneVerified) {
+    //   setError('휴대폰 인증을 완료해주세요.');
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     // 이메일 로그인인 경우 비밀번호 확인
     if (signupType === 'email') {
@@ -550,59 +575,22 @@ function RegisterPageContent() {
                     )}
                   </div>
 
-                  {/* 휴대폰 번호 */}
+                  {/* 휴대폰 번호 - 인증 기능 임시 제거 */}
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                       휴대폰 번호 <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex gap-2">
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        required
-                        className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="010-0000-0000"
-                        value={formData.phone}
-                        onChange={handlePhoneChange}
-                        maxLength={13}
-                      />
-                      {!phoneVerified && (
-                        <button
-                          type="button"
-                          onClick={requestPhoneVerification}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-                          disabled={formData.phone.length < 13}
-                        >
-                          인증요청
-                        </button>
-                      )}
-                    </div>
-                    {phoneVerified && (
-                      <p className="text-sm mt-1 text-green-600">
-                        <Check className="inline w-4 h-4 mr-1" />
-                        휴대폰 인증이 완료되었습니다.
-                      </p>
-                    )}
-                    {showVerificationInput && !phoneVerified && (
-                      <div className="mt-2 flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="인증번호 6자리"
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
-                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          maxLength={6}
-                        />
-                        <button
-                          type="button"
-                          onClick={verifyPhone}
-                          className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
-                        >
-                          확인
-                        </button>
-                      </div>
-                    )}
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      className="w-full appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="010-0000-0000"
+                      value={formData.phone}
+                      onChange={handlePhoneChange}
+                      maxLength={13}
+                    />
                     <p className="text-xs text-gray-500 mt-1">본인 인증 및 낙찰 알림 수신용</p>
                   </div>
 
