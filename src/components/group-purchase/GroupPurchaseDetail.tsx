@@ -67,6 +67,11 @@ interface GroupBuy {
   region_type?: string; // 지역 유형 (local, nationwide)
   region?: string; // 지역명 (서울, 부산 등)
   region_name?: string; // 지역명 (서울특별시, 부산광역시 등)
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>; // 다중 지역 정보
 }
 
 interface GroupPurchaseDetailProps {
@@ -1276,9 +1281,19 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               {groupBuy.region_type && (
                 <div className="flex items-center gap-1 text-sm">
                   <span className="text-gray-500">지역:</span>
-                  <span className="font-medium px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
-                    {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
-                  </span>
+                  {groupBuy.regions && groupBuy.regions.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {groupBuy.regions.map((region, index) => (
+                        <span key={index} className="font-medium px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
+                          {region.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="font-medium px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
+                      {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
+                    </span>
+                  )}
                 </div>
               )}
               
@@ -1307,32 +1322,36 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             </div>
 
-            {/* 통신사 정보 (통신 관련 공구인 경우) */}
+            {/* 통신사 정보 (통신 관련 공구인 경우) - 크고 명확하게 표시 */}
             {(groupBuy.telecom_detail || groupBuy.product_details?.carrier) && (
-              <div className="p-3 bg-gray-50 rounded-lg mb-4">
-                <h3 className="text-sm font-medium mb-2">통신 정보</h3>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-gray-500">통신사:</span>{' '}
-                    <span>{groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier || '-'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">가입유형:</span>{' '}
-                    <span>
+              <div className="p-4 bg-gray-50 rounded-lg mb-4">
+                <h3 className="text-base font-medium mb-3">통신 정보</h3>
+                <div className="flex flex-wrap gap-2">
+                  {/* 통신사, 가입유형, 요금제 순서로 크게 표시 */}
+                  {(groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier) && (
+                    <span className="bg-blue-600 text-white px-4 py-2 rounded-lg text-base font-medium">
+                      {groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier}
+                    </span>
+                  )}
+                  {(groupBuy.telecom_detail?.subscription_type || groupBuy.product_details?.registration_type) && (
+                    <span className="bg-purple-600 text-white px-4 py-2 rounded-lg text-base font-medium">
                       {groupBuy.telecom_detail?.subscription_type_korean || 
                        groupBuy.product_details?.registration_type_korean || 
                        getRegistrationTypeText(groupBuy.telecom_detail?.subscription_type || groupBuy.product_details?.registration_type)}
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">요금제:</span>{' '}
-                    <span>{groupBuy.telecom_detail?.plan_info || groupBuy.product_details?.plan_info || '-'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">약정기간:</span>{' '}
-                    <span>{groupBuy.telecom_detail?.contract_period || groupBuy.product_details?.contract_info || '-'}</span>
-                  </div>
+                  )}
+                  {(groupBuy.telecom_detail?.plan_info || groupBuy.product_details?.plan_info) && (
+                    <span className="bg-green-600 text-white px-4 py-2 rounded-lg text-base font-medium">
+                      {groupBuy.telecom_detail?.plan_info || groupBuy.product_details?.plan_info}
+                    </span>
+                  )}
                 </div>
+                {/* 약정기간은 별도로 표시 */}
+                {(groupBuy.telecom_detail?.contract_period || groupBuy.product_details?.contract_info) && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    약정기간: {groupBuy.telecom_detail?.contract_period || groupBuy.product_details?.contract_info}
+                  </div>
+                )}
               </div>
             )}
 
