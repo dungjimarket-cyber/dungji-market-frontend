@@ -1261,6 +1261,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
             
             <div className="space-y-3">
+              {/* 지역 정보를 제목 위에 표시 */}
+              {groupBuy.regions && groupBuy.regions.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {groupBuy.regions.map((region, index) => (
+                    <span key={index} className="text-amber-600 text-sm font-medium">
+                      [{region.name}]
+                    </span>
+                  ))}
+                </div>
+              )}
               <h2 className="text-xl font-bold text-gray-900">
                 {groupBuy.product_details?.name || '상품명 없음'}
               </h2>
