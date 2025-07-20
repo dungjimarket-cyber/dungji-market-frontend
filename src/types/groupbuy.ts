@@ -78,6 +78,7 @@ export interface GroupBuy {
   telecom_detail?: {
     telecom_carrier: string;
     subscription_type: string;
+    subscription_type_korean?: string;
     plan_info: string;
     contract_period?: string;
   };
