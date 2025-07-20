@@ -154,7 +154,13 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   // 입찰 정보 가져오기 함수 - useCallback으로 메모이제이션
   const fetchBidInfo = useCallback(async () => {
     const groupBuyId = groupBuy?.id;
-    if (!isAuthenticated || !accessToken || !groupBuyId) return;
+    if (!isAuthenticated || !accessToken || !groupBuyId) {
+      // 인증되지 않은 경우 기본값 설정
+      setIsSeller(false);
+      setIsCreator(false);
+      setHasBid(false);
+      return;
+    }
     
     try {
       // 현재 사용자 ID 및 프로필 정보 가져오기

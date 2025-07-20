@@ -28,7 +28,9 @@ export interface NotificationResponse {
  * @returns {Promise<NotificationResponse>} 읽은 알림과 읽지 않은 알림 목록
  */
 export const getNotifications = async (): Promise<NotificationResponse> => {
-  const response = await fetchWithAuth('/notifications/');
+  const response = await fetchWithAuth('/notifications/', {
+    skipAuthRedirect: true // 인증 실패 시 리다이렉트 방지
+  });
   return response.json();
 };
 

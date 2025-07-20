@@ -15,7 +15,7 @@ import { tokenUtils } from '../tokenUtils';
  */
 export const fetchWithAuth = async (
   url: string,
-  options: RequestInit = {}
+  options: RequestInit & { skipAuthRedirect?: boolean } = {}
 ): Promise<Response> => {
   try {
     const headers = await tokenUtils.getAuthHeaders();
@@ -41,10 +41,11 @@ export const fetchWithAuth = async (
       try {
         errorData = JSON.parse(responseText);
         
-        // 토큰 만료 오류인 경우
+        // 토큰 만료 오류인 경우 (skipAuthRedirect가 true가 아닐 때만 리다이렉트)
         if (response.status === 401 && 
             errorData?.code === 'token_not_valid' && 
-            typeof window !== 'undefined') {
+            typeof window !== 'undefined' &&
+            !options.skipAuthRedirect) {
           console.error('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
           window.location.href = '/login';
         }
