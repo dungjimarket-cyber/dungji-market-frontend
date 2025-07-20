@@ -3,10 +3,9 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail, Phone, Building, Check, X } from 'lucide-react';
+import { Loader2, Mail, Check } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
-import { regions } from '@/lib/regions';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -333,7 +332,7 @@ function RegisterPageContent() {
         throw new Error(errorData.error || errorData.detail || '회원가입에 실패했습니다.');
       }
 
-      const data = await response.json();
+      await response.json();
       
       // 회원가입 성공 후 처리
       if (signupType === 'email') {
