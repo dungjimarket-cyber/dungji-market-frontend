@@ -22,7 +22,7 @@ interface MultiRegionDropdownProps {
  * RegionDropdown을 사용하여 여러 지역을 선택할 수 있도록 함
  */
 export default function MultiRegionDropdown({
-  maxSelections = 3,
+  maxSelections = 2,
   onSelectionChange,
   selectedRegions = []
 }: MultiRegionDropdownProps) {

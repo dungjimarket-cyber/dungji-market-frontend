@@ -1287,7 +1287,7 @@ const onSubmit = async (values: FormData) => {
               {regionType === 'local' && (
                 <div className="mt-4 space-y-4">
                   <MultiRegionDropdown
-                    maxSelections={3}
+                    maxSelections={2}
                     selectedRegions={selectedRegions.map(r => {
                       const parts = r.name.split(' ');
                       return {
