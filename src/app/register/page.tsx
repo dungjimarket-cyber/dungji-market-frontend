@@ -8,6 +8,7 @@ import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
 import { useToast } from '@/components/ui/use-toast';
+import { WelcomeModal } from '@/components/auth/WelcomeModal';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -32,7 +33,7 @@ function RegisterPageContent() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'buyer', // 'buyer' or 'seller'
+    role: 'user', // 'user' or 'seller' - 백엔드에서 buyer로 변환됨
     
     // 선택 필드
     region_province: '',
@@ -66,6 +67,7 @@ function RegisterPageContent() {
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerificationInput, setShowVerificationInput] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -364,13 +366,14 @@ function RegisterPageContent() {
         // 이메일 로그인인 경우 자동 로그인
         const loginResult = await login(formData.email, formData.password);
         if (loginResult.success) {
-          router.push('/');
+          // 환영 모달 표시
+          setShowWelcomeModal(true);
         } else {
           router.push('/login?registered=true');
         }
       } else {
-        // 소셜 로그인인 경우 바로 홈으로
-        router.push('/');
+        // 소셜 로그인인 경우도 환영 모달 표시
+        setShowWelcomeModal(true);
       }
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -440,9 +443,9 @@ function RegisterPageContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, role: 'buyer' }))}
+                    onClick={() => setFormData(prev => ({ ...prev, role: 'user' }))}
                     className={`p-4 border-2 rounded-lg text-center transition-colors ${
-                      formData.role === 'buyer' 
+                      formData.role === 'user' 
                         ? 'border-blue-500 bg-blue-50 text-blue-700' 
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
@@ -597,7 +600,7 @@ function RegisterPageContent() {
                   {/* 주요 활동지역 (선택) */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      주요 활동지역 {formData.role === 'buyer' && '(선택)'}
+                      주요 활동지역 {formData.role === 'user' && '(선택)'}
                     </label>
                     <RegionDropdown
                       selectedProvince={formData.region_province}
@@ -774,6 +777,13 @@ function RegisterPageContent() {
           )}
         </div>
       </div>
+      
+      {/* 환영 모달 */}
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+        userRole={formData.role}
+      />
     </div>
   );
 }

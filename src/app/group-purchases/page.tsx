@@ -81,6 +81,7 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (activeTab === 'completed') {
+        // 종료 탭: 마감된 공구들 (백엔드에서 ended로 처리)
         params.append('status', 'ended');
       } else if (activeTab === 'all') {
         // 전체 탭은 모든 상태 포함

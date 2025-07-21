@@ -354,41 +354,48 @@ function BidsListClient() {
         bids.map((bid) => (
           <Card key={bid.id} className="mb-4 hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row justify-between mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
+                  <p className="text-sm text-gray-600 mb-1">상품명:</p>
                   <h2 className="text-lg font-medium">
                     <Link href={`/groupbuys/${bid.groupbuy}`} className="hover:text-blue-600">
-                      {`${bid.product_name || '상품명 없음'} ${bid.telecom_carrier || ''} ${bid.subscription_type ? (bid.subscription_type === 'new' ? '신규가입' : bid.subscription_type === 'transfer' ? '번호이동' : '기기변경') : ''} ${bid.plan_info ? '요금제 ' + bid.plan_info : ''}`}
+                      {bid.product_name || '상품명 없음'}
                     </Link>
                   </h2>
-                  <p className="text-sm text-gray-600">
-                    입찰 유형: {getBidTypeText(bid.bid_type) || '가격 제안'} | 
-                    상태: {statusText(bid.status)}
-                  </p>
                 </div>
-                <div className="mt-2 md:mt-0">
+                <div className="text-right md:text-left">
                   <Badge className={statusColor(bid.status)}>
                     {statusText(bid.status)}
                   </Badge>
                 </div>
               </div>
-              <div className="bg-gray-50 p-3 rounded-md mb-2">
-                <p className="text-gray-700">
-                  <span className="font-medium">제안 금액:</span> {formatNumberWithCommas(bid.amount)}원
-                </p>
-                {bid.contract_period && (
-                  <p className="text-gray-700">
-                    <span className="font-medium">계약 기간:</span> {bid.contract_period}
-                  </p>
-                )}
-                <p className="text-gray-700">
-                  <span className="font-medium">메시지:</span> {bid.message || '메시지 없음'}
-                </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <p className="text-sm text-gray-600">입찰 유형:</p>
+                  <p className="font-medium">{getBidTypeText(bid.bid_type) || '가격 입찰'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">입찰 금액:</p>
+                  <p className="font-medium text-lg">{formatNumberWithCommas(bid.amount)}원</p>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-sm text-gray-500">
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  입찰일: {formatDate(bid.created_at)}
+              
+              {bid.message && (
+                <div className="bg-gray-50 p-3 rounded-md mb-3">
+                  <p className="text-sm text-gray-700">{bid.message}</p>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-sm">
+                <div className="text-gray-600">
+                  <span className="font-medium">입찰시간:</span> {new Date(bid.created_at).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
                 </div>
                 <div>
                   {bid.status === 'pending' && (

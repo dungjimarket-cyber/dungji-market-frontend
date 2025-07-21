@@ -93,9 +93,9 @@ export function GroupBuySuccessDialog({
             </button>
           </div>
           <p className="text-white/90">
-            공동구매가 성공적으로 등록되었습니다.
+            상품 구매가 필요한 친구와 지인에게 공유하고,
             <br />
-            지금 바로 친구들과 공유해보세요!
+            세상에 없던 혜택을 경험해 보세요!
           </p>
         </div>
 

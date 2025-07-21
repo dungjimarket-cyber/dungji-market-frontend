@@ -9,6 +9,7 @@ import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
 import BidManagement from '@/components/mypage/BidManagement';
 import SettlementHistory from '@/components/mypage/SettlementHistory';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
+import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
 import {
   Accordion,
@@ -16,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Store, BarChart, Package, ShoppingBag, ChevronRight, PlusCircle } from 'lucide-react';
+import { Loader2, Store, BarChart, Package, ShoppingBag, ChevronRight, PlusCircle, CheckCircle2 } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -37,6 +38,7 @@ export default function MyPageClient() {
   const [sellerActivityCount, setSellerActivityCount] = useState(0);
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
   const [createdGroupBuysCount, setCreatedGroupBuysCount] = useState(0);
+  const [completedGroupBuysCount, setCompletedGroupBuysCount] = useState(0);
 
   // 참여중인 공구 개수 가져오기
   useEffect(() => {
@@ -138,6 +140,30 @@ export default function MyPageClient() {
       }
     };
     
+    // 종료된 공구 개수 가져오기
+    const fetchCompletedGroupBuysCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/joined_groupbuys/?status=completed`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCompletedGroupBuysCount(data.length);
+        }
+      } catch (error) {
+        console.error('종료된 공구 개수 조회 오류:', error);
+        setCompletedGroupBuysCount(0);
+      }
+    };
+    
     // 내가 만든 공구 개수 가져오기
     const fetchCreatedGroupBuysCount = async () => {
       if (!isAuthenticated || !accessToken) return;
@@ -166,6 +192,7 @@ export default function MyPageClient() {
       fetchParticipatingCount();
       fetchPendingSelectionCount();
       fetchCreatedGroupBuysCount();
+      fetchCompletedGroupBuysCount();
       
       if (isSeller) {
         fetchSellerActivityCount();
@@ -287,6 +314,25 @@ export default function MyPageClient() {
               </AccordionTrigger>
               <AccordionContent className="pt-4">
                 <CreatedGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 공구종료 */}
+            <AccordionItem value="completed">
+              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <CheckCircle2 className="w-5 h-5 mr-2 text-gray-500" />
+                    <span className="font-medium">공구종료</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <span className="mr-1 text-sm">{completedGroupBuysCount}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <CompletedGroupBuys />
               </AccordionContent>
             </AccordionItem>
 
