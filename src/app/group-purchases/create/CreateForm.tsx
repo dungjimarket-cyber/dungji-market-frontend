@@ -121,8 +121,8 @@ const getFormSchema = (mode: string) => z.object({
       full_name: z.string().optional(),
       level: z.number().optional()
     })
-  ).max(3, {
-    message: '공구 지역은 최대 3곳까지 선택 가능합니다',
+  ).max(2, {
+    message: '공구 지역은 최대 2곳까지 선택 가능합니다',
   }).optional().default([]),
   
   // 카테고리별 필드
@@ -572,13 +572,13 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 최대 3개 지역 제한 확인
-    if (selectedRegions.length >= 3) {
-      setRegionError('공구 지역은 최대 3곳까지만 선택 가능합니다.');
+    // 최대 2개 지역 제한 확인
+    if (selectedRegions.length >= 2) {
+      setRegionError('공구 지역은 최대 2곳까지만 선택 가능합니다.');
       toast({
         variant: 'destructive',
         title: '지역 선택 제한',
-        description: '공구 지역은 최대 3곳까지만 선택 가능합니다.',
+        description: '공구 지역은 최대 2곳까지만 선택 가능합니다.',
       });
       setSearchTerm('');
       setSearchResults([]);
@@ -638,7 +638,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     form.setValue('selected_regions', updatedRegions);
 
     // 지역 선택 에러 메시지 초기화
-    if (updatedRegions.length < 3) {
+    if (updatedRegions.length < 2) {
       setRegionError('');
     }
   };
@@ -1322,7 +1322,7 @@ const onSubmit = async (values: FormData) => {
                   <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
                     <p className="text-sm text-gray-700">
                       <CheckCircle2 className="h-4 w-4 inline-block mr-1 text-green-600" />
-                      공구 지역은 최대 3곳까지 선택 가능합니다.
+                      공구 지역은 최대 2곳까지 선택 가능합니다.
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
                       선택한 지역의 판매회원만 입찰이 가능합니다.

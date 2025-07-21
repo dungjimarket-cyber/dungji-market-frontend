@@ -243,14 +243,28 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         {/* 제품 정보 오버레이 */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
           {/* 지역 정보를 제목 위에 표시 */}
-          {groupBuy.regions && groupBuy.regions.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {groupBuy.regions.map((region, index) => (
-                <span key={index} className="text-yellow-400 text-sm font-medium">
-                  [{region.name}]
-                </span>
-              ))}
+          {groupBuy.region_type === 'nationwide' ? (
+            <div className="mb-2">
+              <span className="text-yellow-300 text-base font-bold">
+                [전국 비대면]
+              </span>
             </div>
+          ) : (
+            groupBuy.regions && groupBuy.regions.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {groupBuy.regions.slice(0, 2).map((region, index) => {
+                  // 지역명에서 시/도와 시/군/구 분리
+                  const parts = region.name.split(' ');
+                  const sido = parts[0] || '';
+                  const sigungu = parts.slice(1).join(' ') || '';
+                  return (
+                    <span key={index} className="text-white text-sm font-medium">
+                      [{sido} {sigungu}]
+                    </span>
+                  );
+                })}
+              </div>
+            )
           )}
           <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
             {groupBuy.product_details?.name || '상품명 없음'}
