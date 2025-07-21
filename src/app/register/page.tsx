@@ -7,7 +7,7 @@ import { Loader2, Mail } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
 // import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
-import { useToast } from '@/components/ui/use-toast';
+// import { useToast } from '@/components/ui/use-toast'; // 휴대폰 인증 기능 임시 비활성화
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
 
 // 회원가입 타입 정의
@@ -18,7 +18,7 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
-  const { toast } = useToast();
+  // const { toast } = useToast(); // 휴대폰 인증 기능 임시 비활성화
   
   // URL 파라미터로 소셜 로그인 정보 받기
   const socialProvider = searchParams.get('provider');
@@ -65,8 +65,8 @@ function RegisterPageContent() {
   const [emailChecked, setEmailChecked] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(false);
   // const [phoneVerified] = useState(false); // 휴대폰 인증 기능 임시 비활성화
-  const [verificationCode] = useState('');
-  const [showVerificationInput] = useState(false);
+  // const [verificationCode] = useState(''); // 휴대폰 인증 기능 임시 비활성화
+  // const [showVerificationInput] = useState(false); // 휴대폰 인증 기능 임시 비활성화
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
