@@ -48,10 +48,16 @@ export default function ProfileSection() {
   const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [addressRegion, setAddressRegion] = useState<any>(null);
+  const [addressDetail, setAddressDetail] = useState('');
+  const [role, setRole] = useState('');
+  const [isBusinessVerified, setIsBusinessVerified] = useState(false);
+  const [regions, setRegions] = useState<any[]>([]);
   const [region, setRegion] = useState('');
   const [userType, setUserType] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [editField, setEditField] = useState<'email' | 'nickname' | 'region' | 'user_type' | null>(null);
+  const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | null>(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
@@ -72,9 +78,14 @@ export default function ProfileSection() {
             const profileData = await response.json();
             console.log('백엔드에서 가져온 프로필 정보:', profileData);
             
-            // 이메일, 닉네임, 지역, 회원구분 상태 업데이트
+            // 프로필 정보 상태 업데이트
             setEmail(profileData.email || '');
             setNickname(profileData.username || '');
+            setPhoneNumber(profileData.phone_number || '');
+            setAddressRegion(profileData.address_region || null);
+            setAddressDetail(profileData.address_detail || '');
+            setRole(profileData.role || 'buyer');
+            setIsBusinessVerified(profileData.is_business_verified || false);
             setRegion(profileData.region || '');
             setUserType(profileData.user_type || '일반');
             
@@ -138,6 +149,22 @@ export default function ProfileSection() {
       setUserType('일반');
     }
   }, [user?.email, user?.username, user?.nickname, user?.region, user?.user_type]);
+  
+  // 지역 목록 가져오기
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/regions/`);
+        if (response.ok) {
+          const data = await response.json();
+          setRegions(data);
+        }
+      } catch (error) {
+        console.error('지역 정보 가져오기 오류:', error);
+      }
+    };
+    fetchRegions();
+  }, []);
 
   /**
    * 이메일 주소 업데이트 함수
@@ -167,15 +194,23 @@ export default function ProfileSection() {
     }
 
     // 업데이트할 데이터 객체 준비
-    const updateData: {email?: string, username?: string, region?: string, user_type?: string} = {};
+    const updateData: {
+      email?: string,
+      username?: string,
+      phone_number?: string,
+      address_region_id?: number | null,
+      address_detail?: string
+    } = {};
+    
     if (editField === 'email') {
       updateData.email = email;
     } else if (editField === 'nickname') {
       updateData.username = nickname; // 백엔드에서는 username 필드 사용
-    } else if (editField === 'region') {
-      updateData.region = region;
-    } else if (editField === 'user_type') {
-      updateData.user_type = userType;
+    } else if (editField === 'phone_number') {
+      updateData.phone_number = phoneNumber;
+    } else if (editField === 'address') {
+      updateData.address_region_id = addressRegion?.id || null;
+      updateData.address_detail = addressDetail;
     }
 
     try {
@@ -210,11 +245,14 @@ export default function ProfileSection() {
         const profileData = await profileRes.json();
         console.log('프로필 업데이트 후 백엔드 응답:', profileData);
         
-        // 닉네임, 이메일, 지역, 회원구분 상태 업데이트
+        // 프로필 정보 상태 업데이트
         setEmail(profileData.email);
         setNickname(profileData.username);
-        setRegion(profileData.region || '');
-        setUserType(profileData.user_type || '일반');
+        setPhoneNumber(profileData.phone_number || '');
+        setAddressRegion(profileData.address_region || null);
+        setAddressDetail(profileData.address_detail || '');
+        setRole(profileData.role || 'buyer');
+        setIsBusinessVerified(profileData.is_business_verified || false);
         
         // AuthContext 및 로컬스토리지 동기화
         if (setUser) {
@@ -250,7 +288,7 @@ export default function ProfileSection() {
         <h2 className="text-2xl font-bold">사용자 정보</h2>
         <div className="flex flex-col gap-4 mt-6">
           {/* 판매회원인 경우 입찰권 구매 링크 표시 */}
-          {userType === '판매' && (
+          {role === 'seller' && (
             <button
               onClick={() => router.push('/bid-tickets')}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -369,12 +407,141 @@ export default function ProfileSection() {
               </div>
             )}
           </div>
+          
+          {/* 휴대폰 번호 섹션 */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-gray-700">휴대폰 번호</label>
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditField('phone_number');
+                }}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                수정
+              </button>
+            </div>
+            
+            {isEditing && editField === 'phone_number' ? (
+              <div className="flex items-center">
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="flex-1 p-2 border rounded-md mr-2"
+                  placeholder="휴대폰 번호를 입력하세요 (예: 01012345678)"
+                />
+                <button
+                  onClick={handleProfileUpdate}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditField(null);
+                    setPhoneNumber(phoneNumber || '');
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                >
+                  취소
+                </button>
+              </div>
+            ) : (
+              <div className="p-2 bg-gray-50 rounded-md">
+                <span className="font-medium">{phoneNumber || '휴대폰 번호 정보 없음'}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* 주소 섹션 */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium text-gray-700">주소</label>
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditField('address');
+                }}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                수정
+              </button>
+            </div>
+            
+            {isEditing && editField === 'address' ? (
+              <div className="space-y-2">
+                <select
+                  value={addressRegion?.id || ''}
+                  onChange={(e) => {
+                    const regionId = e.target.value;
+                    const selectedRegion = regions.find(r => r.id === parseInt(regionId));
+                    setAddressRegion(selectedRegion || null);
+                  }}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">지역을 선택하세요</option>
+                  {regions.filter(r => r.level === 1).map(region => (
+                    <option key={region.id} value={region.id}>
+                      {region.full_name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={addressDetail}
+                  onChange={(e) => setAddressDetail(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="상세 주소를 입력하세요"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleProfileUpdate}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  >
+                    저장
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditField(null);
+                    }}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-2 bg-gray-50 rounded-md space-y-1">
+                <div className="font-medium">
+                  {addressRegion ? addressRegion.full_name : '지역 정보 없음'}
+                </div>
+                {addressDetail && (
+                  <div className="text-sm text-gray-600">{addressDetail}</div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         
         {/* 로그인 방식 */}
         <div>
           <p className="text-sm text-gray-500">로그인 방식</p>
           <p className="font-medium">{getLoginProviderLabel(user)}</p>
+        </div>
+        
+        {/* 회원 구분 */}
+        <div>
+          <p className="text-sm text-gray-500">회원 구분</p>
+          <p className="font-medium">
+            {role === 'seller' ? '판매회원' : '일반회원'}
+            {role === 'seller' && isBusinessVerified && (
+              <span className="ml-2 text-xs text-green-600">✓ 사업자 인증 완료</span>
+            )}
+          </p>
         </div>
         
         {/* 성공 메시지 */}
