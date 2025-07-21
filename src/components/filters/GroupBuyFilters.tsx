@@ -154,31 +154,40 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
     <Card className="mb-6">
       <CardContent className="p-4">
         {/* 검색창 */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <Input
-            type="text"
-            placeholder="지역명을 검색하세요 (예: 하남시, 강남구)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleFilterChange('search', searchQuery);
-              }
-            }}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                handleFilterChange('search', '');
+        <div className="flex gap-2 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              type="text"
+              placeholder="지역명을 검색하세요 (예: 하남시, 강남구)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleFilterChange('search', searchQuery);
+                }
               }}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={20} />
-            </button>
-          )}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  handleFilterChange('search', '');
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            )}
+          </div>
+          <Button
+            onClick={() => handleFilterChange('search', searchQuery)}
+            disabled={!searchQuery}
+            className="px-6"
+          >
+            검색
+          </Button>
         </div>
         
         {/* 필터 토글 버튼 */}

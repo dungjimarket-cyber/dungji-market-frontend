@@ -49,6 +49,7 @@ interface GroupBuy {
   regions?: Array<{
     id: number;
     name: string;
+    full_name?: string;
     parent?: string;
   }>; // 다중 지역 정보
 }
@@ -253,13 +254,18 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             groupBuy.regions && groupBuy.regions.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {groupBuy.regions.slice(0, 2).map((region, index) => {
-                  // 지역명에서 시/도와 시/군/구 분리
-                  const parts = region.name.split(' ');
-                  const sido = parts[0] || '';
-                  const sigungu = parts.slice(1).join(' ') || '';
+                  // full_name이 '서울특별시 강남구' 형태로 되어 있음
+                  // '특별시', '광역시', '도' 등을 짧은 형태로 변환
+                  let displayName = region.name || region.full_name || '';
+                  displayName = displayName
+                    .replace('특별시', '시')
+                    .replace('광역시', '시')
+                    .replace('특별자치시', '시')
+                    .replace('특별자치도', '도');
+                  
                   return (
                     <span key={index} className="text-white text-sm font-medium">
-                      [{sido} {sigungu}]
+                      [{displayName}]
                     </span>
                   );
                 })}
