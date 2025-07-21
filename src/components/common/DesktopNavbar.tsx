@@ -26,14 +26,39 @@ export default function DesktopNavbar() {
           
           <div className="flex space-x-8">
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
-              공구둘러보기
-            </Link>          
-            <Link href="/completed" className="text-gray-600 hover:text-gray-900">
-              완료된 공구
+              공구 둘러보기
             </Link>
-            <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
-              마이페이지
-            </Link>
+            
+            {/* 비로그인 시 */}
+            {!isAuthenticated && (
+              <Link href="/register" className="text-gray-600 hover:text-gray-900">
+                회원가입
+              </Link>
+            )}
+            
+            {/* 일반회원 로그인 시 */}
+            {isAuthenticated && user?.role === 'buyer' && (
+              <>
+                <Link href="/group-purchases/create" className="text-gray-600 hover:text-gray-900">
+                  공구 등록하기
+                </Link>
+                <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
+                  마이페이지
+                </Link>
+              </>
+            )}
+            
+            {/* 판매회원 로그인 시 */}
+            {isAuthenticated && user?.role === 'seller' && (
+              <>
+                <Link href="/mypage/seller/bids" className="text-gray-600 hover:text-gray-900">
+                  입찰 내역
+                </Link>
+                <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
+                  마이페이지
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">

@@ -114,7 +114,7 @@ export function BidVotingList({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>입찰 목록 및 투표</span>
+          <span>입찰 내역 및 투표</span>
           {loading ? (
             <span className="text-sm text-gray-500">로딩 중...</span>
           ) : hasVoted ? (
@@ -128,7 +128,7 @@ export function BidVotingList({
       <CardContent>
         {loading ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">입찰 목록을 불러오구 있습니다...</p>
+            <p className="text-gray-500">입찰 내역을 불러오고 있습니다...</p>
           </div>
         ) : bids.length === 0 ? (
           <p className="text-center text-gray-500 py-8">아직 입찰이 없습니다.</p>

@@ -376,7 +376,57 @@ function RegisterPageContent() {
           {/* 소셜 로그인 버튼 (소셜 가입 선택 시) */}
           {signupType === 'social' && !socialProvider && (
             <div className="mb-6">
-              <SocialLoginButtons />
+              {/* 카카오톡 간편가입 약관 동의 */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">(주)둥지마켓 약관 동의</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="terms_agreed_social"
+                      className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                      checked={formData.terms_agreed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, terms_agreed: e.target.checked }))}
+                    />
+                    <label htmlFor="terms_agreed_social" className="ml-2 text-sm text-gray-700">
+                      <span className="text-red-500">*</span> (필수) 이용약관에 동의합니다
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="privacy_agreed_social"
+                      className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                      checked={formData.privacy_agreed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, privacy_agreed: e.target.checked }))}
+                    />
+                    <label htmlFor="privacy_agreed_social" className="ml-2 text-sm text-gray-700">
+                      <span className="text-red-500">*</span> (필수) 개인정보 수집 및 이용에 동의합니다
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="marketing_agreed_social"
+                      className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                      checked={formData.marketing_agreed}
+                      onChange={(e) => setFormData(prev => ({ ...prev, marketing_agreed: e.target.checked }))}
+                    />
+                    <label htmlFor="marketing_agreed_social" className="ml-2 text-sm text-gray-700">
+                      (선택) 마케팅 정보 수신에 동의합니다
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <SocialLoginButtons 
+                requireTermsAgreement={true}
+                termsAgreed={formData.terms_agreed}
+                privacyAgreed={formData.privacy_agreed}
+              />
             </div>
           )}
 

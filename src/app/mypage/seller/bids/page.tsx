@@ -52,7 +52,7 @@ function BidsListSkeleton() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold">입찰 목록</h1>
+        <h1 className="text-2xl font-bold">입찰 내역</h1>
       </div>
       
       <div className="mb-6 flex flex-col md:flex-row gap-4">
@@ -309,7 +309,7 @@ function BidsListClient() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold">입찰 목록</h1>
+        <h1 className="text-2xl font-bold">입찰 내역</h1>
         <span className="ml-2 text-sm text-gray-500">총 {totalCount}건</span>
       </div>
       

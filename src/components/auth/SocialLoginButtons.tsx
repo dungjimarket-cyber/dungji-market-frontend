@@ -6,11 +6,17 @@ import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
+interface SocialLoginButtonsContentProps {
+  requireTermsAgreement?: boolean;
+  termsAgreed?: boolean;
+  privacyAgreed?: boolean;
+}
+
 /**
  * useSearchParams를 사용하는 내부 컴포넌트
  * Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 분리하고 Suspense로 감싸야 함
  */
-function SocialLoginButtonsContent() {
+function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacyAgreed }: SocialLoginButtonsContentProps) {
   const [loading, setLoading] = useState<string>('');
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -21,6 +27,15 @@ function SocialLoginButtonsContent() {
    * @param provider - 소셜 로그인 제공자 ('kakao')
    */
   const handleSocialLogin = (provider: string, callbackUrl: string = '/') => {
+    // 약관 동의 확인
+    if (requireTermsAgreement && (!termsAgreed || !privacyAgreed)) {
+      toast({
+        variant: 'destructive',
+        title: '약관 동의 필요',
+        description: '필수 약관에 동의해주세요.',
+      });
+      return;
+    }
     // 기본 redirectUrl 설정 (로그인 후 돌아갈 경로)
     let redirectUrl = callbackUrl;
     
@@ -120,16 +135,26 @@ function SocialLoginButtonsContent() {
   );
 }
 
+interface SocialLoginButtonsProps {
+  requireTermsAgreement?: boolean;
+  termsAgreed?: boolean;
+  privacyAgreed?: boolean;
+}
+
 /**
  * 소셜 로그인 버튼 컴포넌트
  * JWT 기반 인증을 위해 Django 백엔드의 소셜 로그인 엔드포인트로 연결합니다.
  */
-export default function SocialLoginButtons() {
+export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed, privacyAgreed }: SocialLoginButtonsProps) {
   return (
     <Suspense fallback={<div className="flex flex-col gap-4 w-full items-center justify-center">
       <Loader2 className="h-5 w-5 animate-spin" />
     </div>}>
-      <SocialLoginButtonsContent />
+      <SocialLoginButtonsContent 
+        requireTermsAgreement={requireTermsAgreement}
+        termsAgreed={termsAgreed}
+        privacyAgreed={privacyAgreed}
+      />
     </Suspense>
   );
 }

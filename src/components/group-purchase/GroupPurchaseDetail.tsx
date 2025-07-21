@@ -788,6 +788,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       }
       return;
     }
+
+    // 카카오톡 간편가입 판매회원 필수 정보 체크
+    if (user?.sns_type === 'kakao' && user?.role === 'seller') {
+      if (!user.phone_number || !user.business_address || !user.business_number) {
+        if (confirm('공구에 입찰하기 위한 사업자등록번호, 주소지, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
+          router.push('/mypage');
+        }
+        return;
+      }
+    }
     
     // 입찰권 보유 여부 확인
     try {
@@ -1408,7 +1418,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     onClick={() => setShowBidHistoryModal(true)}
                     className="flex-1 py-2 border border-blue-300 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-50"
                   >
-                    입찰 기록 보기
+                    입찰 내역 보기
                   </button>
                 </div>
               </div>
@@ -1560,6 +1570,15 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               <button
                 onClick={() => {
                   if (isAuthenticated) {
+                    // 카카오톡 간편가입 일반회원 필수 정보 체크
+                    if (user?.sns_type === 'kakao' && user?.role === 'buyer') {
+                      if (!user.phone_number || !user.region) {
+                        if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
+                          router.push('/mypage');
+                        }
+                        return;
+                      }
+                    }
                     setShowJoinModal(true);
                   } else {
                     toast({

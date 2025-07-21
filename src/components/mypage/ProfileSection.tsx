@@ -53,11 +53,12 @@ export default function ProfileSection() {
   const [addressDetail, setAddressDetail] = useState('');
   const [role, setRole] = useState('');
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
+  const [businessNumber, setBusinessNumber] = useState('');  // 사업자등록번호 추가
   const [regions, setRegions] = useState<any[]>([]);
   const [region, setRegion] = useState('');
   const [userType, setUserType] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | null>(null);
+  const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | null>(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
@@ -88,6 +89,7 @@ export default function ProfileSection() {
             setIsBusinessVerified(profileData.is_business_verified || false);
             setRegion(profileData.region || '');
             setUserType(profileData.user_type || '일반');
+            setBusinessNumber(profileData.business_number || '');  // 사업자등록번호 설정
             
             // AuthContext와 로컬스토리지 업데이트
             if (setUser && authUser) {
@@ -199,7 +201,8 @@ export default function ProfileSection() {
       username?: string,
       phone_number?: string,
       address_region_id?: number | null,
-      address_detail?: string
+      address_detail?: string,
+      business_number?: string
     } = {};
     
     if (editField === 'email') {
@@ -211,6 +214,8 @@ export default function ProfileSection() {
     } else if (editField === 'address') {
       updateData.address_region_id = addressRegion?.id || null;
       updateData.address_detail = addressDetail;
+    } else if (editField === 'business_number') {
+      updateData.business_number = businessNumber;
     }
 
     try {
@@ -411,7 +416,17 @@ export default function ProfileSection() {
           {/* 휴대폰 번호 섹션 */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">휴대폰 번호</label>
+              <label className="block text-sm font-medium text-gray-700">
+                휴대폰 번호
+                {authUser?.sns_type === 'kakao' && !phoneNumber && (
+                  <>
+                    <span className="text-red-500 ml-1">⚠️</span>
+                    <span className="text-red-500 text-xs ml-2">
+                      {role === 'seller' ? '공구 입찰에 참여하기 위한 필수 입력 항목입니다.' : '공구에 참여하기 위한 필수 입력 항목입니다.'}
+                    </span>
+                  </>
+                )}
+              </label>
               <button
                 onClick={() => {
                   setIsEditing(true);
@@ -459,7 +474,17 @@ export default function ProfileSection() {
           {/* 주소 섹션 */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">주소</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {role === 'seller' ? '사업장 주소/영업활동지역' : '주요활동지역'}
+                {authUser?.sns_type === 'kakao' && !addressRegion && (
+                  <>
+                    <span className="text-red-500 ml-1">⚠️</span>
+                    <span className="text-red-500 text-xs ml-2">
+                      {role === 'seller' ? '공구 입찰에 참여하기 위한 필수 입력 항목입니다.' : '공구에 참여하기 위한 필수 입력 항목입니다.'}
+                    </span>
+                  </>
+                )}
+              </label>
               <button
                 onClick={() => {
                   setIsEditing(true);
@@ -525,6 +550,66 @@ export default function ProfileSection() {
               </div>
             )}
           </div>
+          
+          {/* 사업자등록번호 섹션 - 판매회원만 표시 */}
+          {role === 'seller' && (
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  사업자등록번호
+                  {authUser?.sns_type === 'kakao' && !businessNumber && (
+                    <>
+                      <span className="text-red-500 ml-1">⚠️</span>
+                      <span className="text-red-500 text-xs ml-2">
+                        공구 입찰에 참여하기 위한 필수 입력 항목입니다.
+                      </span>
+                    </>
+                  )}
+                </label>
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditField('business_number');
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  수정
+                </button>
+              </div>
+              
+              {isEditing && editField === 'business_number' ? (
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={businessNumber}
+                    onChange={(e) => setBusinessNumber(e.target.value)}
+                    className="flex-1 p-2 border rounded-md mr-2"
+                    placeholder="사업자등록번호를 입력하세요 (예: 123-45-67890)"
+                  />
+                  <button
+                    onClick={handleProfileUpdate}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  >
+                    저장
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditField(null);
+                      setBusinessNumber(businessNumber || '');
+                    }}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                  >
+                    취소
+                  </button>
+                </div>
+              ) : (
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">{businessNumber || '사업자등록번호 정보 없음'}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {/* 로그인 방식 */}

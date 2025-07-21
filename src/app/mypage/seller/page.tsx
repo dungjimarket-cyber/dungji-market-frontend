@@ -163,10 +163,10 @@ export default function SellerMyPage() {
             </CardContent>
           </Card>
 
-          <h2 className="text-xl font-bold mb-4">입찰내역</h2>
+          <h2 className="text-xl font-bold mb-4">입찰 내역</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <SummaryCard
-              title="입찰기록"
+              title="입찰 내역"
               count={profile.activeBids}
               icon={<Clock className="h-5 w-5 text-blue-500" />}
               href="/mypage/seller/bids"

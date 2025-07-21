@@ -49,7 +49,7 @@ interface BidHistoryModalProps {
 }
 
 /**
- * 공구 입찰 기록 확인 모달 컴포넌트
+ * 공구 입찰 내역 확인 모달 컴포넌트
  */
 export default function BidHistoryModal({
   isOpen,
@@ -120,7 +120,7 @@ export default function BidHistoryModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">공구 입찰 기록</DialogTitle>
+          <DialogTitle className="text-xl font-bold">공구 입찰 내역</DialogTitle>
           <DialogDescription>
             이 공구에 등록된 모든 입찰 내역을 확인할 수 있습니다.
           </DialogDescription>

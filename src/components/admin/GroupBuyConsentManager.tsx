@@ -70,7 +70,7 @@ export const GroupBuyConsentManager: React.FC = () => {
     }
   };
 
-  // 특정 공구의 입찰 목록 가져오기
+  // 특정 공구의 입찰 내역 가져오기
   const fetchBidsForGroupBuy = async (groupBuyId: number) => {
     try {
       const response = await fetchWithAuth(`/groupbuys/${groupBuyId}/bids/`);
@@ -83,10 +83,10 @@ export const GroupBuyConsentManager: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('입찰 목록 로딩 오류:', error);
+      console.error('입찰 내역 로딩 오류:', error);
       toast({
         title: '오류',
-        description: '입찰 목록을 불러오는데 실패했습니다.',
+        description: '입찰 내역을 불러오는데 실패했습니다.',
         variant: 'destructive',
       });
     }
@@ -139,7 +139,7 @@ export const GroupBuyConsentManager: React.FC = () => {
     fetchGroupBuys();
   }, []);
 
-  // 공구 선택 시 입찰 목록 로드
+  // 공구 선택 시 입찰 내역 로드
   useEffect(() => {
     if (selectedGroupBuy && !selectedGroupBuy.bids) {
       fetchBidsForGroupBuy(selectedGroupBuy.id);
