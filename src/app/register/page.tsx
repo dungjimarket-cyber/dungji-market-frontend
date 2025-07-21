@@ -3,10 +3,10 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail, Check } from 'lucide-react';
+import { Loader2, Mail } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
-import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
+// import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
 import { useToast } from '@/components/ui/use-toast';
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
 
@@ -64,9 +64,9 @@ function RegisterPageContent() {
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
   const [emailChecked, setEmailChecked] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [showVerificationInput, setShowVerificationInput] = useState(false);
+  // const [phoneVerified] = useState(false); // 휴대폰 인증 기능 임시 비활성화
+  const [verificationCode] = useState('');
+  const [showVerificationInput] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -174,64 +174,12 @@ function RegisterPageContent() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setFormData(prev => ({ ...prev, phone: formatted }));
-    setPhoneVerified(false); // 번호가 변경되면 인증 초기화
+    // 휴대폰 인증 기능 임시 비활성화
   };
 
-  // 휴대폰 인증 요청
-  const requestPhoneVerification = async () => {
-    if (!formData.phone || formData.phone.length < 13) {
-      setError('올바른 휴대폰 번호를 입력해주세요.');
-      return;
-    }
-
-    try {
-      const response = await sendVerificationCode({
-        phone_number: formData.phone,
-        purpose: 'signup'
-      });
-      
-      setShowVerificationInput(true);
-      setError('');
-      
-      toast({
-        title: '인증번호 발송',
-        description: response.message,
-      });
-      
-      // 개발 환경에서 인증 코드가 제공되면 콘솔에 출력
-      if (response.code) {
-        console.log('인증번호:', response.code);
-      }
-    } catch (err: any) {
-      setError(err.message || '인증번호 발송에 실패했습니다.');
-    }
-  };
-
-  // 인증번호 확인
-  const verifyPhone = async () => {
-    try {
-      const response = await verifyCode({
-        phone_number: formData.phone,
-        code: verificationCode,
-        purpose: 'signup'
-      });
-      
-      if (response.verified) {
-        setPhoneVerified(true);
-        setShowVerificationInput(false);
-        setError('');
-        
-        toast({
-          title: '인증 완료',
-          description: '휴대폰 인증이 완료되었습니다.',
-        });
-      } else {
-        setError(response.error || '인증번호가 일치하지 않습니다.');
-      }
-    } catch (err: any) {
-      setError(err.message || '인증 확인에 실패했습니다.');
-    }
-  };
+  // 휴대폰 인증 기능 임시 비활성화 - 사용하지 않는 함수들 주석 처리
+  // const requestPhoneVerification = async () => { ... };
+  // const verifyPhone = async () => { ... };
 
   // 지역 선택 핸들러
   const handleRegionSelect = (province: string, city: string, isBusinessAddress: boolean = false) => {
@@ -782,7 +730,7 @@ function RegisterPageContent() {
       <WelcomeModal
         isOpen={showWelcomeModal}
         onClose={() => setShowWelcomeModal(false)}
-        userRole={formData.role}
+        userRole={formData.role as 'user' | 'seller'}
       />
     </div>
   );
