@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check, Share2, X } from 'lucide-react';
@@ -20,6 +21,7 @@ export function GroupBuySuccessDialog({
   productName,
   productImage
 }: GroupBuySuccessDialogProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const groupBuyUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/groupbuys/${groupBuyId}`;
 
@@ -59,13 +61,19 @@ export function GroupBuySuccessDialog({
 
   const handleLater = () => {
     onOpenChange(false);
+    router.push('/group-purchases');
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
+    router.push('/group-purchases');
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm p-6">
         <button
-          onClick={() => onOpenChange(false)}
+          onClick={handleClose}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
         >
           <X className="h-4 w-4" />
