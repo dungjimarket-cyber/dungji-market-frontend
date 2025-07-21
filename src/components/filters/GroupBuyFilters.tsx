@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Filter } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { X, Filter, Search } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -50,8 +51,10 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
     carrier: searchParams.get('carrier') || 'all',
     purchaseType: searchParams.get('purchaseType') || 'all',
     priceRange: searchParams.get('priceRange') || 'all',
-    sort: searchParams.get('sort') || 'all' // 기본값은 all로 변경
+    sort: searchParams.get('sort') || 'all', // 기본값은 all로 변경
+    search: searchParams.get('search') || '' // 검색어 추가
   });
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   /**
    * 필터 변경 처리
@@ -83,8 +86,10 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
       carrier: 'all',
       purchaseType: 'all',
       priceRange: 'all',
-      sort: 'all' // 기본값을 all로 변경
+      sort: 'all', // 기본값을 all로 변경
+      search: ''
     };
+    setSearchQuery('');
     setFilters(clearedFilters);
     
     // URL에서 모든 필터 파라미터 제거
@@ -148,6 +153,34 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
   return (
     <Card className="mb-6">
       <CardContent className="p-4">
+        {/* 검색창 */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <Input
+            type="text"
+            placeholder="지역명을 검색하세요 (예: 하남시, 강남구)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleFilterChange('search', searchQuery);
+              }
+            }}
+            className="pl-10 pr-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                handleFilterChange('search', '');
+              }}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={20} />
+            </button>
+          )}
+        </div>
+        
         {/* 필터 토글 버튼 */}
         <div className="flex items-center justify-between mb-4">
           <Button

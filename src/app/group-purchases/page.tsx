@@ -116,6 +116,10 @@ function GroupPurchasesPageContent() {
                 params.append('sort', 'popular');
               }
             } 
+            // 지역 검색 필터
+            else if (key === 'search') {
+              params.append('region_search', value);
+            }
             // 구매방식 필터 변환
             else if (key === 'purchaseType') {
               let subscriptionType = '';
@@ -185,7 +189,7 @@ function GroupPurchasesPageContent() {
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort'].includes(key)) {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search'].includes(key)) {
         filters[key] = value;
       }
     });
@@ -247,7 +251,7 @@ function GroupPurchasesPageContent() {
     let hasRefreshParam = false;
     
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort'].includes(key)) {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search'].includes(key)) {
         filters[key] = value;
       }
       if (key === 'refresh') {
