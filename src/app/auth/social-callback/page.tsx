@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { tokenUtils } from '@/lib/tokenUtils';
+import { WelcomeModal } from '@/components/auth/WelcomeModal';
 
 /**
  * 소셜 로그인 콜백 처리 페이지
@@ -16,9 +17,13 @@ function SocialCallbackContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<string>('처리 중...');
   const [error, setError] = useState<string | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [userRole, setUserRole] = useState<'user' | 'seller'>('user');
   
   // 콜백 URL 파라미터 추출 (리다이렉트 목적지)
   const callbackUrl = searchParams.get('callbackUrl') || '/';
+  // 신규 사용자 여부 확인
+  const isNewUser = searchParams.get('is_new_user') === 'true';
   
   useEffect(() => {
     /**
@@ -29,18 +34,25 @@ function SocialCallbackContent() {
       try {
         setStatus('토큰 정보 확인 중...');
         
-        // 쿠키에서 JWT 토큰 정보 가져오기
-        const getCookie = (name: string) => {
-          const cookies = document.cookie.split(';');
-          for (let cookie of cookies) {
-            const [key, value] = cookie.trim().split('=');
-            if (key === name) return value;
-          }
-          return null;
-        };
+        // URL 파라미터에서 토큰 확인 (backend kakao callback에서 직접 리다이렉트된 경우)
+        let accessToken = searchParams.get('access_token');
+        let refreshToken = searchParams.get('refresh_token');
         
-        const accessToken = getCookie('accessToken');
-        const refreshToken = getCookie('refreshToken');
+        // URL에 토큰이 없으면 쿠키에서 확인
+        if (!accessToken) {
+          // 쿠키에서 JWT 토큰 정보 가져오기
+          const getCookie = (name: string) => {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+              const [key, value] = cookie.trim().split('=');
+              if (key === name) return value;
+            }
+            return null;
+          };
+          
+          accessToken = getCookie('accessToken');
+          refreshToken = getCookie('refreshToken');
+        }
         
         if (!accessToken) {
           setError('로그인 정보를 찾을 수 없습니다.');
@@ -68,6 +80,7 @@ function SocialCallbackContent() {
         const userId = tokenData.user_id || tokenData.userId || tokenData.sub || '';
         const userEmail = tokenData.email || tokenData.user_email || '';
         const userRole = tokenData.role || tokenData.user_role || 'user';
+        setUserRole(userRole === 'seller' ? 'seller' : 'user');
         
         console.log('추출된 사용자 정보:', { userId, userEmail, userRole });
         
@@ -265,6 +278,13 @@ function SocialCallbackContent() {
         // 토큰 저장 및 세션 설정을 위한 짧은 지연
         await new Promise(resolve => setTimeout(resolve, 1000));
         
+        // 3.5. 신규 사용자인 경우 환영 모달 표시
+        if (isNewUser) {
+          setStatus('환영합니다! 회원가입이 완료되었습니다.');
+          setShowWelcomeModal(true);
+          return; // 모달이 닫힐 때까지 대기
+        }
+        
         // 4. 최종 리다이렉트
         try {
           // 로컬 스토리지에 저장된 원래 URL 확인 (공구 등록 화면 등)
@@ -297,32 +317,70 @@ function SocialCallbackContent() {
     };
     
     handleCallback();
-  }, [callbackUrl, router]);
+  }, [callbackUrl, router, searchParams, isNewUser]);
+  
+  const handleWelcomeModalClose = () => {
+    setShowWelcomeModal(false);
+    // 모달이 닫힌 후 리다이렉트 진행
+    try {
+      // 로컬 스토리지에 저장된 원래 URL 확인 (공구 등록 화면 등)
+      const originalUrl = typeof window !== 'undefined' ? 
+        localStorage.getItem('dungji_redirect_url') : null;
+      
+      // 원래 URL이 있으면 그곳으로, 아니면 콜백 URL 또는 홈으로 리다이렉트
+      const redirectUrl = originalUrl || callbackUrl || '/';
+      console.log('모달 닫힘 후 리다이렉트 URL:', redirectUrl);
+      
+      // 저장된 리다이렉트 URL 삭제 (일회성 사용)
+      if (originalUrl && typeof window !== 'undefined') {
+        localStorage.removeItem('dungji_redirect_url');
+      }
+      
+      // 페이지 전환
+      router.push(redirectUrl);
+    } catch (redirectError) {
+      console.error('리다이렉트 오류:', redirectError);
+      // 오류 발생시 단순 리다이렉트로 대체
+      const fallbackUrl = typeof window !== 'undefined' ? 
+        (localStorage.getItem('dungji_redirect_url') || callbackUrl || '/') : 
+        (callbackUrl || '/');
+      window.location.href = fallbackUrl;
+    }
+  };
   
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-4">소셜 로그인 처리 중</h1>
-        
-        {error ? (
-          <div className="text-red-500 mb-4">
-            <p className="font-bold">오류 발생</p>
-            <p>{error}</p>
-            <button 
-              onClick={() => router.push('/login')}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              로그인 페이지로 돌아가기
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
-            <p>{status}</p>
-          </div>
-        )}
+    <>
+      <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+          <h1 className="text-2xl font-bold mb-4">소셜 로그인 처리 중</h1>
+          
+          {error ? (
+            <div className="text-red-500 mb-4">
+              <p className="font-bold">오류 발생</p>
+              <p>{error}</p>
+              <button 
+                onClick={() => router.push('/login')}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                로그인 페이지로 돌아가기
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+              <p>{status}</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+      
+      {/* 환영 모달 */}
+      <WelcomeModal 
+        isOpen={showWelcomeModal} 
+        onClose={handleWelcomeModalClose}
+        userRole={userRole}
+      />
+    </>
   );
 }
 

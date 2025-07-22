@@ -109,7 +109,7 @@ export default function GroupBuyActionButtons({
           onClick={handleShare}
         >
           <Share2 className="mr-2 h-5 w-5" />
-          지인과 공유하기
+          공유하기
         </Button>
         
         {/* 참여 중이고 탈퇴 가능한 경우에만 탈퇴 버튼 표시 */}

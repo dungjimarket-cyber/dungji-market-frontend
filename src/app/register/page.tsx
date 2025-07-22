@@ -381,6 +381,28 @@ function RegisterPageContent() {
                 <h3 className="text-sm font-medium text-gray-900 mb-3">(주)둥지마켓 약관 동의</h3>
                 
                 <div className="space-y-2">
+                  {/* 전체 동의 체크박스 */}
+                  <div className="flex items-center pb-2 border-b">
+                    <input
+                      type="checkbox"
+                      id="all_agreed_social"
+                      className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                      checked={formData.terms_agreed && formData.privacy_agreed && formData.marketing_agreed}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        setFormData(prev => ({
+                          ...prev,
+                          terms_agreed: isChecked,
+                          privacy_agreed: isChecked,
+                          marketing_agreed: isChecked
+                        }));
+                      }}
+                    />
+                    <label htmlFor="all_agreed_social" className="ml-2 text-sm font-medium text-gray-900">
+                      전체 약관에 동의합니다
+                    </label>
+                  </div>
+                  
                   <div className="flex items-center">
                     <input
                       type="checkbox"
@@ -390,7 +412,7 @@ function RegisterPageContent() {
                       onChange={(e) => setFormData(prev => ({ ...prev, terms_agreed: e.target.checked }))}
                     />
                     <label htmlFor="terms_agreed_social" className="ml-2 text-sm text-gray-700">
-                      <span className="text-red-500">*</span> (필수) 이용약관에 동의합니다
+                      <span className="text-red-500">*</span> (필수) <a href="/terms/general" target="_blank" className="underline text-blue-600 hover:text-blue-800">이용약관</a>에 동의합니다
                     </label>
                   </div>
                   
@@ -403,7 +425,7 @@ function RegisterPageContent() {
                       onChange={(e) => setFormData(prev => ({ ...prev, privacy_agreed: e.target.checked }))}
                     />
                     <label htmlFor="privacy_agreed_social" className="ml-2 text-sm text-gray-700">
-                      <span className="text-red-500">*</span> (필수) 개인정보 수집 및 이용에 동의합니다
+                      <span className="text-red-500">*</span> (필수) <a href="/terms/general#privacy" target="_blank" className="underline text-blue-600 hover:text-blue-800">개인정보 수집 및 이용</a>에 동의합니다
                     </label>
                   </div>
                   
@@ -698,6 +720,28 @@ function RegisterPageContent() {
                   <h3 className="text-lg font-medium text-gray-900">약관 동의</h3>
                   
                   <div className="space-y-2">
+                    {/* 전체 동의 체크박스 */}
+                    <div className="flex items-center pb-2 border-b">
+                      <input
+                        id="all_agreed"
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        checked={formData.terms_agreed && formData.privacy_agreed && formData.marketing_agreed}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setFormData(prev => ({
+                            ...prev,
+                            terms_agreed: isChecked,
+                            privacy_agreed: isChecked,
+                            marketing_agreed: isChecked
+                          }));
+                        }}
+                      />
+                      <label htmlFor="all_agreed" className="ml-2 text-sm font-medium text-gray-900">
+                        전체 약관에 동의합니다
+                      </label>
+                    </div>
+                    
                     <div className="flex items-center">
                       <input
                         id="terms_agreed"
@@ -709,7 +753,7 @@ function RegisterPageContent() {
                         onChange={handleChange}
                       />
                       <label htmlFor="terms_agreed" className="ml-2 text-sm text-gray-700">
-                        <span className="text-red-500">*</span> (필수) 이용약관에 동의합니다
+                        <span className="text-red-500">*</span> (필수) <a href="/terms/general" target="_blank" className="underline text-blue-600 hover:text-blue-800">이용약관</a>에 동의합니다
                       </label>
                     </div>
                     
@@ -724,7 +768,7 @@ function RegisterPageContent() {
                         onChange={handleChange}
                       />
                       <label htmlFor="privacy_agreed" className="ml-2 text-sm text-gray-700">
-                        <span className="text-red-500">*</span> (필수) 개인정보 수집 및 이용에 동의합니다
+                        <span className="text-red-500">*</span> (필수) <a href="/terms/general#privacy" target="_blank" className="underline text-blue-600 hover:text-blue-800">개인정보 수집 및 이용</a>에 동의합니다
                       </label>
                     </div>
                     
