@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { ConsentStatusCard } from '@/components/group-purchase/ConsentStatusCard';
 import { VotingTimer } from '@/components/groupbuy/VotingTimer';
 import { BidVotingList } from '@/components/groupbuy/BidVotingList';
+import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1654,6 +1655,16 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     </AlertDescription>
                   </Alert>
                 )}
+              </div>
+            )}
+            
+            {/* 낙찰 결과 표시 - seller_confirmation 또는 completed 상태일 때 */}
+            {(groupBuy?.status === 'seller_confirmation' || groupBuy?.status === 'completed') && (
+              <div className="mb-4">
+                <WinningBidDisplay 
+                  groupBuyId={groupBuy.id} 
+                  status={groupBuy.status}
+                />
               </div>
             )}
             

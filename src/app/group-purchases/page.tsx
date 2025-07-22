@@ -163,6 +163,24 @@ function GroupPurchasesPageContent() {
       
       let data = await response.json();
       
+      // 프론트엔드에서 추가 필터링 - 탭별로 상태 검증
+      if (activeTab === 'popular' || activeTab === 'new') {
+        // 인기순, 최신순은 진행중인 공구만 표시 (recruiting, bidding 상태)
+        data = data.filter((gb: GroupBuy) => {
+          const actualStatus = gb.status;
+          return actualStatus === 'recruiting' || actualStatus === 'bidding';
+        });
+      } else if (activeTab === 'completed') {
+        // 종료 탭은 종료된 공구만 표시 (voting, completed, cancelled 등)
+        data = data.filter((gb: GroupBuy) => {
+          const actualStatus = gb.status;
+          return actualStatus === 'voting' || actualStatus === 'completed' || 
+                 actualStatus === 'cancelled' || actualStatus === 'seller_confirmation' ||
+                 actualStatus === 'ended';
+        });
+      }
+      // 전체 탭은 모든 공구 표시
+      
       setGroupBuys(data);
     } catch (err) {
       console.error('공구 목록 로딩 실패:', err);
