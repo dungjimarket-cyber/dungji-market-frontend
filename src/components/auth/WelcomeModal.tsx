@@ -52,12 +52,14 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
             </h2>
           </div>
 
-          {/* Event banner */}
-          <div className="mx-4 -mt-2 relative z-10">
-            <div className="bg-gradient-to-r from-orange-400 to-pink-400 rounded-full py-2 px-4 text-white text-center font-medium">
-              🎁 오픈기념 가입 이벤트!
+          {/* Event banner - sellers only */}
+          {userRole === 'seller' && (
+            <div className="mx-4 -mt-2 relative z-10">
+              <div className="bg-gradient-to-r from-orange-400 to-pink-400 rounded-full py-2 px-4 text-white text-center font-medium">
+                🎁 오픈기념 가입 이벤트!
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Content */}
           <div className="p-6 pt-4">
@@ -68,12 +70,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                        <Image
-                          src="/images/bid-token.png"
-                          alt="Bid Token"
-                          width={32}
-                          height={32}
-                        />
+                        <span className="text-2xl">🎟️</span>
                       </div>
                       <div>
                         <p className="font-bold text-gray-800">입찰권 5매 증정 완료!</p>

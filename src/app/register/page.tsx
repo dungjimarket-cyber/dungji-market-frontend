@@ -617,21 +617,23 @@ function RegisterPageContent() {
                     <p className="text-xs text-gray-500 mt-1">본인 인증 및 낙찰 알림 수신용</p>
                   </div>
 
-                  {/* 주요 활동지역 (선택) */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      주요 활동지역 {formData.role === 'user' && '(선택)'}
-                    </label>
-                    <RegionDropdown
-                      selectedProvince={formData.region_province}
-                      selectedCity={formData.region_city}
-                      onSelect={(province, city) => handleRegionSelect(province, city)}
-                      required={formData.role === 'seller'}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      예: 경기도 하남시, 서울시 강남구, 강원도 양양군
-                    </p>
-                  </div>
+                  {/* 주요 활동지역 - 일반회원만 표시 */}
+                  {formData.role === 'user' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        주요 활동지역 (선택)
+                      </label>
+                      <RegionDropdown
+                        selectedProvince={formData.region_province}
+                        selectedCity={formData.region_city}
+                        onSelect={(province, city) => handleRegionSelect(province, city)}
+                        required={false}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        예: 경기도 하남시, 서울시 강남구, 강원도 양양군
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 판매자 전용 필드 */}

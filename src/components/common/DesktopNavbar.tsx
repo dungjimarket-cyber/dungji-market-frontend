@@ -37,7 +37,7 @@ export default function DesktopNavbar() {
             )}
             
             {/* 일반회원 로그인 시 */}
-            {isAuthenticated && user?.role === 'buyer' && (
+            {isAuthenticated && user?.role === 'user' && (
               <>
                 <Link href="/group-purchases/create" className="text-gray-600 hover:text-gray-900">
                   공구 등록하기
