@@ -1680,7 +1680,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
               className="w-full py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center mb-4"
             >
               <Share2 className="w-4 h-4 mr-1" />
-              공유하기
+              우리같이 공구해요~
             </button>
 
             {isParticipant && (
