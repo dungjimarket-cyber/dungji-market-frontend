@@ -23,6 +23,11 @@ export interface SellerProfile {
   username?: string;
   businessNumber?: string;
   isRemoteSales?: boolean;
+  addressRegion?: {
+    code: string;
+    name: string;
+    full_name: string;
+  };
 }
 
 /**

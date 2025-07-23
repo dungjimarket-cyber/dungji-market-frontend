@@ -298,9 +298,39 @@ function RegisterPageContent() {
         }
       }
       
-      // 선택 필드
+      // 선택 필드 - address_region_id 처리
       if (formData.region_province && formData.region_city) {
-        submitData.append('region', `${formData.region_province} ${formData.region_city}`);
+        try {
+          // 모든 지역 데이터 가져오기
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+          const regionsData = await regionsResponse.json();
+          
+          // 시/군/구 레벨에서 일치하는 지역 찾기
+          let cityRegion;
+          
+          if (formData.region_province === '세종특별자치시') {
+            // 세종시는 특별한 처리 필요
+            cityRegion = regionsData.find((r: any) => 
+              r.level === 1 && 
+              r.name === '세종특별자치시' &&
+              r.full_name === '세종특별자치시'
+            );
+          } else {
+            // 일반적인 시/도의 경우
+            cityRegion = regionsData.find((r: any) => 
+              (r.level === 1 || r.level === 2) && 
+              r.name === formData.region_city && 
+              r.full_name.includes(formData.region_province)
+            );
+          }
+          
+          if (cityRegion) {
+            submitData.append('address_region_id', cityRegion.code);
+          }
+        } catch (err) {
+          console.error('지역 정보 로드 오류:', err);
+          // 지역 정보를 가져올 수 없는 경우 그냥 진행
+        }
       }
       
       // 판매자 전용 필드
@@ -656,23 +686,21 @@ function RegisterPageContent() {
                     <p className="text-xs text-gray-500 mt-1">본인 인증 및 낙찰 알림 수신용</p>
                   </div>
 
-                  {/* 주요 활동지역 - 일반회원만 표시 */}
-                  {formData.role === 'buyer' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        주요 활동지역 (선택)
-                      </label>
-                      <RegionDropdown
-                        selectedProvince={formData.region_province}
-                        selectedCity={formData.region_city}
-                        onSelect={(province, city) => handleRegionSelect(province, city)}
-                        required={false}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        예: 경기도 하남시, 서울시 강남구, 강원도 양양군
-                      </p>
-                    </div>
-                  )}
+                  {/* 주요 활동지역 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {formData.role === 'seller' ? '사업장 주소 / 영업활동지역' : '주요 활동지역'} (선택)
+                    </label>
+                    <RegionDropdown
+                      selectedProvince={formData.region_province}
+                      selectedCity={formData.region_city}
+                      onSelect={(province, city) => handleRegionSelect(province, city)}
+                      required={false}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      예: 경기도 하남시, 서울시 강남구, 강원도 양양군
+                    </p>
+                  </div>
                 </div>
 
                 {/* 판매자 전용 필드 */}
