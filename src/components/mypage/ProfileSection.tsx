@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
+import RegionDropdown from '@/components/address/RegionDropdown';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -53,12 +54,16 @@ export default function ProfileSection() {
   const [addressDetail, setAddressDetail] = useState('');
   const [role, setRole] = useState('');
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
-  const [businessNumber, setBusinessNumber] = useState('');  // 사업자등록번호 추가
+  const [businessNumber, setBusinessNumber] = useState('');  // 사업자등록번호
+  const [businessAddressProvince, setBusinessAddressProvince] = useState('');
+  const [businessAddressCity, setBusinessAddressCity] = useState('');
+  const [isRemoteSales, setIsRemoteSales] = useState(false);
+  const [businessRegFile, setBusinessRegFile] = useState<File | null>(null);
   const [regions, setRegions] = useState<any[]>([]);
   const [region, setRegion] = useState('');
   const [userType, setUserType] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | null>(null);
+  const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | 'business_address' | 'remote_sales' | null>(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
@@ -90,6 +95,9 @@ export default function ProfileSection() {
             setRegion(profileData.region || '');
             setUserType(profileData.user_type || '일반');
             setBusinessNumber(profileData.business_number || '');  // 사업자등록번호 설정
+            setBusinessAddressProvince(profileData.business_address_province || '');
+            setBusinessAddressCity(profileData.business_address_city || '');
+            setIsRemoteSales(profileData.is_remote_sales || false);
             
             // AuthContext와 로컬스토리지 업데이트
             if (setUser && authUser) {
@@ -202,7 +210,10 @@ export default function ProfileSection() {
       phone_number?: string,
       address_region_id?: number | null,
       address_detail?: string,
-      business_number?: string
+      business_number?: string,
+      business_address_province?: string,
+      business_address_city?: string,
+      is_remote_sales?: boolean
     } = {};
     
     if (editField === 'email') {
@@ -216,6 +227,11 @@ export default function ProfileSection() {
       updateData.address_detail = addressDetail;
     } else if (editField === 'business_number') {
       updateData.business_number = businessNumber;
+    } else if (editField === 'business_address') {
+      updateData.business_address_province = businessAddressProvince;
+      updateData.business_address_city = businessAddressCity;
+    } else if (editField === 'remote_sales') {
+      updateData.is_remote_sales = isRemoteSales;
     }
 
     try {
@@ -417,7 +433,7 @@ export default function ProfileSection() {
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">
-                휴대폰 번호
+                휴대폰 번호 {role === 'seller' && '(재인증)'}
                 {authUser?.sns_type === 'kakao' && !phoneNumber && (
                   <>
                     <span className="text-red-500 ml-1">⚠️</span>
@@ -434,7 +450,7 @@ export default function ProfileSection() {
                 }}
                 className="text-xs text-blue-600 hover:text-blue-800"
               >
-                수정
+                {role === 'seller' ? '재인증' : '수정'}
               </button>
             </div>
             
@@ -471,97 +487,17 @@ export default function ProfileSection() {
             )}
           </div>
           
-          {/* 주소 섹션 */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                {role === 'seller' ? '사업장 주소/영업활동지역' : '주요활동지역'}
-                {authUser?.sns_type === 'kakao' && !addressRegion && (
-                  <>
-                    <span className="text-red-500 ml-1">⚠️</span>
-                    <span className="text-red-500 text-xs ml-2">
-                      {role === 'seller' ? '공구 입찰에 참여하기 위한 필수 입력 항목입니다.' : '공구에 참여하기 위한 필수 입력 항목입니다.'}
-                    </span>
-                  </>
-                )}
-              </label>
-              <button
-                onClick={() => {
-                  setIsEditing(true);
-                  setEditField('address');
-                }}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                수정
-              </button>
-            </div>
-            
-            {isEditing && editField === 'address' ? (
-              <div className="space-y-2">
-                <select
-                  value={addressRegion?.id || ''}
-                  onChange={(e) => {
-                    const regionId = e.target.value;
-                    const selectedRegion = regions.find(r => r.id === parseInt(regionId));
-                    setAddressRegion(selectedRegion || null);
-                  }}
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="">지역을 선택하세요</option>
-                  {regions.filter(r => r.level === 1).map(region => (
-                    <option key={region.id} value={region.id}>
-                      {region.full_name}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={addressDetail}
-                  onChange={(e) => setAddressDetail(e.target.value)}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="상세 주소를 입력하세요"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleProfileUpdate}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                  >
-                    저장
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditField(null);
-                    }}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
-                  >
-                    취소
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="p-2 bg-gray-50 rounded-md space-y-1">
-                <div className="font-medium">
-                  {addressRegion ? addressRegion.full_name : '지역 정보 없음'}
-                </div>
-                {addressDetail && (
-                  <div className="text-sm text-gray-600">{addressDetail}</div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          {/* 사업자등록번호 섹션 - 판매회원만 표시 */}
-          {role === 'seller' && (
+          {/* 주소 섹션 - 일반회원만 표시 */}
+          {role === 'user' && (
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  사업자등록번호
-                  {authUser?.sns_type === 'kakao' && !businessNumber && (
+                  주요활동지역
+                  {authUser?.sns_type === 'kakao' && !addressRegion && (
                     <>
                       <span className="text-red-500 ml-1">⚠️</span>
                       <span className="text-red-500 text-xs ml-2">
-                        공구 입찰에 참여하기 위한 필수 입력 항목입니다.
+                        공구에 참여하기 위한 필수 입력 항목입니다.
                       </span>
                     </>
                   )}
@@ -569,7 +505,7 @@ export default function ProfileSection() {
                 <button
                   onClick={() => {
                     setIsEditing(true);
-                    setEditField('business_number');
+                    setEditField('address');
                   }}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
@@ -577,38 +513,249 @@ export default function ProfileSection() {
                 </button>
               </div>
               
-              {isEditing && editField === 'business_number' ? (
-                <div className="flex items-center">
+              {isEditing && editField === 'address' ? (
+                <div className="space-y-2">
+                  <select
+                    value={addressRegion?.id || ''}
+                    onChange={(e) => {
+                      const regionId = e.target.value;
+                      const selectedRegion = regions.find(r => r.id === parseInt(regionId));
+                      setAddressRegion(selectedRegion || null);
+                    }}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value="">지역을 선택하세요</option>
+                    {regions.filter(r => r.level === 1).map(region => (
+                      <option key={region.id} value={region.id}>
+                        {region.full_name}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="text"
-                    value={businessNumber}
-                    onChange={(e) => setBusinessNumber(e.target.value)}
-                    className="flex-1 p-2 border rounded-md mr-2"
-                    placeholder="사업자등록번호를 입력하세요 (예: 123-45-67890)"
+                    value={addressDetail}
+                    onChange={(e) => setAddressDetail(e.target.value)}
+                    className="w-full p-2 border rounded-md"
+                    placeholder="상세 주소를 입력하세요"
                   />
-                  <button
-                    onClick={handleProfileUpdate}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                  >
-                    저장
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditField(null);
-                      setBusinessNumber(businessNumber || '');
-                    }}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
-                  >
-                    취소
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleProfileUpdate}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditField(null);
+                      }}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                    >
+                      취소
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium">{businessNumber || '사업자등록번호 정보 없음'}</span>
+                <div className="p-2 bg-gray-50 rounded-md space-y-1">
+                  <div className="font-medium">
+                    {addressRegion ? addressRegion.full_name : '지역 정보 없음'}
+                  </div>
+                  {addressDetail && (
+                    <div className="text-sm text-gray-600">{addressDetail}</div>
+                  )}
                 </div>
               )}
             </div>
+          )}
+          
+          {/* 판매회원 추가 정보 섹션 */}
+          {role === 'seller' && (
+            <>
+              {/* 사업장 주소/영업활동 지역 */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    사업장 주소/영업활동 지역
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setEditField('business_address');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    수정
+                  </button>
+                </div>
+                
+                {isEditing && editField === 'business_address' ? (
+                  <div className="space-y-2">
+                    <RegionDropdown
+                      selectedProvince={businessAddressProvince}
+                      selectedCity={businessAddressCity}
+                      onSelect={(province, city) => {
+                        setBusinessAddressProvince(province);
+                        setBusinessAddressCity(city);
+                      }}
+                      required
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleProfileUpdate}
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditField(null);
+                        }}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <span className="font-medium">
+                      {businessAddressProvince && businessAddressCity 
+                        ? `${businessAddressProvince} ${businessAddressCity}` 
+                        : '사업장 주소 정보 없음'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* 사업자등록번호 */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    사업자등록번호
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setEditField('business_number');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    수정
+                  </button>
+                </div>
+                
+                {isEditing && editField === 'business_number' ? (
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      value={businessNumber}
+                      onChange={(e) => setBusinessNumber(e.target.value)}
+                      className="flex-1 p-2 border rounded-md mr-2"
+                      placeholder="사업자등록번호를 입력하세요 (예: 123-45-67890)"
+                    />
+                    <button
+                      onClick={handleProfileUpdate}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditField(null);
+                        setBusinessNumber(businessNumber || '');
+                      }}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <span className="font-medium">{businessNumber || '사업자등록번호 정보 없음'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 비대면 판매가능 영업소 인증 */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    비대면 판매가능 영업소 인증
+                  </label>
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setEditField('remote_sales');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    수정
+                  </button>
+                </div>
+                
+                {isEditing && editField === 'remote_sales' ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="remote_sales"
+                        checked={isRemoteSales}
+                        onChange={(e) => setIsRemoteSales(e.target.checked)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="remote_sales" className="ml-2 text-sm text-gray-700">
+                        비대면 판매가능 영업소 인증
+                      </label>
+                    </div>
+                    
+                    {isRemoteSales && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          사업자등록증 업로드
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => setBusinessRegFile(e.target.files?.[0] || null)}
+                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleProfileUpdate}
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditField(null);
+                          setIsRemoteSales(false);
+                          setBusinessRegFile(null);
+                        }}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <span className="font-medium">
+                      {isRemoteSales ? '✓ 인증 완료' : '미인증'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
         
