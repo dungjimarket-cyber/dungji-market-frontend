@@ -51,7 +51,6 @@ export default function ProfileSection() {
   const [nickname, setNickname] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [addressRegion, setAddressRegion] = useState<any>(null);
-  const [addressDetail, setAddressDetail] = useState('');
   const [addressProvince, setAddressProvince] = useState('');
   const [addressCity, setAddressCity] = useState('');
   const [role, setRole] = useState('');
@@ -94,7 +93,6 @@ export default function ProfileSection() {
             setNickname(profileData.nickname || profileData.username || '');
             setPhoneNumber(profileData.phone_number || '');
             setAddressRegion(profileData.address_region || null);
-            setAddressDetail(profileData.address_detail || '');
             
             // address_region 객체에서 시/도와 시/군/구 추출
             if (profileData.address_region) {
@@ -128,7 +126,15 @@ export default function ProfileSection() {
                 ...authUser,
                 email: profileData.email,
                 username: profileData.username,
+                nickname: profileData.nickname,
                 sns_type: profileData.sns_type,
+                provider: profileData.sns_type, // 호환성을 위해 provider도 추가
+                phone_number: profileData.phone_number,
+                region: profileData.region,
+                business_number: profileData.business_number,
+                business_address: profileData.business_address_province && profileData.business_address_city 
+                  ? `${profileData.business_address_province} ${profileData.business_address_city}` 
+                  : '',
               };
               
               // AuthContext 업데이트
@@ -231,7 +237,6 @@ export default function ProfileSection() {
       username?: string,
       phone_number?: string,
       address_region_id?: number | null,
-      address_detail?: string,
       address_province?: string,
       address_city?: string,
       business_number?: string,
@@ -307,7 +312,6 @@ export default function ProfileSection() {
         // 지역이 선택되지 않은 경우 null로 설정
         updateData.address_region_id = null;
       }
-      updateData.address_detail = addressDetail;
     } else if (editField === 'business_number') {
       updateData.business_number = businessNumber;
     } else if (editField === 'business_address') {
@@ -354,7 +358,6 @@ export default function ProfileSection() {
         setNickname(profileData.username);
         setPhoneNumber(profileData.phone_number || '');
         setAddressRegion(profileData.address_region || null);
-        setAddressDetail(profileData.address_detail || '');
         
         // address_region 객체에서 시/도와 시/군/구 추출
         if (profileData.address_region) {
@@ -376,13 +379,20 @@ export default function ProfileSection() {
         setIsBusinessVerified(profileData.is_business_verified || false);
         
         // AuthContext 및 로컬스토리지 동기화
-        if (setUser) {
+        if (setUser && authUser) {
           const updatedUser = {
             ...authUser,
             email: profileData.email,
             username: profileData.username,
+            nickname: profileData.nickname,
             sns_type: profileData.sns_type,
-            provider: profileData.sns_type,
+            provider: profileData.sns_type, // 호환성을 위해 provider도 추가
+            phone_number: profileData.phone_number,
+            region: profileData.region,
+            business_number: profileData.business_number,
+            business_address: profileData.business_address_province && profileData.business_address_city 
+              ? `${profileData.business_address_province} ${profileData.business_address_city}` 
+              : '',
           };
           
           console.log('새로운 사용자 정보:', updatedUser);
@@ -642,13 +652,6 @@ export default function ProfileSection() {
                     }}
                     required={false}
                   />
-                  <input
-                    type="text"
-                    value={addressDetail}
-                    onChange={(e) => setAddressDetail(e.target.value)}
-                    className="w-full p-2 border rounded-md"
-                    placeholder="상세 주소를 입력하세요"
-                  />
                   <div className="flex gap-2">
                     <button
                       onClick={handleProfileUpdate}
@@ -668,13 +671,10 @@ export default function ProfileSection() {
                   </div>
                 </div>
               ) : (
-                <div className="p-2 bg-gray-50 rounded-md space-y-1">
+                <div className="p-2 bg-gray-50 rounded-md">
                   <div className="font-medium">
                     {addressProvince && addressCity ? `${addressProvince} ${addressCity}` : '지역 정보 없음'}
                   </div>
-                  {addressDetail && (
-                    <div className="text-sm text-gray-600">{addressDetail}</div>
-                  )}
                 </div>
               )}
             </div>
