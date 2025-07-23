@@ -16,7 +16,8 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Save, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Upload, Phone } from 'lucide-react';
+import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -29,9 +30,15 @@ export default function SellerSettings() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    nickname: '',
     description: '',
     phone: '',
     address: '',
+    businessAddressProvince: '',
+    businessAddressCity: '',
+    businessNumber: '',
+    isRemoteSales: false,
+    businessRegFile: null as File | null,
     notificationEnabled: true,
     profileImage: ''
   });
@@ -53,9 +60,15 @@ export default function SellerSettings() {
         // 폼 데이터 초기화
         setFormData({
           name: data.name || '',
+          nickname: data.nickname || data.username || '',
           description: data.description || '',
           phone: data.phone || '',
           address: data.address || '',
+          businessAddressProvince: data.businessAddressProvince || '',
+          businessAddressCity: data.businessAddressCity || '',
+          businessNumber: data.businessNumber || '',
+          isRemoteSales: data.isRemoteSales || false,
+          businessRegFile: null,
           notificationEnabled: data.notificationEnabled || true,
           profileImage: data.profileImage || ''
         });
@@ -169,6 +182,17 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="nickname">닉네임</Label>
+                  <Input
+                    id="nickname"
+                    name="nickname"
+                    value={formData.nickname}
+                    onChange={handleChange}
+                    placeholder="닉네임을 입력하세요"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="name">판매자명</Label>
                   <Input
                     id="name"
@@ -192,25 +216,91 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">연락처</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="연락처를 입력하세요"
+                  <Label htmlFor="phone">
+                    휴대폰번호(재인증)
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-gray-500" />
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="휴대폰 번호를 입력하세요 (예: 01012345678)"
+                      className="flex-1"
+                    />
+                    <Button type="button" variant="outline" size="sm">
+                      재인증
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="businessAddress">사업장주소/영업활동지역</Label>
+                  <RegionDropdown
+                    selectedProvince={formData.businessAddressProvince}
+                    selectedCity={formData.businessAddressCity}
+                    onSelect={(province, city) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        businessAddressProvince: province,
+                        businessAddressCity: city
+                      }));
+                    }}
+                    required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">주소</Label>
+                  <Label htmlFor="businessNumber">사업자등록번호</Label>
                   <Input
-                    id="address"
-                    name="address"
-                    value={formData.address}
+                    id="businessNumber"
+                    name="businessNumber"
+                    value={formData.businessNumber}
                     onChange={handleChange}
-                    placeholder="주소를 입력하세요"
+                    placeholder="사업자등록번호를 입력하세요 (예: 123-45-67890)"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">비대면 판매가능 영업소 인증</span>
+                      <Switch
+                        id="remoteSales"
+                        checked={formData.isRemoteSales}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ ...prev, isRemoteSales: checked }))
+                        }
+                      />
+                    </div>
+                    {formData.isRemoteSales && (
+                      <div className="space-y-2">
+                        <Label htmlFor="businessRegFile" className="text-sm">사업자등록증 업로드</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="businessRegFile"
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setFormData(prev => ({ ...prev, businessRegFile: file }));
+                            }}
+                            className="flex-1"
+                          />
+                          <Button type="button" variant="outline" size="sm">
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {formData.businessRegFile && (
+                          <p className="text-sm text-gray-600">
+                            선택된 파일: {formData.businessRegFile.name}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">

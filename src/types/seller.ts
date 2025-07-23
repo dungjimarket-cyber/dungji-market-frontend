@@ -19,6 +19,12 @@ export interface SellerProfile {
   address?: string;
   email?: string;
   notificationEnabled?: boolean;
+  nickname?: string;
+  username?: string;
+  businessAddressProvince?: string;
+  businessAddressCity?: string;
+  businessNumber?: string;
+  isRemoteSales?: boolean;
 }
 
 /**
