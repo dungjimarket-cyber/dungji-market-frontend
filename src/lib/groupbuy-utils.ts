@@ -24,24 +24,13 @@ export function calculateGroupBuyStatus(status: string, startTimeStr: string, en
   const endTime = new Date(endTimeStr);
   
   // 백엔드가 제대로 상태를 업데이트하지 않는 경우를 위한 시간 기반 상태 계산
-  if (status === 'recruiting') {
-    if (now >= endTime) {
-      // 마감 시간이 지났으면 voting(최종선택중) 상태로
-      return 'voting';
-    } else if (now >= startTime) {
-      // 시작 시간이 지났으면 bidding(입찰중) 상태로
-      return 'bidding';
-    }
-    // 아직 시작 전이면 recruiting 유지
-    return 'recruiting';
-  }
-  
-  // bidding 상태에서 마감 시간이 지났으면 voting으로
-  if (status === 'bidding' && now >= endTime) {
+  // 공구 마감 시간이 지났으면 voting(최종선택중) 상태로
+  if (now >= endTime) {
     return 'voting';
   }
   
-  // 그 외의 경우는 원래 상태 유지
+  // 마감 시간 전이면 백엔드 상태를 그대로 사용
+  // recruiting 또는 bidding 상태는 실제 입찰 여부에 따라 백엔드에서 관리
   return status;
 }
 

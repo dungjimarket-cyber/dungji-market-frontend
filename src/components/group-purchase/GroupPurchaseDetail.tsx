@@ -1354,7 +1354,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {groupBuy.creator?.username || groupBuy.host_username || groupBuy.creator_name || '익명'}
+                    {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
                   </p>
                   <p className="text-xs text-gray-500">공구 방장</p>
                 </div>

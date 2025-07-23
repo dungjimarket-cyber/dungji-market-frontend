@@ -220,7 +220,7 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                     <div className="flex justify-between items-center pt-2">
                       <div className="flex items-center">
                         <p className="text-xs text-gray-500 mr-1">방장:</p>
-                        <p className="text-xs font-medium truncate max-w-[100px]">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
+                        <p className="text-xs font-medium truncate max-w-[100px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
                       </div>
                       {(groupBuy.subscription_type_korean || groupBuy.product_details?.registration_type_korean) && (
                         <div className="flex items-center">

@@ -81,7 +81,7 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (activeTab === 'completed') {
-        // 종료 탭: 마감된 공구들 (백엔드에서 ended로 처리)
+        // 종료 탭: 마감된 공구들
         params.append('status', 'ended');
       } else if (activeTab === 'all') {
         // 전체 탭은 모든 상태 포함
@@ -90,32 +90,23 @@ function GroupPurchasesPageContent() {
         params.append('status', 'active');
       }
       
-      // 탭별 기본 정렬 (사용자가 명시적으로 선택하지 않은 경우에만)
-      let hasUserSort = false;
-      if (filters && filters.sort && filters.sort !== 'all') {
-        hasUserSort = true;
-      }
-      
-      if (!hasUserSort) {
-        if (activeTab === 'popular') {
-          params.append('sort', 'popular');
-        } else if (activeTab === 'new') {
-          params.append('sort', 'newest');
-        }
+      // 탭별 정렬 설정
+      // 인기순 탭은 항상 참여자순으로 정렬
+      if (activeTab === 'popular') {
+        params.append('sort', 'popular');
+      } else {
+        // 나머지 탭들은 모두 최신순으로 정렬
+        params.append('sort', 'newest');
       }
       
       // 사용자 필터 추가
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value && value !== 'all') {
-            // 정렬 기준 변환 (한글 -> API 파라미터)
+            // 정렬 기준은 무시 (탭별로 자동 설정됨)
             if (key === 'sort') {
-              if (value === '최신순') {
-                params.append('sort', 'newest');
-              } else if (value === '인기순(참여자많은순)') {
-                params.append('sort', 'popular');
-              }
-            } 
+              return;
+            }
             // 지역 검색 필터
             else if (key === 'search') {
               params.append('region_search', value);
@@ -171,11 +162,12 @@ function GroupPurchasesPageContent() {
           return actualStatus === 'recruiting' || actualStatus === 'bidding';
         });
       } else if (activeTab === 'completed') {
-        // 종료 탭은 종료된 공구만 표시 (voting, completed, cancelled 등)
+        // 종료 탭은 종료된 공구만 표시 (voting, seller_confirmation, completed, cancelled 등)
         data = data.filter((gb: GroupBuy) => {
           const actualStatus = gb.status;
-          return actualStatus === 'voting' || actualStatus === 'completed' || 
-                 actualStatus === 'cancelled' || actualStatus === 'seller_confirmation' ||
+          // 공구 시간이 종료된 모든 상태 포함
+          return actualStatus === 'voting' || actualStatus === 'seller_confirmation' || 
+                 actualStatus === 'completed' || actualStatus === 'cancelled' || 
                  actualStatus === 'ended';
         });
       }

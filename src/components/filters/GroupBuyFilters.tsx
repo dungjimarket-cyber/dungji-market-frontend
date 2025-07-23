@@ -25,13 +25,14 @@ interface FilterOptions {
 
 interface GroupBuyFiltersProps {
   onFiltersChange?: (filters: Record<string, string>) => void;
+  hideSort?: boolean; // 정렬 옵션 숨김 여부
 }
 
 /**
  * 공구 목록 필터 컴포넌트
  * @param onFiltersChange - 필터 변경 시 호출되는 콜백 함수
  */
-export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
+export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -219,26 +220,28 @@ export function GroupBuyFilters({ onFiltersChange }: GroupBuyFiltersProps) {
         {/* 필터 옵션들 */}
         {isExpanded && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {/* 정렬 옵션 */}
-            <div>
-              <label className="text-sm font-medium mb-1 block">정렬</label>
-              <Select
-                value={filters.sort}
-                onValueChange={(value) => handleFilterChange('sort', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="정렬 방식 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.sortOptions.map((sortOption) => (
-                    <SelectItem key={sortOption} value={sortOption}>
-                      {sortOption}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* 정렬 옵션 - hideSort가 false일 때만 표시 */}
+            {!hideSort && (
+              <div>
+                <label className="text-sm font-medium mb-1 block">정렬</label>
+                <Select
+                  value={filters.sort}
+                  onValueChange={(value) => handleFilterChange('sort', value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="정렬 방식 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    {filterOptions.sortOptions.map((sortOption) => (
+                      <SelectItem key={sortOption} value={sortOption}>
+                        {sortOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* 제조사 필터 */}
             <div>

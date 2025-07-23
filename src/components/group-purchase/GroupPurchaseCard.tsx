@@ -346,12 +346,12 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 />
               ) : (
                 <div className="w-full h-full bg-gray-500 flex items-center justify-center text-white text-xs">
-                  {groupBuy.creator?.username?.charAt(0)?.toUpperCase() || '?'}
+                  {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'}
                 </div>
               )}
             </div>
             <div>
-              <p className="text-gray-300 text-sm font-medium truncate max-w-[120px]">{groupBuy.host_username || groupBuy.creator_name || groupBuy.creator?.username || '익명'}</p>
+              <p className="text-gray-300 text-sm font-medium truncate max-w-[120px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
               <p className="text-gray-500 text-xs">
                 {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
               </p>
