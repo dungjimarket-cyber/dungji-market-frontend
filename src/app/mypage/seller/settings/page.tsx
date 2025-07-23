@@ -17,8 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, Save, Upload, Phone } from 'lucide-react';
-import RegionDropdown from '@/components/address/RegionDropdown';
-import { getSellerProfile } from '@/lib/api/sellerService';
+import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { toast } from '@/components/ui/use-toast';
@@ -33,9 +32,7 @@ export default function SellerSettings() {
     nickname: '',
     description: '',
     phone: '',
-    address: '',
-    businessAddressProvince: '',
-    businessAddressCity: '',
+    address: '',    
     businessNumber: '',
     isRemoteSales: false,
     businessRegFile: null as File | null,
@@ -64,8 +61,6 @@ export default function SellerSettings() {
           description: data.description || '',
           phone: data.phone || '',
           address: data.address || '',
-          businessAddressProvince: data.businessAddressProvince || '',
-          businessAddressCity: data.businessAddressCity || '',
           businessNumber: data.businessNumber || '',
           isRemoteSales: data.isRemoteSales || false,
           businessRegFile: null,
@@ -101,9 +96,20 @@ export default function SellerSettings() {
     setSaving(true);
 
     try {
-      // 여기서 실제 API 호출이 이루어져야 함
-      // 아직 updateSellerProfile API가 없으므로 임시로 성공 처리
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // API 호출을 위한 데이터 준비
+      const updateData = {
+        name: formData.name,
+        nickname: formData.nickname,
+        description: formData.description,
+        phone: formData.phone,
+        address: formData.address,
+        business_number: formData.businessNumber,
+        is_remote_sales: formData.isRemoteSales,
+        notification_enabled: formData.notificationEnabled,
+        profile_image: formData.profileImage
+      };
+
+      await updateSellerProfile(updateData);
       
       toast({
         title: '프로필 저장 성공',
@@ -235,21 +241,6 @@ export default function SellerSettings() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="businessAddress">사업장주소/영업활동지역</Label>
-                  <RegionDropdown
-                    selectedProvince={formData.businessAddressProvince}
-                    selectedCity={formData.businessAddressCity}
-                    onSelect={(province, city) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        businessAddressProvince: province,
-                        businessAddressCity: city
-                      }));
-                    }}
-                    required
-                  />
-                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="businessNumber">사업자등록번호</Label>

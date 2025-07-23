@@ -116,6 +116,38 @@ export const getSellerSaleDetail = async (id: number): Promise<SaleConfirmation>
 };
 
 /**
+ * 판매자 프로필 정보를 업데이트합니다.
+ * @param data 업데이트할 프로필 데이터
+ * @returns 업데이트된 프로필 정보
+ * @example
+ * const updatedProfile = await updateSellerProfile({
+ *   nickname: '새 닉네임',
+ *   description: '판매자 소개'
+ * });
+ */
+export const updateSellerProfile = async (data: {
+  name?: string;
+  nickname?: string;
+  description?: string;
+  phone?: string;
+  address?: string;
+  address_region_id?: string;
+  business_number?: string;
+  is_remote_sales?: boolean;
+  notification_enabled?: boolean;
+  profile_image?: string;
+}): Promise<SellerProfile> => {
+  try {
+    const headers = await getAxiosAuthHeaders();
+    const response = await axios.patch(`${API_URL}/users/me/`, data, { headers });
+    return response.data;
+  } catch (error: any) {
+    console.error('판매자 프로필 업데이트 오류:', error.response?.data);
+    throw error;
+  }
+};
+
+/**
  * 판매자의 입찰 목록을 조회합니다.
  * @param params 조회 옵션 (페이지, 검색어, 상태 필터)
  * @returns 입찰 목록 및 페이지네이션 정보

@@ -56,8 +56,6 @@ export default function ProfileSection() {
   const [role, setRole] = useState('');
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
   const [businessNumber, setBusinessNumber] = useState('');  // 사업자등록번호
-  const [businessAddressProvince, setBusinessAddressProvince] = useState('');
-  const [businessAddressCity, setBusinessAddressCity] = useState('');
   const [isRemoteSales, setIsRemoteSales] = useState(false);
   const [businessRegFile, setBusinessRegFile] = useState<File | null>(null);
   const [regions, setRegions] = useState<any[]>([]);
@@ -115,8 +113,6 @@ export default function ProfileSection() {
             setRegion(profileData.region || '');
             setUserType(profileData.user_type || '일반');
             setBusinessNumber(profileData.business_number || '');  // 사업자등록번호 설정
-            setBusinessAddressProvince(profileData.business_address_province || '');
-            setBusinessAddressCity(profileData.business_address_city || '');
             setIsRemoteSales(profileData.is_remote_sales || false);
             
             // AuthContext와 로컬스토리지 업데이트
@@ -132,9 +128,6 @@ export default function ProfileSection() {
                 phone_number: profileData.phone_number,
                 region: profileData.region,
                 business_number: profileData.business_number,
-                business_address: profileData.business_address_province && profileData.business_address_city 
-                  ? `${profileData.business_address_province} ${profileData.business_address_city}` 
-                  : '',
               };
               
               // AuthContext 업데이트
@@ -240,8 +233,6 @@ export default function ProfileSection() {
       address_province?: string,
       address_city?: string,
       business_number?: string,
-      business_address_province?: string,
-      business_address_city?: string,
       is_remote_sales?: boolean
     } = {};
     
@@ -314,9 +305,6 @@ export default function ProfileSection() {
       }
     } else if (editField === 'business_number') {
       updateData.business_number = businessNumber;
-    } else if (editField === 'business_address') {
-      updateData.business_address_province = businessAddressProvince;
-      updateData.business_address_city = businessAddressCity;
     } else if (editField === 'remote_sales') {
       updateData.is_remote_sales = isRemoteSales;
     }
@@ -390,9 +378,6 @@ export default function ProfileSection() {
             phone_number: profileData.phone_number,
             region: profileData.region,
             business_number: profileData.business_number,
-            business_address: profileData.business_address_province && profileData.business_address_city 
-              ? `${profileData.business_address_province} ${profileData.business_address_city}` 
-              : '',
           };
           
           console.log('새로운 사용자 정보:', updatedUser);
@@ -406,7 +391,7 @@ export default function ProfileSection() {
       setIsEditing(false);
       setEditField(null);
       setError('');
-    setNicknameError('');
+      setNicknameError('');
       
     } catch (err: any) {
       setError(err.message || '업데이트 중 오류가 발생했습니다.');
@@ -615,17 +600,16 @@ export default function ProfileSection() {
             )}
           </div>
           
-          {/* 주소 섹션 - 일반회원만 표시 */}
-          {(role === 'user' || role === 'buyer') && (
+          {/* 주소 섹션 - 모든 회원 공통 */}
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  주요활동지역
+                  {role === 'seller' ? '사업장 주소/영업활동 지역' : '주요활동지역'}
                   {authUser?.sns_type === 'kakao' && (!addressProvince || !addressCity) && (
                     <>
                       <span className="text-red-500 ml-1">⚠️</span>
                       <span className="text-red-500 text-xs ml-2">
-                        공구에 참여하기 위한 필수 입력 항목입니다.
+                        {role === 'seller' ? '공구 입찰에 참여하기 위한 필수 입력 항목입니다.' : '공구에 참여하기 위한 필수 입력 항목입니다.'}
                       </span>
                     </>
                   )}
@@ -678,68 +662,10 @@ export default function ProfileSection() {
                 </div>
               )}
             </div>
-          )}
           
           {/* 판매회원 추가 정보 섹션 */}
           {role === 'seller' && (
             <>
-              {/* 사업장 주소/영업활동 지역 */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    사업장 주소/영업활동 지역
-                    <span className="text-red-500 ml-1">*</span>
-                  </label>
-                  <button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setEditField('business_address');
-                    }}
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                  >
-                    수정
-                  </button>
-                </div>
-                
-                {isEditing && editField === 'business_address' ? (
-                  <div className="space-y-2">
-                    <RegionDropdown
-                      selectedProvince={businessAddressProvince}
-                      selectedCity={businessAddressCity}
-                      onSelect={(province, city) => {
-                        setBusinessAddressProvince(province);
-                        setBusinessAddressCity(city);
-                      }}
-                      required
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleProfileUpdate}
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                      >
-                        저장
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditField(null);
-                        }}
-                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
-                      >
-                        취소
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-2 bg-gray-50 rounded-md">
-                    <span className="font-medium">
-                      {businessAddressProvince && businessAddressCity 
-                        ? `${businessAddressProvince} ${businessAddressCity}` 
-                        : '사업장 주소 정보 없음'}
-                    </span>
-                  </div>
-                )}
-              </div>
 
               {/* 사업자등록번호 */}
               <div className="mb-4">

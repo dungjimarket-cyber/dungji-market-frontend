@@ -45,9 +45,6 @@ function RegisterPageContent() {
     // 판매자 전용 필드
     business_name: '',
     business_reg_number: '',
-    business_address_province: '',
-    business_address_city: '',
-    business_address_detail: '',
     is_remote_sales: false,
     business_reg_image: null as File | null,
     
@@ -187,20 +184,12 @@ function RegisterPageContent() {
   // const verifyPhone = async () => { ... };
 
   // 지역 선택 핸들러
-  const handleRegionSelect = (province: string, city: string, isBusinessAddress: boolean = false) => {
-    if (isBusinessAddress) {
-      setFormData(prev => ({
-        ...prev,
-        business_address_province: province,
-        business_address_city: city,
-      }));
-    } else {
+  const handleRegionSelect = (province: string, city: string) => {
       setFormData(prev => ({
         ...prev,
         region_province: province,
         region_city: city,
       }));
-    }
   };
 
   // 회원가입 폼 제출
@@ -284,13 +273,6 @@ function RegisterPageContent() {
         scrollToInputField(businessRegInput);
         return;
       }
-      if (!formData.business_address_province || !formData.business_address_city) {
-        setError('사업장 주소를 선택해주세요.');
-        setIsLoading(false);
-        const businessAddressSection = document.getElementById('business-address-section');
-        scrollToInputField(businessAddressSection);
-        return;
-      }
     }
 
     try {
@@ -325,9 +307,6 @@ function RegisterPageContent() {
       if (formData.role === 'seller') {
         submitData.append('business_name', formData.business_name || formData.nickname);
         submitData.append('business_reg_number', formData.business_reg_number);
-        submitData.append('business_address', 
-          `${formData.business_address_province} ${formData.business_address_city} ${formData.business_address_detail}`.trim()
-        );
         submitData.append('is_remote_sales_enabled', formData.is_remote_sales.toString());
         
         if (formData.is_remote_sales && formData.business_reg_image) {
@@ -717,27 +696,6 @@ function RegisterPageContent() {
                         onChange={handleChange}
                       />
                       <p className="text-xs text-gray-500 mt-1">사업자 확인용, 거래 사고 방지를 위한 최소한의 인증절차</p>
-                    </div>
-
-                    {/* 사업장 주소 */}
-                    <div id="business-address-section">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        사업장 주소/영업활동 지역 <span className="text-red-500">*</span>
-                      </label>
-                      <RegionDropdown
-                        selectedProvince={formData.business_address_province}
-                        selectedCity={formData.business_address_city}
-                        onSelect={(province, city) => handleRegionSelect(province, city, true)}
-                        required
-                      />
-                      <input
-                        name="business_address_detail"
-                        type="text"
-                        className="mt-2 appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="상세 주소를 입력하세요"
-                        value={formData.business_address_detail}
-                        onChange={handleChange}
-                      />
                     </div>
 
                     {/* 비대면 판매가능 영업소 인증 */}

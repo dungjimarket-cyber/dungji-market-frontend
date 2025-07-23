@@ -21,8 +21,6 @@ export interface SellerProfile {
   notificationEnabled?: boolean;
   nickname?: string;
   username?: string;
-  businessAddressProvince?: string;
-  businessAddressCity?: string;
   businessNumber?: string;
   isRemoteSales?: boolean;
 }
