@@ -283,7 +283,7 @@ export default function ProfileSection() {
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           const cityRegion = regionsData.find((r: any) => 
-            r.level === 1 && 
+            (r.level === 1 || r.level === 2) && 
             r.name === addressCity && 
             r.full_name.includes(addressProvince)
           );
