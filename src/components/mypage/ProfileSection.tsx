@@ -85,7 +85,7 @@ export default function ProfileSection() {
             setPhoneNumber(profileData.phone_number || '');
             setAddressRegion(profileData.address_region || null);
             setAddressDetail(profileData.address_detail || '');
-            setRole(profileData.role || 'buyer');
+            setRole(profileData.role || 'user');
             setIsBusinessVerified(profileData.is_business_verified || false);
             setRegion(profileData.region || '');
             setUserType(profileData.user_type || '일반');
@@ -256,7 +256,7 @@ export default function ProfileSection() {
         setPhoneNumber(profileData.phone_number || '');
         setAddressRegion(profileData.address_region || null);
         setAddressDetail(profileData.address_detail || '');
-        setRole(profileData.role || 'buyer');
+        setRole(profileData.role || 'user');
         setIsBusinessVerified(profileData.is_business_verified || false);
         
         // AuthContext 및 로컬스토리지 동기화

@@ -69,9 +69,9 @@ export default function MobileNavbar() {
           <FaHome className="text-xl mb-1" />
           <span className="text-xs">홈</span>
         </Link>
-        <Link href="/search" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
+        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
           <FaSearch className="text-xl mb-1" />
-          <span className="text-xs">검색</span>
+          <span className="text-xs">공구</span>
         </Link>
         {/* 가운데 버튼 - 본인 역할에 맞게 버튼 변경 */}
         <Link 

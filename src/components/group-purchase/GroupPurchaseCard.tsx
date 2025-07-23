@@ -192,7 +192,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     // 카카오톡 간편가입 사용자 체크
     if (user.sns_type === 'kakao') {
       // 일반회원: 활동지역, 연락처 체크
-      if (user.role === 'buyer') {
+      if (user.role === 'user') {
         if (!user.phone_number || !user.region) {
           if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
             router.push('/mypage');
