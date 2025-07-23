@@ -3,6 +3,7 @@
 import { useState, Suspense, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { scrollToInputField } from '@/hooks/useMobileKeyboard';
 import { Loader2, Mail } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
@@ -157,12 +158,8 @@ function RegisterPageContent() {
       
       if (!data.available) {
         setError('이미 사용 중인 닉네임입니다.');
-        // 닉네임 필드로 포커스 이동
-        nicknameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // 약간의 지연 후 에러 메시지로도 스크롤
-        setTimeout(() => {
-          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 300);
+        // 모바일 친화적인 스크롤 및 포커스
+        scrollToInputField(nicknameRef.current);
       } else {
         setError('');
       }
@@ -212,10 +209,27 @@ function RegisterPageContent() {
     setError('');
     setIsLoading(true);
 
+    // 필수 필드 검사
+    if (!formData.nickname) {
+      setError('닉네임을 입력해주세요.');
+      setIsLoading(false);
+      scrollToInputField(nicknameRef.current);
+      return;
+    }
+
+    if (!formData.phone) {
+      setError('휴대폰 번호를 입력해주세요.');
+      setIsLoading(false);
+      const phoneInput = document.getElementById('phone');
+      scrollToInputField(phoneInput);
+      return;
+    }
+
     // 유효성 검사
     if (!nicknameChecked || !nicknameAvailable) {
       setError('닉네임 중복 확인을 해주세요.');
       setIsLoading(false);
+      scrollToInputField(nicknameRef.current);
       return;
     }
 
@@ -223,6 +237,8 @@ function RegisterPageContent() {
     if (signupType === 'email' && (!emailChecked || !emailAvailable)) {
       setError('이메일 중복 확인을 해주세요.');
       setIsLoading(false);
+      const emailSection = document.getElementById('email-section');
+      scrollToInputField(emailSection);
       return;
     }
 
@@ -235,14 +251,18 @@ function RegisterPageContent() {
 
     // 이메일 로그인인 경우 비밀번호 확인
     if (signupType === 'email') {
-      if (formData.password !== formData.confirmPassword) {
-        setError('비밀번호가 일치하지 않습니다.');
-        setIsLoading(false);
-        return;
-      }
       if (formData.password.length < 6) {
         setError('비밀번호는 6자 이상이어야 합니다.');
         setIsLoading(false);
+        const passwordInput = document.getElementById('password');
+        scrollToInputField(passwordInput);
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('비밀번호가 일치하지 않습니다.');
+        setIsLoading(false);
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        scrollToInputField(confirmPasswordInput);
         return;
       }
     }
@@ -250,14 +270,25 @@ function RegisterPageContent() {
     if (!formData.terms_agreed || !formData.privacy_agreed) {
       setError('필수 약관에 동의해주세요.');
       setIsLoading(false);
+      const termsSection = document.getElementById('terms-section');
+      scrollToInputField(termsSection);
       return;
     }
 
     // 판매자인 경우 추가 검증
     if (formData.role === 'seller') {
-      if (!formData.business_reg_number || !formData.business_address_province || !formData.business_address_city) {
-        setError('판매자는 사업자등록번호와 사업장 주소를 입력해야 합니다.');
+      if (!formData.business_reg_number) {
+        setError('사업자등록번호를 입력해주세요.');
         setIsLoading(false);
+        const businessRegInput = document.getElementById('business_reg_number');
+        scrollToInputField(businessRegInput);
+        return;
+      }
+      if (!formData.business_address_province || !formData.business_address_city) {
+        setError('사업장 주소를 선택해주세요.');
+        setIsLoading(false);
+        const businessAddressSection = document.getElementById('business-address-section');
+        scrollToInputField(businessAddressSection);
         return;
       }
     }
@@ -512,7 +543,7 @@ function RegisterPageContent() {
                   
                   {/* 이메일 (이메일 로그인인 경우만) */}
                   {signupType === 'email' && (
-                    <div>
+                    <div id="email-section">
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                         아이디(이메일) <span className="text-red-500">*</span>
                       </label>
@@ -689,7 +720,7 @@ function RegisterPageContent() {
                     </div>
 
                     {/* 사업장 주소 */}
-                    <div>
+                    <div id="business-address-section">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         사업장 주소/영업활동 지역 <span className="text-red-500">*</span>
                       </label>
@@ -747,7 +778,7 @@ function RegisterPageContent() {
                 )}
 
                 {/* 약관 동의 */}
-                <div className="space-y-3 pt-4 border-t">
+                <div id="terms-section" className="space-y-3 pt-4 border-t">
                   <h3 className="text-lg font-medium text-gray-900">약관 동의</h3>
                   
                   <div className="space-y-2">
