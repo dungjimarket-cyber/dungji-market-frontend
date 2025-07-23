@@ -18,7 +18,7 @@ function SocialCallbackContent() {
   const [status, setStatus] = useState<string>('처리 중...');
   const [error, setError] = useState<string | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [userRole, setUserRole] = useState<'user' | 'seller'>('user');
+  const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
   
   // 콜백 URL 파라미터 추출 (리다이렉트 목적지)
   const callbackUrl = searchParams.get('callbackUrl') || '/';
@@ -79,8 +79,8 @@ function SocialCallbackContent() {
         // 토큰 데이터에서 사용자 정보 추출
         const userId = tokenData.user_id || tokenData.userId || tokenData.sub || '';
         const userEmail = tokenData.email || tokenData.user_email || '';
-        const userRole = tokenData.role || tokenData.user_role || 'user';
-        setUserRole(userRole === 'seller' ? 'seller' : 'user');
+        const userRole = tokenData.role || tokenData.user_role || 'buyer';
+        setUserRole(userRole === 'seller' ? 'seller' : 'buyer');
         
         console.log('추출된 사용자 정보:', { userId, userEmail, userRole });
         

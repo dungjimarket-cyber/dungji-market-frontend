@@ -312,7 +312,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: profileData.id || decoded?.user_id || '',
                     email: profileData.email || '',
                     username: profileData.username || '',
-                    role: decoded?.role || 'user',
+                    role: decoded?.role || 'buyer',
                     token: storedToken,
                     sns_type: profileData.sns_type,
                     provider: profileData.sns_type,
@@ -324,7 +324,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const userJson = JSON.stringify(userData);
                 localStorage.setItem('user', userJson);
                 localStorage.setItem('auth.user', userJson);
-                localStorage.setItem('userRole', userData.role || 'user');
+                localStorage.setItem('userRole', userData.role || 'buyer');
                 
                 // 상태 업데이트
                 setUser(userData);
@@ -343,7 +343,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   if (decoded) {
                     const userId = decoded.user_id || decoded.sub || '';
                     const userEmail = decoded.email || '';
-                    const userRole = decoded.role || 'user';
+                    const userRole = decoded.role || 'buyer';
                     
                     const extractedUser = {
                       id: userId,
@@ -373,7 +373,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   if (decoded) {
                     const userId = decoded.user_id || decoded.sub || '';
                     const userEmail = decoded.email || '';
-                    const userRole = decoded.role || 'user';
+                    const userRole = decoded.role || 'buyer';
                     
                     const extractedUser = {
                       id: userId,
@@ -573,7 +573,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (decoded) {
           const userId = decoded.user_id;
           const userEmail = decoded.email || email;
-          const userRole = decoded.role || 'user';
+          const userRole = decoded.role || 'buyer';
           
           const user = {
             id: userId,

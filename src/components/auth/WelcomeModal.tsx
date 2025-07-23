@@ -14,7 +14,7 @@ import { Gift, Eye, Gavel, CheckCircle } from 'lucide-react';
 interface WelcomeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userRole: 'user' | 'seller';
+  userRole: 'buyer' | 'seller';
 }
 
 /**

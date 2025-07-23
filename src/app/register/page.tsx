@@ -36,7 +36,7 @@ function RegisterPageContent() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // 'user' or 'seller' - 백엔드에서 buyer로 변환됨
+    role: 'buyer', // 'buyer' or 'seller'
     
     // 선택 필드
     region_province: '',
@@ -502,9 +502,9 @@ function RegisterPageContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, role: 'user' }))}
+                    onClick={() => setFormData(prev => ({ ...prev, role: 'buyer' }))}
                     className={`p-4 border-2 rounded-lg text-center transition-colors ${
-                      formData.role === 'user' 
+                      formData.role === 'buyer' 
                         ? 'border-blue-500 bg-blue-50 text-blue-700' 
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
@@ -678,7 +678,7 @@ function RegisterPageContent() {
                   </div>
 
                   {/* 주요 활동지역 - 일반회원만 표시 */}
-                  {formData.role === 'user' && (
+                  {formData.role === 'buyer' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         주요 활동지역 (선택)
@@ -886,7 +886,7 @@ function RegisterPageContent() {
       <WelcomeModal
         isOpen={showWelcomeModal}
         onClose={() => setShowWelcomeModal(false)}
-        userRole={formData.role as 'user' | 'seller'}
+        userRole={formData.role as 'buyer' | 'seller'}
       />
     </div>
   );
