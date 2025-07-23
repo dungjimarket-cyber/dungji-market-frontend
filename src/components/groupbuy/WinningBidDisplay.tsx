@@ -40,7 +40,7 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
       try {
         // 낙찰된 입찰 정보 가져오기
         const response = await fetchWithAuth(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/groupbuys/${groupBuyId}/winning-bid/`
+          `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/winning_bid/`
         );
         
         if (response.ok) {

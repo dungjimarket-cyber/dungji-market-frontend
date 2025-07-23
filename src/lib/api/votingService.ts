@@ -26,7 +26,7 @@ export async function voteForBid(groupBuyId: number, bidId: number): Promise<any
  * 현재 사용자의 투표 상태 확인
  */
 export async function getMyVote(groupBuyId: number): Promise<any> {
-  const response = await fetchWithAuth(`${API_BASE}/groupbuys/${groupBuyId}/my-vote/`, {
+  const response = await fetchWithAuth(`${API_BASE}/groupbuys/${groupBuyId}/my_vote/`, {
     method: 'GET',
   });
 
@@ -45,7 +45,7 @@ export async function getMyVote(groupBuyId: number): Promise<any> {
  * 공구의 투표 결과 조회
  */
 export async function getVotingResults(groupBuyId: number): Promise<any> {
-  const response = await fetchWithAuth(`${API_BASE}/groupbuys/${groupBuyId}/voting-results/`, {
+  const response = await fetchWithAuth(`${API_BASE}/groupbuys/${groupBuyId}/voting_results/`, {
     method: 'GET',
   });
 

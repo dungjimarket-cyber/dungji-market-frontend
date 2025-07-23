@@ -52,6 +52,8 @@ export default function ProfileSection() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [addressRegion, setAddressRegion] = useState<any>(null);
   const [addressDetail, setAddressDetail] = useState('');
+  const [addressProvince, setAddressProvince] = useState('');
+  const [addressCity, setAddressCity] = useState('');
   const [role, setRole] = useState('');
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
   const [businessNumber, setBusinessNumber] = useState('');  // 사업자등록번호
@@ -90,6 +92,8 @@ export default function ProfileSection() {
             setPhoneNumber(profileData.phone_number || '');
             setAddressRegion(profileData.address_region || null);
             setAddressDetail(profileData.address_detail || '');
+            setAddressProvince(profileData.address_province || '');
+            setAddressCity(profileData.address_city || '');
             setRole(profileData.role || 'user');
             setIsBusinessVerified(profileData.is_business_verified || false);
             setRegion(profileData.region || '');
@@ -164,7 +168,7 @@ export default function ProfileSection() {
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/regions/`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
         if (response.ok) {
           const data = await response.json();
           setRegions(data);
@@ -210,6 +214,8 @@ export default function ProfileSection() {
       phone_number?: string,
       address_region_id?: number | null,
       address_detail?: string,
+      address_province?: string,
+      address_city?: string,
       business_number?: string,
       business_address_province?: string,
       business_address_city?: string,
@@ -223,7 +229,8 @@ export default function ProfileSection() {
     } else if (editField === 'phone_number') {
       updateData.phone_number = phoneNumber;
     } else if (editField === 'address') {
-      updateData.address_region_id = addressRegion?.id || null;
+      updateData.address_province = addressProvince;
+      updateData.address_city = addressCity;
       updateData.address_detail = addressDetail;
     } else if (editField === 'business_number') {
       updateData.business_number = businessNumber;
@@ -272,6 +279,8 @@ export default function ProfileSection() {
         setPhoneNumber(profileData.phone_number || '');
         setAddressRegion(profileData.address_region || null);
         setAddressDetail(profileData.address_detail || '');
+        setAddressProvince(profileData.address_province || '');
+        setAddressCity(profileData.address_city || '');
         setRole(profileData.role || 'user');
         setIsBusinessVerified(profileData.is_business_verified || false);
         
@@ -488,12 +497,12 @@ export default function ProfileSection() {
           </div>
           
           {/* 주소 섹션 - 일반회원만 표시 */}
-          {role === 'user' && (
+          {(role === 'user' || role === 'buyer') && (
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   주요활동지역
-                  {authUser?.sns_type === 'kakao' && !addressRegion && (
+                  {authUser?.sns_type === 'kakao' && (!addressProvince || !addressCity) && (
                     <>
                       <span className="text-red-500 ml-1">⚠️</span>
                       <span className="text-red-500 text-xs ml-2">
@@ -515,22 +524,15 @@ export default function ProfileSection() {
               
               {isEditing && editField === 'address' ? (
                 <div className="space-y-2">
-                  <select
-                    value={addressRegion?.id || ''}
-                    onChange={(e) => {
-                      const regionId = e.target.value;
-                      const selectedRegion = regions.find(r => r.id === parseInt(regionId));
-                      setAddressRegion(selectedRegion || null);
+                  <RegionDropdown
+                    selectedProvince={addressProvince}
+                    selectedCity={addressCity}
+                    onSelect={(province, city) => {
+                      setAddressProvince(province);
+                      setAddressCity(city);
                     }}
-                    className="w-full p-2 border rounded-md"
-                  >
-                    <option value="">지역을 선택하세요</option>
-                    {regions.filter(r => r.level === 1).map(region => (
-                      <option key={region.id} value={region.id}>
-                        {region.full_name}
-                      </option>
-                    ))}
-                  </select>
+                    required={false}
+                  />
                   <input
                     type="text"
                     value={addressDetail}
@@ -559,7 +561,7 @@ export default function ProfileSection() {
               ) : (
                 <div className="p-2 bg-gray-50 rounded-md space-y-1">
                   <div className="font-medium">
-                    {addressRegion ? addressRegion.full_name : '지역 정보 없음'}
+                    {addressProvince && addressCity ? `${addressProvince} ${addressCity}` : '지역 정보 없음'}
                   </div>
                   {addressDetail && (
                     <div className="text-sm text-gray-600">{addressDetail}</div>

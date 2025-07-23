@@ -88,7 +88,7 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
       }
       
       // 소셜 로그인 URL 구성 (백엔드의 새 엔드포인트에 맞게 수정)
-      const socialLoginUrl = `${apiUrl}/api/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(redirectUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      const socialLoginUrl = `${apiUrl}/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(redirectUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       // 디버그 정보 출력
       console.log(`소셜 로그인 URL: ${socialLoginUrl}`);

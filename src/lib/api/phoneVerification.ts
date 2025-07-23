@@ -32,7 +32,7 @@ export interface CheckVerificationStatusResponse {
  */
 export async function sendVerificationCode(data: SendVerificationCodeRequest): Promise<SendVerificationCodeResponse> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-  const response = await fetch(`${baseUrl}/api/auth/phone/send-code/`, {
+  const response = await fetch(`${baseUrl}/auth/phone/send-code/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export async function sendVerificationCode(data: SendVerificationCodeRequest): P
  */
 export async function verifyCode(data: VerifyCodeRequest): Promise<VerifyCodeResponse> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-  const response = await fetch(`${baseUrl}/api/auth/phone/verify/`, {
+  const response = await fetch(`${baseUrl}/auth/phone/verify/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ export async function checkVerificationStatus(
   });
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-  const response = await fetch(`${baseUrl}/api/auth/phone/status/?${params.toString()}`, {
+  const response = await fetch(`${baseUrl}/auth/phone/status/?${params.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

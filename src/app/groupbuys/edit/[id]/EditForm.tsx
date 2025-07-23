@@ -612,7 +612,7 @@ export default function EditForm({ groupBuyId }: { groupBuyId: string }) {
       }
       
       // API 호출
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/groupbuys/${groupBuyId}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -53,7 +53,7 @@ export function BidVotingList({
         setLoading(true);
         
         // Fetch bids
-        const bidsResponse = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/api/groupbuys/${groupBuyId}/bids/`);
+        const bidsResponse = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/bids/`);
         if (bidsResponse.ok) {
           const bidsData = await bidsResponse.json();
           setBids(bidsData);

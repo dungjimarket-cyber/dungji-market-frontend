@@ -63,7 +63,7 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
 
       // API 호출 시뮬레이션
       /*
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bid-tickets/purchase/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bid-tickets/purchase/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
