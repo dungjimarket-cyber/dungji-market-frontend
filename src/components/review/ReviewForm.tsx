@@ -101,11 +101,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           rating,
           content: content.trim(),
           is_purchased: isPurchased,
-        });
+        }, accessToken);
         toast.success('리뷰가 수정되었습니다.');
       } else {
         // 새 리뷰 작성
-        await createReview(reviewData);
+        await createReview(reviewData, accessToken);
         toast.success('리뷰가 등록되었습니다.');
       }
       
@@ -124,7 +124,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   // 로그인 상태가 아닌 경우
-  if (status !== 'authenticated') {
+  if (!isAuthenticated) {
     return (
       <div className="p-4 text-center border rounded-lg bg-gray-50">
         <p className="text-gray-600">리뷰를 작성하려면 로그인이 필요합니다.</p>
