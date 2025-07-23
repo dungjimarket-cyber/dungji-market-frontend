@@ -131,10 +131,6 @@ export default function ProfileSection() {
                 provider: profileData.sns_type, // 호환성을 위해 provider도 추가
                 phone_number: profileData.phone_number,
                 region: profileData.region,
-                business_number: profileData.business_number,
-                business_address: profileData.business_address_province && profileData.business_address_city 
-                  ? `${profileData.business_address_province} ${profileData.business_address_city}` 
-                  : '',
               };
               
               // AuthContext 업데이트
@@ -389,10 +385,6 @@ export default function ProfileSection() {
             provider: profileData.sns_type, // 호환성을 위해 provider도 추가
             phone_number: profileData.phone_number,
             region: profileData.region,
-            business_number: profileData.business_number,
-            business_address: profileData.business_address_province && profileData.business_address_city 
-              ? `${profileData.business_address_province} ${profileData.business_address_city}` 
-              : '',
           };
           
           console.log('새로운 사용자 정보:', updatedUser);
