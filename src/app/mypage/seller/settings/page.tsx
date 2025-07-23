@@ -135,11 +135,24 @@ export default function SellerSettings() {
           const regionsData = await regionsResponse.json();
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
-          const cityRegion = regionsData.find((r: any) => 
-            (r.level === 1 || r.level === 2) && 
-            r.name === formData.addressCity && 
-            r.full_name.includes(formData.addressProvince)
-          );
+          // 세종특별자치시는 특수한 경우로 level 1이면서 시/도와 시/군/구가 동일
+          let cityRegion;
+          
+          if (formData.addressProvince === '세종특별자치시') {
+            // 세종시는 특별한 처리 필요
+            cityRegion = regionsData.find((r: any) => 
+              r.level === 1 && 
+              r.name === '세종특별자치시' &&
+              r.full_name === '세종특별자치시'
+            );
+          } else {
+            // 일반적인 시/도의 경우
+            cityRegion = regionsData.find((r: any) => 
+              (r.level === 1 || r.level === 2) && 
+              r.name === formData.addressCity && 
+              r.full_name.includes(formData.addressProvince)
+            );
+          }
           
           if (cityRegion) {
             updateData.address_region_id = cityRegion.code;
