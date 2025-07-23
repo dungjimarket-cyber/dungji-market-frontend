@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 
 function ReviewCreateContent() {
   const searchParams = useSearchParams();
-  const groupbuyId = searchParams.get('groupbuy_id');
+  const groupbuyId = searchParams.get('groupBuyId') || searchParams.get('groupbuy_id');
 
   if (!groupbuyId) {
     return (
