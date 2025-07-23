@@ -560,7 +560,7 @@ export default function AdminPage() {
                     <div key={user.id} className="border rounded-lg p-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <h3 className="font-semibold mb-2">{user.username}</h3>
+                          <h3 className="font-semibold mb-2">{user.nickname || user.username}</h3>
                           <div className="space-y-1 text-sm">
                             <p><span className="text-muted-foreground">이메일:</span> {user.email}</p>
                             <p><span className="text-muted-foreground">사업자번호:</span> {user.business_reg_number}</p>

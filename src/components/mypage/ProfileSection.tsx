@@ -91,7 +91,7 @@ export default function ProfileSection() {
             
             // 프로필 정보 상태 업데이트
             setEmail(profileData.email || '');
-            setNickname(profileData.username || '');
+            setNickname(profileData.nickname || profileData.username || '');
             setPhoneNumber(profileData.phone_number || '');
             setAddressRegion(profileData.address_region || null);
             setAddressDetail(profileData.address_detail || '');
