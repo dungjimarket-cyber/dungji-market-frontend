@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
@@ -67,6 +67,9 @@ export default function ProfileSection() {
   const [isEditing, setIsEditing] = useState(false);
   const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | 'business_address' | 'remote_sales' | null>(null);
   const [error, setError] = useState('');
+  const [nicknameError, setNicknameError] = useState('');
+  const errorRef = useRef<HTMLDivElement>(null);
+  const nicknameRef = useRef<HTMLDivElement>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
   
@@ -225,6 +228,37 @@ export default function ProfileSection() {
     if (editField === 'email') {
       updateData.email = email;
     } else if (editField === 'nickname') {
+      // 닉네임 변경 시 중복 체크
+      if (!nickname) {
+        setNicknameError('닉네임을 입력해주세요.');
+        return;
+      }
+      
+      // 닉네임 중복 체크 (현재 사용자의 닉네임과 다른 경우만)
+      if (nickname !== user?.username) {
+        try {
+          const checkResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nickname: nickname }),
+          });
+          
+          const checkData = await checkResponse.json();
+          
+          if (!checkData.available) {
+            setNicknameError('이미 사용 중인 닉네임입니다.');
+            // 닉네임 필드로 스크롤
+            nicknameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+          }
+        } catch (err) {
+          setNicknameError('닉네임 중복 확인 중 오류가 발생했습니다.');
+          return;
+        }
+      }
+      
       updateData.username = nickname; // 백엔드에서는 username 필드 사용
     } else if (editField === 'phone_number') {
       updateData.phone_number = phoneNumber;
@@ -305,6 +339,7 @@ export default function ProfileSection() {
       setIsEditing(false);
       setEditField(null);
       setError('');
+    setNicknameError('');
       
     } catch (err: any) {
       setError(err.message || '업데이트 중 오류가 발생했습니다.');
@@ -350,6 +385,7 @@ export default function ProfileSection() {
                 onClick={() => {
                   setIsEditing(true);
                   setEditField('nickname');
+                  setNicknameError('');
                 }}
                 className="text-xs text-blue-600 hover:text-blue-800"
               >
@@ -358,30 +394,46 @@ export default function ProfileSection() {
             </div>
             
             {isEditing && editField === 'nickname' ? (
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  className="flex-1 p-2 border rounded-md mr-2"
-                  placeholder="닉네임을 입력하세요"
-                />
-                <button
-                  onClick={handleProfileUpdate}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                >
-                  저장
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditing(false);
-                    setEditField(null);
-                    setNickname(user?.username || '');
-                  }}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
-                >
-                  취소
-                </button>
+              <div ref={nicknameRef}>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={nickname}
+                    onChange={(e) => {
+                      setNickname(e.target.value);
+                      setNicknameError('');
+                    }}
+                    className={`flex-1 p-2 border rounded-md mr-2 ${nicknameError ? 'border-red-500' : ''}`}
+                    placeholder="닉네임을 입력하세요"
+                  />
+                  <button
+                    onClick={handleProfileUpdate}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  >
+                    저장
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditField(null);
+                      setNickname(user?.username || '');
+                      setNicknameError('');
+                    }}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                  >
+                    취소
+                  </button>
+                </div>
+                {nicknameError && (
+                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">{nicknameError}</span>
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-2 bg-gray-50 rounded-md">
@@ -787,8 +839,11 @@ export default function ProfileSection() {
         
         {/* 오류 메시지 */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm mt-2">
-            {error}
+          <div ref={errorRef} className="bg-red-50 border border-red-300 text-red-700 p-3 rounded text-sm mt-2 flex items-center gap-2">
+            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
       </div>

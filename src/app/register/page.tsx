@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Mail } from 'lucide-react';
@@ -19,6 +19,8 @@ function RegisterPageContent() {
   const searchParams = useSearchParams();
   const { login } = useAuth();
   // const { toast } = useToast(); // 휴대폰 인증 기능 임시 비활성화
+  const errorRef = useRef<HTMLDivElement>(null);
+  const nicknameRef = useRef<HTMLDivElement>(null);
   
   // URL 파라미터로 소셜 로그인 정보 받기
   const socialProvider = searchParams.get('provider');
@@ -155,6 +157,12 @@ function RegisterPageContent() {
       
       if (!data.available) {
         setError('이미 사용 중인 닉네임입니다.');
+        // 닉네임 필드로 포커스 이동
+        nicknameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 약간의 지연 후 에러 메시지로도 스크롤
+        setTimeout(() => {
+          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
       } else {
         setError('');
       }
@@ -490,7 +498,12 @@ function RegisterPageContent() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                  <div className="text-red-500 text-sm p-3 rounded bg-red-50">{error}</div>
+                  <div ref={errorRef} className="text-red-500 text-sm p-3 rounded bg-red-50 border border-red-300 flex items-center gap-2">
+                    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <span>{error}</span>
+                  </div>
                 )}
 
                 {/* 공통 필수 필드 */}
@@ -568,7 +581,7 @@ function RegisterPageContent() {
                   )}
 
                   {/* 닉네임 */}
-                  <div>
+                  <div ref={nicknameRef}>
                     <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
                       {formData.role === 'seller' ? '닉네임 또는 상호명' : '닉네임'} <span className="text-red-500">*</span>
                     </label>
@@ -592,9 +605,25 @@ function RegisterPageContent() {
                       </button>
                     </div>
                     {nicknameChecked && (
-                      <p className={`text-sm mt-1 ${nicknameAvailable ? 'text-green-600' : 'text-red-600'}`}>
-                        {nicknameAvailable ? '✓ 사용 가능한 닉네임입니다.' : '✗ 이미 사용 중인 닉네임입니다.'}
-                      </p>
+                      <div className={`mt-2 p-2 rounded-md ${nicknameAvailable ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                        <p className={`text-sm flex items-center gap-2 ${nicknameAvailable ? 'text-green-700' : 'text-red-700'}`}>
+                          {nicknameAvailable ? (
+                            <>
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              <span>사용 가능한 닉네임입니다.</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                              <span className="font-medium">이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
                     )}
                   </div>
 
