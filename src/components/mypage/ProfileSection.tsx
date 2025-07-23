@@ -95,8 +95,23 @@ export default function ProfileSection() {
             setPhoneNumber(profileData.phone_number || '');
             setAddressRegion(profileData.address_region || null);
             setAddressDetail(profileData.address_detail || '');
-            setAddressProvince(profileData.address_province || '');
-            setAddressCity(profileData.address_city || '');
+            
+            // address_region 객체에서 시/도와 시/군/구 추출
+            if (profileData.address_region) {
+              const fullName = profileData.address_region.full_name || profileData.address_region.name || '';
+              const parts = fullName.split(' ');
+              if (parts.length >= 2) {
+                setAddressProvince(parts[0]);
+                setAddressCity(parts[1]);
+              } else if (parts.length === 1) {
+                setAddressProvince(parts[0]);
+                setAddressCity('');
+              }
+            } else {
+              setAddressProvince('');
+              setAddressCity('');
+            }
+            
             setRole(profileData.role || 'user');
             setIsBusinessVerified(profileData.is_business_verified || false);
             setRegion(profileData.region || '');
@@ -263,8 +278,35 @@ export default function ProfileSection() {
     } else if (editField === 'phone_number') {
       updateData.phone_number = phoneNumber;
     } else if (editField === 'address') {
-      updateData.address_province = addressProvince;
-      updateData.address_city = addressCity;
+      // 주소 업데이트 시 지역 코드를 찾아서 전송
+      if (addressProvince && addressCity) {
+        try {
+          // 모든 지역 데이터 가져오기
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+          const regionsData = await regionsResponse.json();
+          
+          // 시/군/구 레벨에서 일치하는 지역 찾기
+          const cityRegion = regionsData.find((r: any) => 
+            r.level === 1 && 
+            r.name === addressCity && 
+            r.full_name.includes(addressProvince)
+          );
+          
+          if (cityRegion) {
+            // 백엔드는 code를 primary key로 사용하므로 code를 전송
+            updateData.address_region_id = cityRegion.code;
+          } else {
+            setError('선택한 지역을 찾을 수 없습니다.');
+            return;
+          }
+        } catch (err) {
+          setError('지역 정보를 가져오는 중 오류가 발생했습니다.');
+          return;
+        }
+      } else {
+        // 지역이 선택되지 않은 경우 null로 설정
+        updateData.address_region_id = null;
+      }
       updateData.address_detail = addressDetail;
     } else if (editField === 'business_number') {
       updateData.business_number = businessNumber;
@@ -313,8 +355,23 @@ export default function ProfileSection() {
         setPhoneNumber(profileData.phone_number || '');
         setAddressRegion(profileData.address_region || null);
         setAddressDetail(profileData.address_detail || '');
-        setAddressProvince(profileData.address_province || '');
-        setAddressCity(profileData.address_city || '');
+        
+        // address_region 객체에서 시/도와 시/군/구 추출
+        if (profileData.address_region) {
+          const fullName = profileData.address_region.full_name || profileData.address_region.name || '';
+          const parts = fullName.split(' ');
+          if (parts.length >= 2) {
+            setAddressProvince(parts[0]);
+            setAddressCity(parts[1]);
+          } else if (parts.length === 1) {
+            setAddressProvince(parts[0]);
+            setAddressCity('');
+          }
+        } else {
+          setAddressProvince('');
+          setAddressCity('');
+        }
+        
         setRole(profileData.role || 'user');
         setIsBusinessVerified(profileData.is_business_verified || false);
         
