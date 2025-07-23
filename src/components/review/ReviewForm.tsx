@@ -56,7 +56,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onComplete,
   onCancel,
 }) => {
-  const { user, isAuthenticated, isLoading, accessToken } = useAuth();
+  const { isAuthenticated, accessToken } = useAuth();
   const [rating, setRating] = useState<number>(initialRating);
   const [content, setContent] = useState<string>(initialContent);
   const [isPurchased, setIsPurchased] = useState<boolean>(initialIsPurchased);
