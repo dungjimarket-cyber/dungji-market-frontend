@@ -77,7 +77,15 @@ export default function SellerSettings() {
         if (data.addressRegion) {
           const fullName = data.addressRegion.full_name || data.addressRegion.name || '';
           const parts = fullName.split(' ');
-          if (parts.length >= 2) {
+          
+          // 세종특별자치시 특수 처리
+          if (fullName === '세종특별자치시') {
+            setFormData(prev => ({
+              ...prev,
+              addressProvince: '세종특별자치시',
+              addressCity: '세종특별자치시'
+            }));
+          } else if (parts.length >= 2) {
             setFormData(prev => ({
               ...prev,
               addressProvince: parts[0],

@@ -25,7 +25,8 @@ type User = {
   user_type?: string; // 회원 구분 (일반/판매)
   sns_type?: string; // SNS 로그인 타입 (kakao, google, email)
   phone_number?: string; // 휴대폰 번호
-  region?: string; // 활동 지역
+  region?: string; // 활동 지역 (구버전 호환용)
+  address_region?: any; // 활동 지역 객체 (신버전)
   business_number?: string; // 사업자등록번호
   business_address?: string; // 사업장 주소
 };

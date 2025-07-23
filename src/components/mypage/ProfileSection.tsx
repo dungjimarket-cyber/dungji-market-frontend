@@ -96,7 +96,12 @@ export default function ProfileSection() {
             if (profileData.address_region) {
               const fullName = profileData.address_region.full_name || profileData.address_region.name || '';
               const parts = fullName.split(' ');
-              if (parts.length >= 2) {
+              
+              // 세종특별자치시 특수 처리
+              if (fullName === '세종특별자치시') {
+                setAddressProvince('세종특별자치시');
+                setAddressCity('세종특별자치시');
+              } else if (parts.length >= 2) {
                 setAddressProvince(parts[0]);
                 setAddressCity(parts[1]);
               } else if (parts.length === 1) {
@@ -127,6 +132,7 @@ export default function ProfileSection() {
                 provider: profileData.sns_type, // 호환성을 위해 provider도 추가
                 phone_number: profileData.phone_number,
                 region: profileData.region,
+                address_region: profileData.address_region, // 신버전 주소 필드 추가
                 business_number: profileData.business_number,
               };
               
@@ -168,7 +174,7 @@ export default function ProfileSection() {
       setNickname(defaultNickname);
     }
     
-    // 지역 정보 초기화
+    // 지역 정보 초기화 - 구버전 호환용 코드 (삭제 예정)
     if (user?.region) {
       setRegion(user.region);
     }
@@ -179,7 +185,7 @@ export default function ProfileSection() {
     } else {
       setUserType('일반');
     }
-  }, [user?.email, user?.username, user?.nickname, user?.region, user?.user_type]);
+  }, [user?.email, user?.username, user?.nickname, user?.user_type]);
   
   // 지역 목록 가져오기
   useEffect(() => {
