@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, Save, Upload, Phone } from 'lucide-react';
+import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -32,7 +33,9 @@ export default function SellerSettings() {
     nickname: '',
     description: '',
     phone: '',
-    address: '',    
+    address: '',
+    addressProvince: '',
+    addressCity: '',
     businessNumber: '',
     isRemoteSales: false,
     businessRegFile: null as File | null,
@@ -61,12 +64,27 @@ export default function SellerSettings() {
           description: data.description || '',
           phone: data.phone || '',
           address: data.address || '',
+          addressProvince: '',
+          addressCity: '',
           businessNumber: data.businessNumber || '',
           isRemoteSales: data.isRemoteSales || false,
           businessRegFile: null,
           notificationEnabled: data.notificationEnabled || true,
           profileImage: data.profileImage || ''
         });
+        
+        // address_region에서 시/도와 시/군/구 추출
+        if (data.addressRegion) {
+          const fullName = data.addressRegion.full_name || data.addressRegion.name || '';
+          const parts = fullName.split(' ');
+          if (parts.length >= 2) {
+            setFormData(prev => ({
+              ...prev,
+              addressProvince: parts[0],
+              addressCity: parts[1]
+            }));
+          }
+        }
       } catch (error) {
         console.error('판매자 프로필 로드 오류:', error);
         toast({
@@ -97,7 +115,7 @@ export default function SellerSettings() {
 
     try {
       // API 호출을 위한 데이터 준비
-      const updateData = {
+      const updateData: any = {
         name: formData.name,
         nickname: formData.nickname,
         description: formData.description,
@@ -108,6 +126,40 @@ export default function SellerSettings() {
         notification_enabled: formData.notificationEnabled,
         profile_image: formData.profileImage
       };
+
+      // 주소 정보 처리
+      if (formData.addressProvince && formData.addressCity) {
+        try {
+          // 모든 지역 데이터 가져오기
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+          const regionsData = await regionsResponse.json();
+          
+          // 시/군/구 레벨에서 일치하는 지역 찾기
+          const cityRegion = regionsData.find((r: any) => 
+            (r.level === 1 || r.level === 2) && 
+            r.name === formData.addressCity && 
+            r.full_name.includes(formData.addressProvince)
+          );
+          
+          if (cityRegion) {
+            updateData.address_region_id = cityRegion.code;
+          } else {
+            toast({
+              variant: 'destructive',
+              title: '지역 설정 오류',
+              description: '선택한 지역을 찾을 수 없습니다.'
+            });
+            return;
+          }
+        } catch (err) {
+          toast({
+            variant: 'destructive',
+            title: '지역 정보 오류',
+            description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
+          });
+          return;
+        }
+      }
 
       await updateSellerProfile(updateData);
       
@@ -241,6 +293,21 @@ export default function SellerSettings() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="businessAddress">사업장주소/영업활동지역</Label>
+                  <RegionDropdown
+                    selectedProvince={formData.addressProvince}
+                    selectedCity={formData.addressCity}
+                    onSelect={(province, city) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        addressProvince: province,
+                        addressCity: city
+                      }));
+                    }}
+                    required
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="businessNumber">사업자등록번호</Label>
