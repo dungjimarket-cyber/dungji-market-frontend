@@ -17,7 +17,7 @@ export function FindAccountModals({ open, onOpenChange }: { open: boolean; onOpe
             {tab === 'username' ? '아이디 찾기' : '비밀번호 찾기'}
           </DialogTitle>
           <DialogDescription className="text-center text-sm text-gray-500">
-            {tab === 'username' ? '가입한 이메일로 아이디를 찾을 수 있습니다.' : '가입한 이메일과 아이디로 비밀번호를 재설정할 수 있습니다.'}
+            {tab === 'username' ? '가입한 휴대폰 번호로 아이디를 찾을 수 있습니다.' : '가입한 휴대폰 번호로 비밀번호를 재설정할 수 있습니다.'}
           </DialogDescription>
         </DialogHeader>
         <div className="flex mb-4 border-b">
@@ -34,11 +34,23 @@ export function FindAccountModals({ open, onOpenChange }: { open: boolean; onOpe
  * 아이디 찾기 폼
  */
 function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [result, setResult] = useState<string|null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -47,10 +59,10 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
     try {
       // API 호출 경로 - 환경변수가 이미 /api로 끝나는지 확인
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-      const res = await fetch(`${apiUrl}/auth/find-username/`, {
+      const res = await fetch(`${apiUrl}/auth/find-username-by-phone/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ phone_number: phone.replace(/-/g, '') }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -76,9 +88,9 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
           let errorMessage = '';
           
           // 검증 오류 가장 먼저 처리
-          if (err.email) {
-            errorMessage = Array.isArray(err.email) ? err.email[0] : err.email;
-            console.log('이메일 오류 추출:', errorMessage);
+          if (err.phone_number) {
+            errorMessage = Array.isArray(err.phone_number) ? err.phone_number[0] : err.phone_number;
+            console.log('휴대폰 번호 오류 추출:', errorMessage);
           } else if (err.detail) {
             errorMessage = err.detail;
           } else if (typeof err === 'string') {
@@ -127,9 +139,20 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
           <p className="text-red-600 text-sm font-medium">{errorMessage}</p>
         </div>
       )}
-      <label className="block text-sm font-medium text-gray-700">가입 이메일</label>
-      <input type="email" required className="w-full px-3 py-2 border rounded" value={email} onChange={e=>setEmail(e.target.value)} placeholder="example@email.com" />
-      <button type="submit" disabled={loading} className="w-full py-2 rounded bg-blue-600 text-white font-semibold">{loading ? '확인 중...' : '아이디 찾기'}</button>
+      
+      <label className="block text-sm font-medium text-gray-700">휴대폰 번호</label>
+      <input 
+        type="tel" 
+        required 
+        className="w-full px-3 py-2 border rounded" 
+        value={phone} 
+        onChange={handlePhoneChange}
+        placeholder="010-0000-0000"
+        maxLength={13}
+      />
+      <button type="submit" disabled={loading} className="w-full py-2 rounded bg-blue-600 text-white font-semibold">
+        {loading ? '확인 중...' : '아이디 찾기'}
+      </button>
     </form>
   );
 }
@@ -138,12 +161,24 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
  * 비밀번호 찾기 폼
  */
 function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [username, setUsername] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -151,10 +186,10 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     setErrorMessage('');
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-      const res = await fetch(`${apiUrl}/auth/reset-password/`, {
+      const res = await fetch(`${apiUrl}/auth/reset-password-by-phone/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username }),
+        body: JSON.stringify({ phone_number: phone.replace(/-/g, ''), username }),
       });
       if (res.ok) {
         setSent(true);
@@ -231,7 +266,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   
   return sent ? (
     <div className="text-center">
-      <p className="mb-4 text-blue-600 font-bold">임시 비밀번호가 이메일로 전송되었습니다.</p>
+      <p className="mb-4 text-blue-600 font-bold">임시 비밀번호가 SMS로 전송되었습니다.</p>
       <button className="w-full py-2 rounded bg-blue-600 text-white font-semibold" onClick={onClose}>닫기</button>
     </div>
   ) : (
@@ -242,10 +277,18 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           <p className="text-red-600 text-sm font-medium">{errorMessage}</p>
         </div>
       )}
-      <label className="block text-sm font-medium text-gray-700">가입 이메일</label>
-      <input type="email" required className="w-full px-3 py-2 border rounded" value={email} onChange={e=>setEmail(e.target.value)} placeholder="example@email.com" />
-      <label className="block text-sm font-medium text-gray-700">아이디(유저명)</label>
+      <label className="block text-sm font-medium text-gray-700">아이디</label>
       <input type="text" required className="w-full px-3 py-2 border rounded" value={username} onChange={e=>setUsername(e.target.value)} placeholder="아이디" />
+      <label className="block text-sm font-medium text-gray-700">휴대폰 번호</label>
+      <input 
+        type="tel" 
+        required 
+        className="w-full px-3 py-2 border rounded" 
+        value={phone} 
+        onChange={handlePhoneChange}
+        placeholder="010-0000-0000"
+        maxLength={13}
+      />
       <button type="submit" disabled={loading} className="w-full py-2 rounded bg-blue-600 text-white font-semibold">{loading ? '발송 중...' : '임시 비밀번호 발송'}</button>
     </form>
   );

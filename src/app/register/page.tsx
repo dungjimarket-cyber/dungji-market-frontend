@@ -28,11 +28,24 @@ function RegisterPageContent() {
   const socialEmail = searchParams.get('email');
   const socialId = searchParams.get('socialId');
   
+  const [memberType, setMemberType] = useState<'buyer' | 'seller' | null>(null);
   const [signupType, setSignupType] = useState<SignupType>(socialProvider ? 'social' : 'email');
+  
+  // 이메일 도메인 추출
+  const extractEmailDomain = (email: string) => {
+    if (!email || !email.includes('@')) return '';
+    return email.split('@')[1] || '';
+  };
+  
+  const initialEmailDomain = socialEmail ? extractEmailDomain(socialEmail) : '';
+  const isCommonDomain = ['naver.com', 'gmail.com', 'daum.net', 'nate.com', 'kakao.com', 'hanmail.net', 'hotmail.com'].includes(initialEmailDomain);
+  
   const [formData, setFormData] = useState({
     // 공통 필수 필드
     username: '', // 아이디
     email: socialEmail || '', // 이메일
+    emailDomain: isCommonDomain ? initialEmailDomain : (initialEmailDomain ? 'direct' : ''), // 이메일 도메인 (선택된 경우)
+    customEmailDomain: isCommonDomain ? '' : initialEmailDomain, // 직접 입력 도메인
     nickname: '',
     phone: '',
     password: '',
@@ -290,12 +303,15 @@ function RegisterPageContent() {
         return;
       }
       
-      if (!emailChecked || !emailAvailable) {
-        setError('이메일 중복 확인을 해주세요.');
-        setIsLoading(false);
-        const emailSection = document.getElementById('email-section');
-        scrollToInputField(emailSection);
-        return;
+      // 이메일이 입력된 경우에만 중복 확인 필요
+      if (formData.email && formData.email.includes('@')) {
+        if (!emailChecked || !emailAvailable) {
+          setError('이메일 중복 확인을 해주세요.');
+          setIsLoading(false);
+          const emailSection = document.getElementById('email-section');
+          scrollToInputField(emailSection);
+          return;
+        }
       }
     }
 
@@ -470,17 +486,66 @@ function RegisterPageContent() {
             둥지마켓 회원가입
           </h2>
 
-          {/* 회원가입 방식 선택 (소셜 로그인이 아닌 경우에만 표시) */}
-          {!socialProvider && (
+          {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
+          {!socialProvider && !memberType && (
             <div className="mb-6">
-              {!signupType && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                  <p className="text-sm text-blue-800">
-                    <strong>일반회원(참새)</strong>은 공구에 참여하여 상품을 구매할 수 있습니다.<br/>
-                    <strong>판매회원(어미새)</strong>은 공구에 입찰하여 상품을 판매할 수 있습니다.
-                  </p>
-                </div>
-              )}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                <p className="text-sm text-blue-800">
+                  <strong>일반회원(참새)</strong>은 공구에 참여하여 상품을 구매할 수 있습니다.<br/>
+                  <strong>판매회원(어미새)</strong>은 공구에 입찰하여 상품을 판매할 수 있습니다.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMemberType('buyer');
+                    setFormData(prev => ({ ...prev, role: 'buyer' }));
+                  }}
+                  className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
+                >
+                  <div className="mb-2">
+                    <svg className="w-10 h-10 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <div className="font-semibold text-lg">일반회원</div>
+                  <div className="text-sm text-gray-600 mt-2">공구에 참여하여 상품 구매</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMemberType('seller');
+                    setFormData(prev => ({ ...prev, role: 'seller' }));
+                    setSignupType('email'); // 판매회원은 이메일 가입만 가능
+                  }}
+                  className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
+                >
+                  <div className="mb-2">
+                    <svg className="w-10 h-10 mx-auto text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="font-semibold text-lg">판매회원</div>
+                  <div className="text-sm text-gray-600 mt-2">공구에 입찰하여 상품 판매</div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 회원가입 방식 선택 (일반회원만) */}
+          {!socialProvider && memberType === 'buyer' && !signupType && (
+            <div className="mb-6">
+              <button
+                onClick={() => setMemberType(null)}
+                className="mb-4 text-sm text-gray-600 hover:text-gray-800 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                뒤로가기
+              </button>
+              
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
@@ -499,9 +564,8 @@ function RegisterPageContent() {
                     </div>
                   )}
                   <Mail className="w-8 h-8 mx-auto mb-3 text-blue-600" />
-                  <div className="font-semibold text-lg">일반 가입</div>
-                  <div className="text-sm text-gray-600 mt-2">아이디/비밀번호 사용</div>
-                  <div className="text-xs text-green-600 font-medium mt-2">일반회원・판매회원 가능</div>
+                  <div className="font-semibold text-lg">아이디/비밀번호 가입</div>
+                  <div className="text-sm text-gray-600 mt-2">이메일과 비밀번호로 가입</div>
                 </button>
                 <button
                   type="button"
@@ -520,9 +584,8 @@ function RegisterPageContent() {
                     </div>
                   )}
                   <div className="w-8 h-8 mx-auto mb-3 text-3xl">💬</div>
-                  <div className="font-semibold text-lg">간편 가입</div>
-                  <div className="text-sm text-gray-600 mt-2">카카오톡 3초 가입</div>
-                  <div className="text-xs text-orange-600 font-medium mt-2">일반회원만 가능</div>
+                  <div className="font-semibold text-lg">카카오톡 간편가입</div>
+                  <div className="text-sm text-gray-600 mt-2">3초 만에 간편하게 가입</div>
                 </button>
               </div>
             </div>
@@ -608,78 +671,24 @@ function RegisterPageContent() {
           )}
 
           {/* 회원가입 폼 (이메일 가입 또는 소셜 정보가 있는 경우) */}
-          {(signupType === 'email' || socialProvider) && (
+          {((memberType && signupType === 'email') || socialProvider) && (
             <>
-              {/* 회원 유형 선택 */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  회원 유형을 선택해주세요
-                </label>
-                <div className={`grid ${socialProvider === 'kakao' ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, role: 'buyer' }))}
-                    className={`relative p-5 border-2 rounded-xl text-center transition-all ${
-                      formData.role === 'buyer' 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md scale-105' 
-                        : 'border-gray-300 hover:border-gray-400 bg-white hover:shadow-sm'
-                    }`}
-                  >
-                    {formData.role === 'buyer' && (
-                      <div className="absolute top-2 right-2">
-                        <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="mb-2">
-                      <svg className="w-10 h-10 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                    </div>
-                    <div className="font-semibold text-lg">일반회원 (참새)</div>
-                    <div className="text-sm text-gray-600 mt-2">공구 참여하여 상품 구매</div>
-                    <div className="text-xs text-gray-500 mt-1">더 저렴한 가격으로 구매 가능</div>
-                  </button>
-                  {socialProvider !== 'kakao' && (
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, role: 'seller' }))}
-                      className={`relative p-5 border-2 rounded-xl text-center transition-all ${
-                        formData.role === 'seller' 
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md scale-105' 
-                          : 'border-gray-300 hover:border-gray-400 bg-white hover:shadow-sm'
-                      }`}
-                    >
-                      {formData.role === 'seller' && (
-                        <div className="absolute top-2 right-2">
-                          <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                      <div className="mb-2">
-                        <svg className="w-10 h-10 mx-auto text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <div className="font-semibold text-lg">판매회원 (어미새)</div>
-                      <div className="text-sm text-gray-600 mt-2">공구 입찰하여 상품 판매</div>
-                      <div className="text-xs text-gray-500 mt-1">사업자등록증 필요</div>
-                    </button>
-                  )}
-                </div>
-                {socialProvider === 'kakao' && (
-                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      <svg className="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      카카오톡으로는 일반회원만 가입 가능합니다. 판매회원은 일반 회원가입을 이용해주세요.
-                    </p>
-                  </div>
-                )}
-              </div>
+              {/* 뒤로가기 버튼 (판매회원인 경우) */}
+              {memberType === 'seller' && !socialProvider && (
+                <button
+                  onClick={() => {
+                    setMemberType(null);
+                    setSignupType('email');
+                  }}
+                  className="mb-4 text-sm text-gray-600 hover:text-gray-800 flex items-center"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  뒤로가기
+                </button>
+              )}
+              
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
@@ -730,26 +739,85 @@ function RegisterPageContent() {
 
                       <div id="email-section">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                          이메일 <span className="text-red-500">*</span>
+                          이메일 <span className="text-gray-500">(선택)</span>
                         </label>
                         <div className="flex gap-2">
                           <input
                             id="email"
                             name="email"
-                            type="email"
-                            required
+                            type="text"
                             className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="example@email.com"
-                            value={formData.email}
-                            onChange={handleChange}
+                            placeholder="이메일 입력"
+                            value={formData.email.split('@')[0] || ''}
+                            onChange={(e) => {
+                              const emailPrefix = e.target.value;
+                              let fullEmail = emailPrefix;
+                              if (formData.emailDomain === 'direct' && formData.customEmailDomain) {
+                                fullEmail = emailPrefix + '@' + formData.customEmailDomain;
+                              } else if (formData.emailDomain && formData.emailDomain !== 'direct') {
+                                fullEmail = emailPrefix + '@' + formData.emailDomain;
+                              }
+                              setFormData(prev => ({ ...prev, email: fullEmail }));
+                              setEmailChecked(false);
+                              setEmailAvailable(false);
+                            }}
                           />
-                          <button
-                            type="button"
-                            onClick={checkEmail}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          <span className="flex items-center text-gray-700">@</span>
+                          <select
+                            id="emailDomain"
+                            name="emailDomain"
+                            value={formData.emailDomain}
+                            onChange={(e) => {
+                              const domain = e.target.value;
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                emailDomain: domain,
+                                email: domain === 'direct' ? prev.email.split('@')[0] || '' : (prev.email.split('@')[0] || '') + '@' + domain
+                              }));
+                              setEmailChecked(false);
+                              setEmailAvailable(false);
+                            }}
+                            className="appearance-none rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           >
-                            중복확인
-                          </button>
+                            <option value="">선택하세요</option>
+                            <option value="naver.com">naver.com</option>
+                            <option value="gmail.com">gmail.com</option>
+                            <option value="daum.net">daum.net</option>
+                            <option value="nate.com">nate.com</option>
+                            <option value="kakao.com">kakao.com</option>
+                            <option value="hanmail.net">hanmail.net</option>
+                            <option value="hotmail.com">hotmail.com</option>
+                            <option value="direct">직접입력</option>
+                          </select>
+                          {formData.emailDomain === 'direct' && (
+                            <input
+                              id="customEmailDomain"
+                              name="customEmailDomain"
+                              type="text"
+                              placeholder="도메인 입력"
+                              value={formData.customEmailDomain}
+                              onChange={(e) => {
+                                const customDomain = e.target.value;
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  customEmailDomain: customDomain,
+                                  email: (prev.email.split('@')[0] || '') + (customDomain ? '@' + customDomain : '')
+                                }));
+                                setEmailChecked(false);
+                                setEmailAvailable(false);
+                              }}
+                              className="appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          )}
+                          {formData.email && formData.email.includes('@') && (
+                            <button
+                              type="button"
+                              onClick={checkEmail}
+                              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                              중복확인
+                            </button>
+                          )}
                         </div>
                         {emailChecked && (
                           <p className={`text-sm mt-1 ${emailAvailable ? 'text-green-600' : 'text-red-600'}`}>
