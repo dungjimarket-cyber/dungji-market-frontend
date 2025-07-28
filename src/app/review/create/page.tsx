@@ -51,6 +51,24 @@ function ReviewCreateContent() {
           <ReviewForm groupbuyId={parseInt(groupbuyId)} />
         </CardContent>
       </Card>
+      
+      {/* 노쇼 신고 안내 카드 */}
+      <Card className="mt-6 border-orange-200 bg-orange-50">
+        <CardHeader>
+          <CardTitle className="text-lg text-orange-800">거래 상대방이 나타나지 않으셨나요?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-700 mb-4">
+            약속된 거래 시간에 상대방이 나타나지 않거나 연락이 두절된 경우, 
+            노쇼 신고를 통해 불이익을 받지 않도록 조치하세요.
+          </p>
+          <Link href={`/noshow-report/create?groupbuyId=${groupbuyId}`}>
+            <Button variant="outline" className="border-orange-500 text-orange-700 hover:bg-orange-100">
+              노쇼 신고하기
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

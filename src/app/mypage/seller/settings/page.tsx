@@ -29,7 +29,6 @@ export default function SellerSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
     nickname: '',
     description: '',
     phone: '',
@@ -59,7 +58,6 @@ export default function SellerSettings() {
         
         // 폼 데이터 초기화
         setFormData({
-          name: data.name || '',
           nickname: data.nickname || data.username || '',
           description: data.description || '',
           phone: data.phone || '',
@@ -124,7 +122,6 @@ export default function SellerSettings() {
     try {
       // API 호출을 위한 데이터 준비
       const updateData: any = {
-        name: formData.name,
         nickname: formData.nickname,
         description: formData.description,
         phone: formData.phone,
@@ -261,25 +258,16 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nickname">닉네임</Label>
+                  <Label htmlFor="nickname">닉네임 (상호명)</Label>
                   <Input
                     id="nickname"
                     name="nickname"
                     value={formData.nickname}
                     onChange={handleChange}
-                    placeholder="닉네임을 입력하세요"
+                    placeholder="닉네임 또는 상호명을 입력하세요"
+                    required
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="name">판매자명</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="판매자명을 입력하세요"
-                  />
+                  <p className="text-sm text-gray-500">판매자님의 닉네임이 공구에 표시됩니다.</p>
                 </div>
 
                 <div className="space-y-2">

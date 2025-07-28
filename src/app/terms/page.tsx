@@ -46,18 +46,26 @@ export default function TermsPage() {
             둥지마켓을 이용하시기 전에 해당하는 이용약관을 확인해주세요.
           </p>
           
-          <div className="flex justify-center space-x-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex justify-center space-x-6">
+              <Link
+                href="/terms/general"
+                className="btn-animated btn-primary py-3 px-6"
+              >
+                <span>일반 회원 약관 보기</span>
+              </Link>
+              <Link
+                href="/terms/seller"
+                className="btn-animated btn-secondary py-3 px-6"
+              >
+                <span>판매 회원 약관 보기</span>
+              </Link>
+            </div>
             <Link
-              href="/terms/general"
-              className="btn-animated btn-primary py-3 px-6"
+              href="/terms/privacy"
+              className="text-emerald-600 hover:text-emerald-800 underline"
             >
-              <span>일반 회원 약관 보기</span>
-            </Link>
-            <Link
-              href="/terms/seller"
-              className="btn-animated btn-secondary py-3 px-6"
-            >
-              <span>판매 회원 약관 보기</span>
+              개인정보처리방침 보기
             </Link>
           </div>
         </div>

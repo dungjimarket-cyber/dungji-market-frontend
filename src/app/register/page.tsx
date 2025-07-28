@@ -31,7 +31,8 @@ function RegisterPageContent() {
   const [signupType, setSignupType] = useState<SignupType>(socialProvider ? 'social' : 'email');
   const [formData, setFormData] = useState({
     // 공통 필수 필드
-    email: socialEmail || '', // 이메일 로그인인 경우 아이디로 사용
+    username: '', // 아이디
+    email: socialEmail || '', // 이메일
     nickname: '',
     phone: '',
     password: '',
@@ -62,6 +63,8 @@ function RegisterPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [nicknameChecked, setNicknameChecked] = useState(false);
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
+  const [usernameChecked, setUsernameChecked] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(false);
   const [emailChecked, setEmailChecked] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(false);
   // const [phoneVerified] = useState(false); // 휴대폰 인증 기능 임시 비활성화
@@ -83,6 +86,11 @@ function RegisterPageContent() {
         setNicknameChecked(false);
         setNicknameAvailable(false);
       }
+      // 아이디가 변경되면 중복 체크 상태 리셋
+      if (name === 'username') {
+        setUsernameChecked(false);
+        setUsernameAvailable(false);
+      }
       // 이메일이 변경되면 중복 체크 상태 리셋
       if (name === 'email') {
         setEmailChecked(false);
@@ -94,6 +102,43 @@ function RegisterPageContent() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setFormData(prev => ({ ...prev, business_reg_image: file }));
+  };
+
+  // 아이디 중복 체크
+  const checkUsername = async () => {
+    if (!formData.username) {
+      setError('아이디를 입력해주세요.');
+      return;
+    }
+
+    // 아이디 형식 검증 (영문, 숫자, _, - 만 허용, 4-20자)
+    const usernameRegex = /^[a-zA-Z0-9_-]{4,20}$/;
+    if (!usernameRegex.test(formData.username)) {
+      setError('아이디는 4-20자의 영문, 숫자, _, -만 사용할 수 있습니다.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-username/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: formData.username }),
+      });
+
+      const data = await response.json();
+      setUsernameChecked(true);
+      setUsernameAvailable(data.available);
+      
+      if (!data.available) {
+        setError('이미 사용 중인 아이디입니다.');
+      } else {
+        setError('');
+      }
+    } catch (err) {
+      setError('아이디 중복 확인 중 오류가 발생했습니다.');
+    }
   };
 
   // 이메일 중복 체크
@@ -235,13 +280,23 @@ function RegisterPageContent() {
       return;
     }
 
-    // 이메일 로그인인 경우 이메일 중복 확인 필요
-    if (signupType === 'email' && (!emailChecked || !emailAvailable)) {
-      setError('이메일 중복 확인을 해주세요.');
-      setIsLoading(false);
-      const emailSection = document.getElementById('email-section');
-      scrollToInputField(emailSection);
-      return;
+    // 이메일 로그인인 경우 아이디와 이메일 중복 확인 필요
+    if (signupType === 'email') {
+      if (!usernameChecked || !usernameAvailable) {
+        setError('아이디 중복 확인을 해주세요.');
+        setIsLoading(false);
+        const usernameSection = document.getElementById('username-section');
+        scrollToInputField(usernameSection);
+        return;
+      }
+      
+      if (!emailChecked || !emailAvailable) {
+        setError('이메일 중복 확인을 해주세요.');
+        setIsLoading(false);
+        const emailSection = document.getElementById('email-section');
+        scrollToInputField(emailSection);
+        return;
+      }
     }
 
     // 전화번호 인증 기능 임시 비활성화
@@ -308,8 +363,8 @@ function RegisterPageContent() {
       
       // 이메일 로그인인 경우
       if (signupType === 'email') {
+        submitData.append('username', formData.username); // 아이디
         submitData.append('email', formData.email);
-        submitData.append('username', formData.email); // 이메일을 username으로 사용
         submitData.append('password', formData.password);
       } else {
         // 소셜 로그인인 경우
@@ -388,7 +443,7 @@ function RegisterPageContent() {
       // 회원가입 성공 후 처리
       if (signupType === 'email') {
         // 이메일 로그인인 경우 자동 로그인
-        const loginResult = await login(formData.email, formData.password);
+        const loginResult = await login(formData.username, formData.password);
         if (loginResult.success) {
           // 환영 모달 표시
           setShowWelcomeModal(true);
@@ -418,32 +473,56 @@ function RegisterPageContent() {
           {/* 회원가입 방식 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && (
             <div className="mb-6">
+              {!signupType && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                  <p className="text-sm text-blue-800">
+                    <strong>일반회원(참새)</strong>은 공구에 참여하여 상품을 구매할 수 있습니다.<br/>
+                    <strong>판매회원(어미새)</strong>은 공구에 입찰하여 상품을 판매할 수 있습니다.
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => setSignupType('email')}
-                  className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                  className={`relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg ${
                     signupType === 'email' 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 scale-105 shadow-md' 
+                      : 'border-gray-300 hover:border-gray-400 bg-white hover:scale-105'
                   }`}
                 >
-                  <Mail className="w-6 h-6 mx-auto mb-2" />
-                  <div className="font-semibold">이메일로 가입</div>
-                  <div className="text-sm text-gray-500 mt-1">이메일/비밀번호 사용</div>
+                  {signupType === 'email' && (
+                    <div className="absolute top-2 right-2">
+                      <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                  <Mail className="w-8 h-8 mx-auto mb-3 text-blue-600" />
+                  <div className="font-semibold text-lg">일반 가입</div>
+                  <div className="text-sm text-gray-600 mt-2">아이디/비밀번호 사용</div>
+                  <div className="text-xs text-green-600 font-medium mt-2">일반회원・판매회원 가능</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSignupType('social')}
-                  className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                  className={`relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg ${
                     signupType === 'social' 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? 'border-yellow-500 bg-yellow-50 text-yellow-700 scale-105 shadow-md' 
+                      : 'border-gray-300 hover:border-gray-400 bg-white hover:scale-105'
                   }`}
                 >
-                  <div className="w-6 h-6 mx-auto mb-2 text-2xl">💬</div>
-                  <div className="font-semibold">간편 가입</div>
-                  <div className="text-sm text-gray-500 mt-1">카카오톡으로 가입</div>
+                  {signupType === 'social' && (
+                    <div className="absolute top-2 right-2">
+                      <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="w-8 h-8 mx-auto mb-3 text-3xl">💬</div>
+                  <div className="font-semibold text-lg">간편 가입</div>
+                  <div className="text-sm text-gray-600 mt-2">카카오톡 3초 가입</div>
+                  <div className="text-xs text-orange-600 font-medium mt-2">일반회원만 가능</div>
                 </button>
               </div>
             </div>
@@ -533,35 +612,73 @@ function RegisterPageContent() {
             <>
               {/* 회원 유형 선택 */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  회원 유형
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  회원 유형을 선택해주세요
                 </label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className={`grid ${socialProvider === 'kakao' ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, role: 'buyer' }))}
-                    className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                    className={`relative p-5 border-2 rounded-xl text-center transition-all ${
                       formData.role === 'buyer' 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md scale-105' 
+                        : 'border-gray-300 hover:border-gray-400 bg-white hover:shadow-sm'
                     }`}
                   >
-                    <div className="font-semibold">일반회원</div>
-                    <div className="text-sm text-gray-500 mt-1">상품 구매 전용</div>
+                    {formData.role === 'buyer' && (
+                      <div className="absolute top-2 right-2">
+                        <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="mb-2">
+                      <svg className="w-10 h-10 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                    </div>
+                    <div className="font-semibold text-lg">일반회원 (참새)</div>
+                    <div className="text-sm text-gray-600 mt-2">공구 참여하여 상품 구매</div>
+                    <div className="text-xs text-gray-500 mt-1">더 저렴한 가격으로 구매 가능</div>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, role: 'seller' }))}
-                    className={`p-4 border-2 rounded-lg text-center transition-colors ${
-                      formData.role === 'seller' 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <div className="font-semibold">판매회원</div>
-                    <div className="text-sm text-gray-500 mt-1">상품 판매 가능</div>
-                  </button>
+                  {socialProvider !== 'kakao' && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, role: 'seller' }))}
+                      className={`relative p-5 border-2 rounded-xl text-center transition-all ${
+                        formData.role === 'seller' 
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md scale-105' 
+                          : 'border-gray-300 hover:border-gray-400 bg-white hover:shadow-sm'
+                      }`}
+                    >
+                      {formData.role === 'seller' && (
+                        <div className="absolute top-2 right-2">
+                          <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="mb-2">
+                        <svg className="w-10 h-10 mx-auto text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <div className="font-semibold text-lg">판매회원 (어미새)</div>
+                      <div className="text-sm text-gray-600 mt-2">공구 입찰하여 상품 판매</div>
+                      <div className="text-xs text-gray-500 mt-1">사업자등록증 필요</div>
+                    </button>
+                  )}
                 </div>
+                {socialProvider === 'kakao' && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <svg className="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      카카오톡으로는 일반회원만 가입 가능합니다. 판매회원은 일반 회원가입을 이용해주세요.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -578,37 +695,69 @@ function RegisterPageContent() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">기본 정보</h3>
                   
-                  {/* 이메일 (이메일 로그인인 경우만) */}
+                  {/* 아이디 (이메일 로그인인 경우만) */}
                   {signupType === 'email' && (
-                    <div id="email-section">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        아이디(이메일) <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
-                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="example@email.com"
-                          value={formData.email}
-                          onChange={handleChange}
-                        />
-                        <button
-                          type="button"
-                          onClick={checkEmail}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                          중복확인
-                        </button>
+                    <>
+                      <div id="username-section">
+                        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                          아이디 <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            id="username"
+                            name="username"
+                            type="text"
+                            required
+                            className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="영문, 숫자 4-20자"
+                            value={formData.username}
+                            onChange={handleChange}
+                          />
+                          <button
+                            type="button"
+                            onClick={checkUsername}
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            중복확인
+                          </button>
+                        </div>
+                        {usernameChecked && (
+                          <p className={`text-sm mt-1 ${usernameAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                            {usernameAvailable ? '✓ 사용 가능한 아이디입니다.' : '✗ 이미 사용 중인 아이디입니다.'}
+                          </p>
+                        )}
                       </div>
-                      {emailChecked && (
-                        <p className={`text-sm mt-1 ${emailAvailable ? 'text-green-600' : 'text-red-600'}`}>
-                          {emailAvailable ? '✓ 사용 가능한 이메일입니다.' : '✗ 이미 사용 중인 이메일입니다.'}
-                        </p>
-                      )}
-                    </div>
+
+                      <div id="email-section">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                          이메일 <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="example@email.com"
+                            value={formData.email}
+                            onChange={handleChange}
+                          />
+                          <button
+                            type="button"
+                            onClick={checkEmail}
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            중복확인
+                          </button>
+                        </div>
+                        {emailChecked && (
+                          <p className={`text-sm mt-1 ${emailAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                            {emailAvailable ? '✓ 사용 가능한 이메일입니다.' : '✗ 이미 사용 중인 이메일입니다.'}
+                          </p>
+                        )}
+                      </div>
+                    </>
                   )}
 
                   {/* 비밀번호 (이메일 로그인인 경우만) */}

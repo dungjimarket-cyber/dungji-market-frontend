@@ -42,7 +42,7 @@ function LoginSkeleton() {
  */
 function LoginForm() {
   const [findModalOpen, setFindModalOpen] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -65,7 +65,7 @@ function LoginForm() {
    */
   useEffect(() => {
     clearError();
-  }, [email, password]);
+  }, [username, password]);
 
   /**
    * 로그인 양식 제출 처리 함수
@@ -76,13 +76,13 @@ function LoginForm() {
     setLoading(true);
     clearError();
     
-    console.log('로그인 시도:', { email, password: '***' });
+    console.log('로그인 시도:', { username, password: '***' });
     
     try {
       // 사용자 입력 유효성 검사
-      if (!email || !email.includes('@')) {
-        setErrorMessage('유효한 이메일 주소를 입력해주세요.');
-        setErrorCode('invalid_email');
+      if (!username) {
+        setErrorMessage('아이디를 입력해주세요.');
+        setErrorCode('invalid_username');
         setLoading(false);
         return;
       }
@@ -95,7 +95,7 @@ function LoginForm() {
       }
       
       // AuthContext의 login 함수 호출
-      const result = await login(email, password);
+      const result = await login(username, password);
       
       if (result.success) {
         // 로그인 성공 처리
@@ -155,7 +155,7 @@ function LoginForm() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-gray-50 text-gray-500">
-                또는 이메일로 로그인
+                또는 아이디로 로그인
               </span>
             </div>
           </div>
@@ -163,17 +163,17 @@ function LoginForm() {
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm space-y-3">
               <div>
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">아이디</label>
                 <input
-                  id="email-address"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
                   required
-                  className={`appearance-none relative block w-full px-3 py-2 border ${errorCode === 'invalid_email' || errorCode === 'invalid_credentials' ? 'border-red-500' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                  placeholder="이메일 주소"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${errorCode === 'invalid_username' || errorCode === 'invalid_credentials' ? 'border-red-500' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                  placeholder="아이디"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
               <div>

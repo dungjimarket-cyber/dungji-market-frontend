@@ -419,6 +419,85 @@ export default function AdminPage() {
     }
   };
 
+  // 사업자등록증 업로드 핸들러
+  const handleUploadBusinessLicense = async (userId: string) => {
+    // 파일 선택을 위한 input 생성
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      // 파일 타입 검증
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: '파일 형식 오류',
+          description: '이미지 파일만 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      // 파일 크기 검증 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: '파일 크기 초과',
+          description: '파일 크기는 10MB를 초과할 수 없습니다.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      setProcessingVerification(userId);
+      
+      try {
+        const formData = new FormData();
+        formData.append('business_license', file);
+        
+        const token = localStorage.getItem('dungji_auth_token');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/upload_business_license/${userId}/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '업로드 실패');
+        }
+        
+        const data = await response.json();
+        
+        toast({
+          title: '업로드 완료',
+          description: '사업자등록증이 성공적으로 업로드되었습니다.',
+        });
+        
+        // 목록 업데이트
+        setPendingVerifications(pendingVerifications.map(user => 
+          user.id === userId 
+            ? { ...user, business_license_image: data.business_license_image }
+            : user
+        ));
+        
+      } catch (error: any) {
+        toast({
+          title: '업로드 실패',
+          description: error.message || '사업자등록증 업로드 중 오류가 발생했습니다.',
+          variant: 'destructive',
+        });
+      } finally {
+        setProcessingVerification(null);
+      }
+    };
+    
+    input.click();
+  };
+
   // 특정 상품 이미지 업데이트 핸들러
   const handleUpdateProductImage = async (productId: string) => {
     if (!selectedFile) {
@@ -582,7 +661,17 @@ export default function AdminPage() {
                               </a>
                             </div>
                           ) : (
-                            <p className="text-sm text-muted-foreground">등록증 이미지 없음</p>
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-2">등록증 이미지 없음</p>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleUploadBusinessLicense(user.id)}
+                              >
+                                <Upload className="h-4 w-4 mr-1" />
+                                사업자등록증 업로드
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>

@@ -26,14 +26,11 @@ export default function GeneralTermsPage() {
       </div>
 
       <h1 className="text-3xl font-bold mb-2 text-center">둥지마켓 회원가입 약관</h1>
-      <p className="text-center text-gray-500 mb-8">일반 회원용</p>
+      <p className="text-center text-gray-500 mb-8">일반 회원용 | 시행일: 2025년 1월 28일</p>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
         <div className="p-6">
           <div className="mb-6">
-            <p className="text-sm text-gray-500 italic mb-4">
-              ※ 본 약관은 예시이며, 정식 운영 시 법률 자문을 거치는 것이 권장됩니다.
-            </p>
             
             <h2 className="text-xl font-semibold mb-3">제1조 (목적)</h2>
             <p className="mb-4">
@@ -144,15 +141,96 @@ export default function GeneralTermsPage() {
               </li>
             </ul>
 
-            <h2 className="text-xl font-semibold mb-3">제9조 (기타 조항)</h2>
+            <h2 className="text-xl font-semibold mb-3">제9조 (공동구매 참여 및 의무)</h2>
             <ul className="list-disc pl-6 mb-4 space-y-2">
               <li>
-                본 약관에 명시되지 않은 사항은 관련 법령 및 회사의 개별 정책에 따릅니다.
+                회원은 공구 참여 시 해당 공구의 조건을 충분히 숙지하고 참여해야 합니다.
+              </li>
+              <li>
+                공구 참여 후 정당한 사유 없이 반복적으로 취소하는 경우 서비스 이용이 제한될 수 있습니다.
+              </li>
+              <li>
+                최종 선택된 입찰에 대해 12시간 내에 구매 의사를 확정해야 하며, 미응답 시 구매 포기로 간주됩니다.
+              </li>
+              <li>
+                노쇼(No-show) 발생 시 상대방은 노쇼 신고를 할 수 있으며, 누적 시 패널티가 부과됩니다.
+              </li>
+            </ul>
+
+            <h2 className="text-xl font-semibold mb-3">제10조 (지적재산권)</h2>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                서비스에 대한 저작권 및 지적재산권은 회사에 귀속됩니다.
+              </li>
+              <li>
+                회원은 서비스를 이용함으로써 얻은 정보를 회사의 사전 승낙 없이 복제, 송신, 출판, 배포, 방송 기타 방법에 의하여 
+                영리목적으로 이용하거나 제3자에게 이용하게 하여서는 안됩니다.
+              </li>
+              <li>
+                회원이 서비스 내에 게시한 게시물의 저작권은 해당 게시물의 저작자에게 귀속됩니다.
+              </li>
+            </ul>
+
+            <h2 className="text-xl font-semibold mb-3">제11조 (손해배상)</h2>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                회사는 무료로 제공하는 서비스와 관련하여 회원에게 어떠한 손해가 발생하더라도 동 손해가 회사의 고의 또는 
+                중대한 과실로 인한 손해를 제외하고 이에 대하여 책임을 부담하지 않습니다.
+              </li>
+              <li>
+                회원이 본 약관의 규정을 위반함으로 인하여 회사에 손해가 발생하게 되는 경우, 
+                본 약관을 위반한 회원은 회사에 발생하는 모든 손해를 배상할 책임이 있습니다.
+              </li>
+            </ul>
+
+            <h2 className="text-xl font-semibold mb-3">제12조 (면책조항)</h2>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                회사는 천재지변 또는 이에 준하는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.
+              </li>
+              <li>
+                회사는 회원의 귀책사유로 인한 서비스 이용의 장애에 대하여 책임을 지지 않습니다.
+              </li>
+              <li>
+                회사는 회원이 서비스를 이용하여 기대하는 수익을 얻지 못한 것에 대하여 책임을 지지 않으며, 
+                서비스를 통하여 얻은 자료로 인한 손해에 관하여 책임을 지지 않습니다.
+              </li>
+              <li>
+                회사는 회원이 게재한 정보, 자료, 사실의 신뢰도, 정확성 등의 내용에 관하여는 책임을 지지 않습니다.
+              </li>
+            </ul>
+
+            <h2 className="text-xl font-semibold mb-3">제13조 (분쟁해결)</h2>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                회사는 회원이 제기하는 정당한 의견이나 불만을 반영하고 그 피해를 보상처리하기 위하여 고객센터를 설치·운영합니다.
+              </li>
+              <li>
+                회사는 회원으로부터 제출되는 불만사항 및 의견은 우선적으로 그 사항을 처리합니다. 
+                다만, 신속한 처리가 곤란한 경우에는 회원에게 그 사유와 처리일정을 즉시 통보합니다.
+              </li>
+              <li>
+                회사와 회원 간에 발생한 전자상거래 분쟁과 관련하여 회원의 피해구제신청이 있는 경우에는 
+                공정거래위원회 또는 시·도지사가 의뢰하는 분쟁조정기관의 조정에 따를 수 있습니다.
+              </li>
+            </ul>
+
+            <h2 className="text-xl font-semibold mb-3">제14조 (준거법 및 관할법원)</h2>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                본 약관에 명시되지 않은 사항은 「전자상거래 등에서의 소비자보호에 관한 법률」, 「약관의 규제에 관한 법률」, 
+                「전자문서 및 전자거래 기본법」, 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」, 「개인정보보호법」 등 
+                관련 법령의 규정에 따릅니다.
               </li>
               <li>
                 회사와 회원 간 분쟁 발생 시 관할 법원은 회사의 본사 소재지를 관할하는 법원으로 합니다.
               </li>
             </ul>
+
+            <h2 className="text-xl font-semibold mb-3">부칙</h2>
+            <p className="mb-4">
+              이 약관은 2025년 1월 28일부터 시행합니다.
+            </p>
           </div>
         </div>
       </div>
