@@ -15,22 +15,27 @@ import { GroupBuy } from '@/types/groupbuy';
  */
 export function calculateGroupBuyStatus(status: string, startTimeStr: string, endTimeStr: string): string {
   // 이미 완료된 상태들은 그대로 반환
-  if (['completed', 'cancelled', 'seller_confirmation'].includes(status)) {
-    return status;
+  if (['completed', 'cancelled'].includes(status)) {
+    return 'completed';
   }
   
   const now = new Date();
   const startTime = new Date(startTimeStr);
   const endTime = new Date(endTimeStr);
   
-  // 백엔드가 제대로 상태를 업데이트하지 않는 경우를 위한 시간 기반 상태 계산
-  // 공구 마감 시간이 지났으면 voting(최종선택중) 상태로
+  // 공구 마감 시간이 지났으면 최종선택중 또는 종료 상태로
   if (now >= endTime) {
-    return 'voting';
+    // voting, seller_confirmation 상태는 최종선택중으로 표시
+    if (['voting', 'seller_confirmation', 'final_selection'].includes(status)) {
+      return 'voting';
+    }
+    // 그 외는 종료로 표시
+    return 'completed';
   }
   
   // 마감 시간 전이면 백엔드 상태를 그대로 사용
-  // recruiting 또는 bidding 상태는 실제 입찰 여부에 따라 백엔드에서 관리
+  // recruiting: 입찰이 없는 상태 (모집중)
+  // bidding: 입찰이 있는 상태 (입찰중)
   return status;
 }
 

@@ -178,6 +178,19 @@ function RegisterPageContent() {
     setFormData(prev => ({ ...prev, phone: formatted }));
     // 휴대폰 인증 기능 임시 비활성화
   };
+  
+  // 사업자등록번호 포맷팅
+  const formatBusinessRegNumber = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 5) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 5)}-${numbers.slice(5, 10)}`;
+  };
+  
+  const handleBusinessRegNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatBusinessRegNumber(e.target.value);
+    setFormData(prev => ({ ...prev, business_reg_number: formatted }));
+  };
 
   // 휴대폰 인증 기능 임시 비활성화 - 사용하지 않는 함수들 주석 처리
   // const requestPhoneVerification = async () => { ... };
@@ -273,6 +286,15 @@ function RegisterPageContent() {
         scrollToInputField(businessRegInput);
         return;
       }
+      
+      // 판매자는 사업장 주소 필수
+      if (!formData.region_province || !formData.region_city) {
+        setError('사업장 주소를 선택해주세요.');
+        setIsLoading(false);
+        const regionSection = document.querySelector('[data-region-dropdown]');
+        scrollToInputField(regionSection as HTMLElement);
+        return;
+      }
     }
 
     try {
@@ -338,6 +360,12 @@ function RegisterPageContent() {
         submitData.append('business_name', formData.business_name || formData.nickname);
         submitData.append('business_reg_number', formData.business_reg_number);
         submitData.append('is_remote_sales_enabled', formData.is_remote_sales.toString());
+        
+        // 사업장 주소 추가 - 시/도와 시/군/구를 합쳐서 전송
+        if (formData.region_province && formData.region_city) {
+          const businessAddress = `${formData.region_province} ${formData.region_city}`;
+          submitData.append('business_address', businessAddress);
+        }
         
         if (formData.is_remote_sales && formData.business_reg_image) {
           submitData.append('business_reg_image', formData.business_reg_image);
@@ -689,14 +717,16 @@ function RegisterPageContent() {
                   {/* 주요 활동지역 */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {formData.role === 'seller' ? '사업장 주소 / 영업활동지역' : '주요 활동지역'} (선택)
+                      {formData.role === 'seller' ? '사업장 주소 / 영업활동지역' : '주요 활동지역'} {formData.role === 'seller' ? <span className="text-red-500">*</span> : '(선택)'}
                     </label>
-                    <RegionDropdown
-                      selectedProvince={formData.region_province}
-                      selectedCity={formData.region_city}
-                      onSelect={(province, city) => handleRegionSelect(province, city)}
-                      required={false}
-                    />
+                    <div data-region-dropdown>
+                      <RegionDropdown
+                        selectedProvince={formData.region_province}
+                        selectedCity={formData.region_city}
+                        onSelect={(province, city) => handleRegionSelect(province, city)}
+                        required={formData.role === 'seller'}
+                      />
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
                       예: 경기도 하남시, 서울시 강남구, 강원도 양양군
                     </p>
@@ -721,7 +751,8 @@ function RegisterPageContent() {
                         className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         placeholder="000-00-00000"
                         value={formData.business_reg_number}
-                        onChange={handleChange}
+                        onChange={handleBusinessRegNumberChange}
+                        maxLength={12}
                       />
                       <p className="text-xs text-gray-500 mt-1">사업자 확인용, 거래 사고 방지를 위한 최소한의 인증절차</p>
                     </div>

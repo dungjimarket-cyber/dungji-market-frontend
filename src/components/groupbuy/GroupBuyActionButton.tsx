@@ -50,44 +50,63 @@ export default function GroupBuyActionButton({
   });
 
   const handleClick = () => {
-    // 판매회원은 입찰 기록을 보거나 입찰 관리 페이지로 이동
+    // 판매회원은 상세 페이지에서 입찰 처리하도록 이벤트 발생
     if (isSeller) {
-      // 입찰 기록 모달 표시 또는 관리 페이지로 링크 시도
-      console.log('판매회원: 입찰 기록/관리 접근', {
-        groupBuyId: groupBuy.id,
-        isSeller
-      });
-      
-      // 판매자 대시보드로 이동
-      window.location.href = `/seller-dashboard?groupBuyId=${groupBuy.id}`;
+      // 부모 컴포넌트에 입찰 이벤트 전달
+      if (onRefresh) {
+        // onRefresh를 입찰 모달 오픈 용도로 재활용
+        onRefresh();
+      }
       return;
     }
     
-    // 일반 구매회원은 입찰 모달 표시
+    // 일반 구매회원은 참여 모달 표시
     if (isRecruiting && !isFull && !isCreator) {
       setIsModalOpen(true);
     }
   };
 
-  // 판매회원이거나 이미 참여한 공구인 경우 버튼 표시하지 않음
-  if (isSeller || isParticipating) return null;
+  // 버튼 텍스트 결정
+  const getButtonText = () => {
+    if (isCreator) return '내가 만든 공구';
+    if (!isRecruiting) return '종료된 공구';
+    if (isFull) return '인원 마감';
+    
+    // 판매회원인 경우
+    if (isSeller) {
+      return '공구 입찰하기';
+    }
+    
+    // 일반회원인 경우
+    if (isParticipating) {
+      return '참여 완료';
+    }
+    
+    if (!hasSellerMembers) {
+      return '판매회원 없음';
+    }
+    
+    return '공구 참여하기';
+  };
+
+  // 버튼 비활성화 조건
+  const isDisabled = () => {
+    if (!isRecruiting) return true;
+    if (isFull) return true;
+    if (isCreator) return true;
+    if (isParticipating) return true;
+    if (!isSeller && !hasSellerMembers) return true;
+    return false;
+  };
 
   return (
     <>
       <Button 
         className="w-full py-6 text-lg font-bold" 
-        disabled={!isRecruiting || isFull || isCreator || !hasSellerMembers}
+        disabled={isDisabled()}
         onClick={handleClick}
       >
-        {isCreator
-          ? '내가 만든 공구'
-          : !isRecruiting
-            ? '종료된 공구'
-            : isFull
-              ? '인원 마감'
-              : !hasSellerMembers
-                ? '판매회원 없음'
-                : '공구 참여하기'}
+        {getButtonText()}
       </Button>
 
       {/* 공구 참여 모달 */}

@@ -713,7 +713,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               isSeller={!!isSeller}
               isParticipating={participationStatus?.is_participating || false}
               hasSellerMembers={sellerCount > 0}
-              onRefresh={refreshParticipationStatus}
+              onRefresh={isSeller ? () => setIsBidModalOpen(true) : refreshParticipationStatus}
               groupBuy={{
                 id: Number(id),
                 title: groupBuy.title,

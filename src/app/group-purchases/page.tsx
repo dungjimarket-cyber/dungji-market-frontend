@@ -81,18 +81,18 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (activeTab === 'completed') {
-        // 종료 탭: 마감된 공구들
+        // 종료 탭: 종료된 공구들 (voting, final_selection, seller_confirmation, completed, cancelled)
         params.append('status', 'ended');
       } else if (activeTab === 'all') {
         // 전체 탭은 모든 상태 포함
       } else {
-        // 인기순, 최신순 탭은 진행중인 것만
+        // 인기순, 최신순 탭은 진행중인 것만 (recruiting, bidding)
         params.append('status', 'active');
       }
       
       // 탭별 정렬 설정
-      // 인기순 탭은 항상 참여자순으로 정렬
       if (activeTab === 'popular') {
+        // 인기순: 참여자 많은 순으로 정렬
         params.append('sort', 'popular');
       } else {
         // 나머지 탭들은 모두 최신순으로 정렬
@@ -154,23 +154,7 @@ function GroupPurchasesPageContent() {
       
       let data = await response.json();
       
-      // 프론트엔드에서 추가 필터링 - 탭별로 상태 검증
-      if (activeTab === 'popular' || activeTab === 'new') {
-        // 인기순, 최신순은 진행중인 공구만 표시 (recruiting, bidding 상태)
-        data = data.filter((gb: GroupBuy) => {
-          const actualStatus = gb.status;
-          return actualStatus === 'recruiting' || actualStatus === 'bidding';
-        });
-      } else if (activeTab === 'completed') {
-        // 종료 탭은 종료된 공구만 표시 (voting, seller_confirmation, completed, cancelled 등)
-        data = data.filter((gb: GroupBuy) => {
-          const actualStatus = gb.status;
-          // 공구 시간이 종료된 모든 상태 포함
-          return actualStatus === 'voting' || actualStatus === 'seller_confirmation' || 
-                 actualStatus === 'completed' || actualStatus === 'cancelled' || 
-                 actualStatus === 'ended';
-        });
-      }
+      // 프론트엔드에서 추가 필터링은 제거 - 백엔드에서 처리하도록 함
       // 전체 탭은 모든 공구 표시
       
       setGroupBuys(data);
