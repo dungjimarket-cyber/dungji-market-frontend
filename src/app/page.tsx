@@ -117,7 +117,7 @@ function HomeContent() {
         if (response.ok) {
           const data = await response.json();
           // 참여한 공구 ID 목록 추출
-          const participationIds = data.map((p: any) => p.groupbuy_id);
+          const participationIds = data.map((p: any) => p.groupbuy);
           setUserParticipations(participationIds);
         }
       }
