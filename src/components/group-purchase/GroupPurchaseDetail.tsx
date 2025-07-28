@@ -1231,7 +1231,11 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
                     </div>
                   ) : (
                     <span className="font-medium px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
-                      {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region_name || groupBuy.region || '지역한정'}
+                      {groupBuy.region_type === 'nationwide' 
+                        ? '전국' 
+                        : groupBuy.regions && groupBuy.regions.length > 0
+                          ? groupBuy.regions.map(r => r.name).join(', ')
+                          : groupBuy.region_name || groupBuy.region || '미지정'}
                     </span>
                   )}
                 </div>

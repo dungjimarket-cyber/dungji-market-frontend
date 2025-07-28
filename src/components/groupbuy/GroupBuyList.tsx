@@ -59,6 +59,7 @@ interface GroupBuy {
   // 지역 관련 정보
   region_type?: string; // 지역 유형 (local, nationwide)
   region?: string; // 지역명 (서울, 부산 등)
+  region_name?: string; // 지역 상세명
   regions?: Array<{
     id: number;
     name: string;
@@ -168,7 +169,11 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                       {/* 지역 정보 표시 */}
                       {groupBuy.region_type && (
                         <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                          {groupBuy.region_type === 'nationwide' ? '전국' : groupBuy.region || '지역한정'}
+                          {groupBuy.region_type === 'nationwide' 
+                            ? '전국' 
+                            : groupBuy.regions && groupBuy.regions.length > 0
+                              ? groupBuy.regions.map(r => r.name).join(', ')
+                              : groupBuy.region_name || groupBuy.region || '미지정'}
                         </span>
                       )}
                     </div>
