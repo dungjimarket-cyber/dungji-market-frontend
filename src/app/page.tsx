@@ -10,6 +10,7 @@ import { MobileHeader } from '@/components/navigation/MobileHeader';
 import { IoMdClose } from 'react-icons/io';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { getSellerBids } from '@/lib/api/bidService';
 
 /**
  * 메인 홈페이지 컴포넌트
@@ -54,13 +55,15 @@ interface GroupBuy {
  * 메인 홈페이지 컨텐츠 컴포넌트
  */
 function HomeContent() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, accessToken } = useAuth();
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [popularGroupBuys, setPopularGroupBuys] = useState<GroupBuy[]>([]);
   const [newGroupBuys, setNewGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [showIframe, setShowIframe] = useState(false);
+  const [userParticipations, setUserParticipations] = useState<number[]>([]);
+  const [userBids, setUserBids] = useState<number[]>([]);
   
   // iframe이 열렸을 때 뒤로가기 버튼 처리
   useEffect(() => {
@@ -94,6 +97,46 @@ function HomeContent() {
       window.history.replaceState({}, '', newUrl);
     }
   }, [searchParams]);
+
+  /**
+   * 사용자 참여 공구 및 입찰 공구 ID 목록 가져오기
+   */
+  const fetchUserParticipationsAndBids = async () => {
+    if (!accessToken) return;
+    
+    try {
+      // 일반 회원: 참여한 공구 목록 가져오기
+      if (user?.role !== 'seller') {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/participations/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // 참여한 공구 ID 목록 추출
+          const participationIds = data.map((p: any) => p.groupbuy_id);
+          setUserParticipations(participationIds);
+        }
+      }
+      
+      // 판매 회원: 입찰한 공구 목록 가져오기
+      if (user?.role === 'seller') {
+        try {
+          const bids = await getSellerBids();
+          // 입찰한 공구 ID 목록 추출
+          const bidGroupBuyIds = bids.map(bid => bid.groupbuy);
+          setUserBids(bidGroupBuyIds);
+        } catch (error) {
+          console.error('입찰 목록 조회 오류:', error);
+        }
+      }
+    } catch (error) {
+      console.error('사용자 참여/입찰 정보 조회 오류:', error);
+    }
+  };
   
   useEffect(() => {
     setMounted(true);
@@ -122,7 +165,12 @@ function HomeContent() {
     };
     
     fetchGroupBuys();
-  }, []);
+    
+    // 사용자가 로그인한 경우 참여/입찰 정보 가져오기
+    if (accessToken) {
+      fetchUserParticipationsAndBids();
+    }
+  }, [accessToken, user?.role]);
   
   // 클라이언트 사이드 마운트 전에는 인증 상태를 확인할 수 없음
   const showAuthButtons = mounted ? !isAuthenticated : true;
@@ -230,7 +278,12 @@ function HomeContent() {
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {popularGroupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                  <GroupPurchaseCard 
+                    key={groupBuy.id} 
+                    groupBuy={groupBuy}
+                    isParticipant={userParticipations.includes(groupBuy.id)}
+                    hasBid={userBids.includes(groupBuy.id)}
+                  />
                 ))}
               </div>
             )}
@@ -258,7 +311,12 @@ function HomeContent() {
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {newGroupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard key={groupBuy.id} groupBuy={groupBuy} />
+                  <GroupPurchaseCard 
+                    key={groupBuy.id} 
+                    groupBuy={groupBuy}
+                    isParticipant={userParticipations.includes(groupBuy.id)}
+                    hasBid={userBids.includes(groupBuy.id)}
+                  />
                 ))}
               </div>
             )}
