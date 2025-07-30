@@ -67,7 +67,7 @@ function GroupPurchasesPageContent() {
   const [userBids, setUserBids] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('popular');
 
   /**
    * 공구 목록 가져오기 (필터 포함)
