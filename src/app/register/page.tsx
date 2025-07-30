@@ -31,7 +31,7 @@ function RegisterPageContent() {
   const socialId = searchParams.get('socialId');
   
   const [memberType, setMemberType] = useState<'buyer' | 'seller' | null>(null);
-  const [signupType, setSignupType] = useState<SignupType>(socialProvider ? 'social' : 'email');
+  const [signupType, setSignupType] = useState<SignupType | null>(socialProvider ? 'social' : null);
   
   // 이메일 도메인 추출
   const extractEmailDomain = (email: string) => {
@@ -536,7 +536,7 @@ function RegisterPageContent() {
           )}
 
           {/* 회원가입 방식 선택 (일반회원만) */}
-          {!socialProvider && memberType === 'buyer' && !signupType && (
+          {!socialProvider && memberType === 'buyer' && signupType === null && (
             <div className="mb-6">
               <button
                 onClick={() => setMemberType(null)}
