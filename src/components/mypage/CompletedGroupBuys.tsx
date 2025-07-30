@@ -25,6 +25,10 @@ interface CompletedGroupBuy {
     image_url: string;
   };
   has_review?: boolean;
+  creator?: {
+    id: number;
+    username: string;
+  } | number;
 }
 
 /**
@@ -33,7 +37,7 @@ interface CompletedGroupBuy {
  */
 export default function CompletedGroupBuys() {
   const router = useRouter();
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const [groupBuys, setGroupBuys] = useState<CompletedGroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -154,14 +158,31 @@ export default function CompletedGroupBuys() {
                   상세보기
                 </Button>
                 {!groupBuy.has_review && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleWriteReview(groupBuy.id, groupBuy.product_details.id)}
-                    className="flex items-center gap-1"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    후기작성
-                  </Button>
+                  (() => {
+                    const creatorId = typeof groupBuy.creator === 'object' 
+                      ? groupBuy.creator?.id 
+                      : groupBuy.creator;
+                    const isMyGroupBuy = user?.id === creatorId;
+                    
+                    if (isMyGroupBuy) {
+                      return (
+                        <div className="text-sm text-gray-500">
+                          내가 만든 공구
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <Button
+                        size="sm"
+                        onClick={() => handleWriteReview(groupBuy.id, groupBuy.product_details.id)}
+                        className="flex items-center gap-1"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        후기작성
+                      </Button>
+                    );
+                  })()
                 )}
               </div>
             </div>

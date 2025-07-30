@@ -28,6 +28,8 @@ interface ReviewFormProps {
   onComplete?: () => void;
   /** 작성 취소 시 호출될 콜백 함수 */
   onCancel?: () => void;
+  /** 공구 생성자 ID */
+  creatorId?: number;
 }
 
 /**
@@ -55,8 +57,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   initialIsPurchased = false,
   onComplete,
   onCancel,
+  creatorId,
 }) => {
-  const { isAuthenticated, accessToken } = useAuth();
+  const { isAuthenticated, accessToken, user } = useAuth();
   const [rating, setRating] = useState<number>(initialRating);
   const [content, setContent] = useState<string>(initialContent);
   const [isPurchased, setIsPurchased] = useState<boolean>(initialIsPurchased);
@@ -128,6 +131,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     return (
       <div className="p-4 text-center border rounded-lg bg-gray-50">
         <p className="text-gray-600">리뷰를 작성하려면 로그인이 필요합니다.</p>
+      </div>
+    );
+  }
+
+  // 내가 만든 공구인 경우
+  if (creatorId && user?.id === creatorId) {
+    return (
+      <div className="p-6 text-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+        <p className="text-gray-600 font-medium mb-2">내가 만든 공구는 후기를 작성할 수 없습니다.</p>
+        <p className="text-sm text-gray-500">다른 참여자들의 후기를 기다려주세요.</p>
       </div>
     );
   }

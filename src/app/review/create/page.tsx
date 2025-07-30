@@ -1,16 +1,40 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ReviewForm from '@/components/review/ReviewForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 function ReviewCreateContent() {
   const searchParams = useSearchParams();
   const groupbuyId = searchParams.get('groupBuyId') || searchParams.get('groupbuy_id');
+  const [groupBuyData, setGroupBuyData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (groupbuyId) {
+      const fetchGroupBuyData = async () => {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/`);
+          if (response.ok) {
+            const data = await response.json();
+            setGroupBuyData(data);
+          }
+        } catch (error) {
+          console.error('공구 정보 로드 실패:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchGroupBuyData();
+    } else {
+      setLoading(false);
+    }
+  }, [groupbuyId]);
 
   if (!groupbuyId) {
     return (
@@ -32,6 +56,16 @@ function ReviewCreateContent() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="flex justify-center items-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="mb-6">
@@ -48,7 +82,10 @@ function ReviewCreateContent() {
           <CardTitle>공구 후기 작성</CardTitle>
         </CardHeader>
         <CardContent>
-          <ReviewForm groupbuyId={parseInt(groupbuyId)} />
+          <ReviewForm 
+            groupbuyId={parseInt(groupbuyId)} 
+            creatorId={groupBuyData?.creator?.id || groupBuyData?.creator}
+          />
         </CardContent>
       </Card>
       
