@@ -138,6 +138,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   const getButtonText = () => {
     if (isCompleted) return '마감완료';
     
+    // 최종선택중 상태 체크
+    if (isFinalSelection) return '공구 마감';
+    
     // 비로그인
     if (!isAuthenticated) {
       return '공구 둘러보기';
@@ -161,6 +164,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   const getButtonStyle = () => {
     if (isCompleted) {
       return 'bg-gray-500 text-white cursor-not-allowed';
+    }
+    
+    // 최종선택중 상태
+    if (isFinalSelection) {
+      return 'bg-orange-500 text-white cursor-not-allowed';
     }
     
     // 참여 완료 상태
@@ -395,7 +403,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         <button
           className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 ${getButtonStyle()}`}
           onClick={handleViewDetail}
-          disabled={false}
+          disabled={isFinalSelection}
         >
           {getButtonText()}
         </button>

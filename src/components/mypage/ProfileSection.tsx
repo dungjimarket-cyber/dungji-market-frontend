@@ -590,10 +590,17 @@ export default function ProfileSection() {
               <div className="flex items-center">
                 <input
                   type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  value={phoneNumber ? phoneNumber.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3') : ''}
+                  onChange={(e) => {
+                    // 숫자만 추출
+                    const numbers = e.target.value.replace(/[^\d]/g, '');
+                    if (numbers.length <= 11) {
+                      setPhoneNumber(numbers);
+                    }
+                  }}
                   className="flex-1 p-2 border rounded-md mr-2"
-                  placeholder="휴대폰 번호를 입력하세요 (예: 01012345678)"
+                  placeholder="010-0000-0000"
+                  maxLength={13}
                 />
                 <button
                   onClick={handleProfileUpdate}
@@ -614,7 +621,12 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium">{phoneNumber || '휴대폰 번호 정보 없음'}</span>
+                <span className="font-medium">
+                  {phoneNumber ? 
+                    phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
+                    '휴대폰 번호 정보 없음'
+                  }
+                </span>
               </div>
             )}
           </div>

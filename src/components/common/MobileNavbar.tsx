@@ -92,7 +92,7 @@ export default function MobileNavbar() {
               <button className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md mb-1">
                 <span className="text-2xl">+</span>
               </button>
-              <span className="text-xs mt-0.5">공구 등록</span>
+              <span className="text-xs">공구등록</span>
             </>
           )}
         </Link>

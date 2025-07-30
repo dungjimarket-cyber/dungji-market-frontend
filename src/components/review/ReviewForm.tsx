@@ -136,7 +136,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   }
 
   // 내가 만든 공구인 경우
-  if (creatorId && user?.id === creatorId) {
+  if (creatorId && user?.id && parseInt(user.id) === creatorId) {
     return (
       <div className="p-6 text-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
         <p className="text-gray-600 font-medium mb-2">내가 만든 공구는 후기를 작성할 수 없습니다.</p>

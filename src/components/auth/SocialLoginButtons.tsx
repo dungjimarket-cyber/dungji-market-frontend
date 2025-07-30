@@ -27,7 +27,13 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
    * @param provider - 소셜 로그인 제공자 ('kakao')
    */
   const handleSocialLogin = (provider: string, callbackUrl: string = '/') => {
-    // 약관 동의 확인
+    // 로그인 페이지에서 카카오 로그인 클릭 시 회원가입 페이지로 리다이렉트
+    if (!requireTermsAgreement) {
+      router.push('/register');
+      return;
+    }
+    
+    // 약관 동의 확인 (회원가입 페이지에서만)
     if (requireTermsAgreement && (!termsAgreed || !privacyAgreed)) {
       toast({
         variant: 'destructive',

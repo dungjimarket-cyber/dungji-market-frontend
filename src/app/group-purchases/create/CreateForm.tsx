@@ -398,10 +398,11 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     }
     
     // 카카오톡 간편가입 사용자 조건부 팝업 체크
+    // phone_number와 address_region 모두 없는 경우에만 팝업 표시
     if (user?.sns_type === 'kakao') {
       // 일반회원: 활동지역, 연락처 체크
-      if (user.role === 'user') {
-        if (!user.phone_number || !user.address_region) {
+      if (user.role === 'user' || user.role === 'buyer') {
+        if (!user.phone_number && !user.address_region) {
           if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
             router.push('/mypage');
             return;
