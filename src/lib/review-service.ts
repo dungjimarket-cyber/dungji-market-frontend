@@ -54,6 +54,7 @@ export const createReview = async (
   token?: string
 ) => {
   try {
+    console.log('리뷰 작성 요청 데이터:', data);
     // AccessToken이 인자로 전달되지 않은 경우 tokenUtils에서 가져오기
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -79,7 +80,9 @@ export const createReview = async (
     });
     
     if (!response.ok) {
-      throw new Error(`리뷰 작성 오류: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('리뷰 작성 실패 응답:', errorData);
+      throw new Error(`리뷰 작성 오류: ${response.status} - ${JSON.stringify(errorData)}`);
     }
     
     return await response.json();
