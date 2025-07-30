@@ -7,6 +7,8 @@ import { scrollToInputField } from '@/hooks/useMobileKeyboard';
 import { Loader2, Mail } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
+import { signIn } from 'next-auth/react';
+import Image from 'next/image';
 // import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
 // import { useToast } from '@/components/ui/use-toast'; // 휴대폰 인증 기능 임시 비활성화
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
@@ -689,6 +691,22 @@ function RegisterPageContent() {
                 </button>
               )}
               
+              {/* 카카오톡 로그인 버튼 (소셜 가입 선택 시) */}
+              {signupType === 'social' && (
+                <button
+                  type="button"
+                  onClick={() => signIn('kakao', { callbackUrl: '/register' })}
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#FEE500] hover:bg-[#FDD835] text-[#3C1E1E] font-medium rounded-lg transition-colors"
+                >
+                  <Image
+                    src="/images/kakao-logo.png"
+                    alt="Kakao"
+                    width={20}
+                    height={20}
+                  />
+                  카카오톡으로 시작하기
+                </button>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
