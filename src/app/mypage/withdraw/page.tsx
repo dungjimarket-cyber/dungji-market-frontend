@@ -58,7 +58,12 @@ export default function WithdrawPage() {
       });
 
       if (response.ok) {
-        alert('회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
+        // 카카오 사용자인 경우 추가 안내
+        if (user?.sns_type === 'kakao') {
+          alert('회원 탈퇴가 완료되었습니다.\n\n카카오톡 연결도 함께 해제되었습니다.\n그동안 이용해주셔서 감사합니다.');
+        } else {
+          alert('회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
+        }
         logout();
         router.push('/');
       } else {
@@ -97,6 +102,9 @@ export default function WithdrawPage() {
                     <li>• 진행 중인 공구가 있는 경우, 탈퇴가 제한될 수 있습니다.</li>
                     <li>• 탈퇴 후 동일한 이메일로 재가입이 가능하나, 이전 활동 내역은 복구되지 않습니다.</li>
                     <li>• 작성하신 리뷰나 문의사항은 탈퇴 후에도 남아있을 수 있습니다.</li>
+                    {user?.sns_type === 'kakao' && (
+                      <li className="font-semibold">• 카카오톡 계정 연결도 함께 해제됩니다.</li>
+                    )}
                   </ul>
                 </div>
               </div>
