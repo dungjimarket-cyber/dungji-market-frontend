@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText } from '@/lib/groupbuy-utils';
@@ -446,8 +446,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     return '지역 정보 없음';
   };
 
+  // 남은 자리 계산
+  const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* 헤더 */}
       <div className="sticky top-0 z-40 bg-white border-b">
         <div className="flex items-center justify-between px-4 h-14">
@@ -470,8 +473,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
 
       {/* 메인 이미지 */}
-      <div className="relative w-full bg-white">
-        <div className="relative aspect-square max-w-lg mx-auto">
+      <div className="relative w-full bg-gray-100">
+        <div className="relative aspect-square w-full">
           <Image
             src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
             alt={groupBuy.product_details?.name || '상품 이미지'}
@@ -483,135 +486,111 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
 
       {/* 상품 정보 */}
-      <div className="bg-white px-4 py-6 border-b">
-        <h2 className="text-2xl font-bold mb-2">
+      <div className="px-4 py-6">
+        <h2 className="text-2xl font-bold mb-3">
           {groupBuy.product_details?.name || '상품명 없음'}
         </h2>
         
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-          <span className="text-lg font-bold text-blue-600">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
+        {/* 가격 */}
+        <div className="flex items-baseline gap-2 mb-4">
+          <span className="text-sm text-gray-500">참고가</span>
+          <span className="text-2xl font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-3">
+        {/* 태그들 */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
+            가입유형 : {groupBuy.product_details?.registration_type_korean || 
+                     groupBuy.telecom_detail?.subscription_type_korean || 
+                     getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type || '신규가입')}
+          </span>
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-              통신사: {groupBuy.telecom_detail.telecom_carrier}
-            </span>
-          )}
-          {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-            <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-              가입유형: {groupBuy.product_details?.registration_type_korean || 
-                       groupBuy.telecom_detail?.subscription_type_korean || 
-                       getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
+            <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
+              통신사 : {groupBuy.telecom_detail.telecom_carrier}
             </span>
           )}
           {groupBuy.telecom_detail?.plan_info && (
-            <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              요금제: {groupBuy.telecom_detail.plan_info}
+            <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
+              요금제 : {groupBuy.telecom_detail.plan_info}
             </span>
           )}
         </div>
 
-        {/* 상품 설명 */}
-        {groupBuy.product_details?.description && (
-          <div className="mt-4 text-gray-600">
-            <p className="whitespace-pre-wrap">{groupBuy.product_details.description}</p>
-          </div>
-        )}
-      </div>
+        {/* 날짜 정보 */}
+        <div className="text-sm text-gray-500 mb-1">
+          종료일: {new Date(groupBuy.end_time).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
+        <div className="text-sm text-gray-500 mb-6">
+          • 가입약정 기간은 24개월 입니다
+        </div>
 
-      {/* 공구 정보 */}
-      <div className="bg-white px-4 py-4 border-b">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">모집인원</span>
-            <span className="font-bold text-lg">
-              {groupBuy.current_participants}/{groupBuy.max_participants}명
-            </span>
+        {/* 최고 지원금 박스 */}
+        <div className="bg-yellow-50 rounded-lg p-4 mb-6">
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
+            <p className="text-3xl font-bold text-orange-500">
+              {groupBuy.total_bids || 0}<span className="text-lg">원</span>
+            </p>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">마감시간</span>
-            <span className="font-bold text-lg text-red-500">
-              {timeLeftText}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">공구지역</span>
-            <span className="font-bold">
-              {renderRegionInfo()}
-            </span>
-          </div>
+        </div>
 
-          {groupBuy.telecom_detail?.contract_period && (
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">약정기간</span>
-              <span className="font-bold">
-                {groupBuy.telecom_detail.contract_period}
-              </span>
-            </div>
-          )}
-
-          {groupBuy.total_bids !== undefined && groupBuy.total_bids > 0 && (
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">현재 최고 지원금</span>
-              <span className="font-bold text-lg text-blue-600">
-                {groupBuy.total_bids}건
-              </span>
-            </div>
-          )}
+        {/* 안내 메시지 */}
+        <div className="text-sm text-gray-500 text-center mb-8">
+          <p>*카트 제휴할인이나 중성물음 택포한 승수 최여 적용됩니다.</p>
+          <p className="mt-1">(쿠키지쿠팅+추가지원금)</p>
+          <p className="mt-1">*입자의룰 제안한 입찰 금액은 타공구 이탈시</p>
         </div>
       </div>
 
-      {/* 공구 주최자 정보 */}
-      <div className="bg-white px-4 py-4 border-b">
-        <div className="flex items-center justify-between">
+      {/* 공구 정보 섹션 */}
+      <div className="border-t border-gray-200">
+        {/* 공구 주최자 */}
+        <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden">
-              {groupBuy.creator?.profile_image ? (
-                <Image
-                  src={groupBuy.creator.profile_image}
-                  alt={groupBuy.creator?.username || '사용자'}
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-                  {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'}
-                </div>
-              )}
-            </div>
-            <div>
-              <p className="font-medium">공구 주최자</p>
-              <p className="text-sm text-gray-600">
-                {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
-              </p>
+            <span className="text-gray-500">공구 주최 지역</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
+                {groupBuy.creator?.profile_image ? (
+                  <Image
+                    src={groupBuy.creator.profile_image}
+                    alt={groupBuy.creator?.username || '사용자'}
+                    width={32}
+                    height={32}
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+                    {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                )}
+              </div>
+              <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
+              <span className="text-blue-600 text-sm bg-blue-50 px-2 py-0.5 rounded">방장</span>
             </div>
           </div>
-          
-          <button className="text-blue-600 text-sm font-medium">
-            방장
-          </button>
+          <ChevronRight className="w-5 h-5 text-gray-400" />
         </div>
-        
-        <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
-          <span>공구 참여인원</span>
+
+        {/* 공구 참여인원 */}
+        <div className="px-4 py-4 flex items-center justify-between border-t">
+          <span className="text-gray-500">공구 참여인원</span>
           <span className="font-medium">{groupBuy.current_participants}명</span>
         </div>
       </div>
 
-      {/* 안내 사항 */}
-      <div className="bg-white px-4 py-4 mb-20">
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="text-sm text-gray-600 leading-relaxed">
-            * 카트 제휴할인이나 중성물음 택포한 승수 최여 적용됩니다.
-            (쿠키지쿠팅+추가지원금)
-          </p>
-          <p className="text-sm text-gray-600 mt-2">
-            * 입자의룰 제안한 입찰 금액은 타공구 이탈시
-          </p>
+      {/* 공구 상태 정보 */}
+      <div className="mt-2 px-4 py-4 bg-gray-50">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-1">참여인원</p>
+            <p className="text-2xl font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}</p>
+            <p className="text-xs text-gray-500 mt-1">명</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-1">남은 시간</p>
+            <p className="text-2xl font-bold text-red-500">{timeLeftText}</p>
+            <p className="text-xs text-gray-500 mt-1">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
+          </div>
         </div>
       </div>
 
@@ -630,11 +609,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         </div>
         
-        {/* 찜하기 버튼 아래 텍스트 */}
-        <p className="text-center text-xs text-gray-500 mt-2">
-          공동 구매 가이트라인
-        </p>
+        {/* 가이드라인 링크 */}
+        <div className="text-center mt-3">
+          <button className="text-sm text-blue-600 underline">
+            공동 구매 가이드라인
+          </button>
+        </div>
       </div>
+
+      {/* 하단 여백 */}
+      <div className="pb-32"></div>
 
       {/* 모달들 */}
       <JoinGroupBuyModal
