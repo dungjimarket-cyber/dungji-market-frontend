@@ -88,6 +88,24 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   );
   const [timeLeftText, setTimeLeftText] = useState<string>('');
   
+  // 전체 시간과 남은 시간 비율 계산
+  const totalDuration = new Date(groupBuy.end_time).getTime() - new Date(groupBuy.start_time).getTime();
+  const [timeRemainingPercent, setTimeRemainingPercent] = useState<number>(() => {
+    const now = Date.now();
+    const startTime = new Date(groupBuy.start_time).getTime();
+    const endTime = new Date(groupBuy.end_time).getTime();
+    
+    // 아직 시작 전인 경우 100%
+    if (now < startTime) return 100;
+    
+    // 이미 종료된 경우 0%
+    if (now > endTime || isCompleted) return 0;
+    
+    // 진행 중인 경우 남은 시간 비율 계산
+    const remaining = endTime - now;
+    return Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
+  });
+  
   // 마감 임박 조건: 3시간 미만 또는 잔여 인원 3명 이하
   const isUrgent = (currentTimeLeft < 3 * 60 * 60 * 1000 && currentTimeLeft > 0) || 
                   (remainingSlots <= 3 && remainingSlots > 0);
@@ -116,11 +134,26 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       const newTimeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
       setCurrentTimeLeft(newTimeLeft);
       setTimeLeftText(formatTimeLeft(newTimeLeft));
+      
+      // 남은 시간 퍼센트 업데이트
+      const now = Date.now();
+      const startTime = new Date(groupBuy.start_time).getTime();
+      const endTime = new Date(groupBuy.end_time).getTime();
+      
+      let percent;
+      if (now < startTime) {
+        percent = 100;
+      } else if (now > endTime || groupBuy.status === 'completed') {
+        percent = 0;
+      } else {
+        percent = Math.max(0, Math.min(100, (newTimeLeft / totalDuration) * 100));
+      }
+      setTimeRemainingPercent(percent);
     }, 1000);
     
     // 컴포넌트 언마운트 시 타이머 정리
     return () => clearInterval(timerInterval);
-  }, [groupBuy.end_time]);
+  }, [groupBuy.end_time, totalDuration]);
 
   const getStatusColor = () => {
     if (isCompleted) return 'text-gray-500';
@@ -389,14 +422,20 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           </div>
         </div>
 
-        {/* 진행률 바 */}
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div 
-            className={`h-2 rounded-full transition-all duration-300 ${
-              isCompleted ? 'bg-gray-500' : isUrgent ? 'bg-purple-500' : 'bg-green-500'
-            }`}
-            style={{ width: `${(groupBuy.current_participants / groupBuy.max_participants) * 100}%` }}
-          />
+        {/* 남은 시간 바 */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>남은 시간</span>
+            <span>{Math.round(timeRemainingPercent)}%</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div 
+              className={`h-2 rounded-full transition-all duration-300 ${
+                isCompleted ? 'bg-gray-500' : isUrgent ? 'bg-red-500' : 'bg-blue-500'
+              }`}
+              style={{ width: `${timeRemainingPercent}%` }}
+            />
+          </div>
         </div>
 
         {/* 참여 버튼 */}
