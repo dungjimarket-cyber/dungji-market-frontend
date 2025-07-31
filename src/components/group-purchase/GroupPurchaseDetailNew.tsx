@@ -86,9 +86,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const { isAuthenticated, accessToken, user } = useAuth();
   const { toast } = useToast();
   
-  // 디버깅을 위한 로그
-  console.log('GroupBuy data:', groupBuy);
-  console.log('highest_bid_amount:', groupBuy.highest_bid_amount);
+  // 디버깅을 위한 로그 제거
   
   const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -119,6 +117,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const fetchBidInfoRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const [topBids, setTopBids] = useState<any[]>([]);
   const [isBidding, setIsBidding] = useState(false);
+  const [highestBidAmount, setHighestBidAmount] = useState<number | null>(groupBuy.highest_bid_amount || null);
+  const [totalBids, setTotalBids] = useState<number>(groupBuy.total_bids || 0);
 
   useEffect(() => {
     setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
@@ -388,6 +388,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           }
         }).slice(0, 5);
         setTopBids(sortedBids);
+        
+        // 최고 입찰금액과 총 입찰 수 업데이트
+        setTotalBids(bids.length);
+        if (bids.length > 0) {
+          const highestBid = Math.max(...bids.map((bid: any) => bid.amount));
+          setHighestBidAmount(highestBid);
+        }
       }
     } catch (error) {
       console.error('상위 입찰 조회 오류:', error);
@@ -395,10 +402,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   useEffect(() => {
-    if (isSeller && accessToken) {
+    if (accessToken) {
       fetchTopBids();
     }
-  }, [isSeller, accessToken, groupBuy.id]);
+  }, [accessToken, groupBuy.id]);
 
   const handleBidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -767,12 +774,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
             <p className="text-3xl font-bold text-orange-500">
-              <span>{groupBuy.highest_bid_amount && groupBuy.highest_bid_amount > 0 ? maskAmount(groupBuy.highest_bid_amount) : '0'}</span>
+              <span>{highestBidAmount && highestBidAmount > 0 ? maskAmount(highestBidAmount) : '0'}</span>
               <span className="text-lg">원</span>
             </p>
-            {groupBuy.total_bids !== undefined && groupBuy.total_bids > 0 && (
+            {totalBids > 0 && (
               <>
-                <p className="text-xs text-gray-500 mt-1">총 {groupBuy.total_bids}개 입찰</p>
+                <p className="text-xs text-gray-500 mt-1">총 {totalBids}개 입찰</p>
                 {!isSeller && (
                   <button
                     onClick={() => setShowBidHistoryModal(true)}
