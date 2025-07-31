@@ -319,7 +319,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const renderActionButton = () => {
     if (isEnded) {
       return (
-        <Button disabled className="w-full py-6 text-lg font-bold bg-gray-400">
+        <Button disabled className="w-full py-4 text-base font-medium bg-gray-400">
           마감된 공구
         </Button>
       );
@@ -327,7 +327,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
     if (isFinalSelection) {
       return (
-        <Button disabled className="w-full py-6 text-lg font-bold bg-orange-500">
+        <Button disabled className="w-full py-4 text-base font-medium bg-orange-500">
           최종 선택 진행중
         </Button>
       );
@@ -338,7 +338,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         return (
           <Button 
             onClick={() => router.push(`/groupbuys/${groupBuy.id}/bid`)}
-            className="w-full py-6 text-lg font-bold bg-indigo-600 hover:bg-indigo-700"
+            className="w-full py-4 text-base font-medium bg-indigo-600 hover:bg-indigo-700"
           >
             입찰 수정하기
           </Button>
@@ -347,7 +347,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       return (
         <Button 
           onClick={handleJoinClick}
-          className="w-full py-6 text-lg font-bold bg-blue-600 hover:bg-blue-700"
+          className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
         >
           공구 입찰하기
         </Button>
@@ -356,27 +356,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
     if (isParticipant) {
       return (
-        <div className="space-y-2">
-          <Button disabled className="w-full py-6 text-lg font-bold bg-green-600">
-            ✓ 참여 완료
-          </Button>
-          {!isBidding && (
-            <Button
-              variant="outline"
-              onClick={() => setShowWithdrawDialog(true)}
-              className="w-full py-3 text-sm"
-            >
-              참여 철회하기
-            </Button>
-          )}
-        </div>
+        <Button disabled className="w-full py-4 text-base font-medium bg-green-600">
+          ✓ 참여 완료
+        </Button>
       );
     }
 
     return (
       <Button 
         onClick={handleJoinClick}
-        className="w-full py-6 text-lg font-bold bg-blue-600 hover:bg-blue-700"
+        className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
       >
         공구 참여하기
       </Button>
@@ -520,11 +509,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="text-sm text-gray-500 mb-1">
           종료일: {new Date(groupBuy.end_time).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
-        <div className="text-sm text-gray-500 mb-1">
-          • 가입약정 기간은 24개월 입니다
-        </div>
         <div className="text-sm text-gray-500 mb-6">
-          • 입찰 진행중에는 탈퇴가 제한되니 신중한 참여 부탁드립니다.
+          • 가입약정 기간은 24개월 입니다
         </div>
 
         {/* 최고 지원금 박스 */}
@@ -597,31 +583,43 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       </div>
 
-      {/* 하단 고정 버튼 영역 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-30">
-        <div className="flex gap-3">
-          <button
-            onClick={handleWishToggle}
-            className={`p-3 border rounded-lg ${isWished ? 'bg-red-50 border-red-500' : 'border-gray-300'}`}
-          >
-            <Heart className={`w-6 h-6 ${isWished ? 'text-red-500 fill-red-500' : 'text-gray-500'}`} />
-          </button>
+      {/* 버튼 영역 (고정되지 않음) */}
+      <div className="px-4 py-6">
+        <div className="space-y-3">
+          {/* 참여/입찰 버튼 */}
+          {renderActionButton()}
           
-          <div className="flex-1">
-            {renderActionButton()}
-          </div>
+          {/* 공유하기 버튼 */}
+          <Button
+            onClick={handleShare}
+            variant="outline"
+            className="w-full py-3"
+          >
+            지인과 공유하기
+          </Button>
+          
+          {/* 탈퇴하기 버튼 (참여자만 표시) */}
+          {isParticipant && !isBidding && (
+            <Button
+              onClick={() => setShowWithdrawDialog(true)}
+              variant="outline"
+              className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+            >
+              탈퇴하기
+            </Button>
+          )}
         </div>
         
         {/* 가이드라인 링크 */}
-        <div className="text-center mt-3">
+        <div className="text-center mt-6">
           <button className="text-sm text-blue-600 underline">
             공동 구매 가이드라인
           </button>
+          <p className="text-xs text-gray-500 mt-2">
+            • 입찰 진행중에는 탈퇴가 제한되니 신중한 참여 부탁드립니다.
+          </p>
         </div>
       </div>
-
-      {/* 하단 여백 */}
-      <div className="pb-32"></div>
 
       {/* 모달들 */}
       <JoinGroupBuyModal
