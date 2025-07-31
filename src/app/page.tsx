@@ -11,6 +11,7 @@ import { IoMdClose } from 'react-icons/io';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getSellerBids } from '@/lib/api/bidService';
+import BannerCarousel from '@/components/banner/BannerCarousel';
 
 /**
  * 메인 홈페이지 컴포넌트
@@ -267,6 +268,11 @@ function HomeContent() {
             <span className="text-sm sm:text-base">둥지마켓 알아보기</span>
           </button>
         </div>
+      </section>
+
+      {/* 배너 캐러셀 추가 */}
+      <section className="mb-12">
+        <BannerCarousel />
       </section>
 
       {/* <section className="mb-12">
