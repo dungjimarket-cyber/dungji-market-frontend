@@ -493,7 +493,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         {/* 가격 */}
         <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-sm text-gray-500">참고가</span>
+          <span className="text-sm text-gray-500">출고가</span>
           <span className="text-2xl font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
         </div>
 
@@ -520,8 +520,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="text-sm text-gray-500 mb-1">
           종료일: {new Date(groupBuy.end_time).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
-        <div className="text-sm text-gray-500 mb-6">
+        <div className="text-sm text-gray-500 mb-1">
           • 가입약정 기간은 24개월 입니다
+        </div>
+        <div className="text-sm text-gray-500 mb-6">
+          • 입찰 진행중에는 탈퇴가 제한되니 신중한 참여 부탁드립니다.
         </div>
 
         {/* 최고 지원금 박스 */}
@@ -536,9 +539,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
         {/* 안내 메시지 */}
         <div className="text-sm text-gray-500 text-center mb-8">
-          <p>*카트 제휴할인이나 중성물음 택포한 승수 최여 적용됩니다.</p>
-          <p className="mt-1">(쿠키지쿠팅+추가지원금)</p>
-          <p className="mt-1">*입자의룰 제안한 입찰 금액은 타공구 이탈시</p>
+          <p>*카드 제휴할인이나 증정품을 제외한 순수 지원금입니다.</p>
+          <p className="mt-1">(공시지원금+추가지원금)</p>
+          <p className="mt-1">*앞자리를 제외한 입찰 금액은 비공개 입니다.</p>
         </div>
       </div>
 
@@ -547,7 +550,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* 공구 주최자 */}
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-gray-500">공구 주최 지역</span>
+            <span className="text-gray-500">공구 중심지역</span>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
                 {groupBuy.creator?.profile_image ? (
