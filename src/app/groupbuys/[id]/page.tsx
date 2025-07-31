@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { GroupPurchaseDetail } from '@/components/group-purchase/GroupPurchaseDetail';
+import { GroupPurchaseDetailNew } from '@/components/group-purchase/GroupPurchaseDetailNew';
 import type { Metadata } from 'next';
 
 interface GroupBuy {
@@ -131,5 +131,5 @@ export default async function GroupBuyPage({ params }: { params: Promise<PagePar
     notFound();
   }
 
-  return <GroupPurchaseDetail groupBuy={groupBuy} />;
+  return <GroupPurchaseDetailNew groupBuy={groupBuy} />;
 }
