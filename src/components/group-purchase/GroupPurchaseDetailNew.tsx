@@ -762,7 +762,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
             <p className="text-3xl font-bold text-orange-500">
-              {groupBuy.highest_bid_amount ? maskAmount(groupBuy.highest_bid_amount) : 0}<span className="text-lg">원</span>
+              <span>{groupBuy.highest_bid_amount && groupBuy.highest_bid_amount > 0 ? maskAmount(groupBuy.highest_bid_amount) : '0'}</span>
+              <span className="text-lg">원</span>
             </p>
             {groupBuy.total_bids !== undefined && groupBuy.total_bids > 0 && (
               <>
