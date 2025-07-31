@@ -145,17 +145,30 @@ function HomeContent() {
     const fetchGroupBuys = async () => {
       try {
         const [popularResponse, newResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=popular&limit=2`),
-          // 인기순 정렬 시 백엔드에서 최종선택 이전 상태(recruiting, bidding, voting)만 자동 필터링
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=newest&limit=2`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=popular&limit=10`),
+          // 더 많이 가져와서 필터링 후 선택
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=newest&limit=10`)
         ]);
         
         if (popularResponse.ok && newResponse.ok) {
           const popularData = await popularResponse.json();
           const newData = await newResponse.json();
           
-          setPopularGroupBuys(popularData.slice(0, 2));
-          setNewGroupBuys(newData.slice(0, 2));
+          // 최종선택중(final_selection, voting, seller_confirmation), 완료(completed), 취소(cancelled) 상태 제외
+          const excludedStatuses = ['final_selection', 'voting', 'seller_confirmation', 'completed', 'cancelled'];
+          
+          // 인기 공구 필터링
+          const filteredPopular = popularData.filter((groupBuy: GroupBuy) => 
+            !excludedStatuses.includes(groupBuy.status)
+          );
+          
+          // 새로운 공구 필터링
+          const filteredNew = newData.filter((groupBuy: GroupBuy) => 
+            !excludedStatuses.includes(groupBuy.status)
+          );
+          
+          setPopularGroupBuys(filteredPopular.slice(0, 2));
+          setNewGroupBuys(filteredNew.slice(0, 2));
         }
       } catch (error) {
         console.error('공구 데이터 로딩 실패:', error);
