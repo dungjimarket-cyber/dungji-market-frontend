@@ -86,6 +86,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const { isAuthenticated, accessToken, user } = useAuth();
   const { toast } = useToast();
   
+  // 디버깅을 위한 로그
+  console.log('GroupBuy data:', groupBuy);
+  console.log('highest_bid_amount:', groupBuy.highest_bid_amount);
+  
   const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
@@ -230,7 +234,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     if (!isSeller) return;
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/bids/`, {
+      // 판매자의 입찰 목록 조회 - 마이페이지 API 사용
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller-bids/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
