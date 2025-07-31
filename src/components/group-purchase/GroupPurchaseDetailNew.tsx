@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
+import BidModal from '@/components/groupbuy/BidModal';
+import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText } from '@/lib/groupbuy-utils';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -100,6 +102,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [deletingGroupBuy, setDeletingGroupBuy] = useState(false);
   const [hasReceivedContact, setHasReceivedContact] = useState(false);
   const [isWished, setIsWished] = useState(false);
+  
+  // 판매자 관련 상태
+  const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
+  const [myBidId, setMyBidId] = useState<number | null>(null);
+  const [canCancelBid, setCanCancelBid] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
+  const [bidAmount, setBidAmount] = useState<number | string>('');
+  const [bidType, setBidType] = useState<'price' | 'support'>('support');
+  const [myBidRank, setMyBidRank] = useState<{ rank: number; total: number } | null>(null);
+  const [showBidHistoryModal, setShowBidHistoryModal] = useState(false);
+  const [showNoBidTokenDialog, setShowNoBidTokenDialog] = useState(false);
+  const [bidHistory, setBidHistory] = useState<any[]>([]);
+  const fetchBidInfoRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
     setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
@@ -187,10 +202,54 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (response.ok) {
         const data = await response.json();
         const bid = data.find((b: any) => b.groupbuy === groupBuy.id);
-        setHasBid(!!bid);
+        if (bid) {
+          setHasBid(true);
+          setMyBidAmount(bid.amount);
+          setMyBidId(bid.id);
+          setBidType(bid.bid_type || 'support');
+          
+          // 입찰 취소 가능 여부 확인
+          const now = new Date();
+          const endTime = new Date(groupBuy.end_time);
+          setCanCancelBid(now < endTime);
+          
+          // 입찰 순위 확인
+          fetchBidRank(bid.id);
+        } else {
+          setHasBid(false);
+          setMyBidAmount(null);
+          setMyBidId(null);
+        }
       }
     } catch (error) {
       console.error('입찰 상태 확인 오류:', error);
+    }
+  };
+  
+  // 입찰 순위 확인
+  const fetchBidRank = async (bidId: number) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/bids/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const bids = await response.json();
+        const sortedBids = bids.sort((a: any, b: any) => b.amount - a.amount);
+        const myBidIndex = sortedBids.findIndex((b: any) => b.id === bidId);
+        
+        if (myBidIndex !== -1) {
+          setMyBidRank({
+            rank: myBidIndex + 1,
+            total: sortedBids.length
+          });
+        }
+      }
+    } catch (error) {
+      console.error('입찰 순위 확인 오류:', error);
     }
   };
 
@@ -296,14 +355,33 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
   };
 
-  const handleJoinClick = () => {
+  const handleJoinClick = async () => {
     if (!isAuthenticated) {
       router.push(`/login?callbackUrl=/groupbuys/${groupBuy.id}`);
       return;
     }
 
     if (isSeller) {
-      router.push(`/groupbuys/${groupBuy.id}/bid`);
+      // 입찰권 확인
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bid-tokens/balance/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.balance === 0) {
+            setShowNoBidTokenDialog(true);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('입찰권 확인 오류:', error);
+      }
+      
+      setShowBidModal(true);
       return;
     }
 
@@ -314,6 +392,53 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     setIsParticipant(true);
     setShowJoinModal(false);
     router.refresh();
+  };
+
+  const handleBidSuccess = () => {
+    checkBidStatus();
+    router.refresh();
+  };
+
+  const handleCancelBid = async () => {
+    if (!myBidId || !accessToken) return;
+    
+    setCancellingBid(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/${myBidId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        }
+      });
+
+      if (response.ok) {
+        setHasBid(false);
+        setMyBidAmount(null);
+        setMyBidId(null);
+        setMyBidRank(null);
+        toast({
+          title: '입찰 취소 완료',
+          description: '입찰이 성공적으로 취소되었습니다.',
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: '입찰 취소 실패',
+          description: '입찰 취소에 실패했습니다.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('입찰 취소 오류:', error);
+      toast({
+        title: '오류 발생',
+        description: '입찰 취소 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setCancellingBid(false);
+      setShowCancelBidDialog(false);
+    }
   };
 
   const renderActionButton = () => {
@@ -337,7 +462,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (hasBid) {
         return (
           <Button 
-            onClick={() => router.push(`/groupbuys/${groupBuy.id}/bid`)}
+            onClick={() => setShowBidModal(true)}
             className="w-full py-4 text-base font-medium bg-indigo-600 hover:bg-indigo-700"
           >
             입찰 수정하기
@@ -518,8 +643,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
             <p className="text-3xl font-bold text-orange-500">
-              {groupBuy.total_bids || 0}<span className="text-lg">원</span>
+              {groupBuy.highest_bid_amount ? groupBuy.highest_bid_amount.toLocaleString() : 0}<span className="text-lg">원</span>
             </p>
+            {groupBuy.total_bids !== undefined && groupBuy.total_bids > 0 && (
+              <>
+                <p className="text-xs text-gray-500 mt-1">총 {groupBuy.total_bids}개 입찰</p>
+                {!isSeller && (
+                  <button
+                    onClick={() => setShowBidHistoryModal(true)}
+                    className="text-xs text-blue-600 hover:underline mt-1"
+                  >
+                    입찰 내역 보기
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -582,6 +720,46 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         </div>
       </div>
+      
+      {/* 판매자 입찰 정보 */}
+      {isSeller && hasBid && myBidAmount && (
+        <div className="mx-4 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-medium text-blue-800 flex items-center">
+              <Gavel className="w-5 h-5 mr-2" />
+              나의 입찰 정보
+            </h3>
+            {canCancelBid && (
+              <button
+                onClick={() => setShowCancelBidDialog(true)}
+                className="text-sm text-red-600 hover:underline"
+              >
+                입찰 취소
+              </button>
+            )}
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">입찰 금액</span>
+              <span className="font-medium">{myBidAmount.toLocaleString()}원</span>
+            </div>
+            {myBidRank && (
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">현재 순위</span>
+                <span className="font-medium text-blue-600">
+                  {myBidRank.rank}위 / {myBidRank.total}개
+                </span>
+              </div>
+            )}
+            <button
+              onClick={() => setShowBidHistoryModal(true)}
+              className="text-sm text-blue-600 hover:underline mt-2"
+            >
+              전체 입찰 내역 보기
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
@@ -652,6 +830,78 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </>
               ) : (
                 '참여 철회'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 입찰 모달 */}
+      <BidModal
+        isOpen={showBidModal}
+        onClose={() => setShowBidModal(false)}
+        groupBuyId={groupBuy.id}
+        targetPrice={groupBuy.product_details?.base_price || 0}
+        productName={groupBuy.product_details?.name || ''}
+        minParticipants={groupBuy.max_participants}
+        currentParticipants={groupBuy.current_participants}
+        onBidSuccess={handleBidSuccess}
+        isClosed={isEnded}
+        productCategory={groupBuy.product_details?.category_name}
+      />
+
+      {/* 입찰 내역 모달 */}
+      <BidHistoryModal
+        isOpen={showBidHistoryModal}
+        onClose={() => setShowBidHistoryModal(false)}
+        groupBuyId={groupBuy.id}
+      />
+
+      {/* 입찰권 부족 다이얼로그 */}
+      <AlertDialog open={showNoBidTokenDialog} onOpenChange={setShowNoBidTokenDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>입찰권 부족</AlertDialogTitle>
+            <AlertDialogDescription>
+              입찰하려면 입찰권이 필요합니다. 
+              입찰권을 구매하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => router.push('/mypage/seller/bid-tokens')}
+            >
+              입찰권 구매하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 입찰 취소 다이얼로그 */}
+      <AlertDialog open={showCancelBidDialog} onOpenChange={setShowCancelBidDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>입찰 취소 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말로 입찰을 취소하시겠습니까?
+              취소 후에는 입찰권이 환불되지 않습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>닫기</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelBid}
+              disabled={cancellingBid}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {cancellingBid ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  취소 중...
+                </>
+              ) : (
+                '입찰 취소'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
