@@ -39,31 +39,12 @@ const getAxiosAuthHeaders = async () => {
 export const getSellerProfile = async (): Promise<SellerProfile> => {
   try {
     const headers = await getAxiosAuthHeaders();
-    // /auth/profile/ 엔드포인트 사용으로 변경
-    const response = await axios.get(`${API_URL}/auth/profile/`, { headers });
+    // 판매자 전용 프로필 엔드포인트 사용
+    const response = await axios.get(`${API_URL}/users/me/seller-profile/`, { headers });
     
-    // API 응답 데이터를 SellerProfile 형식으로 매핑
+    // API 응답 데이터를 그대로 반환 (백엔드에서 이미 올바른 필드명 사용)
     const data = response.data;
-    return {
-      ...data,
-      // 필드명 매핑
-      businessNumber: data.business_reg_number || data.business_number || '',
-      isRemoteSales: data.is_remote_sales_enabled || data.is_remote_sales || false,
-      address: data.address_detail || data.address || '',
-      addressRegion: data.address_region || null,
-      profileImage: data.profile_image || '',
-      phone: data.phone_number || data.phone || '',
-      // 판매자 대시보드용 추가 필드들 (기본값 설정)
-      activeBids: data.activeBids || 0,
-      pendingSelection: data.pendingSelection || 0,
-      pendingSales: data.pendingSales || 0,
-      completedSales: data.completedSales || 0,
-      remainingBids: data.remainingBids || 0,
-      hasUnlimitedBids: data.hasUnlimitedBids || false,
-      rating: data.rating || 0,
-      isVip: data.isVip || false,
-      notificationEnabled: data.notificationEnabled !== undefined ? data.notificationEnabled : true
-    };
+    return data;
   } catch (error: any) {
     console.error('판매자 프로필 조회 오류:', error.response?.data);
     console.error('오류 상태 코드:', error.response?.status);
