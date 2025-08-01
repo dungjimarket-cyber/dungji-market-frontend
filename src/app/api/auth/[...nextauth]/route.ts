@@ -98,7 +98,7 @@ const authOptions: NextAuthOptions = {
         if ((user as any).is_superuser === true) {
           token.role = 'admin';
         } else {
-          token.role = (user as any).role || 'user';
+          token.role = (user as any).role || 'buyer';
         }
         
         token.accessToken = (user as any).accessToken || (user as any).token || '';
@@ -122,7 +122,7 @@ const authOptions: NextAuthOptions = {
       session.user = {
         ...session.user,
         id: (token.id as string) || (token.sub as string) || '',
-        role: (token.role as string) || 'user',
+        role: (token.role as string) || 'buyer',
         accessToken: (token.accessToken as string) || '',
         provider: (token.provider as string) || undefined,
         image: (token.picture as string) || session.user?.image || ''

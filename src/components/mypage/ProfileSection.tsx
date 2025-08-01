@@ -113,7 +113,7 @@ export default function ProfileSection() {
               setAddressCity('');
             }
             
-            setRole(profileData.role || 'user');
+            setRole(profileData.role || 'buyer');
             setIsBusinessVerified(profileData.is_business_verified || false);
             setRegion(profileData.region || '');
             setUserType(profileData.user_type || '일반');
@@ -382,7 +382,7 @@ export default function ProfileSection() {
           setAddressCity('');
         }
         
-        setRole(profileData.role || 'user');
+        setRole(profileData.role || 'buyer');
         setIsBusinessVerified(profileData.is_business_verified || false);
         
         // AuthContext 및 로컬스토리지 동기화

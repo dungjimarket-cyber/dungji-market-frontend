@@ -143,7 +143,7 @@ export default function RequireAuth({
               }
               
               // 역할 추출
-              const userRole = tokenData.role || 'user';
+              const userRole = tokenData.role || 'buyer';
               
               // 사용자 정보 저장
               const authUser = {

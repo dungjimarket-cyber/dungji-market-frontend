@@ -16,6 +16,7 @@ import { ConsentStatusCard } from '@/components/group-purchase/ConsentStatusCard
 import { VotingTimer } from '@/components/groupbuy/VotingTimer';
 import { BidVotingList } from '@/components/groupbuy/BidVotingList';
 import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
+import { FinalSelectionTimer } from '@/components/final-selection/FinalSelectionTimer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,6 +104,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [deletingGroupBuy, setDeletingGroupBuy] = useState(false);
   const [hasReceivedContact, setHasReceivedContact] = useState(false);
   const [isWished, setIsWished] = useState(false);
+  const [showFinalSelectionModal, setShowFinalSelectionModal] = useState(false);
   
   // 판매자 관련 상태
   const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
@@ -621,11 +623,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
 
     if (isFinalSelection) {
-      return (
-        <Button disabled className="w-full py-4 text-base font-medium bg-orange-500">
-          최종 선택 진행중
-        </Button>
-      );
+      // 최종선택중인 공구는 참여한 회원만 최종선택 버튼 표시
+      if (isParticipant) {
+        return (
+          <Button 
+            onClick={() => setShowFinalSelectionModal(true)}
+            className="w-full py-4 text-base font-medium bg-orange-600 hover:bg-orange-700"
+          >
+            최종선택하기
+          </Button>
+        );
+      } else {
+        // 참여하지 않은 사용자에게는 공구 마감 표시
+        return (
+          <Button disabled className="w-full py-4 text-base font-medium bg-gray-400">
+            공구 마감
+          </Button>
+        );
+      }
     }
 
     // 판매자는 renderActionButton을 사용하지 않음 (인라인 UI 사용)
@@ -1176,6 +1191,28 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         onClose={() => setShowBidHistoryModal(false)}
         groupBuyId={groupBuy.id}
       />
+
+      {/* 최종선택 모달 */}
+      <AlertDialog open={showFinalSelectionModal} onOpenChange={setShowFinalSelectionModal}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="sr-only">최종선택</AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="p-0">
+            {groupBuy.voting_end && (
+              <FinalSelectionTimer
+                groupBuyId={groupBuy.id}
+                endTime={groupBuy.voting_end}
+                onSelectionMade={() => {
+                  setShowFinalSelectionModal(false);
+                  // 페이지 새로고침 또는 상태 업데이트
+                  router.refresh();
+                }}
+              />
+            )}
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* 입찰권 부족 다이얼로그 */}
       <AlertDialog open={showNoBidTokenDialog} onOpenChange={setShowNoBidTokenDialog}>
