@@ -409,21 +409,15 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 카카오톡 간편가입 사용자 조건부 팝업 체크
-    // phone_number와 address_region 모두 없는 경우에만 팝업 표시
-    if (user?.sns_type === 'kakao') {
-      // 일반회원: 활동지역, 연락처 체크
-      if (user.role === 'buyer') {
-        if (!user.phone_number && !user.address_region) {
-          if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
-            router.push('/mypage');
-            return;
-          }
-          // 취소를 누른 경우 이전 페이지로
-          router.back();
-          return;
-        }
+    // 일반회원: 활동지역 체크 (모든 가입 방식에 적용)
+    if (user?.role === 'buyer' && !user.address_region) {
+      if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
+        router.push('/mypage');
+        return;
       }
+      // 취소를 누른 경우 이전 페이지로
+      router.back();
+      return;
     }
   }, [router, isLoading, isAuthenticated, user]);
 
@@ -861,9 +855,9 @@ const continueSubmitWithUserId = async (
 const onSubmit = async (values: FormData) => {
   console.log('폼 제출 시작 - 값:', values);
   
-  // 일반회원의 경우 주소와 휴대폰번호 체크
-  if (user?.role === 'buyer' && (!user.phone_number || !user.address_region)) {
-    if (confirm('공구를 등록하기 위해서는 주소와 휴대폰번호 입력이 필요합니다.\n\n마이페이지로 이동하시겠습니까?')) {
+  // 일반회원의 경우 주소 체크 (휴대폰번호는 선택사항)
+  if (user?.role === 'buyer' && !user.address_region) {
+    if (confirm('공구를 등록하기 위해서는 활동지역 입력이 필요합니다.\n\n마이페이지로 이동하시겠습니까?')) {
       router.push('/mypage');
     }
     return;

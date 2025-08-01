@@ -150,19 +150,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     
     if (length <= 1) {
       return amountStr;
-    } else if (length === 2) {
-      return amountStr[0] + "*";
-    } else if (length === 3) {
-      return amountStr[0] + "**";
-    } else if (length === 4) {
-      return amountStr[0] + "***";
-    } else if (length === 5) {
-      return amountStr[0] + "****";
-    } else if (length === 6) {
-      return amountStr[0] + "*****";
     } else {
-      // 7자리 이상
-      return amountStr[0] + "*".repeat(length - 2) + amountStr[length - 1];
+      // 첫 자리만 보이고 나머지는 * 표시
+      return amountStr[0] + "*".repeat(length - 1);
     }
   };
 
@@ -440,7 +430,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
     
-    setBidAmount(numericValue === '' ? '' : numValue);
+    // 1,000원 단위로 반올림
+    const roundedValue = Math.round(numValue / 1000) * 1000;
+    
+    setBidAmount(roundedValue === 0 ? '' : roundedValue);
   };
 
   const handleBidClick = async () => {
@@ -943,18 +936,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="space-y-2">
             {hasBid && myBidAmount ? (
               <>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">나의 입찰 금액</span>
-                  <span className="font-medium">{myBidAmount.toLocaleString()}원</span>
+                <div className="text-sm text-gray-600 mb-1">나의 입찰 정보</div>
+                <div className="pl-2">
+                  {myBidRank && (
+                    <div className="text-sm font-medium text-blue-600 mb-1">
+                      {myBidRank.rank}위 / {myBidAmount.toLocaleString()}원
+                    </div>
+                  )}
                 </div>
-                {myBidRank && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">현재 순위</span>
-                    <span className="font-medium text-blue-600">
-                      {myBidRank.rank}위 / {myBidRank.total}개
-                    </span>
-                  </div>
-                )}
               </>
             ) : (
               <div className="text-sm text-gray-600">
@@ -1011,18 +1000,28 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 {topBids.length > 0 && (
                   <>
                     <div className="space-y-1">
-                      {topBids.map((bid: any, index: number) => (
-                        <div key={bid.id} className="flex justify-between text-sm">
-                          <span className={`${bid.seller === user?.id ? 'font-medium text-blue-600' : ''}`}>
-                            {index + 1}위 {bid.seller === user?.id && '(내 입찰)'}
-                          </span>
-                          <span>
-                            {bid.seller === user?.id
-                              ? `${bid.amount.toLocaleString()}원`
-                              : maskAmount(bid.amount) + '원'}
-                          </span>
-                        </div>
-                      ))}
+                      {topBids.map((bid: any, index: number) => {
+                        const isMyBid = bid.seller === user?.id;
+                        return (
+                          <div key={bid.id} className={`flex justify-between text-sm ${isMyBid ? 'font-bold' : ''}`}>
+                            <span className={isMyBid ? 'text-blue-600' : ''}>
+                              {index + 1}위
+                            </span>
+                            <span className="flex items-center gap-2">
+                              <span className={isMyBid ? 'text-blue-600' : ''}>
+                                {isMyBid
+                                  ? `${bid.amount.toLocaleString()}원`
+                                  : maskAmount(bid.amount) + '원'}
+                              </span>
+                              {isMyBid && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                                  내순위
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">앞자리를 제외한 입찰가는 비공개입니다.</p>
                   </>
@@ -1076,6 +1075,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   )}
                 </button>
               </div>
+              
+              <p className="text-xs text-gray-500 mt-1">* 입찰 금액은 1,000원 단위로 입력됩니다.</p>
               
               <div className="text-gray-500 text-sm mt-2">
                 앞자리를 제외한 입찰가는 비공개입니다.

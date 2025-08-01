@@ -768,8 +768,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
   const maskAmount = (amount?: number) => {
     if (!amount) return '0원';
     const amountStr = amount.toString();
-    if (amountStr.length <= 2) return `${amountStr}원`;
-    return `${amountStr[0]}${'*'.repeat(amountStr.length - 2)}${amountStr[amountStr.length - 1]}원`;
+    if (amountStr.length <= 1) return `${amountStr}원`;
+    // 첫 자리만 보이고 나머지는 * 표시
+    return `${amountStr[0]}${'*'.repeat(amountStr.length - 1)}원`;
   };
   
   // 통화 관련 함수는 위에서 이미 정의되어 있음
