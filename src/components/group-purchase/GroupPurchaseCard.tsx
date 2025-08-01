@@ -413,21 +413,18 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           </div>
         </div>
 
-        {/* 시간 정보 */}
-        <div className="flex items-center gap-2">
-          <Clock className={`w-5 h-5 ${isCompleted ? 'text-gray-400' : isUrgent ? 'text-red-500' : 'text-blue-500'}`} />
-          <span className={`font-medium ${isCompleted ? 'text-gray-600' : isUrgent ? 'text-red-600' : 'text-blue-600'}`}>
-            {timeLeftText || formatTimeLeft(currentTimeLeft)}
-          </span>
-          <span className={`text-sm ${isUrgent ? 'text-red-500' : isCompleted ? 'text-gray-500' : 'text-green-600'}`}>
-            {isUrgent ? '마감임박!' : isCompleted ? '마감완료' : '여유있음'}
-          </span>
-        </div>
-
         {/* 남은 시간 바 */}
         <div className="space-y-1">
-          <div className="text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-gray-500">
             <span>남은 시간</span>
+            <div className="flex items-center gap-2">
+              <span className={`font-medium ${isCompleted ? 'text-gray-600' : isUrgent ? 'text-red-600' : 'text-blue-600'}`}>
+                {timeLeftText || formatTimeLeft(currentTimeLeft)}
+              </span>
+              <span className={`${isUrgent ? 'text-red-500' : isCompleted ? 'text-gray-500' : 'text-green-600'}`}>
+                {isUrgent ? '마감임박!' : isCompleted ? '마감완료' : '여유있음'}
+              </span>
+            </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div 
