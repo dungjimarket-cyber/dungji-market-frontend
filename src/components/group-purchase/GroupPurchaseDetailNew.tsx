@@ -732,7 +732,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 메인 이미지 */}
       <div className="relative w-full bg-gray-100">
-        <div className="relative aspect-square w-full">
+        <div className="relative aspect-square w-full md:max-w-md md:mx-auto lg:max-w-lg">
           <Image
             src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
             alt={groupBuy.product_details?.name || '상품 이미지'}
@@ -868,7 +868,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* 공구 지역 */}
         <div className="px-4 py-4 flex items-center justify-between border-t">
           <span className="text-gray-500">공구 지역</span>
-          <div className="flex flex-wrap gap-1 justify-end">
+          <div className="flex flex-wrap gap-1">
             {groupBuy.region_type === 'nationwide' ? (
               <span className="font-medium text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded">전국</span>
             ) : groupBuy.regions && groupBuy.regions.length > 0 ? (
@@ -883,11 +883,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         </div>
 
-        {/* 공구 참여인원 */}
-        <div className="px-4 py-4 flex items-center justify-between border-t">
-          <span className="text-gray-500">공구 참여인원</span>
-          <span className="font-medium">{groupBuy.current_participants}명</span>
-        </div>
       </div>
 
       {/* 공구 상태 정보 */}

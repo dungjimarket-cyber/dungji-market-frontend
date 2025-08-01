@@ -122,7 +122,7 @@ export default function BidHistoryModal({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">공구 입찰 내역</DialogTitle>
           <DialogDescription>
-            이 공구에 등록된 모든 입찰 내역을 확인할 수 있습니다.
+            이 공구에 등록된 입찰 내역 상위 10개를 확인할 수 있습니다.
           </DialogDescription>
         </DialogHeader>
         
@@ -140,37 +140,23 @@ export default function BidHistoryModal({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>판매자</TableHead>
-                  <TableHead>입찰 유형</TableHead>
-                  <TableHead>금액</TableHead>
-                  <TableHead>등록일</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead>메시지</TableHead>
+                  <TableHead className="w-20 text-center">순위</TableHead>
+                  <TableHead className="text-right">금액</TableHead>
+                  <TableHead className="text-center">등록일</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bids.map((bid, index) => (
+                {bids.slice(0, 10).map((bid, index) => (
                   <TableRow key={bid.id}>
-                    <TableCell className="font-medium">{bid.seller_name}</TableCell>
-                    <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                    <TableCell>
-                      {/* 순위에 따른 익명화된 금액 표시 */}
-                      {anonymizeAmount(bid.amount, index + 1)}
-                      {index < 5 && (
-                        <Badge variant="outline" className="ml-2 text-xs bg-gray-50">
-                          {index + 1}위
-                        </Badge>
-                      )}
+                    <TableCell className="text-center font-medium">
+                      <Badge variant={index < 3 ? "default" : "outline"} className={index === 0 ? "bg-yellow-500" : index === 1 ? "bg-gray-400" : index === 2 ? "bg-amber-600" : ""}>
+                        {index + 1}위
+                      </Badge>
                     </TableCell>
-                    <TableCell>{formatDate(bid.created_at)}</TableCell>
-                    <TableCell>{getStatusBadge(bid.status)}</TableCell>
-                    <TableCell>
-                      {bid.message ? (
-                        <span className="text-sm line-clamp-2">{bid.message}</span>
-                      ) : (
-                        <span className="text-gray-400 text-sm">-</span>
-                      )}
+                    <TableCell className="text-right font-medium">
+                      {formatNumberWithCommas(bid.amount)}원
                     </TableCell>
+                    <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

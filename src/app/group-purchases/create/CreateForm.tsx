@@ -284,6 +284,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [manufacturerFilter, setManufacturerFilter] = useState<'samsung' | 'apple' | null>(null);
   const [endTimeOption, setEndTimeOption] = useState<string>('24hours');
   const [sliderHours, setSliderHours] = useState<number>(24);
   const [customHours, setCustomHours] = useState<number>(24);
@@ -1209,6 +1210,44 @@ const onSubmit = async (values: FormData) => {
             )}
             <div className="space-y-6">
               <h3 className="text-lg font-medium">기기 선택</h3>
+              
+              {/* 제조사 카테고리 버튼 */}
+              <div className="flex gap-4 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setManufacturerFilter('samsung')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    manufacturerFilter === 'samsung' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  갤럭시
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setManufacturerFilter('apple')}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    manufacturerFilter === 'apple' 
+                      ? 'bg-gray-900 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  아이폰
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setManufacturerFilter(null)}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    manufacturerFilter === null 
+                      ? 'bg-gray-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  전체
+                </button>
+              </div>
+
               <FormField
                 control={form.control}
                 name="product"
@@ -1263,11 +1302,23 @@ const onSubmit = async (values: FormData) => {
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                          {products.map((product) => (
-                            <SelectItem key={product.id} value={product.id.toString()}>
-                              {product.name} <span className="text-gray-500 ml-1">(출고가: {product.base_price.toLocaleString()}원)</span>
-                            </SelectItem>
-                          ))}
+                          {products
+                            .filter((product) => {
+                              if (!manufacturerFilter) return true;
+                              const productName = product.name.toLowerCase();
+                              if (manufacturerFilter === 'samsung') {
+                                return productName.includes('갤럭시') || productName.includes('galaxy');
+                              }
+                              if (manufacturerFilter === 'apple') {
+                                return productName.includes('아이폰') || productName.includes('iphone');
+                              }
+                              return true;
+                            })
+                            .map((product) => (
+                              <SelectItem key={product.id} value={product.id.toString()}>
+                                {product.name} <span className="text-gray-500 ml-1">(출고가: {product.base_price.toLocaleString()}원)</span>
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
