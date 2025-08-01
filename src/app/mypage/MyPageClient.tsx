@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import ProfileSection from '@/components/mypage/ProfileSection';
 import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
-import SettlementHistory from '@/components/mypage/SettlementHistory';
+import PurchaseConfirmedGroupBuys from '@/components/mypage/PurchaseConfirmedGroupBuys';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
@@ -90,7 +90,7 @@ export default function MyPageClient() {
       if (!isAuthenticated || !accessToken) return;
       
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/settlements/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/purchase_confirmed/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -105,7 +105,6 @@ export default function MyPageClient() {
         }
       } catch (error) {
         console.error('구매 진행중 개수 조회 오류:', error);
-        // API가 아직 없다면 임시값 설정
         setPurchaseInProgressCount(0);
       }
     };
@@ -115,7 +114,7 @@ export default function MyPageClient() {
       if (!isAuthenticated || !accessToken) return;
       
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/joined_groupbuys/?status=completed`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/purchase_completed/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -254,7 +253,7 @@ export default function MyPageClient() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-4">
-                <SettlementHistory />
+                <PurchaseConfirmedGroupBuys />
               </AccordionContent>
             </AccordionItem>
 
