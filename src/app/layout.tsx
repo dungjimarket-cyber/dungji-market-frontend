@@ -6,6 +6,7 @@ import DesktopNavbar from '@/components/common/DesktopNavbar';
 import MobileNavbar from '@/components/common/MobileNavbar';
 import Footer from '@/components/common/Footer';
 import { Analytics } from "@vercel/analytics/next"
+import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
 
 
 export const metadata: Metadata = {
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="font-sans min-h-screen relative">
         <Providers>
           <Toaster />
+          <RoleUpdateNotice />
           <DesktopNavbar />
           <main className="flex-1 pb-16 md:pb-0">
             {children}
