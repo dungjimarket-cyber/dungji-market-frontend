@@ -97,7 +97,7 @@ function GroupPurchasesPageContent() {
         params.append('ordering', '-current_participants');
       } else {
         // 나머지 탭들은 모두 최신순으로 정렬
-        params.append('ordering', '-created_at');
+        params.append('ordering', '-start_time');
       }
       
       // 사용자 필터 추가
