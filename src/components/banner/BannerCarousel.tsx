@@ -18,11 +18,14 @@ export default function BannerCarousel() {
 
   const fetchBanners = async () => {
     try {
+      console.log('[BannerCarousel] 배너 데이터 요청 시작');
       const response = await getMainBanners();
+      console.log('[BannerCarousel] 배너 응답:', response);
       setBanners(response || []);
+      console.log('[BannerCarousel] 설정된 배너 개수:', (response || []).length);
     } catch (err) {
       setError('배너를 불러오는데 실패했습니다.');
-      console.error('Failed to fetch banners:', err);
+      console.error('[BannerCarousel] Failed to fetch banners:', err);
     } finally {
       setLoading(false);
     }
@@ -61,8 +64,22 @@ export default function BannerCarousel() {
     );
   }
 
-  if (error || banners.length === 0) {
-    return null;
+  if (error) {
+    console.log('[BannerCarousel] 오류 발생:', error);
+    return (
+      <div className="w-full h-64 sm:h-96 bg-red-100 rounded-lg flex items-center justify-center">
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
+
+  if (banners.length === 0) {
+    console.log('[BannerCarousel] 배너가 없음');
+    return (
+      <div className="w-full h-64 sm:h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+        <p className="text-gray-600">표시할 배너가 없습니다.</p>
+      </div>
+    );
   }
 
   const currentBanner = banners[currentIndex];

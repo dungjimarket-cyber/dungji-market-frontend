@@ -952,8 +952,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="text-sm text-gray-600 mb-1">나의 입찰 정보</div>
                 <div className="pl-2">
                   {myBidRank && (
-                    <div className="text-sm font-medium text-blue-600 mb-1">
-                      {myBidRank.rank}위 / {myBidAmount.toLocaleString()}원
+                    <div className="text-sm font-medium text-blue-600 mb-1 flex items-center">
+                      <span className="mr-2">{myBidRank.rank}위</span>
+                      <span>{myBidAmount.toLocaleString()}원</span>
                     </div>
                   )}
                 </div>
@@ -1014,23 +1015,27 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <>
                     <div className="space-y-1">
                       {topBids.map((bid: any, index: number) => {
-                        const isMyBid = bid.seller === user?.id;
+                        const isMyBid = (() => {
+                          const sellerId = typeof bid.seller === 'object' && bid.seller?.id 
+                            ? bid.seller.id 
+                            : (typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller);
+                          const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id;
+                          return sellerId === userId;
+                        })();
                         return (
-                          <div key={bid.id} className={`flex justify-between text-sm ${isMyBid ? 'font-bold' : ''}`}>
-                            <span className={isMyBid ? 'text-blue-600' : ''}>
-                              {index + 1}위
-                            </span>
-                            <span className="flex items-center gap-2">
-                              <span className={isMyBid ? 'text-blue-600' : ''}>
-                                {isMyBid
-                                  ? `${bid.amount.toLocaleString()}원`
-                                  : maskAmount(bid.amount) + '원'}
-                              </span>
+                          <div key={bid.id} className={`flex text-sm ${isMyBid ? 'font-bold' : ''}`}>
+                            <span className={`${isMyBid ? 'text-blue-600' : ''} flex items-center gap-2`}>
+                              <span>{index + 1}위</span>
                               {isMyBid && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                                <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">
                                   내순위
                                 </span>
                               )}
+                            </span>
+                            <span className={`ml-2 ${isMyBid ? 'text-blue-600' : ''}`}>
+                              {isMyBid
+                                ? `${bid.amount.toLocaleString()}원`
+                                : maskAmount(bid.amount) + '원'}
                             </span>
                           </div>
                         );

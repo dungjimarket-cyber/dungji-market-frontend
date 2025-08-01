@@ -42,9 +42,35 @@ export interface Banner {
 
 // 메인 배너 가져오기
 export const getMainBanners = async (): Promise<Banner[]> => {
-  const response = await fetchWithAuth('/banners/main/');
-  const data = await response.json();
-  return data.results || [];
+  console.log('[bannerService] 메인 배너 API 호출 시작');
+  try {
+    // 먼저 인증 없이 시도
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const response = await fetch(`${baseUrl}/banners/main/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log('[bannerService] 응답 상태:', response.status);
+    
+    if (!response.ok) {
+      // 인증이 필요한 경우 fetchWithAuth 사용
+      console.log('[bannerService] 인증 필요, fetchWithAuth 재시도');
+      const authResponse = await fetchWithAuth('/banners/main/');
+      const authData = await authResponse.json();
+      console.log('[bannerService] 인증 응답 데이터:', authData);
+      return authData.results || [];
+    }
+    
+    const data = await response.json();
+    console.log('[bannerService] 응답 데이터:', data);
+    return data.results || [];
+  } catch (error) {
+    console.error('[bannerService] API 호출 오류:', error);
+    throw error;
+  }
 };
 
 // 배너 목록 가져오기
