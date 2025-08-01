@@ -909,14 +909,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
       
       {/* 판매자 입찰 정보 */}
-      {isSeller && hasBid && myBidAmount && (
+      {isSeller && (
         <div className="mx-4 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium text-blue-800 flex items-center">
               <Gavel className="w-5 h-5 mr-2" />
-              나의 입찰 정보
+              입찰 정보
             </h3>
-            {canCancelBid && (
+            {hasBid && canCancelBid && (
               <button
                 onClick={() => setShowCancelBidDialog(true)}
                 className="text-sm text-red-600 hover:underline"
@@ -926,16 +926,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">입찰 금액</span>
-              <span className="font-medium">{myBidAmount.toLocaleString()}원</span>
-            </div>
-            {myBidRank && (
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">현재 순위</span>
-                <span className="font-medium text-blue-600">
-                  {myBidRank.rank}위 / {myBidRank.total}개
-                </span>
+            {hasBid && myBidAmount ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">나의 입찰 금액</span>
+                  <span className="font-medium">{myBidAmount.toLocaleString()}원</span>
+                </div>
+                {myBidRank && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">현재 순위</span>
+                    <span className="font-medium text-blue-600">
+                      {myBidRank.rank}위 / {myBidRank.total}개
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-sm text-gray-600">
+                아직 입찰하지 않았습니다.
               </div>
             )}
             <button
