@@ -66,6 +66,11 @@ export default function BannerCarousel() {
   }
 
   const currentBanner = banners[currentIndex];
+  
+  // currentBanner가 없는 경우 처리
+  if (!currentBanner) {
+    return null;
+  }
 
   return (
     <div className="relative w-full overflow-hidden rounded-lg">
