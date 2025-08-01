@@ -202,14 +202,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     return () => clearInterval(timer);
   }, [groupBuy.end_time]);
 
+  // fetchBidInfoRef 설정
+  useEffect(() => {
+    fetchBidInfoRef.current = checkBidStatus;
+  }, []);
+
   // 사용자 참여 상태 확인
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       checkParticipationStatus();
-      checkBidStatus();
+      if (isSeller) {
+        checkBidStatus();
+      }
       checkWishStatus();
     }
-  }, [isAuthenticated, accessToken, groupBuy.id]);
+  }, [isAuthenticated, accessToken, groupBuy.id, isSeller]);
 
   const checkParticipationStatus = async () => {
     try {

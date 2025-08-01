@@ -360,10 +360,17 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     // 인증 상태 디버깅
     console.log('[CreateForm] 인증 상태:', { 
       isAuthenticated, 
+      isLoading,
       user, 
       accessToken: accessToken ? '토큰 있음' : '토큰 없음',
       tokenLength: accessToken?.length
     });
+    
+    // 아직 인증 상태 로딩 중이면 대기
+    if (isLoading) {
+      console.log('[CreateForm] 인증 상태 로딩 중...');
+      return;
+    }
     
     // 로컬 스토리지에서 직접 토큰 확인 (백업 검사)
     const localToken = localStorage.getItem('dungji_auth_token') || 
@@ -378,13 +385,17 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     }
     
     // 토큰은 있지만 인증 상태가 false인 경우 (불일치 상태)
-    if (!isAuthenticated && localToken) {
-      console.log('[CreateForm] 토큰은 있지만 인증 상태가 false, 인증 컨텍스트 초기화 시도');
-      // 인증 상태 이벤트 발생시켜 AuthContext 재초기화 유도
-      window.dispatchEvent(new Event('auth-changed'));
-      // 짧은 지연 후 페이지 새로고침 (최후의 수단)
-      setTimeout(() => window.location.reload(), 500);
-      return;
+    if (!isAuthenticated && localToken && !isLoading) {
+      console.log('[CreateForm] 토큰은 있지만 인증 상태가 false, 재확인 중...');
+      // 약간의 지연 후 다시 확인 (AuthContext 초기화 대기)
+      const checkTimer = setTimeout(() => {
+        if (!isAuthenticated && !isLoading) {
+          console.log('[CreateForm] 여전히 인증되지 않음, 새로고침');
+          window.location.reload();
+        }
+      }, 1000);
+      
+      return () => clearTimeout(checkTimer);
     }
     
     // 판매자(seller) 계정은 공구 등록 불가
