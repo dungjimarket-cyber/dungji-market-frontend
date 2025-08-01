@@ -260,14 +260,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   };
 
   return (
-    <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl overflow-hidden shadow-xl">
-      {/* 메인 이미지 */}
-      <div className="relative h-80 w-full">
+    <div 
+      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+      onClick={handleViewDetail}>
+      {/* 메인 이미지 - 단독 표시 */}
+      <div className="relative h-64 w-full bg-gray-50">
         <Image
           src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
           alt={groupBuy.product_details?.name || '상품 이미지'}
           fill
-          className="object-cover"
+          className="object-contain"
         />
         
         {/* 공구 상태 배지 - 우측 상단 */}
@@ -314,21 +316,20 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           )}
         </div>
 
-        {/* 제품 정보 오버레이 */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-          {/* 지역 정보를 제목 위에 표시 */}
+      </div>
+
+      {/* 상품 정보 영역 - 별도 섹션 */}
+      <div className="p-4 border-b">
+        {/* 지역 정보 */}
+        <div className="mb-2">
           {groupBuy.region_type === 'nationwide' ? (
-            <div className="mb-2">
-              <span className="text-yellow-300 text-base font-bold">
-                [전국 비대면]
-              </span>
-            </div>
+            <span className="text-amber-600 text-sm font-bold">
+              [전국 비대면]
+            </span>
           ) : (
             groupBuy.regions && groupBuy.regions.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
+              <div className="flex flex-wrap gap-1">
                 {groupBuy.regions.slice(0, 2).map((region, index) => {
-                  // full_name이 '서울특별시 강남구' 형태로 되어 있음
-                  // '특별시', '광역시', '도' 등을 짧은 형태로 변환
                   let displayName = region.name || region.full_name || '';
                   displayName = displayName
                     .replace('특별시', '시')
@@ -337,7 +338,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                     .replace('특별자치도', '도');
                   
                   return (
-                    <span key={index} className="text-white text-sm font-medium">
+                    <span key={index} className="text-gray-600 text-sm font-medium">
                       [{displayName}]
                     </span>
                   );
@@ -345,38 +346,41 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               </div>
             )
           )}
-          <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
-            {groupBuy.product_details?.name || '상품명 없음'}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {/* 통신사, 가입유형, 요금제 순서로 변경하고 크기 키움 */}
-            {groupBuy.telecom_detail?.telecom_carrier && (
-              <span className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
-                {groupBuy.telecom_detail.telecom_carrier}
-              </span>
-            )}
-            {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-              <span className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
-                {groupBuy.product_details?.registration_type_korean || 
-                 groupBuy.telecom_detail?.subscription_type_korean || 
-                 getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
-              </span>
-            )}
-            {groupBuy.telecom_detail?.plan_info && (
-              <span className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
-                {groupBuy.telecom_detail.plan_info}
-              </span>
-            )}
-          </div>
+        </div>
+        
+        {/* 상품명 */}
+        <h3 className="text-gray-900 text-lg font-bold mb-3 line-clamp-2">
+          {groupBuy.product_details?.name || '상품명 없음'}
+        </h3>
+        
+        {/* 통신사, 가입유형, 요금제 정보 */}
+        <div className="flex flex-wrap gap-2">
+          {groupBuy.telecom_detail?.telecom_carrier && (
+            <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md text-sm font-medium">
+              {groupBuy.telecom_detail.telecom_carrier}
+            </span>
+          )}
+          {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
+            <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md text-sm font-medium">
+              {groupBuy.product_details?.registration_type_korean || 
+               groupBuy.telecom_detail?.subscription_type_korean || 
+               getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
+            </span>
+          )}
+          {groupBuy.telecom_detail?.plan_info && (
+            <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-sm font-medium">
+              {groupBuy.telecom_detail.plan_info}
+            </span>
+          )}
         </div>
       </div>
 
       {/* 하단 정보 */}
-      <div className="p-6 space-y-4">
+      <div className="p-4 space-y-3 bg-gray-50">
         {/* 작성자 정보 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-600 rounded-full overflow-hidden">
+            <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
               {groupBuy.creator?.profile_image ? (
                 <Image
                   src={groupBuy.creator.profile_image}
@@ -386,13 +390,13 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-500 flex items-center justify-center text-white text-xs">
+                <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs">
                   {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'}
                 </div>
               )}
             </div>
             <div>
-              <p className="text-gray-300 text-sm font-medium truncate max-w-[120px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
+              <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
               <p className="text-gray-500 text-xs">
                 {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
               </p>
@@ -400,10 +404,10 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           </div>
           
           <div className="text-right">
-            <p className={`text-lg font-bold ${getParticipantColor()}`}>
+            <p className="text-lg font-bold text-gray-900">
               {groupBuy.current_participants}/{groupBuy.max_participants}명
             </p>
-            <p className="text-gray-400 text-xs">
+            <p className="text-gray-500 text-xs">
               {isCompleted ? '마감' : `${remainingSlots}자리 남음`}
             </p>
           </div>
@@ -412,26 +416,25 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         {/* 시간 정보 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className={`w-5 h-5 ${getStatusColor()}`} />
-            <span className={`font-medium ${getStatusColor()}`}>
+            <Clock className={`w-5 h-5 ${isCompleted ? 'text-gray-400' : isUrgent ? 'text-red-500' : 'text-blue-500'}`} />
+            <span className={`font-medium ${isCompleted ? 'text-gray-600' : isUrgent ? 'text-red-600' : 'text-blue-600'}`}>
               {timeLeftText || formatTimeLeft(currentTimeLeft)}
             </span>
           </div>
-          <div className={`text-sm ${isUrgent ? 'text-red-400' : isCompleted ? 'text-gray-500' : 'text-green-400'}`}>
+          <div className={`text-sm ${isUrgent ? 'text-red-500' : isCompleted ? 'text-gray-500' : 'text-green-600'}`}>
             {isUrgent ? '마감임박!' : isCompleted ? '마감완료' : '여유있음'}
           </div>
         </div>
 
         {/* 남은 시간 바 */}
         <div className="space-y-1">
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="text-xs text-gray-500">
             <span>남은 시간</span>
-            <span>{Math.round(timeRemainingPercent)}%</span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div 
               className={`h-2 rounded-full transition-all duration-300 ${
-                isCompleted ? 'bg-gray-500' : isUrgent ? 'bg-red-500' : 'bg-blue-500'
+                isCompleted ? 'bg-gray-400' : isUrgent ? 'bg-red-500' : 'bg-blue-500'
               }`}
               style={{ width: `${timeRemainingPercent}%` }}
             />

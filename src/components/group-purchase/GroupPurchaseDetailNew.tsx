@@ -420,7 +420,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
     
-    setBidAmount(numericValue === '' ? '' : parseInt(numericValue, 10));
+    const numValue = parseInt(numericValue, 10);
+    // 999만원 이하로 제한
+    if (numValue > 9999999) {
+      toast({
+        title: '입찰 금액 제한',
+        description: '입찰 금액은 999만원을 초과할 수 없습니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setBidAmount(numericValue === '' ? '' : numValue);
   };
 
   const handleBidClick = async () => {
@@ -750,9 +761,49 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                      getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type || '신규가입')}
           </span>
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
-              통신사 : {groupBuy.telecom_detail.telecom_carrier}
-            </span>
+            <div className="relative inline-flex items-center group">
+              <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
+                통신사 : {groupBuy.telecom_detail.telecom_carrier}
+                <button className="ml-1 text-gray-400 hover:text-gray-600">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              </span>
+              
+              {/* 툴팁 - 통신사별 요금제 링크 */}
+              <div className="absolute top-full left-0 mt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+                <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px]">
+                  <p className="text-xs font-medium text-gray-700 mb-2">통신사별 요금제 알아보기</p>
+                  <div className="space-y-1">
+                    <a
+                      href="https://www.tworld.co.kr/web/product/plan/list"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      SK텔레콤 →
+                    </a>
+                    <a
+                      href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      KT →
+                    </a>
+                    <a
+                      href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      LG유플러스 →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
           {groupBuy.telecom_detail?.plan_info && (
             <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
@@ -763,7 +814,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
-          종료일: {new Date(groupBuy.end_time).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+          출시일: {new Date(groupBuy.end_time).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
         <div className="text-sm text-gray-500 mb-6">
           • 가입약정 기간은 24개월 입니다
@@ -806,26 +857,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* 공구 주최자 */}
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-gray-500">공구 중심지역</span>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
-                {groupBuy.creator?.profile_image ? (
-                  <Image
-                    src={groupBuy.creator.profile_image}
-                    alt={groupBuy.creator?.username || '사용자'}
-                    width={32}
-                    height={32}
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
-                    {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                )}
-              </div>
-              <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
-              <span className="text-blue-600 text-sm bg-blue-50 px-2 py-0.5 rounded">방장</span>
-            </div>
+            <span className="text-gray-500">방장</span>
+            <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
           </div>
           <ChevronRight className="w-5 h-5 text-gray-400" />
         </div>
@@ -913,7 +946,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
-        {isSeller ? (
+        {isSeller && groupBuy.status !== 'final_selection' && groupBuy.status !== 'voting' && 
+         groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 
+         groupBuy.status !== 'cancelled' ? (
           // 판매자용 입찰 인터페이스
           <div className="space-y-4">
             {!hasBid && (

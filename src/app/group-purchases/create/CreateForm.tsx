@@ -1527,6 +1527,41 @@ const onSubmit = async (values: FormData) => {
                     </>
                   )}
                 </div>
+                
+                {/* 통신사별 요금제 알아보기 링크 */}
+                {(selectedProduct?.category?.detail_type === 'telecom' || !selectedProduct?.category?.detail_type) && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">통신사별 요금제 알아보기</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href="https://www.tworld.co.kr/web/product/plan/list"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        SK텔레콤 →
+                      </a>
+                      <span className="text-gray-400">|</span>
+                      <a
+                        href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        KT →
+                      </a>
+                      <span className="text-gray-400">|</span>
+                      <a
+                        href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        LG유플러스 →
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
               </div>
             )}
