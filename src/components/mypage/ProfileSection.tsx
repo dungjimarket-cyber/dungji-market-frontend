@@ -572,38 +572,14 @@ export default function ProfileSection() {
             )}
           </div>
           
-          {/* 휴대폰 인증 정보 섹션 - 이름, 생년월일, 성별 */}
-          {(firstName || birthDate || gender) && (
+          {/* 휴대폰 인증 정보 섹션 - 이름만 표시 */}
+          {firstName && (
             <>
               {/* 이름 */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
                 <div className="p-2 bg-gray-50 rounded-md">
                   <span className="font-medium">{firstName || '정보 없음'}</span>
-                </div>
-              </div>
-              
-              {/* 생년월일 */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">생년월일</label>
-                <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium">
-                    {birthDate ? new Date(birthDate).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    }) : '정보 없음'}
-                  </span>
-                </div>
-              </div>
-              
-              {/* 성별 */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">성별</label>
-                <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium">
-                    {gender === 'M' ? '남성' : gender === 'F' ? '여성' : '정보 없음'}
-                  </span>
                 </div>
               </div>
             </>

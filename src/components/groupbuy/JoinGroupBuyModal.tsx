@@ -237,19 +237,24 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
         {step === 'confirm' && (
           <>
             <DialogHeader>
-              <DialogTitle>공구 참여하기</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-lg">공구 참여하기</DialogTitle>
+              <DialogDescription className="text-sm text-gray-600">
                 공구에 참여하시겠습니까?
               </DialogDescription>
             </DialogHeader>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
-              <p className="text-sm text-yellow-700">
-                <strong>중요 안내:</strong> 입찰중일 경우 탈퇴가 제한됩니다. 참여하시겠습니까?
-                <br />(입찰건이 없을 경우에는 탈퇴가 가능합니다)
-              </p>
-              <p className="text-sm text-yellow-700 mt-2">
-                <strong>참고:</strong> 동일한 상품에 대한 다른 공구에 이미 참여 중인 경우 참여가 제한됩니다.
-              </p>
+            <div className="bg-orange-50 border border-orange-200 rounded-md p-3 mb-4">
+              <div className="text-orange-800">
+                <p className="text-sm font-semibold mb-2 text-orange-900">❗ 중요 안내</p>
+                <p className="text-xs leading-relaxed mb-1">
+                  • 입찰이 진행된 경우에는 탈퇴가 제한됩니다.
+                </p>
+                <p className="text-xs leading-relaxed mb-2">
+                  • 동일한 상품에는 중복 참여가 불가합니다.
+                </p>
+                <p className="text-sm font-medium text-orange-900">
+                  참여하시겠습니까?
+                </p>
+              </div>
             </div>
             <div className="flex flex-col items-center p-4">
               <Image 

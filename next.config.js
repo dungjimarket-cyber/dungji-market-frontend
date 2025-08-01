@@ -24,6 +24,10 @@ const nextConfig = {
       },
       { 
         protocol: 'https',
+        hostname: 'dungjimarket.s3.ap-northeast-2.amazonaws.com',
+      },
+      { 
+        protocol: 'https',
         hostname: 'images.samsung.com',
       },
     ],

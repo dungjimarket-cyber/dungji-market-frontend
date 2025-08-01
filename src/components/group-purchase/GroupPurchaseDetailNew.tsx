@@ -1041,7 +1041,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">앞자리를 제외한 입찰가는 비공개입니다.</p>
+                    <p className="text-sm font-semibold text-blue-800 mt-2 bg-blue-50 p-2 rounded border border-blue-200">❗ 앞자리를 제외한 입찰가는 비공개입니다.</p>
                   </>
                 )}
               </div>
@@ -1094,10 +1094,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </button>
               </div>
               
-              <p className="text-xs text-gray-500 mt-1">* 입찰 금액은 1,000원 단위로 입력됩니다.</p>
-              
-              <div className="text-gray-500 text-sm mt-2">
-                앞자리를 제외한 입찰가는 비공개입니다.
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-3">
+                <p className="text-sm font-medium text-blue-900 mb-2">💰 입찰 금액은 1,000원 단위로 입력됩니다.</p>
+                <p className="text-sm font-semibold text-blue-800 mb-1">❗ 앞자리를 제외한 입찰가는 비공개입니다.</p>
               </div>
             </div>
             
@@ -1111,11 +1110,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </button>
             )}
             
-            <div className="text-xs text-gray-500">
-              <div>• 입찰 시 입찰권 1개가 소모됩니다.</div>
-              <div>• 최소 입찰 단위는 1,000원입니다.</div>
-              <div>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
-              <div>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</div>
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+              <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 입찰 안내사항</h4>
+              <div className="text-sm text-gray-700 space-y-1">
+                <div>• 입찰 시 입찰권 1개가 소모됩니다.</div>
+                <div>• 최소 입찰 단위는 1,000원입니다.</div>
+                <div>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
+                <div>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</div>
+              </div>
             </div>
             
             {/* 공유하기 버튼 */}
