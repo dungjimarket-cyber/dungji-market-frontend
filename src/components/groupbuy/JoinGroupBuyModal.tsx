@@ -144,6 +144,17 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
             return; // 오류 상태로 전환하고 예외를 발생시키지 않음
           }
           
+          // 공구 마감/종료 오류 특별 처리
+          if (errorData.error && (
+            errorData.error.includes('참여할 수 없는 공구입니다') ||
+            errorData.error.includes('모집이 종료되었거나') ||
+            errorData.error.includes('마감되었습니다')
+          )) {
+            setError('공구 모집이 종료되었거나 마감되었습니다.');
+            setStep('error');
+            return; // 오류 상태로 전환하고 예외를 발생시키지 않음
+          }
+          
           throw new Error(errorData.error || errorData.detail || '공구 참여에 실패했습니다.');
         } catch (error) {
           if (error instanceof Error && (
@@ -308,10 +319,15 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                 <AlertTriangle className="h-10 w-10 text-red-500" />
               </div>
               <p className="text-center text-gray-700 mb-2 font-medium">
-                이미 동일한 상품의 공구에 참여 중입니다.
+                {error || '공구에 참여할 수 없습니다.'}
               </p>
               <p className="text-center text-gray-600 mb-4">
-                하나의 상품에 대해 여러 공구에 동시에 참여할 수 없습니다.
+                {error.includes('중복참여') 
+                  ? '하나의 상품에 대해 여러 공구에 동시에 참여할 수 없습니다.'
+                  : error.includes('모집이 종료')
+                  ? '공구 모집 기간이 마감되었거나 정원이 초과되었습니다.'
+                  : '자세한 내용은 고객센터에 문의해주세요.'
+                }
               </p>
             </div>
             <DialogFooter className="sm:justify-center">
