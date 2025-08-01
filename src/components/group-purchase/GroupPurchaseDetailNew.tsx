@@ -430,10 +430,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
     
-    // 1,000원 단위로 반올림
-    const roundedValue = Math.round(numValue / 1000) * 1000;
-    
-    setBidAmount(roundedValue === 0 ? '' : roundedValue);
+    // 입력 중에는 그대로 저장
+    setBidAmount(numericValue === '' ? '' : numValue);
   };
 
   const handleBidClick = async () => {
@@ -444,6 +442,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         variant: 'destructive',
       });
       return;
+    }
+
+    // 1,000원 단위로 반올림
+    const numAmount = typeof bidAmount === 'number' ? bidAmount : parseInt(bidAmount.toString(), 10);
+    const roundedAmount = Math.round(numAmount / 1000) * 1000;
+    
+    // 반올림된 금액이 원래 금액과 다르면 알림
+    if (roundedAmount !== numAmount) {
+      toast({
+        title: '입찰 금액 조정',
+        description: `입찰 금액이 ${roundedAmount.toLocaleString()}원으로 조정됩니다.`,
+      });
+      setBidAmount(roundedAmount);
     }
 
     setIsBidding(true);
@@ -458,7 +469,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         body: JSON.stringify({
           groupbuy: groupBuy.id,
           bid_type: bidType,
-          amount: typeof bidAmount === 'number' ? bidAmount : parseInt(bidAmount.toString(), 10),
+          amount: roundedAmount,
           message: '',
           seller: user?.id // 판매자 ID 추가
         })
