@@ -10,4 +10,9 @@ export interface AuthUser {
   email: string;
   username: string;
   roles?: string[];
+  role?: string;
+  address_region?: string;
+  phone_number?: string;
+  sns_type?: string;
+  business_number?: string;
 }

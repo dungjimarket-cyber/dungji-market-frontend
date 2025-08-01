@@ -398,6 +398,12 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return () => clearTimeout(checkTimer);
     }
     
+    // 사용자 정보가 아직 로드되지 않은 경우 대기
+    if (isAuthenticated && !user) {
+      console.log('[CreateForm] 사용자 정보 로딩 대기 중...');
+      return;
+    }
+    
     // 판매자(seller) 계정은 공구 등록 불가
     if (user?.role === 'seller' || (user?.roles && user.roles.includes('seller'))) {
       toast({
@@ -1113,7 +1119,7 @@ const onSubmit = async (values: FormData) => {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="container mx-auto py-6 space-y-8 flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
         {/* 중복 공구 알림 다이얼로그 */}
         <AlertDialog open={showDuplicateProductDialog} onOpenChange={setShowDuplicateProductDialog}>
