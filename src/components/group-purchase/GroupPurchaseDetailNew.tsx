@@ -356,8 +356,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           })));
           
           const myBid = bids.find((bid: any) => {
-            // seller가 숫자면 직접 비교, 문자열이면 변환 후 비교
-            const sellerId = typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller;
+            // seller가 객체인 경우 id 속성을 추출, 그렇지 않으면 직접 사용
+            const sellerId = typeof bid.seller === 'object' && bid.seller?.id 
+              ? bid.seller.id 
+              : (typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller);
             const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
             return sellerId === userId;
           });
