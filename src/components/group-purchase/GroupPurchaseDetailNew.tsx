@@ -242,7 +242,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     
     try {
       // 판매자의 입찰 목록 조회 - 마이페이지 API 사용
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller-bids/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/bids/summary/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
