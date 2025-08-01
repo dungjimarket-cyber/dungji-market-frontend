@@ -23,26 +23,15 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 
-// 입찰 금액 익명화 처리 함수 - 앞자리 제외한 * 표기
+// 입찰 금액 익명화 처리 함수 - 첫 자리만 보이고 나머지는 * 표시
 const anonymizeAmount = (amount: number, rank: number): string => {
   const amountStr = amount.toString();
   
-  // 금액 길이에 따라 마스킹 처리
-  if (amountStr.length <= 3) {
-    // 3자리 이하는 모두 마스킹
-    return "***원";
-  } else if (amountStr.length === 4) {
-    // 4자리는 마지막 3자리만 표시
-    return "*" + amountStr.slice(-3) + "원";
-  } else if (amountStr.length === 5) {
-    // 5자리는 마지막 3자리만 표시
-    return "**" + amountStr.slice(-3) + "원";
-  } else if (amountStr.length === 6) {
-    // 6자리는 마지막 3자리만 표시
-    return "***" + amountStr.slice(-3) + "원";
+  if (amountStr.length <= 1) {
+    return amountStr + "원";
   } else {
-    // 7자리 이상은 마지막 3자리만 표시
-    return "*".repeat(amountStr.length - 3) + amountStr.slice(-3) + "원";
+    // 첫 자리만 보이고 나머지는 * 표시
+    return amountStr[0] + "*".repeat(amountStr.length - 1) + "원";
   }
 };
 
