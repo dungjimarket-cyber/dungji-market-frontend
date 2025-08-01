@@ -454,9 +454,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          groupbuy_id: groupBuy.id,
+          groupbuy: groupBuy.id,
           bid_type: bidType,
           amount: typeof bidAmount === 'number' ? bidAmount : parseInt(bidAmount.toString(), 10),
+          message: '',
+          seller: user?.id // 판매자 ID 추가
         })
       });
 
