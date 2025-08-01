@@ -67,36 +67,37 @@ function GroupPurchasesPageContent() {
   const [userBids, setUserBids] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('popular');
+  const [activeTab, setActiveTab] = useState('all');
 
   /**
    * 공구 목록 가져오기 (필터 포함)
    */
-  const fetchGroupBuys = async (filters?: Record<string, string>) => {
+  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>) => {
     setLoading(true);
     setError('');
+    console.log('fetchGroupBuys 호출 - activeTab:', activeTab, 'filters:', filters);
     
     try {
       const params = new URLSearchParams();
       
       // 기본 상태 설정 - 탭에 따라
       if (activeTab === 'completed') {
-        // 종료 탭: 종료된 공구들 (voting, final_selection, seller_confirmation, completed, cancelled)
-        params.append('status', 'ended');
+        // 종료 탭: 종료된 공구들 (ended, voting, final_selection, seller_confirmation, completed, cancelled)
+        params.append('status', 'ended,voting,final_selection,seller_confirmation,completed,cancelled');
       } else if (activeTab === 'all') {
-        // 전체 탭은 모든 상태 포함
+        // 전체 탭은 모든 상태 포함 - 상태 필터 없음
       } else {
         // 인기순, 최신순 탭은 진행중인 것만 (recruiting, bidding)
-        params.append('status', 'active');
+        params.append('status', 'recruiting,bidding');
       }
       
       // 탭별 정렬 설정
       if (activeTab === 'popular') {
         // 인기순: 참여자 많은 순으로 정렬
-        params.append('sort', 'popular');
+        params.append('ordering', '-current_participants');
       } else {
         // 나머지 탭들은 모두 최신순으로 정렬
-        params.append('sort', 'newest');
+        params.append('ordering', '-created_at');
       }
       
       // 사용자 필터 추가
@@ -165,7 +166,7 @@ function GroupPurchasesPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, accessToken]);
 
   /**
    * 필터 변경 처리
@@ -177,24 +178,21 @@ function GroupPurchasesPageContent() {
   /**
    * 탭 변경 처리
    */
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = useCallback((tab: string) => {
+    console.log('탭 변경:', tab);
     setActiveTab(tab);
     
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search'].includes(key)) {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'search'].includes(key)) {
         filters[key] = value;
       }
     });
     
-    // 탭 변경시에는 정렬 필터를 초기화 (사용자가 명시적으로 선택한 경우 제외)
-    if (!filters.sort) {
-      filters.sort = 'all';
-    }
-    
+    // 탭에 따른 필터 설정은 fetchGroupBuys에서 처리
     fetchGroupBuys(filters);
-  };
+  }, [searchParams, fetchGroupBuys]);
 
   /**
    * 사용자 참여 공구 및 입찰 공구 ID 목록 가져오기
@@ -267,7 +265,7 @@ function GroupPurchasesPageContent() {
       const newUrl = newSearchParams.toString() ? `?${newSearchParams.toString()}` : '';
       router.replace(`/group-purchases${newUrl}`);
     }
-  }, [activeTab, searchParams, accessToken, fetchUserParticipationsAndBids, router]);
+  }, [activeTab, searchParams, accessToken, fetchUserParticipationsAndBids, router, fetchGroupBuys]);
 
   /**
    * 페이지가 다시 포커스될 때 데이터 새로고침
@@ -331,15 +329,16 @@ function GroupPurchasesPageContent() {
             <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="all">전체</TabsTrigger>
               <TabsTrigger value="popular">인기순</TabsTrigger>
-              <TabsTrigger value="new">최신순</TabsTrigger>
+              <TabsTrigger value="newest">최신순</TabsTrigger>
               <TabsTrigger value="completed">종료</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="mt-2">
+            {/* 통합된 콘텐츠 영역 - 모든 탭이 동일한 데이터 표시 */}
+            <div className="mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {loading ? (
-                  [...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                  [...Array(8)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
                   ))
                 ) : error ? (
                   <div className="col-span-full text-center py-8">
@@ -347,7 +346,12 @@ function GroupPurchasesPageContent() {
                   </div>
                 ) : groupBuys.length === 0 ? (
                   <div className="col-span-full text-center py-8">
-                    <p className="text-gray-500">진행중인 공동구매가 없습니다.</p>
+                    <p className="text-gray-500">
+                      {activeTab === 'all' && '공동구매가 없습니다.'}
+                      {activeTab === 'popular' && '인기 공동구매가 없습니다.'}
+                      {activeTab === 'newest' && '새로운 공동구매가 없습니다.'}
+                      {activeTab === 'completed' && '종료된 공동구매가 없습니다.'}
+                    </p>
                   </div>
                 ) : (
                   groupBuys.map((groupBuy) => (
@@ -360,88 +364,7 @@ function GroupPurchasesPageContent() {
                   ))
                 )}
               </div>
-            </TabsContent>
-
-            <TabsContent value="popular" className="mt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                ))
-              ) : error ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">{error}</p>
-                </div>
-              ) : groupBuys.length === 0 ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">인기 공동구매가 없습니다.</p>
-                </div>
-              ) : (
-                groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard 
-                    key={groupBuy.id} 
-                    groupBuy={groupBuy}
-                    isParticipant={userParticipations.includes(groupBuy.id)}
-                    hasBid={userBids.includes(groupBuy.id)}
-                  />
-                ))
-              )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="new" className="mt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                ))
-              ) : error ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">{error}</p>
-                </div>
-              ) : groupBuys.length === 0 ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">새로운 공동구매가 없습니다.</p>
-                </div>
-              ) : (
-                groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard 
-                    key={groupBuy.id} 
-                    groupBuy={groupBuy}
-                    isParticipant={userParticipations.includes(groupBuy.id)}
-                    hasBid={userBids.includes(groupBuy.id)}
-                  />
-                ))
-              )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="completed" className="mt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
-                ))
-              ) : error ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">{error}</p>
-                </div>
-              ) : groupBuys.length === 0 ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">완료된 공동구매가 없습니다.</p>
-                </div>
-              ) : (
-                groupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard 
-                    key={groupBuy.id} 
-                    groupBuy={groupBuy}
-                    isParticipant={userParticipations.includes(groupBuy.id)}
-                    hasBid={userBids.includes(groupBuy.id)}
-                  />
-                ))
-              )}
-              </div>
-            </TabsContent>
+            </div>
           </Tabs>
         </div>
       </div>
