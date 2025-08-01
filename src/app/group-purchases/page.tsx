@@ -72,19 +72,20 @@ function GroupPurchasesPageContent() {
   /**
    * 공구 목록 가져오기 (필터 포함)
    */
-  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>) => {
+  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string) => {
     setLoading(true);
     setError('');
-    console.log('fetchGroupBuys 호출 - activeTab:', activeTab, 'filters:', filters);
+    const currentTab = tabValue || activeTab;
+    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters);
     
     try {
       const params = new URLSearchParams();
       
       // 기본 상태 설정 - 탭에 따라
-      if (activeTab === 'completed') {
+      if (currentTab === 'completed') {
         // 종료 탭: 종료된 공구들 (ended, voting, final_selection, seller_confirmation, completed, cancelled)
         params.append('status', 'ended,voting,final_selection,seller_confirmation,completed,cancelled');
-      } else if (activeTab === 'all') {
+      } else if (currentTab === 'all') {
         // 전체 탭은 모든 상태 포함 - 상태 필터 없음
       } else {
         // 인기순, 최신순 탭은 진행중인 것만 (recruiting, bidding)
@@ -92,7 +93,7 @@ function GroupPurchasesPageContent() {
       }
       
       // 탭별 정렬 설정
-      if (activeTab === 'popular') {
+      if (currentTab === 'popular') {
         // 인기순: 참여자 많은 순으로 정렬
         params.append('ordering', '-current_participants');
       } else {
@@ -172,7 +173,7 @@ function GroupPurchasesPageContent() {
    * 필터 변경 처리
    */
   const handleFiltersChange = (filters: Record<string, string>) => {
-    fetchGroupBuys(filters);
+    fetchGroupBuys(filters, activeTab);
   };
 
   /**
@@ -190,8 +191,8 @@ function GroupPurchasesPageContent() {
       }
     });
     
-    // 탭에 따른 필터 설정은 fetchGroupBuys에서 처리
-    fetchGroupBuys(filters);
+    // 탭에 따른 필터 설정은 fetchGroupBuys에서 처리 - 새로운 탭 값 전달
+    fetchGroupBuys(filters, tab);
   }, [searchParams, fetchGroupBuys]);
 
   /**
@@ -251,7 +252,7 @@ function GroupPurchasesPageContent() {
       }
     });
     
-    fetchGroupBuys(filters);
+    fetchGroupBuys(filters, activeTab);
     
     // 사용자가 로그인한 경우 참여/입찰 정보 가져오기
     if (accessToken) {
