@@ -866,7 +866,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
 
         {/* 공구 지역 */}
-        <div className="px-4 py-4 flex items-center justify-between border-t">
+        <div className="px-4 py-4 flex items-center gap-3 border-t">
           <span className="text-gray-500">공구 지역</span>
           <div className="flex flex-wrap gap-1">
             {groupBuy.region_type === 'nationwide' ? (
