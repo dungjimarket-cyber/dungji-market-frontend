@@ -261,6 +261,13 @@ function HomeContent() {
             <span className="text-sm sm:text-base">공구 둘러보기</span>
           </Link>
           
+          <Link 
+            href="/events"
+            className="btn-animated btn-accent whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto"
+          >
+            <span className="text-sm sm:text-base">이벤트</span>
+          </Link>
+          
           <button
             onClick={() => setShowIframe(!showIframe)}
             className="btn-animated btn-outline whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 hover:bg-gray-50 transition-all w-full sm:w-auto"

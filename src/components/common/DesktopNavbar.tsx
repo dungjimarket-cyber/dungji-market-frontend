@@ -28,6 +28,9 @@ export default function DesktopNavbar() {
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
               공구 둘러보기
             </Link>
+            <Link href="/events" className="text-gray-600 hover:text-gray-900">
+              이벤트
+            </Link>
             
             {/* 비로그인 시 */}
             {!isAuthenticated && (
