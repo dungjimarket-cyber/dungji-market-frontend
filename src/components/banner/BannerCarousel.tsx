@@ -72,10 +72,39 @@ export default function BannerCarousel() {
       {/* 배너 컨테이너 */}
       <div className="relative h-64 sm:h-96">
         {/* 배너 이미지 */}
-        <Link 
-          href={currentBanner.target_url}
-          className="block w-full h-full"
-        >
+        {currentBanner.target_url ? (
+          <Link 
+            href={currentBanner.target_url}
+            className="block w-full h-full"
+          >
+            <div className="relative w-full h-full">
+              <Image
+                src={currentBanner.image_url}
+                alt={currentBanner.title}
+                fill
+                className="object-cover"
+                priority={currentIndex === 0}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
+              />
+              {/* 그라데이션 오버레이 (선택사항) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              
+              {/* 배너 텍스트 (선택사항) */}
+              {currentBanner.event_detail && (
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                    {currentBanner.event_detail.title}
+                  </h2>
+                  {currentBanner.event_detail.short_description && (
+                    <p className="text-sm sm:text-base line-clamp-2">
+                      {currentBanner.event_detail.short_description}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </Link>
+        ) : (
           <div className="relative w-full h-full">
             <Image
               src={currentBanner.image_url}
@@ -102,7 +131,7 @@ export default function BannerCarousel() {
               </div>
             )}
           </div>
-        </Link>
+        )}
 
         {/* 이전/다음 버튼 - 배너가 2개 이상일 때만 표시 */}
         {banners.length > 1 && (
