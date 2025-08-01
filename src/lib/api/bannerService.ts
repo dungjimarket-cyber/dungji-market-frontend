@@ -44,7 +44,7 @@ export interface Banner {
 export const getMainBanners = async (): Promise<Banner[]> => {
   const response = await fetchWithAuth('/banners/main/');
   const data = await response.json();
-  return data;
+  return data.results || [];
 };
 
 // 배너 목록 가져오기
