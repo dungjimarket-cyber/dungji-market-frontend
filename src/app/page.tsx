@@ -219,30 +219,7 @@ function HomeContent() {
       <section className="mb-12">       
         {/* 메인 배너 이미지 */}
         <section className="mb-2">
-          <div className="relative w-full overflow-hidden">
-            <img 
-              src="/images/dungji-banner.png" 
-              alt="둥지마켓 메인 배너" 
-              className="w-full h-auto object-cover"
-            />
-            {/* 배너 안쪽 아래쪽에 버튼 이미지 추가 */}
-            <div className="absolute bottom-[10%] sm:bottom-[15%] left-0 right-0 flex justify-center gap-2 sm:gap-4 px-4">
-              <Link href="/register" className="flex-1 max-w-[140px] sm:max-w-[160px]">
-                <img 
-                  src="/button/seller_register_button.png" 
-                  alt="판매회원 가입 버튼" 
-                  className="w-full h-auto hover:opacity-90 transition-opacity"
-                />
-              </Link>
-              <Link href="/group-purchases" className="flex-1 max-w-[140px] sm:max-w-[160px]">
-                <img 
-                  src="/button/group-purchases_button.png" 
-                  alt="공구 둘러보기 버튼" 
-                  className="w-full h-auto hover:opacity-90 transition-opacity"
-                />
-              </Link>
-            </div>
-          </div>
+          
         </section>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mb-8 mt-4 px-4">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}

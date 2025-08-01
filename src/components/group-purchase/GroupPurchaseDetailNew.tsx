@@ -203,12 +203,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       checkParticipationStatus();
-      if (isSeller) {
-        checkBidStatus();
-      }
       checkWishStatus();
     }
-  }, [isAuthenticated, accessToken, groupBuy.id, isSeller]);
+  }, [isAuthenticated, accessToken, groupBuy.id]);
 
   const checkParticipationStatus = async () => {
     try {
@@ -230,41 +227,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   const checkBidStatus = async () => {
-    if (!isSeller) return;
-    
-    try {
-      // 판매자의 입찰 목록 조회 - 마이페이지 API 사용
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/bids/summary/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const bid = data.find((b: any) => b.groupbuy === groupBuy.id);
-        if (bid) {
-          setHasBid(true);
-          setMyBidAmount(bid.amount);
-          setMyBidId(bid.id);
-          setBidType(bid.bid_type || 'support');
-          
-          // 입찰 취소 가능 여부 확인
-          const now = new Date();
-          const endTime = new Date(groupBuy.end_time);
-          setCanCancelBid(now < endTime);
-          
-          // 입찰 순위 확인
-          fetchBidRank(bid.id);
-        } else {
-          setHasBid(false);
-          setMyBidAmount(null);
-          setMyBidId(null);
-        }
-      }
-    } catch (error) {
-      console.error('입찰 상태 확인 오류:', error);
+    // fetchTopBids에서 내 입찰 정보를 확인하므로 별도로 호출할 필요 없음
+    if (isSeller) {
+      await fetchTopBids();
     }
   };
   
