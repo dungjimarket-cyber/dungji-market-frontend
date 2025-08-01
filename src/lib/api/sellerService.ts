@@ -131,15 +131,26 @@ export const updateSellerProfile = async (data: {
   description?: string;
   phone?: string;
   address?: string;
+  address_detail?: string;
   address_region_id?: string;
   business_number?: string;
+  business_reg_number?: string;
   is_remote_sales?: boolean;
+  is_remote_sales_enabled?: boolean;
   notification_enabled?: boolean;
   profile_image?: string;
 }): Promise<SellerProfile> => {
   try {
     const headers = await getAxiosAuthHeaders();
-    const response = await axios.patch(`${API_URL}/users/me/`, data, { headers });
+    // API 호출 전에 데이터 매핑
+    const apiData = {
+      ...data,
+      username: data.nickname || data.name,
+      business_reg_number: data.business_reg_number || data.business_number,
+      is_remote_sales_enabled: data.is_remote_sales_enabled || data.is_remote_sales,
+      address_detail: data.address_detail || data.address
+    };
+    const response = await axios.patch(`${API_URL}/auth/profile/`, apiData, { headers });
     return response.data;
   } catch (error: any) {
     console.error('판매자 프로필 업데이트 오류:', error.response?.data);
