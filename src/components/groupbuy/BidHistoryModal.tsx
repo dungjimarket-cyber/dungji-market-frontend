@@ -23,21 +23,27 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 
-// 입찰 금액 익명화 처리 함수
+// 입찰 금액 익명화 처리 함수 - 앞자리 제외한 * 표기
 const anonymizeAmount = (amount: number, rank: number): string => {
-  // 1~5위까지만 익명화 처리
-  if (rank <= 5) {
-    const amountStr = amount.toString();
-    if (amountStr.length <= 4) { // 1000원 이하일 경우
-      return "XX" + amountStr.slice(-2) + "원";
-    } else {
-      // 앞자리 제외한 후배 자리만 표시 (1자리 이상 제외)
-      const maskedDigits = amountStr.length > 5 ? 2 : 1;
-      return "X".repeat(maskedDigits) + amountStr.slice(maskedDigits) + "원";
-    }
+  const amountStr = amount.toString();
+  
+  // 금액 길이에 따라 마스킹 처리
+  if (amountStr.length <= 3) {
+    // 3자리 이하는 모두 마스킹
+    return "***원";
+  } else if (amountStr.length === 4) {
+    // 4자리는 마지막 3자리만 표시
+    return "*" + amountStr.slice(-3) + "원";
+  } else if (amountStr.length === 5) {
+    // 5자리는 마지막 3자리만 표시
+    return "**" + amountStr.slice(-3) + "원";
+  } else if (amountStr.length === 6) {
+    // 6자리는 마지막 3자리만 표시
+    return "***" + amountStr.slice(-3) + "원";
+  } else {
+    // 7자리 이상은 마지막 3자리만 표시
+    return "*".repeat(amountStr.length - 3) + amountStr.slice(-3) + "원";
   }
-  // 5위 이후는 일반 형식으로 표시
-  return formatNumberWithCommas(amount) + "원";
 };
 
 // 여기서는 BidData 인터페이스를 API 서비스에서 가져와 사용합니다
@@ -154,7 +160,7 @@ export default function BidHistoryModal({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatNumberWithCommas(bid.amount)}원
+                      {index < 10 ? anonymizeAmount(bid.amount, index + 1) : formatNumberWithCommas(bid.amount) + '원'}
                     </TableCell>
                     <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
                   </TableRow>

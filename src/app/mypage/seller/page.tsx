@@ -163,10 +163,10 @@ export default function SellerMyPage() {
             </CardContent>
           </Card>
 
-          <h2 className="text-xl font-bold mb-4">입찰 내역</h2>
+          <h2 className="text-xl font-bold mb-4">판매 활동</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <SummaryCard
-              title="입찰 내역"
+              title="입찰내역"
               count={profile.activeBids}
               icon={<Clock className="h-5 w-5 text-blue-500" />}
               href="/mypage/seller/bids"
@@ -181,13 +181,13 @@ export default function SellerMyPage() {
               title="판매 확정"
               count={profile.pendingSales}
               icon={<BadgeCheck className="h-5 w-5 text-green-500" />}
-              href="/mypage/seller/sales/confirmed"
+              href="/mypage/seller/sales?filter=confirmed"
             />
             <SummaryCard
-              title="판매 완료"
+              title="판매완료"
               count={profile.completedSales}
               icon={<ShoppingBag className="h-5 w-5 text-purple-500" />}
-              href="/mypage/seller/sales/completed"
+              href="/mypage/seller/sales?filter=completed"
             />
           </div>
 

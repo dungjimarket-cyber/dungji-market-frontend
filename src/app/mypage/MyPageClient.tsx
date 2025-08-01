@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import ProfileSection from '@/components/mypage/ProfileSection';
 import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
-import CreatedGroupBuys from '@/components/mypage/CreatedGroupBuys';
-import BidManagement from '@/components/mypage/BidManagement';
 import SettlementHistory from '@/components/mypage/SettlementHistory';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
@@ -17,13 +15,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Store, BarChart, Package, ShoppingBag, ChevronRight, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
  * 사용자 역할에 따라 다른 UI를 보여줍니다.
- * - 일반 사용자: 참여 중인 공구, 내가 만든 공구, 주문 내역
- * - 판매회원(셀러): 참여 중인 공구, 입찰 관리, 정산 내역
+ * - 일반 사용자: 참여중인 공구, 최종선택 대기중, 구매 확정, 구매 완료
+ * - 판매회원(셀러): 별도 판매자 마이페이지로 리디렉션
  */
 export default function MyPageClient() {
   const router = useRouter();
@@ -35,9 +33,7 @@ export default function MyPageClient() {
   // 각 섹션의 데이터 카운트 상태 관리
   const [participatingCount, setParticipatingCount] = useState(0);
   const [pendingSelectionCount, setPendingSelectionCount] = useState(0);
-  const [sellerActivityCount, setSellerActivityCount] = useState(0);
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
-  const [createdGroupBuysCount, setCreatedGroupBuysCount] = useState(0);
   const [completedGroupBuysCount, setCompletedGroupBuysCount] = useState(0);
 
   // 참여중인 공구 개수 가져오기
@@ -89,35 +85,9 @@ export default function MyPageClient() {
       }
     };
     
-    // 판매자 활동 개수 가져오기 (판매자만 실행)
-    const fetchSellerActivityCount = async () => {
-      if (!isAuthenticated || !accessToken || !isSeller) return;
-      
-      try {
-        // 입찰 관리에서 데이터 개수 가져오기
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/bids/`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          cache: 'no-store'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setSellerActivityCount(data.length);
-        }
-      } catch (error) {
-        console.error('판매자 활동 개수 조회 오류:', error);
-        // API가 아직 없다면 임시값 설정
-        setSellerActivityCount(0);
-      }
-    };
-    
-    // 구매 진행중인 상품 개수 가져오기 (판매자만 실행)
+    // 구매 진행중인 상품 개수 가져오기
     const fetchPurchaseInProgressCount = async () => {
-      if (!isAuthenticated || !accessToken || !isSeller) return;
+      if (!isAuthenticated || !accessToken) return;
       
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/settlements/`, {
@@ -164,40 +134,11 @@ export default function MyPageClient() {
       }
     };
     
-    // 내가 만든 공구 개수 가져오기
-    const fetchCreatedGroupBuysCount = async () => {
-      if (!isAuthenticated || !accessToken) return;
-      
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/my_groupbuys/`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          cache: 'no-store'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setCreatedGroupBuysCount(data.length);
-        }
-      } catch (error) {
-        console.error('내가 만든 공구 개수 조회 오류:', error);
-        setCreatedGroupBuysCount(0);
-      }
-    };
-    
     if (isAuthenticated && accessToken) {
       fetchParticipatingCount();
       fetchPendingSelectionCount();
-      fetchCreatedGroupBuysCount();
       fetchCompletedGroupBuysCount();
-      
-      if (isSeller) {
-        fetchSellerActivityCount();
-        fetchPurchaseInProgressCount();
-      }
+      fetchPurchaseInProgressCount();
     }
   }, [isAuthenticated, accessToken, isSeller]);
   
@@ -279,13 +220,13 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 최종 선택 대기중 */}
+            {/* 최종선택 대기중 */}
             <AccordionItem value="pending">
               <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <ShoppingBag className="w-5 h-5 mr-2 text-amber-500" />
-                    <span className="font-medium">최종 선택 대기중</span>
+                    <span className="font-medium">최종선택 대기중</span>
                   </div>
                   <div className="flex items-center text-amber-600">
                     <span className="mr-1 text-sm">{pendingSelectionCount}</span>
@@ -298,32 +239,32 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 내가 만든 공구 */}
-            <AccordionItem value="created">
+            {/* 구매 확정 */}
+            <AccordionItem value="purchase-confirmed">
               <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <PlusCircle className="w-5 h-5 mr-2 text-purple-500" />
-                    <span className="font-medium">내가 만든 공구</span>
+                    <CheckCircle2 className="w-5 h-5 mr-2 text-green-500" />
+                    <span className="font-medium">구매 확정</span>
                   </div>
-                  <div className="flex items-center text-purple-600">
-                    <span className="mr-1 text-sm">{createdGroupBuysCount}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  <div className="flex items-center text-green-600">
+                    <span className="mr-1 text-sm">{purchaseInProgressCount}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-green-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-4">
-                <CreatedGroupBuys />
+                <SettlementHistory />
               </AccordionContent>
             </AccordionItem>
 
-            {/* 공구종료 */}
-            <AccordionItem value="completed">
+            {/* 구매 완료 */}
+            <AccordionItem value="purchase-completed">
               <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <CheckCircle2 className="w-5 h-5 mr-2 text-gray-500" />
-                    <span className="font-medium">공구종료</span>
+                    <span className="font-medium">구매 완료</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <span className="mr-1 text-sm">{completedGroupBuysCount}</span>
@@ -336,46 +277,6 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 판매자 활동 (판매자만 표시) */}
-            {isSeller && (
-              <>
-                <AccordionItem value="bids">
-                  <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center">
-                        <Store className="w-5 h-5 mr-2 text-green-500" />
-                        <span className="font-medium">판매자 활동 대기중</span>
-                      </div>
-                      <div className="flex items-center text-green-600">
-                        <span className="mr-1 text-sm">{sellerActivityCount}</span>
-                        <ChevronRight className="h-4 w-4 shrink-0 text-green-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4">
-                    <BidManagement />
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="settlements">
-                  <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center">
-                        <BarChart className="w-5 h-5 mr-2 text-purple-500" />
-                        <span className="font-medium">구매 진행중</span>
-                      </div>
-                      <div className="flex items-center text-purple-600">
-                        <span className="mr-1 text-sm">{purchaseInProgressCount}</span>
-                        <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4">
-                    <SettlementHistory />
-                  </AccordionContent>
-                </AccordionItem>
-              </>
-            )}
           </Accordion>
         </div>
       ) : (

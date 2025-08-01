@@ -849,6 +849,15 @@ const continueSubmitWithUserId = async (
  */
 const onSubmit = async (values: FormData) => {
   console.log('폼 제출 시작 - 값:', values);
+  
+  // 일반회원의 경우 주소와 휴대폰번호 체크
+  if (user?.role === 'buyer' && (!user.phone_number || !user.address_region)) {
+    if (confirm('공구를 등록하기 위해서는 주소와 휴대폰번호 입력이 필요합니다.\n\n마이페이지로 이동하시겠습니까?')) {
+      router.push('/mypage');
+    }
+    return;
+  }
+  
   setIsSubmitting(true);
 
   // API 요청 데이터 및 상품 세부 정보 변수 선언
@@ -1215,7 +1224,15 @@ const onSubmit = async (values: FormData) => {
               <div className="flex gap-4 mb-4">
                 <button
                   type="button"
-                  onClick={() => setManufacturerFilter('samsung')}
+                  onClick={() => {
+                    setManufacturerFilter('samsung');
+                    // Reset selection if current selection doesn't match filter
+                    const currentProduct = products.find(p => p.id.toString() === form.getValues('product'));
+                    if (currentProduct && !currentProduct.name.toLowerCase().includes('갤럭시') && !currentProduct.name.toLowerCase().includes('galaxy')) {
+                      form.setValue('product', '');
+                      setSelectedProduct(null);
+                    }
+                  }}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     manufacturerFilter === 'samsung' 
                       ? 'bg-blue-600 text-white' 
@@ -1226,7 +1243,15 @@ const onSubmit = async (values: FormData) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setManufacturerFilter('apple')}
+                  onClick={() => {
+                    setManufacturerFilter('apple');
+                    // Reset selection if current selection doesn't match filter
+                    const currentProduct = products.find(p => p.id.toString() === form.getValues('product'));
+                    if (currentProduct && !currentProduct.name.toLowerCase().includes('아이폰') && !currentProduct.name.toLowerCase().includes('iphone')) {
+                      form.setValue('product', '');
+                      setSelectedProduct(null);
+                    }
+                  }}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     manufacturerFilter === 'apple' 
                       ? 'bg-gray-900 text-white' 
@@ -1237,7 +1262,9 @@ const onSubmit = async (values: FormData) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setManufacturerFilter(null)}
+                  onClick={() => {
+                    setManufacturerFilter(null);
+                  }}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     manufacturerFilter === null 
                       ? 'bg-gray-600 text-white' 
@@ -1301,7 +1328,7 @@ const onSubmit = async (values: FormData) => {
                             {field.value && selectedProduct ? selectedProduct.name : "상품을 선택해주세요"}
                           </SelectValue>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" sideOffset={5}>
                           {products
                             .filter((product) => {
                               if (!manufacturerFilter) return true;
