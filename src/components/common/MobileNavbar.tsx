@@ -20,7 +20,7 @@ export default function MobileNavbar() {
     if (user) {
       const isSellerUser = user.role === 'seller' || user.user_type === '판매';
       setIsSeller(isSellerUser);
-      setUserRole(isSellerUser ? 'seller' : 'user');
+      setUserRole(isSellerUser ? 'seller' : 'buyer');
     } else {
       setIsSeller(false);
       setUserRole(null);
