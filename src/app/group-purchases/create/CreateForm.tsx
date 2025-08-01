@@ -410,6 +410,13 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     }
     
     // 일반회원: 활동지역 체크 (모든 가입 방식에 적용)
+    console.log('[CreateForm] 사용자 정보 확인:', {
+      role: user?.role,
+      address_region: user?.address_region,
+      phone_number: user?.phone_number,
+      user_full: user
+    });
+    
     if (user?.role === 'buyer' && !user.address_region) {
       if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
         router.push('/mypage');

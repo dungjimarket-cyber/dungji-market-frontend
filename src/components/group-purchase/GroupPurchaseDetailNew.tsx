@@ -382,14 +382,30 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         // 내 입찰 찾기
         if (user && isSeller) {
-          const myBid = bids.find((bid: any) => bid.seller === parseInt(user.id));
+          console.log('내 user.id:', user.id, typeof user.id);
+          console.log('입찰 목록:', bids.map((bid: any) => ({ 
+            id: bid.id, 
+            seller: bid.seller, 
+            sellerType: typeof bid.seller,
+            amount: bid.amount 
+          })));
+          
+          const myBid = bids.find((bid: any) => {
+            // seller가 숫자면 직접 비교, 문자열이면 변환 후 비교
+            const sellerId = typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller;
+            const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+            return sellerId === userId;
+          });
+          
+          console.log('내 입찰:', myBid);
+          
           if (myBid) {
             setHasBid(true);
             setMyBidAmount(myBid.amount);
             setMyBidId(myBid.id);
             
             // 내 입찰 순위 계산
-            const sortedForRank = bids.sort((a: any, b: any) => b.amount - a.amount);
+            const sortedForRank = [...bids].sort((a: any, b: any) => b.amount - a.amount);
             const myRank = sortedForRank.findIndex((bid: any) => bid.id === myBid.id) + 1;
             setMyBidRank({
               rank: myRank,
