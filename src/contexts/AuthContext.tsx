@@ -304,6 +304,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     username: profileData.username,
                     sns_type: profileData.sns_type,
                     provider: profileData.sns_type, // 호환성을 위해 provider 필드도 설정
+                    phone_number: profileData.phone_number,
+                    region: profileData.region,
+                    address_region: profileData.address_region,
+                    business_address: profileData.business_address,
                   };
                   logDebug('사용자 정보 업데이트 완료', userData);
                 } else {
@@ -317,6 +321,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     token: storedToken,
                     sns_type: profileData.sns_type,
                     provider: profileData.sns_type,
+                    phone_number: profileData.phone_number,
+                    region: profileData.region,
+                    address_region: profileData.address_region,
+                    business_address: profileData.business_address,
                   };
                   logDebug('새 사용자 정보 생성', userData);
                 }
@@ -576,6 +584,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userEmail = decoded.email || email;
           const userRole = decoded.role || 'buyer';
           
+          // 프로필 정보 가져오기
+          try {
+            const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`, {
+              headers: {
+                'Authorization': `Bearer ${access}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (profileResponse.ok) {
+              const profileData = await profileResponse.json();
+              const user = {
+                id: userId,
+                email: userEmail,
+                role: userRole,
+                username: profileData.username,
+                phone_number: profileData.phone_number,
+                region: profileData.region,
+                address_region: profileData.address_region,
+                business_address: profileData.business_address,
+                sns_type: profileData.sns_type,
+                provider: profileData.sns_type,
+                token: access
+              };
+              
+              setUser(user);
+              
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('auth.user', JSON.stringify(user));
+                localStorage.setItem('userRole', userRole);
+              }
+              
+              logDebug('로그인 성공 및 프로필 정보 로드 완료');
+              return { success: true };
+            }
+          } catch (profileError) {
+            console.error('프로필 정보 로드 실패:', profileError);
+          }
+          
+          // 프로필 정보 로드 실패시 기본 정보만 사용
           const user = {
             id: userId,
             email: userEmail,
