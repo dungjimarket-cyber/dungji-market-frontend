@@ -8,6 +8,8 @@ declare module 'next-auth' {
     username?: string; // 닉네임
     nickname?: string; // 대체 닉네임 필드
     accessToken?: string;
+    birth_date?: string; // 생년월일 (YYYY-MM-DD)
+    gender?: 'M' | 'F'; // 성별
     jwt?: {
       access: string;
       refresh: string;

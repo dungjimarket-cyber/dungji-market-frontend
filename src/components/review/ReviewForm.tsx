@@ -12,6 +12,8 @@ import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { AlertCircle } from 'lucide-react';
 
 interface ReviewFormProps {
   /** 리뷰를 작성할 그룹구매 ID */
@@ -60,6 +62,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   creatorId,
 }) => {
   const { isAuthenticated, accessToken, user } = useAuth();
+  const router = useRouter();
   const [rating, setRating] = useState<number>(initialRating);
   const [content, setContent] = useState<string>(initialContent);
   const [isPurchased, setIsPurchased] = useState<boolean>(initialIsPurchased);
@@ -210,6 +213,30 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               : '리뷰 등록'}
         </Button>
       </div>
+      
+      {/* 노쇼 신고 섹션 - 수정 모드가 아닐 때만 표시 */}
+      {!isEditMode && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-start space-x-2">
+            <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 font-medium">거래 상대방이 나타나지 않으셨나요?</p>
+              <p className="text-xs text-gray-600 mt-1">
+                약속된 거래 시간에 상대방이 나타나지 않은 경우 노쇼 신고를 할 수 있습니다.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+                onClick={() => router.push(`/noshow-report/create?groupbuyId=${groupbuyId}`)}
+              >
+                노쇼 신고하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 };

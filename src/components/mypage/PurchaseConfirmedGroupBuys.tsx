@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, Truck, Clock, CheckCircle } from 'lucide-react';
+import { Package, Truck, Clock, CheckCircle, Phone } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
+import ContactInfoModal from '@/components/groupbuy/ContactInfoModal';
 
 interface Product {
   id: number;
@@ -39,6 +40,8 @@ export default function PurchaseConfirmedGroupBuys() {
   const { isAuthenticated, isLoading, accessToken } = useAuth();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPurchaseConfirmedGroupBuys = async () => {
@@ -112,8 +115,9 @@ export default function PurchaseConfirmedGroupBuys() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {groupBuys.map((groupBuy) => (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {groupBuys.map((groupBuy) => (
         <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
@@ -158,6 +162,18 @@ export default function PurchaseConfirmedGroupBuys() {
                 
                 {/* 액션 버튼 */}
                 <div className="mt-3 flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedGroupBuyId(groupBuy.id);
+                      setIsContactModalOpen(true);
+                    }}
+                  >
+                    <Phone className="w-3 h-3 mr-1" />
+                    판매자 연락처
+                  </Button>
                   <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
                     <Button size="sm" variant="outline" className="w-full">
                       상세보기
@@ -175,7 +191,21 @@ export default function PurchaseConfirmedGroupBuys() {
             </div>
           </CardContent>
         </Card>
-      ))}
-    </div>
+        ))}
+      </div>
+      
+      {/* 연락처 정보 모달 */}
+      {selectedGroupBuyId && (
+        <ContactInfoModal
+          isOpen={isContactModalOpen}
+          onClose={() => {
+            setIsContactModalOpen(false);
+            setSelectedGroupBuyId(null);
+          }}
+          groupbuyId={selectedGroupBuyId}
+          userRole="buyer"
+        />
+      )}
+    </>
   );
 }

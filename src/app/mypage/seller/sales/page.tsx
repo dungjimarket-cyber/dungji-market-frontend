@@ -17,8 +17,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Search, Phone, Calendar } from 'lucide-react';
+import { ChevronLeft, Search, Phone, Calendar, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ContactInfoModal from '@/components/groupbuy/ContactInfoModal';
 
 // Skeleton 컴포넌트 인라인 정의
 const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
@@ -98,6 +99,8 @@ function SalesListClient() {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
+  const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -243,7 +246,14 @@ function SalesListClient() {
         <>
           <div className="space-y-4">
             {sales.map((sale) => (
-              <SaleCard key={sale.id} sale={sale} />
+              <SaleCard 
+                key={sale.id} 
+                sale={sale} 
+                onViewContacts={() => {
+                  setSelectedGroupBuyId(sale.id);
+                  setIsContactModalOpen(true);
+                }}
+              />
             ))}
           </div>
 
@@ -272,6 +282,19 @@ function SalesListClient() {
           <p className="text-gray-500">판매 확정 내역이 없습니다.</p>
         </div>
       )}
+      
+      {/* 연락처 정보 모달 */}
+      {selectedGroupBuyId && (
+        <ContactInfoModal
+          isOpen={isContactModalOpen}
+          onClose={() => {
+            setIsContactModalOpen(false);
+            setSelectedGroupBuyId(null);
+          }}
+          groupbuyId={selectedGroupBuyId}
+          userRole="seller"
+        />
+      )}
     </div>
   );
 }
@@ -281,9 +304,10 @@ function SalesListClient() {
  */
 interface SaleCardProps {
   sale: SaleConfirmation;
+  onViewContacts?: () => void;
 }
 
-function SaleCard({ sale }: SaleCardProps) {
+function SaleCard({ sale, onViewContacts }: SaleCardProps) {
   const formattedDate = new Date(sale.confirmationDate).toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: '2-digit',
@@ -293,9 +317,8 @@ function SaleCard({ sale }: SaleCardProps) {
   });
 
   return (
-    <Link href={`/mypage/seller/sales/${sale.id}`}>
-      <Card className="hover:shadow-md transition-all">
-        <CardContent className="p-4">
+    <Card className="hover:shadow-md transition-all">
+      <CardContent className="p-4">
           <div className="flex items-center">
             <div className="mr-4">
               <div className="bg-gray-100 w-16 h-16 rounded-md flex items-center justify-center">
@@ -324,18 +347,33 @@ function SaleCard({ sale }: SaleCardProps) {
                     : 'bg-yellow-100 text-yellow-800'
                 }
               >
-                {sale.status === 'confirmed' ? '구매자 정보 및 공구 내역 확인' : '확정 대기중'}
+                {sale.status === 'confirmed' ? '확정 완료' : '확정 대기중'}
               </Badge>
               
               <div className="flex items-center mt-2 text-sm text-gray-500">
                 <Calendar className="h-4 w-4 mr-1" />
                 {formattedDate}
               </div>
+              
+              {sale.status === 'confirmed' && onViewContacts && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onViewContacts();
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  구매자 연락처
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
-    </Link>
   );
 }
 

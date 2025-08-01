@@ -41,6 +41,9 @@ interface ExtendedUser {
   roles?: string[];
   region?: string;    // 지역 정보
   user_type?: string; // 회원구분(일반/판매)
+  birth_date?: string; // 생년월일
+  gender?: 'M' | 'F'; // 성별
+  first_name?: string; // 이름 (실명)
 }
 
 export default function ProfileSection() {
@@ -61,6 +64,9 @@ export default function ProfileSection() {
   const [regions, setRegions] = useState<any[]>([]);
   const [region, setRegion] = useState('');
   const [userType, setUserType] = useState('');
+  const [birthDate, setBirthDate] = useState(''); // 생년월일
+  const [gender, setGender] = useState<'M' | 'F' | ''>(''); // 성별
+  const [firstName, setFirstName] = useState(''); // 실명
   const [isEditing, setIsEditing] = useState(false);
   const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | 'business_address' | 'remote_sales' | null>(null);
   const [error, setError] = useState('');
@@ -119,6 +125,11 @@ export default function ProfileSection() {
             setUserType(profileData.user_type || '일반');
             setBusinessNumber(profileData.business_number || '');  // 사업자등록번호 설정
             setIsRemoteSales(profileData.is_remote_sales || false);
+            
+            // 휴대폰 인증 정보
+            setBirthDate(profileData.birth_date || '');
+            setGender(profileData.gender || '');
+            setFirstName(profileData.first_name || '');
             
             // AuthContext와 로컬스토리지 업데이트
             if (setUser && authUser) {
@@ -560,6 +571,43 @@ export default function ProfileSection() {
               </div>
             )}
           </div>
+          
+          {/* 휴대폰 인증 정보 섹션 - 이름, 생년월일, 성별 */}
+          {(firstName || birthDate || gender) && (
+            <>
+              {/* 이름 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">{firstName || '정보 없음'}</span>
+                </div>
+              </div>
+              
+              {/* 생년월일 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">생년월일</label>
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">
+                    {birthDate ? new Date(birthDate).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    }) : '정보 없음'}
+                  </span>
+                </div>
+              </div>
+              
+              {/* 성별 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">성별</label>
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">
+                    {gender === 'M' ? '남성' : gender === 'F' ? '여성' : '정보 없음'}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
           
           {/* 휴대폰 번호 섹션 */}
           <div className="mb-4">
