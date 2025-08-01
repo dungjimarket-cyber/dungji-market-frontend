@@ -830,6 +830,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <ChevronRight className="w-5 h-5 text-gray-400" />
         </div>
 
+        {/* 공구 지역 */}
+        <div className="px-4 py-4 flex items-center justify-between border-t">
+          <span className="text-gray-500">공구 지역</span>
+          <div className="flex flex-wrap gap-1 justify-end">
+            {groupBuy.region_type === 'nationwide' ? (
+              <span className="font-medium text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded">전국</span>
+            ) : groupBuy.regions && groupBuy.regions.length > 0 ? (
+              groupBuy.regions.map((region, index) => (
+                <span key={index} className="font-medium text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                  {region.name || ''}
+                </span>
+              ))
+            ) : (
+              <span className="font-medium text-sm">지역 정보 없음</span>
+            )}
+          </div>
+        </div>
+
         {/* 공구 참여인원 */}
         <div className="px-4 py-4 flex items-center justify-between border-t">
           <span className="text-gray-500">공구 참여인원</span>
