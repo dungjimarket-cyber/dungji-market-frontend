@@ -1112,7 +1112,11 @@ const onSubmit = async (values: FormData) => {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="container mx-auto py-6 space-y-8">
+      <div className="container mx-auto py-6 space-y-8 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-600">데이터를 불러오는 중...</p>
+        </div>
         {/* 중복 공구 알림 다이얼로그 */}
         <AlertDialog open={showDuplicateProductDialog} onOpenChange={setShowDuplicateProductDialog}>
           <AlertDialogContent>

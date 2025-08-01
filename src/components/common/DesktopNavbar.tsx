@@ -40,7 +40,7 @@ export default function DesktopNavbar() {
             )}
             
             {/* 일반회원 로그인 시 */}
-            {isAuthenticated && user?.role === 'user' && (
+            {isAuthenticated && (user?.role === 'user' || user?.user_type === '일반' || (!user?.role && !user?.user_type)) && (
               <>
                 <Link href="/group-purchases/create" className="text-gray-600 hover:text-gray-900">
                   공구 등록하기
@@ -52,7 +52,7 @@ export default function DesktopNavbar() {
             )}
             
             {/* 판매회원 로그인 시 */}
-            {isAuthenticated && user?.role === 'seller' && (
+            {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
               <>
                 <Link href="/mypage/seller/bids" className="text-gray-600 hover:text-gray-900">
                   입찰 내역

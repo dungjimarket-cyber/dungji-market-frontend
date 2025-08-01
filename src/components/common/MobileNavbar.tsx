@@ -10,57 +10,22 @@ import MobileNotificationButton from '@/components/notification/MobileNotificati
  * 모바일용 하단 네비게이션 바 컴포넌트
  */
 export default function MobileNavbar() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   
   // 사용자 역할 확인
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const checkUserRole = () => {
-      try {
-        // 여러 소스에서 역할 정보 확인
-        const userRole = localStorage.getItem('userRole');
-        if (userRole) {
-          setUserRole(userRole);
-          setIsSeller(userRole === 'seller');
-          return;
-        }
-        
-        // auth.user에서 확인
-        const authUserStr = localStorage.getItem('auth.user') || localStorage.getItem('user');
-        if (authUserStr) {
-          const authUser = JSON.parse(authUserStr);
-          if (authUser.role) {
-            setUserRole(authUser.role);
-            setIsSeller(authUser.role === 'seller');
-            return;
-          }
-        }
-        
-        // next-auth 세션 확인
-        const sessionStr = sessionStorage.getItem('next-auth.session');
-        if (sessionStr) {
-          const sessionData = JSON.parse(sessionStr);
-          if (sessionData.user?.role) {
-            setUserRole(sessionData.user.role);
-            setIsSeller(sessionData.user.role === 'seller');
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('사용자 역할 확인 오류:', error);
-      }
-    };
-    
-    checkUserRole();
-    
-    // 스토리지 변경 감지
-    const handleStorageChange = () => checkUserRole();
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    // Auth context의 user 객체에서 직접 확인
+    if (user) {
+      const isSellerUser = user.role === 'seller' || user.user_type === '판매';
+      setIsSeller(isSellerUser);
+      setUserRole(isSellerUser ? 'seller' : 'user');
+    } else {
+      setIsSeller(false);
+      setUserRole(null);
+    }
+  }, [user]);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 w-full">
