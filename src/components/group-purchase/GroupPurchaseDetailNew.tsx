@@ -379,6 +379,25 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       
       if (response.ok) {
         const bids = await response.json();
+        
+        // 내 입찰 찾기
+        if (user && isSeller) {
+          const myBid = bids.find((bid: any) => bid.seller === parseInt(user.id));
+          if (myBid) {
+            setHasBid(true);
+            setMyBidAmount(myBid.amount);
+            setMyBidId(myBid.id);
+            
+            // 내 입찰 순위 계산
+            const sortedForRank = bids.sort((a: any, b: any) => b.amount - a.amount);
+            const myRank = sortedForRank.findIndex((bid: any) => bid.id === myBid.id) + 1;
+            setMyBidRank({
+              rank: myRank,
+              total: bids.length
+            });
+          }
+        }
+        
         const sortedBids = bids.sort((a: any, b: any) => {
           if (bidType === 'price') {
             return a.amount - b.amount;
@@ -478,7 +497,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (response.ok) {
         const data = await response.json();
         setHasBid(true);
-        setMyBidAmount(typeof bidAmount === 'number' ? bidAmount : parseInt(bidAmount.toString(), 10));
+        setMyBidAmount(roundedAmount);
         setMyBidId(data.id);
         
         toast({
