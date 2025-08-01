@@ -197,6 +197,11 @@ function HomeContent() {
       </div>
       
       <div className="container mx-auto px-4 py-8">
+      {/* 배너 캐러셀을 맨 위로 이동 */}
+      <section className="mb-8">
+        <BannerCarousel />
+      </section>
+
       {/* iframe 팝업 */}
       {showIframe && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -216,11 +221,8 @@ function HomeContent() {
           </div>
         </div>
       )}
+      
       <section className="mb-12">       
-        {/* 메인 배너 이미지 */}
-        <section className="mb-2">
-          
-        </section>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mb-8 mt-4 px-4">
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <RoleButton 
@@ -252,11 +254,6 @@ function HomeContent() {
             <span className="text-sm sm:text-base">둥지마켓 알아보기</span>
           </button>
         </div>
-      </section>
-
-      {/* 배너 캐러셀 추가 */}
-      <section className="mb-12">
-        <BannerCarousel />
       </section>
 
       {/* <section className="mb-12">
