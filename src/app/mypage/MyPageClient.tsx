@@ -134,10 +134,15 @@ export default function MyPageClient() {
     };
     
     if (isAuthenticated && accessToken) {
-      fetchParticipatingCount();
-      fetchPendingSelectionCount();
-      fetchCompletedGroupBuysCount();
-      fetchPurchaseInProgressCount();
+      // 모든 API 호출을 병렬로 실행하여 로딩 시간 단축
+      Promise.all([
+        fetchParticipatingCount(),
+        fetchPendingSelectionCount(),
+        fetchCompletedGroupBuysCount(),
+        fetchPurchaseInProgressCount()
+      ]).catch(error => {
+        console.error('마이페이지 데이터 로딩 오류:', error);
+      });
     }
   }, [isAuthenticated, accessToken, isSeller]);
   

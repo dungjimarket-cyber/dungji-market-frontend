@@ -44,6 +44,17 @@ interface ExtendedUser {
   birth_date?: string; // 생년월일
   gender?: 'M' | 'F'; // 성별
   first_name?: string; // 이름 (실명)
+  phone_number?: string; // 휴대폰 번호
+  address_region?: {
+    code: string;
+    name: string;
+    full_name: string;
+    level: number;
+  };
+  role?: string;
+  is_business_verified?: boolean;
+  business_number?: string;
+  is_remote_sales?: boolean;
 }
 
 export default function ProfileSection() {
@@ -76,97 +87,52 @@ export default function ProfileSection() {
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
   
-  // 컴포넌트 마운트시 백엔드에서 최신 프로필 정보 가져오기
+  // 컴포넌트 마운트시 AuthContext의 user 정보에서 프로필 데이터 설정
   useEffect(() => {
-    const fetchProfileData = async () => {
-      if (accessToken) {
-        try {
-          console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          
-          if (response.ok) {
-            const profileData = await response.json();
-            console.log('백엔드에서 가져온 프로필 정보:', profileData);
+    // AuthContext에서 이미 로그인 시 프로필을 가져왔으므로 중복 API 호출 제거
+    if (user) {
+      console.log('AuthContext에서 사용자 정보 사용:', user);
+      
+      // 프로필 정보 상태 업데이트
+      setEmail(user.email || '');
+      setNickname(user.nickname || user.username || '');
+      setPhoneNumber(user.phone_number || '');
+      setAddressRegion(user.address_region || null);
             
-            // 프로필 정보 상태 업데이트
-            setEmail(profileData.email || '');
-            setNickname(profileData.nickname || profileData.username || '');
-            setPhoneNumber(profileData.phone_number || '');
-            setAddressRegion(profileData.address_region || null);
-            
-            // address_region 객체에서 시/도와 시/군/구 추출
-            if (profileData.address_region) {
-              const fullName = profileData.address_region.full_name || profileData.address_region.name || '';
-              const parts = fullName.split(' ');
-              
-              // 세종특별자치시 특수 처리
-              if (fullName === '세종특별자치시') {
-                setAddressProvince('세종특별자치시');
-                setAddressCity('세종특별자치시');
-              } else if (parts.length >= 2) {
-                setAddressProvince(parts[0]);
-                setAddressCity(parts[1]);
-              } else if (parts.length === 1) {
-                setAddressProvince(parts[0]);
-                setAddressCity('');
-              }
-            } else {
-              setAddressProvince('');
-              setAddressCity('');
-            }
-            
-            setRole(profileData.role || 'buyer');
-            setIsBusinessVerified(profileData.is_business_verified || false);
-            setRegion(profileData.region || '');
-            setUserType(profileData.user_type || '일반');
-            setBusinessNumber(profileData.business_number || '');  // 사업자등록번호 설정
-            setIsRemoteSales(profileData.is_remote_sales || false);
-            
-            // 휴대폰 인증 정보
-            setBirthDate(profileData.birth_date || '');
-            setGender(profileData.gender || '');
-            setFirstName(profileData.first_name || '');
-            
-            // AuthContext와 로컬스토리지 업데이트
-            if (setUser && authUser) {
-              // authUser 사용 (user가 아님) - 원본 AuthContext의 사용자 객체
-              const updatedUser = {
-                ...authUser,
-                email: profileData.email,
-                username: profileData.username,
-                nickname: profileData.nickname,
-                sns_type: profileData.sns_type,
-                provider: profileData.sns_type, // 호환성을 위해 provider도 추가
-                phone_number: profileData.phone_number,
-                region: profileData.region,
-                address_region: profileData.address_region, // 신버전 주소 필드 추가
-                business_number: profileData.business_number,
-              };
-              
-              // AuthContext 업데이트
-              setUser(updatedUser as any); // 타입 캐스팅 추가
-              
-              // 로컬스토리지 업데이트
-              localStorage.setItem('user', JSON.stringify(updatedUser));
-              localStorage.setItem('auth.user', JSON.stringify(updatedUser));
-              
-              console.log('사용자 정보 업데이트 완료:', updatedUser);
-            }
-          } else {
-            console.error('프로필 정보 가져오기 실패:', response.status);
-          }
-        } catch (error) {
-          console.error('프로필 정보 가져오기 오류:', error);
+      // address_region 객체에서 시/도와 시/군/구 추출
+      if (user.address_region) {
+        const fullName = user.address_region.full_name || user.address_region.name || '';
+        const parts = fullName.split(' ');
+        
+        // 세종특별자치시 특수 처리
+        if (fullName === '세종특별자치시') {
+          setAddressProvince('세종특별자치시');
+          setAddressCity('세종특별자치시');
+        } else if (parts.length >= 2) {
+          setAddressProvince(parts[0]);
+          setAddressCity(parts[1]);
+        } else if (parts.length === 1) {
+          setAddressProvince(parts[0]);
+          setAddressCity('');
         }
+      } else {
+        setAddressProvince('');
+        setAddressCity('');
       }
-    };
-    
-    fetchProfileData();
-  }, [accessToken, setUser]); // user 의존성 제거
+      
+      setRole(user.role || 'buyer');
+      setIsBusinessVerified(user.is_business_verified || false);
+      setRegion(user.region || '');
+      setUserType(user.user_type || '일반');
+      setBusinessNumber(user.business_number || '');  // 사업자등록번호 설정
+      setIsRemoteSales(user.is_remote_sales || false);
+      
+      // 휴대폰 인증 정보
+      setBirthDate(user.birth_date || '');
+      setGender(user.gender || '');
+      setFirstName(user.first_name || '');
+    }
+  }, [user]); // user가 변경될 때만 업데이트
   
   // 이메일, 닉네임, 지역, 회원구분 필드 초기화 (선택적 백업 용도)
   useEffect(() => {

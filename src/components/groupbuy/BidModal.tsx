@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { createBid, getSellerBids, cancelBid } from '@/lib/api/bidService';
+import bidTokenService from '@/lib/bid-token-service';
 import { 
   Dialog, 
   DialogContent, 
@@ -63,6 +64,13 @@ export default function BidModal({
   const [bidType, setBidType] = useState<'price' | 'support'>(defaultBidType);
   const [existingBid, setExistingBid] = useState<{id: number, amount: number} | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [bidTokenInfo, setBidTokenInfo] = useState<{
+    single_tokens: number;
+    unlimited_subscription: boolean;
+    unlimited_expires_at: string | null;
+  } | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingBidData, setPendingBidData] = useState<BidFormData | null>(null);
   
   // 마감된 경우 모달 자체에서 방어
   if (isClosed) {
@@ -91,9 +99,9 @@ export default function BidModal({
     }
   });
   
-  // 현재 공구에 대한 판매자의 기존 입찰 확인
+  // 현재 공구에 대한 판매자의 기존 입찰 확인 및 입찰권 정보 가져오기
   useEffect(() => {
-    const checkExistingBid = async () => {
+    const fetchData = async () => {
       try {
         // 판매자의 입찰 목록 조회
         const bids = await getSellerBids();
@@ -114,13 +122,17 @@ export default function BidModal({
           setValue('message', existing.message || '');
           setBidType(existing.bid_type);
         }
+        
+        // 입찰권 정보 가져오기
+        const tokenInfo = await bidTokenService.getBidTokens();
+        setBidTokenInfo(tokenInfo);
       } catch (error) {
-        console.error('기존 입찰 확인 중 오류:', error);
+        console.error('데이터 확인 중 오류:', error);
       }
     };
     
     if (isOpen && groupBuyId) {
-      checkExistingBid();
+      fetchData();
     }
   }, [isOpen, groupBuyId, setValue]);
 
@@ -131,15 +143,39 @@ export default function BidModal({
 
   // 입찰 제출 핸들러
   const onSubmit = async (data: BidFormData) => {
+    // 기존 입찰이 없는 경우에만 입찰권 확인
+    if (!existingBid) {
+      // 입찰권/구독권이 없는 경우 입찰권 구매 페이지로 이동
+      if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
+        toast({
+          title: '입찰권이 필요합니다',
+          description: '입찰하시려면 입찰권을 구매해주세요.',
+          variant: 'default'
+        });
+        router.push('/mypage/seller/bid-tokens');
+        return;
+      }
+    }
+    
+    // 입찰 확인 팝업 표시
+    setPendingBidData(data);
+    setShowConfirmDialog(true);
+  };
+  
+  // 실제 입찰 진행
+  const confirmBid = async () => {
+    if (!pendingBidData) return;
+    
     setLoading(true);
+    setShowConfirmDialog(false);
     
     try {
       // 입찰 전송 데이터 로깅
       const bidData = {
         groupbuy_id: groupBuyId,
-        bid_type: data.bidType,
-        amount: data.amount,
-        message: data.message
+        bid_type: pendingBidData.bidType,
+        amount: pendingBidData.amount,
+        message: pendingBidData.message
       };
       console.log('입찰 전송 데이터:', bidData);
       
@@ -250,6 +286,7 @@ export default function BidModal({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
@@ -426,5 +463,74 @@ export default function BidModal({
         </form>
       </DialogContent>
     </Dialog>
+    
+    {/* 입찰 확인 팝업 */}
+    <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-bold">
+            {existingBid ? '다시 입찰하기' : '입찰하기'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-4">
+          {/* 나의 입찰금액 */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">나의 입찰금액:</span>
+            <span className="font-bold text-lg">
+              {pendingBidData ? formatNumberWithCommas(pendingBidData.amount) : '0'}원
+            </span>
+          </div>
+          
+          {/* 확인 메시지 */}
+          <p className="text-center text-gray-700">
+            {existingBid
+              ? '다시 입찰 하시겠습니까?'
+              : bidTokenInfo?.unlimited_subscription
+                ? '입찰 하시겠습니까?'
+                : '입찰권 1개가 소모됩니다. 입찰 하시겠습니까?'
+            }
+          </p>
+          
+          {/* 입찰권 정보 */}
+          <div className="text-center text-sm">
+            {bidTokenInfo?.unlimited_subscription ? (
+              <span className="text-blue-600 font-medium">무제한 구독권 이용중</span>
+            ) : (
+              <span className="text-gray-600">
+                남은 입찰권 갯수 <span className="font-bold">{bidTokenInfo?.single_tokens || 0}개</span>
+              </span>
+            )}
+          </div>
+          
+          <p className="text-xs text-gray-500 text-center">
+            입찰 금액은 1,000원 단위로 입력됩니다.
+          </p>
+        </div>
+        
+        <DialogFooter className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowConfirmDialog(false)}
+          >
+            고민해볼게요
+          </Button>
+          <Button
+            onClick={confirmBid}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                처리 중...
+              </>
+            ) : (
+              '예'
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
