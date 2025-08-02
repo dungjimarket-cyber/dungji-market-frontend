@@ -37,7 +37,7 @@ export default function SellerFinalSelection() {
         }
 
         // 최종선택 대기중인 공구 목록 조회
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/bids/?status=final_selection`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -46,7 +46,21 @@ export default function SellerFinalSelection() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupbuys(data);
+          // final_selection 상태인 입찰만 필터링
+          const finalSelectionBids = data.filter((bid: any) => 
+            bid.groupbuy_status === 'final_selection' && 
+            bid.is_selected === true
+          );
+          setGroupbuys(finalSelectionBids.map((bid: any) => ({
+            id: bid.groupbuy,
+            product_name: bid.groupbuy_product_name || bid.product_name || '상품명',
+            product_category: bid.product_category || '카테고리',
+            bid_amount: bid.amount,
+            participants_count: bid.participants_count || 0,
+            voting_end: bid.voting_end || bid.groupbuy_voting_end,
+            final_decision: bid.final_decision || 'pending',
+            created_at: bid.created_at
+          })));
         } else {
           throw new Error('데이터 조회 실패');
         }
