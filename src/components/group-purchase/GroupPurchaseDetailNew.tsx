@@ -114,6 +114,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [bidAmount, setBidAmount] = useState<number | string>('');
   const [bidType, setBidType] = useState<'price' | 'support'>('support');  // 초기값은 일단 support로 설정
   const [myBidRank, setMyBidRank] = useState<{ rank: number; total: number } | null>(null);
+  const [isMyBidSelected, setIsMyBidSelected] = useState(false);
+  const [myBidFinalDecision, setMyBidFinalDecision] = useState<'pending' | 'confirmed' | 'cancelled' | null>(null);
   const [showBidHistoryModal, setShowBidHistoryModal] = useState(false);
   const [showNoBidTokenDialog, setShowNoBidTokenDialog] = useState(false);
   const [bidHistory, setBidHistory] = useState<any[]>([]);
@@ -402,6 +404,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             setHasBid(true);
             setMyBidAmount(myBid.amount);
             setMyBidId(myBid.id);
+            
+            // 입찰 선택 상태 확인
+            if (myBid.status === 'selected' || myBid.is_selected) {
+              setIsMyBidSelected(true);
+              setMyBidFinalDecision(myBid.final_decision || 'pending');
+            }
             
             // 입찰 취소 가능 여부 설정 (입찰 중이고 마감 시간 전)
             const now = new Date();
@@ -1032,7 +1040,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
-        {isSeller && groupBuy.status !== 'final_selection' && groupBuy.status !== 'voting' && 
+        {isSeller && isFinalSelection && isMyBidSelected && myBidFinalDecision === 'pending' ? (
+          // 판매자 최종선택 버튼
+          <Button 
+            onClick={() => setShowFinalSelectionModal(true)}
+            className="w-full py-4 text-base font-medium bg-orange-600 hover:bg-orange-700"
+          >
+            최종선택하기
+          </Button>
+        ) : isSeller && groupBuy.status !== 'final_selection' && groupBuy.status !== 'voting' && 
          groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 
          groupBuy.status !== 'cancelled' ? (
           // 판매자용 입찰 인터페이스
@@ -1288,6 +1304,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               />
             )}
           </div>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel onClick={() => setShowFinalSelectionModal(false)}>
+              닫기
+            </AlertDialogCancel>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 

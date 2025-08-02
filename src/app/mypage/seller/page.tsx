@@ -175,7 +175,7 @@ export default function SellerMyPage() {
               title="최종선택 대기중"
               count={profile.pendingSelection}
               icon={<Star className="h-5 w-5 text-yellow-500" />}
-              href="/mypage/seller/bids?filter=pending"
+              href="/mypage/seller/bids?filter=final_selection"
             />
             <SummaryCard
               title="판매 확정"

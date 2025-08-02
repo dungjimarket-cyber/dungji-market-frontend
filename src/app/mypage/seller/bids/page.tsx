@@ -88,7 +88,7 @@ function BidsListClient() {
   const [loading, setLoading] = useState<boolean>(true);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filter, setFilter] = useState<'all' | 'pending' | 'selected' | 'confirmed' | 'rejected'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'selected' | 'confirmed' | 'rejected' | 'final_selection'>('all');
   const { toast } = useToast();
   
   const router = useRouter();
@@ -113,7 +113,13 @@ function BidsListClient() {
         }
         
         if (filter !== 'all') {
-          params.status = filter;
+          if (filter === 'final_selection') {
+            // 최종선택 대기중인 입찰 (selected 상태이면서 final_decision이 pending)
+            params.status = 'selected';
+            params.final_decision = 'pending';
+          } else {
+            params.status = filter;
+          }
         }
         
         try {
@@ -167,16 +173,25 @@ function BidsListClient() {
     router.push(`/mypage/seller/bids?page=1&filter=${filter}&search=${encodeURIComponent(searchQuery)}`);
   };
 
-  const handleFilterChange = (value: 'all' | 'pending' | 'selected' | 'confirmed' | 'rejected') => {
+  const handleFilterChange = (value: 'all' | 'pending' | 'selected' | 'confirmed' | 'rejected' | 'final_selection') => {
     setFilter(value);
     router.push(`/mypage/seller/bids?page=1&filter=${value}&search=${encodeURIComponent(searchQuery)}`);
   };
 
   // 입찰 상태에 따른 텍스트 표시
-  const statusText = (status: string) => {
+  const statusText = (status: string, bid?: any) => {
     switch (status) {
-      case 'pending': return '대기중';
-      case 'selected': return '낙찰 선택';
+      case 'pending': return '입찰 대기중';
+      case 'selected': 
+        // final_decision 상태에 따라 다르게 표시
+        if (bid?.final_decision === 'pending') {
+          return '최종선택 대기중';
+        } else if (bid?.final_decision === 'confirmed') {
+          return '판매 확정';
+        } else if (bid?.final_decision === 'cancelled') {
+          return '판매 포기';
+        }
+        return '낙찰됨';
       case 'confirmed': return '판매 확정';
       case 'rejected': return '판매 포기';
       default: return '알 수 없음';
@@ -188,10 +203,19 @@ function BidsListClient() {
     return bidType === 'support' ? '지원금 입찰' : '가격 입찰';
   };
 
-  const statusColor = (status: string) => {
+  const statusColor = (status: string, bid?: any) => {
     switch (status) {
       case 'pending': return 'bg-blue-100 text-blue-800';
-      case 'selected': return 'bg-yellow-100 text-yellow-800';
+      case 'selected': 
+        // final_decision 상태에 따라 다르게 표시
+        if (bid?.final_decision === 'pending') {
+          return 'bg-orange-100 text-orange-800';
+        } else if (bid?.final_decision === 'confirmed') {
+          return 'bg-green-100 text-green-800';
+        } else if (bid?.final_decision === 'cancelled') {
+          return 'bg-red-100 text-red-800';
+        }
+        return 'bg-yellow-100 text-yellow-800';
       case 'confirmed': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -237,10 +261,11 @@ function BidsListClient() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">모든 상태</SelectItem>
-            <SelectItem value="pending">선택 대기중</SelectItem>
-            <SelectItem value="selected">선택됨</SelectItem>
-            <SelectItem value="confirmed">확정됨</SelectItem>
-            <SelectItem value="rejected">거절됨</SelectItem>
+            <SelectItem value="pending">입찰 대기중</SelectItem>
+            <SelectItem value="final_selection">최종선택 대기중</SelectItem>
+            <SelectItem value="selected">낙찰됨</SelectItem>
+            <SelectItem value="confirmed">판매 확정</SelectItem>
+            <SelectItem value="rejected">판매 포기</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -265,8 +290,8 @@ function BidsListClient() {
                   </h2>
                 </div>
                 <div className="text-right md:text-left">
-                  <Badge className={statusColor(bid.status)}>
-                    {statusText(bid.status)}
+                  <Badge className={statusColor(bid.status, bid)}>
+                    {statusText(bid.status, bid)}
                   </Badge>
                 </div>
               </div>
@@ -304,7 +329,14 @@ function BidsListClient() {
                       <Button variant="outline" size="sm">상세보기</Button>
                     </Link>
                   )}
-                  {bid.status === 'selected' && (
+                  {bid.status === 'selected' && bid.final_decision === 'pending' && (
+                    <Link href={`/groupbuys/${bid.groupbuy}`}>
+                      <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                        최종선택하기
+                      </Button>
+                    </Link>
+                  )}
+                  {bid.status === 'selected' && bid.final_decision !== 'pending' && (
                     <div className="flex space-x-2">
                       <Link href={`/mypage/seller/sales/${bid.id}`}>
                         <Button variant="outline" size="sm">판매 정보</Button>

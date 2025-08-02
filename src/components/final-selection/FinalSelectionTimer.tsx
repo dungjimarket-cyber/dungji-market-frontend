@@ -137,9 +137,17 @@ export function FinalSelectionTimer({
         ) : (
           /* 선택 버튼 */
           <div className="space-y-2">
-            <div className="text-sm text-gray-600 text-center mb-4">
+            <div className="text-sm text-gray-700 text-center mb-4">
               {status.role === 'buyer' 
-                ? '이 공구를 구매하시겠습니까?' 
+                ? (
+                  <>
+                    낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?
+                    <br />
+                    <span className="text-xs text-gray-600 mt-1 block">
+                      (구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)
+                    </span>
+                  </>
+                )
                 : '이 공구를 판매하시겠습니까?'
               }
             </div>

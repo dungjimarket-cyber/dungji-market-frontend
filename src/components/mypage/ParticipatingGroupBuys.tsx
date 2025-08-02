@@ -142,10 +142,10 @@ export default function ParticipatingGroupBuys() {
     return ['recruiting', 'bidding'].includes(status);
   });
   
-  // 종료된 공구: 최종선택중, 완료, 만료, 취소 포함
+  // 종료된 공구: 최종선택중, 판매자확정대기, 완료, 만료, 취소 포함
   const completedGroupBuys = sortedGroupBuys.filter(groupBuy => {
     const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
-    return ['voting', 'selecting', 'completed', 'expired', 'canceled'].includes(status);
+    return ['voting', 'selecting', 'final_selection', 'seller_confirmation', 'completed', 'expired', 'canceled'].includes(status);
   });
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
