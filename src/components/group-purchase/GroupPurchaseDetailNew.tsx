@@ -8,6 +8,7 @@ import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, Chevron
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
+import BidConfirmModal from '@/components/groupbuy/BidConfirmModal';
 import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText } from '@/lib/groupbuy-utils';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -121,6 +122,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [isBidding, setIsBidding] = useState(false);
   const [highestBidAmount, setHighestBidAmount] = useState<number | null>(groupBuy.highest_bid_amount || null);
   const [totalBids, setTotalBids] = useState<number>(groupBuy.total_bids || 0);
+  const [showBidConfirmModal, setShowBidConfirmModal] = useState(false);
+  const [remainingTokens, setRemainingTokens] = useState<number>(0);
+  const [hasUnlimitedSubscription, setHasUnlimitedSubscription] = useState(false);
+  const [confirmedBidAmount, setConfirmedBidAmount] = useState<number>(0);
+  const [bidTokenInfo, setBidTokenInfo] = useState({
+    remaining_tokens: 0,
+    has_unlimited_subscription: false
+  });
 
   useEffect(() => {
     setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
@@ -204,8 +213,31 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     if (isAuthenticated && accessToken) {
       checkParticipationStatus();
       checkWishStatus();
+      if (isSeller) {
+        fetchBidTokenInfo();
+      }
     }
   }, [isAuthenticated, accessToken, groupBuy.id]);
+
+  // 입찰권 정보 가져오기
+  const fetchBidTokenInfo = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bid-tokens/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRemainingTokens(data.single_tokens || 0);
+        setHasUnlimitedSubscription(data.unlimited_subscription || false);
+      }
+    } catch (error) {
+      console.error('입찰권 정보 조회 오류:', error);
+    }
+  };
 
   const checkParticipationStatus = async () => {
     try {
@@ -371,6 +403,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             setMyBidAmount(myBid.amount);
             setMyBidId(myBid.id);
             
+            // 입찰 취소 가능 여부 설정 (입찰 중이고 마감 시간 전)
+            const now = new Date();
+            const endTime = new Date(groupBuy.end_time);
+            const canCancel = groupBuy.status === 'bidding' && now < endTime;
+            setCanCancelBid(canCancel);
+            
             // 내 입찰 순위 계산
             const sortedForRank = [...bids].sort((a: any, b: any) => b.amount - a.amount);
             const myRank = sortedForRank.findIndex((bid: any) => bid.id === myBid.id) + 1;
@@ -459,6 +497,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       setBidAmount(roundedAmount);
     }
 
+    // 입찰권/구독권이 없는 경우 바로 구매 화면으로 이동
+    if (!hasUnlimitedSubscription && remainingTokens === 0) {
+      setShowNoBidTokenDialog(true);
+      return;
+    }
+
+    // 확인될 입찰 금액 저장
+    setConfirmedBidAmount(roundedAmount);
+
+    // 입찰 확인 모달 표시
+    setShowBidConfirmModal(true);
+  };
+
+  const handleBidConfirm = async () => {
+    setShowBidConfirmModal(false);
     setIsBidding(true);
     
     try {
@@ -471,7 +524,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         body: JSON.stringify({
           groupbuy: groupBuy.id,
           bid_type: bidType,
-          amount: roundedAmount,
+          amount: confirmedBidAmount,
           message: '',
           seller: user?.id // 판매자 ID 추가
         })
@@ -480,7 +533,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (response.ok) {
         const data = await response.json();
         setHasBid(true);
-        setMyBidAmount(roundedAmount);
+        setMyBidAmount(confirmedBidAmount);
         setMyBidId(data.id);
         
         toast({
@@ -844,7 +897,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
-          출시일: {new Date(groupBuy.end_time).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+          공구 등록일: {new Date(groupBuy.start_time).toLocaleString('ko-KR', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
         </div>
         <div className="text-sm text-gray-500 mb-6">
           • 가입약정 기간은 24개월 입니다
@@ -1285,6 +1344,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 입찰 확인 모달 */}
+      <BidConfirmModal
+        isOpen={showBidConfirmModal}
+        onClose={() => setShowBidConfirmModal(false)}
+        onConfirm={handleBidConfirm}
+        bidAmount={confirmedBidAmount}
+        isRebid={hasBid && myBidAmount !== null}
+        loading={isBidding}
+        remainingTokens={bidTokenInfo.remaining_tokens}
+        hasUnlimitedSubscription={bidTokenInfo.has_unlimited_subscription}
+      />
     </div>
   );
 }
