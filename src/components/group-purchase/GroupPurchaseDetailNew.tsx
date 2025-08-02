@@ -235,6 +235,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         const data = await response.json();
         setRemainingTokens(data.single_tokens || 0);
         setHasUnlimitedSubscription(data.unlimited_subscription || false);
+        setBidTokenInfo({
+          remaining_tokens: data.single_tokens || 0,
+          has_unlimited_subscription: data.unlimited_subscription || false
+        });
       }
     } catch (error) {
       console.error('입찰권 정보 조회 오류:', error);

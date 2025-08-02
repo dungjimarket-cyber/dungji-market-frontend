@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 interface BidConfirmModalProps {
@@ -36,6 +36,9 @@ export default function BidConfirmModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg">{isRebid ? '다시 입찰하기' : '입찰하기'}</DialogTitle>
+          <DialogDescription className="sr-only">
+            입찰 확인 팝업
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
