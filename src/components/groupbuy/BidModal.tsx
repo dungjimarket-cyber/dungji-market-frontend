@@ -397,7 +397,8 @@ export default function BidModal({
               {...register('amount', { 
                 required: '금액을 입력해주세요', 
                 min: { value: 1000, message: '최소 1,000원 이상 입력해주세요' },
-                max: { value: 10000000, message: '최대 1천만원까지 입력 가능합니다' }
+                max: { value: 10000000, message: '최대 1천만원까지 입력 가능합니다' },
+                valueAsNumber: true
               })}
               type="number"
               placeholder={bidType === 'price' ? '판매 가격을 입력하세요' : '지원금을 입력하세요'}
@@ -473,62 +474,65 @@ export default function BidModal({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 py-4">
           {/* 나의 입찰금액 */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">나의 입찰금액:</span>
-            <span className="font-bold text-lg">
-              {pendingBidData ? formatNumberWithCommas(pendingBidData.amount) : '0'}원
+          <div className="text-sm text-gray-700">
+            <span>나의 입찰금액 : </span>
+            <span className="font-medium">
+              {pendingBidData && pendingBidData.amount ? formatNumberWithCommas(Number(pendingBidData.amount)) : '0'}원
             </span>
           </div>
           
           {/* 확인 메시지 */}
-          <p className="text-center text-gray-700">
+          <div className="text-sm text-gray-700">
             {existingBid
-              ? '다시 입찰 하시겠습니까?'
+              ? '"다시 입찰 하시겠습니까?"'
               : bidTokenInfo?.unlimited_subscription
-                ? '입찰 하시겠습니까?'
-                : '입찰권 1개가 소모됩니다. 입찰 하시겠습니까?'
+                ? '"입찰 하시겠습니까?"'
+                : '"입찰권 1개가 소모됩니다. 입찰 하시겠습니까?"'
             }
-          </p>
+          </div>
+          
+          {/* 버튼 그룹 - DialogFooter 밖으로 이동 */}
+          <div className="flex gap-2 justify-center py-2">
+            <Button
+              onClick={confirmBid}
+              disabled={loading}
+              size="sm"
+              className="px-6"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  처리 중...
+                </>
+              ) : (
+                '예'
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              size="sm"
+              className="px-4"
+            >
+              고민해볼게요
+            </Button>
+          </div>
           
           {/* 입찰권 정보 */}
-          <div className="text-center text-sm">
+          <div className="text-sm text-gray-600">
             {bidTokenInfo?.unlimited_subscription ? (
-              <span className="text-blue-600 font-medium">무제한 구독권 이용중</span>
+              <span>무제한 구독권 이용중</span>
             ) : (
-              <span className="text-gray-600">
-                남은 입찰권 갯수 <span className="font-bold">{bidTokenInfo?.single_tokens || 0}개</span>
-              </span>
+              <span>남은 입찰권 갯수 {bidTokenInfo?.single_tokens || 0}개</span>
             )}
           </div>
           
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-500">
             입찰 금액은 1,000원 단위로 입력됩니다.
           </p>
         </div>
-        
-        <DialogFooter className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowConfirmDialog(false)}
-          >
-            고민해볼게요
-          </Button>
-          <Button
-            onClick={confirmBid}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                처리 중...
-              </>
-            ) : (
-              '예'
-            )}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
     </>
