@@ -487,7 +487,7 @@ export default function BidModal({
           <div className="text-sm text-gray-700">
             {existingBid
               ? '"다시 입찰 하시겠습니까?"'
-              : bidTokenInfo?.unlimited_subscription
+              : bidTokenInfo && bidTokenInfo.unlimited_subscription === true
                 ? '"입찰 하시겠습니까?"'
                 : '"입찰권 1개가 소모됩니다. 입찰 하시겠습니까?"'
             }
@@ -522,7 +522,7 @@ export default function BidModal({
           
           {/* 입찰권 정보 */}
           <div className="text-sm text-gray-600">
-            {bidTokenInfo?.unlimited_subscription ? (
+            {bidTokenInfo && bidTokenInfo.unlimited_subscription === true ? (
               <span>무제한 구독권 이용중</span>
             ) : (
               <span>남은 입찰권 갯수 {bidTokenInfo?.single_tokens || 0}개</span>
