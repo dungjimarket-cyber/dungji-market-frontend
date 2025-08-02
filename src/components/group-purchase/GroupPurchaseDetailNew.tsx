@@ -726,11 +726,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       );
     }
 
-    // recruiting 상태가 아니면 참여 불가
-    if (groupBuy.status !== 'recruiting') {
+    // recruiting 또는 bidding 상태가 아니면 참여 불가
+    if (!['recruiting', 'bidding'].includes(groupBuy.status)) {
       return (
         <Button disabled className="w-full py-4 text-base font-medium bg-gray-400">
-          {groupBuy.status === 'bidding' ? '입찰 진행중' : '참여 불가'}
+          참여 불가
         </Button>
       );
     }
