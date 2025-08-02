@@ -71,7 +71,7 @@ export default function GroupBuyActionButtons({
         
         // 입찰 있어서 나가기 불가능한 경우
         if (errorData.error && (
-          errorData.error.includes('입찰이 있어 탈퇴할 수 없습니다') ||
+          errorData.error.includes('입찰이 있어 나가기가 불가합니다') ||
           errorData.error.includes('has bids') ||
           errorData.error.includes('입찰 중')
         )) {

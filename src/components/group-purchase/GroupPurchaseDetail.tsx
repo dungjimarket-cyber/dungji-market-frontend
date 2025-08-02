@@ -678,8 +678,8 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       const errorMessage = err instanceof Error ? err.message : '공구 나가기에 실패했습니다.';
       
       if (errorMessage.includes('Cannot leave group buy with active bids') || 
-          errorMessage.includes('입찰이 진행 중인 공구에서는 탈퇴할 수 없습니다')) {
-        setLeaveErrorMessage('입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.');
+          errorMessage.includes('입찰이 진행 중인 공구에서는 나가기가 불가합니다')) {
+        setLeaveErrorMessage('입찰이 진행되어 나가기가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.');
         setShowLeaveRestrictionDialog(true);
       } else {
         toast({
@@ -1749,9 +1749,9 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
       <AlertDialog open={showLeaveRestrictionDialog} onOpenChange={setShowLeaveRestrictionDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>탈퇴 불가 안내</AlertDialogTitle>
+            <AlertDialogTitle>나가기 불가 안내</AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              {leaveErrorMessage || '입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.'}
+              {leaveErrorMessage || '입찰이 진행되어 나가기가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

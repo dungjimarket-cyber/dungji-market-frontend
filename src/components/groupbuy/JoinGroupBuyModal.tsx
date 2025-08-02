@@ -246,7 +246,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
               <div className="text-orange-800">
                 <p className="text-sm font-semibold mb-2 text-orange-900">❗ 중요 안내</p>
                 <p className="text-xs leading-relaxed mb-1">
-                  • 입찰이 진행된 경우에는 탈퇴가 제한됩니다.
+                  • 입찰이 진행된 경우에는 나가기가 제한됩니다.
                 </p>
                 <p className="text-xs leading-relaxed mb-2">
                   • 동일한 상품에는 중복 참여가 불가합니다.
