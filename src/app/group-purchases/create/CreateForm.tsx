@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
+import { toKSTString } from '@/lib/utils';
 import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -725,7 +726,7 @@ const continueSubmitWithUserId = async (
   userId: string | number,
   values: FormData,
   currentProductId: number,
-  calculatedEndTimeIso: string,
+  calculatedEndTimeKST: string,
   safeTitle: string,
   safeDescription: string,
   minPart: number,
@@ -742,7 +743,7 @@ const continueSubmitWithUserId = async (
       description: safeDescription,       // 선택 필드, 문자열 (자동 생성된 설명)
       min_participants: minPart,          // 필수 필드, 수치, 최소 1
       max_participants: maxPart,          // 필수 필드, 수치, 최소 1
-      end_time: calculatedEndTimeIso,     // 필수 필드, 날짜/시간 문자열
+      end_time: calculatedEndTimeKST,     // 필수 필드, 날짜/시간 문자열
       region_type: regionType || 'local', // 선택 필드, 문자열, 기본값 'local'
       product_details: cleanProductDetails, // 백엔드에서 이 키를 사용하여 통신사 정보 추출
       // 다중 지역 정보를 regions 배열로 전송
@@ -966,10 +967,10 @@ const onSubmit = async (values: FormData) => {
         endTime = new Date(values.end_time);
       }
       
-      // 계산된 마감 시간을 ISO 문자열로 변환하여 endTimeValue 상태 업데이트
-      const calculatedEndTimeIso = endTime.toISOString();
-      console.log('계산된 마감 시간 ISO 문자열:', calculatedEndTimeIso);
-      setEndTimeValue(calculatedEndTimeIso); // 상태 업데이트
+      // 계산된 마감 시간을 한국 시간 문자열로 변환하여 endTimeValue 상태 업데이트
+      const calculatedEndTimeKST = toKSTString(endTime);
+      console.log('계산된 마감 시간 KST 문자열:', calculatedEndTimeKST);
+      setEndTimeValue(calculatedEndTimeKST); // 상태 업데이트
       
       // 현재 선택된 상품 ID 확인
       const currentProductId = parseInt(values.product);
@@ -1021,7 +1022,7 @@ const onSubmit = async (values: FormData) => {
               localStorage.setItem('auth.user', JSON.stringify(userDataToStore));
               
               // 이 ID로 계속 진행
-              return await continueSubmitWithUserId(backendUserId, values, currentProductId, calculatedEndTimeIso, safeTitle, safeDescription, minPart, maxPart, regionType, cleanProductDetails, selectedRegions);
+              return await continueSubmitWithUserId(backendUserId, values, currentProductId, calculatedEndTimeKST, safeTitle, safeDescription, minPart, maxPart, regionType, cleanProductDetails, selectedRegions);
             }
           } else {
             console.error('백엔드 프로필 API 호출 실패:', profileResponse.status);
@@ -1056,10 +1057,10 @@ const onSubmit = async (values: FormData) => {
       endTime = new Date(values.end_time);
     }
     
-    // 계산된 마감 시간을 ISO 문자열로 변환하여 endTimeValue 상태 업데이트
-    const calculatedEndTimeIso = endTime.toISOString();
-    console.log('계산된 마감 시간 ISO 문자열:', calculatedEndTimeIso);
-    setEndTimeValue(calculatedEndTimeIso); // 상태 업데이트
+    // 계산된 마감 시간을 한국 시간 문자열로 변환하여 endTimeValue 상태 업데이트
+    const calculatedEndTimeKST = toKSTString(endTime);
+    console.log('계산된 마감 시간 KST 문자열:', calculatedEndTimeKST);
+    setEndTimeValue(calculatedEndTimeKST); // 상태 업데이트
     
     // 현재 선택된 상품 ID 확인
     const currentProductId = parseInt(values.product);
@@ -1070,7 +1071,7 @@ const onSubmit = async (values: FormData) => {
       title: generateTitle(), // 자동 생성된 제목 사용
       min_participants: values.min_participants,
       max_participants: values.max_participants,
-      end_time: endTime.toISOString(),
+      end_time: toKSTString(endTime),
       description: values.description || '',
       // 다중 지역 지원
       region_type: regionType,
@@ -1132,7 +1133,7 @@ const onSubmit = async (values: FormData) => {
       });
       
       // 사용자 ID가 확인되었으므로 API 요청 데이터 구성 및 제출 함수 호출
-      return await continueSubmitWithUserId(userId, values, currentProductId, calculatedEndTimeIso, safeTitle, safeDescription, minPart, maxPart, regionType, cleanProductDetails, selectedRegions);
+      return await continueSubmitWithUserId(userId, values, currentProductId, calculatedEndTimeKST, safeTitle, safeDescription, minPart, maxPart, regionType, cleanProductDetails, selectedRegions);
     } catch (error) {
       console.error('공구 등록 실패:', error);
       
@@ -1771,10 +1772,10 @@ const onSubmit = async (values: FormData) => {
                             // 슬라이더 값에 따른 종료 시간 설정
                             const currentTime = new Date();
                             const newEndTime = new Date(currentTime.getTime() + sliderValue * 60 * 60 * 1000);
-                            form.setValue('end_time', newEndTime.toISOString());
+                            form.setValue('end_time', toKSTString(newEndTime));
                             
                             console.log('슬라이더 값 변경:', sliderValue, '시간');
-                            console.log('종료 시간:', newEndTime.toISOString());
+                            console.log('종료 시간:', toKSTString(newEndTime));
                             
                             // 제품이 선택되어 있을 경우에만 제목/설명 업데이트
                             if (selectedProduct) {
@@ -1820,11 +1821,11 @@ const onSubmit = async (values: FormData) => {
                             // 현재 시간에 설정한 시간을 더함
                             const endTime = new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
                             
-                            // ISO 형식으로 변환 (전체 시간대 정보 포함)
-                            form.setValue('end_time', endTime.toISOString());
+                            // 한국 시간 형식으로 변환
+                            form.setValue('end_time', toKSTString(endTime));
                             
                             setEndTimeOption(value);
-                            console.log('자동 설정된 마감 시간:', endTime.toISOString());
+                            console.log('자동 설정된 마감 시간:', toKSTString(endTime));
                           } else {
                             setEndTimeOption(value);
                           }
