@@ -740,34 +740,63 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     setWithdrawingParticipation(true);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/leave/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // 만든 사람인 경우 공구 삭제
+      if (isCreator) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-      if (response.ok) {
-        setIsParticipant(false);
-        toast({
-          title: '참여 철회 완료',
-          description: '공구 참여가 철회되었습니다.',
-        });
-        router.refresh();
+        if (response.ok) {
+          toast({
+            title: '공구 삭제 완료',
+            description: '공구가 삭제되었습니다.',
+          });
+          // 삭제 후 공구 리스트 페이지로 이동
+          router.push('/group-purchases');
+        } else {
+          const data = await response.json();
+          toast({
+            title: '공구 삭제 실패',
+            description: data.detail || '공구를 삭제할 수 없습니다.',
+            variant: 'destructive',
+          });
+        }
       } else {
-        const data = await response.json();
-        toast({
-          title: '참여 철회 실패',
-          description: data.error || '참여 철회에 실패했습니다.',
-          variant: 'destructive',
+        // 일반 참여자인 경우 나가기
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/leave/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
         });
+
+        if (response.ok) {
+          setIsParticipant(false);
+          toast({
+            title: '공구 나가기 완료',
+            description: '공구에서 나왔습니다.',
+          });
+          // 나가기 후 공구 리스트 페이지로 이동
+          router.push('/group-purchases');
+        } else {
+          const data = await response.json();
+          toast({
+            title: '나가기 실패',
+            description: data.error || '공구에서 나갈 수 없습니다.',
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error) {
-      console.error('참여 철회 오류:', error);
+      console.error('나가기 오류:', error);
       toast({
         title: '오류 발생',
-        description: '참여 철회 중 오류가 발생했습니다.',
+        description: '공구 나가기 중 오류가 발생했습니다.',
         variant: 'destructive',
       });
     } finally {
@@ -1222,14 +1251,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               지인과 공유하기
             </Button>
             
-            {/* 탈퇴하기 버튼 (참여자만 표시) */}
+            {/* 나가기 버튼 (참여자만 표시) */}
             {isParticipant && !isBiddingStatus && (
               <Button
                 onClick={() => setShowWithdrawDialog(true)}
                 variant="outline"
                 className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
               >
-                탈퇴하기
+                공구 나가기
               </Button>
             )}
           </div>
@@ -1241,7 +1270,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             공동 구매 가이드라인
           </button>
           <p className="text-xs text-gray-500 mt-2">
-            • 입찰 진행중에는 탈퇴가 제한되니 신중한 참여 부탁드립니다.
+            • 입찰 진행중에는 나가기가 제한되니 신중한 참여 부탁드립니다.
           </p>
         </div>
       </div>
@@ -1257,10 +1286,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       <AlertDialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>참여 철회 확인</AlertDialogTitle>
+            <AlertDialogTitle>공구 나가기</AlertDialogTitle>
             <AlertDialogDescription>
-              정말로 이 공구 참여를 철회하시겠습니까?
-              철회 후에는 다시 참여할 수 있습니다.
+              {isCreator ? (
+                <>
+                  정말로 이 공구를 삭제하시겠습니까?
+                  <br />
+                  삭제 후에는 복구할 수 없습니다.
+                </>
+              ) : (
+                <>
+                  정말로 이 공구에서 나가시겠습니까?
+                  <br />
+                  공구 마감전에 언제든 다시 참여할 수 있습니다.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1273,10 +1313,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {withdrawingParticipation ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  철회 중...
+                  나가는 중...
                 </>
               ) : (
-                '참여 철회'
+                '나가기'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

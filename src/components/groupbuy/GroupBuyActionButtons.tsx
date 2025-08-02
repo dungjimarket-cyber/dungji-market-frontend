@@ -46,7 +46,7 @@ export default function GroupBuyActionButtons({
       });
   };
 
-  // 탈퇴하기 버튼 클릭 핸들러
+  // 나가기 버튼 클릭 핸들러
   const handleLeave = () => {
     if (!participationStatus?.can_leave) {
       // 상세 안내 팝업 표시
@@ -56,7 +56,7 @@ export default function GroupBuyActionButtons({
 
     setIsLeaving(true);
     
-    // 탈퇴 API 호출
+    // 나가기 API 호출
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/leave/`, {
       method: 'POST',
       headers: {
@@ -69,22 +69,22 @@ export default function GroupBuyActionButtons({
         // 오류 응답 처리
         const errorData = await response.json().catch(() => ({}));
         
-        // 입찰 있어서 탈퇴 불가능한 경우
+        // 입찰 있어서 나가기 불가능한 경우
         if (errorData.error && (
           errorData.error.includes('입찰이 있어 탈퇴할 수 없습니다') ||
           errorData.error.includes('has bids') ||
           errorData.error.includes('입찰 중')
         )) {
           setShowLeaveRestrictionDialog(true);
-          throw new Error('입찰이 진행되어 탈퇴이 불가합니다.');
+          throw new Error('입찰이 진행되어 나가기가 불가합니다.');
         }
         
-        throw new Error(errorData.error || errorData.detail || '탈퇴에 실패했습니다.');
+        throw new Error(errorData.error || errorData.detail || '나가기에 실패했습니다.');
       }
       return response.json();
     })
     .then(data => {
-      toast.success('공구 탈퇴가 완료되었습니다.');
+      toast.success('공구 나가기 완료');
       // 상태 새로고침 콜백 호출
       if (onRefresh) {
         onRefresh();
@@ -92,11 +92,11 @@ export default function GroupBuyActionButtons({
       setIsLeaving(false);
     })
     .catch(err => {
-      // 탈퇴 제한 안내 팝업이 표시되는 경우에는 토스트 에러 메시지는 표시하지 않음
-      if (!err.message.includes('입찰이 진행되어 탈퇴이 불가합니다')) {
-        toast.error(err.message || '탈퇴에 실패했습니다.');
+      // 나가기 제한 안내 팝업이 표시되는 경우에는 토스트 에러 메시지는 표시하지 않음
+      if (!err.message.includes('입찰이 진행되어 나가기가 불가합니다')) {
+        toast.error(err.message || '나가기에 실패했습니다.');
       }
-      console.error('탈퇴 오류:', err);
+      console.error('나가기 오류:', err);
       setIsLeaving(false);
     });
   };
@@ -112,26 +112,26 @@ export default function GroupBuyActionButtons({
           우리같이 공구해요~
         </Button>
         
-        {/* 참여 중이고 탈퇴 가능한 경우에만 탈퇴 버튼 표시 */}
+        {/* 참여 중이고 나가기 가능한 경우에만 나가기 버튼 표시 */}
         {participationStatus?.is_participating && (
           <Button 
             variant={participationStatus.can_leave ? "destructive" : "outline"}
             className="flex-1 py-6"
-            disabled={isLeaving} // 탈퇴 불가 버튼도 클릭 가능하게 함
+            disabled={isLeaving} // 나가기 불가 버튼도 클릭 가능하게 함
             onClick={handleLeave}
           >
-            {isLeaving ? '처리 중...' : participationStatus.can_leave ? '탈퇴하기' : '탈퇴 불가'}
+            {isLeaving ? '처리 중...' : participationStatus.can_leave ? '공구 나가기' : '나가기 불가'}
           </Button>
         )}
       </div>
 
-      {/* 탈퇴 제한 안내 팝업 */}
+      {/* 나가기 제한 안내 팝업 */}
       <AlertDialog open={showLeaveRestrictionDialog} onOpenChange={setShowLeaveRestrictionDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>탈퇴 불가 안내</AlertDialogTitle>
+            <AlertDialogTitle>나가기 불가 안내</AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              입찰이 진행되어 탈퇴가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.
+              입찰이 진행되어 나가기가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
