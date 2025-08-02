@@ -14,7 +14,8 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Save, Phone } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Phone, Upload } from 'lucide-react';
+import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -28,10 +29,13 @@ export default function SellerSettings() {
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
+    addressProvince: '',
+    addressCity: '',
     businessNumber1: '',
     businessNumber2: '',
     businessNumber3: '',
-    isRemoteSales: false
+    isRemoteSales: false,
+    businessRegFile: null as File | null
   });
 
   useEffect(() => {
@@ -53,11 +57,35 @@ export default function SellerSettings() {
         setFormData({
           nickname: data.nickname || data.username || '',
           phone: data.phone || '',
+          addressProvince: '',
+          addressCity: '',
           businessNumber1: businessNumParts[0] || '',
           businessNumber2: businessNumParts[1] || '',
           businessNumber3: businessNumParts[2] || '',
-          isRemoteSales: data.isRemoteSales || false
+          isRemoteSales: data.isRemoteSales || false,
+          businessRegFile: null
         });
+        
+        // address_region에서 시/도와 시/군/구 추출
+        if (data.addressRegion) {
+          const fullName = data.addressRegion.full_name || data.addressRegion.name || '';
+          const parts = fullName.split(' ');
+          
+          // 세종특별자치시 특수 처리
+          if (fullName === '세종특별자치시') {
+            setFormData(prev => ({
+              ...prev,
+              addressProvince: '세종특별자치시',
+              addressCity: '세종특별자치시'
+            }));
+          } else if (parts.length >= 2) {
+            setFormData(prev => ({
+              ...prev,
+              addressProvince: parts[0],
+              addressCity: parts[1]
+            }));
+          }
+        }
       } catch (error) {
         console.error('판매자 프로필 로드 오류:', error);
         toast({
@@ -92,6 +120,56 @@ export default function SellerSettings() {
         business_number: businessNumber,
         is_remote_sales: formData.isRemoteSales
       };
+
+      // 주소 정보 처리
+      if (formData.addressProvince && formData.addressCity) {
+        try {
+          // 모든 지역 데이터 가져오기
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+          const regionsData = await regionsResponse.json();
+          
+          // 시/군/구 레벨에서 일치하는 지역 찾기
+          // 세종특별자치시는 특수한 경우로 level 1이면서 시/도와 시/군/구가 동일
+          let cityRegion;
+          
+          if (formData.addressProvince === '세종특별자치시') {
+            // 세종시는 특별한 처리 필요
+            cityRegion = regionsData.find((r: any) => 
+              r.level === 1 && 
+              r.name === '세종특별자치시' &&
+              r.full_name === '세종특별자치시'
+            );
+          } else {
+            // 일반적인 시/도의 경우
+            cityRegion = regionsData.find((r: any) => 
+              (r.level === 1 || r.level === 2) && 
+              r.name === formData.addressCity && 
+              r.full_name.includes(formData.addressProvince)
+            );
+          }
+          
+          if (cityRegion) {
+            updateData.address_region_id = cityRegion.code;
+          } else {
+            toast({
+              variant: 'destructive',
+              title: '지역 설정 오류',
+              description: '선택한 지역을 찾을 수 없습니다.'
+            });
+            return;
+          }
+        } catch (err) {
+          toast({
+            variant: 'destructive',
+            title: '지역 정보 오류',
+            description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
+          });
+          return;
+        }
+      }
+
+      // 파일 업로드 처리 (if needed)
+      // TODO: 파일 업로드 API 구현 필요
 
       await updateSellerProfile(updateData);
       
@@ -177,6 +255,22 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="businessAddress">사업장주소/영업활동지역</Label>
+                  <RegionDropdown
+                    selectedProvince={formData.addressProvince}
+                    selectedCity={formData.addressCity}
+                    onSelect={(province, city) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        addressProvince: province,
+                        addressCity: city
+                      }));
+                    }}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="businessNumber1">사업자등록번호</Label>
                   <div className="flex items-center gap-2">
                     <Input
@@ -222,6 +316,30 @@ export default function SellerSettings() {
                       }
                     />
                   </div>
+                  {formData.isRemoteSales && (
+                    <div className="mt-3 p-4 border rounded-lg bg-gray-50">
+                      <Label htmlFor="businessRegFile" className="text-sm font-medium">비대면 판매가능 인증 파일 업로드</Label>
+                      <div className="mt-2">
+                        <Input
+                          id="businessRegFile"
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            setFormData(prev => ({ ...prev, businessRegFile: file }));
+                          }}
+                        />
+                        {formData.businessRegFile && (
+                          <p className="text-sm text-green-600 mt-2">
+                            ✓ 파일 선택됨: {formData.businessRegFile.name}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          ※ 비대면 판매가 가능한 영업소 인증 서류를 업로드해주세요.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
