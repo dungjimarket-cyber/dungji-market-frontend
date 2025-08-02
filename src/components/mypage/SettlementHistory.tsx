@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth';
 import { getSettlements, SettlementData } from '@/lib/api/bidService';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 // SettlementData 인터페이스를 API 서비스에서 가져와 사용합니다
 
@@ -56,12 +56,6 @@ export default function SettlementHistory() {
     }
   };
 
-  // 날짜 형식 변환
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  };
-
   if (isLoading) {
     return <div className="flex justify-center items-center p-8">로딩 중...</div>;
   }
@@ -76,34 +70,6 @@ export default function SettlementHistory() {
     );
   }
 
-  // 데이터가 없을 때 테스트용 더미 데이터
-  const dummySettlements: SettlementData[] = [
-    {
-      id: 1,
-      groupbuy_id: 101,
-      groupbuy_title: "갤럭시 S23 공동구매",
-      product_name: "갤럭시 S23 Ultra",
-      total_amount: 5400000,
-      fee_amount: 270000,
-      net_amount: 5130000,
-      participants_count: 3,
-      settlement_date: "2025-04-15",
-      payment_status: "completed",
-      receipt_url: "#"
-    },
-    {
-      id: 2,
-      groupbuy_id: 102,
-      groupbuy_title: "아이폰 15 공동구매",
-      product_name: "아이폰 15 Pro",
-      total_amount: 4800000,
-      fee_amount: 240000,
-      net_amount: 4560000,
-      participants_count: 2,
-      settlement_date: "2025-04-20",
-      payment_status: "pending"
-    }
-  ];
 
   return (
     <Card>
@@ -128,7 +94,7 @@ export default function SettlementHistory() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(settlements.length > 0 ? settlements : dummySettlements).map((settlement) => (
+              {settlements.map((settlement) => (
                 <TableRow key={settlement.id}>
                   <TableCell className="font-medium">{settlement.groupbuy_title}</TableCell>
                   <TableCell>{settlement.product_name}</TableCell>

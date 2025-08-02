@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -22,6 +23,8 @@ function NoShowReportContent() {
   const [reportType, setReportType] = useState<'buyer_noshow' | 'seller_noshow'>('seller_noshow');
   const [content, setContent] = useState('');
   const [groupbuyInfo, setGroupbuyInfo] = useState<any>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -45,9 +48,31 @@ function NoShowReportContent() {
       if (response.ok) {
         const data = await response.json();
         setGroupbuyInfo(data);
+        
+        // 판매자인 경우 참여자 목록도 가져오기
+        if (user?.role === 'seller') {
+          fetchParticipants();
+        }
       }
     } catch (error) {
       console.error('공구 정보 조회 실패:', error);
+    }
+  };
+
+  const fetchParticipants = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setParticipants(data);
+      }
+    } catch (error) {
+      console.error('참여자 목록 조회 실패:', error);
     }
   };
 
@@ -85,9 +110,12 @@ function NoShowReportContent() {
           return;
         }
       } else {
-        // 구매자 노쇼: TODO - UI에서 구매자 선택 기능 추가
-        toast.error('구매자 노쇼 신고는 현재 준비 중입니다.');
-        return;
+        // 구매자 노쇼: 선택된 구매자 ID 사용
+        if (!selectedBuyerId) {
+          toast.error('신고할 구매자를 선택해주세요.');
+          return;
+        }
+        reportedUserId = parseInt(selectedBuyerId);
       }
 
       // 노쇼 신고 제출
@@ -188,6 +216,28 @@ function NoShowReportContent() {
               </RadioGroup>
             </div>
 
+            {/* 구매자 선택 (판매자가 구매자 노쇼 신고 시) */}
+            {user?.role === 'seller' && reportType === 'buyer_noshow' && participants.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="buyer-select">신고할 구매자 선택</Label>
+                <Select value={selectedBuyerId} onValueChange={setSelectedBuyerId}>
+                  <SelectTrigger id="buyer-select">
+                    <SelectValue placeholder="구매자를 선택해주세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {participants.map((participant) => (
+                      <SelectItem key={participant.id} value={participant.id.toString()}>
+                        {participant.username || participant.nickname || `참여자 ${participant.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  공구에 참여한 구매자 중에서 신고할 대상을 선택해주세요.
+                </p>
+              </div>
+            )}
+
             {/* 신고 내용 */}
             <div className="space-y-2">
               <Label htmlFor="content">신고 내용</Label>
@@ -230,7 +280,12 @@ function NoShowReportContent() {
               </Link>
               <Button 
                 type="submit" 
-                disabled={loading || !content.trim() || content.trim().length < 20}
+                disabled={
+                  loading || 
+                  !content.trim() || 
+                  content.trim().length < 20 ||
+                  (user?.role === 'seller' && reportType === 'buyer_noshow' && !selectedBuyerId)
+                }
                 className="bg-orange-600 hover:bg-orange-700"
               >
                 {loading ? '신고 접수 중...' : '노쇼 신고하기'}

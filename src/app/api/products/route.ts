@@ -1,49 +1,44 @@
 import { NextResponse } from 'next/server';
 
-// 개발용 목업 데이터
-const mockProducts = {
-  electronics: [
-    {
-      id: '1',
-      name: 'Apple MacBook Pro M3',
-      description: '최신형 MacBook Pro M3 칩셋 탑재',
-      price: 2500000,
-      image: 'https://example.com/macbook.jpg',
-      status: 'active',
-      endTime: '2025-03-01T00:00:00Z',
-    },
-    {
-      id: '2',
-      name: 'Samsung Galaxy S24 Ultra',
-      description: '삼성전자 최신플래그십 스마트폰',
-      price: 1500000,
-      image: 'https://example.com/galaxy.jpg',
-      status: 'active',
-      endTime: '2025-02-28T00:00:00Z',
-    },
-  ],
-};
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
+  const search = searchParams.get('search');
+  const page = searchParams.get('page') || '1';
+  const limit = searchParams.get('limit') || '20';
 
   try {
-    // 개발 환경에서는 목업 데이터 사용
-    if (process.env.NODE_ENV === 'development') {
-      return NextResponse.json({
-        products: mockProducts[category as keyof typeof mockProducts] || [],
-      });
+    // 백엔드 API URL 구성
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const params = new URLSearchParams();
+    
+    if (category) params.append('category', category);
+    if (search) params.append('search', search);
+    params.append('page', page);
+    params.append('limit', limit);
+
+    // 백엔드 API 호출
+    const response = await fetch(`${apiUrl}/products/?${params.toString()}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store', // 항상 최신 데이터를 가져옴
+    });
+
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
     }
 
-    // 운영 환경에서는 실제 API 호출 (추후 구현)
-    throw new Error('Production API not implemented');
+    const data = await response.json();
+    
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch products',
-        products: [], // 에러 발생 시 빈 배열 반환
+        results: [],
+        count: 0,
       },
       { status: 500 }
     );

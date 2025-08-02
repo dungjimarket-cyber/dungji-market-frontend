@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Search } from 'lucide-react';
 import { formatNumberWithCommas, cn } from '@/lib/utils';
 import { tokenUtils } from '@/lib/tokenUtils';
+import { useToast } from '@/components/ui/use-toast';
 
 // Skeleton 컴포넌트 인라인 정의
 const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
@@ -88,6 +89,7 @@ function BidsListClient() {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'selected' | 'confirmed' | 'rejected'>('all');
+  const { toast } = useToast();
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -137,121 +139,20 @@ function BidsListClient() {
           setLoading(false);
           return;
         } catch (apiError) {
-          console.error('API 호출 오류, 가상 데이터 사용:', apiError);
-        }
-        
-        // API 호출이 실패한 경우 개발용 가상 데이터 사용
-        const mockBids = [
-          {
-            id: 1,
-            groupbuy: {
-              id: 101,
-              title: '삼성 갤럭시 S24 Ultra 공동구매',
-              product: {
-                id: 201,
-                name: '삼성 갤럭시 S24 Ultra',
-                category: { name: '모바일' }
-              },
-              creator: { username: '김모바일' },
-              region_type: '서울',
-              status: 'bidding',
-              current_participants: 3,
-              min_participants: 3,
-              max_participants: 5
-            },
-            amount: 450000,
-            message: '번호이동 시 추가 할인해드립니다.',
-            status: 'pending',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: 2,
-            groupbuy: {
-              id: 102,
-              title: '아이폰 15 Pro 공동구매',
-              product: {
-                id: 202,
-                name: '아이폰 15 Pro',
-                category: { name: '모바일' }
-              },
-              creator: { username: '박애플' },
-              region_type: '경기',
-              status: 'confirmed',
-              current_participants: 4,
-              min_participants: 3,
-              max_participants: 5
-            },
-            amount: 550000,
-            message: 'AppleCare+ 무상 제공해 드립니다.',
-            status: 'selected',
-            created_at: new Date(Date.now() - 86400000).toISOString(),
-            updated_at: new Date(Date.now() - 43200000).toISOString()
-          },
-          {
-            id: 3,
-            groupbuy: {
-              id: 103,
-              title: 'LG 그램 노트북 공동구매',
-              product: {
-                id: 203,
-                name: 'LG 그램 2025',
-                category: { name: '노트북' }
-              },
-              creator: { username: '이엘지' },
-              region_type: '부산',
-              status: 'completed',
-              current_participants: 5,
-              min_participants: 5,
-              max_participants: 10
-            },
-            amount: 300000,
-            message: '정품 파우치와 마우스 증정',
-            status: 'confirmed',
-            created_at: new Date(Date.now() - 172800000).toISOString(),
-            updated_at: new Date(Date.now() - 86400000).toISOString()
-          },
-          {
-            id: 4,
-            groupbuy: {
-              id: 104,
-              title: '애플 에어팟 프로 2세대 공동구매',
-              product: {
-                id: 204,
-                name: '애플 에어팟 프로 2',
-                category: { name: '이어폰' }
-              },
-              creator: { username: '최사운드' },
-              region_type: '대구',
-              status: 'cancelled',
-              current_participants: 2,
-              min_participants: 3,
-              max_participants: 5
-            },
-            amount: 150000,
-            message: '무료 각인 서비스 제공',
-            status: 'rejected',
-            created_at: new Date(Date.now() - 259200000).toISOString(),
-            updated_at: new Date(Date.now() - 172800000).toISOString()
+          console.error('입찰 목록 조회 오류:', apiError);
+          setBids([]);
+          setTotalCount(0);
+          
+          // 에러 토스트 표시
+          if (toast) {
+            toast({
+              title: '데이터 로딩 실패',
+              description: '입찰 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.',
+              variant: 'destructive',
+            });
           }
-        ];
-        
-        // 검색 및 필터링 적용
-        let filteredBids = mockBids;
-        if (searchQuery) {
-          filteredBids = filteredBids.filter(bid => 
-            bid.groupbuy.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            bid.groupbuy.product.name.toLowerCase().includes(searchQuery.toLowerCase())
-          );
+          setLoading(false);
         }
-        
-        if (filter !== 'all') {
-          filteredBids = filteredBids.filter(bid => bid.status === filter);
-        }
-        
-        setBids(filteredBids);
-        setTotalCount(filteredBids.length);
-        setLoading(false);
       } catch (error) {
         console.error('입찰 목록 조회 오류:', error);
         setLoading(false);

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Search, Phone, Calendar, Eye } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import ContactInfoModal from '@/components/groupbuy/ContactInfoModal';
 
@@ -99,6 +100,7 @@ function SalesListClient() {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
+  const { toast } = useToast();
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   
@@ -124,64 +126,20 @@ function SalesListClient() {
         }
         
         try {
-          // API 호출 시도
+          // API 호출
           const response = await getSellerSales(params);
           setSales(response.results);
           setTotalCount(response.count);
         } catch (apiError) {
-          console.error('API 호출 오류, 가상 데이터 사용:', apiError);
-          
-          // 개발용 가상 데이터
-          const mockSales: SaleConfirmation[] = [
-            {
-              id: 1,
-              productName: '삼성 갤럭시 S24 Ultra',
-              provider: 'SK텔레콤',
-              plan: '5만원대',
-              tradeNumber: '#000123',
-              confirmationDate: new Date().toISOString(),
-              subsidyAmount: 450000,
-              status: 'pending',
-              buyerInfo: [{ name: '김민수', contact: '010-1234-5678' }]
-            },
-            {
-              id: 2,
-              productName: '아이폰 15 Pro',
-              provider: 'KT',
-              plan: '9만원대',
-              tradeNumber: '#000124',
-              confirmationDate: new Date(Date.now() - 86400000).toISOString(), // 어제
-              subsidyAmount: 550000,
-              status: 'confirmed',
-              buyerInfo: [{ name: '박지원', contact: '010-9876-5432' }]
-            },
-            {
-              id: 3,
-              productName: '아이패드 Pro',
-              provider: 'LG U+',
-              plan: '7만원대',
-              tradeNumber: '#000125',
-              confirmationDate: new Date(Date.now() - 172800000).toISOString(), // 2일 전
-              subsidyAmount: 300000,
-              status: 'pending',
-              buyerInfo: [{ name: '이지은', contact: '010-5555-1234' }]
-            }
-          ];
-          
-          // 검색 및 필터링 적용
-          let filteredSales = mockSales;
-          if (searchQuery) {
-            filteredSales = filteredSales.filter(sale => 
-              sale.productName.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-          }
-          
-          if (filter !== 'all') {
-            filteredSales = filteredSales.filter(sale => sale.status === filter);
-          }
-          
-          setSales(filteredSales);
-          setTotalCount(filteredSales.length);
+          console.error('판매 확정 목록 조회 오류:', apiError);
+          setSales([]);
+          setTotalCount(0);
+          // 에러 토스트 표시
+          toast({
+            title: '데이터 로딩 실패',
+            description: '판매 확정 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.',
+            variant: 'destructive',
+          });
         }
       } catch (error) {
         console.error('판매 확정 목록 조회 오류:', error);
