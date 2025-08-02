@@ -1158,22 +1158,6 @@ const onSubmit = async (values: FormData) => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-        {/* 중복 공구 알림 다이얼로그 */}
-        <AlertDialog open={showDuplicateProductDialog} onOpenChange={setShowDuplicateProductDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{errorDialogTitle}</AlertDialogTitle>
-              <AlertDialogDescription className="text-base">
-                {errorDialogMessage}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogAction>확인</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-        <div className="h-96 bg-gray-200 rounded"></div>
       </div>
     );
   }
