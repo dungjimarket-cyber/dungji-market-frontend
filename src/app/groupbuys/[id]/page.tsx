@@ -44,7 +44,7 @@ interface GroupBuy {
 async function getGroupBuy(id: string): Promise<GroupBuy | null> {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${id}/`, {
-      next: { revalidate: 60 } // 60초마다 캐시 갱신
+      next: { revalidate: 10 } // 10초마다 캐시 갱신 - 닉네임 변경 등이 빨리 반영되도록
     });
     if (!response.ok) throw new Error('Failed to fetch group buy');
     return await response.json();

@@ -417,6 +417,13 @@ export default function ProfileSection() {
           localStorage.setItem('user', JSON.stringify(updatedUser));
           localStorage.setItem('auth.user', JSON.stringify(updatedUser));
         }
+        
+        // 닉네임이 변경된 경우 페이지 새로고침하여 모든 데이터 업데이트
+        if (editField === 'nickname') {
+          setTimeout(() => {
+            window.location.reload();
+          }, 500); // 성공 메시지를 잠시 보여준 후 새로고침
+        }
       }
       setIsEditing(false);
       setEditField(null);

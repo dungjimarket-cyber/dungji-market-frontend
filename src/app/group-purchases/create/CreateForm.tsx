@@ -281,6 +281,9 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   // 인증 상태를 NextAuth와 호환되는 status 변수로 변환
   const status = isLoading ? 'loading' : isAuthenticated ? 'authenticated' : 'unauthenticated';
   const router = useRouter();
+  
+  // 사용자 정보 로딩 완료 상태
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -404,6 +407,28 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
+    // 로딩 상태가 아니고 인증된 상태이지만 사용자 정보가 여전히 불완전한 경우 추가 대기
+    if (!isLoading && isAuthenticated && user && (!user.id || user.id === undefined)) {
+      console.log('[CreateForm] 사용자 정보가 불완전함, 추가 대기 중...');
+      return;
+    }
+    
+    // 사용자 정보가 완전히 로드되었는지 확인하고 상태 업데이트
+    if (isAuthenticated && user && user.id && !userDataLoaded) {
+      // 사용자 정보가 완전히 로드되었을 때 추가 지연을 통해 확실하게 처리
+      const delayTimer = setTimeout(() => {
+        setUserDataLoaded(true);
+      }, 100); // 100ms 지연으로 확실한 로딩 완료 대기
+      
+      return () => clearTimeout(delayTimer);
+    }
+    
+    // userDataLoaded가 false이면 아직 검증하지 않음
+    if (isAuthenticated && !userDataLoaded) {
+      console.log('[CreateForm] 사용자 데이터 로딩 완료 대기 중...');
+      return;
+    }
+    
     // 판매자(seller) 계정은 공구 등록 불가
     if (user?.role === 'seller' || (user?.roles && user.roles.includes('seller'))) {
       toast({
@@ -415,7 +440,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 일반회원: 활동지역 체크 (모든 가입 방식에 적용)
+    // 일반회원: 활동지역과 휴대폰 번호 체크 (모든 가입 방식에 적용)
     console.log('[CreateForm] 사용자 정보 확인:', {
       role: user?.role,
       address_region: user?.address_region,
@@ -423,6 +448,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       user_full: user
     });
     
+    // 활동지역 검증
     if (user?.role === 'buyer' && !user.address_region) {
       if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
         router.push('/mypage');
@@ -432,7 +458,18 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       router.back();
       return;
     }
-  }, [router, isLoading, isAuthenticated, user]);
+    
+    // 휴대폰 번호 검증 (필요한 경우만)
+    if (user?.role === 'buyer' && !user.phone_number) {
+      if (confirm('공구를 등록하기 위해서는 휴대폰 번호 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
+        router.push('/mypage');
+        return;
+      }
+      // 취소를 누른 경우 이전 페이지로
+      router.back();
+      return;
+    }
+  }, [router, isLoading, isAuthenticated, user, userDataLoaded]);
 
   useEffect(() => {
     console.log('현재 인증 상태:', isAuthenticated ? '인증됨' : '비인증');

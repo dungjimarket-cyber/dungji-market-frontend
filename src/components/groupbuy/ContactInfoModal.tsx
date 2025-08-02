@@ -68,7 +68,12 @@ export default function ContactInfoModal({
       
       if (data.role === 'seller') {
         setContactRole('seller');
-        setSellerInfo(data.seller);
+        // 백엔드가 seller 객체가 아닌 직접 정보를 반환하므로 data 자체를 사용
+        setSellerInfo({
+          name: data.name,
+          phone: data.phone,
+          address: data.address
+        });
       } else if (data.role === 'buyers') {
         setContactRole('buyers');
         setBuyersInfo(data.buyers || []);
