@@ -17,6 +17,7 @@ export interface ContactInfo {
   phone?: string;
   business_name?: string;
   business_number?: string;
+  address?: string;
   buyers?: Array<{
     name: string;
     phone: string;

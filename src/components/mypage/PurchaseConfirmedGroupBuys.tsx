@@ -8,7 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
-import ContactInfoModal from '@/components/groupbuy/ContactInfoModal';
+import ContactInfoModal from '@/components/final-selection/ContactInfoModal';
 
 interface Product {
   id: number;
@@ -202,8 +202,8 @@ export default function PurchaseConfirmedGroupBuys() {
             setIsContactModalOpen(false);
             setSelectedGroupBuyId(null);
           }}
-          groupbuyId={selectedGroupBuyId}
-          userRole="buyer"
+          groupBuyId={selectedGroupBuyId}
+          role="buyer"
         />
       )}
     </>

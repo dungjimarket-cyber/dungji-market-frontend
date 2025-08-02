@@ -35,11 +35,12 @@ export default function SellerSettings() {
     address: '',
     addressProvince: '',
     addressCity: '',
-    businessNumber: '',
+    businessNumber1: '',
+    businessNumber2: '',
+    businessNumber3: '',
     isRemoteSales: false,
     businessRegFile: null as File | null,
-    notificationEnabled: true,
-    profileImage: ''
+    notificationEnabled: true
   });
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function SellerSettings() {
         setProfile(data);
         
         // 폼 데이터 초기화
+        const businessNumParts = (data.businessNumber || '').split('-');
         setFormData({
           nickname: data.nickname || data.username || '',
           description: data.description || '',
@@ -64,11 +66,12 @@ export default function SellerSettings() {
           address: data.address || '',
           addressProvince: '',
           addressCity: '',
-          businessNumber: data.businessNumber || '',
+          businessNumber1: businessNumParts[0] || '',
+          businessNumber2: businessNumParts[1] || '',
+          businessNumber3: businessNumParts[2] || '',
           isRemoteSales: data.isRemoteSales || false,
           businessRegFile: null,
-          notificationEnabled: data.notificationEnabled || true,
-          profileImage: data.profileImage || ''
+          notificationEnabled: data.notificationEnabled || true
         });
         
         // address_region에서 시/도와 시/군/구 추출
@@ -121,15 +124,15 @@ export default function SellerSettings() {
 
     try {
       // API 호출을 위한 데이터 준비
+      const businessNumber = `${formData.businessNumber1}-${formData.businessNumber2}-${formData.businessNumber3}`;
       const updateData: any = {
         nickname: formData.nickname,
         description: formData.description,
         phone: formData.phone,
         address: formData.address,
-        business_number: formData.businessNumber,
+        business_number: businessNumber,
         is_remote_sales: formData.isRemoteSales,
-        notification_enabled: formData.notificationEnabled,
-        profile_image: formData.profileImage
+        notification_enabled: formData.notificationEnabled
       };
 
       // 주소 정보 처리
@@ -236,26 +239,6 @@ export default function SellerSettings() {
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="profileImage">프로필 이미지</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                      {formData.profileImage ? (
-                        <img 
-                          src={formData.profileImage} 
-                          alt="프로필 이미지" 
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-gray-400">No Image</span>
-                      )}
-                    </div>
-                    <Button type="button" variant="outline" size="sm">
-                      <Upload className="h-4 w-4 mr-2" />
-                      이미지 업로드
-                    </Button>
-                  </div>
-                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="nickname">닉네임 (상호명)</Label>
@@ -319,55 +302,75 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="businessNumber">사업자등록번호</Label>
-                  <Input
-                    id="businessNumber"
-                    name="businessNumber"
-                    value={formData.businessNumber}
-                    onChange={handleChange}
-                    placeholder="사업자등록번호를 입력하세요 (예: 123-45-67890)"
-                  />
+                  <Label htmlFor="businessNumber1">사업자등록번호</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="businessNumber1"
+                      name="businessNumber1"
+                      value={formData.businessNumber1}
+                      onChange={handleChange}
+                      placeholder="123"
+                      maxLength={3}
+                      className="flex-1"
+                    />
+                    <span className="text-gray-500">-</span>
+                    <Input
+                      id="businessNumber2"
+                      name="businessNumber2"
+                      value={formData.businessNumber2}
+                      onChange={handleChange}
+                      placeholder="45"
+                      maxLength={2}
+                      className="flex-1"
+                    />
+                    <span className="text-gray-500">-</span>
+                    <Input
+                      id="businessNumber3"
+                      name="businessNumber3"
+                      value={formData.businessNumber3}
+                      onChange={handleChange}
+                      placeholder="67890"
+                      maxLength={5}
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">비대면 판매가능 영업소 인증</span>
-                      <Switch
-                        id="remoteSales"
-                        checked={formData.isRemoteSales}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ ...prev, isRemoteSales: checked }))
-                        }
-                      />
-                    </div>
-                    {formData.isRemoteSales && (
-                      <div className="space-y-2">
-                        <Label htmlFor="businessRegFile" className="text-sm">사업자등록증 업로드</Label>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            id="businessRegFile"
-                            type="file"
-                            accept="image/*,.pdf"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0] || null;
-                              setFormData(prev => ({ ...prev, businessRegFile: file }));
-                            }}
-                            className="flex-1"
-                          />
-                          <Button type="button" variant="outline" size="sm">
-                            <Upload className="h-4 w-4" />
-                          </Button>
-                        </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
+                    <Switch
+                      id="remoteSales"
+                      checked={formData.isRemoteSales}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ ...prev, isRemoteSales: checked }))
+                      }
+                    />
+                  </div>
+                  {formData.isRemoteSales && (
+                    <div className="mt-3 p-4 border rounded-lg bg-gray-50">
+                      <Label htmlFor="businessRegFile" className="text-sm font-medium">비대면 판매가능 인증 파일 업로드</Label>
+                      <div className="mt-2">
+                        <Input
+                          id="businessRegFile"
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            setFormData(prev => ({ ...prev, businessRegFile: file }));
+                          }}
+                        />
                         {formData.businessRegFile && (
-                          <p className="text-sm text-gray-600">
-                            선택된 파일: {formData.businessRegFile.name}
+                          <p className="text-sm text-green-600 mt-2">
+                            ✓ 파일 선택됨: {formData.businessRegFile.name}
                           </p>
                         )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          ※ 비대면 판매가 가능한 영업소 인증 서류를 업로드해주세요.
+                        </p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">

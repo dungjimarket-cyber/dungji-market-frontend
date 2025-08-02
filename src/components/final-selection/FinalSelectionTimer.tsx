@@ -12,11 +12,14 @@ import {
   submitSellerFinalDecision,
   type FinalDecisionStatus
 } from '@/lib/api/finalSelectionService';
+import FinalSelectionModal from './FinalSelectionModal';
 
 interface FinalSelectionTimerProps {
   groupBuyId: number;
   endTime: string;
   onSelectionMade?: () => void;
+  bidAmount?: number;
+  participantCount?: number;
 }
 
 
@@ -26,12 +29,16 @@ interface FinalSelectionTimerProps {
 export function FinalSelectionTimer({ 
   groupBuyId, 
   endTime, 
-  onSelectionMade 
+  onSelectionMade,
+  bidAmount,
+  participantCount = 0
 }: FinalSelectionTimerProps) {
   const { user, accessToken } = useAuth();
   const [status, setStatus] = useState<FinalDecisionStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalDecision, setModalDecision] = useState<'confirmed' | 'cancelled'>('confirmed');
 
   // 사용자의 최종선택 상태 조회
   useEffect(() => {
@@ -49,8 +56,14 @@ export function FinalSelectionTimer({
     fetchStatus();
   }, [groupBuyId, accessToken]);
 
+  // 최종선택 버튼 클릭 핸들러
+  const handleDecisionClick = (decision: 'confirmed' | 'cancelled') => {
+    setModalDecision(decision);
+    setShowModal(true);
+  };
+
   // 최종선택 제출
-  const handleDecision = async (decision: 'confirmed' | 'cancelled') => {
+  const handleDecisionConfirm = async () => {
     if (!accessToken || !status) return;
 
     setSubmitting(true);
@@ -59,15 +72,17 @@ export function FinalSelectionTimer({
         ? submitBuyerFinalDecision
         : submitSellerFinalDecision;
 
-      const data = await submitFunction(groupBuyId, decision);
+      const data = await submitFunction(groupBuyId, modalDecision);
       toast.success(data.message || '최종선택이 완료되었습니다.');
       
       // 상태 업데이트
       setStatus(prev => prev ? {
         ...prev,
-        decision,
+        decision: modalDecision,
         decision_at: new Date().toISOString()
       } : null);
+
+      setShowModal(false);
 
       if (onSelectionMade) {
         onSelectionMade();
@@ -98,6 +113,7 @@ export function FinalSelectionTimer({
   }
 
   return (
+    <>
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-lg">
@@ -136,53 +152,45 @@ export function FinalSelectionTimer({
           </div>
         ) : (
           /* 선택 버튼 */
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="text-sm text-gray-700 text-center mb-4">
-              {status.role === 'buyer' 
-                ? (
-                  <>
-                    낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?
-                    <br />
-                    <span className="text-xs text-gray-600 mt-1 block">
-                      (구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)
-                    </span>
-                  </>
-                )
-                : '이 공구를 판매하시겠습니까?'
-              }
+              최종선택 기간입니다.
             </div>
             
             <div className="grid grid-cols-2 gap-3">
               <Button
-                onClick={() => handleDecision('confirmed')}
+                onClick={() => handleDecisionClick('confirmed')}
                 disabled={submitting}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                {submitting ? '처리중...' : (
-                  status.role === 'buyer' ? '구매확정' : '판매확정'
-                )}
+                {status.role === 'buyer' ? '구매확정' : '판매확정'}
               </Button>
               
               <Button
-                onClick={() => handleDecision('cancelled')}
+                onClick={() => handleDecisionClick('cancelled')}
                 disabled={submitting}
                 variant="outline"
                 className="border-red-300 text-red-600 hover:bg-red-50"
               >
-                {submitting ? '처리중...' : (
-                  status.role === 'buyer' ? '구매포기' : '판매포기'
-                )}
+                {status.role === 'buyer' ? '구매포기' : '판매포기'}
               </Button>
             </div>
-
-            {status.role === 'seller' && (
-              <div className="text-xs text-orange-600 text-center mt-2">
-                ⚠️ 판매포기 시 패널티 점수가 부과됩니다.
-              </div>
-            )}
           </div>
         )}
       </CardContent>
     </Card>
+
+    {/* 최종선택 확인 모달 */}
+    <FinalSelectionModal
+      isOpen={showModal}
+      onClose={() => setShowModal(false)}
+      onConfirm={handleDecisionConfirm}
+      loading={submitting}
+      role={status?.role || 'buyer'}
+      decision={modalDecision}
+      bidAmount={bidAmount}
+      participantCount={participantCount}
+    />
+    </>
   );
 }

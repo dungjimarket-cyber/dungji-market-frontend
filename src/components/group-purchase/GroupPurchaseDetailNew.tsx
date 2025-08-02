@@ -119,6 +119,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [showBidHistoryModal, setShowBidHistoryModal] = useState(false);
   const [showNoBidTokenDialog, setShowNoBidTokenDialog] = useState(false);
   const [bidHistory, setBidHistory] = useState<any[]>([]);
+  const [selectedBidAmount, setSelectedBidAmount] = useState<number | null>(null);
   const fetchBidInfoRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const [topBids, setTopBids] = useState<any[]>([]);
   const [isBidding, setIsBidding] = useState(false);
@@ -413,6 +414,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             if (myBid.status === 'selected' || myBid.is_selected) {
               setIsMyBidSelected(true);
               setMyBidFinalDecision(myBid.final_decision || 'pending');
+              setSelectedBidAmount(myBid.amount);
             }
             
             // 입찰 취소 가능 여부 설정 (입찰 중이고 마감 시간 전)
@@ -1300,6 +1302,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <FinalSelectionTimer
                 groupBuyId={groupBuy.id}
                 endTime={groupBuy.voting_end}
+                bidAmount={selectedBidAmount || undefined}
+                participantCount={groupBuy.current_participants}
                 onSelectionMade={() => {
                   setShowFinalSelectionModal(false);
                   // 페이지 새로고침 또는 상태 업데이트
