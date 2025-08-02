@@ -726,15 +726,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     setWithdrawingParticipation(true);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/participations/withdraw/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/leave/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          groupbuy_id: groupBuy.id
-        })
+        }
       });
 
       if (response.ok) {

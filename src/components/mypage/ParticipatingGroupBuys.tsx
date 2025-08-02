@@ -136,14 +136,16 @@ export default function ParticipatingGroupBuys() {
   });
   
   // 공구 상태에 따라 필터링
+  // 진행중: 모집중, 입찰중만 포함 (최종선택중 제외)
   const activeGroupBuys = sortedGroupBuys.filter(groupBuy => {
     const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
-    return ['recruiting', 'bidding', 'voting', 'selecting'].includes(status);
+    return ['recruiting', 'bidding'].includes(status);
   });
   
+  // 종료된 공구: 최종선택중, 완료, 만료, 취소 포함
   const completedGroupBuys = sortedGroupBuys.filter(groupBuy => {
     const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
-    return ['completed', 'expired', 'canceled'].includes(status);
+    return ['voting', 'selecting', 'completed', 'expired', 'canceled'].includes(status);
   });
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
