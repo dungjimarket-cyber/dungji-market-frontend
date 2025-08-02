@@ -125,6 +125,7 @@ export default function BidModal({
         
         // 입찰권 정보 가져오기
         const tokenInfo = await bidTokenService.getBidTokens();
+        console.log('BidModal - 입찰권 정보:', tokenInfo);
         setBidTokenInfo(tokenInfo);
       } catch (error) {
         console.error('데이터 확인 중 오류:', error);
@@ -472,6 +473,9 @@ export default function BidModal({
           <DialogTitle className="text-lg font-bold">
             {existingBid ? '다시 입찰하기' : '입찰하기'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            입찰 확인 팝업
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-3 py-4">
@@ -485,12 +489,19 @@ export default function BidModal({
           
           {/* 확인 메시지 */}
           <div className="text-sm text-gray-700">
-            {existingBid
-              ? '"다시 입찰 하시겠습니까?"'
-              : bidTokenInfo && bidTokenInfo.unlimited_subscription === true
-                ? '"입찰 하시겠습니까?"'
-                : '"입찰권 1개가 소모됩니다. 입찰 하시겠습니까?"'
-            }
+            {(() => {
+              console.log('확인 팝업 - bidTokenInfo:', bidTokenInfo);
+              console.log('확인 팝업 - unlimited_subscription:', bidTokenInfo?.unlimited_subscription);
+              console.log('확인 팝업 - existingBid:', existingBid);
+              
+              if (existingBid) {
+                return '"다시 입찰 하시겠습니까?"';
+              } else if (bidTokenInfo && bidTokenInfo.unlimited_subscription === true) {
+                return '"입찰 하시겠습니까?"';
+              } else {
+                return '"입찰권 1개가 소모됩니다. 입찰 하시겠습니까?"';
+              }
+            })()}
           </div>
           
           {/* 버튼 그룹 - DialogFooter 밖으로 이동 */}
