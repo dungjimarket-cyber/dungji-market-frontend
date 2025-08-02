@@ -125,7 +125,6 @@ export default function BidModal({
         
         // 입찰권 정보 가져오기
         const tokenInfo = await bidTokenService.getBidTokens();
-        console.log('BidModal - 입찰권 정보:', tokenInfo);
         setBidTokenInfo(tokenInfo);
       } catch (error) {
         console.error('데이터 확인 중 오류:', error);
@@ -489,19 +488,12 @@ export default function BidModal({
           
           {/* 확인 메시지 */}
           <div className="text-sm text-gray-700">
-            {(() => {
-              console.log('확인 팝업 - bidTokenInfo:', bidTokenInfo);
-              console.log('확인 팝업 - unlimited_subscription:', bidTokenInfo?.unlimited_subscription);
-              console.log('확인 팝업 - existingBid:', existingBid);
-              
-              if (existingBid) {
-                return '"다시 입찰 하시겠습니까?"';
-              } else if (bidTokenInfo && bidTokenInfo.unlimited_subscription === true) {
-                return '"입찰 하시겠습니까?"';
-              } else {
-                return '"입찰권 1개가 소모됩니다. 입찰 하시겠습니까?"';
-              }
-            })()}
+            {existingBid
+              ? '"다시 입찰 하시겠습니까?"'
+              : bidTokenInfo?.unlimited_subscription
+                ? '"입찰 하시겠습니까?"'
+                : '"입찰권 1개가 소모됩니다. 입찰 하시겠습니까?"'
+            }
           </div>
           
           {/* 버튼 그룹 - DialogFooter 밖으로 이동 */}
@@ -533,7 +525,7 @@ export default function BidModal({
           
           {/* 입찰권 정보 */}
           <div className="text-sm text-gray-600">
-            {bidTokenInfo && bidTokenInfo.unlimited_subscription === true ? (
+            {bidTokenInfo?.unlimited_subscription ? (
               <span>무제한 구독권 이용중</span>
             ) : (
               <span>남은 입찰권 갯수 {bidTokenInfo?.single_tokens || 0}개</span>
