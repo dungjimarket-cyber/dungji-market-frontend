@@ -175,19 +175,19 @@ export default function SellerMyPage() {
               title="최종선택 대기중"
               count={profile.pendingSelection}
               icon={<Star className="h-5 w-5 text-yellow-500" />}
-              href="/mypage/seller/final-selection"
+              href="/mypage/seller/bids?filter=final_selection"
             />
             <SummaryCard
               title="판매 확정"
               count={profile.pendingSales}
               icon={<BadgeCheck className="h-5 w-5 text-green-500" />}
-              href="/mypage/seller/sales"
+              href="/mypage/seller/sales?filter=confirmed"
             />
             <SummaryCard
               title="판매완료"
               count={profile.completedSales}
               icon={<ShoppingBag className="h-5 w-5 text-purple-500" />}
-              href="/mypage/seller/completed"
+              href="/mypage/seller/sales?filter=completed"
             />
           </div>
 

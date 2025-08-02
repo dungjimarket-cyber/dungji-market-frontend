@@ -84,16 +84,26 @@ function BidsListSkeleton() {
  * 입찰 목록 클라이언트 컴포넌트
  */
 function BidsListClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = parseInt(searchParams.get('page') || '1');
+  const filterFromUrl = searchParams.get('filter');
+  
   const [bids, setBids] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filter, setFilter] = useState<'all' | 'pending' | 'selected' | 'confirmed' | 'rejected' | 'final_selection'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'selected' | 'confirmed' | 'rejected' | 'final_selection'>(
+    (filterFromUrl as any) || 'all'
+  );
   const { toast } = useToast();
-  
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const page = parseInt(searchParams.get('page') || '1');
+
+  // URL 파라미터 변경 감지
+  useEffect(() => {
+    if (filterFromUrl) {
+      setFilter(filterFromUrl as any);
+    }
+  }, [filterFromUrl]);
 
   // 입찰 목록 조회
   useEffect(() => {
