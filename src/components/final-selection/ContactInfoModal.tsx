@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -126,10 +127,12 @@ export function ContactInfoModal({
                 <div className="flex items-start gap-4">
                   <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
                     {contactInfo.contact_info.profile_image ? (
-                      <img 
+                      <Image 
                         src={contactInfo.contact_info.profile_image} 
                         alt={contactInfo.contact_info.name}
-                        className="h-16 w-16 rounded-full object-cover"
+                        width={64}
+                        height={64}
+                        className="rounded-full object-cover"
                       />
                     ) : (
                       <User className="h-8 w-8 text-gray-500" />

@@ -11,7 +11,12 @@ import { IoMdClose } from 'react-icons/io';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getSellerBids } from '@/lib/api/bidService';
-import BannerCarousel from '@/components/banner/BannerCarousel';
+import dynamic from 'next/dynamic';
+
+const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false
+});
 
 /**
  * 메인 홈페이지 컴포넌트
@@ -146,9 +151,13 @@ function HomeContent() {
     const fetchGroupBuys = async () => {
       try {
         const [popularResponse, newResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=popular&limit=10`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=popular&limit=10`, {
+            next: { revalidate: 60 } // 1분 캐시
+          }),
           // 더 많이 가져와서 필터링 후 선택
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=newest&limit=10`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=newest&limit=10`, {
+            next: { revalidate: 60 } // 1분 캐시
+          })
         ]);
         
         if (popularResponse.ok && newResponse.ok) {
@@ -277,12 +286,13 @@ function HomeContent() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {popularGroupBuys.map((groupBuy) => (
+                {popularGroupBuys.map((groupBuy, index) => (
                   <GroupPurchaseCard 
                     key={groupBuy.id} 
                     groupBuy={groupBuy}
                     isParticipant={userParticipations.includes(groupBuy.id)}
                     hasBid={userBids.includes(groupBuy.id)}
+                    priority={index < 2}
                   />
                 ))}
               </div>

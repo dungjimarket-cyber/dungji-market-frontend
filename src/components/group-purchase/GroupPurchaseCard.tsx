@@ -59,6 +59,7 @@ interface GroupPurchaseCardProps {
   onJoin?: (id: number) => void;
   isParticipant?: boolean; // 참여 여부
   hasBid?: boolean; // 입찰 여부
+  priority?: boolean; // 이미지 우선순위
 }
 
 /**
@@ -66,7 +67,7 @@ interface GroupPurchaseCardProps {
  * @param groupBuy - 공구 정보
  * @param onJoin - 참여하기 버튼 클릭 핸들러 (사용하지 않음, 상세 페이지로 이동)
  */
-export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = false }: GroupPurchaseCardProps) {
+export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = false, priority = false }: GroupPurchaseCardProps) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
@@ -270,6 +271,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           alt={groupBuy.product_details?.name || '상품 이미지'}
           fill
           className="object-contain"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={priority}
+          loading="lazy"
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
         
         {/* 공구 상태 배지 - 우측 상단 */}

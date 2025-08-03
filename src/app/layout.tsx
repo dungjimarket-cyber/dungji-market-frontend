@@ -41,6 +41,9 @@ export const metadata: Metadata = {
     images: ['/logo.png'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
+  other: {
+    'X-DNS-Prefetch-Control': 'on',
+  }
 };
 
 export default function RootLayout({
