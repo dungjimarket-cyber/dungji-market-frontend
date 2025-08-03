@@ -1,170 +1,235 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
-  DialogFooter
 } from '@/components/ui/dialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { User, Phone, Building, MapPin, Loader2 } from 'lucide-react';
-import { getContactInfo, type ContactInfo } from '@/lib/api/finalSelectionService';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+// Avatar component not available, using div instead
+import { Phone, Mail, Building, User, Copy, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface ContactInfo {
+  role: 'buyer' | 'seller';
+  contact_info: {
+    name: string;
+    business_name?: string;
+    phone: string;
+    email: string;
+    profile_image?: string;
+  } | Array<{
+    name: string;
+    phone: string;
+    email: string;
+    joined_at: string;
+  }>;
+}
 
 interface ContactInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   groupBuyId: number;
-  role: 'buyer' | 'seller';
+  accessToken: string | null;
 }
 
-export default function ContactInfoModal({ 
+export function ContactInfoModal({ 
   isOpen, 
-  onClose,
+  onClose, 
   groupBuyId,
-  role
+  accessToken 
 }: ContactInfoModalProps) {
-  const [loading, setLoading] = useState(false);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (isOpen && groupBuyId) {
+    if (isOpen && accessToken) {
       fetchContactInfo();
     }
-  }, [isOpen, groupBuyId]);
+  }, [isOpen, groupBuyId, accessToken]);
 
   const fetchContactInfo = async () => {
     setLoading(true);
     try {
-      const data = await getContactInfo(groupBuyId);
-      setContactInfo(data);
-    } catch (error: any) {
-      console.error('연락처 정보 조회 오류:', error);
-      toast.error(error.message || '연락처 정보를 불러올 수 없습니다.');
-      onClose();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/contact_info/`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setContactInfo(data);
+      } else {
+        const error = await response.json();
+        toast({
+          variant: 'destructive',
+          title: '오류',
+          description: error.error || '연락처 정보를 가져올 수 없습니다.'
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '연락처 정보 조회 중 문제가 발생했습니다.'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const renderSellerInfo = () => {
-    if (!contactInfo || contactInfo.role !== 'seller') return null;
-
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="font-medium mb-4 flex items-center">
-            <Building className="h-5 w-5 mr-2 text-blue-600" />
-            판매자 정보
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-24">상호/이름:</span>
-              <span className="text-sm font-medium">{contactInfo.name}</span>
-            </div>
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-24">연락처:</span>
-              <span className="text-sm font-medium">{contactInfo.phone}</span>
-            </div>
-            {contactInfo.business_name && (
-              <div className="flex items-start">
-                <span className="text-sm text-gray-500 w-24">사업자명:</span>
-                <span className="text-sm font-medium">{contactInfo.business_name}</span>
-              </div>
-            )}
-            {contactInfo.business_number && (
-              <div className="flex items-start">
-                <span className="text-sm text-gray-500 w-24">사업자번호:</span>
-                <span className="text-sm font-medium">{contactInfo.business_number}</span>
-              </div>
-            )}
-            {contactInfo.address && (
-              <div className="flex items-start">
-                <span className="text-sm text-gray-500 w-24">주소:</span>
-                <span className="text-sm font-medium">{contactInfo.address}</span>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    toast({
+      title: '복사됨',
+      description: `${field}이(가) 클립보드에 복사되었습니다.`
+    });
+    
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const renderBuyersInfo = () => {
-    if (!contactInfo || contactInfo.role !== 'buyers' || !contactInfo.buyers) return null;
-
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium flex items-center">
-            <User className="h-5 w-5 mr-2 text-blue-600" />
-            구매자 목록
-          </h3>
-          <span className="text-sm text-gray-500">
-            총 {contactInfo.total_count}명
-          </span>
-        </div>
-        {contactInfo.buyers.map((buyer, index) => (
-          <Card key={index}>
-            <CardContent className="p-4">
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2 text-gray-400" />
-                  <span className="text-sm font-medium">{buyer.name}</span>
-                </div>
-                <div className="flex items-center">
-                  <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                  <span className="text-sm">{buyer.phone}</span>
-                </div>
-                {buyer.address && (
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                    <span className="text-sm">{buyer.address}</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  };
+  if (!contactInfo) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {role === 'buyer' ? '판매자 정보' : '구매자 정보'}
+            {contactInfo.role === 'buyer' ? '판매자 정보' : '구매자 정보'}
           </DialogTitle>
           <DialogDescription>
-            {role === 'buyer' 
-              ? '구매확정하신 공구의 판매자 연락처입니다.'
-              : '판매확정하신 공구의 구매자 목록입니다.'
-            }
+            {contactInfo.role === 'buyer' 
+              ? '판매자와 연락하여 거래를 진행하세요.'
+              : '구매 확정한 고객 목록입니다. 연락하여 거래를 진행하세요.'}
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="py-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-            </div>
-          ) : (
-            <>
-              {contactInfo?.role === 'seller' && renderSellerInfo()}
-              {contactInfo?.role === 'buyers' && renderBuyersInfo()}
-            </>
-          )}
-        </div>
 
-        <DialogFooter>
+        {loading ? (
+          <div className="text-center py-8">로딩 중...</div>
+        ) : (
+          <div className="space-y-4">
+            {contactInfo.role === 'buyer' && !Array.isArray(contactInfo.contact_info) ? (
+              // 구매자가 보는 판매자 정보
+              <Card className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
+                    {contactInfo.contact_info.profile_image ? (
+                      <img 
+                        src={contactInfo.contact_info.profile_image} 
+                        alt={contactInfo.contact_info.name}
+                        className="h-16 w-16 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-8 w-8 text-gray-500" />
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg">{contactInfo.contact_info.name}</h3>
+                      {contactInfo.contact_info.business_name && (
+                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                          <Building className="h-4 w-4" />
+                          {contactInfo.contact_info.business_name}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-4 w-4 text-gray-500" />
+                          <span>{contactInfo.contact_info.phone}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard((contactInfo.contact_info as any).phone, '전화번호')}
+                        >
+                          {copiedField === '전화번호' ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-4 w-4 text-gray-500" />
+                          <span>{contactInfo.contact_info.email}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard((contactInfo.contact_info as any).email, '이메일')}
+                        >
+                          {copiedField === '이메일' ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              // 판매자가 보는 구매자 목록
+              <div className="space-y-3">
+                {Array.isArray(contactInfo.contact_info) && contactInfo.contact_info.map((buyer, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <h4 className="font-medium">{buyer.name}</h4>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {buyer.phone}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {buyer.email}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          참여일: {new Date(buyer.joined_at).toLocaleDateString('ko-KR')}
+                        </p>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(buyer.phone, `${buyer.name} 전화번호`)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-end">
           <Button onClick={onClose}>닫기</Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

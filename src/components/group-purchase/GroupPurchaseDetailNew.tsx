@@ -18,6 +18,8 @@ import { VotingTimer } from '@/components/groupbuy/VotingTimer';
 import { BidVotingList } from '@/components/groupbuy/BidVotingList';
 import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
 import { FinalSelectionTimer } from '@/components/final-selection/FinalSelectionTimer';
+import { SimpleFinalSelectionTimer } from '@/components/final-selection/SimpleFinalSelectionTimer';
+import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +40,7 @@ interface GroupBuy {
   start_time: string;
   end_time: string;
   voting_end?: string;
+  final_selection_end?: string;
   creator_name?: string;
   host_id?: number;
   host_username?: string;
@@ -118,6 +121,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [myParticipationFinalDecision, setMyParticipationFinalDecision] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
   const [showFinalSelectionDialog, setShowFinalSelectionDialog] = useState(false);
   const [finalSelectionType, setFinalSelectionType] = useState<'confirm' | 'cancel'>('confirm');
+  const [showContactInfoModal, setShowContactInfoModal] = useState(false);
   
   // 판매자 관련 상태
   const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
@@ -1029,37 +1033,45 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           • 가입약정 기간은 24개월 입니다
         </div>
 
+        {/* 최종선택 타이머 */}
+        {groupBuy.status === 'final_selection' && groupBuy.final_selection_end && (
+          <div className="mb-6">
+            <SimpleFinalSelectionTimer 
+              endTime={groupBuy.final_selection_end}
+              onTimeEnd={() => router.refresh()}
+            />
+          </div>
+        )}
+
         {/* 최고 지원금/최종 낙찰 지원금 박스 */}
         {groupBuy.status === 'final_selection' || groupBuy.status === 'completed' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200">
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-800 mb-2">✨ 최종 낙찰 지원금</p>
-              <p className="text-4xl font-bold text-orange-600">
+              <p className="text-xl font-bold text-gray-800 mb-4">최종 낙찰 지원금</p>
+              <p className="text-5xl font-bold text-orange-600 mb-1">
                 <span>
                   {groupBuy.winning_bid_amount 
                     ? groupBuy.winning_bid_amount.toLocaleString()
                     : groupBuy.winning_bid_amount_masked || '***'}
                 </span>
-                <span className="text-xl">원</span>
+                <span className="text-2xl">원</span>
               </p>
-              {groupBuy.total_bids_count && (
-                <p className="text-sm text-gray-600 mt-2">
-                  총 {groupBuy.total_bids_count}개 입찰
+              <div className="mt-4 space-y-3">
+                <p className="text-base text-gray-700 font-medium">
+                  총 {groupBuy.total_bids_count || 0}개 입찰
                 </p>
-              )}
-            </div>
-            {/* 입찰 순위 표시 */}
-            {groupBuy.bid_ranking && groupBuy.bid_ranking.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-orange-200">
-                <button 
+                {/* 입찰 내역 보기 버튼 */}
+                <Button
                   onClick={() => setShowBidHistoryModal(true)}
-                  className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                  variant="outline"
+                  size="default"
+                  className="px-6"
                 >
-                  입찰 내역 보기 →
-                </button>
+                  입찰 내역 보기
+                </Button>
               </div>
-            )}
+            </div>
           </div>
         ) : (
           // 진행중인 상태일 때 기존 표시
@@ -1189,6 +1201,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
+        {/* 구매/판매 확정 후 연락처 보기 버튼 */}
+        {((isParticipant && myParticipationFinalDecision === 'confirmed') || 
+          (isSeller && myBidFinalDecision === 'confirmed')) && 
+         (groupBuy.status === 'final_selection' || groupBuy.status === 'completed') ? (
+          <Button 
+            onClick={() => setShowContactInfoModal(true)}
+            className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700 mb-4"
+          >
+            {isSeller ? '구매자 정보 보기' : '판매자 정보 보기'}
+          </Button>
+        ) : null}
+
         {/* 구매회원 최종선택 버튼 */}
         {!isSeller && isParticipant && groupBuy.status === 'final_selection' && myParticipationFinalDecision === 'pending' ? (
           <div className="space-y-3">
@@ -1563,6 +1587,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         hasUnlimitedSubscription={bidTokenInfo.has_unlimited_subscription}
       />
 
+      {/* 연락처 정보 모달 */}
+      <ContactInfoModal
+        isOpen={showContactInfoModal}
+        onClose={() => setShowContactInfoModal(false)}
+        groupBuyId={groupBuy.id}
+        accessToken={accessToken}
+      />
+
       {/* 최종선택 확인 다이얼로그 */}
       <AlertDialog open={showFinalSelectionDialog} onOpenChange={setShowFinalSelectionDialog}>
         <AlertDialogContent>
@@ -1593,10 +1625,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               ) : (
                 isSeller ? (
                   <>
-                    판매 포기시 패널티가 부과될 수 있습니다. 포기하시겠습니까?<br />
-                    <span className="text-sm text-gray-600 mt-2 block">
-                      (구매자가 1명 이하일 경우 패널티는 부과되지 않습니다)
-                    </span>
+                    판매 포기시 패널티가 부과될 수 있습니다.<br />
+                    포기하시겠습니까?
+                    {groupBuy.current_participants <= 1 && (
+                      <span className="text-sm text-blue-600 mt-2 block">
+                        (구매자가 1명 이하일 경우 패널티는 부과되지 않습니다)
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>공동구매 진행을 포기하시겠습니까?</>

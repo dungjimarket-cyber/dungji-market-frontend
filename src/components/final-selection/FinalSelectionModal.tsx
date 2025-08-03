@@ -46,7 +46,7 @@ export default function FinalSelectionModal({
                   최종낙찰된 지원금액: <span className="font-bold">{formatNumberWithCommas(bidAmount)}원</span>
                 </div>
               )}
-              <p className="font-medium">"낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?"</p>
+              <p className="font-medium">낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?</p>
               <p className="text-sm text-gray-600">(구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)</p>
             </div>
           ),
@@ -58,7 +58,7 @@ export default function FinalSelectionModal({
           title: '구매포기',
           content: (
             <div className="space-y-3">
-              <p className="font-medium">"공동구매 진행을 포기하시겠습니까?"</p>
+              <p className="font-medium">공동구매 진행을 포기하시겠습니까?</p>
             </div>
           ),
           confirmText: '네 포기할게요',
@@ -71,7 +71,7 @@ export default function FinalSelectionModal({
           title: '판매확정',
           content: (
             <div className="space-y-3">
-              <p className="font-medium">"낙찰받은 견적 그대로 책임 하에 판매하시겠습니까?"</p>
+              <p className="font-medium">낙찰받은 견적 그대로 책임 하에 판매하시겠습니까?</p>
               <p className="text-sm text-gray-600">(판매를 확정하시면 구매자 리스트를 제공해 드립니다)</p>
             </div>
           ),
@@ -83,9 +83,10 @@ export default function FinalSelectionModal({
           title: '판매포기',
           content: (
             <div className="space-y-3">
-              <p className="font-medium">"판매 포기시 패널티가 부과될수 있습니다. 포기하시겠습니까?"</p>
+              <p className="font-medium">판매 포기시 패널티가 부과될 수 있습니다.</p>
+              <p className="font-medium">포기하시겠습니까?</p>
               {participantCount <= 1 && (
-                <p className="text-sm text-blue-600">(구매자가 1명 이하일 경우 패널티는 부과되지 않습니다)</p>
+                <p className="text-sm text-blue-600 mt-2">(구매자가 1명 이하일 경우 패널티는 부과되지 않습니다)</p>
               )}
             </div>
           ),

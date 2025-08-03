@@ -48,9 +48,9 @@ export default function CompletedGroupBuys() {
 
       try {
         setLoading(true);
-        // 종료된 공구 목록 가져오기
+        // 구매 완료된 공구 목록 가져오기
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/joined_groupbuys/?status=completed`,
+          `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/purchase_completed/`,
           {
             method: 'GET',
             headers: {

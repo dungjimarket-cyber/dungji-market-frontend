@@ -23,17 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 
-// 입찰 금액 익명화 처리 함수 - 첫 자리만 보이고 나머지는 * 표시
-const anonymizeAmount = (amount: number, rank: number): string => {
-  const amountStr = amount.toString();
-  
-  if (amountStr.length <= 1) {
-    return amountStr + "원";
-  } else {
-    // 첫 자리만 보이고 나머지는 * 표시
-    return amountStr[0] + "*".repeat(amountStr.length - 1) + "원";
-  }
-};
+// 입찰 금액 익명화 처리 함수는 더 이상 사용하지 않음
+// 요구사항에 따라 1위부터 10위까지 정상 금액 표기
 
 // 여기서는 BidData 인터페이스를 API 서비스에서 가져와 사용합니다
 
@@ -149,7 +140,7 @@ export default function BidHistoryModal({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {index < 10 ? anonymizeAmount(bid.amount, index + 1) : formatNumberWithCommas(bid.amount) + '원'}
+                      {formatNumberWithCommas(bid.amount)}원
                     </TableCell>
                     <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
                   </TableRow>
