@@ -12,7 +12,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t mt-12 py-6 bg-gray-50">
+    <footer className="border-t mt-12 py-6 bg-gray-50 min-h-[300px]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Company Info */}

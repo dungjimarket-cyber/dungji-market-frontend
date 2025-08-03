@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter } from 'next/font/google';
 import "./globals.css";
 import Providers from './Providers';
 import { Toaster } from "@/components/ui/toaster";
@@ -7,6 +8,11 @@ import MobileNavbar from '@/components/common/MobileNavbar';
 import Footer from '@/components/common/Footer';
 import { Analytics } from "@vercel/analytics/next"
 import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 
 export const metadata: Metadata = {
@@ -48,12 +54,12 @@ export default function RootLayout({
    */
   return (
     <html lang="ko">
-      <body className="font-sans min-h-screen relative">
+      <body className={`${inter.className} min-h-screen relative`}>
         <Providers>
           <Toaster />
           <RoleUpdateNotice />
           <DesktopNavbar />
-          <main className="flex-1 pb-16 md:pb-0">
+          <main className="flex-1 pb-16 md:pb-0 min-h-[calc(100vh-400px)]">
             {children}
           </main>
           <MobileNavbar />
