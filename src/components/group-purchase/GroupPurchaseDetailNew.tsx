@@ -69,6 +69,15 @@ interface GroupBuy {
   };
   total_bids?: number;
   highest_bid_amount?: number;
+  winning_bid_amount?: number;
+  winning_bid_amount_masked?: string;
+  total_bids_count?: number;
+  bid_ranking?: Array<{
+    rank: number;
+    amount?: number;
+    amount_masked?: string;
+    is_winner: boolean;
+  }>;
   region_type?: string;
   region?: string;
   region_name?: string;
@@ -958,29 +967,63 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           • 가입약정 기간은 24개월 입니다
         </div>
 
-        {/* 최고 지원금 박스 */}
-        <div className="bg-yellow-50 rounded-lg p-4 mb-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
-            <p className="text-3xl font-bold text-orange-500">
-              <span>{highestBidAmount && highestBidAmount > 0 ? maskAmount(highestBidAmount) : '0'}</span>
-              <span className="text-lg">원</span>
-            </p>
-            {totalBids > 0 && (
-              <>
-                <p className="text-xs text-gray-500 mt-1">총 {totalBids}개 입찰</p>
-                {!isSeller && (
-                  <button
-                    onClick={() => setShowBidHistoryModal(true)}
-                    className="text-xs text-blue-600 hover:underline mt-1"
-                  >
-                    입찰 내역 보기
-                  </button>
-                )}
-              </>
+        {/* 최고 지원금/최종 낙찰 지원금 박스 */}
+        {groupBuy.status === 'final_selection' || groupBuy.status === 'completed' ? (
+          // 최종선택 상태일 때 낙찰 정보 표시
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200">
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-800 mb-2">✨ 최종 낙찰 지원금</p>
+              <p className="text-4xl font-bold text-orange-600">
+                <span>
+                  {groupBuy.winning_bid_amount 
+                    ? groupBuy.winning_bid_amount.toLocaleString()
+                    : groupBuy.winning_bid_amount_masked || '***'}
+                </span>
+                <span className="text-xl">원</span>
+              </p>
+              {groupBuy.total_bids_count && (
+                <p className="text-sm text-gray-600 mt-2">
+                  총 {groupBuy.total_bids_count}개 입찰
+                </p>
+              )}
+            </div>
+            {/* 입찰 순위 표시 */}
+            {groupBuy.bid_ranking && groupBuy.bid_ranking.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-orange-200">
+                <button 
+                  onClick={() => setShowBidHistoryModal(true)}
+                  className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  입찰 내역 보기 →
+                </button>
+              </div>
             )}
           </div>
-        </div>
+        ) : (
+          // 진행중인 상태일 때 기존 표시
+          <div className="bg-yellow-50 rounded-lg p-4 mb-6">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
+              <p className="text-3xl font-bold text-orange-500">
+                <span>{highestBidAmount && highestBidAmount > 0 ? maskAmount(highestBidAmount) : '0'}</span>
+                <span className="text-lg">원</span>
+              </p>
+              {totalBids > 0 && (
+                <>
+                  <p className="text-xs text-gray-500 mt-1">총 {totalBids}개 입찰</p>
+                  {!isSeller && (
+                    <button
+                      onClick={() => setShowBidHistoryModal(true)}
+                      className="text-xs text-blue-600 hover:underline mt-1"
+                    >
+                      입찰 내역 보기
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 안내 메시지 */}
         <div className="text-sm text-gray-500 text-center mb-8">

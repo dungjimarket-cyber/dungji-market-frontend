@@ -21,7 +21,8 @@ import {
   User,
   Settings,
   LogOut,
-  Ticket
+  Ticket,
+  XCircle
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -35,6 +36,7 @@ export default function SellerMyPage() {
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [cancelledCount, setCancelledCount] = useState(0);
   const { logout } = useAuth();
   const router = useRouter();
   
@@ -56,13 +58,26 @@ export default function SellerMyPage() {
       }
 
       try {
-        // 판매자 프로필 정보 가져오기
-        const profileData = await getSellerProfile();
-        setProfile(profileData);
+        // 병렬로 모든 데이터 가져오기
+        const [profileData, tokenData, cancelledResponse] = await Promise.all([
+          getSellerProfile(),
+          bidTokenService.getBidTokens(),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/cancelled_groupbuys/`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+        ]);
         
-        // 입찰권 정보 가져오기
-        const tokenData = await bidTokenService.getBidTokens();
+        setProfile(profileData);
         setBidTokens(tokenData);
+        
+        // 취소된 공구 개수 설정
+        if (cancelledResponse.ok) {
+          const cancelledData = await cancelledResponse.json();
+          setCancelledCount(cancelledData.length);
+        }
         
         // 프로필 데이터에 입찰권 정보 통합
         if (profileData && tokenData) {
@@ -175,7 +190,7 @@ export default function SellerMyPage() {
               title="최종선택 대기중"
               count={profile.pendingSelection}
               icon={<Star className="h-5 w-5 text-yellow-500" />}
-              href="/mypage/seller/bids?filter=final_selection"
+              href="/mypage/seller/final-selection"
             />
             <SummaryCard
               title="판매 확정"
@@ -188,6 +203,15 @@ export default function SellerMyPage() {
               count={profile.completedSales}
               icon={<ShoppingBag className="h-5 w-5 text-purple-500" />}
               href="/mypage/seller/sales?filter=completed"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <SummaryCard
+              title="취소된 공구"
+              count={cancelledCount}
+              icon={<XCircle className="h-5 w-5 text-red-500" />}
+              href="/mypage/seller/cancelled"
             />
           </div>
 

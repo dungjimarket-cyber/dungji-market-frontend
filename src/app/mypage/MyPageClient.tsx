@@ -8,6 +8,7 @@ import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
 import PurchaseConfirmedGroupBuys from '@/components/mypage/PurchaseConfirmedGroupBuys';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
+import CancelledGroupBuys from '@/components/mypage/CancelledGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
 import {
   Accordion,
@@ -15,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -35,6 +36,7 @@ export default function MyPageClient() {
   const [pendingSelectionCount, setPendingSelectionCount] = useState(0);
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
   const [completedGroupBuysCount, setCompletedGroupBuysCount] = useState(0);
+  const [cancelledGroupBuysCount, setCancelledGroupBuysCount] = useState(0);
 
   // 참여중인 공구 개수 가져오기
   useEffect(() => {
@@ -133,13 +135,38 @@ export default function MyPageClient() {
       }
     };
     
+    // 취소된 공구 개수 가져오기
+    const fetchCancelledGroupBuysCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/cancelled_groupbuys/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCancelledGroupBuysCount(data.length);
+        }
+      } catch (error) {
+        console.error('취소된 공구 개수 조회 오류:', error);
+        setCancelledGroupBuysCount(0);
+      }
+    };
+    
     if (isAuthenticated && accessToken) {
       // 모든 API 호출을 병렬로 실행하여 로딩 시간 단축
       Promise.all([
         fetchParticipatingCount(),
         fetchPendingSelectionCount(),
         fetchCompletedGroupBuysCount(),
-        fetchPurchaseInProgressCount()
+        fetchPurchaseInProgressCount(),
+        fetchCancelledGroupBuysCount()
       ]).catch(error => {
         console.error('마이페이지 데이터 로딩 오류:', error);
       });
@@ -278,6 +305,25 @@ export default function MyPageClient() {
               </AccordionTrigger>
               <AccordionContent className="pt-4">
                 <CompletedGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 취소된 공구 */}
+            <AccordionItem value="cancelled">
+              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <XCircle className="w-5 h-5 mr-2 text-red-500" />
+                    <span className="font-medium">취소된 공구</span>
+                  </div>
+                  <div className="flex items-center text-red-600">
+                    <span className="mr-1 text-sm">{cancelledGroupBuysCount}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-red-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <CancelledGroupBuys />
               </AccordionContent>
             </AccordionItem>
 
