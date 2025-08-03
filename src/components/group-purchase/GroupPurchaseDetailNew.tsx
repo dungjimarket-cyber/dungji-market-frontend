@@ -115,6 +115,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [hasReceivedContact, setHasReceivedContact] = useState(false);
   const [isWished, setIsWished] = useState(false);
   const [showFinalSelectionModal, setShowFinalSelectionModal] = useState(false);
+  const [myParticipationFinalDecision, setMyParticipationFinalDecision] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
+  const [showFinalSelectionDialog, setShowFinalSelectionDialog] = useState(false);
+  const [finalSelectionType, setFinalSelectionType] = useState<'confirm' | 'cancel'>('confirm');
   
   // 판매자 관련 상태
   const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
@@ -268,6 +271,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         const data = await response.json();
         const participation = data.find((p: any) => p.groupbuy === groupBuy.id);
         setIsParticipant(!!participation);
+        
+        // 최종선택 상태 설정
+        if (participation && participation.final_decision) {
+          setMyParticipationFinalDecision(participation.final_decision);
+        }
       }
     } catch (error) {
       console.error('참여 상태 확인 오류:', error);
@@ -634,6 +642,60 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     setIsParticipant(true);
     setShowJoinModal(false);
     router.refresh();
+  };
+
+  const handleFinalSelection = (type: 'confirm' | 'cancel') => {
+    setFinalSelectionType(type);
+    setShowFinalSelectionDialog(true);
+  };
+
+  const processFinalSelection = async () => {
+    try {
+      const endpoint = isSeller 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/bids/${myBidId}/final-decision/`
+        : `${process.env.NEXT_PUBLIC_API_URL}/participations/${groupBuy.id}/final-decision/`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          decision: finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled'
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: finalSelectionType === 'confirm' 
+            ? (isSeller ? '판매를 확정했습니다' : '구매를 확정했습니다')
+            : (isSeller ? '판매를 포기했습니다' : '구매를 포기했습니다'),
+          description: finalSelectionType === 'confirm'
+            ? (isSeller ? '구매자 정보를 확인할 수 있습니다' : '판매자 정보를 확인할 수 있습니다')
+            : '마이페이지에서 취소된 공구를 확인할 수 있습니다'
+        });
+        
+        // 상태 업데이트
+        if (isSeller) {
+          setMyBidFinalDecision(finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled');
+        } else {
+          setMyParticipationFinalDecision(finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled');
+        }
+        
+        router.refresh();
+      } else {
+        throw new Error('최종선택 처리 중 오류가 발생했습니다');
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '최종선택 처리 중 문제가 발생했습니다'
+      });
+    } finally {
+      setShowFinalSelectionDialog(false);
+    }
   };
 
   const handleBidSuccess = async () => {
@@ -1127,14 +1189,40 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
-        {isSeller && isFinalSelection && isMyBidSelected && myBidFinalDecision === 'pending' ? (
+        {/* 구매회원 최종선택 버튼 */}
+        {!isSeller && isParticipant && groupBuy.status === 'final_selection' && myParticipationFinalDecision === 'pending' ? (
+          <div className="space-y-3">
+            <Button 
+              onClick={() => handleFinalSelection('confirm')}
+              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+            >
+              구매 확정
+            </Button>
+            <Button 
+              onClick={() => handleFinalSelection('cancel')}
+              variant="outline"
+              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+            >
+              구매 포기
+            </Button>
+          </div>
+        ) : isSeller && isFinalSelection && isMyBidSelected && myBidFinalDecision === 'pending' ? (
           // 판매자 최종선택 버튼
-          <Button 
-            onClick={() => setShowFinalSelectionModal(true)}
-            className="w-full py-4 text-base font-medium bg-orange-600 hover:bg-orange-700"
-          >
-            최종선택하기
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => handleFinalSelection('confirm')}
+              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+            >
+              판매 확정
+            </Button>
+            <Button 
+              onClick={() => handleFinalSelection('cancel')}
+              variant="outline"
+              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+            >
+              판매 포기
+            </Button>
+          </div>
         ) : isSeller && groupBuy.status !== 'final_selection' && groupBuy.status !== 'voting' && 
          groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 
          groupBuy.status !== 'cancelled' ? (
@@ -1474,6 +1562,63 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         remainingTokens={bidTokenInfo.remaining_tokens}
         hasUnlimitedSubscription={bidTokenInfo.has_unlimited_subscription}
       />
+
+      {/* 최종선택 확인 다이얼로그 */}
+      <AlertDialog open={showFinalSelectionDialog} onOpenChange={setShowFinalSelectionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {finalSelectionType === 'confirm' 
+                ? (isSeller ? '판매 확정' : '구매 확정')
+                : (isSeller ? '판매 포기' : '구매 포기')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {finalSelectionType === 'confirm' ? (
+                isSeller ? (
+                  <>
+                    낙찰받은 견적 그대로 책임 하에 판매하시겠습니까?<br />
+                    <span className="text-sm text-gray-600 mt-2 block">
+                      (판매를 확정하시면 구매자 리스트를 제공해 드립니다)
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    최종 낙찰된 지원금액: {groupBuy.winning_bid_amount?.toLocaleString()}원<br />
+                    낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?<br />
+                    <span className="text-sm text-gray-600 mt-2 block">
+                      (구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)
+                    </span>
+                  </>
+                )
+              ) : (
+                isSeller ? (
+                  <>
+                    판매 포기시 패널티가 부과될 수 있습니다. 포기하시겠습니까?<br />
+                    <span className="text-sm text-gray-600 mt-2 block">
+                      (구매자가 1명 이하일 경우 패널티는 부과되지 않습니다)
+                    </span>
+                  </>
+                ) : (
+                  <>공동구매 진행을 포기하시겠습니까?</>
+                )
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              고민해 볼게요
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={processFinalSelection}
+              className={finalSelectionType === 'cancel' ? 'bg-red-600 hover:bg-red-700' : ''}
+            >
+              {finalSelectionType === 'confirm' 
+                ? (isSeller ? '네 판매할게요' : '네 구매할게요')
+                : '네 포기할게요'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
