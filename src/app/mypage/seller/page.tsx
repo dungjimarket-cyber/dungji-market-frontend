@@ -193,14 +193,8 @@ export default function SellerMyPage() {
               href="/mypage/seller/final-selection"
             />
             <SummaryCard
-              title="판매 확정"
-              count={profile.pendingSales}
-              icon={<BadgeCheck className="h-5 w-5 text-green-500" />}
-              href="/mypage/seller/sales?filter=confirmed"
-            />
-            <SummaryCard
               title="판매확정"
-              count={profile.confirmedSales || 0}
+              count={profile.confirmedSales || profile.pendingSales || 0}
               icon={<CheckCircle className="h-5 w-5 text-green-500" />}
               href="/mypage/seller/sales-confirmed"
             />
