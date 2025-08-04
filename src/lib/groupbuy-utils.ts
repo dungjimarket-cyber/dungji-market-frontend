@@ -8,7 +8,7 @@ import { GroupBuy } from '@/types/groupbuy';
  * 공구의 실제 상태를 계산합니다.
  * 백엔드에서 받은 상태와 시작/마감 시간을 고려하여 실제 상태를 결정합니다.
  * 
- * @param status 백엔드에서 받은 상태 (recruiting, bidding, voting 등)
+ * @param status 백엔드에서 받은 상태 (recruiting, bidding, final_selection 등)
  * @param startTimeStr 공구 시작 시간
  * @param endTimeStr 공구 마감 시간
  * @returns 실제 공구 상태
@@ -16,7 +16,7 @@ import { GroupBuy } from '@/types/groupbuy';
 export function calculateGroupBuyStatus(status: string, startTimeStr: string, endTimeStr: string): string {
   // 이미 완료된 상태들은 그대로 반환
   if (['completed', 'cancelled'].includes(status)) {
-    return 'completed';
+    return status;
   }
   
   const now = new Date();
@@ -25,9 +25,9 @@ export function calculateGroupBuyStatus(status: string, startTimeStr: string, en
   
   // 공구 마감 시간이 지났으면 최종선택중 또는 종료 상태로
   if (now >= endTime) {
-    // voting, seller_confirmation 상태는 최종선택중으로 표시
+    // voting을 final_selection으로 변환, seller_confirmation도 포함
     if (['voting', 'seller_confirmation', 'final_selection'].includes(status)) {
-      return 'voting';
+      return 'final_selection';
     }
     // 그 외는 종료로 표시
     return 'completed';

@@ -14,8 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
 import { ConsentStatusCard } from '@/components/group-purchase/ConsentStatusCard';
-import { VotingTimer } from '@/components/groupbuy/VotingTimer';
-import { BidVotingList } from '@/components/groupbuy/BidVotingList';
 import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
 import { FinalSelectionTimer } from '@/components/final-selection/FinalSelectionTimer';
 import { SimpleFinalSelectionTimer } from '@/components/final-selection/SimpleFinalSelectionTimer';

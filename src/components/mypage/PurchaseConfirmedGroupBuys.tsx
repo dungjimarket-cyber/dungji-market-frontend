@@ -49,7 +49,7 @@ interface GroupBuy {
 
 /**
  * 구매 확정된 공구 목록 컴포넌트
- * 판매자가 확정하고 배송을 준비 중인 공구들을 표시
+ * 사용자가 구매확정을 선택하고 판매자의 판매확정을 기다리는 공구들을 표시
  */
 export default function PurchaseConfirmedGroupBuys() {
   const { isAuthenticated, isLoading, accessToken } = useAuth();

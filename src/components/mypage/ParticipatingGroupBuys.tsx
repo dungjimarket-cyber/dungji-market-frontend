@@ -147,7 +147,7 @@ export default function ParticipatingGroupBuys() {
   // 종료된 공구: 최종선택중, 판매자확정대기, 완료, 만료, 취소 포함
   const completedGroupBuys = sortedGroupBuys.filter(groupBuy => {
     const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
-    return ['voting', 'selecting', 'final_selection', 'seller_confirmation', 'completed', 'expired', 'canceled'].includes(status);
+    return ['final_selection', 'seller_confirmation', 'completed', 'expired', 'canceled'].includes(status);
   });
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
@@ -306,7 +306,7 @@ export default function ParticipatingGroupBuys() {
                     {((groupBuy.remaining_seconds !== undefined && groupBuy.remaining_seconds > 0) || new Date(groupBuy.end_time) > new Date()) && (
                       <div className="flex items-center text-red-500">
                         <Clock size={10} className="mr-1" />
-                        {(calculatedStatus === 'bidding' || calculatedStatus === 'voting' || calculatedStatus === 'final_selection') ? (
+                        {(calculatedStatus === 'bidding' || calculatedStatus === 'final_selection') ? (
                           <CountdownTimer 
                             endTime={
                               calculatedStatus === 'final_selection' && groupBuy.final_selection_end ? 
