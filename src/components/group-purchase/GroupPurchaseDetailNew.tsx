@@ -1205,13 +1205,61 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {((isParticipant && myParticipationFinalDecision === 'confirmed') || 
           (isSeller && myBidFinalDecision === 'confirmed')) && 
          (groupBuy.status === 'final_selection' || groupBuy.status === 'completed') ? (
-          <Button 
-            onClick={() => setShowContactInfoModal(true)}
-            className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700 mb-4"
-          >
-            {isSeller ? '구매자 정보 보기' : '판매자 정보 보기'}
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => setShowContactInfoModal(true)}
+              className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
+            >
+              {isSeller ? '구매자 정보 보기' : '판매자 정보 보기'}
+            </Button>
+            
+            {/* 최종선택 기간 내 포기 버튼 (확정 후에도 표시) */}
+            {groupBuy.status === 'final_selection' && (
+              <Button 
+                onClick={() => {
+                  if (confirm('정말 포기하시겠습니까? 이 작업은 되돌릴 수 없으며, 판매자의 경우 패널티가 부과될 수 있습니다.')) {
+                    handleFinalSelection('cancel');
+                  }
+                }}
+                variant="outline"
+                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+              >
+                {isSeller ? '판매 포기' : '구매 포기'}
+              </Button>
+            )}
+          </div>
         ) : null}
+
+        {/* 거래 완료 버튼 (구매/판매 확정 후 표시) */}
+        {groupBuy.status === 'completed' && 
+         ((isParticipant && myParticipationFinalDecision === 'confirmed') || 
+          (isSeller && myBidFinalDecision === 'confirmed')) && (
+          <div className="space-y-3">
+            <Button 
+              onClick={() => {
+                if (confirm('거래가 정상적으로 완료되었나요?\n\n확인을 누르시면 거래 완료 처리됩니다.')) {
+                  // TODO: 거래 완료 API 호출
+                  toast({
+                    title: "거래 완료",
+                    description: "거래가 성공적으로 완료되었습니다.",
+                  });
+                }
+              }}
+              className="w-full py-4 text-base font-medium bg-purple-600 hover:bg-purple-700"
+            >
+              거래 완료 확인
+            </Button>
+            
+            {/* 노쇼 신고 버튼 */}
+            <Button 
+              onClick={() => router.push(`/noshow-report/create?groupbuyId=${groupBuy.id}`)}
+              variant="outline"
+              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+            >
+              노쇼 신고하기
+            </Button>
+          </div>
+        )}
 
         {/* 구매회원 최종선택 버튼 */}
         {!isSeller && isParticipant && groupBuy.status === 'final_selection' && myParticipationFinalDecision === 'pending' ? (
