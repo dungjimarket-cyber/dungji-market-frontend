@@ -167,12 +167,19 @@ export default function SearchPage() {
                       <span className={`px-2 py-1 text-xs sm:text-sm rounded-full ${
                         groupBuy.status === 'recruiting'
                           ? 'bg-blue-100 text-blue-800'
-                          : groupBuy.status === 'confirmed'
+                          : groupBuy.status === 'completed'
                           ? 'bg-green-100 text-green-800'
+                          : groupBuy.status === 'bidding'
+                          ? 'bg-purple-100 text-purple-800'
+                          : groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller'
+                          ? 'bg-orange-100 text-orange-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {groupBuy.status === 'recruiting' ? '모집중' :
-                         groupBuy.status === 'confirmed' ? '확정' : '종료'}
+                         groupBuy.status === 'bidding' ? '입찰중' :
+                         groupBuy.status === 'final_selection_buyers' ? '구매자 최종선택중' :
+                         groupBuy.status === 'final_selection_seller' ? '판매자 최종선택중' :
+                         groupBuy.status === 'completed' ? '완료' : '취소됨'}
                       </span>
                     </div>
                   </CardHeader>

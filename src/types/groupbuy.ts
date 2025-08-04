@@ -54,12 +54,14 @@ export interface GroupBuy {
   id: number;
   title: string;
   description: string;
-  status: string;
+  status: 'recruiting' | 'bidding' | 'final_selection_buyers' | 'final_selection_seller' | 'completed' | 'cancelled';
   current_participants: number;
   min_participants: number;
   max_participants: number;
   start_time: string;
   end_time: string;
+  final_selection_end?: string; // 구매자 최종선택 종료 시간
+  seller_selection_end?: string; // 판매자 최종선택 종료 시간
   product: number; // product ID
   product_details: GroupBuyProduct; // 상세 제품 정보
   product_name?: string; // 상품명 백업 필드
@@ -135,7 +137,7 @@ export interface ConsentStatus {
   };
   details: Array<{
     user: string;
-    status: string;
+    status: '동의' | '거부' | '만료' | '대기중';
     agreed_at: string | null;
     disagreed_at: string | null;
   }>;

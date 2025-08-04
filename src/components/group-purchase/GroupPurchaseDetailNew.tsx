@@ -40,6 +40,7 @@ interface GroupBuy {
   start_time: string;
   end_time: string;
   final_selection_end?: string;
+  seller_selection_end?: string;
   creator_name?: string;
   host_id?: number;
   host_username?: string;
@@ -163,14 +164,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isEnded = actualStatus === 'completed' || actualStatus === 'cancelled';
   const isBiddingStatus = actualStatus === 'bidding';
   const isSellerConfirmation = actualStatus === 'seller_confirmation';
-  const isFinalSelection = isSellerConfirmation || groupBuy.status === 'final_selection';
+  const isBuyerFinalSelection = groupBuy.status === 'final_selection_buyers';
+  const isSellerFinalSelection = groupBuy.status === 'final_selection_seller';
+  const isFinalSelection = isBuyerFinalSelection || isSellerFinalSelection || isSellerConfirmation;
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
   
   // 최종선택 기간 종료 확인
-  const isFinalSelectionExpired = groupBuy.final_selection_end ? 
+  const isBuyerSelectionExpired = groupBuy.final_selection_end ? 
     new Date(groupBuy.final_selection_end) < new Date() : false;
+  const isSellerSelectionExpired = groupBuy.seller_selection_end ? 
+    new Date(groupBuy.seller_selection_end) < new Date() : false;
+  const isFinalSelectionExpired = isBuyerFinalSelection ? isBuyerSelectionExpired : isSellerSelectionExpired;
 
   // 금액 마스킹 함수
   const maskAmount = (amount: number): string => {
@@ -1006,7 +1012,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
 
         {/* 최종선택 타이머 */}
-        {groupBuy.status === 'final_selection' && groupBuy.final_selection_end && (
+        {isBuyerFinalSelection && groupBuy.final_selection_end && (
           <div className="mb-6">
             <SimpleFinalSelectionTimer 
               endTime={groupBuy.final_selection_end}
@@ -1014,9 +1020,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             />
           </div>
         )}
+        
+        {/* 판매자 최종선택 타이머 */}
+        {isSellerFinalSelection && groupBuy.seller_selection_end && (
+          <div className="mb-6">
+            <SimpleFinalSelectionTimer 
+              endTime={groupBuy.seller_selection_end}
+              onTimeEnd={() => router.refresh()}
+            />
+          </div>
+        )}
 
         {/* 최고 지원금/최종 낙찰 지원금 박스 */}
-        {groupBuy.status === 'final_selection' || groupBuy.status === 'completed' ? (
+        {isFinalSelection || groupBuy.status === 'completed' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
@@ -1196,7 +1212,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
         {/* 최종선택 기간 종료 표시 */}
-        {groupBuy.status === 'final_selection' && isFinalSelectionExpired && (
+        {isFinalSelection && isFinalSelectionExpired && (
           <div className="mb-4 p-4 bg-gray-100 rounded-lg text-center">
             <p className="font-semibold text-gray-800 mb-2">최종선택 기간 종료</p>
             <p className="text-sm text-gray-600">
@@ -1214,7 +1230,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* 구매/판매 확정 후 연락처 보기 버튼 */}
         {((isParticipant && myParticipationFinalDecision === 'confirmed') || 
           (isSeller && myBidFinalDecision === 'confirmed')) && 
-         (groupBuy.status === 'final_selection' || groupBuy.status === 'completed') ? (
+         (isFinalSelection || groupBuy.status === 'completed') ? (
           <div className="space-y-3">
             <Button 
               onClick={() => setShowContactInfoModal(true)}
@@ -1224,7 +1240,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </Button>
             
             {/* 최종선택 기간 내 포기 버튼 (확정 후에도 표시, 기간 종료 시 숨김) */}
-            {groupBuy.status === 'final_selection' && !isFinalSelectionExpired && (
+            {isFinalSelection && !isFinalSelectionExpired && (
               <Button 
                 onClick={() => {
                   if (confirm('정말 포기하시겠습니까? 이 작업은 되돌릴 수 없으며, 판매자의 경우 패널티가 부과될 수 있습니다.')) {
@@ -1272,7 +1288,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         )}
 
         {/* 구매회원 최종선택 버튼 (기간 내에만 표시) */}
-        {!isSeller && isParticipant && groupBuy.status === 'final_selection' && 
+        {!isSeller && isParticipant && isBuyerFinalSelection && 
          myParticipationFinalDecision === 'pending' && !isFinalSelectionExpired ? (
           <div className="space-y-3">
             <Button 
@@ -1289,7 +1305,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               구매 포기
             </Button>
           </div>
-        ) : isSeller && isFinalSelection && isMyBidSelected && 
+        ) : isSeller && isSellerFinalSelection && isMyBidSelected && 
             myBidFinalDecision === 'pending' && !isFinalSelectionExpired ? (
           // 판매자 최종선택 버튼 (기간 내에만 표시)
           <div className="space-y-3">
@@ -1307,7 +1323,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               판매 포기
             </Button>
           </div>
-        ) : isSeller && groupBuy.status !== 'final_selection' && 
+        ) : isSeller && !isFinalSelection && 
          groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 
          groupBuy.status !== 'cancelled' ? (
           // 판매자용 입찰 인터페이스
