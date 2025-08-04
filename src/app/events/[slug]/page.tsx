@@ -11,7 +11,8 @@ interface EventDetail {
   id: number;
   title: string;
   slug: string;
-  thumbnail: string;
+  thumbnail_url: string;
+  content_image_url?: string;
   content: string;
   start_date: string;
   end_date: string;
@@ -78,7 +79,7 @@ export default function EventDetailPage() {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="aspect-[16/9] relative">
           <Image
-            src={event.thumbnail}
+            src={event.thumbnail_url || '/placeholder.png'}
             alt={event.title}
             fill
             className="object-cover"
@@ -101,6 +102,18 @@ export default function EventDetailPage() {
             <p>조회수: {event.view_count.toLocaleString()}</p>
           </div>
 
+          {event.content_image_url && (
+            <div className="mb-6">
+              <Image
+                src={event.content_image_url}
+                alt={`${event.title} 상세 이미지`}
+                width={800}
+                height={600}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          )}
+          
           <div 
             className="prose prose-lg max-w-none"
             dangerouslySetInnerHTML={{ __html: event.content }}

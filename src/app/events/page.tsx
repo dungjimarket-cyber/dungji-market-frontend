@@ -10,7 +10,7 @@ interface Event {
   id: number;
   title: string;
   slug: string;
-  thumbnail: string;
+  thumbnail_url: string;
   start_date: string;
   end_date: string;
   is_active: boolean;
@@ -68,7 +68,7 @@ export default function EventListPage() {
             >
               <div className="aspect-[16/9] relative">
                 <Image
-                  src={event.thumbnail}
+                  src={event.thumbnail_url || '/placeholder.png'}
                   alt={event.title}
                   fill
                   className="object-cover"
