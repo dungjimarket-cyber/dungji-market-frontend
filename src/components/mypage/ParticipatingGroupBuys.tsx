@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { CountdownTimer } from '@/components/ui/CountdownTimer';
 
 interface Product {
   id: number;
@@ -39,6 +40,7 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
+  final_selection_end?: string;
   product: Product;
   product_details?: Product; // 하위 호환성
   calculated_status?: string;
@@ -304,7 +306,20 @@ export default function ParticipatingGroupBuys() {
                     {((groupBuy.remaining_seconds !== undefined && groupBuy.remaining_seconds > 0) || new Date(groupBuy.end_time) > new Date()) && (
                       <div className="flex items-center text-red-500">
                         <Clock size={10} className="mr-1" />
-                        <span>{remainingTime}</span>
+                        {(calculatedStatus === 'bidding' || calculatedStatus === 'voting' || calculatedStatus === 'final_selection') ? (
+                          <CountdownTimer 
+                            endTime={
+                              calculatedStatus === 'final_selection' && groupBuy.final_selection_end ? 
+                              groupBuy.final_selection_end : 
+                              groupBuy.end_time
+                            } 
+                            format="compact" 
+                            urgent={60}
+                            className="text-xs"
+                          />
+                        ) : (
+                          <span>{remainingTime}</span>
+                        )}
                       </div>
                     )}
                   </div>

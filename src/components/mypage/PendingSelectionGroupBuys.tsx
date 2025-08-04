@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
+import { CountdownTimer } from '@/components/ui/CountdownTimer';
 
 interface Product {
   id: number;
@@ -176,7 +177,13 @@ export default function PendingSelectionGroupBuys() {
                 {groupBuy.final_selection_deadline && (
                   <div className="flex items-center text-xs text-red-500 mt-2">
                     <Clock size={12} className="mr-1" />
-                    <span>선택 마감: {getRemainingTime(groupBuy.final_selection_deadline)}</span>
+                    <span>선택 마감: </span>
+                    <CountdownTimer 
+                      endTime={groupBuy.final_selection_deadline} 
+                      format="compact" 
+                      urgent={180}
+                      className="text-xs"
+                    />
                   </div>
                 )}
                 
