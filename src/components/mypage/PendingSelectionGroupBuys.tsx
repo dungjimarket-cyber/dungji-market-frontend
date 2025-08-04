@@ -87,7 +87,12 @@ export default function PendingSelectionGroupBuys() {
         }
 
         const data = await response.json();
-        setGroupBuys(data);
+        // 최종선택 기간이 지나지 않은 공구만 필터링
+        const activeGroupBuys = data.filter((groupBuy: GroupBuy) => {
+          if (!groupBuy.final_selection_deadline) return true;
+          return new Date(groupBuy.final_selection_deadline) > new Date();
+        });
+        setGroupBuys(activeGroupBuys);
       } catch (err) {
         console.error('최종 선택 대기중인 공구 목록 조회 오류:', err);
         // 실제 API가 없을 수 있으므로 에러를 표시하지 않고 빈 목록으로 처리

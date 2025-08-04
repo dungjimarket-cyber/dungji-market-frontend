@@ -9,6 +9,7 @@ export interface SellerProfile {
   activeBids: number;
   pendingSelection: number;
   pendingSales: number;
+  confirmedSales?: number;  // 판매확정 수
   completedSales: number;
   remainingBids: number;  // single_tokens 개수
   hasUnlimitedBids: boolean;  // unlimited_subscription 여부

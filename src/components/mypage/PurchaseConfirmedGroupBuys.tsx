@@ -30,6 +30,9 @@ interface GroupBuy {
   final_price?: number;
   shipping_status?: 'preparing' | 'shipped' | 'delivered';
   tracking_number?: string;
+  seller_confirmed?: boolean;
+  buyer_confirmed?: boolean;
+  all_buyers_confirmed?: boolean;
 }
 
 /**
@@ -138,12 +141,21 @@ export default function PurchaseConfirmedGroupBuys() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{groupBuy.product?.name}</p>
                 
-                {/* 판매자 정보 */}
-                {groupBuy.seller_name && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    판매자: {groupBuy.seller_name}
-                    {groupBuy.seller_phone && ` (${groupBuy.seller_phone})`}
+                {/* 확정 상태 표시 */}
+                {!groupBuy.seller_confirmed ? (
+                  <p className="text-sm text-orange-600 mt-1">
+                    판매자 선택 대기중
                   </p>
+                ) : !groupBuy.all_buyers_confirmed ? (
+                  <p className="text-sm text-blue-600 mt-1">
+                    구매자 선택 대기중
+                  </p>
+                ) : (
+                  groupBuy.seller_name && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      판매자: {groupBuy.seller_name}
+                    </p>
+                  )
                 )}
                 
                 {/* 최종 가격 */}
@@ -162,18 +174,21 @@ export default function PurchaseConfirmedGroupBuys() {
                 
                 {/* 액션 버튼 */}
                 <div className="mt-3 flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedGroupBuyId(groupBuy.id);
-                      setIsContactModalOpen(true);
-                    }}
-                  >
-                    <Phone className="w-3 h-3 mr-1" />
-                    판매자 연락처
-                  </Button>
+                  {/* 판매자 정보는 구매자 전원이 선택한 이후에만 표시 */}
+                  {groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setSelectedGroupBuyId(groupBuy.id);
+                        setIsContactModalOpen(true);
+                      }}
+                    >
+                      <Phone className="w-3 h-3 mr-1" />
+                      판매자 정보 확인하기
+                    </Button>
+                  )}
                   <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
                     <Button size="sm" variant="outline" className="w-full">
                       상세보기

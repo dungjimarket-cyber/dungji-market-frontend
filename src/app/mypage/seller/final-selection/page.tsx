@@ -46,16 +46,26 @@ export default function SellerFinalSelection() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupbuys(data.map((bid: any) => ({
-            id: bid.groupbuy,
-            product_name: bid.groupbuy_product_name || bid.product_name || '상품명',
-            product_category: bid.product_category || '카테고리',
-            bid_amount: bid.amount,
-            participants_count: bid.participants_count || 0,
-            voting_end: bid.final_selection_end,  // final_selection_end 사용
-            final_decision: bid.final_decision || 'pending',
-            created_at: bid.created_at
-          })));
+          // 최종선택 기간이 아직 지나지 않은 공구만 필터링
+          const activeGroupbuys = data
+            .filter((bid: any) => {
+              if (!bid.final_selection_end) return false;
+              const now = new Date();
+              const selectionEnd = new Date(bid.final_selection_end);
+              // 최종선택 기간이 지나지 않고, 아직 결정하지 않은 경우만
+              return selectionEnd > now && (!bid.final_decision || bid.final_decision === 'pending');
+            })
+            .map((bid: any) => ({
+              id: bid.groupbuy,
+              product_name: bid.groupbuy_product_name || bid.product_name || '상품명',
+              product_category: bid.product_category || '카테고리',
+              bid_amount: bid.amount,
+              participants_count: bid.participants_count || 0,
+              voting_end: bid.final_selection_end,
+              final_decision: bid.final_decision || 'pending',
+              created_at: bid.created_at
+            }));
+          setGroupbuys(activeGroupbuys);
         } else {
           throw new Error('데이터 조회 실패');
         }

@@ -36,13 +36,15 @@ interface ContactInfoModalProps {
   onClose: () => void;
   groupBuyId: number;
   accessToken: string | null;
+  isSeller?: boolean;
 }
 
 export function ContactInfoModal({ 
   isOpen, 
   onClose, 
   groupBuyId,
-  accessToken 
+  accessToken,
+  isSeller = false
 }: ContactInfoModalProps) {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [loading, setLoading] = useState(false);

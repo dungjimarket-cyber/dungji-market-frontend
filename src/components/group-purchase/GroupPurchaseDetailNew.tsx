@@ -20,6 +20,8 @@ import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
 import { FinalSelectionTimer } from '@/components/final-selection/FinalSelectionTimer';
 import { SimpleFinalSelectionTimer } from '@/components/final-selection/SimpleFinalSelectionTimer';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
+import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,7 +108,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [hasBid, setHasBid] = useState(false);
-  const [timeLeftText, setTimeLeftText] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
@@ -196,35 +197,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     return value.toLocaleString();
   };
 
-  // 남은 시간 계산
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const endTime = new Date(groupBuy.end_time);
-      const diff = endTime.getTime() - now.getTime();
-
-      if (diff <= 0) {
-        setTimeLeftText('마감');
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-      if (days > 0) {
-        setTimeLeftText(`${days}일 ${hours}시간`);
-      } else if (hours > 0) {
-        setTimeLeftText(`${hours}시간 ${minutes}분`);
-      } else {
-        setTimeLeftText(`${minutes}분`);
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 60000);
-    return () => clearInterval(timer);
-  }, [groupBuy.end_time]);
 
   // fetchBidInfoRef 설정
   useEffect(() => {
@@ -1152,10 +1124,30 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <p className="text-2xl font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}</p>
             <p className="text-xs text-gray-500 mt-1">명</p>
           </div>
-          <div className="bg-white rounded-lg p-4 text-center">
-            <p className="text-gray-500 text-sm mb-1">남은 시간</p>
-            <p className="text-2xl font-bold text-red-500">{timeLeftText}</p>
-            <p className="text-xs text-gray-500 mt-1">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
+          <div className="bg-white rounded-lg p-4">
+            <p className="text-gray-500 text-sm mb-2 text-center">남은 시간</p>
+            <CountdownTimer 
+              endTime={groupBuy.end_time}
+              format="compact"
+              showLabel={false}
+              urgent={60}
+              className="text-xl font-bold text-center"
+            />
+            {/* 시간 진행률 바 */}
+            <div className="mt-3">
+              <Progress 
+                value={(() => {
+                  const now = new Date().getTime();
+                  const start = new Date(groupBuy.start_time).getTime();
+                  const end = new Date(groupBuy.end_time).getTime();
+                  const total = end - start;
+                  const elapsed = now - start;
+                  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+                })()}
+                className="h-2"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
           </div>
         </div>
       </div>
