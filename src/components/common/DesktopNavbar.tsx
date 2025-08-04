@@ -62,20 +62,7 @@ export default function DesktopNavbar() {
                 </Link>
               </>
             )}
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {isAuthenticated && (
-              <div className="relative">
-                <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
-                <NotificationDropdown 
-                  isOpen={showNotifications} 
-                  onClose={() => setShowNotifications(false)} 
-                />
-              </div>
-            )}
-            <AuthButtons isAuthenticated={isAuthenticated} />
-          </div>
+          </div>          
         </div>
       </div>
     </nav>
