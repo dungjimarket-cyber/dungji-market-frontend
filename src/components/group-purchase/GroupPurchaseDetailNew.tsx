@@ -1467,7 +1467,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               variant="outline"
               className="w-full py-3"
             >
-              지인과 공유하기
+              공동구매 초대하기
             </Button>
           </div>
         ) : (
@@ -1482,7 +1482,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               variant="outline"
               className="w-full py-3"
             >
-              지인과 공유하기
+              공동구매 초대하기
             </Button>
             
             {/* 나가기 버튼 (참여자만 표시) */}
