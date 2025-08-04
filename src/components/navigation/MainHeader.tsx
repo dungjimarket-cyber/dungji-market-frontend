@@ -57,18 +57,6 @@ export function MainHeader({
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
       </div>
-      
-      {showNotification && isAuthenticated && (
-        <div className="relative">
-          <div className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-            <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
-          </div>
-          <NotificationDropdown 
-            isOpen={showNotifications} 
-            onClose={() => setShowNotifications(false)} 
-          />
-        </div>
-      )}
     </header>
   );
 }
