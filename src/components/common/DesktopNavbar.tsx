@@ -68,10 +68,19 @@ export default function DesktopNavbar() {
             {isAuthenticated && (
               <div className="relative">
                 <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
-                <NotificationDropdown 
-                  isOpen={showNotifications} 
-                  onClose={() => setShowNotifications(false)} 
-                />
+                {showNotifications && (
+                  <>
+                    {/* Click outside to close */}
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowNotifications(false)}
+                    />
+                    <NotificationDropdown 
+                      isOpen={showNotifications} 
+                      onClose={() => setShowNotifications(false)} 
+                    />
+                  </>
+                )}
               </div>
             )}
             <AuthButtons isAuthenticated={isAuthenticated} />

@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface NotificationDropdownProps {
   isOpen: boolean;
   onClose: () => void;
+  isMobile?: boolean;
 }
 
 /**
@@ -29,7 +30,7 @@ interface NotificationDropdownProps {
  * <NotificationDropdown isOpen={isOpen} onClose={() => setIsOpen(false)} />
  * ```
  */
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose }) => {
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose, isMobile = false }) => {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<{
@@ -104,7 +105,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onC
   if (!isOpen) return null;
 
   return (
-    <div className="w-full bg-white shadow-lg rounded-md border border-gray-200 z-50">
+    <div className={isMobile 
+      ? "w-full bg-white shadow-lg rounded-md border border-gray-200" 
+      : "absolute right-0 top-full mt-2 w-96 bg-white shadow-lg rounded-md border border-gray-200 z-50"
+    }>
       <div className="flex items-center justify-between p-4 border-b">
         <h3 className="font-medium flex items-center">
           <Bell className="h-4 w-4 mr-2" />

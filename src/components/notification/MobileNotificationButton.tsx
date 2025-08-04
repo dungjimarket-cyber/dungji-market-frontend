@@ -41,6 +41,7 @@ const MobileNotificationButton: React.FC = () => {
               <NotificationDropdown 
                 isOpen={showNotifications} 
                 onClose={() => setShowNotifications(false)} 
+                isMobile={true}
               />
             </div>
           </div>
