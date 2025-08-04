@@ -25,8 +25,8 @@ export function calculateGroupBuyStatus(status: string, startTimeStr: string, en
   
   // 공구 마감 시간이 지났으면 최종선택중 또는 종료 상태로
   if (now >= endTime) {
-    // voting을 final_selection으로 변환, seller_confirmation도 포함
-    if (['voting', 'seller_confirmation', 'final_selection'].includes(status)) {
+    // seller_confirmation과 final_selection은 최종선택중으로 표시
+    if (['seller_confirmation', 'final_selection'].includes(status)) {
       return 'final_selection';
     }
     // 그 외는 종료로 표시
@@ -51,7 +51,6 @@ export function getStatusText(status: string): string {
       return '모집중';
     case 'bidding':
       return '입찰중';
-    case 'voting':
     case 'final_selection':
       return '최종선택중';
     case 'seller_confirmation':
@@ -79,7 +78,6 @@ export function getStatusClass(status: string): string {
       return 'bg-blue-100 text-blue-800';
     case 'bidding':
       return 'bg-purple-100 text-purple-800';
-    case 'voting':
     case 'final_selection':
       return 'bg-orange-100 text-orange-800';
     case 'seller_confirmation':

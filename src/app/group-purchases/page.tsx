@@ -83,8 +83,8 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
-        // 종료 탭: 종료된 공구들 (ended, voting, final_selection, seller_confirmation, completed, cancelled)
-        params.append('status', 'ended,voting,final_selection,seller_confirmation,completed,cancelled');
+        // 종료 탭: 종료된 공구들 (ended, final_selection, seller_confirmation, completed, cancelled)
+        params.append('status', 'ended,final_selection,seller_confirmation,completed,cancelled');
       } else if (currentTab === 'all') {
         // 전체 탭은 모든 상태 포함 - 상태 필터 없음
       } else {

@@ -13,8 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
 import { ConsentStatusCard } from '@/components/group-purchase/ConsentStatusCard';
-import { VotingTimer } from '@/components/groupbuy/VotingTimer';
-import { BidVotingList } from '@/components/groupbuy/BidVotingList';
 import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
 import {
   AlertDialog,
@@ -35,7 +33,6 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
-  voting_end?: string;
   creator_name?: string;
   host_id?: number;
   host_username?: string;
@@ -1431,19 +1428,7 @@ export function GroupPurchaseDetail({ groupBuy }: GroupPurchaseDetailProps) {
             )}
             
             {/* 버튼 영역 */}
-            {groupBuy.status === 'voting' && isParticipant ? (
-              // 투표 UI
-              <div className="space-y-4 mb-4">
-                <VotingTimer 
-                  votingEndTime={groupBuy.voting_end || ''} 
-                  groupBuyId={groupBuy.id}
-                />
-                <BidVotingList 
-                  groupBuyId={groupBuy.id}
-                  isParticipant={isParticipant}
-                />
-              </div>
-            ) : isSeller ? (
+            {isSeller ? (
               // 판매회원용 입찰 인터페이스
               <div className="space-y-4 mb-4">
                 {!hasBid && (

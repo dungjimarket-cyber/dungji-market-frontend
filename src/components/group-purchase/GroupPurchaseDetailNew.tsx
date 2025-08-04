@@ -39,7 +39,6 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
-  voting_end?: string;
   final_selection_end?: string;
   creator_name?: string;
   host_id?: number;
@@ -163,9 +162,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const actualStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
   const isEnded = actualStatus === 'completed' || actualStatus === 'cancelled';
   const isBiddingStatus = actualStatus === 'bidding';
-  const isVoting = actualStatus === 'voting';
   const isSellerConfirmation = actualStatus === 'seller_confirmation';
-  const isFinalSelection = isVoting || isSellerConfirmation || groupBuy.status === 'final_selection';
+  const isFinalSelection = isSellerConfirmation || groupBuy.status === 'final_selection';
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
@@ -1309,7 +1307,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               판매 포기
             </Button>
           </div>
-        ) : isSeller && groupBuy.status !== 'final_selection' && groupBuy.status !== 'voting' && 
+        ) : isSeller && groupBuy.status !== 'final_selection' && 
          groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 
          groupBuy.status !== 'cancelled' ? (
           // 판매자용 입찰 인터페이스
@@ -1564,10 +1562,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogTitle className="sr-only">최종선택</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="p-0">
-            {groupBuy.voting_end && (
+            {groupBuy.final_selection_end && (
               <FinalSelectionTimer
                 groupBuyId={groupBuy.id}
-                endTime={groupBuy.voting_end}
+                endTime={groupBuy.final_selection_end}
                 bidAmount={selectedBidAmount || undefined}
                 participantCount={groupBuy.current_participants}
                 onSelectionMade={() => {

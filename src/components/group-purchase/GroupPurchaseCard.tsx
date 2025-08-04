@@ -79,7 +79,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   const isBidding = actualStatus === 'bidding';
   const isCompleted = actualStatus === 'completed';
   const isRecruiting = actualStatus === 'recruiting';
-  const isFinalSelection = actualStatus === 'voting' || actualStatus === 'seller_confirmation';
+  const isFinalSelection = actualStatus === 'final_selection' || actualStatus === 'seller_confirmation';
   
   const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
   

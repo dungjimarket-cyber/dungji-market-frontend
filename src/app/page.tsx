@@ -164,8 +164,8 @@ function HomeContent() {
           const popularData = await popularResponse.json();
           const newData = await newResponse.json();
           
-          // 최종선택중(final_selection, voting, seller_confirmation), 완료(completed), 취소(cancelled) 상태 제외
-          const excludedStatuses = ['final_selection', 'voting', 'seller_confirmation', 'completed', 'cancelled'];
+          // 최종선택중(final_selection, seller_confirmation), 완료(completed), 취소(cancelled) 상태 제외
+          const excludedStatuses = ['final_selection', 'seller_confirmation', 'completed', 'cancelled'];
           
           // 인기 공구 필터링
           const filteredPopular = popularData.filter((groupBuy: GroupBuy) => 

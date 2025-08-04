@@ -17,7 +17,7 @@ interface FinalSelectionGroupBuy {
   product_category: string;
   bid_amount: number;
   participants_count: number;
-  voting_end: string;
+  final_selection_end: string;
   final_decision: 'pending' | 'confirmed' | 'cancelled';
   created_at: string;
 }
@@ -61,7 +61,7 @@ export default function SellerFinalSelection() {
               product_category: bid.product_category || '카테고리',
               bid_amount: bid.amount,
               participants_count: bid.participants_count || 0,
-              voting_end: bid.final_selection_end,
+              final_selection_end: bid.final_selection_end,
               final_decision: bid.final_decision || 'pending',
               created_at: bid.created_at
             }));
@@ -153,7 +153,7 @@ export default function SellerFinalSelection() {
                     <span className="text-sm font-medium text-amber-800">최종선택 마감시간</span>
                   </div>
                   <CountdownTimer
-                    endTime={groupbuy.voting_end}
+                    endTime={groupbuy.final_selection_end}
                     format="full"
                     urgent={180}
                   />

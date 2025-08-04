@@ -50,8 +50,8 @@ export const GroupBuyConsentManager: React.FC = () => {
   const fetchGroupBuys = async () => {
     try {
       setLoading(true);
-      // voting과 bidding 상태의 공구만 가져오기
-      const response = await fetchWithAuth('/groupbuys/?status=voting,bidding');
+      // final_selection과 bidding 상태의 공구만 가져오기
+      const response = await fetchWithAuth('/groupbuys/?status=final_selection,bidding');
       if (response.ok) {
         const data = await response.json();
         setGroupBuys(data);
@@ -148,7 +148,7 @@ export const GroupBuyConsentManager: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'voting':
+      case 'final_selection':
         return <Badge className="bg-purple-500">최종선택중</Badge>;
       case 'bidding':
         return <Badge className="bg-blue-500">입찰중</Badge>;
