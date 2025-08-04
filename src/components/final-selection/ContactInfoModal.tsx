@@ -61,7 +61,7 @@ export function ContactInfoModal({
     setLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/contact_info/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/contact-info/`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,

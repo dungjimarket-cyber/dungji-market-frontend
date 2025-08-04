@@ -628,8 +628,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const processFinalSelection = async () => {
     try {
       const endpoint = isSeller 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/bids/${myBidId}/final-decision/`
-        : `${process.env.NEXT_PUBLIC_API_URL}/participations/${groupBuy.id}/final-decision/`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/seller-decision/`
+        : `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-decision/`;
       
       const response = await fetch(endpoint, {
         method: 'POST',
