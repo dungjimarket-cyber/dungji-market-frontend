@@ -3,12 +3,24 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, Truck, Clock, CheckCircle, Phone } from 'lucide-react';
+import { Package, Truck, Clock, CheckCircle, Phone, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Product {
   id: number;
@@ -45,6 +57,10 @@ export default function PurchaseConfirmedGroupBuys() {
   const [loading, setLoading] = useState(true);
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [selectedCompleteId, setSelectedCompleteId] = useState<number | null>(null);
+  const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPurchaseConfirmedGroupBuys = async () => {
@@ -81,6 +97,48 @@ export default function PurchaseConfirmedGroupBuys() {
 
     fetchPurchaseConfirmedGroupBuys();
   }, [isAuthenticated, accessToken]);
+
+  const handlePurchaseComplete = async () => {
+    if (!selectedCompleteId || !accessToken) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedCompleteId}/complete_purchase/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: '구매 완료',
+          description: '거래가 성공적으로 완료되었습니다. 후기를 작성해주세요!'
+        });
+        // 목록 새로고침
+        window.location.reload();
+      } else {
+        throw new Error('구매 완료 처리 실패');
+      }
+    } catch (error) {
+      console.error('구매 완료 처리 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '처리 실패',
+        description: '구매 완료 처리 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setShowCompleteDialog(false);
+      setSelectedCompleteId(null);
+    }
+  };
+
+  const handleNoShowReport = (groupBuyId: number) => {
+    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
+  };
 
   if (isLoading || loading) return <p className="text-gray-500">로딩 중...</p>;
   
@@ -173,29 +231,57 @@ export default function PurchaseConfirmedGroupBuys() {
                 )}
                 
                 {/* 액션 버튼 */}
-                <div className="mt-3 flex gap-2">
-                  {/* 판매자 정보는 구매자 전원이 선택한 이후에만 표시 */}
-                  {groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed && (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => {
-                        setSelectedGroupBuyId(groupBuy.id);
-                        setIsContactModalOpen(true);
-                      }}
-                    >
-                      <Phone className="w-3 h-3 mr-1" />
-                      판매자 정보 확인하기
-                    </Button>
-                  )}
-                  <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
-                    <Button size="sm" variant="outline" className="w-full">
-                      상세보기
-                    </Button>
-                  </Link>
-                  {groupBuy.shipping_status === 'delivered' && (
-                    <Link href={`/reviews/write?groupbuy=${groupBuy.id}`} className="flex-1">
+                <div className="mt-3">
+                  {/* 첫 번째 줄: 연락처 확인 및 상세보기 */}
+                  <div className="flex gap-2 mb-2">
+                    {/* 판매자 정보는 구매자 전원이 선택한 이후에만 표시 */}
+                    {groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          setSelectedGroupBuyId(groupBuy.id);
+                          setIsContactModalOpen(true);
+                        }}
+                      >
+                        <Phone className="w-3 h-3 mr-1" />
+                        판매자 정보 확인하기
+                      </Button>
+                    )}
+                    <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
+                      <Button size="sm" variant="outline" className="w-full">
+                        상세보기
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  {/* 두 번째 줄: 구매완료/노쇼신고 또는 후기작성 */}
+                  {groupBuy.shipping_status !== 'delivered' ? (
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => {
+                          setSelectedCompleteId(groupBuy.id);
+                          setShowCompleteDialog(true);
+                        }}
+                      >
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        구매완료
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => handleNoShowReport(groupBuy.id)}
+                      >
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        노쇼 신고하기
+                      </Button>
+                    </div>
+                  ) : (
+                    <Link href={`/reviews/write?groupbuy=${groupBuy.id}`} className="w-full">
                       <Button size="sm" className="w-full">
                         후기작성
                       </Button>
@@ -221,6 +307,26 @@ export default function PurchaseConfirmedGroupBuys() {
           accessToken={accessToken}
         />
       )}
+      
+      {/* 구매완료 확인 다이얼로그 */}
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>구매 완료 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              판매자와의 거래를 원만하게 종료하셨나요?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedCompleteId(null)}>
+              아니오
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handlePurchaseComplete}>
+              네
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
