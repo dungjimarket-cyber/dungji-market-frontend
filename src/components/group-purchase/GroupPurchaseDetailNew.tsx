@@ -1054,12 +1054,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="text-center">
               <p className="text-xl font-bold text-gray-800 mb-4">최종 낙찰 지원금</p>
               <p className="text-5xl font-bold text-orange-600 mb-1">
-                <span>
-                  {groupBuy.winning_bid_amount 
-                    ? groupBuy.winning_bid_amount.toLocaleString()
-                    : groupBuy.winning_bid_amount_masked || '***'}
-                </span>
-                <span className="text-2xl">원</span>
+                {groupBuy.winning_bid_amount ? (
+                  <>
+                    <span>{groupBuy.winning_bid_amount.toLocaleString()}</span>
+                    <span className="text-2xl">원</span>
+                  </>
+                ) : (
+                  <span>{groupBuy.winning_bid_amount_masked || '***원'}</span>
+                )}
               </p>
               <div className="mt-4 space-y-3">
                 <p className="text-base text-gray-700 font-medium">
