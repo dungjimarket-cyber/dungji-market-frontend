@@ -358,7 +358,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       if (response.ok) {
         const data = await response.json();
         // 현재 공구의 낙찰된 입찰 찾기
-        const winningBid = data.find((bid: any) => bid.groupbuy === groupBuyState.id);
+        const winningBid = data.find((bid: any) => bid.groupbuy === Number(id));
         
         if (winningBid) {
           setHasWinningBid(true);
@@ -368,7 +368,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     } catch (error) {
       console.error('낙찰 입찰 확인 오류:', error);
     }
-  }, [groupBuyState?.id]);
+  }, [groupBuyState?.id, id]);
   
   /**
    * 해당 공구에 참여한 판매자 수 확인
