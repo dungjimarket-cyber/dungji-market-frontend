@@ -347,6 +347,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       const token = await tokenUtils.getAccessToken();
       if (!token || !groupBuyState?.id) return;
       
+      console.log('checkWinningBidStatus 시작, groupBuy ID:', Number(id));
+      
       // 판매자의 최종선택 대기중인 입찰 조회
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/final-selection/`, {
         headers: {
@@ -357,12 +359,18 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       
       if (response.ok) {
         const data = await response.json();
+        console.log('낙찰 입찰 데이터:', data);
+        console.log('찾고 있는 groupbuy ID:', Number(id));
+        
         // 현재 공구의 낙찰된 입찰 찾기
         const winningBid = data.find((bid: any) => bid.groupbuy === Number(id));
         
         if (winningBid) {
+          console.log('낙찰 입찰 찾음:', winningBid);
           setHasWinningBid(true);
           setWinningBidInfo(winningBid);
+        } else {
+          console.log('현재 공구의 낙찰 입찰을 찾을 수 없음');
         }
       }
     } catch (error) {
@@ -414,6 +422,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           
           // 판매자 최종선택 상태인 경우 낙찰 여부 확인
           if (groupBuyState.status === 'final_selection_seller') {
+            console.log('판매자 최종선택 상태 확인, checkWinningBidStatus 호출');
             await checkWinningBidStatus();
           }
         }
@@ -798,6 +807,15 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         )}
         
         {/* 판매자 최종선택 UI - 판매자가 낙찰된 경우에만 표시 */}
+        {(() => {
+          console.log('판매자 최종선택 UI 조건:', {
+            isSeller,
+            status: groupBuyState?.status,
+            hasWinningBid,
+            winningBidInfo
+          });
+          return null;
+        })()}
         {isSeller && groupBuyState?.status === 'final_selection_seller' && hasWinningBid && (
           <div className="bg-yellow-50 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-3">
