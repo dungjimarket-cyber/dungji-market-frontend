@@ -113,7 +113,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     if (isAuthenticated && user?.id && groupBuy?.creator) {
       // 두 값을 모두 문자열로 변환하여 비교
       const userId = String(user.id);
-      const creatorId = String(groupBuy.creator);
+      const creatorId = String(groupBuyState?.creator || '');
       
       // 디버깅 로그
       console.log('공구 생성자 체크:', {
@@ -250,9 +250,9 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   }, [id, isAuthenticated, accessToken, user]);
   
   useEffect(() => {
-    if (groupBuy && groupBuy.id) {
+    if (groupBuyState && groupBuyState.id) {
       // 판매자 수 확인
-      checkSellerCount(groupBuy.id);
+      checkSellerCount(groupBuyState.id);
       
       if (isSeller) {
         checkSellerBid();
@@ -291,12 +291,12 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       
       // 현재 공구에 대한 입찰이 있는지 확인
       const existingBid = bids.find((bid: any) => 
-        bid.groupbuy === groupBuy.id && 
+        bid.groupbuy === groupBuyState?.id && 
         bid.status === 'pending'
       );
       
       setHasBid(!!existingBid);
-      setBidData(bids.filter((bid: any) => bid.groupbuy === groupBuy.id));
+      setBidData(bids.filter((bid: any) => bid.groupbuy === groupBuyState?.id));
     } catch (error) {
       console.error('입찰 이력 확인 중 오류:', error);
       setHasBid(false);
@@ -372,8 +372,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         setIsSeller(true);
         
         // 판매자가 이미 입찰했는지 확인 (API 호출 추가 필요)
-        if (groupBuy?.id) {
-          await checkSellerBidStatus(groupBuy.id);
+        if (groupBuyState?.id) {
+          await checkSellerBidStatus(groupBuyState.id);
         }
       }
     };
@@ -381,21 +381,69 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     checkSeller();
   }, [isAuthenticated, user, groupBuy?.id]);
   
-  const progress = groupBuy.max_participants
-    ? (groupBuy.current_participants / groupBuy.max_participants) * 100
+  // 참여자 진행률
+  const participantProgress = groupBuyState?.max_participants
+    ? (groupBuyState.current_participants / groupBuyState.max_participants) * 100
     : 0;
-  const remainingSpots = groupBuy.max_participants - groupBuy.current_participants;
+  
+  // 시간 진행률 계산 (100에서 시작해서 0으로 감소)
+  const calculateTimeProgress = () => {
+    if (!groupBuyState?.start_time || !groupBuyState?.end_time) return 100;
+    
+    const now = new Date();
+    const start = new Date(groupBuyState.start_time);
+    const end = new Date(groupBuyState.end_time);
+    
+    const totalDuration = end.getTime() - start.getTime();
+    const elapsed = now.getTime() - start.getTime();
+    
+    if (elapsed >= totalDuration) return 0;
+    if (elapsed <= 0) return 100;
+    
+    // 남은 시간의 비율 (100에서 0으로 감소)
+    return Math.round(((totalDuration - elapsed) / totalDuration) * 100);
+  };
+  
+  const [timeProgress, setTimeProgress] = useState(100);
+  
+  useEffect(() => {
+    if (!groupBuyState?.start_time || !groupBuyState?.end_time) return;
+    
+    const updateProgress = () => {
+      setTimeProgress(calculateTimeProgress());
+    };
+    
+    updateProgress();
+    const interval = setInterval(updateProgress, 60000); // 1분마다 업데이트
+    
+    return () => clearInterval(interval);
+  }, [groupBuyState?.start_time, groupBuyState?.end_time]);
+  const remainingSpots = groupBuyState?.max_participants && groupBuyState?.current_participants
+    ? groupBuyState.max_participants - groupBuyState.current_participants
+    : 0;
   
   // 공구 상태를 동적으로 계산
-  const calculatedStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
+  const calculatedStatus = groupBuyState 
+    ? calculateGroupBuyStatus(groupBuyState.status, groupBuyState.start_time, groupBuyState.end_time)
+    : 'recruiting';
   const isRecruiting = calculatedStatus === 'recruiting';
   const isFull = remainingSpots === 0;
   const isClosed = !isRecruiting || isFull;
-  const remainingTime = getRemainingTime(groupBuy.end_time);
+  const remainingTime = groupBuyState?.end_time ? getRemainingTime(groupBuyState.end_time) : '';
   
   // 지원금은 입찰 시 사용자가 제안하는 금액으로, 공구에 입찰된 최고 지원금을 표시
   // 실제로는 Bid 모델에서 가져와야 하지만, 현재는 임의의 값을 사용
   const maskedSupportAmount = maskSupportAmount(300000); // 임의의 값으로 대체
+
+  if (loading || !groupBuyState) {
+    return (
+      <div className="bg-gray-100 min-h-screen pb-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg text-gray-600">로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen pb-8">
@@ -417,8 +465,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           {/* 상품 이미지 */}
           <div className="bg-white p-4 rounded-lg mb-4">
             <Image
-              src={groupBuy.product_details?.image_url || '/placeholder.png'}
-              alt={groupBuy.product_details?.name || ''}
+              src={groupBuyState?.product_details?.image_url || '/placeholder.png'}
+              alt={groupBuyState?.product_details?.name || ''}
               width={400}
               height={400}
               className="object-cover rounded-lg"
@@ -429,9 +477,9 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           <div className="mb-4">
             <p className="text-sm text-gray-500">출고가</p>
             <p className="text-2xl font-bold mb-2">
-              ₩{new Intl.NumberFormat('ko-KR').format(groupBuy.product_details?.base_price || 0)}원
+              ₩{new Intl.NumberFormat('ko-KR').format(groupBuyState?.product_details?.base_price || 0)}원
             </p>
-            <p className="text-sm text-gray-700">{groupBuy.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
+            <p className="text-sm text-gray-700">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
           </div>
 
           {/* 총 지원금 정보 */}
@@ -445,9 +493,9 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         {/* 공구 참여 정보 카드 */}
         <div className="bg-white p-4 mb-4">
           {/* 지역 정보를 제목 위에 표시 */}
-          {groupBuy.regions && groupBuy.regions.length > 0 && (
+          {groupBuyState?.regions && groupBuyState.regions.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
-              {groupBuy.regions.map((region, index) => (
+              {groupBuyState.regions.map((region, index) => (
                 <span key={index} className="text-amber-600 text-sm font-medium">
                   [{region.name}]
                 </span>
@@ -467,7 +515,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                   방장
                 </span>
                 <span className="ml-2 text-sm">
-                  {groupBuy.creator_name || '익명'}
+                  {groupBuyState?.creator_name || '익명'}
                 </span>
                 
                 {/* 참여중 표시 배지 */}
@@ -501,8 +549,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 </div>
               )}
               
-              {groupBuy.product_details?.release_date && (
-                <div className="text-sm text-gray-500 mt-2">출시일: {new Date(groupBuy.product_details.release_date).toLocaleDateString('ko-KR')}</div>
+              {groupBuyState?.product_details?.release_date && (
+                <div className="text-sm text-gray-500 mt-2">출시일: {new Date(groupBuyState.product_details.release_date).toLocaleDateString('ko-KR')}</div>
               )}
             </div>
             <div className="flex flex-col">
@@ -517,8 +565,13 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
             </div>
           </div>
 
-          {/* 진행 상황 바 */}
-          <Progress value={progress} className="h-2 mb-2" />
+          {/* 진행 상황 바 - 시간 기준으로 우측에서 좌측으로 감소 */}
+          <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+            <div 
+              className="absolute top-0 right-0 h-full bg-blue-500 transition-all duration-300"
+              style={{ width: `${timeProgress}%` }}
+            />
+          </div>
           
           {/* 총 입찰 건수 */}
           <div className="flex justify-between items-center text-sm mb-4">
@@ -716,13 +769,13 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               onRefresh={isSeller ? () => setIsBidModalOpen(true) : refreshParticipationStatus}
               groupBuy={{
                 id: Number(id),
-                title: groupBuy.title,
+                title: groupBuyState?.title || '',
                 product_details: {
-                  name: groupBuy.product_details?.name || '',
-                  image_url: groupBuy.product_details?.image_url || '/placeholder.png',
-                  carrier: groupBuy.product_details?.telecom_detail?.carrier || 'SK텔레콤',
-                  registration_type: groupBuy.product_details?.telecom_detail?.registration_type || '번호이동',
-                  base_price: groupBuy.product_details?.base_price || 0
+                  name: groupBuyState?.product_details?.name || '',
+                  image_url: groupBuyState?.product_details?.image_url || '/placeholder.png',
+                  carrier: groupBuyState?.product_details?.telecom_detail?.carrier || 'SK텔레콤',
+                  registration_type: groupBuyState?.product_details?.telecom_detail?.registration_type || '번호이동',
+                  base_price: groupBuyState?.product_details?.base_price || 0
                 }
               }}
             />
@@ -745,10 +798,10 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
             isOpen={isBidModalOpen}
             onClose={() => setIsBidModalOpen(false)}
             groupBuyId={parseInt(id)}
-            targetPrice={groupBuy.product_details?.base_price || 0}
-            productName={groupBuy.product_details?.name || groupBuy.title || ''}
-            minParticipants={groupBuy.min_participants}
-            currentParticipants={groupBuy.current_participants}
+            targetPrice={groupBuyState?.product_details?.base_price || 0}
+            productName={groupBuyState?.product_details?.name || groupBuyState?.title || ''}
+            minParticipants={groupBuyState?.min_participants || 0}
+            currentParticipants={groupBuyState?.current_participants || 0}
             onBidSuccess={() => {
               setHasBid(true);
               toast({
