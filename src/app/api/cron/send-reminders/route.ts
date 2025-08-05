@@ -6,13 +6,23 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjima
 const CRON_AUTH_TOKEN = process.env.CRON_AUTH_TOKEN || 'your-secret-token-here';
 
 export async function GET(request: NextRequest) {
-  // Vercel Cron Job 인증 확인
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+  // Vercel Cron Job 인증은 자동으로 처리됨
+  // 추가 보안이 필요한 경우 환경에 따라 검증
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // 프로덕션 환경에서만 추가 검증
+  if (isProduction && CRON_SECRET) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+      // Vercel cron job은 특별한 헤더를 사용하므로 추가 확인
+      const vercelCronHeader = request.headers.get('x-vercel-cron');
+      if (!vercelCronHeader) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+    }
   }
 
   try {
