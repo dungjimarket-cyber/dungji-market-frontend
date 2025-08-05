@@ -12,6 +12,7 @@ import GroupBuyActionButton from '@/components/groupbuy/GroupBuyActionButton';
 import GroupBuyActionButtons from '@/components/groupbuy/GroupBuyActionButtons';
 import BidModal from '@/components/groupbuy/BidModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
+import { FinalDecisionModal } from '@/components/groupbuy/FinalDecisionModal';
 import { WishButton } from '@/components/ui/WishButton';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle, getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -104,6 +105,11 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   
   // 판매회원(셀러) 여부 확인
   const [isSeller, setIsSeller] = useState(false);
+  
+  // 최종선택 모달 상태
+  const [isFinalDecisionModalOpen, setIsFinalDecisionModalOpen] = useState(false);
+  const [hasWinningBid, setHasWinningBid] = useState(false);
+  const [winningBidInfo, setWinningBidInfo] = useState<any>(null);
   
   // 자신이 생성한 공구인지 확인하는 상태 추가
   const [isCreator, setIsCreator] = useState<boolean>(!!propIsCreator);
@@ -334,6 +340,37 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   };
   
   /**
+   * 판매자가 낙찰된 입찰을 가지고 있는지 확인
+   */
+  const checkWinningBidStatus = async () => {
+    try {
+      const token = await tokenUtils.getAccessToken();
+      if (!token) return;
+      
+      // 판매자의 최종선택 대기중인 입찰 조회
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/final-selection/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // 현재 공구의 낙찰된 입찰 찾기
+        const winningBid = data.find((bid: any) => bid.groupbuy === groupBuyState?.id);
+        
+        if (winningBid) {
+          setHasWinningBid(true);
+          setWinningBidInfo(winningBid);
+        }
+      }
+    } catch (error) {
+      console.error('낙찰 입찰 확인 오류:', error);
+    }
+  };
+  
+  /**
    * 해당 공구에 참여한 판매자 수 확인
    */
   const checkSellerCount = async (groupBuyId: number) => {
@@ -374,6 +411,11 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         // 판매자가 이미 입찰했는지 확인 (API 호출 추가 필요)
         if (groupBuyState?.id) {
           await checkSellerBidStatus(groupBuyState.id);
+          
+          // 판매자 최종선택 상태인 경우 낙찰 여부 확인
+          if (groupBuyState.status === 'final_selection_seller') {
+            await checkWinningBidStatus();
+          }
         }
       }
     };
@@ -755,6 +797,32 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           </div>
         )}
         
+        {/* 판매자 최종선택 UI - 판매자가 낙찰된 경우에만 표시 */}
+        {isSeller && groupBuyState?.status === 'final_selection_seller' && hasWinningBid && (
+          <div className="bg-yellow-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-lg">판매자 최종선택</h3>
+              <span className="text-sm text-yellow-700">최종선택 대기중</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              구매자가 모두 최종선택을 완료했습니다. 판매확정 또는 판매포기를 선택해주세요.
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setIsFinalDecisionModalOpen(true)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                최종선택 하기
+              </Button>
+            </div>
+            {winningBidInfo?.final_selection_end && (
+              <div className="mt-3 text-xs text-gray-500">
+                마감 시간: {new Date(winningBidInfo.final_selection_end).toLocaleString('ko-KR')}
+              </div>
+            )}
+          </div>
+        )}
+        
         {/* 참여 버튼 - 이미 참여한 경우 표시하지 않음 */}
         <div className="px-4">
           {/* participationStatus가 null이 아니고 is_participating이 true인 경우에는 버튼 표시하지 않음 */}
@@ -818,6 +886,21 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
             groupBuyId={parseInt(id)}
           />
         </>
+      )}
+      
+      {/* 최종선택 모달 */}
+      {hasWinningBid && (
+        <FinalDecisionModal
+          isOpen={isFinalDecisionModalOpen}
+          onClose={() => setIsFinalDecisionModalOpen(false)}
+          groupBuyId={parseInt(id)}
+          groupBuyTitle={groupBuyState?.title || ''}
+          onDecisionComplete={() => {
+            setIsFinalDecisionModalOpen(false);
+            refreshParticipationStatus();
+            checkWinningBidStatus();
+          }}
+        />
       )}
     </div>
   );
