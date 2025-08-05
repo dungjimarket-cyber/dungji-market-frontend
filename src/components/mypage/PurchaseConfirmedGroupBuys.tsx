@@ -251,7 +251,7 @@ export default function PurchaseConfirmedGroupBuys() {
                     )}
                     <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
                       <Button size="sm" variant="outline" className="w-full">
-                        상세보기
+                        공구보기
                       </Button>
                     </Link>
                   </div>

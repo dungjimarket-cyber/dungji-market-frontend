@@ -33,7 +33,7 @@ export interface BidData {
   groupbuy_title: string;
   product_name: string;
   bid_type: 'price' | 'support';
-  amount: number;
+  amount: number | string;
   message: string;
   status: 'pending' | 'selected' | 'rejected';
   created_at: string;

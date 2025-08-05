@@ -518,7 +518,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // HTTP 상태 코드에 따른 에러 메시지
         if (response.status === 401) {
-          errorMessage = '이메일 또는 비밀번호가 일치하지 않습니다.';
+          errorMessage = '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.';
           errorCode = 'invalid_credentials';
         } else if (response.status === 404) {
           errorMessage = '로그인 서비스를 찾을 수 없습니다. 관리자에게 문의하세요.';

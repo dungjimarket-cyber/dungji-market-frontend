@@ -473,8 +473,10 @@ export default function CreatorGroupBuyManagementPage() {
                             </Badge>
                           </div>
                           <p className="text-lg font-semibold text-blue-600">
-                            {formatNumberWithCommas(bid.amount)}
-                            {bid.bid_type === 'percentage' ? '%' : '원'}
+                            {typeof bid.amount === 'string' 
+                              ? bid.amount 
+                              : `${formatNumberWithCommas(bid.amount)}${bid.bid_type === 'percentage' ? '%' : '원'}`
+                            }
                           </p>
                           {bid.message && (
                             <p className="text-sm text-gray-600 mt-2">{bid.message}</p>

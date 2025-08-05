@@ -114,11 +114,11 @@ export default function BidModal({
         if (existing) {
           setExistingBid({
             id: existing.id,
-            amount: existing.amount
+            amount: typeof existing.amount === 'string' ? 0 : existing.amount
           });
           // 기존 입찰 정보로 폼 초기화
           setValue('bidType', existing.bid_type);
-          setValue('amount', existing.amount);
+          setValue('amount', typeof existing.amount === 'string' ? 0 : existing.amount);
           setValue('message', existing.message || '');
           setBidType(existing.bid_type);
         }

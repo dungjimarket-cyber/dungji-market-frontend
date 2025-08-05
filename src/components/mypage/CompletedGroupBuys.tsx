@@ -155,7 +155,7 @@ export default function CompletedGroupBuys() {
                   size="sm"
                   onClick={() => handleViewDetail(groupBuy.id)}
                 >
-                  상세보기
+                  공구보기
                 </Button>
                 {!groupBuy.has_review && (
                   (() => {

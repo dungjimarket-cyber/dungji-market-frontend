@@ -17,7 +17,7 @@ interface WinningBidData {
       profile_image?: string;
     };
     bid_type: 'price' | 'support';
-    amount: number;
+    amount: number | string;
     message: string;
     created_at: string;
     vote_count: number;
@@ -110,8 +110,12 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
             <div className="mt-2 space-y-1">
               <p className="text-2xl font-bold text-blue-600">
                 {bid.bid_type === 'support' 
-                  ? `지원금 ${formatNumberWithCommas(bid.amount)}원`
-                  : `${formatNumberWithCommas(bid.amount)}원`
+                  ? typeof bid.amount === 'string' 
+                    ? `지원금 ${bid.amount}`
+                    : `지원금 ${formatNumberWithCommas(bid.amount)}원`
+                  : typeof bid.amount === 'string'
+                    ? bid.amount
+                    : `${formatNumberWithCommas(bid.amount)}원`
                 }
               </p>
               

@@ -108,13 +108,13 @@ function LoginForm() {
         router.push(callbackUrl);
       } else {
         // 로그인 실패 처리 - 상세 오류 메시지 표시
-        setErrorMessage(result.errorMessage || '로그인에 실패했습니다.');
+        setErrorMessage(result.errorMessage || '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.');
         setErrorCode(result.errorCode || 'unknown');
         
         toast({
           variant: 'destructive',
           title: '로그인 실패',
-          description: result.errorMessage || '이메일 또는 비밀번호가 일치하지 않습니다.'
+          description: result.errorMessage || '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.'
         });
       }
     } catch (err) {

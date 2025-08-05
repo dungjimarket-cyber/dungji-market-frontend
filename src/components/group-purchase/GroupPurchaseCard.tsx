@@ -427,9 +427,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               <span className={`font-medium ${isCompleted ? 'text-gray-600' : isUrgent ? 'text-red-600' : 'text-blue-600'}`}>
                 {timeLeftText || formatTimeLeft(currentTimeLeft)}
               </span>
-              <span className={`${isUrgent ? 'text-red-500' : isCompleted ? 'text-gray-500' : 'text-green-600'}`}>
-                {isUrgent ? '마감임박!' : isCompleted ? '마감완료' : '여유있음'}
-              </span>
+              {!isCompleted && (
+                <span className={`${isUrgent ? 'text-red-500' : 'text-green-600'}`}>
+                  {isUrgent ? '마감임박!' : '여유있음'}
+                </span>
+              )}
             </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">

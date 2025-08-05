@@ -176,7 +176,12 @@ export default function BidManagement() {
                         <div className="text-xs text-gray-500">{bid.groupbuy_title}</div>
                       </TableCell>
                       <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                      <TableCell className="font-medium">{bid.amount.toLocaleString()}원</TableCell>
+                      <TableCell className="font-medium">
+                        {typeof bid.amount === 'string' 
+                          ? bid.amount 
+                          : `${bid.amount.toLocaleString()}원`
+                        }
+                      </TableCell>
                       <TableCell className="text-sm">{formatBidTime(bid.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(bid.status)}</TableCell>
                       <TableCell>
@@ -236,7 +241,12 @@ export default function BidManagement() {
                         <div className="text-xs text-gray-500">{bid.groupbuy_title}</div>
                       </TableCell>
                       <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                      <TableCell className="font-medium">{bid.amount.toLocaleString()}원</TableCell>
+                      <TableCell className="font-medium">
+                        {typeof bid.amount === 'string' 
+                          ? bid.amount 
+                          : `${bid.amount.toLocaleString()}원`
+                        }
+                      </TableCell>
                       <TableCell className="text-sm">{formatBidTime(bid.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(bid.status)}</TableCell>
                     </TableRow>
@@ -278,7 +288,12 @@ export default function BidManagement() {
                         <div className="text-xs text-gray-500">{bid.groupbuy_title}</div>
                       </TableCell>
                       <TableCell>{getBidTypeText(bid.bid_type)}</TableCell>
-                      <TableCell className="font-medium">{bid.amount.toLocaleString()}원</TableCell>
+                      <TableCell className="font-medium">
+                        {typeof bid.amount === 'string' 
+                          ? bid.amount 
+                          : `${bid.amount.toLocaleString()}원`
+                        }
+                      </TableCell>
                       <TableCell className="text-sm">{formatBidTime(bid.created_at)}</TableCell>
                       <TableCell>{getStatusBadge(bid.status)}</TableCell>
                     </TableRow>

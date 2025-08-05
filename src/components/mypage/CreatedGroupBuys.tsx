@@ -327,7 +327,7 @@ export default function CreatedGroupBuys() {
                       className="flex-1"
                       onClick={() => router.push(`/group-purchases/${groupBuy.id}`)}
                     >
-                      상세보기
+                      공구보기
                     </Button>
                     <Button
                       size="sm"

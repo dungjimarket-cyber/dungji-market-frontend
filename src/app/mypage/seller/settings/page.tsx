@@ -168,14 +168,33 @@ export default function SellerSettings() {
         }
       }
 
-      // 파일 업로드 처리 (if needed)
-      // TODO: 파일 업로드 API 구현 필요
-
-      await updateSellerProfile(updateData);
+      // 파일 업로드 처리
+      if (formData.businessRegFile && formData.isRemoteSales) {
+        const formDataWithFile = new FormData();
+        Object.keys(updateData).forEach(key => {
+          formDataWithFile.append(key, updateData[key]);
+        });
+        formDataWithFile.append('remote_sales_cert', formData.businessRegFile);
+        
+        // multipart/form-data로 전송
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/profile/`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
+          },
+          body: formDataWithFile
+        });
+        
+        if (!response.ok) {
+          throw new Error('프로필 업데이트 실패');
+        }
+      } else {
+        await updateSellerProfile(updateData);
+      }
       
       toast({
-        title: '프로필 저장 성공',
-        description: '프로필 정보가 성공적으로 저장되었습니다.'
+        title: '저장 완료',
+        description: '수정되었습니다'
       });
     } catch (error) {
       console.error('프로필 저장 오류:', error);
@@ -215,7 +234,6 @@ export default function SellerSettings() {
             <CardHeader>
               <CardTitle>프로필 정보</CardTitle>
               <CardDescription>
-                판매자 프로필 정보를 설정합니다. 입력한 정보는 공개적으로 표시될 수 있습니다.
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -231,7 +249,6 @@ export default function SellerSettings() {
                     placeholder="닉네임 또는 상호명을 입력하세요"
                     required
                   />
-                  <p className="text-sm text-gray-500">판매자님의 닉네임이 공구에 표시됩니다.</p>
                 </div>
 
                 <div className="space-y-2">

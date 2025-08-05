@@ -1153,8 +1153,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   const start = new Date(groupBuy.start_time).getTime();
                   const end = new Date(groupBuy.end_time).getTime();
                   const total = end - start;
-                  const elapsed = now - start;
-                  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+                  const remaining = end - now;
+                  // 남은 시간 비율 계산 (100%에서 시작해서 0%로 감소)
+                  return Math.min(100, Math.max(0, (remaining / total) * 100));
                 })()}
                 className="h-2"
               />

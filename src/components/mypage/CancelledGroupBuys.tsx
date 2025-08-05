@@ -117,7 +117,20 @@ export default function CancelledGroupBuys() {
     if (!selectedGroupBuy) return;
 
     try {
-      // 여기에 삭제 API 호출 추가 (현재는 UI에서만 제거)
+      // 취소된 공구 삭제 API 호출
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedGroupBuy.id}/hide/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('삭제 실패');
+      }
+
+      // UI에서 제거
       setGroupbuys(prev => prev.filter(gb => gb.id !== selectedGroupBuy.id));
       toast({
         title: '삭제 완료',

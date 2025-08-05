@@ -58,10 +58,13 @@ export default function BidHistoryModal({
         const sortedData = [...data].sort((a, b) => {
           if (a.bid_type === b.bid_type) {
             // 같은 입찰 유형인 경우 금액 비교 (가격 입찰은 낮은 순, 지원금 입찰은 높은 순)
+            const aAmount = typeof a.amount === 'string' ? 0 : a.amount;
+            const bAmount = typeof b.amount === 'string' ? 0 : b.amount;
+            
             if (a.bid_type === 'price') {
-              return a.amount - b.amount; // 가격 입찰은 낮은 순으로
+              return aAmount - bAmount; // 가격 입찰은 낮은 순으로
             } else {
-              return b.amount - a.amount; // 지원금 입찰은 높은 순으로
+              return bAmount - aAmount; // 지원금 입찰은 높은 순으로
             }
           }
           // 입찰 유형이 다르면 가격 입찰을 우선
@@ -140,7 +143,7 @@ export default function BidHistoryModal({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatNumberWithCommas(bid.amount)}원
+                      {typeof bid.amount === 'string' ? bid.amount : `${formatNumberWithCommas(bid.amount)}원`}
                     </TableCell>
                     <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
                   </TableRow>

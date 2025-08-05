@@ -193,6 +193,12 @@ export default function SellerSalesConfirmed() {
                 </div>
 
                 <div className="flex gap-2">
+                  <Link href={`/groupbuys/${groupbuy.id}`}>
+                    <Button size="sm" variant="outline">
+                      공구보기
+                    </Button>
+                  </Link>
+                  
                   {/* 구매자 정보는 전원이 확정한 후에만 표시 */}
                   {groupbuy.all_buyers_confirmed && (
                     <Button 

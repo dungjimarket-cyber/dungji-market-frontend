@@ -313,7 +313,12 @@ function BidsListClient() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">입찰 금액:</p>
-                  <p className="font-medium text-lg">{formatNumberWithCommas(bid.amount)}원</p>
+                  <p className="font-medium text-lg">
+                    {typeof bid.amount === 'string' 
+                      ? bid.amount 
+                      : `${formatNumberWithCommas(bid.amount)}원`
+                    }
+                  </p>
                 </div>
               </div>
               
@@ -336,7 +341,7 @@ function BidsListClient() {
                 <div>
                   {bid.status === 'pending' && (
                     <Link href={`/groupbuys/${bid.groupbuy}`}>
-                      <Button variant="outline" size="sm">상세보기</Button>
+                      <Button variant="outline" size="sm">공구보기</Button>
                     </Link>
                   )}
                   {bid.status === 'selected' && bid.final_decision === 'pending' && (
