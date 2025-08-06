@@ -98,12 +98,12 @@ export default function WaitingBuyerSelection() {
                 </div>
 
                 {/* 남은 시간 표시 */}
-                {groupBuy.buyer_selection_end_time && (
+                {groupBuy.final_selection_end && (
                   <div className="mb-2">
                     <span className="text-sm text-gray-600">구매자 선택 마감: </span>
                     <CountdownTimer
-                      endTime={groupBuy.buyer_selection_end_time}
-                      format="short"
+                      endTime={groupBuy.final_selection_end}
+                      format="compact"
                       className="inline-block text-yellow-600 font-medium"
                     />
                   </div>

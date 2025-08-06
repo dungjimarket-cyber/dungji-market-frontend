@@ -115,12 +115,12 @@ export default function PendingSellerDecision() {
                 </div>
 
                 {/* 남은 시간 표시 */}
-                {groupBuy.seller_selection_end_time && (
+                {groupBuy.seller_selection_end && (
                   <div className="mb-2 bg-orange-100 rounded px-2 py-1 inline-block">
                     <span className="text-sm text-orange-700">선택 마감: </span>
                     <CountdownTimer
-                      endTime={groupBuy.seller_selection_end_time}
-                      format="short"
+                      endTime={groupBuy.seller_selection_end}
+                      format="compact"
                       className="inline-block text-orange-800 font-bold"
                       urgent={180} // 3시간 이하일 때 urgent
                     />

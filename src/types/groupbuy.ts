@@ -99,6 +99,17 @@ export interface GroupBuy {
     name: string;
     parent?: string;
   }>;
+  
+  // 판매자 관련 필드
+  my_bid_amount?: number; // 내가 입찰한 금액
+  bid_status?: string; // 입찰 상태
+  is_selected?: boolean; // 낙찰 여부
+  winning_bid_amount?: number; // 최종 낙찰 금액
+  winning_bid_amount_masked?: string; // 마스킹된 낙찰 금액
+  confirmed_buyers?: number; // 구매확정 인원 수
+  buyer_selection_end_time?: string; // 구매자 선택 종료 시간
+  completed_at?: string; // 완료 시간
+  cancel_reason?: string; // 취소 사유
 }
 
 // 참여 상태 정보

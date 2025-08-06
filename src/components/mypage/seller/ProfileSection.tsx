@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, LogOut, User, Star, Ticket } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import bidTokenService, { BidTokenResponse } from '@/lib/bid-token-service';
 
@@ -50,16 +49,7 @@ export default function ProfileSection() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="relative h-20 w-20 rounded-full overflow-hidden bg-gray-100">
-                {user.profile_image ? (
-                  <Image
-                    src={user.profile_image}
-                    alt={user.username}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <User className="h-full w-full p-4 text-gray-400" />
-                )}
+                <User className="h-full w-full p-4 text-gray-400" />
               </div>
 
               <div>
@@ -75,13 +65,13 @@ export default function ProfileSection() {
                       <Star
                         key={star}
                         className={`h-4 w-4 ${
-                          star <= Math.round(user.rating || 0)
+                          star <= 3
                             ? 'text-yellow-400 fill-yellow-400'
                             : 'text-gray-300'
                         }`}
                       />
                     ))}
-                    <span className="ml-1 text-sm">({user.rating || 0})</span>
+                    <span className="ml-1 text-sm">(3.0)</span>
                   </div>
                 </div>
 
