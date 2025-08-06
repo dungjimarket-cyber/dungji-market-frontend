@@ -197,7 +197,7 @@ export default function MyPageClient() {
         console.error('마이페이지 데이터 로딩 오류:', error);
       });
     }
-  }, [isAuthenticated, accessToken, isSeller]);
+  }, [isAuthenticated, accessToken]);
   
   useEffect(() => {
     // 사용자 역할 확인

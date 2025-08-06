@@ -1399,41 +1399,83 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
-        {/* 구매회원 최종선택 버튼 (기간 내에만 표시) */}
-        {!isSeller && isParticipant && isBuyerFinalSelection && 
-         myParticipationFinalDecision === 'pending' && !isFinalSelectionExpired ? (
+        {/* 구매회원 최종선택 버튼 (기간 내에만 표시, 선택 상태에 따라 반대 버튼만 표시) */}
+        {!isSeller && isParticipant && isBuyerFinalSelection && !isFinalSelectionExpired ? (
           <div className="space-y-3">
-            <Button 
-              onClick={() => handleFinalSelection('confirm')}
-              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
-            >
-              구매 확정
-            </Button>
-            <Button 
-              onClick={() => handleFinalSelection('cancel')}
-              variant="outline"
-              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
-            >
-              구매 포기
-            </Button>
+            {myParticipationFinalDecision === 'pending' ? (
+              // 미선택 상태: 두 버튼 모두 표시
+              <>
+                <Button 
+                  onClick={() => handleFinalSelection('confirm')}
+                  className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                >
+                  구매 확정
+                </Button>
+                <Button 
+                  onClick={() => handleFinalSelection('cancel')}
+                  variant="outline"
+                  className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                >
+                  구매 포기
+                </Button>
+              </>
+            ) : myParticipationFinalDecision === 'confirmed' ? (
+              // 구매확정 상태: 구매포기 버튼만 표시
+              <Button 
+                onClick={() => handleFinalSelection('cancel')}
+                variant="outline"
+                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+              >
+                구매 포기로 변경
+              </Button>
+            ) : (
+              // 구매포기 상태: 구매확정 버튼만 표시
+              <Button 
+                onClick={() => handleFinalSelection('confirm')}
+                className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+              >
+                구매 확정으로 변경
+              </Button>
+            )}
           </div>
-        ) : isSeller && isSellerFinalSelection && isMyBidSelected && 
-            myBidFinalDecision === 'pending' && !isFinalSelectionExpired ? (
-          // 판매자 최종선택 버튼 (기간 내에만 표시)
+        ) : isSeller && isSellerFinalSelection && isMyBidSelected && !isFinalSelectionExpired ? (
+          // 판매자 최종선택 버튼 (기간 내에만 표시, 선택 상태에 따라 반대 버튼만 표시)
           <div className="space-y-3">
-            <Button 
-              onClick={() => handleFinalSelection('confirm')}
-              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
-            >
-              판매 확정
-            </Button>
-            <Button 
-              onClick={() => handleFinalSelection('cancel')}
-              variant="outline"
-              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
-            >
-              판매 포기
-            </Button>
+            {myBidFinalDecision === 'pending' ? (
+              // 미선택 상태: 두 버튼 모두 표시
+              <>
+                <Button 
+                  onClick={() => handleFinalSelection('confirm')}
+                  className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                >
+                  판매 확정
+                </Button>
+                <Button 
+                  onClick={() => handleFinalSelection('cancel')}
+                  variant="outline"
+                  className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                >
+                  판매 포기
+                </Button>
+              </>
+            ) : myBidFinalDecision === 'confirmed' ? (
+              // 판매확정 상태: 판매포기 버튼만 표시
+              <Button 
+                onClick={() => handleFinalSelection('cancel')}
+                variant="outline"
+                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+              >
+                판매 포기로 변경
+              </Button>
+            ) : (
+              // 판매포기 상태: 판매확정 버튼만 표시
+              <Button 
+                onClick={() => handleFinalSelection('confirm')}
+                className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+              >
+                판매 확정으로 변경
+              </Button>
+            )}
           </div>
         ) : isSeller && !isFinalSelection && 
          groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 

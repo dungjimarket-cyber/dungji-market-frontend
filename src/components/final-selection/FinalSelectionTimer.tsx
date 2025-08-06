@@ -39,6 +39,20 @@ export function FinalSelectionTimer({
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalDecision, setModalDecision] = useState<'confirmed' | 'cancelled'>('confirmed');
+  const [isExpired, setIsExpired] = useState(false);
+  
+  // 시간 만료 체크
+  useEffect(() => {
+    const checkExpired = () => {
+      const now = new Date().getTime();
+      const end = new Date(endTime).getTime();
+      setIsExpired(now > end);
+    };
+    
+    checkExpired();
+    const interval = setInterval(checkExpired, 1000);
+    return () => clearInterval(interval);
+  }, [endTime]);
 
   // 사용자의 최종선택 상태 조회
   useEffect(() => {
@@ -131,8 +145,28 @@ export function FinalSelectionTimer({
           />
         </div>
 
-        {/* 선택 완료 상태 */}
-        {status.decision !== 'pending' ? (
+        {/* 시간 만료 상태 */}
+        {isExpired ? (
+          <div className="text-center space-y-3">
+            <div className="text-lg font-medium text-gray-600">
+              최종선택 기간 종료
+            </div>
+            <div className={`text-base ${
+              status.decision === 'confirmed' 
+                ? 'text-green-600' 
+                : status.decision === 'cancelled'
+                ? 'text-red-600'
+                : 'text-gray-500'
+            }`}>
+              {status.role === 'buyer' 
+                ? (status.decision === 'confirmed' ? '구매확정' : 
+                   status.decision === 'cancelled' ? '구매포기' : '미선택 (자동 포기)')
+                : (status.decision === 'confirmed' ? '판매확정' : 
+                   status.decision === 'cancelled' ? '판매포기' : '미선택 (자동 포기)')
+              }
+            </div>
+          </div>
+        ) : status.decision !== 'pending' ? (
           <div className="text-center space-y-3">
             <div className={`text-lg font-medium ${
               status.decision === 'confirmed' 
@@ -150,8 +184,8 @@ export function FinalSelectionTimer({
               </div>
             )}
             
-            {/* 구매자이고 구매확정한 경우에만 변경 버튼 표시 */}
-            {status.role === 'buyer' && status.decision === 'confirmed' && (
+            {/* 구매자이고 구매확정한 경우에만 변경 버튼 표시 (시간 내에만) */}
+            {status.role === 'buyer' && status.decision === 'confirmed' && !isExpired && (
               <Button
                 onClick={() => handleDecisionClick('cancelled')}
                 disabled={submitting}
