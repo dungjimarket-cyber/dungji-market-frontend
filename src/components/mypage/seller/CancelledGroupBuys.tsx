@@ -118,8 +118,8 @@ export default function CancelledGroupBuys() {
 
     try {
       // 취소된 공구 삭제 API 호출
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedGroupBuy.id}/hide/`, {
-        method: 'POST',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedGroupBuy.id}/delete_cancelled/`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'

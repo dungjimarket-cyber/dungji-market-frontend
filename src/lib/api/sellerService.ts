@@ -154,7 +154,7 @@ export const updateSellerProfile = async (data: {
       is_remote_sales_enabled: data.is_remote_sales_enabled || data.is_remote_sales,
       address_detail: data.address_detail || data.address
     };
-    const response = await axios.patch(`${API_URL}/auth/profile/`, apiData, { headers });
+    const response = await axios.patch(`${API_URL}/users/me/seller-profile/`, apiData, { headers });
     return response.data;
   } catch (error: any) {
     console.error('판매자 프로필 업데이트 오류:', error.response?.data);

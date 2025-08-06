@@ -60,7 +60,7 @@ export function SimpleFinalSelectionTimer({ endTime, onTimeEnd }: SimpleFinalSel
 
   // 12시간 = 43200초
   const maxSeconds = 12 * 60 * 60;
-  const progressPercentage = Math.max(0, Math.min(100, ((maxSeconds - totalSeconds) / maxSeconds) * 100));
+  const progressPercentage = Math.max(0, Math.min(100, (totalSeconds / maxSeconds) * 100));
   
   // 남은 시간에 따른 색상 변경
   const getColorClass = () => {

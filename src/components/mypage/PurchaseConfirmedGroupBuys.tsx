@@ -232,7 +232,7 @@ export default function PurchaseConfirmedGroupBuys() {
                 
                 {/* 액션 버튼 */}
                 <div className="mt-3">
-                  {/* 첫 번째 줄: 연락처 확인 및 상세보기 */}
+                  {/* 첫 번째 줄: 연락처 확인 및 공구보기 */}
                   <div className="flex gap-2 mb-2">
                     {/* 판매자 정보는 구매자 전원이 선택한 이후에만 표시 */}
                     {groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed && (

@@ -177,8 +177,8 @@ export default function SellerSettings() {
         formDataWithFile.append('remote_sales_cert', formData.businessRegFile);
         
         // multipart/form-data로 전송
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/profile/`, {
-          method: 'PUT',
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
+          method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
           },
