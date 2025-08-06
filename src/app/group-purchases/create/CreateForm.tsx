@@ -967,6 +967,9 @@ const onSubmit = async (values: FormData) => {
         endTime = new Date(values.end_time);
       }
       
+      // 초단위를 0으로 버림 처리
+      endTime.setSeconds(0, 0);
+      
       // 계산된 마감 시간을 한국 시간 문자열로 변환하여 endTimeValue 상태 업데이트
       const calculatedEndTimeKST = toKSTString(endTime);
       console.log('계산된 마감 시간 KST 문자열:', calculatedEndTimeKST);
@@ -1056,6 +1059,9 @@ const onSubmit = async (values: FormData) => {
       // 사용자 지정 날짜/시간 사용
       endTime = new Date(values.end_time);
     }
+    
+    // 초단위를 0으로 버림 처리
+    endTime.setSeconds(0, 0);
     
     // 계산된 마감 시간을 한국 시간 문자열로 변환하여 endTimeValue 상태 업데이트
     const calculatedEndTimeKST = toKSTString(endTime);
