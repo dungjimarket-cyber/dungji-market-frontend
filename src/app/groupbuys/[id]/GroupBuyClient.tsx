@@ -39,6 +39,12 @@ interface GroupBuyClientProps {
 }
 
 export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator, participationStatus: propParticipationStatus }: GroupBuyClientProps) {
+  console.log('GroupBuyClient 렌더링:', {
+    groupBuyId: groupBuy?.id,
+    groupBuyStatus: groupBuy?.status,
+    id: id
+  });
+  
   const { user, isAuthenticated, accessToken } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
@@ -410,6 +416,13 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
 
   useEffect(() => {
     const checkSeller = async () => {
+      console.log('checkSeller 실행:', {
+        isAuthenticated,
+        userRole: user?.role,
+        groupBuyId: groupBuy?.id,
+        groupBuyStatus: groupBuy?.status
+      });
+      
       if (!isAuthenticated || !user) return;
       
       // 판매자 확인 로직
@@ -417,11 +430,11 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         setIsSeller(true);
         
         // 판매자가 이미 입찰했는지 확인 (API 호출 추가 필요)
-        if (groupBuyState?.id) {
-          await checkSellerBidStatus(groupBuyState.id);
+        if (groupBuy?.id) {
+          await checkSellerBidStatus(groupBuy.id);
           
           // 판매자 최종선택 상태인 경우 낙찰 여부 확인
-          if (groupBuyState.status === 'final_selection_seller') {
+          if (groupBuy.status === 'final_selection_seller') {
             console.log('판매자 최종선택 상태 확인, checkWinningBidStatus 호출');
             await checkWinningBidStatus();
           }
@@ -430,7 +443,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     };
     
     checkSeller();
-  }, [isAuthenticated, user, groupBuy?.id]);
+  }, [isAuthenticated, user, groupBuy?.id, groupBuy?.status]);
   
   // 참여자 진행률
   const participantProgress = groupBuyState?.max_participants

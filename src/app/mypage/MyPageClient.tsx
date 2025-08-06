@@ -7,6 +7,7 @@ import ProfileSection from '@/components/mypage/ProfileSection';
 import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
 import PurchaseConfirmedGroupBuys from '@/components/mypage/PurchaseConfirmedGroupBuys';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
+import WaitingSellerDecisionGroupBuys from '@/components/mypage/WaitingSellerDecisionGroupBuys';
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import CancelledGroupBuys from '@/components/mypage/CancelledGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
@@ -16,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -34,6 +35,7 @@ export default function MyPageClient() {
   // 각 섹션의 데이터 카운트 상태 관리
   const [participatingCount, setParticipatingCount] = useState(0);
   const [pendingSelectionCount, setPendingSelectionCount] = useState(0);
+  const [waitingSellerCount, setWaitingSellerCount] = useState(0);
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
   const [completedGroupBuysCount, setCompletedGroupBuysCount] = useState(0);
   const [cancelledGroupBuysCount, setCancelledGroupBuysCount] = useState(0);
@@ -62,7 +64,7 @@ export default function MyPageClient() {
       }
     };
     
-    // 최종 선택 대기중인 상품 개수 가져오기 (API 가정)
+    // 구매확정/포기 선택하기 상품 개수 가져오기
     const fetchPendingSelectionCount = async () => {
       if (!isAuthenticated || !accessToken) return;
       
@@ -81,9 +83,32 @@ export default function MyPageClient() {
           setPendingSelectionCount(data.length);
         }
       } catch (error) {
-        console.error('최종 선택 대기중 개수 조회 오류:', error);
-        // API가 아직 없다면 임시값 설정
+        console.error('구매확정/포기 선택하기 개수 조회 오류:', error);
         setPendingSelectionCount(0);
+      }
+    };
+    
+    // 판매자 최종선택 대기중인 상품 개수 가져오기
+    const fetchWaitingSellerCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/waiting_seller_decision/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setWaitingSellerCount(data.length);
+        }
+      } catch (error) {
+        console.error('판매자 최종선택 대기중 개수 조회 오류:', error);
+        setWaitingSellerCount(0);
       }
     };
     
@@ -164,6 +189,7 @@ export default function MyPageClient() {
       Promise.all([
         fetchParticipatingCount(),
         fetchPendingSelectionCount(),
+        fetchWaitingSellerCount(),
         fetchCompletedGroupBuysCount(),
         fetchPurchaseInProgressCount(),
         fetchCancelledGroupBuysCount()
@@ -251,13 +277,13 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 최종선택 대기중 */}
+            {/* 구매확정/포기 선택하기 */}
             <AccordionItem value="pending">
               <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <ShoppingBag className="w-5 h-5 mr-2 text-amber-500" />
-                    <span className="font-medium">최종선택 대기중</span>
+                    <span className="font-medium">구매확정/포기 선택하기</span>
                   </div>
                   <div className="flex items-center text-amber-600">
                     <span className="mr-1 text-sm">{pendingSelectionCount}</span>
@@ -270,13 +296,32 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 구매 확정 */}
+            {/* 판매자 최종선택 대기중 */}
+            <AccordionItem value="waiting-seller">
+              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Clock className="w-5 h-5 mr-2 text-purple-500" />
+                    <span className="font-medium">판매자 최종선택 대기중</span>
+                  </div>
+                  <div className="flex items-center text-purple-600">
+                    <span className="mr-1 text-sm">{waitingSellerCount}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <WaitingSellerDecisionGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 거래중 */}
             <AccordionItem value="purchase-confirmed">
               <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <CheckCircle2 className="w-5 h-5 mr-2 text-green-500" />
-                    <span className="font-medium">구매 확정</span>
+                    <span className="font-medium">거래중</span>
                   </div>
                   <div className="flex items-center text-green-600">
                     <span className="mr-1 text-sm">{purchaseInProgressCount}</span>

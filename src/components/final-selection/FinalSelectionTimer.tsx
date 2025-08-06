@@ -133,7 +133,7 @@ export function FinalSelectionTimer({
 
         {/* 선택 완료 상태 */}
         {status.decision !== 'pending' ? (
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <div className={`text-lg font-medium ${
               status.decision === 'confirmed' 
                 ? 'text-green-600' 
@@ -148,6 +148,19 @@ export function FinalSelectionTimer({
               <div className="text-sm text-gray-500">
                 {new Date(status.decision_at).toLocaleString('ko-KR')}
               </div>
+            )}
+            
+            {/* 구매자이고 구매확정한 경우에만 변경 버튼 표시 */}
+            {status.role === 'buyer' && status.decision === 'confirmed' && (
+              <Button
+                onClick={() => handleDecisionClick('cancelled')}
+                disabled={submitting}
+                variant="outline"
+                size="sm"
+                className="border-orange-300 text-orange-600 hover:bg-orange-50"
+              >
+                구매포기로 변경
+              </Button>
             )}
           </div>
         ) : (

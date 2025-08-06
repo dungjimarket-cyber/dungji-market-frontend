@@ -20,6 +20,7 @@ import { SimpleFinalSelectionTimer } from '@/components/final-selection/SimpleFi
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Progress } from '@/components/ui/progress';
+import { FinalDecisionModal } from '@/components/groupbuy/FinalDecisionModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -148,6 +149,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     remaining_tokens: 0,
     has_unlimited_subscription: false
   });
+  
+  // 판매자 최종선택 관련 상태
+  const [showSellerFinalDecisionModal, setShowSellerFinalDecisionModal] = useState(false);
+  const [hasWinningBid, setHasWinningBid] = useState(false);
+  const [winningBidInfo, setWinningBidInfo] = useState<any>(null);
 
   useEffect(() => {
     setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
@@ -170,6 +176,84 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
+  
+  // 판매자가 낙찰된 입찰을 가지고 있는지 확인
+  const checkWinningBidStatus = useCallback(async () => {
+    if (!accessToken || !isSeller || !groupBuy.id) return;
+    
+    console.log('checkWinningBidStatus 시작, groupBuy ID:', groupBuy.id);
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/final-selection/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('낙찰 입찰 데이터:', data);
+        
+        // 현재 공구의 낙찰된 입찰 찾기
+        const winningBid = data.find((bid: any) => bid.groupbuy === groupBuy.id);
+        
+        if (winningBid) {
+          console.log('낙찰 입찰 찾음:', winningBid);
+          setHasWinningBid(true);
+          setWinningBidInfo(winningBid);
+        } else {
+          console.log('현재 공구의 낙찰 입찰을 찾을 수 없음');
+        }
+      }
+    } catch (error) {
+      console.error('낙찰 입찰 확인 오류:', error);
+    }
+  }, [accessToken, isSeller, groupBuy.id]);
+  
+  // 판매자의 입찰 정보 조회
+  const fetchSellerBidInfo = useCallback(async () => {
+    if (!accessToken || !isSeller || !groupBuy.id) return;
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/?groupbuy_id=${groupBuy.id}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('판매자 입찰 정보:', data);
+        
+        if (data.results && data.results.length > 0) {
+          const myBid = data.results[0];
+          setHasBid(true);
+          setMyBidAmount(myBid.amount);
+          setMyBidId(myBid.id);
+          setIsMyBidSelected(myBid.status === 'selected');
+        }
+      }
+    } catch (error) {
+      console.error('판매자 입찰 정보 조회 오류:', error);
+    }
+  }, [accessToken, isSeller, groupBuy.id]);
+  
+  // 판매자인 경우 입찰 정보 조회
+  useEffect(() => {
+    if (isSeller && groupBuy.id) {
+      fetchSellerBidInfo();
+    }
+  }, [isSeller, groupBuy.id, fetchSellerBidInfo]);
+  
+  // 판매자 최종선택 상태인 경우 낙찰 여부 확인
+  useEffect(() => {
+    if (groupBuy.status === 'final_selection_seller' && isSeller) {
+      console.log('판매자 최종선택 상태 확인, checkWinningBidStatus 호출');
+      checkWinningBidStatus();
+    }
+  }, [groupBuy.status, isSeller, checkWinningBidStatus]);
   
   // 최종선택 기간 종료 확인
   const isBuyerSelectionExpired = groupBuy.final_selection_end ? 
@@ -1030,6 +1114,32 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             />
           </div>
         )}
+        
+        {/* 판매자 최종선택 UI */}
+        {isSeller && isSellerFinalSelection && hasWinningBid && (
+          <div className="bg-yellow-50 p-4 rounded-lg mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-lg">판매자 최종선택</h3>
+              <span className="text-sm text-yellow-700">최종선택 대기중</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              구매자가 모두 최종선택을 완료했습니다. 판매확정 또는 판매포기를 선택해주세요.
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowSellerFinalDecisionModal(true)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                최종선택 하기
+              </Button>
+            </div>
+            {winningBidInfo?.final_selection_end && (
+              <div className="mt-3 text-xs text-gray-500">
+                마감 시간: {new Date(winningBidInfo.final_selection_end).toLocaleString('ko-KR')}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 최고 지원금/최종 낙찰 지원금 박스 */}
         {isFinalSelection || groupBuy.status === 'completed' ? (
@@ -1731,6 +1841,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* 판매자 최종선택 모달 */}
+      {hasWinningBid && (
+        <FinalDecisionModal
+          isOpen={showSellerFinalDecisionModal}
+          onClose={() => setShowSellerFinalDecisionModal(false)}
+          groupBuyId={groupBuy.id}
+          groupBuyTitle={groupBuy.title}
+          onDecisionComplete={() => {
+            setShowSellerFinalDecisionModal(false);
+            router.refresh();
+            checkWinningBidStatus();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,8 @@ import { ArrowLeft, Loader2, Clock } from 'lucide-react';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { toast } from '@/components/ui/use-toast';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Users } from 'lucide-react';
 
 interface FinalSelectionGroupBuy {
   id: number;
@@ -22,10 +24,23 @@ interface FinalSelectionGroupBuy {
   created_at: string;
 }
 
+interface BuyerConfirmationStats {
+  total_participants: number;
+  confirmed_count: number;
+  cancelled_count: number;
+  pending_count: number;
+  confirmation_rate: number;
+  has_penalty_exemption: boolean;
+}
+
 export default function SellerFinalSelection() {
   const router = useRouter();
   const [groupbuys, setGroupbuys] = useState<FinalSelectionGroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
+  const [confirmationStats, setConfirmationStats] = useState<BuyerConfirmationStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
 
   useEffect(() => {
     const fetchFinalSelectionGroupBuys = async () => {
@@ -88,6 +103,51 @@ export default function SellerFinalSelection() {
     router.push(`/groupbuys/${groupBuyId}`);
   };
 
+  const fetchConfirmationStats = async (groupBuyId: number) => {
+    try {
+      setLoadingStats(true);
+      const token = await tokenUtils.getAccessToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/buyer-confirmation-stats/`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setConfirmationStats(data);
+      } else {
+        toast({
+          title: '오류',
+          description: '구매확정 인원 정보를 불러오는데 실패했습니다.',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching confirmation stats:', error);
+      toast({
+        title: '오류',
+        description: '구매확정 인원 정보를 불러오는데 실패했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const handleShowStats = async (e: React.MouseEvent, groupBuyId: number) => {
+    e.stopPropagation();
+    setSelectedGroupBuyId(groupBuyId);
+    setShowStatsModal(true);
+    await fetchConfirmationStats(groupBuyId);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -147,25 +207,110 @@ export default function SellerFinalSelection() {
                   </div>
                 </div>
 
-                <div className="bg-amber-50 p-3 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm font-medium text-amber-800">최종선택 마감시간</span>
+                <div className="space-y-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={(e) => handleShowStats(e, groupbuy.id)}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    구매확정 인원 보기
+                  </Button>
+                  
+                  <div className="bg-amber-50 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="h-4 w-4 text-amber-600" />
+                      <span className="text-sm font-medium text-amber-800">최종선택 마감시간</span>
+                    </div>
+                    <CountdownTimer
+                      endTime={groupbuy.final_selection_end}
+                      format="full"
+                      urgent={180}
+                    />
+                    <p className="text-xs text-amber-600 mt-2">
+                      공구 진입 후 판매확정/판매포기를 선택해주세요.
+                    </p>
                   </div>
-                  <CountdownTimer
-                    endTime={groupbuy.final_selection_end}
-                    format="full"
-                    urgent={180}
-                  />
-                  <p className="text-xs text-amber-600 mt-2">
-                    공구 진입 후 판매확정/판매포기를 선택해주세요.
-                  </p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* 구매확정 인원 통계 모달 */}
+      <Dialog open={showStatsModal} onOpenChange={setShowStatsModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>구매확정 인원 현황</DialogTitle>
+          </DialogHeader>
+          
+          {loadingStats ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            </div>
+          ) : confirmationStats ? (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">전체 참여인원</span>
+                  <span className="font-bold">{confirmationStats.total_participants}명</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-green-600">구매확정</span>
+                  <span className="font-bold text-green-600">{confirmationStats.confirmed_count}명</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-red-600">구매포기</span>
+                  <span className="font-bold text-red-600">{confirmationStats.cancelled_count}명</span>
+                </div>
+                {confirmationStats.pending_count > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">미결정</span>
+                    <span className="font-bold text-gray-500">{confirmationStats.pending_count}명</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className={`p-4 rounded-lg ${
+                confirmationStats.confirmation_rate <= 50 
+                  ? 'bg-blue-50 border border-blue-200' 
+                  : 'bg-green-50 border border-green-200'
+              }`}>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">구매확정률</p>
+                  <p className="text-2xl font-bold ${
+                    confirmationStats.confirmation_rate <= 50 ? 'text-blue-600' : 'text-green-600'
+                  }">
+                    {confirmationStats.confirmation_rate}%
+                  </p>
+                </div>
+                
+                {confirmationStats.has_penalty_exemption && (
+                  <div className="mt-3 p-2 bg-white rounded">
+                    <p className="text-xs text-blue-600 text-center">
+                      구매확정률이 50% 이하이므로 판매포기 시<br/>
+                      패널티 없이 해당 공구 입찰권이 환불됩니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <Button 
+                className="w-full" 
+                onClick={() => setShowStatsModal(false)}
+              >
+                확인
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              데이터를 불러올 수 없습니다.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
