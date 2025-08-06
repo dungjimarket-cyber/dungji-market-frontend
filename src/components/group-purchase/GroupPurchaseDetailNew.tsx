@@ -1148,13 +1148,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="text-center">
               <p className="text-xl font-bold text-gray-800 mb-4">최종 낙찰 지원금</p>
               <p className="text-5xl font-bold text-orange-600 mb-1">
-                {groupBuy.winning_bid_amount ? (
+                {/* 참여자이거나 낙찰자(판매자)인 경우에만 정상 금액 표시 */}
+                {(isParticipant || (isSeller && hasWinningBid)) && groupBuy.winning_bid_amount ? (
                   <>
                     <span>{groupBuy.winning_bid_amount.toLocaleString()}</span>
                     <span className="text-2xl">원</span>
                   </>
                 ) : (
-                  <span>{groupBuy.winning_bid_amount_masked || '***원'}</span>
+                  <span>{groupBuy.winning_bid_amount_masked || '***,***원'}</span>
                 )}
               </p>
               <div className="mt-4 space-y-3">
