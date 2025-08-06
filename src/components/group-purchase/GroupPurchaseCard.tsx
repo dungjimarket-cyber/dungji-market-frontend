@@ -448,7 +448,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         <button
           className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 ${getButtonStyle()}`}
           onClick={handleViewDetail}
-          disabled={isFinalSelection}
+          disabled={isFinalSelection || isCompleted}
         >
           {getButtonText()}
         </button>
