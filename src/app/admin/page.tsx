@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { GroupBuyConsentManager } from '@/components/admin/GroupBuyConsentManager';
+import WinnerSelection from '@/components/admin/WinnerSelection';
 
 // 입찰권 유형 정의
 const TOKEN_TYPES = [
@@ -619,6 +620,7 @@ export default function AdminPage() {
         <TabsList className="mb-4">
           <TabsTrigger value="verifications">사업자 인증</TabsTrigger>
           <TabsTrigger value="group-purchases">공동구매 관리</TabsTrigger>
+          <TabsTrigger value="winner-selection">낙찰자 선정</TabsTrigger>
           <TabsTrigger value="sellers">셀러 관리</TabsTrigger>
           <TabsTrigger value="products">상품 관리</TabsTrigger>
         </TabsList>
@@ -898,6 +900,11 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        {/* 낙찰자 선정 탭 */}
+        <TabsContent value="winner-selection">
+          <WinnerSelection />
         </TabsContent>
         
         {/* 상품 관리 탭 */}
