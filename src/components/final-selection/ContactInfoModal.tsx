@@ -16,19 +16,21 @@ import { Phone, Mail, Building, User, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ContactInfo {
-  role: 'buyer' | 'seller';
-  contact_info: {
+  role: 'seller' | 'buyers';
+  // 판매자 정보 (구매자가 볼 때)
+  name?: string;
+  business_name?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  business_number?: string;
+  // 구매자 목록 (판매자가 볼 때)
+  buyers?: Array<{
     name: string;
-    business_name?: string;
     phone: string;
-    email: string;
-    profile_image?: string;
-  } | Array<{
-    name: string;
-    phone: string;
-    email: string;
-    joined_at: string;
+    address?: string;
   }>;
+  total_count?: number;
 }
 
 interface ContactInfoModalProps {
@@ -110,10 +112,10 @@ export function ContactInfoModal({
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {contactInfo.role === 'buyer' ? '판매자 정보' : '구매자 정보'}
+            {contactInfo.role === 'seller' ? '판매자 정보' : '구매자 정보'}
           </DialogTitle>
           <DialogDescription>
-            {contactInfo.role === 'buyer' 
+            {contactInfo.role === 'seller' 
               ? '판매자와 연락하여 거래를 진행하세요.'
               : '구매 확정한 고객 목록입니다. 연락하여 거래를 진행하세요.'}
           </DialogDescription>
@@ -123,71 +125,79 @@ export function ContactInfoModal({
           <div className="text-center py-8">로딩 중...</div>
         ) : (
           <div className="space-y-4">
-            {contactInfo.role === 'buyer' && !Array.isArray(contactInfo.contact_info) ? (
+            {contactInfo.role === 'seller' ? (
               // 구매자가 보는 판매자 정보
               <Card className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                    {contactInfo.contact_info.profile_image ? (
-                      <Image 
-                        src={contactInfo.contact_info.profile_image} 
-                        alt={contactInfo.contact_info.name}
-                        width={64}
-                        height={64}
-                        className="rounded-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-8 w-8 text-gray-500" />
-                    )}
+                    <User className="h-8 w-8 text-gray-500" />
                   </div>
                   
                   <div className="flex-1 space-y-3">
                     <div>
-                      <h3 className="font-semibold text-lg">{contactInfo.contact_info.name}</h3>
-                      {contactInfo.contact_info.business_name && (
+                      <h3 className="font-semibold text-lg">{contactInfo.name}</h3>
+                      {contactInfo.business_name && (
                         <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                           <Building className="h-4 w-4" />
-                          {contactInfo.contact_info.business_name}
+                          {contactInfo.business_name}
                         </p>
                       )}
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-gray-500" />
-                          <span>{contactInfo.contact_info.phone}</span>
+                      {contactInfo.phone && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-gray-500" />
+                            <span>{contactInfo.phone}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(contactInfo.phone!, '전화번호')}
+                          >
+                            {copiedField === '전화번호' ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard((contactInfo.contact_info as any).phone, '전화번호')}
-                        >
-                          {copiedField === '전화번호' ? (
-                            <Check className="h-4 w-4" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                      )}
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Mail className="h-4 w-4 text-gray-500" />
-                          <span>{contactInfo.contact_info.email}</span>
+                      {contactInfo.email && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-4 w-4 text-gray-500" />
+                            <span>{contactInfo.email}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(contactInfo.email!, '이메일')}
+                          >
+                            {copiedField === '이메일' ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard((contactInfo.contact_info as any).email, '이메일')}
-                        >
-                          {copiedField === '이메일' ? (
-                            <Check className="h-4 w-4" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                      )}
+                      
+                      {contactInfo.business_number && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Building className="h-4 w-4 text-gray-500" />
+                          <span>사업자번호: {contactInfo.business_number}</span>
+                        </div>
+                      )}
+                      
+                      {contactInfo.address && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Building className="h-4 w-4 text-gray-500" />
+                          <span>{contactInfo.address}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -195,7 +205,10 @@ export function ContactInfoModal({
             ) : (
               // 판매자가 보는 구매자 목록
               <div className="space-y-3">
-                {Array.isArray(contactInfo.contact_info) && contactInfo.contact_info.map((buyer, index) => (
+                <p className="text-sm text-gray-600 mb-2">
+                  총 {contactInfo.total_count}명의 구매자가 확정했습니다.
+                </p>
+                {contactInfo.buyers && contactInfo.buyers.map((buyer, index) => (
                   <Card key={index} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
@@ -205,14 +218,12 @@ export function ContactInfoModal({
                             <Phone className="h-3 w-3" />
                             {buyer.phone}
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {buyer.email}
-                          </span>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          참여일: {new Date(buyer.joined_at).toLocaleDateString('ko-KR')}
-                        </p>
+                        {buyer.address && (
+                          <p className="text-xs text-gray-500">
+                            주소: {buyer.address}
+                          </p>
+                        )}
                       </div>
                       
                       <div className="flex gap-2">
