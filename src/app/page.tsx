@@ -7,7 +7,6 @@ import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard
 import { RoleButton } from '@/components/auth/RoleButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { MobileHeader } from '@/components/navigation/MobileHeader';
-import { IoMdClose } from 'react-icons/io';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getSellerBids } from '@/lib/api/bidService';
@@ -67,29 +66,8 @@ function HomeContent() {
   const [popularGroupBuys, setPopularGroupBuys] = useState<GroupBuy[]>([]);
   const [newGroupBuys, setNewGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showIframe, setShowIframe] = useState(false);
   const [userParticipations, setUserParticipations] = useState<number[]>([]);
   const [userBids, setUserBids] = useState<number[]>([]);
-  
-  // iframe이 열렸을 때 뒤로가기 버튼 처리
-  useEffect(() => {
-    if (showIframe) {
-      // 현재 상태를 history에 추가
-      window.history.pushState(null, '', window.location.pathname);
-      
-      // popstate 이벤트 리스너 추가 (뒤로가기 버튼 클릭 시 발생)
-      const handlePopState = () => {
-        setShowIframe(false);
-      };
-      
-      window.addEventListener('popstate', handlePopState);
-      
-      // 컴포넌트 언마운트 시 이벤트 리스너 제거
-      return () => {
-        window.removeEventListener('popstate', handlePopState);
-      };
-    }
-  }, [showIframe]);
   
   // URL 파라미터에서 에러 메시지 확인
   useEffect(() => {
@@ -211,25 +189,6 @@ function HomeContent() {
         <BannerCarousel />
       </section>
 
-      {/* iframe 팝업 */}
-      {showIframe && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-6xl h-[80vh] relative">
-            <button 
-              onClick={() => setShowIframe(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 z-10"
-              aria-label="닫기"
-            >
-              <IoMdClose size={24} />
-            </button>
-            <iframe 
-              src="https://dungjimarket-guide-wnop7bf.gamma.site/" 
-              className="w-full h-full rounded-lg"
-              title="둥지마켓 알아보기"
-            />
-          </div>
-        </div>
-      )}
       
       <section className="mb-12">       
         <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mb-8 mt-4 px-4">
@@ -264,13 +223,6 @@ function HomeContent() {
           >
             <span className="text-sm sm:text-base">이용가이드</span>
           </a>
-          
-          <button
-            onClick={() => setShowIframe(!showIframe)}
-            className="btn-animated btn-outline whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 hover:bg-gray-50 transition-all w-full sm:w-auto"
-          >
-            <span className="text-sm sm:text-base">둥지마켓 알아보기</span>
-          </button>
         </div>
       </section>
 
