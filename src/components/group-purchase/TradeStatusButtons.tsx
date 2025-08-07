@@ -2,15 +2,20 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, XCircle, Phone, AlertTriangle, Package, Users, Info } from 'lucide-react';
 
 interface TradeStatusButtonsProps {
   status: string;
   userRole: 'buyer' | 'seller';
   groupBuyId: number;
   myDecision?: 'pending' | 'confirmed' | 'cancelled';
+  participantCount?: number;
+  confirmedCount?: number;
   onContactInfo?: () => void;
   onFinalSelection?: (decision: 'confirm' | 'cancel') => void;
   onComplete?: () => void;
+  onViewConfirmedCount?: () => void;
 }
 
 /**
@@ -22,11 +27,18 @@ export function TradeStatusButtons({
   userRole,
   groupBuyId,
   myDecision = 'pending',
+  participantCount,
+  confirmedCount,
   onContactInfo,
   onFinalSelection,
-  onComplete
+  onComplete,
+  onViewConfirmedCount
 }: TradeStatusButtonsProps) {
   const router = useRouter();
+  
+  const confirmRate = participantCount && confirmedCount 
+    ? Math.round((confirmedCount / participantCount) * 100)
+    : 0;
 
   // 구매자 버튼 렌더링
   if (userRole === 'buyer') {
@@ -34,29 +46,42 @@ export function TradeStatusButtons({
       case 'final_selection_buyers':
         if (myDecision === 'pending') {
           return (
-            <>
+            <div className="space-y-3">
               <Button
                 onClick={() => onFinalSelection?.('confirm')}
-                className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
               >
+                <CheckCircle className="h-5 w-5 mr-2" />
                 구매확정
               </Button>
               <Button
                 onClick={() => onFinalSelection?.('cancel')}
                 variant="outline"
-                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                className="w-full py-4 text-base font-medium border-red-500 text-red-600 hover:bg-red-50"
               >
+                <XCircle className="h-5 w-5 mr-2" />
                 구매포기
               </Button>
-            </>
+            </div>
+          );
+        } else if (myDecision === 'confirmed') {
+          return (
+            <Button
+              disabled
+              className="w-full py-4 text-base font-medium bg-green-100 text-green-700"
+            >
+              <CheckCircle className="h-5 w-5 mr-2" />
+              구매확정 완료
+            </Button>
           );
         } else {
           return (
             <Button
               disabled
-              className="w-full py-4 text-base font-medium"
+              className="w-full py-4 text-base font-medium bg-gray-100 text-gray-500"
             >
-              {myDecision === 'confirmed' ? '✓ 구매확정 완료' : '✓ 구매포기 완료'}
+              <XCircle className="h-5 w-5 mr-2" />
+              구매포기 완료
             </Button>
           );
         }
@@ -70,28 +95,30 @@ export function TradeStatusButtons({
 
       case 'in_progress':
         return (
-          <>
+          <div className="space-y-3">
             <Button
               onClick={onContactInfo}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700"
             >
-              판매자정보보기
-            </Button>
-            <Button
-              onClick={onComplete}
-              variant="outline"
-              className="w-full py-3"
-            >
-              구매완료
+              <Phone className="h-4 w-4 mr-2" />
+              판매자 정보보기
             </Button>
             <Button
               onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`)}
               variant="outline"
-              className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+              className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
             >
-              노쇼신고
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              노쇼신고하기
             </Button>
-          </>
+            <Button
+              onClick={onComplete}
+              className="w-full py-3 bg-green-600 hover:bg-green-700"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              구매완료
+            </Button>
+          </div>
         );
 
       case 'completed':
@@ -127,57 +154,87 @@ export function TradeStatusButtons({
       case 'final_selection_seller':
         if (myDecision === 'pending') {
           return (
-            <>
+            <div className="space-y-3">
+              {participantCount !== undefined && confirmedCount !== undefined && (
+                <Button
+                  onClick={onViewConfirmedCount}
+                  variant="outline"
+                  className="w-full py-3"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  구매확정 인원 보기
+                  {confirmRate > 0 && (
+                    <Badge className={`ml-2 ${confirmRate <= 50 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                      {confirmRate}%
+                    </Badge>
+                  )}
+                </Button>
+              )}
               <Button
                 onClick={() => onFinalSelection?.('confirm')}
-                className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
               >
+                <CheckCircle className="h-5 w-5 mr-2" />
                 판매확정
               </Button>
               <Button
                 onClick={() => onFinalSelection?.('cancel')}
                 variant="outline"
-                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                className="w-full py-4 text-base font-medium border-red-500 text-red-600 hover:bg-red-50"
               >
+                <XCircle className="h-5 w-5 mr-2" />
                 판매포기
               </Button>
-            </>
+            </div>
+          );
+        } else if (myDecision === 'confirmed') {
+          return (
+            <Button
+              disabled
+              className="w-full py-4 text-base font-medium bg-green-100 text-green-700"
+            >
+              <CheckCircle className="h-5 w-5 mr-2" />
+              판매확정 완료
+            </Button>
           );
         } else {
           return (
             <Button
               disabled
-              className="w-full py-4 text-base font-medium"
+              className="w-full py-4 text-base font-medium bg-gray-100 text-gray-500"
             >
-              {myDecision === 'confirmed' ? '✓ 판매확정 완료' : '✓ 판매포기 완료'}
+              <XCircle className="h-5 w-5 mr-2" />
+              판매포기 완료
             </Button>
           );
         }
 
       case 'in_progress':
         return (
-          <>
+          <div className="space-y-3">
             <Button
               onClick={onContactInfo}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700"
             >
-              구매자정보보기
-            </Button>
-            <Button
-              onClick={onComplete}
-              variant="outline"
-              className="w-full py-3"
-            >
-              판매완료
+              <Phone className="h-4 w-4 mr-2" />
+              구매자 정보보기
             </Button>
             <Button
               onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`)}
               variant="outline"
-              className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+              className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
             >
+              <AlertTriangle className="h-4 w-4 mr-2" />
               노쇼신고하기
             </Button>
-          </>
+            <Button
+              onClick={onComplete}
+              className="w-full py-3 bg-green-600 hover:bg-green-700"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              판매완료
+            </Button>
+          </div>
         );
 
       case 'completed':

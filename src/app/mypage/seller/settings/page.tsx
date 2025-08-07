@@ -38,6 +38,8 @@ export default function SellerSettings() {
     isRemoteSales: false,
     businessRegFile: null as File | null
   });
+  const [checkingNickname, setCheckingNickname] = useState(false);
+  const [nicknameError, setNicknameError] = useState('');
 
   useEffect(() => {
     const loadSellerProfile = async () => {
@@ -103,14 +105,89 @@ export default function SellerSettings() {
     loadSellerProfile();
   }, [router]);
 
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^0-9]/g, '');
+    
+    // 11자리 초과 방지
+    if (numbers.length > 11) {
+      return formData.phone;
+    }
+    
+    // 포맷팅
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else if (numbers.length <= 11) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+    }
+    
+    return value;
+  };
+
+  const checkNicknameDuplicate = async (nickname: string) => {
+    if (!nickname || nickname === profile?.nickname) {
+      setNicknameError('');
+      return;
+    }
+    
+    setCheckingNickname(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/check-nickname/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
+        },
+        body: JSON.stringify({ nickname })
+      });
+      
+      const data = await response.json();
+      if (!data.available) {
+        setNicknameError('이미 사용중인 닉네임입니다.');
+      } else {
+        setNicknameError('');
+      }
+    } catch (error) {
+      console.error('닉네임 중복 확인 오류:', error);
+    } finally {
+      setCheckingNickname(false);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'phone') {
+      const formatted = formatPhoneNumber(value);
+      setFormData(prev => ({ ...prev, phone: formatted }));
+    } else if (name === 'nickname') {
+      setFormData(prev => ({ ...prev, nickname: value }));
+      // 디바운스를 위해 타이머 설정
+      const timer = setTimeout(() => {
+        checkNicknameDuplicate(value);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 닉네임 에러가 있으면 제출 방지
+    if (nicknameError) {
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '닉네임이 중복되었습니다. 다른 닉네임을 사용해주세요.'
+      });
+      return;
+    }
+    
     setSaving(true);
 
     try {
@@ -208,14 +285,23 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="nickname">닉네임 (상호명)</Label>
-                  <Input
-                    id="nickname"
-                    name="nickname"
-                    value={formData.nickname}
-                    onChange={handleChange}
-                    placeholder="닉네임 또는 상호명을 입력하세요"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="nickname"
+                      name="nickname"
+                      value={formData.nickname}
+                      onChange={handleChange}
+                      placeholder="닉네임 또는 상호명을 입력하세요"
+                      required
+                      className={nicknameError ? 'border-red-500' : ''}
+                    />
+                    {checkingNickname && (
+                      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
+                    )}
+                  </div>
+                  {nicknameError && (
+                    <p className="text-sm text-red-500 mt-1">{nicknameError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
