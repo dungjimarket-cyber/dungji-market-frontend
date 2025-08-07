@@ -1727,9 +1727,37 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         ) : (
           // 비참여자 또는 비회원
-          <div className="p-4 bg-gray-100 rounded-lg text-center">
-            <p className="font-semibold text-gray-700">공구종료</p>
-          </div>
+          <>
+            {/* 공구가 종료된 경우 */}
+            {(groupBuy.status === 'completed' || groupBuy.status === 'cancelled' || 
+              groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' ||
+              groupBuy.status === 'in_progress') ? (
+              <div className="p-4 bg-gray-100 rounded-lg text-center">
+                <p className="font-semibold text-gray-700">공구종료</p>
+              </div>
+            ) : (
+              // 진행 중인 공구 - 참여 가능
+              <div className="space-y-3">
+                {/* 공구 참여하기 버튼 */}
+                {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
+                  <Button
+                    onClick={handleJoinClick}
+                    className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
+                  >
+                    공구 참여하기
+                  </Button>
+                )}
+                {/* 공유하기 버튼 */}
+                <Button
+                  onClick={handleShare}
+                  variant="outline"
+                  className="w-full py-3"
+                >
+                  공동구매 초대하기
+                </Button>
+              </div>
+            )}
+          </>
         )}
         
         {/* 가이드라인 링크 */}
