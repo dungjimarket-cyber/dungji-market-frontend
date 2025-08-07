@@ -32,6 +32,8 @@ interface BidHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   groupBuyId: number;
+  currentUserId?: number;
+  isSeller?: boolean;
 }
 
 /**
@@ -40,7 +42,9 @@ interface BidHistoryModalProps {
 export default function BidHistoryModal({
   isOpen,
   onClose,
-  groupBuyId
+  groupBuyId,
+  currentUserId,
+  isSeller = false
 }: BidHistoryModalProps) {
   const [bids, setBids] = useState<BidData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,23 +135,56 @@ export default function BidHistoryModal({
                 <TableRow>
                   <TableHead className="w-20 text-center">순위</TableHead>
                   <TableHead className="text-right">금액</TableHead>
+                  {isSeller && <TableHead className="text-center">상태</TableHead>}
                   <TableHead className="text-center">등록일</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bids.slice(0, 10).map((bid, index) => (
-                  <TableRow key={bid.id}>
-                    <TableCell className="text-center font-medium">
-                      <Badge variant={index < 3 ? "default" : "outline"} className={index === 0 ? "bg-yellow-500" : index === 1 ? "bg-gray-400" : index === 2 ? "bg-amber-600" : ""}>
-                        {index + 1}위
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {typeof bid.amount === 'string' ? bid.amount : `${formatNumberWithCommas(bid.amount)}원`}
-                    </TableCell>
-                    <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
-                  </TableRow>
-                ))}
+                {bids.slice(0, 10).map((bid, index) => {
+                  const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
+                  const isWinner = index === 0;
+                  
+                  return (
+                    <TableRow 
+                      key={bid.id} 
+                      className={isMyBid ? "bg-blue-50" : isWinner ? "bg-yellow-50" : ""}
+                    >
+                      <TableCell className="text-center font-medium">
+                        <div className="flex items-center justify-center gap-2">
+                          <Badge 
+                            variant={index < 3 ? "default" : "outline"} 
+                            className={
+                              index === 0 ? "bg-yellow-500" : 
+                              index === 1 ? "bg-gray-400" : 
+                              index === 2 ? "bg-amber-600" : ""
+                            }
+                          >
+                            {index + 1}위
+                          </Badge>
+                          {isMyBid && (
+                            <Badge variant="secondary" className="text-xs">
+                              내 입찰
+                            </Badge>
+                          )}
+                          {isWinner && (
+                            <Badge className="bg-green-500 text-xs">
+                              낙찰
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {typeof bid.amount === 'string' ? bid.amount : `${formatNumberWithCommas(bid.amount)}원`}
+                      </TableCell>
+                      {isSeller && (
+                        <TableCell className="text-center">
+                          {getStatusBadge(bid.status || 'pending')}
+                        </TableCell>
+                      )}
+                      <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
