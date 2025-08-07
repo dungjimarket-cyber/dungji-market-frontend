@@ -213,27 +213,25 @@ export default function SellerMyPageClient() {
           </AccordionItem>
           
           {/* 3. 판매확정/포기 선택하기 */}
-          {pendingSellerCount > 0 && (
-            <AccordionItem value="pending-decision" className="border-orange-200">
-              <AccordionTrigger className="hover:no-underline bg-orange-50">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-orange-500" />
-                    <span className="font-medium text-orange-700">판매확정/포기 선택하기</span>
-                  </div>
-                  <div className="flex items-center gap-2 mr-2">
-                    <span className="text-sm text-orange-600 font-semibold">
-                      {pendingSellerCount}건 선택 대기중
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-orange-500" />
-                  </div>
+          <AccordionItem value="pending-decision" className="border-orange-200">
+            <AccordionTrigger className="hover:no-underline bg-orange-50">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-orange-500" />
+                  <span className="font-medium text-orange-700">판매확정/포기 선택하기</span>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <PendingSellerDecision />
-              </AccordionContent>
-            </AccordionItem>
-          )}
+                <div className="flex items-center gap-2 mr-2">
+                  <span className="text-sm text-orange-600 font-semibold">
+                    {pendingSellerCount}건 선택 대기중
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-orange-500" />
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <PendingSellerDecision />
+            </AccordionContent>
+          </AccordionItem>
           
           {/* 4. 거래중 */}
           <AccordionItem value="trading">
@@ -274,25 +272,23 @@ export default function SellerMyPageClient() {
           </AccordionItem>
           
           {/* 6. 취소된 공구 */}
-          {cancelledCount > 0 && (
-            <AccordionItem value="cancelled">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    <XCircle className="h-5 w-5 text-red-500" />
-                    <span className="font-medium">취소된 공구</span>
-                  </div>
-                  <div className="flex items-center gap-2 mr-2">
-                    <span className="text-sm text-gray-500">총 {cancelledCount}건</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </div>
+          <AccordionItem value="cancelled">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3">
+                  <XCircle className="h-5 w-5 text-red-500" />
+                  <span className="font-medium">취소된 공구</span>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <CancelledGroupBuys />
-              </AccordionContent>
-            </AccordionItem>
-          )}
+                <div className="flex items-center gap-2 mr-2">
+                  <span className="text-sm text-gray-500">총 {cancelledCount}건</span>
+                  <ChevronRight className="h-4 w-4" />
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CancelledGroupBuys />
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </div>
     </div>
