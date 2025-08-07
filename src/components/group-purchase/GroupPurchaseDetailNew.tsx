@@ -1216,7 +1216,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 {/* 최종선택 단계 이후부터는 참여자에게 정상 금액 표시, 미참여자는 마스킹 */}
                 {((groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' || groupBuy.status === 'in_progress' || groupBuy.status === 'completed') && isParticipant) || (isSeller && hasWinningBid) ? (
                   <>
-                    <span>{groupBuy.winning_bid_amount?.toLocaleString() || '0'}</span>
+                    <span>{
+                      groupBuy.winning_bid_amount?.toLocaleString() || 
+                      (groupBuy.bid_ranking && groupBuy.bid_ranking[0]?.amount ? groupBuy.bid_ranking[0].amount.toLocaleString() : '0')
+                    }</span>
                     <span className="text-2xl">원</span>
                   </>
                 ) : (

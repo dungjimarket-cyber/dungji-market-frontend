@@ -106,6 +106,8 @@ export interface GroupBuy {
   is_selected?: boolean; // 낙찰 여부
   winning_bid_amount?: number; // 최종 낙찰 금액
   winning_bid_amount_masked?: string; // 마스킹된 낙찰 금액
+  bid_ranking?: Array<{ rank: number; amount: number; is_winner: boolean }>; // 입찰 순위
+  total_bids_count?: number; // 총 입찰 수
   confirmed_buyers?: number; // 구매확정 인원 수
   buyer_selection_end_time?: string; // 구매자 선택 종료 시간
   completed_at?: string; // 완료 시간
