@@ -629,6 +629,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
               
               logDebug('로그인 성공 및 프로필 정보 로드 완료');
+              setIsLoading(false);
               return { success: true };
             }
           } catch (profileError) {
@@ -659,6 +660,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('토큰 파싱 오류:', error);
       }
+      
+      setIsLoading(false);
+      return { success: true };
     
     } catch (error) {
       console.error('로그인 오류:', error);
@@ -670,8 +674,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         errorMessage: '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'
       };
     }
-    setIsLoading(false);
-    return { success: true };
   }, []);
 
   /**

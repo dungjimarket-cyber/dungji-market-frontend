@@ -154,24 +154,55 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [showSellerFinalDecisionModal, setShowSellerFinalDecisionModal] = useState(false);
   const [hasWinningBid, setHasWinningBid] = useState(false);
   const [winningBidInfo, setWinningBidInfo] = useState<any>(null);
+  const [groupBuyData, setGroupBuyData] = useState(groupBuy);
 
   useEffect(() => {
     setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
   }, []);
 
+  // 인증된 사용자로 공구 데이터 다시 가져오기
+  useEffect(() => {
+    const fetchAuthenticatedGroupBuyData = async () => {
+      if (!accessToken || !isAuthenticated) return;
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('인증된 사용자로 가져온 공구 데이터:', {
+            winning_bid_amount: data.winning_bid_amount,
+            bid_ranking: data.bid_ranking,
+            status: data.status
+          });
+          setGroupBuyData(data);
+        }
+      } catch (error) {
+        console.error('공구 데이터 재조회 오류:', error);
+      }
+    };
+
+    fetchAuthenticatedGroupBuyData();
+  }, [accessToken, isAuthenticated, groupBuy.id]);
+
   // 카테고리에 따라 입찰 타입 설정
   useEffect(() => {
-    const telecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
+    const telecom = groupBuyData.product_details?.category_name === '휴대폰' || groupBuyData.product_details?.category_detail_type === 'telecom';
     setBidType(telecom ? 'support' : 'price');
-  }, [groupBuy.product_details]);
+  }, [groupBuyData.product_details]);
 
   // 실제 상태 계산
-  const actualStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
+  const actualStatus = calculateGroupBuyStatus(groupBuyData.status, groupBuyData.start_time, groupBuyData.end_time);
   const isEnded = actualStatus === 'completed' || actualStatus === 'cancelled';
   const isBiddingStatus = actualStatus === 'bidding';
   const isSellerConfirmation = actualStatus === 'seller_confirmation';
-  const isBuyerFinalSelection = groupBuy.status === 'final_selection_buyers';
-  const isSellerFinalSelection = groupBuy.status === 'final_selection_seller';
+  const isBuyerFinalSelection = groupBuyData.status === 'final_selection_buyers';
+  const isSellerFinalSelection = groupBuyData.status === 'final_selection_seller';
   const isFinalSelection = isBuyerFinalSelection || isSellerFinalSelection || isSellerConfirmation;
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
@@ -1207,28 +1238,28 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         )}
 
         {/* 최고 지원금/최종 낙찰 지원금 박스 */}
-        {isFinalSelection || groupBuy.status === 'completed' || groupBuy.status === 'in_progress' || groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' ? (
+        {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
               <p className="text-xl font-bold text-gray-800 mb-4">최종 낙찰 지원금</p>
               <p className="text-5xl font-bold text-orange-600 mb-1">
                 {/* 최종선택 단계 이후부터는 참여자에게 정상 금액 표시, 미참여자는 마스킹 */}
-                {((groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' || groupBuy.status === 'in_progress' || groupBuy.status === 'completed') && isParticipant) || (isSeller && hasWinningBid) ? (
+                {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && isParticipant) || (isSeller && hasWinningBid) ? (
                   <>
                     <span>{
-                      groupBuy.winning_bid_amount?.toLocaleString() || 
-                      (groupBuy.bid_ranking && groupBuy.bid_ranking[0]?.amount ? groupBuy.bid_ranking[0].amount.toLocaleString() : '0')
+                      groupBuyData.winning_bid_amount?.toLocaleString() || 
+                      (groupBuyData.bid_ranking && groupBuyData.bid_ranking[0]?.amount ? groupBuyData.bid_ranking[0].amount.toLocaleString() : '0')
                     }</span>
                     <span className="text-2xl">원</span>
                   </>
                 ) : (
-                  <span>{groupBuy.winning_bid_amount_masked || '***,***원'}</span>
+                  <span>{groupBuyData.winning_bid_amount_masked || '***,***원'}</span>
                 )}
               </p>
               <div className="mt-4 space-y-3">
                 <p className="text-base text-gray-700 font-medium">
-                  총 {groupBuy.total_bids_count || 0}개 입찰
+                  총 {groupBuyData.total_bids_count || 0}개 입찰
                 </p>
                 {/* 입찰 내역 보기 버튼 */}
                 <Button

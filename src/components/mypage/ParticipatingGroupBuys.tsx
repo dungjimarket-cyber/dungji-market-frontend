@@ -12,6 +12,7 @@ import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTim
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { Pagination } from '@/components/ui/Pagination';
 
 interface Product {
   id: number;
@@ -64,6 +65,11 @@ export default function ParticipatingGroupBuys() {
   const [sortBy, setSortBy] = useState<'created_at' | 'end_time' | 'participants'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 최신순이 기본
   const [activeTab, setActiveTab] = useState('active'); // 'active' 또는 'completed' 탭 상태
+  
+  // 페이징 상태
+  const [activePage, setActivePage] = useState(1);
+  const [completedPage, setCompletedPage] = useState(1);
+  const itemsPerPage = 10;
 
   // 인증 로딩 상태일 때는 로딩 표시
   if (isLoading) return <p className="text-gray-500">로딩 중...</p>;
@@ -149,6 +155,20 @@ export default function ParticipatingGroupBuys() {
     const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
     return ['final_selection', 'seller_confirmation', 'completed', 'expired', 'canceled'].includes(status);
   });
+  
+  // 페이징된 데이터
+  const paginatedActiveGroupBuys = activeGroupBuys.slice(
+    (activePage - 1) * itemsPerPage,
+    activePage * itemsPerPage
+  );
+  const paginatedCompletedGroupBuys = completedGroupBuys.slice(
+    (completedPage - 1) * itemsPerPage,
+    completedPage * itemsPerPage
+  );
+  
+  // 총 페이지 수 계산
+  const activeTotalPages = Math.ceil(activeGroupBuys.length / itemsPerPage);
+  const completedTotalPages = Math.ceil(completedGroupBuys.length / itemsPerPage);
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -394,9 +414,16 @@ export default function ParticipatingGroupBuys() {
           {activeGroupBuys.length === 0 ? (
             <p className="text-gray-500 text-center py-8">진행중인 공구가 없습니다.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeGroupBuys.map(renderGroupBuyCard)}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedActiveGroupBuys.map(renderGroupBuyCard)}
+              </div>
+              <Pagination
+                currentPage={activePage}
+                totalPages={activeTotalPages}
+                onPageChange={setActivePage}
+              />
+            </>
           )}
         </TabsContent>
 
@@ -404,9 +431,16 @@ export default function ParticipatingGroupBuys() {
           {completedGroupBuys.length === 0 ? (
             <p className="text-gray-500 text-center py-8">종료된 공구가 없습니다.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {completedGroupBuys.map(renderGroupBuyCard)}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedCompletedGroupBuys.map(renderGroupBuyCard)}
+              </div>
+              <Pagination
+                currentPage={completedPage}
+                totalPages={completedTotalPages}
+                onPageChange={setCompletedPage}
+              />
+            </>
           )}
         </TabsContent>
       </Tabs>

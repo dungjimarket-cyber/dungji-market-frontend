@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Calendar, MapPin, Users } from 'lucide-react';
 import Image from 'next/image';
+import { Pagination } from '@/components/ui/Pagination';
 
 /**
  * 입찰내역 컴포넌트
@@ -18,6 +19,8 @@ export default function BidHistory() {
   const router = useRouter();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchBidHistory = async () => {
@@ -64,9 +67,15 @@ export default function BidHistory() {
     );
   }
 
+  // 페이징된 데이터
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedGroupBuys = groupBuys.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(groupBuys.length / itemsPerPage);
+
   return (
     <div className="space-y-4">
-      {groupBuys.map((groupBuy) => (
+      {paginatedGroupBuys.map((groupBuy) => (
         <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <div className="flex gap-4">
@@ -121,6 +130,14 @@ export default function BidHistory() {
           </CardContent>
         </Card>
       ))}
+      
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }
