@@ -738,6 +738,18 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         {isSeller && (
           <div className="bg-white p-4 mb-4 border-2 border-green-500 rounded-lg">
             <h3 className="text-lg font-bold text-green-700 mb-2">판매회원 입찰 관리</h3>
+            
+            {/* 낙찰 실패 메시지 - 입찰했지만 다른 판매자가 낙찰된 경우 */}
+            {hasBid && !hasWinningBid && groupBuyState?.status && 
+             ['final_selection_buyers', 'final_selection_seller', 'in_progress', 'completed'].includes(groupBuyState.status) && (
+              <Alert className="bg-red-50 border-red-200 mb-4">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-700">
+                  아쉽지만 낙찰되지 못했어요. 다음 공구에서 더 좋은 조건으로 입찰해보세요!
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <p className="text-sm text-gray-600 mb-4">이 공구에 입찰하여 고객을 유치하세요.</p>
             
             <div className="flex justify-between mb-4">
