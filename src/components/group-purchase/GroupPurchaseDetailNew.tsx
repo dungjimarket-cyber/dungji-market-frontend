@@ -184,7 +184,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     console.log('checkWinningBidStatus 시작, groupBuy ID:', groupBuy.id);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/final-selection/`, {
+      // 현재 공구의 판매자 입찰 정보 조회
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bids/seller/?groupbuy_id=${groupBuy.id}`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
@@ -193,17 +194,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       
       if (response.ok) {
         const data = await response.json();
-        console.log('낙찰 입찰 데이터:', data);
+        console.log('판매자 입찰 정보:', data);
         
-        // 현재 공구의 낙찰된 입찰 찾기
-        const winningBid = data.find((bid: any) => bid.groupbuy === groupBuy.id);
-        
-        if (winningBid) {
-          console.log('낙찰 입찰 찾음:', winningBid);
-          setHasWinningBid(true);
-          setWinningBidInfo(winningBid);
-        } else {
-          console.log('현재 공구의 낙찰 입찰을 찾을 수 없음');
+        if (data.results && data.results.length > 0) {
+          const myBid = data.results[0];
+          // 낙찰 여부 확인
+          if (myBid.status === 'selected' || myBid.is_selected) {
+            console.log('낙찰 입찰 찾음:', myBid);
+            setHasWinningBid(true);
+            setWinningBidInfo(myBid);
+            setIsMyBidSelected(true);
+            setMyBidFinalDecision(myBid.final_decision || 'pending');
+          }
+          setHasBid(true);
+          setMyBidAmount(myBid.amount);
+          setMyBidId(myBid.id);
         }
       }
     } catch (error) {
@@ -232,7 +237,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           setHasBid(true);
           setMyBidAmount(myBid.amount);
           setMyBidId(myBid.id);
-          setIsMyBidSelected(myBid.status === 'selected');
+          setIsMyBidSelected(myBid.status === 'selected' || myBid.is_selected);
+          if (myBid.status === 'selected' || myBid.is_selected) {
+            setHasWinningBid(true);
+            setWinningBidInfo(myBid);
+            setMyBidFinalDecision(myBid.final_decision || 'pending');
+          }
         }
       }
     } catch (error) {
@@ -249,8 +259,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   
   // 판매자 최종선택 상태인 경우 낙찰 여부 확인
   useEffect(() => {
-    if (groupBuy.status === 'final_selection_seller' && isSeller) {
-      console.log('판매자 최종선택 상태 확인, checkWinningBidStatus 호출');
+    if ((groupBuy.status === 'final_selection_seller' || groupBuy.status === 'in_progress') && isSeller) {
+      console.log('판매자 상태 확인, checkWinningBidStatus 호출');
       checkWinningBidStatus();
     }
   }, [groupBuy.status, isSeller, checkWinningBidStatus]);
@@ -297,8 +307,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (isSeller) {
         fetchBidTokenInfo();
       }
+      // 최종선택 상태인 경우 최종선택 정보 확인
+      if (isBuyerFinalSelection || isSellerFinalSelection) {
+        fetchFinalDecisionStatus();
+      }
     }
-  }, [isAuthenticated, accessToken, groupBuy.id]);
+  }, [isAuthenticated, accessToken, groupBuy.id, isBuyerFinalSelection, isSellerFinalSelection]);
 
   // 입찰권 정보 가져오기
   const fetchBidTokenInfo = async () => {
@@ -379,6 +393,30 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       }
     } catch (error) {
       console.error('입찰 순위 확인 오류:', error);
+    }
+  };
+
+  const fetchFinalDecisionStatus = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/final-decision-status/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('최종선택 상태:', data);
+        
+        if (data.role === 'buyer') {
+          setMyParticipationFinalDecision(data.decision || 'pending');
+        } else if (data.role === 'seller') {
+          setMyBidFinalDecision(data.decision || 'pending');
+        }
+      }
+    } catch (error) {
+      console.error('최종선택 상태 확인 오류:', error);
     }
   };
 
@@ -1323,158 +1361,215 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">
-        {/* 최종선택 기간 종료 표시 */}
-        {isFinalSelection && isFinalSelectionExpired && (
-          <div className="mb-4 p-4 bg-gray-100 rounded-lg text-center">
-            <p className="font-semibold text-gray-800 mb-2">최종선택 기간 종료</p>
-            <p className="text-sm text-gray-600">
-              선택 결과: {
-                isSeller && myBidFinalDecision ? 
-                  (myBidFinalDecision === 'confirmed' ? '판매 확정' : myBidFinalDecision === 'cancelled' ? '판매 포기' : '미선택') :
-                isParticipant && myParticipationFinalDecision ?
-                  (myParticipationFinalDecision === 'confirmed' ? '구매 확정' : myParticipationFinalDecision === 'cancelled' ? '구매 포기' : '미선택') :
-                '미참여'
-              }
-            </p>
-          </div>
-        )}
-
-        {/* 구매/판매 확정 후 연락처 보기 버튼 */}
-        {((isParticipant && myParticipationFinalDecision === 'confirmed') || 
-          (isSeller && myBidFinalDecision === 'confirmed')) && 
-         (isFinalSelection || groupBuy.status === 'completed') ? (
+        {/* 일반회원 버튼 구성 */}
+        {!isSeller && isParticipant ? (
+          // 참여한 일반회원
           <div className="space-y-3">
-            <Button 
-              onClick={() => setShowContactInfoModal(true)}
-              className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
-            >
-              {isSeller ? '구매자 정보 보기' : '판매자 정보 보기'}
-            </Button>
-            
-            {/* 최종선택 기간 내 포기 버튼 (확정 후에도 표시, 기간 종료 시 숨김) */}
-            {isFinalSelection && !isFinalSelectionExpired && (
-              <Button 
-                onClick={() => {
-                  if (confirm('정말 포기하시겠습니까? 이 작업은 되돌릴 수 없으며, 판매자의 경우 패널티가 부과될 수 있습니다.')) {
-                    handleFinalSelection('cancel');
-                  }
-                }}
-                variant="outline"
-                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
-              >
-                {isSeller ? '판매 포기' : '구매 포기'}
-              </Button>
-            )}
-          </div>
-        ) : null}
-
-        {/* 거래 완료 버튼 (구매/판매 확정 후 표시) */}
-        {groupBuy.status === 'completed' && 
-         ((isParticipant && myParticipationFinalDecision === 'confirmed') || 
-          (isSeller && myBidFinalDecision === 'confirmed')) && (
-          <div className="space-y-3">
-            <Button 
-              onClick={() => {
-                if (confirm('거래가 정상적으로 완료되었나요?\n\n확인을 누르시면 거래 완료 처리됩니다.')) {
-                  // TODO: 거래 완료 API 호출
-                  toast({
-                    title: "거래 완료",
-                    description: "거래가 성공적으로 완료되었습니다.",
-                  });
-                }
-              }}
-              className="w-full py-4 text-base font-medium bg-purple-600 hover:bg-purple-700"
-            >
-              거래 완료 확인
-            </Button>
-            
-            {/* 노쇼 신고 버튼 */}
-            <Button 
-              onClick={() => router.push(`/noshow-report/create?groupbuyId=${groupBuy.id}`)}
-              variant="outline"
-              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
-            >
-              노쇼 신고하기
-            </Button>
-          </div>
-        )}
-
-        {/* 구매회원 최종선택 버튼 (기간 내에만 표시, 선택 상태에 따라 반대 버튼만 표시) */}
-        {!isSeller && isParticipant && isBuyerFinalSelection && !isFinalSelectionExpired ? (
-          <div className="space-y-3">
-            {myParticipationFinalDecision === 'pending' ? (
-              // 미선택 상태: 두 버튼 모두 표시
+            {/* 1. 참여중인 공구 (recruiting, bidding 상태) */}
+            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
               <>
-                <Button 
-                  onClick={() => handleFinalSelection('confirm')}
-                  className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
-                >
-                  구매 확정
-                </Button>
-                <Button 
-                  onClick={() => handleFinalSelection('cancel')}
+                <Button
+                  onClick={handleShare}
                   variant="outline"
-                  className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                  className="w-full py-3"
                 >
-                  구매 포기
+                  공동구매 초대하기
+                </Button>
+                <Button
+                  onClick={() => setShowWithdrawDialog(true)}
+                  variant="outline"
+                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  공구 나가기
                 </Button>
               </>
-            ) : myParticipationFinalDecision === 'confirmed' ? (
-              // 구매확정 상태: 구매포기 버튼만 표시
-              <Button 
-                onClick={() => handleFinalSelection('cancel')}
-                variant="outline"
-                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
-              >
-                구매 포기로 변경
-              </Button>
-            ) : (
-              // 구매포기 상태: 구매확정 버튼만 표시
-              <Button 
-                onClick={() => handleFinalSelection('confirm')}
-                className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
-              >
-                구매 확정으로 변경
-              </Button>
             )}
-          </div>
-        ) : isSeller && isSellerFinalSelection && isMyBidSelected && !isFinalSelectionExpired ? (
-          // 판매자 최종선택 버튼 (기간 내에만 표시, 선택 상태에 따라 반대 버튼만 표시)
-          <div className="space-y-3">
-            {myBidFinalDecision === 'pending' ? (
-              // 미선택 상태: 두 버튼 모두 표시
+
+            {/* 2. 구매확정/포기 선택하기 (구매자 최종선택) */}
+            {isBuyerFinalSelection && !isFinalSelectionExpired && (
               <>
-                <Button 
-                  onClick={() => handleFinalSelection('confirm')}
-                  className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                {myParticipationFinalDecision === 'pending' ? (
+                  // 최초: 구매확정, 구매포기 둘 다 표시
+                  <>
+                    <Button
+                      onClick={() => handleFinalSelection('confirm')}
+                      className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                    >
+                      구매확정
+                    </Button>
+                    <Button
+                      onClick={() => handleFinalSelection('cancel')}
+                      variant="outline"
+                      className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      구매포기
+                    </Button>
+                  </>
+                ) : (
+                  // 선택 후: 선택한 버튼만 표시
+                  <Button
+                    disabled
+                    className="w-full py-4 text-base font-medium"
+                  >
+                    {myParticipationFinalDecision === 'confirmed' ? '✓ 구매확정' : '✓ 구매포기'}
+                  </Button>
+                )}
+              </>
+            )}
+
+            {/* 3. 판매자 최종선택 대기중 */}
+            {isSellerFinalSelection && myParticipationFinalDecision === 'confirmed' && (
+              <div className="p-4 bg-yellow-50 rounded-lg text-center">
+                <p className="font-semibold text-yellow-800">판매자 최종선택 대기중</p>
+              </div>
+            )}
+
+            {/* 4. 거래중 */}
+            {groupBuy.status === 'in_progress' && myParticipationFinalDecision === 'confirmed' && (
+              <>
+                <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
+                  <p className="font-semibold text-green-800">거래중</p>
+                </div>
+                <Button
+                  onClick={() => setShowContactInfoModal(true)}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700"
                 >
-                  판매 확정
+                  판매자정보보기
                 </Button>
-                <Button 
-                  onClick={() => handleFinalSelection('cancel')}
+                <Button
+                  onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`)}
                   variant="outline"
-                  className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
                 >
-                  판매 포기
+                  노쇼신고
                 </Button>
               </>
-            ) : myBidFinalDecision === 'confirmed' ? (
-              // 판매확정 상태: 판매포기 버튼만 표시
-              <Button 
-                onClick={() => handleFinalSelection('cancel')}
-                variant="outline"
-                className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
-              >
-                판매 포기로 변경
-              </Button>
-            ) : (
-              // 판매포기 상태: 판매확정 버튼만 표시
-              <Button 
-                onClick={() => handleFinalSelection('confirm')}
-                className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
-              >
-                판매 확정으로 변경
-              </Button>
+            )}
+
+            {/* 5. 구매완료 */}
+            {groupBuy.status === 'completed' && myParticipationFinalDecision === 'confirmed' && (
+              <>
+                <div className="p-4 bg-purple-50 rounded-lg text-center mb-3">
+                  <p className="font-semibold text-purple-800">구매완료</p>
+                </div>
+                <Button
+                  onClick={() => router.push(`/reviews/write?groupbuy=${groupBuy.id}`)}
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-700"
+                >
+                  후기작성
+                </Button>
+              </>
+            )}
+          </div>
+        ) : isSeller && hasWinningBid ? (
+          // 낙찰된 판매회원
+          <div className="space-y-3">
+            {/* 1. 구매자 최종선택 대기중 */}
+            {isBuyerFinalSelection && (
+              <>
+                <div className="p-4 bg-yellow-50 rounded-lg text-center mb-3">
+                  <p className="font-semibold text-yellow-800">구매자 최종선택 대기중</p>
+                </div>
+                <Button
+                  onClick={() => {
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                      headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                      }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                      alert(`공구 참여인원: ${data.total_participants}명\n구매확정: ${data.confirmed_count}명 (확정률 ${data.confirmation_rate}%)`);
+                    });
+                  }}
+                  variant="outline"
+                  className="w-full py-3"
+                >
+                  구매자 확정률 실시간 확인
+                </Button>
+                <div className="p-3 bg-orange-100 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-orange-600">🎉 최종 낙찰되었습니다!</p>
+                </div>
+              </>
+            )}
+
+            {/* 2. 판매확정/포기 선택하기 */}
+            {isSellerFinalSelection && isMyBidSelected && !isFinalSelectionExpired && (
+              <>
+                <div className="p-4 bg-blue-50 rounded-lg mb-3">
+                  <p className="text-sm text-gray-700">구매자 확정률 최종</p>
+                  <Button
+                    onClick={() => {
+                      fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                        headers: {
+                          'Authorization': `Bearer ${accessToken}`,
+                        }
+                      })
+                      .then(res => res.json())
+                      .then(data => {
+                        alert(`공구 참여인원: ${data.total_participants}명\n구매확정: ${data.confirmed_count}명 (확정률 ${data.confirmation_rate}%)`);
+                      });
+                    }}
+                    variant="ghost"
+                    className="text-blue-600 underline text-sm mt-1"
+                  >
+                    확인하기
+                  </Button>
+                </div>
+                {myBidFinalDecision === 'pending' ? (
+                  <>
+                    <Button
+                      onClick={() => handleFinalSelection('confirm')}
+                      className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                    >
+                      판매확정
+                    </Button>
+                    <Button
+                      onClick={() => handleFinalSelection('cancel')}
+                      variant="outline"
+                      className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      판매포기
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    disabled
+                    className="w-full py-4 text-base font-medium"
+                  >
+                    {myBidFinalDecision === 'confirmed' ? '✓ 판매확정' : '✓ 판매포기'}
+                  </Button>
+                )}
+              </>
+            )}
+
+            {/* 3. 거래중 */}
+            {groupBuy.status === 'in_progress' && myBidFinalDecision === 'confirmed' && (
+              <>
+                <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
+                  <p className="font-semibold text-green-800">거래중</p>
+                </div>
+                <Button
+                  onClick={() => setShowContactInfoModal(true)}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700"
+                >
+                  구매자정보보기
+                </Button>
+                <Button
+                  onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`)}
+                  variant="outline"
+                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  노쇼신고하기
+                </Button>
+              </>
+            )}
+
+            {/* 4. 판매완료 */}
+            {groupBuy.status === 'completed' && myBidFinalDecision === 'confirmed' && (
+              <div className="p-4 bg-purple-50 rounded-lg text-center">
+                <p className="font-semibold text-purple-800">판매완료</p>
+              </div>
             )}
           </div>
         ) : isSeller && !isFinalSelection && 
@@ -1631,30 +1726,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </Button>
           </div>
         ) : (
-          // 일반 사용자용 버튼
-          <div className="space-y-3">
-            {/* 참여/입찰 버튼 */}
-            {renderActionButton()}
-            
-            {/* 공유하기 버튼 */}
-            <Button
-              onClick={handleShare}
-              variant="outline"
-              className="w-full py-3"
-            >
-              공동구매 초대하기
-            </Button>
-            
-            {/* 나가기 버튼 (참여자만 표시) */}
-            {isParticipant && !isBiddingStatus && (
-              <Button
-                onClick={() => setShowWithdrawDialog(true)}
-                variant="outline"
-                className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-              >
-                공구 나가기
-              </Button>
-            )}
+          // 비참여자 또는 비회원
+          <div className="p-4 bg-gray-100 rounded-lg text-center">
+            <p className="font-semibold text-gray-700">공구종료</p>
           </div>
         )}
         
