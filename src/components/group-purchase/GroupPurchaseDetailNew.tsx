@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
@@ -1242,7 +1242,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-800 mb-4">최종 낙찰 지원금</p>
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Crown className="h-6 w-6 text-orange-500" />
+                <p className="text-xl font-bold text-gray-800">최종 낙찰 지원금</p>
+              </div>
               <p className="text-5xl font-bold text-orange-600 mb-1">
                 {/* 최종선택 단계 이후부터는 참여자에게 정상 금액 표시, 미참여자는 마스킹 */}
                 {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && isParticipant) || (isSeller && hasWinningBid) ? (
@@ -1261,15 +1264,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <p className="text-base text-gray-700 font-medium">
                   총 {groupBuyData.total_bids_count || 0}개 입찰
                 </p>
-                {/* 입찰 내역 보기 버튼 */}
-                <Button
-                  onClick={() => setShowBidHistoryModal(true)}
-                  variant="outline"
-                  size="default"
-                  className="px-6"
-                >
-                  입찰 내역 보기
-                </Button>
+                {/* 입찰 내역 보기 버튼 - 마감 후에만 표시 */}
+                {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
+                  <Button
+                    onClick={() => setShowBidHistoryModal(true)}
+                    variant="outline"
+                    size="default"
+                    className="px-6"
+                  >
+                    입찰 내역 보기
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -1634,9 +1639,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
           </div>
         ) : isSeller && !isFinalSelection && 
-         groupBuy.status !== 'seller_confirmation' && groupBuy.status !== 'completed' && 
-         groupBuy.status !== 'cancelled' ? (
-          // 판매자용 입찰 인터페이스
+         groupBuy.status === 'bidding' && 
+         !isEnded ? (
+          // 판매자용 입찰 인터페이스 - 입찰 진행 중일 때만 표시
           <div className="space-y-4">
             {!hasBid && (
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">

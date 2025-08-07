@@ -3,24 +3,32 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { GroupBuy } from '@/types/groupbuy';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Calendar, MapPin, Users } from 'lucide-react';
-import Image from 'next/image';
-import { Pagination } from '@/components/ui/Pagination';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, ArrowRight, TrendingUp, Calendar } from 'lucide-react';
+import { formatNumberWithCommas } from '@/lib/utils';
+
+interface Bid {
+  id: number;
+  groupbuy: number;
+  product_name: string;
+  amount: number;
+  status: string;
+  bid_type: string;
+  created_at: string;
+  final_decision?: string;
+}
 
 /**
  * 입찰내역 컴포넌트
- * 판매자가 입찰한 모든 공구를 표시
+ * 판매자가 입찰한 최근 5개 공구를 간략하게 표시
  */
 export default function BidHistory() {
   const { accessToken } = useAuth();
   const router = useRouter();
-  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
+  const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchBidHistory = async () => {
@@ -28,7 +36,7 @@ export default function BidHistory() {
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_bids/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/bids/seller/`,
           {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
@@ -39,7 +47,8 @@ export default function BidHistory() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          // 최근 5개만 표시
+          setBids(data.slice(0, 5));
         }
       } catch (error) {
         console.error('입찰내역 조회 오류:', error);
@@ -51,93 +60,97 @@ export default function BidHistory() {
     fetchBidHistory();
   }, [accessToken]);
 
+  const getStatusBadge = (status: string, finalDecision?: string) => {
+    if (status === 'selected' && finalDecision === 'pending') {
+      return <Badge className="bg-orange-100 text-orange-700">최종선택 대기</Badge>;
+    } else if (status === 'selected' && finalDecision === 'confirmed') {
+      return <Badge className="bg-green-100 text-green-700">판매확정</Badge>;
+    } else if (status === 'selected' && finalDecision === 'cancelled') {
+      return <Badge className="bg-red-100 text-red-700">판매포기</Badge>;
+    } else if (status === 'selected') {
+      return <Badge className="bg-yellow-100 text-yellow-700">낙찰</Badge>;
+    } else if (status === 'pending') {
+      return <Badge className="bg-blue-100 text-blue-700">입찰중</Badge>;
+    } else if (status === 'rejected') {
+      return <Badge className="bg-gray-100 text-gray-700">미선정</Badge>;
+    }
+    return <Badge>{status}</Badge>;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
       </div>
     );
   }
 
-  if (groupBuys.length === 0) {
+  if (bids.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        아직 입찰한 공구가 없습니다.
-      </div>
+      <Card className="p-6">
+        <div className="text-center text-gray-500">
+          <TrendingUp className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm">아직 입찰한 공구가 없습니다.</p>
+          <Button 
+            className="mt-4" 
+            onClick={() => router.push('/group-purchases')}
+          >
+            공구 둘러보기
+          </Button>
+        </div>
+      </Card>
     );
   }
-
-  // 페이징된 데이터
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedGroupBuys = groupBuys.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(groupBuys.length / itemsPerPage);
 
   return (
-    <div className="space-y-4">
-      {paginatedGroupBuys.map((groupBuy) => (
-        <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
+    <div className="space-y-3">
+      {bids.map((bid) => (
+        <Card 
+          key={bid.id} 
+          className="hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => router.push(`/groupbuys/${bid.groupbuy}`)}
+        >
           <CardContent className="p-4">
-            <div className="flex gap-4">
-              {/* 상품 이미지 */}
-              <div className="relative w-24 h-24 flex-shrink-0">
-                <Image
-                  src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
-                  alt={groupBuy.product_details?.name || '상품'}
-                  fill
-                  className="object-cover rounded-md"
-                />
-              </div>
-
-              {/* 공구 정보 */}
+            <div className="flex items-center justify-between">
               <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-1">
-                  {groupBuy.product_details?.name}
-                </h3>
-                
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(groupBuy.end_time).toLocaleDateString()}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {groupBuy.current_participants}/{groupBuy.max_participants}명
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {groupBuy.region_name || '전국'}
-                  </span>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="font-medium text-base">
+                    {bid.product_name}
+                  </h3>
+                  {getStatusBadge(bid.status, bid.final_decision)}
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-gray-600">입찰금액: </span>
-                    <span className="font-semibold text-green-600">
-                      {groupBuy.my_bid_amount?.toLocaleString()}원
-                    </span>
-                  </div>
-                  
-                  <Button
-                    size="sm"
-                    onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
-                  >
-                    상세보기
-                  </Button>
+                
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(bid.created_at).toLocaleDateString()}
+                  </span>
+                  <span className="font-medium text-green-600">
+                    {formatNumberWithCommas(bid.amount)}원
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {bid.bid_type === 'support' ? '지원금' : '가격'} 입찰
+                  </span>
                 </div>
               </div>
+              
+              <ArrowRight className="h-5 w-5 text-gray-400" />
             </div>
           </CardContent>
         </Card>
       ))}
       
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
+      {/* 전체보기 버튼 */}
+      <div className="text-center pt-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/mypage/seller/bids')}
+          className="w-full"
+        >
+          전체 입찰내역 보기
+        </Button>
+      </div>
     </div>
   );
 }
