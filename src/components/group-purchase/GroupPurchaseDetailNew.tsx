@@ -264,9 +264,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     new Date(groupBuy.seller_selection_end) < new Date() : false;
   const isFinalSelectionExpired = isBuyerFinalSelection ? isBuyerSelectionExpired : isSellerSelectionExpired;
 
-  // 판매자 최종선택 상태인 경우 낙찰 여부 확인
+  // 판매자의 낙찰 여부 확인 - 더 많은 상태에서 필요
   useEffect(() => {
-    if ((groupBuy.status === 'final_selection_seller' || groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'in_progress') && isSeller) {
+    const sellerNeedsWinningCheck = 
+      groupBuy.status === 'final_selection_seller' || 
+      groupBuy.status === 'final_selection_buyers' || 
+      groupBuy.status === 'in_progress' ||
+      groupBuy.status === 'completed';
+    
+    if (sellerNeedsWinningCheck && isSeller) {
       console.log('판매자 상태 확인, checkWinningBidStatus 호출, status:', groupBuy.status);
       checkWinningBidStatus();
     }
@@ -321,12 +327,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (isSeller) {
         fetchBidTokenInfo();
       }
-      // 최종선택 상태인 경우 최종선택 정보 확인
-      if (isBuyerFinalSelection || isSellerFinalSelection) {
+      // 최종선택 관련 상태인 경우 최종선택 정보 확인
+      // completed, in_progress 상태에서도 최종선택 정보가 필요함
+      const needsFinalDecisionStatus = 
+        isBuyerFinalSelection || 
+        isSellerFinalSelection || 
+        groupBuy.status === 'in_progress' || 
+        groupBuy.status === 'completed';
+      
+      if (needsFinalDecisionStatus) {
         fetchFinalDecisionStatus();
       }
     }
-  }, [isAuthenticated, accessToken, groupBuy.id, isBuyerFinalSelection, isSellerFinalSelection]);
+  }, [isAuthenticated, accessToken, groupBuy.id, isBuyerFinalSelection, isSellerFinalSelection, groupBuy.status]);
 
   // 입찰권 정보 가져오기
   const fetchBidTokenInfo = async () => {
