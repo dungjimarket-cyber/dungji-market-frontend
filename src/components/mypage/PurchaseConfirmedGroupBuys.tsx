@@ -199,8 +199,23 @@ export default function PurchaseConfirmedGroupBuys() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{groupBuy.product?.name}</p>
                 
-                {/* 확정 상태 표시 */}
-                {!groupBuy.seller_confirmed ? (
+                {/* 확정 상태 표시 - 거래중 상태이므로 판매자 확정 완료 */}
+                {groupBuy.status === 'in_progress' && groupBuy.seller_confirmed ? (
+                  <div className="mt-1">
+                    <p className="text-sm text-green-600 font-medium">
+                      거래 진행중
+                    </p>
+                    {groupBuy.seller_name && (
+                      <p className="text-sm text-gray-600">
+                        판매자: {groupBuy.seller_name}
+                      </p>
+                    )}
+                  </div>
+                ) : groupBuy.status === 'in_progress' ? (
+                  <p className="text-sm text-green-600 mt-1">
+                    거래 진행중
+                  </p>
+                ) : !groupBuy.seller_confirmed ? (
                   <p className="text-sm text-orange-600 mt-1">
                     판매자 선택 대기중
                   </p>
@@ -208,13 +223,7 @@ export default function PurchaseConfirmedGroupBuys() {
                   <p className="text-sm text-blue-600 mt-1">
                     구매자 선택 대기중
                   </p>
-                ) : (
-                  groupBuy.seller_name && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      판매자: {groupBuy.seller_name}
-                    </p>
-                  )
-                )}
+                ) : null}
                 
                 {/* 최종 가격 */}
                 {groupBuy.final_price && (
@@ -234,8 +243,8 @@ export default function PurchaseConfirmedGroupBuys() {
                 <div className="mt-3">
                   {/* 첫 번째 줄: 연락처 확인 및 공구보기 */}
                   <div className="flex gap-2 mb-2">
-                    {/* 판매자 정보는 구매자 전원이 선택한 이후에만 표시 */}
-                    {groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed && (
+                    {/* 거래중 상태에서는 판매자 정보 확인 가능 */}
+                    {(groupBuy.status === 'in_progress' || (groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed)) && (
                       <Button 
                         size="sm" 
                         variant="outline" 
