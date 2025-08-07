@@ -533,9 +533,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // 백엔드에서 반환한 에러 메시지가 있는 경우 사용
         if (errorData.detail) {
-          errorMessage = errorData.detail;
+          // "지정된 자격 증명에 해당하는 활성화된 사용자를 찾을 수 없습니다" 메시지를 변환
+          if (errorData.detail.includes('자격 증명') || errorData.detail.includes('활성화된 사용자')) {
+            errorMessage = '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.';
+          } else {
+            errorMessage = errorData.detail;
+          }
         } else if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
-          errorMessage = errorData.non_field_errors[0];
+          const msg = errorData.non_field_errors[0];
+          // 영어 메시지도 처리
+          if (msg.includes('No active account') || msg.includes('credentials')) {
+            errorMessage = '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.';
+          } else {
+            errorMessage = msg;
+          }
         } else if (errorData.error) {
           errorMessage = errorData.error;
         }

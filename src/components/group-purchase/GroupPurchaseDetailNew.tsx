@@ -1207,16 +1207,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         )}
 
         {/* 최고 지원금/최종 낙찰 지원금 박스 */}
-        {isFinalSelection || groupBuy.status === 'completed' ? (
+        {isFinalSelection || groupBuy.status === 'completed' || groupBuy.status === 'in_progress' || groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
               <p className="text-xl font-bold text-gray-800 mb-4">최종 낙찰 지원금</p>
               <p className="text-5xl font-bold text-orange-600 mb-1">
-                {/* 참여자이거나 낙찰자(판매자)인 경우에만 정상 금액 표시 */}
-                {(isParticipant || (isSeller && hasWinningBid)) && groupBuy.winning_bid_amount ? (
+                {/* 최종선택 단계 이후부터는 참여자에게 정상 금액 표시, 미참여자는 마스킹 */}
+                {((groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' || groupBuy.status === 'in_progress' || groupBuy.status === 'completed') && isParticipant) || (isSeller && hasWinningBid) ? (
                   <>
-                    <span>{groupBuy.winning_bid_amount.toLocaleString()}</span>
+                    <span>{groupBuy.winning_bid_amount?.toLocaleString() || '0'}</span>
                     <span className="text-2xl">원</span>
                   </>
                 ) : (

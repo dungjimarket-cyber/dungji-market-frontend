@@ -413,9 +413,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <p className="text-lg font-bold text-gray-900">
               {groupBuy.current_participants}/{groupBuy.max_participants}명
             </p>
-            <p className="text-gray-500 text-xs">
-              {isCompleted ? '마감' : `${remainingSlots}자리 남음`}
-            </p>
+            {!isCompleted && (
+              <p className="text-gray-500 text-xs">
+                {remainingSlots}자리 남음
+              </p>
+            )}
           </div>
         </div>
 
