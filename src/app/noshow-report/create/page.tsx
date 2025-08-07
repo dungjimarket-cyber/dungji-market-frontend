@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +25,8 @@ function NoShowReportContent() {
   const [groupbuyInfo, setGroupbuyInfo] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string>('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -76,6 +78,42 @@ function NoShowReportContent() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 크기 체크 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('파일 크기는 5MB 이하여야 합니다.');
+      return;
+    }
+
+    // 파일 타입 체크
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('JPG, PNG, PDF 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    setEvidenceFile(file);
+
+    // 이미지 파일인 경우 미리보기
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview('');
+    }
+  };
+
+  const removeFile = () => {
+    setEvidenceFile(null);
+    setFilePreview('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -118,19 +156,25 @@ function NoShowReportContent() {
         reportedUserId = parseInt(selectedBuyerId);
       }
 
+      // FormData 생성 (파일 업로드 포함)
+      const formData = new FormData();
+      formData.append('reported_user', reportedUserId.toString());
+      formData.append('groupbuy', groupbuyId || '');
+      formData.append('report_type', reportType);
+      formData.append('content', content.trim());
+      
+      if (evidenceFile) {
+        formData.append('evidence_image', evidenceFile);
+      }
+
       // 노쇼 신고 제출
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${accessToken}`
+          // Content-Type은 설정하지 않음 (FormData가 자동으로 설정)
         },
-        body: JSON.stringify({
-          reported_user: reportedUserId,
-          groupbuy: groupbuyId,
-          report_type: reportType,
-          content: content.trim()
-        })
+        body: formData
       });
 
       if (response.ok) {
@@ -243,6 +287,19 @@ function NoShowReportContent() {
               </div>
             )}
 
+            {/* 안내 문구 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-gray-700">
+                {user?.role === 'buyer' ? (
+                  <>판매자가 연락이 닿지 않거나, 낙찰된 금액대로 상품을 제공하지 않는 경우 등,
+                  신고 내용을 최대한 자세히 적어주세요. 증빙자료가 있다면 첨부 부탁드립니다.</>
+                ) : (
+                  <>구매자가 연락이 닿지 않거나, 정당한 사유 없이 거래를 중단한 경우 등,
+                  신고 내용을 자세히 작성해 주시고 증빙자료가 있다면 첨부 부탁드립니다.</>
+                )}
+              </p>
+            </div>
+
             {/* 신고 내용 */}
             <div className="space-y-2">
               <Label htmlFor="content">신고 내용</Label>
@@ -258,6 +315,50 @@ function NoShowReportContent() {
               />
               <p className="text-xs text-gray-500 text-right">
                 {content.length}/500자
+              </p>
+            </div>
+
+            {/* 파일 업로드 */}
+            <div className="space-y-2">
+              <Label>증빙자료 첨부 (선택)</Label>
+              <div className="flex items-center gap-4">
+                <label htmlFor="evidence-file" className="cursor-pointer">
+                  <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm">파일 선택</span>
+                  </div>
+                  <input
+                    id="evidence-file"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,application/pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {evidenceFile && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">{evidenceFile.name}</span>
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              {filePreview && (
+                <div className="mt-2">
+                  <img 
+                    src={filePreview} 
+                    alt="증빙자료 미리보기" 
+                    className="max-w-xs rounded-lg border"
+                  />
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                JPG, PNG, PDF 파일만 업로드 가능합니다. (최대 5MB)
               </p>
             </div>
 

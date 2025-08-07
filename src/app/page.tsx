@@ -256,6 +256,15 @@ function HomeContent() {
             <span className="text-sm sm:text-base">이벤트</span>
           </Link>
           
+          <a
+            href="https://doongji-market-1vi5n3i.gamma.site/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-animated btn-purple whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            <span className="text-sm sm:text-base">이용가이드</span>
+          </a>
+          
           <button
             onClick={() => setShowIframe(!showIframe)}
             className="btn-animated btn-outline whitespace-nowrap px-4 py-3 sm:px-6 sm:py-2 hover:bg-gray-50 transition-all w-full sm:w-auto"

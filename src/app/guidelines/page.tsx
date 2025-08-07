@@ -1,8 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 
 export default function GuidelinesPage() {
   return (
@@ -20,6 +21,28 @@ export default function GuidelinesPage() {
 
       {/* 메인 컨텐츠 */}
       <div className="max-w-lg mx-auto">
+        {/* 둥지마켓 이용가이드 링크 */}
+        <Card className="mt-4 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-purple-900">둥지마켓 이용가이드</h3>
+                <p className="text-sm text-gray-600 mt-1">더 자세한 이용 방법을 확인하세요</p>
+              </div>
+              <a 
+                href="https://doongji-market-1vi5n3i.gamma.site/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                  <span>바로가기</span>
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                </Button>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="mt-4">
           <CardHeader>
             <CardTitle>공동 구매란?</CardTitle>
