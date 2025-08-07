@@ -257,20 +257,34 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
   }, [isSeller, groupBuy.id, fetchSellerBidInfo]);
   
-  // 판매자 최종선택 상태인 경우 낙찰 여부 확인
-  useEffect(() => {
-    if ((groupBuy.status === 'final_selection_seller' || groupBuy.status === 'in_progress') && isSeller) {
-      console.log('판매자 상태 확인, checkWinningBidStatus 호출');
-      checkWinningBidStatus();
-    }
-  }, [groupBuy.status, isSeller, checkWinningBidStatus]);
-  
   // 최종선택 기간 종료 확인
   const isBuyerSelectionExpired = groupBuy.final_selection_end ? 
     new Date(groupBuy.final_selection_end) < new Date() : false;
   const isSellerSelectionExpired = groupBuy.seller_selection_end ? 
     new Date(groupBuy.seller_selection_end) < new Date() : false;
   const isFinalSelectionExpired = isBuyerFinalSelection ? isBuyerSelectionExpired : isSellerSelectionExpired;
+
+  // 판매자 최종선택 상태인 경우 낙찰 여부 확인
+  useEffect(() => {
+    if ((groupBuy.status === 'final_selection_seller' || groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'in_progress') && isSeller) {
+      console.log('판매자 상태 확인, checkWinningBidStatus 호출, status:', groupBuy.status);
+      checkWinningBidStatus();
+    }
+  }, [groupBuy.status, isSeller, checkWinningBidStatus]);
+
+  // 디버깅을 위한 상태 로그
+  useEffect(() => {
+    if (isSeller && isSellerFinalSelection) {
+      console.log('판매자 최종선택 UI 조건:', {
+        isSellerFinalSelection,
+        isFinalSelectionExpired,
+        hasWinningBid,
+        isMyBidSelected,
+        myBidFinalDecision,
+        groupBuyStatus: groupBuy.status
+      });
+    }
+  }, [isSeller, isSellerFinalSelection, isFinalSelectionExpired, hasWinningBid, isMyBidSelected, myBidFinalDecision, groupBuy.status]);
 
   // 금액 마스킹 함수
   const maskAmount = (amount: number): string => {
@@ -1461,7 +1475,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </>
             )}
           </div>
-        ) : isSeller && hasWinningBid ? (
+        ) : isSeller && (hasWinningBid || isMyBidSelected) ? (
           // 낙찰된 판매회원
           <div className="space-y-3">
             {/* 1. 구매자 최종선택 대기중 */}
@@ -1494,7 +1508,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
 
             {/* 2. 판매확정/포기 선택하기 */}
-            {isSellerFinalSelection && isMyBidSelected && !isFinalSelectionExpired && (
+            {isSellerFinalSelection && !isFinalSelectionExpired && (
               <>
                 <div className="p-4 bg-blue-50 rounded-lg mb-3">
                   <p className="text-sm text-gray-700">구매자 확정률 최종</p>
