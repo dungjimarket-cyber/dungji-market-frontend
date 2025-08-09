@@ -8,9 +8,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 interface ContactInfo {
-  name: string;
+  nickname: string;
   phone: string;
   address?: string;
+  business_number?: string;
 }
 
 interface ContactInfoModalProps {
@@ -70,9 +71,10 @@ export default function ContactInfoModal({
         setContactRole('seller');
         // 백엔드가 seller 객체가 아닌 직접 정보를 반환하므로 data 자체를 사용
         setSellerInfo({
-          name: data.name,
+          nickname: data.nickname || data.name,
           phone: data.phone,
-          address: data.address
+          address: data.address,
+          business_number: data.business_number
         });
       } else if (data.role === 'buyers') {
         setContactRole('buyers');
@@ -126,8 +128,8 @@ export default function ContactInfoModal({
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="text-sm text-gray-600">이름</p>
-                      <p className="font-medium">{sellerInfo.name}</p>
+                      <p className="text-sm text-gray-600">닉네임</p>
+                      <p className="font-medium">{sellerInfo.nickname}</p>
                     </div>
                   </div>
                   
@@ -143,8 +145,18 @@ export default function ContactInfoModal({
                     <div className="flex items-center gap-3">
                       <MapPin className="h-5 w-5 text-gray-500" />
                       <div>
-                        <p className="text-sm text-gray-600">주소</p>
+                        <p className="text-sm text-gray-600">사업자 주요활동지역</p>
                         <p className="font-medium">{sellerInfo.address}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {sellerInfo.business_number && (
+                    <div className="flex items-center gap-3">
+                      <User className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600">사업자등록번호</p>
+                        <p className="font-medium">{sellerInfo.business_number}</p>
                       </div>
                     </div>
                   )}
@@ -168,7 +180,7 @@ export default function ContactInfoModal({
                   <div key={index} className="bg-gray-50 rounded-lg p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-sm">{buyer.name}</span>
+                      <span className="font-medium text-sm">{buyer.nickname}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">

@@ -110,31 +110,32 @@ export default function BidHistory() {
           className="hover:shadow-md transition-shadow cursor-pointer"
           onClick={() => router.push(`/groupbuys/${bid.groupbuy}`)}
         >
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-medium text-base">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                  <h3 className="font-medium text-sm sm:text-base truncate">
                     {bid.product_name}
                   </h3>
                   {getStatusBadge(bid.status, bid.final_decision)}
                 </div>
                 
-                <div className="flex items-center gap-4 text-sm text-gray-600">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(bid.created_at).toLocaleDateString()}
+                    <span className="hidden sm:inline">{new Date(bid.created_at).toLocaleDateString()}</span>
+                    <span className="sm:hidden">{new Date(bid.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}</span>
                   </span>
                   <span className="font-medium text-green-600">
                     {formatNumberWithCommas(bid.amount)}원
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-[10px] sm:text-xs text-gray-500">
                     {bid.bid_type === 'support' ? '지원금' : '가격'} 입찰
                   </span>
                 </div>
               </div>
               
-              <ArrowRight className="h-5 w-5 text-gray-400" />
+              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0 ml-2" />
             </div>
           </CardContent>
         </Card>

@@ -178,13 +178,13 @@ export default function SellerMyPageClient() {
           <AccordionItem value="bid-history">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <Gavel className="h-5 w-5 text-blue-500" />
-                  <span className="font-medium">입찰내역</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Gavel className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">입찰내역</span>
                 </div>
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-gray-500">총 {bidHistoryCount}건</span>
-                  <ChevronRight className="h-4 w-4" />
+                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
+                  <span className="text-xs sm:text-sm text-gray-500">총 {bidHistoryCount}건</span>
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>
@@ -197,13 +197,13 @@ export default function SellerMyPageClient() {
           <AccordionItem value="waiting-buyer">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-yellow-500" />
-                  <span className="font-medium">구매자 최종선택 대기중</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">구매자 최종선택 대기중</span>
                 </div>
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-gray-500">총 {waitingBuyerCount}건</span>
-                  <ChevronRight className="h-4 w-4" />
+                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
+                  <span className="text-xs sm:text-sm text-gray-500">총 {waitingBuyerCount}건</span>
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>
@@ -216,15 +216,15 @@ export default function SellerMyPageClient() {
           <AccordionItem value="pending-decision" className="border-orange-200">
             <AccordionTrigger className="hover:no-underline bg-orange-50">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-orange-500" />
-                  <span className="font-medium text-orange-700">판매확정/포기 선택하기</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
+                  <span className="font-medium text-orange-700 text-sm sm:text-base">판매확정/포기 선택하기</span>
                 </div>
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-orange-600 font-semibold">
+                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
+                  <span className="text-xs sm:text-sm text-orange-600 font-semibold">
                     {pendingSellerCount}건 선택 대기중
                   </span>
-                  <ChevronRight className="h-4 w-4 text-orange-500" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>
@@ -237,13 +237,13 @@ export default function SellerMyPageClient() {
           <AccordionItem value="trading">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <Package className="h-5 w-5 text-green-500" />
-                  <span className="font-medium">거래중</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">거래중</span>
                 </div>
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-gray-500">총 {tradingCount}건</span>
-                  <ChevronRight className="h-4 w-4" />
+                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
+                  <span className="text-xs sm:text-sm text-gray-500">총 {tradingCount}건</span>
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>
@@ -256,13 +256,13 @@ export default function SellerMyPageClient() {
           <AccordionItem value="completed">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-purple-500" />
-                  <span className="font-medium">판매완료</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">판매완료</span>
                 </div>
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-gray-500">총 {completedCount}건</span>
-                  <ChevronRight className="h-4 w-4" />
+                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
+                  <span className="text-xs sm:text-sm text-gray-500">총 {completedCount}건</span>
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>
@@ -275,13 +275,13 @@ export default function SellerMyPageClient() {
           <AccordionItem value="cancelled">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <XCircle className="h-5 w-5 text-red-500" />
-                  <span className="font-medium">취소된 공구</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">취소된 공구</span>
                 </div>
-                <div className="flex items-center gap-2 mr-2">
-                  <span className="text-sm text-gray-500">총 {cancelledCount}건</span>
-                  <ChevronRight className="h-4 w-4" />
+                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
+                  <span className="text-xs sm:text-sm text-gray-500">총 {cancelledCount}건</span>
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>

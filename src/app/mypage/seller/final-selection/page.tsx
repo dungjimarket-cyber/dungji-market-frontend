@@ -185,25 +185,25 @@ export default function SellerFinalSelection() {
               onClick={() => handleGroupBuyClick(groupbuy.id)}
             >
               <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{groupbuy.product_name}</CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">{groupbuy.product_category}</p>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base sm:text-lg truncate">{groupbuy.product_name}</CardTitle>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">{groupbuy.product_category}</p>
                   </div>
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300 self-start sm:self-auto whitespace-nowrap">
                     최종선택 대기중
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 mb-4">
+              <CardContent className="px-3 sm:px-6">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <div>
-                    <p className="text-sm text-gray-500">낙찰 금액</p>
-                    <p className="font-bold">{groupbuy.bid_amount.toLocaleString()}원</p>
+                    <p className="text-xs sm:text-sm text-gray-500">최종 낙찰지원금</p>
+                    <p className="font-bold text-base sm:text-lg text-orange-600">{groupbuy.bid_amount.toLocaleString()}원</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">참여자 수</p>
-                    <p className="font-bold">{groupbuy.participants_count}명</p>
+                    <p className="text-xs sm:text-sm text-gray-500">참여자 수</p>
+                    <p className="font-bold text-base sm:text-lg">{groupbuy.participants_count}명</p>
                   </div>
                 </div>
 

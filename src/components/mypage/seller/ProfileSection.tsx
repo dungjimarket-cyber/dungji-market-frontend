@@ -45,38 +45,38 @@ export default function ProfileSection() {
     <>
       {/* 프로필 카드 */}
       <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative h-20 w-20 rounded-full overflow-hidden bg-gray-100">
-                <User className="h-full w-full p-4 text-gray-400" />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full sm:w-auto">
+              <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gray-100">
+                <User className="h-full w-full p-3 sm:p-4 text-gray-400" />
               </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold">{user.username}</h2>
+              <div className="text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-2 mb-1">
+                  <h2 className="text-lg sm:text-xl font-bold">{user.username}</h2>
                   <Badge className="bg-blue-500">판매회원</Badge>
                 </div>
 
-                <div className="flex items-center text-gray-600">
+                <div className="flex flex-col sm:flex-row items-center text-gray-600 text-sm sm:text-base">
                   <span>평판 점수</span>
-                  <div className="flex items-center ml-2">
+                  <div className="flex items-center sm:ml-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`h-4 w-4 ${
+                        className={`h-3 w-3 sm:h-4 sm:w-4 ${
                           star <= 3
                             ? 'text-yellow-400 fill-yellow-400'
                             : 'text-gray-300'
                         }`}
                       />
                     ))}
-                    <span className="ml-1 text-sm">(3.0)</span>
+                    <span className="ml-1 text-xs sm:text-sm">(3.0)</span>
                   </div>
                 </div>
 
-                <div className="flex mt-2 text-sm">
-                  <Badge variant="outline" className="mr-2">
+                <div className="flex flex-wrap justify-center sm:justify-start mt-2 text-xs sm:text-sm gap-2">
+                  <Badge variant="outline">
                     본인인증 완료
                   </Badge>
                   <Badge variant="outline">사업자 인증</Badge>
@@ -84,7 +84,7 @@ export default function ProfileSection() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
               <Button
                 onClick={handleLogout}
                 variant="outline"
@@ -92,7 +92,7 @@ export default function ProfileSection() {
                 className="flex items-center text-red-600 hover:text-red-800 border-red-200 hover:bg-red-50"
               >
                 <LogOut className="h-4 w-4 mr-1" />
-                로그아웃
+                <span className="hidden sm:inline">로그아웃</span>
               </Button>
               <Link href="/mypage/seller/settings">
                 <Button variant="ghost" size="icon">
@@ -106,13 +106,13 @@ export default function ProfileSection() {
 
       {/* 입찰권 정보 카드 */}
       <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">남은 입찰권</h3>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="w-full sm:w-auto">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">남은 입찰권</h3>
               <div className="flex items-center gap-2 mb-1">
-                <Ticket className="h-5 w-5 text-blue-500" />
-                <p className="text-2xl font-bold">
+                <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                <p className="text-xl sm:text-2xl font-bold">
                   {bidTokens?.unlimited_subscription
                     ? '무제한'
                     : `${bidTokens?.single_tokens || 0}개`}
@@ -121,25 +121,27 @@ export default function ProfileSection() {
               
               {bidTokens?.unlimited_subscription ? (
                 <>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-xs sm:text-sm text-blue-600">
                     무제한 구독권 사용중
                     {bidTokens.unlimited_expires_at && (
-                      <> ({new Date(bidTokens.unlimited_expires_at).toLocaleDateString()} 만료)</>
+                      <span className="block sm:inline">
+                        ({new Date(bidTokens.unlimited_expires_at).toLocaleDateString()} 만료)
+                      </span>
                     )}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                     *무제한 입찰권 이용시 보유한 입찰권은 소진되지 않습니다
                   </p>
                 </>
               ) : bidTokens && bidTokens.single_tokens > 0 && (
-                <p className="text-sm text-green-600">
+                <p className="text-xs sm:text-sm text-green-600">
                   단품 입찰권 {bidTokens.single_tokens}개 (유효기간: 무기한)
                 </p>
               )}
             </div>
 
-            <Link href="/bid-tickets">
-              <Button className="bg-blue-500 hover:bg-blue-600">
+            <Link href="/bid-tickets" className="w-full sm:w-auto">
+              <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
                 입찰권 구매하기
               </Button>
             </Link>
