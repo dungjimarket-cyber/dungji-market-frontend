@@ -92,19 +92,21 @@ export default function BannerCarousel() {
   return (
     <div className="relative w-full overflow-hidden rounded-lg">
       {/* 배너 컨테이너 */}
-      <div className="relative h-64 sm:h-96">
+      <div className="relative h-64 sm:h-96 md:h-[400px] lg:h-[500px] bg-gray-100">
         {/* 배너 이미지 */}
-        {currentBanner.target_url ? (
+        {currentBanner.target_url && currentBanner.target_url !== '#' ? (
           <Link 
-            href={currentBanner.target_url}
+            href={currentBanner.target_url.startsWith('http') ? currentBanner.target_url : `/${currentBanner.target_url.replace(/^\//, '')}`}
             className="block w-full h-full"
+            target={currentBanner.target_url.startsWith('http') ? '_blank' : '_self'}
+            rel={currentBanner.target_url.startsWith('http') ? 'noopener noreferrer' : undefined}
           >
             <div className="relative w-full h-full">
               <Image
                 src={currentBanner.image_url}
                 alt={currentBanner.title}
                 fill
-                className="object-cover"
+                className="object-contain sm:object-cover"
                 priority={currentIndex === 0}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
               />
@@ -132,7 +134,7 @@ export default function BannerCarousel() {
               src={currentBanner.image_url}
               alt={currentBanner.title}
               fill
-              className="object-cover"
+              className="object-contain sm:object-cover"
               priority={currentIndex === 0}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
             />

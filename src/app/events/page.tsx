@@ -66,12 +66,14 @@ export default function EventListPage() {
               href={`/events/${event.slug}`}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
             >
-              <div className="aspect-[16/9] relative">
+              <div className="aspect-[16/9] relative bg-gray-100">
                 <Image
                   src={event.thumbnail_url || '/placeholder.png'}
                   alt={event.title}
                   fill
-                  className="object-cover"
+                  className="object-contain sm:object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  quality={85}
                 />
                 {event.is_active && (
                   <div className="absolute top-2 right-2 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
