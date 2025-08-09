@@ -397,14 +397,15 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 />
               ) : (
                 <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs">
-                  {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'}
+                  {/* {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'} */}
+                  방장
                 </div>
               )}
             </div>
             <div>
-              <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
+              {/* <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
                 방장: {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
-              </p>
+              </p> */}
               <p className="text-gray-500 text-xs">
                 {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
               </p>
