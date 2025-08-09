@@ -447,9 +447,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               )}
             </div>
             <div>
-              {/* <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
-                방장: {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
-              </p> */}
+               <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
+                {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
+              </p> 
               <p className="text-gray-500 text-xs">
                 {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
               </p>
@@ -497,13 +497,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         <button
           className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 ${getButtonStyle()}`}
           onClick={handleViewDetail}
-          disabled={
-            isFinalSelection || 
-            isCompleted || 
-            (user?.role === 'seller' && isRecruiting) || // 판매자는 모집중일 때 클릭 불가
-            (user?.role === 'seller' && !isBidding && !isRecruiting) || // 판매자는 입찰중이 아니면 클릭 불가
-            (user?.role !== 'seller' && isBidding && !isParticipant) // 일반회원은 입찰중일 때 참여하지 않았으면 클릭 불가
-          }
+          disabled={isFinalSelection || isCompleted}
         >
           {getButtonText()}
         </button>
