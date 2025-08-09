@@ -41,6 +41,28 @@ export default function SellerSettings() {
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
 
+  // formatPhoneNumber 함수를 먼저 정의
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^0-9]/g, '');
+    
+    // 11자리 초과 방지
+    if (numbers.length > 11) {
+      return formData.phone;
+    }
+    
+    // 포맷팅
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else if (numbers.length <= 11) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+    }
+    
+    return value;
+  };
+
   useEffect(() => {
     const loadSellerProfile = async () => {
       try {
@@ -55,17 +77,37 @@ export default function SellerSettings() {
         const data = await getSellerProfile();
         setProfile(data);
         
-        // 폼 데이터 초기화
-        const businessNumParts = (data.businessNumber || '').split('-');
+        // 휴대폰 번호 포맷팅
+        const formattedPhone = data.phone ? formatPhoneNumber(data.phone) : '';
+        
+        // 사업자등록번호 파싱 - 하이픈이 없는 경우도 처리
+        let businessNum1 = '';
+        let businessNum2 = '';
+        let businessNum3 = '';
+        
+        if (data.businessNumber) {
+          const cleanBusinessNum = data.businessNumber.replace(/-/g, '');
+          if (cleanBusinessNum.length === 10) {
+            businessNum1 = cleanBusinessNum.slice(0, 3);
+            businessNum2 = cleanBusinessNum.slice(3, 5);
+            businessNum3 = cleanBusinessNum.slice(5, 10);
+          } else {
+            const businessNumParts = data.businessNumber.split('-');
+            businessNum1 = businessNumParts[0] || '';
+            businessNum2 = businessNumParts[1] || '';
+            businessNum3 = businessNumParts[2] || '';
+          }
+        }
+        
         setFormData({
           nickname: data.nickname || data.username || '',
-          phone: data.phone || '',
+          phone: formattedPhone,
           addressProvince: '',
           addressCity: '',
           addressCityCode: '',
-          businessNumber1: businessNumParts[0] || '',
-          businessNumber2: businessNumParts[1] || '',
-          businessNumber3: businessNumParts[2] || '',
+          businessNumber1: businessNum1,
+          businessNumber2: businessNum2,
+          businessNumber3: businessNum3,
           isRemoteSales: data.isRemoteSales || false,
           businessRegFile: null
         });
@@ -109,28 +151,7 @@ export default function SellerSettings() {
     };
 
     loadSellerProfile();
-  }, [router]);
-
-  const formatPhoneNumber = (value: string) => {
-    // 숫자만 추출
-    const numbers = value.replace(/[^0-9]/g, '');
-    
-    // 11자리 초과 방지
-    if (numbers.length > 11) {
-      return formData.phone;
-    }
-    
-    // 포맷팅
-    if (numbers.length <= 3) {
-      return numbers;
-    } else if (numbers.length <= 7) {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    } else if (numbers.length <= 11) {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
-    }
-    
-    return value;
-  };
+  }, [router, formatPhoneNumber]);
 
   const checkNicknameDuplicate = async (nickname: string) => {
     if (!nickname || nickname === profile?.nickname) {
@@ -219,10 +240,12 @@ export default function SellerSettings() {
       }
 
       // 파일 업로드 처리
+      let updateSuccess = false;
+      
       if (formData.businessRegFile && formData.isRemoteSales) {
         const formDataWithFile = new FormData();
         Object.keys(updateData).forEach(key => {
-          formDataWithFile.append(key, updateData[key]);
+          formDataWithFile.append(key, String(updateData[key]));
         });
         formDataWithFile.append('remote_sales_cert', formData.businessRegFile);
         
@@ -231,21 +254,31 @@ export default function SellerSettings() {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
+            // Content-Type을 설정하지 않음 - FormData가 자동으로 설정
           },
           body: formDataWithFile
         });
         
+        updateSuccess = response.ok;
         if (!response.ok) {
           throw new Error('프로필 업데이트 실패');
         }
       } else {
-        await updateSellerProfile(updateData);
+        const result = await updateSellerProfile(updateData);
+        updateSuccess = !!result;
       }
       
-      toast({
-        title: '저장 완료',
-        description: '수정되었습니다'
-      });
+      if (updateSuccess) {
+        toast({
+          title: '프로필 수정 완료',
+          description: '성공적으로 저장되었습니다.',
+          variant: 'default'
+        });
+        
+        // 프로필 정보 새로고침
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
+      }
     } catch (error) {
       console.error('프로필 저장 오류:', error);
       toast({
