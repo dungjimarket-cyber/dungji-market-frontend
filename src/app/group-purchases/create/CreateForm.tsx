@@ -1063,15 +1063,9 @@ const onSubmit = async (values: FormData) => {
     // 초단위를 0으로 버림 처리
     endTime.setSeconds(0, 0);
     
-    // 프로덕션 서버가 USE_TZ=False일 때를 위한 임시 처리
-    // 한국 시간을 기준으로 9시간을 더해서 보냄
-    const adjustedEndTime = new Date(endTime.getTime() + 9 * 60 * 60 * 1000);
-    
-    // 계산된 마감 시간을 한국 시간 문자열로 변환하여 endTimeValue 상태 업데이트
-    const calculatedEndTimeKST = toKSTString(adjustedEndTime);
-    console.log('계산된 마감 시간 KST 문자열:', calculatedEndTimeKST);
-    console.log('원래 endTime:', endTime.toISOString());
-    console.log('조정된 endTime (USE_TZ=False 대응):', adjustedEndTime.toISOString());
+    // 계산된 마감 시간을 한국 시간 문자열로 변환
+    const calculatedEndTimeKST = toKSTString(endTime);
+    console.log('계산된 마감 시간 한국 시간 문자열:', calculatedEndTimeKST);
     setEndTimeValue(calculatedEndTimeKST); // 상태 업데이트
     
     // 현재 선택된 상품 ID 확인
