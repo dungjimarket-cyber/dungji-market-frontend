@@ -182,17 +182,38 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     // 판매회원
     if (user?.role === 'seller') {
-      if (hasBid) {
-        return '다시 입찰하기';
+      // 모집중일 때는 입찰할 수 없음
+      if (isRecruiting) {
+        return '입찰 대기중';
       }
-      return '공구 입찰하기';
+      // 입찰중일 때
+      if (isBidding) {
+        if (hasBid) {
+          return '입찰 수정하기';
+        }
+        return '공구 입찰하기';
+      }
+      // 그 외 상태
+      return '입찰 마감';
     }
     
     // 일반회원
-    if (isParticipant) {
-      return '참여 완료';
+    if (isRecruiting) {
+      if (isParticipant) {
+        return '참여 완료';
+      }
+      return '공구 참여하기';
     }
-    return '공구 참여하기';
+    
+    // 일반회원 - 입찰중 상태
+    if (isBidding) {
+      if (isParticipant) {
+        return '참여 완료';
+      }
+      return '입찰 진행중';
+    }
+    
+    return '공구 마감';
   };
 
   const getButtonStyle = () => {
@@ -205,20 +226,43 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       return 'bg-orange-500 text-white cursor-not-allowed';
     }
     
-    // 참여 완료 상태
-    if (isParticipant && user?.role !== 'seller') {
-      return 'bg-blue-600 text-white hover:bg-blue-700';
+    // 판매회원 스타일
+    if (user?.role === 'seller') {
+      // 모집중 - 입찰 불가
+      if (isRecruiting) {
+        return 'bg-gray-400 text-white cursor-not-allowed';
+      }
+      // 입찰중 - 입찰 가능
+      if (isBidding) {
+        if (hasBid) {
+          return 'bg-indigo-600 text-white hover:bg-indigo-700';
+        }
+        return 'bg-purple-600 text-white hover:bg-purple-700';
+      }
+      // 입찰 마감
+      return 'bg-gray-500 text-white cursor-not-allowed';
     }
     
-    // 입찰 완료 상태
-    if (hasBid && user?.role === 'seller') {
-      return 'bg-indigo-600 text-white hover:bg-indigo-700';
+    // 일반회원 스타일
+    if (isRecruiting) {
+      if (isParticipant) {
+        return 'bg-blue-600 text-white hover:bg-blue-700';
+      }
+      if (isUrgent) {
+        return 'bg-gradient-to-r from-purple-600 to-purple-700 text-purple-100 hover:from-purple-700 hover:to-purple-800';
+      }
+      return 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800';
     }
     
-    if (isUrgent) {
-      return 'bg-gradient-to-r from-purple-600 to-purple-700 text-purple-100 hover:from-purple-700 hover:to-purple-800';
+    // 입찰중 상태 (일반회원)
+    if (isBidding) {
+      if (isParticipant) {
+        return 'bg-blue-600 text-white hover:bg-blue-700';
+      }
+      return 'bg-gray-400 text-white cursor-not-allowed';
     }
-    return 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800';
+    
+    return 'bg-gray-500 text-white cursor-not-allowed';
   };
 
   /**
@@ -453,7 +497,13 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         <button
           className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 ${getButtonStyle()}`}
           onClick={handleViewDetail}
-          disabled={isFinalSelection || isCompleted}
+          disabled={
+            isFinalSelection || 
+            isCompleted || 
+            (user?.role === 'seller' && isRecruiting) || // 판매자는 모집중일 때 클릭 불가
+            (user?.role === 'seller' && !isBidding && !isRecruiting) || // 판매자는 입찰중이 아니면 클릭 불가
+            (user?.role !== 'seller' && isBidding && !isParticipant) // 일반회원은 입찰중일 때 참여하지 않았으면 클릭 불가
+          }
         >
           {getButtonText()}
         </button>
