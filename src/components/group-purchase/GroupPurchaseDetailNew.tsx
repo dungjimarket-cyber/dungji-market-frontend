@@ -1639,19 +1639,29 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
           </div>
         ) : isSeller && !isFinalSelection && 
-         groupBuy.status === 'bidding' && 
+         (groupBuy.status === 'bidding' || groupBuy.status === 'recruiting') && 
          !isEnded ? (
-          // 판매자용 입찰 인터페이스 - 입찰 진행 중일 때만 표시
+          // 판매자용 인터페이스
           <div className="space-y-4">
-            {!hasBid && (
+            {groupBuy.status === 'recruiting' ? (
+              // 모집중일 때 - 판매자는 입찰할 수 없음
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="font-medium text-gray-800 mb-2">입찰 대기중</h3>
+                <p className="text-sm text-gray-600">현재 구매자 모집중입니다. 입찰은 모집이 완료된 후 시작됩니다.</p>
+                <div className="mt-3 text-sm text-gray-500">
+                  <div>• 현재 참여자: {groupBuy.current_participants}/{groupBuy.max_participants}명</div>
+                  <div>• 모집 완료 후 입찰이 시작됩니다</div>
+                </div>
+              </div>
+            ) : !hasBid ? (
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 모드</h3>
                 <p className="text-sm text-yellow-700">입찰에 참여하여 공구 판매 기회를 얻으세요.</p>
               </div>
-            )}
+            ) : null}
             
-            {/* 입찰 타입 표시 */}
-            {!hasBid && (
+            {/* 입찰 타입 표시 - 입찰중일 때만 */}
+            {groupBuy.status === 'bidding' && !hasBid && (
               <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
                 <div className="text-sm font-medium">입찰 유형:</div>
                 <div className="text-sm font-medium px-3 py-1 bg-blue-600 text-white rounded-md">
@@ -1709,6 +1719,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
             
+            {/* 입찰 입력 폼 - 입찰중일 때만 표시 */}
+            {groupBuy.status === 'bidding' && (
             <div className="flex flex-col w-full">
               {/* 입찰 유형별 안내 문구 */}
               {bidType === 'support' && (
@@ -1761,9 +1773,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <p className="text-sm font-semibold text-blue-800 mb-1">❗ 앞자리를 제외한 입찰가는 비공개입니다.</p>
               </div>
             </div>
+            )}
             
-            {/* 입찰 취소 버튼 */}
-            {hasBid && canCancelBid && !isEnded && !isFinalSelection && (
+            {/* 입찰 취소 버튼 - 입찰중일 때만 */}
+            {groupBuy.status === 'bidding' && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
               <button
                 onClick={() => setShowCancelBidDialog(true)}
                 className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
@@ -1772,6 +1785,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </button>
             )}
             
+            {/* 입찰 안내사항 - 입찰중일 때만 */}
+            {groupBuy.status === 'bidding' && (
             <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
               <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 입찰 안내사항</h4>
               <div className="text-sm text-gray-700 space-y-1">
@@ -1781,6 +1796,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</div>
               </div>
             </div>
+            )}
             
             {/* 공유하기 버튼 */}
             <Button
