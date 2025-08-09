@@ -19,11 +19,13 @@ interface ContactInfo {
   role: 'seller' | 'buyers';
   // 판매자 정보 (구매자가 볼 때)
   name?: string;
+  nickname?: string;
   business_name?: string;
   phone?: string;
   email?: string;
   address?: string;
   business_number?: string;
+  address_region?: string;
   // 구매자 목록 (판매자가 볼 때)
   buyers?: Array<{
     name: string;
@@ -128,77 +130,58 @@ export function ContactInfoModal({
             {contactInfo.role === 'seller' ? (
               // 구매자가 보는 판매자 정보
               <Card className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                    <User className="h-8 w-8 text-gray-500" />
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{contactInfo.nickname || contactInfo.name}</h3>
                   </div>
                   
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg">{contactInfo.name}</h3>
-                      {contactInfo.business_name && (
-                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                          <Building className="h-4 w-4" />
-                          {contactInfo.business_name}
-                        </p>
-                      )}
-                    </div>
+                  <div className="space-y-3">
+                    {contactInfo.phone && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-4 w-4 text-gray-500" />
+                          <span>{contactInfo.phone}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(contactInfo.phone!, '전화번호')}
+                        >
+                          {copiedField === '전화번호' ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
                     
-                    <div className="space-y-2">
-                      {contactInfo.phone && (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Phone className="h-4 w-4 text-gray-500" />
-                            <span>{contactInfo.phone}</span>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(contactInfo.phone!, '전화번호')}
-                          >
-                            {copiedField === '전화번호' ? (
-                              <Check className="h-4 w-4" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {contactInfo.email && (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="h-4 w-4 text-gray-500" />
-                            <span>{contactInfo.email}</span>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(contactInfo.email!, '이메일')}
-                          >
-                            {copiedField === '이메일' ? (
-                              <Check className="h-4 w-4" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {contactInfo.business_number && (
+                    {contactInfo.business_number && (
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm">
                           <Building className="h-4 w-4 text-gray-500" />
                           <span>사업자번호: {contactInfo.business_number}</span>
                         </div>
-                      )}
-                      
-                      {contactInfo.address && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Building className="h-4 w-4 text-gray-500" />
-                          <span>{contactInfo.address}</span>
-                        </div>
-                      )}
-                    </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(contactInfo.business_number!, '사업자번호')}
+                        >
+                          {copiedField === '사업자번호' ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {contactInfo.address_region && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Building className="h-4 w-4 text-gray-500" />
+                        <span>사업자주소: {contactInfo.address_region}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
