@@ -35,18 +35,12 @@ export function formatPrice(price: number | undefined): string {
 }
 
 /**
- * Date 객체를 한국 시간 문자열로 변환하는 함수
- * ISO 8601 형식이지만 UTC가 아닌 한국 시간으로 반환
+ * Date 객체를 UTC ISO 문자열로 변환하는 함수
+ * Django 백엔드와 호환되도록 UTC 타임존을 포함한 ISO 8601 형식으로 반환
  * @param date Date 객체
- * @returns 한국 시간 문자열 (예: 2024-03-21T15:30:00)
+ * @returns UTC ISO 문자열 (예: 2024-03-21T06:30:00Z)
  */
 export function toKSTString(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  // toISOString()은 자동으로 UTC로 변환하여 반환
+  return date.toISOString();
 }

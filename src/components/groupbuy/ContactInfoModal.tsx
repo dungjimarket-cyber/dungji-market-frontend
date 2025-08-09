@@ -103,8 +103,13 @@ export default function ContactInfoModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {contactRole === 'seller' ? '판매자' : '구매자'} 연락처 정보
+            {contactRole === 'seller' ? '판매자' : '구매자'} 정보
           </DialogTitle>
+          {contactRole === 'seller' && (
+            <p className="text-sm text-gray-600 mt-2">
+              판매자와 연락하여 거래를 진행하세요.
+            </p>
+          )}
         </DialogHeader>
 
         <div className="mt-4">

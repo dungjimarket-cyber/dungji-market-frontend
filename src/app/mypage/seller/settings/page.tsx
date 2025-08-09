@@ -72,12 +72,9 @@ export default function SellerSettings() {
         
         // address_region에서 시/도와 시/군/구 추출
         if (data.addressRegion) {
-          console.log('[Settings] addressRegion 데이터:', data.addressRegion);
           const fullName = data.addressRegion.full_name || data.addressRegion.name || '';
           const parts = fullName.split(' ');
           const regionCode = data.addressRegion.code || '';
-          
-          console.log('[Settings] 파싱된 주소 - fullName:', fullName, 'parts:', parts, 'code:', regionCode);
           
           // 세종특별자치시 특수 처리
           if (fullName === '세종특별자치시') {
@@ -93,7 +90,6 @@ export default function SellerSettings() {
               addressCity: parts[1],
               addressCityCode: regionCode
             };
-            console.log('[Settings] FormData 업데이트:', updateData);
             setFormData(prev => ({
               ...prev,
               ...updateData

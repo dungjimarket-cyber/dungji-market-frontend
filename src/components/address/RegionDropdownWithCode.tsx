@@ -52,8 +52,10 @@ export default function RegionDropdownWithCode({
         const regions = await loadRegions();
         const selectedProvinceData = provinces.find(p => p.name === selectedProvince);
         if (selectedProvinceData) {
+          // parent 필드 대신 code의 앞자리로 매칭
+          const provincePrefix = selectedProvinceData.code.substring(0, 2);
           const cityList = regions.filter((r: Region) => 
-            r.level === 1 && r.parent === selectedProvinceData.code
+            r.level === 1 && r.code.startsWith(provincePrefix)
           );
           setCities(cityList);
         }
@@ -91,31 +93,27 @@ export default function RegionDropdownWithCode({
   // 컴포넌트 마운트 시 지역 데이터 로드
   useEffect(() => {
     const initRegions = async () => {
-      console.log('[RegionDropdown] 초기화 시작, selectedProvince:', selectedProvince, 'selectedCity:', selectedCity, 'selectedCityCode:', selectedCityCode);
       const regions = await loadRegions();
-      console.log('[RegionDropdown] 로드된 전체 지역 데이터:', regions?.length, '개');
       
       // 시/도 목록 추출 (level 0)
       const provinceList = regions.filter((r: Region) => r.level === 0);
-      console.log('[RegionDropdown] 시/도 목록:', provinceList);
       setProvinces(provinceList);
       
       // 선택된 시/도가 있으면 해당 시/군/구 목록 로드
       if (selectedProvince) {
         const selectedProvinceData = provinceList.find((p: Region) => p.name === selectedProvince);
-        console.log('[RegionDropdown] 선택된 시/도 데이터:', selectedProvinceData);
         if (selectedProvinceData) {
+          // parent 필드 대신 code의 앞자리로 매칭
+          const provincePrefix = selectedProvinceData.code.substring(0, 2);
           const cityList = regions.filter((r: Region) => 
-            r.level === 1 && r.parent === selectedProvinceData.code
+            r.level === 1 && r.code.startsWith(provincePrefix)
           );
-          console.log('[RegionDropdown] 시/군/구 목록:', cityList);
           setCities(cityList);
           
           // 선택된 시/군/구가 있지만 코드가 없는 경우, 이름으로 코드 찾기
           if (selectedCity && !selectedCityCode) {
             const cityData = cityList.find((c: Region) => c.name === selectedCity);
             if (cityData) {
-              console.log('[RegionDropdown] 시/군/구 코드 찾음:', cityData.code);
               setCityCode(cityData.code);
             }
           }
@@ -143,8 +141,10 @@ export default function RegionDropdownWithCode({
     const selectedProvinceData = provinces.find(p => p.name === newProvince);
     
     if (selectedProvinceData) {
+      // parent 필드 대신 code의 앞자리로 매칭
+      const provincePrefix = selectedProvinceData.code.substring(0, 2);
       const cityList = regions.filter((r: Region) => 
-        r.level === 1 && r.parent === selectedProvinceData.code
+        r.level === 1 && r.code.startsWith(provincePrefix)
       );
       setCities(cityList);
     }
