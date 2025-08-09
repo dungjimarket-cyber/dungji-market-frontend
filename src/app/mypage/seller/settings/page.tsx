@@ -134,7 +134,7 @@ export default function SellerSettings() {
     
     setCheckingNickname(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/check-nickname/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
