@@ -83,6 +83,14 @@ export default function RegionDropdownWithCode({
             r.level === 1 && r.parent === selectedProvinceData.code
           );
           setCities(cityList);
+          
+          // 선택된 시/군/구가 있지만 코드가 없는 경우, 이름으로 코드 찾기
+          if (selectedCity && !selectedCityCode) {
+            const cityData = cityList.find((c: Region) => c.name === selectedCity);
+            if (cityData) {
+              setCityCode(cityData.code);
+            }
+          }
         }
       }
     };
