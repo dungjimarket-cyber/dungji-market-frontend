@@ -40,6 +40,28 @@ export default function RegionDropdownWithCode({
   const [cities, setCities] = useState<Region[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // props가 변경될 때 state 업데이트
+  useEffect(() => {
+    setProvince(selectedProvince);
+    setCity(selectedCity);
+    setCityCode(selectedCityCode);
+    
+    // 시/도가 변경되었고 provinces가 로드되어 있으면 cities 업데이트
+    if (selectedProvince && provinces.length > 0) {
+      const updateCities = async () => {
+        const regions = await loadRegions();
+        const selectedProvinceData = provinces.find(p => p.name === selectedProvince);
+        if (selectedProvinceData) {
+          const cityList = regions.filter((r: Region) => 
+            r.level === 1 && r.parent === selectedProvinceData.code
+          );
+          setCities(cityList);
+        }
+      };
+      updateCities();
+    }
+  }, [selectedProvince, selectedCity, selectedCityCode]);
+
   // 지역 데이터 로드 (캐싱 적용)
   const loadRegions = async () => {
     const now = Date.now();
