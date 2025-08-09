@@ -1054,10 +1054,7 @@ const onSubmit = async (values: FormData) => {
       // 슬라이더 값(시간)을 현재 시간에 더함
       const hoursToAdd = values.sliderHours || sliderHours;
       console.log('제출 시 슬라이더 값:', values.sliderHours, '상태 값:', sliderHours, '최종 사용 값:', hoursToAdd);
-      // 프로덕션 서버 임시 대응: 실제 시간보다 9시간 더 추가
-      const adjustedHours = hoursToAdd + 9;
-      endTime = new Date(currentDate.getTime() + adjustedHours * 60 * 60 * 1000);
-      console.log('프로덕션 대응: 원래 시간 + 9시간 추가');
+      endTime = new Date(currentDate.getTime() + (typeof hoursToAdd === 'number' ? hoursToAdd : 24) * 60 * 60 * 1000);
     } else if (values.end_time_option === 'custom' && values.end_time) {
       // 사용자 지정 날짜/시간 사용
       endTime = new Date(values.end_time);
