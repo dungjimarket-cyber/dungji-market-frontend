@@ -151,7 +151,7 @@ export default function SellerSettings() {
     };
 
     loadSellerProfile();
-  }, [router, formatPhoneNumber]);
+  }, [router]);
 
   const checkNicknameDuplicate = async (nickname: string) => {
     if (!nickname || nickname === profile?.nickname) {
