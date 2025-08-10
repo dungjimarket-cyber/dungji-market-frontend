@@ -40,8 +40,7 @@ export default function SellerSettings() {
   });
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
-  const [maskedPhone, setMaskedPhone] = useState('');
-  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [nicknameAvailable, setNicknameAvailable] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -65,16 +64,6 @@ export default function SellerSettings() {
     return value;
   };
 
-  // 전화번호 마스킹 함수
-  const maskPhoneNumber = (phone: string) => {
-    const numbers = phone.replace(/[^0-9]/g, '');
-    if (numbers.length === 11) {
-      return `${numbers.slice(0, 3)}-****-****`;
-    } else if (numbers.length === 10) {
-      return `${numbers.slice(0, 3)}-***-****`;
-    }
-    return phone;
-  };
 
   useEffect(() => {
     const loadSellerProfile = async () => {
@@ -92,8 +81,6 @@ export default function SellerSettings() {
         
         // 휴대폰 번호 포맷팅
         const formattedPhone = data.phone ? formatPhoneNumber(data.phone) : '';
-        const maskedPhoneDisplay = data.phone ? maskPhoneNumber(data.phone) : '';
-        setMaskedPhone(maskedPhoneDisplay);
         
         // 사업자등록번호 파싱 - 하이픈이 없는 경우도 처리
         let businessNum1 = '';
@@ -168,13 +155,24 @@ export default function SellerSettings() {
     loadSellerProfile();
   }, [router]);
 
-  const checkNicknameDuplicate = async (nickname: string) => {
-    if (!nickname || nickname === profile?.nickname) {
+  const checkNicknameDuplicate = async () => {
+    const nickname = formData.nickname;
+    
+    if (!nickname) {
+      setNicknameError('닉네임을 입력해주세요.');
+      setNicknameAvailable(false);
+      return;
+    }
+    
+    if (nickname === profile?.nickname) {
       setNicknameError('');
+      setNicknameAvailable(true);
       return;
     }
     
     setCheckingNickname(true);
+    setNicknameError('');
+    
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
         method: 'POST',
@@ -188,11 +186,19 @@ export default function SellerSettings() {
       const data = await response.json();
       if (!data.available) {
         setNicknameError('이미 사용중인 닉네임입니다.');
+        setNicknameAvailable(false);
       } else {
         setNicknameError('');
+        setNicknameAvailable(true);
+        toast({
+          title: '✅ 사용 가능한 닉네임입니다',
+          variant: 'default'
+        });
       }
     } catch (error) {
       console.error('닉네임 중복 확인 오류:', error);
+      setNicknameError('중복 확인 중 오류가 발생했습니다.');
+      setNicknameAvailable(false);
     } finally {
       setCheckingNickname(false);
     }
@@ -206,11 +212,8 @@ export default function SellerSettings() {
       setFormData(prev => ({ ...prev, phone: formatted }));
     } else if (name === 'nickname') {
       setFormData(prev => ({ ...prev, nickname: value }));
-      // 디바운스를 위해 타이머 설정
-      const timer = setTimeout(() => {
-        checkNicknameDuplicate(value);
-      }, 500);
-      return () => clearTimeout(timer);
+      setNicknameAvailable(false); // 닉네임 변경시 재확인 필요
+      setNicknameError('');
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -220,12 +223,12 @@ export default function SellerSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 닉네임 에러가 있으면 제출 방지
-    if (nicknameError) {
+    // 닉네임 중복체크 확인
+    if (formData.nickname !== profile?.nickname && !nicknameAvailable) {
       toast({
         variant: 'destructive',
         title: '저장 실패',
-        description: '닉네임이 중복되었습니다. 다른 닉네임을 사용해주세요.'
+        description: '닉네임 중복체크를 해주세요.'
       });
       return;
     }
@@ -263,14 +266,27 @@ export default function SellerSettings() {
         return;
       }
 
-      // 파일 업로드 처리
+      // API 호출
       let updateSuccess = false;
       
+      // 파일이 있는 경우 FormData로 전송
       if (formData.businessRegFile && formData.isRemoteSales) {
         const formDataWithFile = new FormData();
-        Object.keys(updateData).forEach(key => {
-          formDataWithFile.append(key, String(updateData[key]));
-        });
+        
+        // 각 필드를 FormData에 추가
+        formDataWithFile.append('nickname', updateData.nickname);
+        formDataWithFile.append('business_number', updateData.business_number);
+        formDataWithFile.append('is_remote_sales', String(updateData.is_remote_sales));
+        
+        if (updateData.phone) {
+          formDataWithFile.append('phone', updateData.phone);
+        }
+        
+        if (updateData.address_region_id) {
+          formDataWithFile.append('address_region_id', updateData.address_region_id);
+        }
+        
+        // 파일 추가
         formDataWithFile.append('remote_sales_cert', formData.businessRegFile);
         
         // multipart/form-data로 전송
@@ -283,11 +299,15 @@ export default function SellerSettings() {
           body: formDataWithFile
         });
         
-        updateSuccess = response.ok;
-        if (!response.ok) {
+        if (response.ok) {
+          updateSuccess = true;
+        } else {
+          const errorText = await response.text();
+          console.error('프로필 업데이트 실패:', errorText);
           throw new Error('프로필 업데이트 실패');
         }
       } else {
+        // 파일이 없는 경우 JSON으로 전송
         const result = await updateSellerProfile(updateData);
         updateSuccess = !!result;
       }
@@ -299,17 +319,9 @@ export default function SellerSettings() {
           variant: 'default'
         });
         
-        // 휴대폰 번호 수정 모드 종료
-        setIsEditingPhone(false);
-        
         // 프로필 정보 새로고침
         const updatedData = await getSellerProfile();
         setProfile(updatedData);
-        
-        // 마스킹된 전화번호 업데이트
-        if (updatedData.phone) {
-          setMaskedPhone(maskPhoneNumber(updatedData.phone));
-        }
       }
     } catch (error) {
       console.error('프로필 저장 오류:', error);
@@ -356,22 +368,35 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="nickname">닉네임 (상호명)</Label>
-                  <div className="relative">
-                    <Input
-                      id="nickname"
-                      name="nickname"
-                      value={formData.nickname}
-                      onChange={handleChange}
-                      placeholder="닉네임 또는 상호명을 입력하세요"
-                      required
-                      className={nicknameError ? 'border-red-500' : ''}
-                    />
-                    {checkingNickname && (
-                      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
-                    )}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="nickname"
+                        name="nickname"
+                        value={formData.nickname}
+                        onChange={handleChange}
+                        placeholder="닉네임 또는 상호명을 입력하세요"
+                        required
+                        className={nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}
+                      />
+                      {checkingNickname && (
+                        <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
+                      )}
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={checkNicknameDuplicate}
+                      disabled={checkingNickname || !formData.nickname}
+                    >
+                      중복체크
+                    </Button>
                   </div>
                   {nicknameError && (
                     <p className="text-sm text-red-500 mt-1">{nicknameError}</p>
+                  )}
+                  {nicknameAvailable && !nicknameError && formData.nickname && (
+                    <p className="text-sm text-green-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
                   )}
                 </div>
 
@@ -381,46 +406,16 @@ export default function SellerSettings() {
                   </Label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-500" />
-                    {isEditingPhone ? (
-                      <>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          placeholder="휴대폰 번호를 입력하세요 (예: 010-1234-5678)"
-                          className="flex-1"
-                        />
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            setIsEditingPhone(false);
-                            setMaskedPhone(maskPhoneNumber(formData.phone));
-                          }}
-                        >
-                          취소
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Input
-                          value={maskedPhone}
-                          disabled
-                          className="flex-1 bg-gray-50"
-                        />
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setIsEditingPhone(true)}
-                        >
-                          수정
-                        </Button>
-                      </>
-                    )}
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="휴대폰 번호를 입력하세요 (예: 010-1234-5678)"
+                      className="flex-1"
+                    />
                   </div>
+                  <p className="text-xs text-gray-500">하이픈(-)을 포함하여 입력해주세요</p>
                 </div>
 
                 <div className="space-y-2">
