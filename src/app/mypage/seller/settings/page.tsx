@@ -40,6 +40,8 @@ export default function SellerSettings() {
   });
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
+  const [maskedPhone, setMaskedPhone] = useState('');
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -63,6 +65,17 @@ export default function SellerSettings() {
     return value;
   };
 
+  // 전화번호 마스킹 함수
+  const maskPhoneNumber = (phone: string) => {
+    const numbers = phone.replace(/[^0-9]/g, '');
+    if (numbers.length === 11) {
+      return `${numbers.slice(0, 3)}-****-****`;
+    } else if (numbers.length === 10) {
+      return `${numbers.slice(0, 3)}-***-****`;
+    }
+    return phone;
+  };
+
   useEffect(() => {
     const loadSellerProfile = async () => {
       try {
@@ -79,6 +92,8 @@ export default function SellerSettings() {
         
         // 휴대폰 번호 포맷팅
         const formattedPhone = data.phone ? formatPhoneNumber(data.phone) : '';
+        const maskedPhoneDisplay = data.phone ? maskPhoneNumber(data.phone) : '';
+        setMaskedPhone(maskedPhoneDisplay);
         
         // 사업자등록번호 파싱 - 하이픈이 없는 경우도 처리
         let businessNum1 = '';
@@ -270,14 +285,22 @@ export default function SellerSettings() {
       
       if (updateSuccess) {
         toast({
-          title: '프로필 수정 완료',
-          description: '성공적으로 저장되었습니다.',
+          title: '✅ 수정되었습니다',
+          description: '판매자 정보가 성공적으로 저장되었습니다.',
           variant: 'default'
         });
+        
+        // 휴대폰 번호 수정 모드 종료
+        setIsEditingPhone(false);
         
         // 프로필 정보 새로고침
         const updatedData = await getSellerProfile();
         setProfile(updatedData);
+        
+        // 마스킹된 전화번호 업데이트
+        if (updatedData.phone) {
+          setMaskedPhone(maskPhoneNumber(updatedData.phone));
+        }
       }
     } catch (error) {
       console.error('프로필 저장 오류:', error);
@@ -345,21 +368,49 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">
-                    휴대폰번호(재인증)
+                    휴대폰번호
                   </Label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-500" />
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="휴대폰 번호를 입력하세요 (예: 01012345678)"
-                      className="flex-1"
-                    />
-                    <Button type="button" variant="outline" size="sm">
-                      재인증
-                    </Button>
+                    {isEditingPhone ? (
+                      <>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          placeholder="휴대폰 번호를 입력하세요 (예: 010-1234-5678)"
+                          className="flex-1"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setIsEditingPhone(false);
+                            setMaskedPhone(maskPhoneNumber(formData.phone));
+                          }}
+                        >
+                          취소
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          value={maskedPhone}
+                          disabled
+                          className="flex-1 bg-gray-50"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setIsEditingPhone(true)}
+                        >
+                          수정
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
 
