@@ -203,10 +203,26 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isSellerConfirmation = actualStatus === 'seller_confirmation';
   const isBuyerFinalSelection = groupBuyData.status === 'final_selection_buyers';
   const isSellerFinalSelection = groupBuyData.status === 'final_selection_seller';
+  const isInProgress = groupBuyData.status === 'in_progress';
+  const isCompleted = groupBuyData.status === 'completed';
   const isFinalSelection = isBuyerFinalSelection || isSellerFinalSelection || isSellerConfirmation;
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
+  
+  // 디버깅 로그
+  console.log('공구 상태 체크:', {
+    status: groupBuyData.status,
+    actualStatus,
+    isBuyerFinalSelection,
+    isSellerFinalSelection,
+    isInProgress,
+    isCompleted,
+    myParticipationFinalDecision,
+    myBidFinalDecision,
+    isParticipant,
+    hasWinningBid
+  });
   
   // 판매자가 낙찰된 입찰을 가지고 있는지 확인
   const checkWinningBidStatus = useCallback(async () => {
@@ -298,16 +314,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   // 판매자의 낙찰 여부 확인 - 더 많은 상태에서 필요
   useEffect(() => {
     const sellerNeedsWinningCheck = 
-      groupBuy.status === 'final_selection_seller' || 
-      groupBuy.status === 'final_selection_buyers' || 
-      groupBuy.status === 'in_progress' ||
-      groupBuy.status === 'completed';
+      groupBuyData.status === 'final_selection_seller' || 
+      groupBuyData.status === 'final_selection_buyers' || 
+      groupBuyData.status === 'in_progress' ||
+      groupBuyData.status === 'completed';
     
     if (sellerNeedsWinningCheck && isSeller) {
-      console.log('판매자 상태 확인, checkWinningBidStatus 호출, status:', groupBuy.status);
+      console.log('판매자 상태 확인, checkWinningBidStatus 호출, status:', groupBuyData.status);
       checkWinningBidStatus();
     }
-  }, [groupBuy.status, isSeller, checkWinningBidStatus]);
+  }, [groupBuyData.status, isSeller, checkWinningBidStatus]);
 
   // 디버깅을 위한 상태 로그
   useEffect(() => {
@@ -363,14 +379,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       const needsFinalDecisionStatus = 
         isBuyerFinalSelection || 
         isSellerFinalSelection || 
-        groupBuy.status === 'in_progress' || 
-        groupBuy.status === 'completed';
+        groupBuyData.status === 'in_progress' || 
+        groupBuyData.status === 'completed';
       
       if (needsFinalDecisionStatus) {
         fetchFinalDecisionStatus();
       }
     }
-  }, [isAuthenticated, accessToken, groupBuy.id, isBuyerFinalSelection, isSellerFinalSelection, groupBuy.status]);
+  }, [isAuthenticated, accessToken, groupBuy.id, isBuyerFinalSelection, isSellerFinalSelection, groupBuyData.status]);
 
   // 입찰권 정보 가져오기
   const fetchBidTokenInfo = async () => {
@@ -599,7 +615,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             // 입찰 취소 가능 여부 설정 (v3.0: 모집중 또는 입찰중이고 마감 시간 전)
             const now = new Date();
             const endTime = new Date(groupBuy.end_time);
-            const canCancel = (groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && now < endTime;
+            const canCancel = (groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && now < endTime;
             setCanCancelBid(canCancel);
             
             // 내 입찰 순위 계산
@@ -1432,7 +1448,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           // 참여한 일반회원
           <div className="space-y-3">
             {/* 1. 참여중인 공구 (recruiting, bidding 상태) */}
-            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
+            {(groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && (
               <>
                 <Button
                   onClick={handleShare}
@@ -1491,7 +1507,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
 
             {/* 4. 거래중 */}
-            {groupBuy.status === 'in_progress' && myParticipationFinalDecision === 'confirmed' && (
+            {isInProgress && myParticipationFinalDecision === 'confirmed' && (
               <>
                 <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
                   <p className="font-semibold text-green-800">거래중</p>
@@ -1513,7 +1529,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
 
             {/* 5. 구매완료 */}
-            {groupBuy.status === 'completed' && myParticipationFinalDecision === 'confirmed' && (
+            {isCompleted && myParticipationFinalDecision === 'confirmed' && (
               <>
                 <div className="p-4 bg-purple-50 rounded-lg text-center mb-3">
                   <p className="font-semibold text-purple-800">구매완료</p>
@@ -1610,7 +1626,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
 
             {/* 3. 거래중 */}
-            {groupBuy.status === 'in_progress' && myBidFinalDecision === 'confirmed' && (
+            {isInProgress && myBidFinalDecision === 'confirmed' && (
               <>
                 <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
                   <p className="font-semibold text-green-800">거래중</p>
@@ -1632,18 +1648,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
 
             {/* 4. 판매완료 */}
-            {groupBuy.status === 'completed' && myBidFinalDecision === 'confirmed' && (
+            {isCompleted && myBidFinalDecision === 'confirmed' && (
               <div className="p-4 bg-purple-50 rounded-lg text-center">
                 <p className="font-semibold text-purple-800">판매완료</p>
               </div>
             )}
           </div>
         ) : isSeller && !isFinalSelection && 
-         (groupBuy.status === 'bidding' || groupBuy.status === 'recruiting') && 
+         (groupBuyData.status === 'bidding' || groupBuyData.status === 'recruiting') && 
          !isEnded ? (
           // 판매자용 인터페이스
           <div className="space-y-4">
-            {groupBuy.status === 'recruiting' && !hasBid ? (
+            {groupBuyData.status === 'recruiting' && !hasBid ? (
               // v3.0: 모집과 입찰 동시 진행
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 가능</h3>
@@ -1653,7 +1669,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <div>• 공구 종료까지 입찰 가능합니다</div>
                 </div>
               </div>
-            ) : groupBuy.status === 'bidding' && !hasBid ? (
+            ) : groupBuyData.status === 'bidding' && !hasBid ? (
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 모드</h3>
                 <p className="text-sm text-yellow-700">입찰에 참여하여 공구 판매 기회를 얻으세요.</p>
@@ -1661,7 +1677,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             ) : null}
             
             {/* 입찰 타입 표시 - v3.0: recruiting 상태에서도 표시 */}
-            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && !hasBid && (
+            {(groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && !hasBid && (
               <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
                 <div className="text-sm font-medium">입찰 유형:</div>
                 <div className="text-sm font-medium px-3 py-1 bg-blue-600 text-white rounded-md">
@@ -1720,7 +1736,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
             
             {/* 입찰 입력 폼 - v3.0: 모집중과 입찰중 모두 표시 */}
-            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
+            {(groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && (
             <div className="flex flex-col w-full">
               {/* 입찰 유형별 안내 문구 */}
               {bidType === 'support' && (
@@ -1776,7 +1792,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
             
             {/* 입찰 취소 버튼 - v3.0: 모집중과 입찰중 모두 */}
-            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
+            {(groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
               <button
                 onClick={() => setShowCancelBidDialog(true)}
                 className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
@@ -1786,7 +1802,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
             
             {/* 입찰 안내사항 - v3.0: 모집중과 입찰중 모두 */}
-            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
+            {(groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && (
             <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
               <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 입찰 안내사항</h4>
               <div className="text-sm text-gray-700 space-y-1">
@@ -1811,9 +1827,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           // 비참여자 또는 비회원
           <>
             {/* 공구가 종료된 경우 */}
-            {(groupBuy.status === 'completed' || groupBuy.status === 'cancelled' || 
-              groupBuy.status === 'final_selection_buyers' || groupBuy.status === 'final_selection_seller' ||
-              groupBuy.status === 'in_progress') ? (
+            {(groupBuyData.status === 'completed' || groupBuyData.status === 'cancelled' || 
+              groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ||
+              groupBuyData.status === 'in_progress') ? (
               <div className="p-4 bg-gray-100 rounded-lg text-center">
                 <p className="font-semibold text-gray-700">공구종료</p>
               </div>
@@ -1821,7 +1837,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               // 진행 중인 공구 - 참여 가능
               <div className="space-y-3">
                 {/* 공구 참여하기 버튼 */}
-                {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
+                {(groupBuyData.status === 'recruiting' || groupBuyData.status === 'bidding') && (
                   <Button
                     onClick={handleJoinClick}
                     className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
