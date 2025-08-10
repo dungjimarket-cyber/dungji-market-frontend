@@ -1102,7 +1102,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     <EndedGroupBuyAccessControl
       status={groupBuyData.status}
       isAuthenticated={!!user}
-      isParticipant={isParticipant}
+      isParticipant={isParticipant || hasBid}
     >
       <div className="min-h-screen bg-white">
       {/* 헤더 */}

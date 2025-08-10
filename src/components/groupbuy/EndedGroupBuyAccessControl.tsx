@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 interface EndedGroupBuyAccessControlProps {
   status: string;
   isAuthenticated: boolean;
-  isParticipant: boolean;
+  isParticipant: boolean; // 일반회원 참여 또는 판매회원 입찰 여부
   children: React.ReactNode;
 }
 
@@ -72,7 +72,7 @@ export function EndedGroupBuyAccessControl({
                   접근 권한이 없습니다
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  해당 공구 참여자만 확인 가능합니다.
+                  해당 공구 참여자(구매회원) 또는 입찰자(판매회원)만 확인 가능합니다.
                 </p>
                 <div className="space-y-3">
                   <Button 
