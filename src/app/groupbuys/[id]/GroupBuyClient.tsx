@@ -272,6 +272,19 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       }
     }
   }, [isSeller, groupBuy?.id]);
+
+  // v3.0: groupBuyState가 변경될 때 입찰 가능 상태 체크
+  useEffect(() => {
+    if (groupBuyState && groupBuyState.status) {
+      // recruiting 상태에서 입찰 가능 (v3.0: bidding 상태 제거)
+      const canBid = groupBuyState.status === 'recruiting';
+      setIsValidBidStatus(canBid);
+      console.log('입찰 가능 상태 체크:', {
+        status: groupBuyState.status,
+        canBid: canBid
+      });
+    }
+  }, [groupBuyState?.status]);
   
   // 판매자 입찰권 보유 여부 확인
   const checkBidTokens = async () => {
@@ -786,7 +799,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                       toast({
                         variant: 'destructive',
                         title: '입찰 불가',
-                        description: '모집 중이거나 입찰 중인 공구만 입찰할 수 있습니다.'
+                        description: '모집 중인 공구만 입찰할 수 있습니다.'
                       });
                       return;
                     }
