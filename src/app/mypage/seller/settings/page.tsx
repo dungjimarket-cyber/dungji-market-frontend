@@ -235,12 +235,21 @@ export default function SellerSettings() {
     try {
       // API 호출을 위한 데이터 준비
       const businessNumber = `${formData.businessNumber1}-${formData.businessNumber2}-${formData.businessNumber3}`;
+      
+      // 전화번호에서 하이픈 제거 (백엔드는 하이픈 없이 저장)
+      const cleanPhone = formData.phone.replace(/-/g, '');
+      
       const updateData: any = {
         nickname: formData.nickname,
-        phone: formData.phone,
         business_number: businessNumber,
         is_remote_sales: formData.isRemoteSales
       };
+      
+      // 전화번호가 변경된 경우에만 포함 (기존 전화번호와 비교)
+      const originalPhone = profile?.phone?.replace(/-/g, '');
+      if (cleanPhone !== originalPhone && cleanPhone) {
+        updateData.phone = cleanPhone;
+      }
 
       // 주소 정보 처리 - RegionDropdownWithCode에서 제공한 code 사용
       if (formData.addressProvince && formData.addressCityCode) {
