@@ -146,6 +146,12 @@ export default function SellerSettings() {
               const cityName = parts.length === 2 ? parts[1] : 
                               (parts[1].endsWith('시') || parts[1].endsWith('군') ? parts[1] : parts.slice(1).join(' '));
               
+              console.log('주소 설정:', {
+                provinceName,
+                cityName,
+                regionCode
+              });
+              
               setFormData(prev => ({
                 ...prev,
                 addressProvince: provinceName,
