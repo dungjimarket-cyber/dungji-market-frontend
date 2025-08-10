@@ -231,9 +231,12 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     // 판매회원 스타일
     if (user?.role === 'seller') {
-      // 모집중 - 입찰 불가
+      // v3.0: 모집중에도 입찰 가능
       if (isRecruiting) {
-        return 'bg-gray-400 text-white cursor-not-allowed';
+        if (hasBid) {
+          return 'bg-indigo-600 text-white hover:bg-indigo-700';
+        }
+        return 'bg-purple-600 text-white hover:bg-purple-700';
       }
       // 입찰중 - 입찰 가능
       if (isBidding) {
