@@ -46,10 +46,18 @@ const CancelReasonBadge = ({ reason }: { reason?: string }) => {
         </div>
       );
     case '구매자 전원 구매포기로 인한 공구 진행 취소':
+    case '참여자 전원 구매포기로 인한 공구 취소':
       return (
         <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-gray-50 to-red-50 rounded-lg border border-gray-200">
           <Info className="h-4 w-4 text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">구매자 전원 구매포기로 인한 공구 진행 취소</span>
+          <span className="text-sm font-medium text-gray-700">참여자 전원 구매포기로 인한 공구 취소</span>
+        </div>
+      );
+    case '낙찰자의 판매포기로 인한 공구 진행 취소':
+      return (
+        <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
+          <Info className="h-4 w-4 text-orange-600" />
+          <span className="text-sm font-medium text-orange-700">판매포기로 인한 공구 취소</span>
         </div>
       );
     default:
