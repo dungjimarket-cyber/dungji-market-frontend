@@ -22,9 +22,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
+import { formatBidAmount } from '@/lib/utils/maskAmount';
 
-// 입찰 금액 익명화 처리 함수는 더 이상 사용하지 않음
-// 요구사항에 따라 1위부터 10위까지 정상 금액 표기
+// 구성표에 따른 입찰 금액 표시 규칙 적용
+// 1위부터 10위까지 정상 금액 표기, 본인 입찰은 항상 정상 표기
 
 // 여기서는 BidData 인터페이스를 API 서비스에서 가져와 사용합니다
 
@@ -34,6 +35,8 @@ interface BidHistoryModalProps {
   groupBuyId: number;
   currentUserId?: number;
   isSeller?: boolean;
+  isParticipant?: boolean;  // 공구 참여 여부 추가
+  groupBuyStatus?: string;   // 공구 상태 추가
 }
 
 /**
@@ -44,7 +47,9 @@ export default function BidHistoryModal({
   onClose,
   groupBuyId,
   currentUserId,
-  isSeller = false
+  isSeller = false,
+  isParticipant = false,
+  groupBuyStatus
 }: BidHistoryModalProps) {
   const [bids, setBids] = useState<BidData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,6 +149,15 @@ export default function BidHistoryModal({
                   const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
                   const isWinner = index === 0;
                   
+                  // 모집종료 여부 확인
+                  const isRecruitingEnded = groupBuyStatus && 
+                    ['final_selection_buyers', 'final_selection_seller', 'in_progress', 'completed', 'cancelled'].includes(groupBuyStatus);
+                  
+                  // 금액 표시 로직 (구성표 기준)
+                  const shouldShowAmount = 
+                    isMyBid ||  // 본인 입찰은 항상 표시
+                    (isParticipant && isRecruitingEnded);  // 참여자이면서 모집종료 후
+                  
                   return (
                     <TableRow 
                       key={bid.id} 
@@ -174,7 +188,12 @@ export default function BidHistoryModal({
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {typeof bid.amount === 'string' ? bid.amount : `${formatNumberWithCommas(bid.amount)}원`}
+                        {typeof bid.amount === 'string' 
+                          ? bid.amount 
+                          : shouldShowAmount
+                            ? `${bid.amount.toLocaleString()}원`  // 정상 표기
+                            : `${formatBidAmount(bid.amount, false, 999)}원`  // 마스킹
+                        }
                       </TableCell>
                       {isSeller && (
                         <TableCell className="text-center">
