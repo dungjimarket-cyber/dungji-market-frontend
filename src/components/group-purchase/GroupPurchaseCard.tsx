@@ -51,7 +51,7 @@ interface GroupBuy {
     id: number;
     name: string;
     full_name?: string;
-    parent?: string;
+    parent_id?: string;
   }>; // 다중 지역 정보
 }
 

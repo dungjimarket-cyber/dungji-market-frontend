@@ -8,7 +8,7 @@ interface Region {
   name: string;
   full_name: string;
   level: number;
-  parent?: string;
+  parent_id?: string;
 }
 
 interface RegionDropdownWithCodeProps {
@@ -61,10 +61,9 @@ export default function RegionDropdownWithCode({
           p.full_name === selectedProvince
         );
         if (selectedProvinceData) {
-          // parent 필드 대신 code의 앞자리로 매칭
-          const provincePrefix = selectedProvinceData.code.substring(0, 2);
+          // parent_id로 하위 지역 찾기
           const cityList = regions.filter((r: Region) => 
-            r.level === 1 && r.code.startsWith(provincePrefix)
+            r.level === 1 && r.parent_id === selectedProvinceData.code
           );
           setCities(cityList);
           
@@ -127,10 +126,9 @@ export default function RegionDropdownWithCode({
           p.full_name === selectedProvince
         );
         if (selectedProvinceData) {
-          // parent 필드 대신 code의 앞자리로 매칭
-          const provincePrefix = selectedProvinceData.code.substring(0, 2);
+          // parent_id로 하위 지역 찾기
           const cityList = regions.filter((r: Region) => 
-            r.level === 1 && r.code.startsWith(provincePrefix)
+            r.level === 1 && r.parent_id === selectedProvinceData.code
           );
           setCities(cityList);
           
@@ -180,10 +178,9 @@ export default function RegionDropdownWithCode({
     const selectedProvinceData = provinces.find(p => p.name === newProvince);
     
     if (selectedProvinceData) {
-      // parent 필드 대신 code의 앞자리로 매칭
-      const provincePrefix = selectedProvinceData.code.substring(0, 2);
+      // parent_id로 하위 지역 찾기
       const cityList = regions.filter((r: Region) => 
-        r.level === 1 && r.code.startsWith(provincePrefix)
+        r.level === 1 && r.parent_id === selectedProvinceData.code
       );
       setCities(cityList);
     }
