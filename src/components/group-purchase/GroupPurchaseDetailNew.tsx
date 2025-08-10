@@ -1839,10 +1839,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </button>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-3">
+              {/* <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-3">
                 <p className="text-sm font-medium text-blue-900 mb-2">💰 입찰 금액은 1,000원 단위로 입력됩니다.</p>
                 <p className="text-sm font-semibold text-blue-800 mb-1">❗ 앞자리를 제외한 입찰가는 비공개입니다.</p>
-              </div>
+              </div> */}
             </div>
             )}
             
