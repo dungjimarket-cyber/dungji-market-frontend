@@ -596,10 +596,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               setSelectedBidAmount(myBid.amount);
             }
             
-            // 입찰 취소 가능 여부 설정 (입찰 중이고 마감 시간 전)
+            // 입찰 취소 가능 여부 설정 (v3.0: 모집중 또는 입찰중이고 마감 시간 전)
             const now = new Date();
             const endTime = new Date(groupBuy.end_time);
-            const canCancel = groupBuy.status === 'bidding' && now < endTime;
+            const canCancel = (groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && now < endTime;
             setCanCancelBid(canCancel);
             
             // 내 입찰 순위 계산
@@ -1719,8 +1719,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
             
-            {/* 입찰 입력 폼 - 입찰중일 때만 표시 */}
-            {groupBuy.status === 'bidding' && (
+            {/* 입찰 입력 폼 - v3.0: 모집중과 입찰중 모두 표시 */}
+            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
             <div className="flex flex-col w-full">
               {/* 입찰 유형별 안내 문구 */}
               {bidType === 'support' && (
@@ -1775,8 +1775,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
             )}
             
-            {/* 입찰 취소 버튼 - 입찰중일 때만 */}
-            {groupBuy.status === 'bidding' && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
+            {/* 입찰 취소 버튼 - v3.0: 모집중과 입찰중 모두 */}
+            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
               <button
                 onClick={() => setShowCancelBidDialog(true)}
                 className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
@@ -1785,8 +1785,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </button>
             )}
             
-            {/* 입찰 안내사항 - 입찰중일 때만 */}
-            {groupBuy.status === 'bidding' && (
+            {/* 입찰 안내사항 - v3.0: 모집중과 입찰중 모두 */}
+            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && (
             <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
               <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 입찰 안내사항</h4>
               <div className="text-sm text-gray-700 space-y-1">
