@@ -116,28 +116,51 @@ export default function SellerSettings() {
         
         // address_region에서 시/도와 시/군/구 추출
         if (data.addressRegion) {
-          const fullName = data.addressRegion.full_name || data.addressRegion.name || '';
-          const parts = fullName.split(' ');
           const regionCode = data.addressRegion.code || '';
+          const regionName = data.addressRegion.name || '';
+          const fullName = data.addressRegion.full_name || '';
+          
+          console.log('주소 정보:', {
+            code: regionCode,
+            name: regionName,
+            full_name: fullName
+          });
           
           // 세종특별자치시 특수 처리
-          if (fullName === '세종특별자치시') {
+          if (fullName === '세종특별자치시' || regionName === '세종특별자치시') {
             setFormData(prev => ({
               ...prev,
               addressProvince: '세종특별자치시',
               addressCity: '세종특별자치시',
               addressCityCode: regionCode
             }));
-          } else if (parts.length >= 2) {
-            const updateData = {
-              addressProvince: parts[0],
-              addressCity: parts[1],
-              addressCityCode: regionCode
-            };
-            setFormData(prev => ({
-              ...prev,
-              ...updateData
-            }));
+          } else {
+            // full_name에서 시/도와 시/군/구 추출
+            // 예: "경기도 안양시" -> ["경기도", "안양시"]
+            const parts = fullName.split(' ').filter(part => part.length > 0);
+            
+            if (parts.length >= 2) {
+              // 첫 번째 부분은 시/도
+              const provinceName = parts[0];
+              // 두 번째 부분은 시/군/구 (만강구, 동구 등의 경우 처리)
+              const cityName = parts.length === 2 ? parts[1] : 
+                              (parts[1].endsWith('시') || parts[1].endsWith('군') ? parts[1] : parts.slice(1).join(' '));
+              
+              setFormData(prev => ({
+                ...prev,
+                addressProvince: provinceName,
+                addressCity: cityName,
+                addressCityCode: regionCode
+              }));
+            } else if (regionName) {
+              // full_name이 없거나 부족한 경우 name을 사용
+              setFormData(prev => ({
+                ...prev,
+                addressProvince: '',
+                addressCity: regionName,
+                addressCityCode: regionCode
+              }));
+            }
           }
         }
       } catch (error) {

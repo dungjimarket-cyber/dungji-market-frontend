@@ -42,15 +42,24 @@ export default function RegionDropdownWithCode({
 
   // props가 변경될 때 state 업데이트
   useEffect(() => {
-    setProvince(selectedProvince);
-    setCity(selectedCity);
-    setCityCode(selectedCityCode);
+    if (selectedProvince !== province) {
+      setProvince(selectedProvince);
+    }
+    if (selectedCity !== city) {
+      setCity(selectedCity);
+    }
+    if (selectedCityCode !== cityCode) {
+      setCityCode(selectedCityCode);
+    }
     
     // 시/도가 변경되었고 provinces가 로드되어 있으면 cities 업데이트
-    if (selectedProvince && provinces.length > 0) {
+    if (selectedProvince && provinces.length > 0 && !cities.length) {
       const updateCities = async () => {
         const regions = await loadRegions();
-        const selectedProvinceData = provinces.find(p => p.name === selectedProvince);
+        const selectedProvinceData = provinces.find(p => 
+          p.name === selectedProvince || 
+          p.full_name === selectedProvince
+        );
         if (selectedProvinceData) {
           // parent 필드 대신 code의 앞자리로 매칭
           const provincePrefix = selectedProvinceData.code.substring(0, 2);
@@ -58,11 +67,23 @@ export default function RegionDropdownWithCode({
             r.level === 1 && r.code.startsWith(provincePrefix)
           );
           setCities(cityList);
+          
+          // 선택된 시/군/구가 있으면 해당 코드도 설정
+          if (selectedCity && cityList.length > 0) {
+            const matchedCity = cityList.find((c: Region) => 
+              c.name === selectedCity || 
+              c.full_name === selectedCity ||
+              c.full_name?.includes(selectedCity)
+            );
+            if (matchedCity && !selectedCityCode) {
+              setCityCode(matchedCity.code);
+            }
+          }
         }
       };
       updateCities();
     }
-  }, [selectedProvince, selectedCity, selectedCityCode]);
+  }, [selectedProvince, selectedCity, selectedCityCode, provinces.length]);
 
   // 지역 데이터 로드 (캐싱 적용)
   const loadRegions = async () => {
@@ -101,7 +122,10 @@ export default function RegionDropdownWithCode({
       
       // 선택된 시/도가 있으면 해당 시/군/구 목록 로드
       if (selectedProvince) {
-        const selectedProvinceData = provinceList.find((p: Region) => p.name === selectedProvince);
+        const selectedProvinceData = provinceList.find((p: Region) => 
+          p.name === selectedProvince || 
+          p.full_name === selectedProvince
+        );
         if (selectedProvinceData) {
           // parent 필드 대신 code의 앞자리로 매칭
           const provincePrefix = selectedProvinceData.code.substring(0, 2);
@@ -110,11 +134,26 @@ export default function RegionDropdownWithCode({
           );
           setCities(cityList);
           
-          // 선택된 시/군/구가 있지만 코드가 없는 경우, 이름으로 코드 찾기
-          if (selectedCity && !selectedCityCode) {
-            const cityData = cityList.find((c: Region) => c.name === selectedCity);
-            if (cityData) {
-              setCityCode(cityData.code);
+          // 선택된 시/군/구가 있으면 해당 아이템 찾기
+          if (selectedCity) {
+            // 코드가 있으면 코드로 매칭
+            if (selectedCityCode) {
+              const cityData = cityList.find((c: Region) => c.code === selectedCityCode);
+              if (cityData) {
+                setCity(cityData.name);
+                setCityCode(cityData.code);
+              }
+            } else {
+              // 코드가 없으면 이름으로 매칭
+              const cityData = cityList.find((c: Region) => 
+                c.name === selectedCity || 
+                c.full_name === selectedCity ||
+                c.full_name?.endsWith(selectedCity)
+              );
+              if (cityData) {
+                setCity(cityData.name);
+                setCityCode(cityData.code);
+              }
             }
           }
         }
