@@ -1208,25 +1208,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           • 가입약정 기간은 24개월 입니다
         </div>
 
-        {/* 최종선택 타이머 */}
-        {isBuyerFinalSelection && groupBuy.final_selection_end && (
-          <div className="mb-6">
-            <SimpleFinalSelectionTimer 
-              endTime={groupBuy.final_selection_end}
-              onTimeEnd={() => router.refresh()}
-            />
-          </div>
-        )}
-        
-        {/* 판매자 최종선택 타이머 */}
-        {isSellerFinalSelection && groupBuy.seller_selection_end && (
-          <div className="mb-6">
-            <SimpleFinalSelectionTimer 
-              endTime={groupBuy.seller_selection_end}
-              onTimeEnd={() => router.refresh()}
-            />
-          </div>
-        )}
+        {/* 최종선택 타이머 - 공구 상태 정보 섹션으로 통합 이동 */}
         
         {/* 판매자 최종선택 UI */}
         {isSeller && isSellerFinalSelection && hasWinningBid && (
@@ -1369,36 +1351,113 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <p className="text-xs text-gray-500 mt-1">명</p>
           </div>
           <div className="bg-white rounded-lg p-4">
-            <p className="text-gray-500 text-sm mb-2 text-center">남은 시간</p>
-            <CountdownTimer 
-              endTime={groupBuy.end_time}
-              format="compact"
-              showLabel={false}
-              urgent={60}
-              className="text-xl font-bold text-center"
-            />
-            {/* 시간 진행률 바 */}
-            <div className="mt-3">
-              <Progress 
-                value={(() => {
-                  const now = new Date().getTime();
-                  const start = new Date(groupBuy.start_time).getTime();
-                  const end = new Date(groupBuy.end_time).getTime();
-                  const total = end - start;
-                  const remaining = end - now;
-                  // 남은 시간 비율 계산 (100%에서 시작해서 0%로 감소)
-                  return Math.min(100, Math.max(0, (remaining / total) * 100));
-                })()}
-                className="h-2"
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
+            {/* 상태별 타이머 표시 */}
+            {groupBuyData.status === 'recruiting' && (
+              <>
+                <p className="text-gray-500 text-sm mb-2 text-center">공구 마감까지</p>
+                <CountdownTimer 
+                  endTime={groupBuy.end_time}
+                  format="compact"
+                  showLabel={false}
+                  urgent={60}
+                  className="text-xl font-bold text-center"
+                />
+                {/* 시간 진행률 바 */}
+                <div className="mt-3">
+                  <Progress 
+                    value={(() => {
+                      const now = new Date().getTime();
+                      const start = new Date(groupBuy.start_time).getTime();
+                      const end = new Date(groupBuy.end_time).getTime();
+                      const total = end - start;
+                      const remaining = end - now;
+                      // 남은 시간 비율 계산 (100%에서 시작해서 0%로 감소)
+                      return Math.min(100, Math.max(0, (remaining / total) * 100));
+                    })()}
+                    className="h-2"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2 text-center">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
+              </>
+            )}
+            
+            {groupBuyData.status === 'final_selection_buyers' && groupBuy.final_selection_end && (
+              <>
+                <p className="text-gray-500 text-sm mb-2 text-center">구매자 최종선택 마감까지</p>
+                <CountdownTimer 
+                  endTime={groupBuy.final_selection_end}
+                  format="compact"
+                  showLabel={false}
+                  urgent={60}
+                  className="text-xl font-bold text-center"
+                />
+                <div className="mt-3">
+                  <Progress 
+                    value={(() => {
+                      const now = new Date().getTime();
+                      const start = new Date(groupBuy.end_time).getTime();
+                      const end = new Date(groupBuy.final_selection_end).getTime();
+                      const total = 12 * 60 * 60 * 1000; // 12시간
+                      const remaining = end - now;
+                      // 남은 시간 비율 계산 (100%에서 시작해서 0%로 감소)
+                      return Math.min(100, Math.max(0, (remaining / total) * 100));
+                    })()}
+                    className="h-2"
+                  />
+                </div>
+                <p className="text-xs text-red-500 mt-2 text-center font-medium">
+                  ⚠️ 시간 내 선택하지 않으면 자동 포기 처리
+                </p>
+              </>
+            )}
+            
+            {groupBuyData.status === 'final_selection_seller' && groupBuy.seller_selection_end && (
+              <>
+                <p className="text-gray-500 text-sm mb-2 text-center">판매자 최종선택 마감까지</p>
+                <CountdownTimer 
+                  endTime={groupBuy.seller_selection_end}
+                  format="compact"
+                  showLabel={false}
+                  urgent={60}
+                  className="text-xl font-bold text-center"
+                />
+                <div className="mt-3">
+                  <Progress 
+                    value={(() => {
+                      const now = new Date().getTime();
+                      const end = new Date(groupBuy.seller_selection_end).getTime();
+                      const total = 6 * 60 * 60 * 1000; // 6시간
+                      const remaining = end - now;
+                      // 남은 시간 비율 계산 (100%에서 시작해서 0%로 감소)
+                      return Math.min(100, Math.max(0, (remaining / total) * 100));
+                    })()}
+                    className="h-2"
+                  />
+                </div>
+                {isSeller && (
+                  <p className="text-xs text-red-500 mt-2 text-center font-medium">
+                    ⚠️ 시간 내 선택하지 않으면 자동 포기 처리
+                  </p>
+                )}
+              </>
+            )}
+            
+            {(groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed' || groupBuyData.status === 'cancelled') && (
+              <>
+                <p className="text-gray-500 text-sm mb-2 text-center">거래 상태</p>
+                <p className="text-xl font-bold text-center">
+                  {groupBuyData.status === 'in_progress' && '거래중'}
+                  {groupBuyData.status === 'completed' && '거래완료'}
+                  {groupBuyData.status === 'cancelled' && '취소됨'}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
       
-      {/* 판매자 입찰 정보 */}
-      {isSeller && (
+      {/* 판매자 입찰 정보 - 히든 처리 */}
+      {/* {isSeller && (
         <div className="mx-4 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium text-blue-800 flex items-center">
@@ -1440,7 +1499,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* 버튼 영역 (고정되지 않음) */}
       <div className="px-4 py-6">

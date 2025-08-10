@@ -6,9 +6,11 @@ import { Clock } from 'lucide-react';
 interface SimpleFinalSelectionTimerProps {
   endTime?: string;
   onTimeEnd?: () => void;
+  maxHours?: number; // 최대 시간 (기본값: 12시간)
+  label?: string; // 타이머 레이블
 }
 
-export function SimpleFinalSelectionTimer({ endTime, onTimeEnd }: SimpleFinalSelectionTimerProps) {
+export function SimpleFinalSelectionTimer({ endTime, onTimeEnd, maxHours = 12, label = '최종선택 마감까지' }: SimpleFinalSelectionTimerProps) {
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [isExpired, setIsExpired] = useState(false);
   const [totalSeconds, setTotalSeconds] = useState(0);
@@ -58,8 +60,8 @@ export function SimpleFinalSelectionTimer({ endTime, onTimeEnd }: SimpleFinalSel
 
   if (!endTime) return null;
 
-  // 12시간 = 43200초
-  const maxSeconds = 12 * 60 * 60;
+  // maxHours를 초로 변환 (기본값: 12시간)
+  const maxSeconds = maxHours * 60 * 60;
   const progressPercentage = Math.max(0, Math.min(100, (totalSeconds / maxSeconds) * 100));
   
   // 남은 시간에 따른 색상 변경
@@ -80,7 +82,7 @@ export function SimpleFinalSelectionTimer({ endTime, onTimeEnd }: SimpleFinalSel
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Clock className={`h-5 w-5 ${getColorClass()}`} />
-          <h3 className="font-semibold text-gray-900">최종선택 마감까지</h3>
+          <h3 className="font-semibold text-gray-900">{label}</h3>
         </div>
         <div className={`text-lg font-bold ${getColorClass()}`}>
           {timeLeft}
