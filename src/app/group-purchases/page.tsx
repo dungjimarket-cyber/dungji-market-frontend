@@ -83,7 +83,7 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
-        // 종료 탭: 종료된 공구들 (ended, final_selection, seller_confirmation, completed, cancelled)
+        // 공구완료 탭: 완료된 공구들 (ended, final_selection, seller_confirmation, completed, cancelled)
         params.append('status', 'ended,final_selection,seller_confirmation,completed,cancelled');
       } else if (currentTab === 'all') {
         // 전체 탭은 모든 상태 포함 - 상태 필터 없음
@@ -331,7 +331,7 @@ function GroupPurchasesPageContent() {
               <TabsTrigger value="all">전체</TabsTrigger>
               <TabsTrigger value="popular">인기순</TabsTrigger>
               <TabsTrigger value="newest">최신순</TabsTrigger>
-              <TabsTrigger value="completed">종료</TabsTrigger>
+              <TabsTrigger value="completed">공구완료</TabsTrigger>
             </TabsList>
 
             {/* 통합된 콘텐츠 영역 - 모든 탭이 동일한 데이터 표시 */}

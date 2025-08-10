@@ -80,14 +80,14 @@ function CompletedPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <MainHeader title="완료된 공동구매" />
+      <MainHeader title="공구완료" />
       
       <div className="pt-16 pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* 페이지 헤더 */}
           <div className="px-4 py-6 border-b border-gray-100">
-            <h1 className="text-2xl font-bold text-gray-900">완료된 공동구매</h1>
-            <p className="text-sm text-gray-600 mt-1">종료된 공동구매 내역을 확인하세요</p>
+            <h1 className="text-2xl font-bold text-gray-900">공구완료</h1>
+            <p className="text-sm text-gray-600 mt-1">완료된 공동구매 내역을 확인하세요</p>
           </div>
 
           {/* 공구 목록 */}
@@ -103,7 +103,7 @@ function CompletedPageContent() {
                 </div>
               ) : groupBuys.length === 0 ? (
                 <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">완료된 공동구매가 없습니다.</p>
+                  <p className="text-gray-500">완료된 공구가 없습니다.</p>
                 </div>
               ) : (
                 groupBuys.map((groupBuy) => (
@@ -125,7 +125,7 @@ export default function CompletedPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50">
-        <MainHeader title="완료된 공동구매" />
+        <MainHeader title="공구완료" />
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>        
