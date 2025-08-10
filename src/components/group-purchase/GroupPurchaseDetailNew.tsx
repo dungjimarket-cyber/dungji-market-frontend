@@ -1304,11 +1304,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         )}
 
         {/* 안내 메시지 */}
-        <div className="text-sm text-gray-500 text-center mb-8">
+        {/* <div className="text-sm text-gray-500 text-center mb-8">
           <p>*카드 제휴할인이나 증정품을 제외한 순수 지원금입니다.</p>
           <p className="mt-1">(공시지원금+추가지원금)</p>
           <p className="mt-1">*앞자리를 제외한 입찰 금액은 비공개 입니다.</p>
-        </div>
+        </div> */}
       </div>
 
       {/* 공구 정보 섹션 */}
