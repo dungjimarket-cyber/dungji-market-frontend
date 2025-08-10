@@ -182,14 +182,17 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     // 판매회원
     if (user?.role === 'seller') {
-      // 모집중일 때는 입찰할 수 없음
+      // v3.0: 모집중일 때도 입찰 가능
       if (isRecruiting) {
-        return '입찰 대기중';
+        if (hasBid) {
+          return '다시 입찰하기';
+        }
+        return '공구 입찰하기';
       }
-      // 입찰중일 때
+      // 입찰중일 때 (v3.0에서는 사용 안함)
       if (isBidding) {
         if (hasBid) {
-          return '입찰 수정하기';
+          return '다시 입찰하기';
         }
         return '공구 입찰하기';
       }

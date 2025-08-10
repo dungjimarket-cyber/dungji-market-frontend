@@ -1643,25 +1643,25 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
          !isEnded ? (
           // 판매자용 인터페이스
           <div className="space-y-4">
-            {groupBuy.status === 'recruiting' ? (
-              // 모집중일 때 - 판매자는 입찰할 수 없음
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-800 mb-2">입찰 대기중</h3>
-                <p className="text-sm text-gray-600">현재 구매자 모집중입니다. 입찰은 모집이 완료된 후 시작됩니다.</p>
-                <div className="mt-3 text-sm text-gray-500">
+            {groupBuy.status === 'recruiting' && !hasBid ? (
+              // v3.0: 모집과 입찰 동시 진행
+              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 가능</h3>
+                <p className="text-sm text-yellow-700">모집과 입찰이 동시에 진행중입니다. 지금 입찰하세요!</p>
+                <div className="mt-2 text-sm text-gray-600">
                   <div>• 현재 참여자: {groupBuy.current_participants}/{groupBuy.max_participants}명</div>
-                  <div>• 모집 완료 후 입찰이 시작됩니다</div>
+                  <div>• 공구 종료까지 입찰 가능합니다</div>
                 </div>
               </div>
-            ) : !hasBid ? (
+            ) : groupBuy.status === 'bidding' && !hasBid ? (
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 모드</h3>
                 <p className="text-sm text-yellow-700">입찰에 참여하여 공구 판매 기회를 얻으세요.</p>
               </div>
             ) : null}
             
-            {/* 입찰 타입 표시 - 입찰중일 때만 */}
-            {groupBuy.status === 'bidding' && !hasBid && (
+            {/* 입찰 타입 표시 - v3.0: recruiting 상태에서도 표시 */}
+            {(groupBuy.status === 'recruiting' || groupBuy.status === 'bidding') && !hasBid && (
               <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
                 <div className="text-sm font-medium">입찰 유형:</div>
                 <div className="text-sm font-medium px-3 py-1 bg-blue-600 text-white rounded-md">

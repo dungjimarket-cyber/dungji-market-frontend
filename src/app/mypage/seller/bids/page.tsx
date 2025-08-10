@@ -191,7 +191,7 @@ function BidsListClient() {
   // 입찰 상태에 따른 텍스트 표시
   const statusText = (status: string, bid?: any) => {
     switch (status) {
-      case 'pending': return '입찰 대기중';
+      case 'pending': return '입찰 진행중';
       case 'selected': 
         // final_decision 상태에 따라 다르게 표시
         if (bid?.final_decision === 'pending') {
@@ -271,7 +271,7 @@ function BidsListClient() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">모든 상태</SelectItem>
-            <SelectItem value="pending">입찰 대기중</SelectItem>
+            <SelectItem value="pending">입찰 진행중</SelectItem>
             <SelectItem value="final_selection">최종선택 대기중</SelectItem>
             <SelectItem value="selected">낙찰됨</SelectItem>
             <SelectItem value="confirmed">판매 확정</SelectItem>
