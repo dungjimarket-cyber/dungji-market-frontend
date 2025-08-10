@@ -66,27 +66,27 @@ export default function GroupBuyActionButton({
     }
   };
 
-  // 버튼 텍스트 결정
+  // 버튼 텍스트 결정 (v3.0 변경)
   const getButtonText = () => {
     if (isCreator) return '내가 만든 공구';
     if (!isRecruiting) return '종료된 공구';
     if (isFull) return '인원 마감';
     
-    // 판매회원인 경우
+    // 판매회원인 경우 (v3.0: 입찰 텍스트 제거, 참여로 통합)
     if (isSeller) {
-      return '공구 입찰하기';
+      return isParticipating ? '참여완료' : '공구참여하기';
     }
     
     // 일반회원인 경우
     if (isParticipating) {
-      return '참여 완료';
+      return '참여완료';
     }
     
     if (!hasSellerMembers) {
       return '판매회원 없음';
     }
     
-    return '공구 참여하기';
+    return '공구참여하기';
   };
 
   // 버튼 비활성화 조건
