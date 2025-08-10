@@ -6,6 +6,7 @@ import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react'
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { SimplifiedGroupBuyButton } from '@/components/groupbuy/SimplifiedGroupBuyButton';
 
 interface GroupBuy {
   id: number;
@@ -169,106 +170,74 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     return 'text-green-600';
   };
 
+  // 간소화된 버튼 텍스트 (4개로 통합)
   const getButtonText = () => {
-    if (isCompleted) return '마감완료';
-    
-    // 최종선택중 상태 체크
-    if (isFinalSelection) return '공구 마감';
+    const status = groupBuy.status;
     
     // 비로그인
     if (!isAuthenticated) {
       return '공구 둘러보기';
     }
     
+    // 일반회원
+    if (user?.role === 'buyer' || !user?.role) {
+      if (status === 'recruiting') {
+        return isParticipant ? '참여 완료' : '공구 참여하기';
+      }
+      if (status === 'final_selection_buyers' || 
+          status === 'final_selection_seller' || 
+          status === 'in_progress') {
+        return '진행상황 확인';
+      }
+      if (status === 'completed') {
+        return '공구 완료';
+      }
+      if (status === 'cancelled') {
+        return '공구 취소';
+      }
+    }
+    
     // 판매회원
     if (user?.role === 'seller') {
-      // v3.0: 모집중일 때도 입찰 가능
-      if (isRecruiting) {
-        if (hasBid) {
-          return '다시 입찰하기';
-        }
-        return '공구 입찰하기';
+      if (status === 'recruiting') {
+        return hasBid ? '다시 입찰하기' : '공구 입찰하기';
       }
-      // 입찰중일 때 (v3.0에서는 사용 안함)
-      if (isBidding) {
-        if (hasBid) {
-          return '다시 입찰하기';
-        }
-        return '공구 입찰하기';
+      if (status === 'final_selection_buyers' || 
+          status === 'final_selection_seller' || 
+          status === 'in_progress') {
+        return '진행상황 확인';
       }
-      // 그 외 상태
-      return '입찰 마감';
+      if (status === 'completed') {
+        return '공구 완료';
+      }
+      if (status === 'cancelled') {
+        return '공구 취소';
+      }
     }
     
-    // 일반회원
-    if (isRecruiting) {
-      if (isParticipant) {
-        return '참여 완료';
-      }
-      return '공구 참여하기';
-    }
-    
-    // 일반회원 - 입찰중 상태
-    if (isBidding) {
-      if (isParticipant) {
-        return '참여 완료';
-      }
-      return '입찰 진행중';
-    }
-    
-    return '공구 마감';
+    return '확인';
   };
 
+  // 간소화된 버튼 스타일
   const getButtonStyle = () => {
-    if (isCompleted) {
-      return 'bg-gray-500 text-white cursor-not-allowed';
+    const status = groupBuy.status;
+    
+    if (status === 'completed' || status === 'cancelled') {
+      return 'bg-gray-500 text-white hover:bg-gray-600';
     }
     
-    // 최종선택중 상태
-    if (isFinalSelection) {
-      return 'bg-orange-500 text-white cursor-not-allowed';
-    }
-    
-    // 판매회원 스타일
-    if (user?.role === 'seller') {
-      // v3.0: 모집중에도 입찰 가능
-      if (isRecruiting) {
-        if (hasBid) {
-          return 'bg-indigo-600 text-white hover:bg-indigo-700';
-        }
-        return 'bg-purple-600 text-white hover:bg-purple-700';
-      }
-      // 입찰중 - 입찰 가능
-      if (isBidding) {
-        if (hasBid) {
-          return 'bg-indigo-600 text-white hover:bg-indigo-700';
-        }
-        return 'bg-purple-600 text-white hover:bg-purple-700';
-      }
-      // 입찰 마감
-      return 'bg-gray-500 text-white cursor-not-allowed';
-    }
-    
-    // 일반회원 스타일
-    if (isRecruiting) {
-      if (isParticipant) {
+    if (status === 'recruiting') {
+      if (user?.role === 'buyer' && isParticipant) {
         return 'bg-blue-600 text-white hover:bg-blue-700';
       }
-      if (isUrgent) {
-        return 'bg-gradient-to-r from-purple-600 to-purple-700 text-purple-100 hover:from-purple-700 hover:to-purple-800';
+      if (user?.role === 'seller' && hasBid) {
+        return 'bg-indigo-600 text-white hover:bg-indigo-700';
       }
-      return 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800';
+      return 'bg-purple-600 text-white hover:bg-purple-700';
     }
     
-    // 입찰중 상태 (일반회원)
-    if (isBidding) {
-      if (isParticipant) {
-        return 'bg-blue-600 text-white hover:bg-blue-700';
-      }
-      return 'bg-gray-400 text-white cursor-not-allowed';
-    }
-    
-    return 'bg-gray-500 text-white cursor-not-allowed';
+    // 진행상황 확인 버튼
+    return 'bg-orange-600 text-white hover:bg-orange-700';
   };
 
   /**
@@ -328,32 +297,81 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
         
-        {/* 공구 상태 배지 - 우측 상단 */}
+        {/* 공구 상태 배지 - 우측 상단 (간소화) */}
         <div className="absolute top-4 right-4">
-          {isRecruiting && (
-            <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-              <Users className="w-4 h-4" />
-              <span>모집중</span>
-            </div>
-          )}
-          {isBidding && (
-            <div className="flex items-center gap-1 bg-purple-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-              <Gavel className="w-4 h-4" />
-              <span>입찰중</span>
-            </div>
-          )}
-          {isFinalSelection && (
-            <div className="flex items-center gap-1 bg-orange-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-              <CheckCircle className="w-4 h-4" />
-              <span>최종선택중</span>
-            </div>
-          )}
-          {isCompleted && (
-            <div className="flex items-center gap-1 bg-gray-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-              <CheckCircle className="w-4 h-4" />
-              <span>공구종료</span>
-            </div>
-          )}
+          {(() => {
+            const status = groupBuy.status;
+            
+            // 모집중
+            if (status === 'recruiting') {
+              // 참여/입찰 상태 표시
+              if (user?.role === 'buyer' && isParticipant) {
+                return (
+                  <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>참여중</span>
+                  </div>
+                );
+              }
+              if (user?.role === 'seller' && hasBid) {
+                return (
+                  <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>입찰완료</span>
+                  </div>
+                );
+              }
+              return (
+                <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <Users className="w-4 h-4" />
+                  <span>모집중</span>
+                </div>
+              );
+            }
+            
+            // 진행 상태별 배지
+            if (status === 'final_selection_buyers') {
+              return (
+                <div className="flex items-center gap-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <Clock className="w-4 h-4" />
+                  <span>구매자 선택중</span>
+                </div>
+              );
+            }
+            if (status === 'final_selection_seller') {
+              return (
+                <div className="flex items-center gap-1 bg-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <Clock className="w-4 h-4" />
+                  <span>판매자 선택중</span>
+                </div>
+              );
+            }
+            if (status === 'in_progress') {
+              return (
+                <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>거래중</span>
+                </div>
+              );
+            }
+            if (status === 'completed') {
+              return (
+                <div className="flex items-center gap-1 bg-gray-700 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>완료</span>
+                </div>
+              );
+            }
+            if (status === 'cancelled') {
+              return (
+                <div className="flex items-center gap-1 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <span>취소</span>
+                </div>
+              );
+            }
+            
+            return null;
+          })()}
         </div>
         
         {/* 추가 정보 배지 - 왼쪽 상단 */}

@@ -18,6 +18,9 @@ import { WinningBidDisplay } from '@/components/groupbuy/WinningBidDisplay';
 import { FinalSelectionTimer } from '@/components/final-selection/FinalSelectionTimer';
 import { SimpleFinalSelectionTimer } from '@/components/final-selection/SimpleFinalSelectionTimer';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
+import { BuyerConfirmationModal } from '@/components/groupbuy/BuyerConfirmationModal';
+import { EndedGroupBuyAccessControl } from '@/components/groupbuy/EndedGroupBuyAccessControl';
+import { SimplifiedGroupBuyButton } from '@/components/groupbuy/SimplifiedGroupBuyButton';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Progress } from '@/components/ui/progress';
 import { FinalDecisionModal } from '@/components/groupbuy/FinalDecisionModal';
@@ -155,6 +158,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [hasWinningBid, setHasWinningBid] = useState(false);
   const [winningBidInfo, setWinningBidInfo] = useState<any>(null);
   const [groupBuyData, setGroupBuyData] = useState(groupBuy);
+  
+  // 구매자 확정률 모달 상태
+  const [showBuyerConfirmationModal, setShowBuyerConfirmationModal] = useState(false);
+  const [buyerConfirmationData, setBuyerConfirmationData] = useState<{
+    total_participants: number;
+    confirmed_count: number;
+    confirmation_rate: number;
+  } | null>(null);
 
   useEffect(() => {
     setIsKakaoInAppBrowser(/KAKAOTALK/i.test(navigator.userAgent));
@@ -1088,7 +1099,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
 
   return (
-    <div className="min-h-screen bg-white">
+    <EndedGroupBuyAccessControl
+      status={groupBuyData.status}
+      isAuthenticated={!!user}
+      isParticipant={isParticipant}
+    >
+      <div className="min-h-screen bg-white">
       {/* 헤더 */}
       <div className="sticky top-0 z-40 bg-white border-b">
         <div className="flex items-center justify-between px-4 h-14">
@@ -1241,6 +1257,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
+              {/* 낙찰자에게만 최종 낙찰자 선정 메시지 표시 */}
+              {isSeller && hasWinningBid && (
+                <div className="mb-4 p-3 bg-orange-100 rounded-lg">
+                  <p className="text-lg font-bold text-orange-700">🎉 최종 낙찰자로 선정되었습니다</p>
+                </div>
+              )}
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Crown className="h-6 w-6 text-orange-500" />
                 <p className="text-xl font-bold text-gray-800">최종 낙찰 지원금</p>
@@ -1289,14 +1311,41 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {totalBids > 0 && (
                 <>
                   <p className="text-xs text-gray-500 mt-1">총 {totalBids}개 입찰</p>
-                  {!isSeller && (
-                    <button
-                      onClick={() => setShowBidHistoryModal(true)}
-                      className="text-xs text-blue-600 hover:underline mt-1"
-                    >
-                      입찰 내역 보기
-                    </button>
-                  )}
+                  <div className="flex items-center justify-center gap-3 mt-2">
+                    {!isSeller && (
+                      <button
+                        onClick={() => setShowBidHistoryModal(true)}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        입찰 내역 보기
+                      </button>
+                    )}
+                    {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 */}
+                    {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
+                      <>
+                        <span className="text-gray-400">|</span>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                                headers: {
+                                  'Authorization': `Bearer ${accessToken}`,
+                                }
+                              });
+                              const data = await res.json();
+                              setBuyerConfirmationData(data);
+                              setShowBuyerConfirmationModal(true);
+                            } catch (error) {
+                              console.error('Error fetching buyer confirmation stats:', error);
+                            }
+                          }}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          구매자 확정률 확인
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -1612,26 +1661,29 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="p-4 bg-yellow-50 rounded-lg text-center mb-3">
                   <p className="font-semibold text-yellow-800">구매자 최종선택 대기중</p>
                 </div>
+                <div className="p-3 bg-orange-100 rounded-lg text-center mb-3">
+                  <p className="text-2xl font-bold text-orange-600">🎉 최종 낙찰되었습니다!</p>
+                </div>
                 <Button
-                  onClick={() => {
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                      headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                      }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                      alert(`공구 참여인원: ${data.total_participants}명\n구매확정: ${data.confirmed_count}명 (확정률 ${data.confirmation_rate}%)`);
-                    });
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                        headers: {
+                          'Authorization': `Bearer ${accessToken}`,
+                        }
+                      });
+                      const data = await res.json();
+                      setBuyerConfirmationData(data);
+                      setShowBuyerConfirmationModal(true);
+                    } catch (error) {
+                      console.error('Error fetching buyer confirmation stats:', error);
+                    }
                   }}
                   variant="outline"
                   className="w-full py-3"
                 >
                   구매자 확정률 실시간 확인
                 </Button>
-                <div className="p-3 bg-orange-100 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-orange-600">🎉 최종 낙찰되었습니다!</p>
-                </div>
               </>
             )}
 
@@ -1641,16 +1693,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="p-4 bg-blue-50 rounded-lg mb-3">
                   <p className="text-sm text-gray-700">구매자 확정률 최종</p>
                   <Button
-                    onClick={() => {
-                      fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                        headers: {
-                          'Authorization': `Bearer ${accessToken}`,
-                        }
-                      })
-                      .then(res => res.json())
-                      .then(data => {
-                        alert(`공구 참여인원: ${data.total_participants}명\n구매확정: ${data.confirmed_count}명 (확정률 ${data.confirmation_rate}%)`);
-                      });
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                          headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                          }
+                        });
+                        const data = await res.json();
+                        setBuyerConfirmationData(data);
+                        setShowBuyerConfirmationModal(true);
+                      } catch (error) {
+                        console.error('Error fetching buyer confirmation stats:', error);
+                      }
                     }}
                     variant="ghost"
                     className="text-blue-600 underline text-sm mt-1"
@@ -2154,6 +2209,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           }}
         />
       )}
-    </div>
+      
+      {/* 구매자 확정률 모달 */}
+      {buyerConfirmationData && (
+        <BuyerConfirmationModal
+          isOpen={showBuyerConfirmationModal}
+          onClose={() => setShowBuyerConfirmationModal(false)}
+          totalParticipants={buyerConfirmationData.total_participants}
+          confirmedCount={buyerConfirmationData.confirmed_count}
+          confirmationRate={buyerConfirmationData.confirmation_rate}
+        />
+      )}
+      </div>
+    </EndedGroupBuyAccessControl>
   );
 }
