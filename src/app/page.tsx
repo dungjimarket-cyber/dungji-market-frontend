@@ -11,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getSellerBids } from '@/lib/api/bidService';
 import dynamic from 'next/dynamic';
+import { SearchBar } from '@/components/search/SearchBar';
 
 const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
@@ -189,6 +190,14 @@ function HomeContent() {
         <BannerCarousel />
       </section>
 
+      {/* 검색 섹션 추가 */}
+      <section className="mb-8">
+        <SearchBar 
+          className="max-w-2xl mx-auto"
+          placeholder="통합검색 (상품명, 지역, 통신사 등)"
+          showMyRegionButton={true}
+        />
+      </section>
       
       <section className="mb-12">       
         <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mb-8 mt-4 px-4">
