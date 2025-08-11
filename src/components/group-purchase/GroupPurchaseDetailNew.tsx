@@ -1252,17 +1252,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
+        {/* 낙찰자에게 최종 낙찰자 선정 메시지 표시 - 중앙 배치 */}
+        {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress') && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-lg border-2 border-orange-300 shadow-lg">
+            <p className="text-xl font-bold text-center text-orange-700">
+              🎉 최종 낙찰자로 선정되었습니다 🎉
+            </p>
+          </div>
+        )}
+
         {/* 최고 지원금/최종 낙찰 지원금 박스 */}
         {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
-              {/* 낙찰자에게만 최종 낙찰자 선정 메시지 표시 */}
-              {isSeller && hasWinningBid && (
-                <div className="mb-4 p-3 bg-orange-100 rounded-lg">
-                  <p className="text-lg font-bold text-orange-700">🎉 최종 낙찰자로 선정되었습니다</p>
-                </div>
-              )}
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Crown className="h-6 w-6 text-orange-500" />
                 <p className="text-xl font-bold text-gray-800">최종 낙찰 지원금</p>
@@ -1285,16 +1288,49 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <p className="text-base text-gray-700 font-medium">
                   총 {groupBuyData.total_bids_count || 0}개 입찰
                 </p>
-                {/* 입찰 내역 보기 버튼 - 마감 후에만 표시 */}
+                {/* 입찰 내역 보기 & 구매확정 인원 보기 버튼 - 마감 후에만 표시 */}
                 {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
-                  <Button
-                    onClick={() => setShowBidHistoryModal(true)}
-                    variant="outline"
-                    size="default"
-                    className="px-6"
-                  >
-                    입찰 내역 보기
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowBidHistoryModal(true)}
+                      variant="outline"
+                      size="default"
+                      className="px-6"
+                    >
+                      입찰 내역 보기
+                    </Button>
+                    {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 */}
+                    {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                              headers: {
+                                'Authorization': `Bearer ${accessToken}`,
+                              }
+                            });
+                            if (res.ok) {
+                              const data = await res.json();
+                              setBuyerConfirmationData(data);
+                              setShowBuyerConfirmationModal(true);
+                            }
+                          } catch (error) {
+                            console.error('구매자 확정률 조회 실패:', error);
+                            toast({
+                              title: '오류',
+                              description: '구매자 확정률을 조회할 수 없습니다.',
+                              variant: 'destructive'
+                            });
+                          }
+                        }}
+                        variant="outline"
+                        size="default"
+                        className="px-6"
+                      >
+                        구매확정 인원 보기
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

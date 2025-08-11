@@ -28,75 +28,87 @@ export function BuyerConfirmationModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-center">
-            구매자 확정 현황
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">구매자 확정 현황</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          {/* 전체 참여인원 */}
+        <div className="py-4">
+          {/* 메인 통계 카드 */}
+          <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 mb-6 border border-blue-200 shadow-sm">
+            <div className="text-center mb-4">
+              <p className="text-sm text-gray-600 mb-1">전체 참여인원</p>
+              <p className="text-3xl font-bold text-blue-700">{totalParticipants}명</p>
+            </div>
+            
+            {/* 확정/포기 통계 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/80 rounded-lg p-4 text-center">
+                <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                <p className="text-sm text-gray-600 mb-1">구매확정</p>
+                <p className="text-2xl font-bold text-green-600">{confirmedCount}명</p>
+                <p className="text-xs text-gray-500 mt-1">({confirmationRate}%)</p>
+              </div>
+              
+              <div className="bg-white/80 rounded-lg p-4 text-center">
+                <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                <p className="text-sm text-gray-600 mb-1">구매포기</p>
+                <p className="text-2xl font-bold text-red-600">{declinedCount}명</p>
+                <p className="text-xs text-gray-500 mt-1">({100 - confirmationRate}%)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 확정률 진행바 섹션 */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-gray-600" />
-                <span className="font-medium text-gray-700">전체 참여인원</span>
-              </div>
-              <span className="text-xl font-bold">{totalParticipants}명</span>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-700">구매 확정률</span>
+              <span className={`text-lg font-bold ${
+                confirmationRate > 50 ? 'text-green-600' : 'text-orange-600'
+              }`}>
+                {confirmationRate}%
+              </span>
             </div>
-          </div>
-
-          {/* 구매확정/포기 현황 */}
-          <div className="space-y-3">
-            {/* 구매확정 */}
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium text-green-700">구매확정</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-bold text-green-600">{confirmedCount}명</span>
-                  <span className="text-sm text-gray-600 ml-2">({confirmationRate}%)</span>
-                </div>
+            
+            {/* 진행바 */}
+            <div className="relative">
+              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-700 ease-out ${
+                    confirmationRate > 50 
+                      ? 'bg-gradient-to-r from-green-400 to-green-500' 
+                      : 'bg-gradient-to-r from-orange-400 to-orange-500'
+                  }`}
+                  style={{ width: `${confirmationRate}%` }}
+                />
               </div>
-            </div>
-
-            {/* 구매포기 */}
-            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-red-600" />
-                  <span className="font-medium text-red-700">구매포기</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-bold text-red-600">{declinedCount}명</span>
-                  <span className="text-sm text-gray-600 ml-2">({100 - confirmationRate}%)</span>
-                </div>
+              
+              {/* 50% 기준선 표시 */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-4 w-0.5 bg-gray-400" />
+              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                <span className="text-xs text-gray-500">50%</span>
               </div>
             </div>
-          </div>
-
-          {/* 확정률 진행바 */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>확정률</span>
-              <span className="font-bold">{confirmationRate}%</span>
+            
+            {/* 패널티 안내 메시지 */}
+            <div className="mt-8 pt-4 border-t border-gray-200">
+              {confirmationRate <= 50 ? (
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
+                  <p className="text-sm text-orange-700">
+                    현재 확정률이 50% 이하입니다. 판매자가 판매를 포기하더라도 패널티가 부과되지 않으며, 
+                    해당 공구에 사용된 입찰권은 환불 처리됩니다.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
+                  <p className="text-sm text-green-700">
+                    확정률이 50%를 초과했습니다. 판매자가 판매를 포기할 경우 패널티가 부과됩니다.
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div 
-                className={`h-full transition-all duration-500 ${
-                  confirmationRate > 50 ? 'bg-green-500' : 'bg-orange-500'
-                }`}
-                style={{ width: `${confirmationRate}%` }}
-              />
-            </div>
-            {confirmationRate <= 50 && (
-              <p className="text-xs text-orange-600 mt-2 text-center">
-                ※ 확정률 50% 이하 시 판매포기 패널티 면제
-              </p>
-            )}
           </div>
         </div>
       </DialogContent>
