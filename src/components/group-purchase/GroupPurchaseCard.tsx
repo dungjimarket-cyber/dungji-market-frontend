@@ -297,82 +297,69 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
         
-        {/* 공구 상태 배지 - 우측 상단 (간소화) */}
-        <div className="absolute top-4 right-4">
-          {(() => {
-            const status = groupBuy.status;
-            
-            // 모집중
-            if (status === 'recruiting') {
-              // 참여/입찰 상태 표시
-              if (user?.role === 'buyer' && isParticipant) {
+        {/* 공구 상태 배지 - 우측 상단 (모집중이 아닌 경우 제거) */}
+        {groupBuy.status !== 'completed' && groupBuy.status !== 'cancelled' && (
+          <div className="absolute top-4 right-4">
+            {(() => {
+              const status = groupBuy.status;
+              
+              // 모집중
+              if (status === 'recruiting') {
+                // 참여/입찰 상태 표시
+                if (user?.role === 'buyer' && isParticipant) {
+                  return (
+                    <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>참여중</span>
+                    </div>
+                  );
+                }
+                if (user?.role === 'seller' && hasBid) {
+                  return (
+                    <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>입찰완료</span>
+                    </div>
+                  );
+                }
                 return (
-                  <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>참여중</span>
+                  <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <Users className="w-4 h-4" />
+                    <span>모집중</span>
                   </div>
                 );
               }
-              if (user?.role === 'seller' && hasBid) {
+              
+              // 진행 상태별 배지
+              if (status === 'final_selection_buyers') {
                 return (
-                  <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>입찰완료</span>
+                  <div className="flex items-center gap-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <Clock className="w-4 h-4" />
+                    <span>구매자 선택중</span>
                   </div>
                 );
               }
-              return (
-                <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                  <Users className="w-4 h-4" />
-                  <span>모집중</span>
-                </div>
-              );
-            }
-            
-            // 진행 상태별 배지
-            if (status === 'final_selection_buyers') {
-              return (
-                <div className="flex items-center gap-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                  <Clock className="w-4 h-4" />
-                  <span>구매자 선택중</span>
-                </div>
-              );
-            }
-            if (status === 'final_selection_seller') {
-              return (
-                <div className="flex items-center gap-1 bg-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                  <Clock className="w-4 h-4" />
-                  <span>판매자 선택중</span>
-                </div>
-              );
-            }
-            if (status === 'in_progress') {
-              return (
-                <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>거래중</span>
-                </div>
-              );
-            }
-            if (status === 'completed') {
-              return (
-                <div className="flex items-center gap-1 bg-gray-700 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>완료</span>
-                </div>
-              );
-            }
-            if (status === 'cancelled') {
-              return (
-                <div className="flex items-center gap-1 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                  <span>취소</span>
-                </div>
-              );
-            }
-            
-            return null;
-          })()}
-        </div>
+              if (status === 'final_selection_seller') {
+                return (
+                  <div className="flex items-center gap-1 bg-yellow-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <Clock className="w-4 h-4" />
+                    <span>판매자 선택중</span>
+                  </div>
+                );
+              }
+              if (status === 'in_progress') {
+                return (
+                  <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>거래중</span>
+                  </div>
+                );
+              }
+              
+              return null;
+            })()}
+          </div>
+        )}
         
         {/* 추가 정보 배지 - 왼쪽 상단 */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -492,30 +479,30 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           </div>
         </div>
 
-        {/* 남은 시간 바 */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>남은 시간</span>
-            <div className="flex items-center gap-2">
-              <span className={`font-medium ${isCompleted ? 'text-gray-600' : isUrgent ? 'text-red-600' : 'text-blue-600'}`}>
-                {timeLeftText || formatTimeLeft(currentTimeLeft)}
-              </span>
-              {!isCompleted && (
+        {/* 남은 시간 바 - 모집중일 때만 표시 */}
+        {groupBuy.status === 'recruiting' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>남은 시간</span>
+              <div className="flex items-center gap-2">
+                <span className={`font-medium ${isUrgent ? 'text-red-600' : 'text-blue-600'}`}>
+                  {timeLeftText || formatTimeLeft(currentTimeLeft)}
+                </span>
                 <span className={`${isUrgent ? 'text-red-500' : 'text-green-600'}`}>
                   {isUrgent ? '마감임박!' : '여유있음'}
                 </span>
-              )}
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div 
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  isUrgent ? 'bg-red-500' : 'bg-blue-500'
+                }`}
+                style={{ width: `${timeRemainingPercent}%` }}
+              />
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-            <div 
-              className={`h-2 rounded-full transition-all duration-300 ${
-                isCompleted ? 'bg-gray-400' : isUrgent ? 'bg-red-500' : 'bg-blue-500'
-              }`}
-              style={{ width: `${timeRemainingPercent}%` }}
-            />
-          </div>
-        </div>
+        )}
 
         {/* 참여 버튼 */}
         <button
