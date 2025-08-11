@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 
 function ReviewCreateContent() {
   const searchParams = useSearchParams();
-  const groupbuyId = searchParams.get('groupBuyId') || searchParams.get('groupbuy_id');
+  const groupbuyId = searchParams.get('groupbuy') || searchParams.get('groupBuyId') || searchParams.get('groupbuy_id');
   const [groupBuyData, setGroupBuyData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -99,7 +99,7 @@ function ReviewCreateContent() {
             약속된 거래 시간에 상대방이 나타나지 않거나 연락이 두절된 경우, 
             노쇼 신고를 통해 불이익을 받지 않도록 조치하세요.
           </p>
-          <Link href={`/noshow-report/create?groupbuyId=${groupbuyId}`}>
+          <Link href={`/noshow-report/create?groupbuy=${groupbuyId}`}>
             <Button variant="outline" className="border-orange-500 text-orange-700 hover:bg-orange-100">
               노쇼 신고하기
             </Button>

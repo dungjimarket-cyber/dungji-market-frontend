@@ -17,7 +17,7 @@ function NoShowReportContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
-  const groupbuyId = searchParams.get('groupbuyId') || searchParams.get('groupbuy_id');
+  const groupbuyId = searchParams.get('groupbuy') || searchParams.get('groupbuyId') || searchParams.get('groupbuy_id');
   
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState<'buyer_noshow' | 'seller_noshow'>('seller_noshow');
