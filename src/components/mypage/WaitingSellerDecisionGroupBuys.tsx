@@ -124,7 +124,7 @@ export default function WaitingSellerDecisionGroupBuys() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <p className="text-sm text-gray-500">낙찰 금액</p>
+                <p className="text-sm text-gray-500">최종 낙찰지원금</p>
                 <p className="font-bold">{formatNumberWithCommas(groupBuy.winning_bid_amount)}원</p>
               </div>
               <div>

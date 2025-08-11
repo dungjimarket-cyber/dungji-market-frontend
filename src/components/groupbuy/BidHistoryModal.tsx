@@ -154,15 +154,16 @@ export default function BidHistoryModal({
                   const isWinner = index === 0;
                   
                   // 금액 표시 로직
-                  // 1. 참여자(구매회원) 또는 입찰자(판매회원)는 모든 금액 정상 표시
-                  // 2. 미참여/미입찰 회원 또는 비회원은 마스킹 처리
+                  // 모집중(recruiting) 상태일 때는 본인 입찰만 정상 표시, 나머지는 마스킹
+                  // 모집 종료 후에는 참여자/입찰자는 정상 표시
+                  const isRecruiting = groupBuyStatus === 'recruiting';
+                  
                   const shouldShowAmount = 
                     isMyBid ||           // 본인 입찰은 항상 표시
-                    isParticipant ||     // 공구 참여자는 정상 표시
-                    hasBid;              // 입찰한 판매자는 정상 표시
+                    (!isRecruiting && (isParticipant || hasBid));  // 모집 종료 후 참여자/입찰자는 정상 표시
                   
-                  // 비로그인 사용자는 항상 마스킹
-                  const shouldMask = !isAuthenticated || (!isParticipant && !hasBid && !isMyBid);
+                  // 마스킹 조건: 모집중이거나, 비로그인이거나, 미참여/미입찰자
+                  const shouldMask = !shouldShowAmount;
                   
                   return (
                     <TableRow 

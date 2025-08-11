@@ -19,6 +19,7 @@ import { FinalSelectionTimer } from '@/components/final-selection/FinalSelection
 import { SimpleFinalSelectionTimer } from '@/components/final-selection/SimpleFinalSelectionTimer';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
 import { BuyerConfirmationModal } from '@/components/groupbuy/BuyerConfirmationModal';
+import { BuyerInfoModal } from '@/components/groupbuy/BuyerInfoModal';
 import { EndedGroupBuyAccessControl } from '@/components/groupbuy/EndedGroupBuyAccessControl';
 import { SimplifiedGroupBuyButton } from '@/components/groupbuy/SimplifiedGroupBuyButton';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
@@ -125,6 +126,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [showFinalSelectionDialog, setShowFinalSelectionDialog] = useState(false);
   const [finalSelectionType, setFinalSelectionType] = useState<'confirm' | 'cancel'>('confirm');
   const [showContactInfoModal, setShowContactInfoModal] = useState(false);
+  const [showBuyerInfoModal, setShowBuyerInfoModal] = useState(false);
   
   // 판매자 관련 상태
   const [myBidAmount, setMyBidAmount] = useState<number | null>(null);
@@ -1783,7 +1785,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <p className="font-semibold text-green-800">거래중</p>
                 </div>
                 <Button
-                  onClick={() => setShowContactInfoModal(true)}
+                  onClick={() => setShowBuyerInfoModal(true)}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700"
                 >
                   구매자정보보기
@@ -2169,12 +2171,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         hasUnlimitedSubscription={bidTokenInfo.has_unlimited_subscription}
       />
 
-      {/* 연락처 정보 모달 */}
+      {/* 연락처 정보 모달 - 구매자용 */}
       <ContactInfoModal
         isOpen={showContactInfoModal}
         onClose={() => setShowContactInfoModal(false)}
         groupBuyId={groupBuy.id}
         accessToken={accessToken}
+      />
+
+      {/* 구매자 정보 모달 - 판매자용 */}
+      <BuyerInfoModal
+        isOpen={showBuyerInfoModal}
+        onClose={() => setShowBuyerInfoModal(false)}
+        groupBuyId={groupBuy.id}
       />
 
       {/* 최종선택 확인 다이얼로그 */}
@@ -2197,8 +2206,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   </>
                 ) : (
                   <>
-                    최종 낙찰된 지원금액: {groupBuy.winning_bid_amount?.toLocaleString()}원<br />
-                    낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?<br />
+                    최종 낙찰지원금: {groupBuy.winning_bid_amount?.toLocaleString()}원<br />
+                    최종 낙찰지원금으로 공동구매를 최종 진행하시겠습니까?<br />
                     <span className="text-sm text-gray-600 mt-2 block">
                       (구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)
                     </span>

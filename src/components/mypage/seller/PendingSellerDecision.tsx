@@ -129,7 +129,7 @@ export default function PendingSellerDecision() {
 
                 <div className="flex items-center justify-between mt-3">
                   <div>
-                    <span className="text-sm text-gray-600">낙찰금액: </span>
+                    <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
                     <span className="font-semibold text-green-600">
                       {groupBuy.winning_bid_amount?.toLocaleString()}원
                     </span>

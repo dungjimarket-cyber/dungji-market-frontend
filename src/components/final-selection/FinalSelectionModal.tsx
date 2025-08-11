@@ -43,10 +43,10 @@ export default function FinalSelectionModal({
             <div className="space-y-3">
               {bidAmount && (
                 <div className="text-sm">
-                  최종낙찰된 지원금액: <span className="font-bold">{formatNumberWithCommas(bidAmount)}원</span>
+                  최종 낙찰지원금: <span className="font-bold">{formatNumberWithCommas(bidAmount)}원</span>
                 </div>
               )}
-              <p className="font-medium">낙찰된 금액으로 공동구매를 최종 진행하시겠습니까?</p>
+              <p className="font-medium">최종 낙찰지원금으로 공동구매를 최종 진행하시겠습니까?</p>
               <p className="text-sm text-gray-600">(구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)</p>
             </div>
           ),
