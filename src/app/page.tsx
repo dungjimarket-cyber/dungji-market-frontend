@@ -130,11 +130,12 @@ function HomeContent() {
     const fetchGroupBuys = async () => {
       try {
         const [popularResponse, newResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=popular&limit=10`, {
+          // 인기순: recruiting,bidding 상태만, 참여자 많은 순으로 정렬
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?status=recruiting,bidding&ordering=-current_participants&limit=10`, {
             next: { revalidate: 60 } // 1분 캐시
           }),
-          // 더 많이 가져와서 필터링 후 선택
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?sort=newest&limit=10`, {
+          // 최신순: recruiting,bidding 상태만, 시작시간 최신순으로 정렬
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?status=recruiting,bidding&ordering=-start_time&limit=10`, {
             next: { revalidate: 60 } // 1분 캐시
           })
         ]);
@@ -143,21 +144,9 @@ function HomeContent() {
           const popularData = await popularResponse.json();
           const newData = await newResponse.json();
           
-          // 최종선택중(final_selection, seller_confirmation), 완료(completed), 취소(cancelled) 상태 제외
-          const excludedStatuses = ['final_selection', 'seller_confirmation', 'completed', 'cancelled'];
-          
-          // 인기 공구 필터링
-          const filteredPopular = popularData.filter((groupBuy: GroupBuy) => 
-            !excludedStatuses.includes(groupBuy.status)
-          );
-          
-          // 새로운 공구 필터링
-          const filteredNew = newData.filter((groupBuy: GroupBuy) => 
-            !excludedStatuses.includes(groupBuy.status)
-          );
-          
-          setPopularGroupBuys(filteredPopular.slice(0, 2));
-          setNewGroupBuys(filteredNew.slice(0, 2));
+          // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
+          setPopularGroupBuys(popularData.slice(0, 2));
+          setNewGroupBuys(newData.slice(0, 2));
         }
       } catch (error) {
         console.error('공구 데이터 로딩 실패:', error);
