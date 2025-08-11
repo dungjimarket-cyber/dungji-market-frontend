@@ -294,11 +294,13 @@ export default function CreatedGroupBuys() {
                         }</span>
                         <span className="ml-2">{
                           // 요금제 표시
-                          groupBuy.plan_info === '5G_basic' ? '3만원대' :
                           groupBuy.plan_info === '5G_standard' ? '5만원대' :
+                          groupBuy.plan_info === '5G_basic_plus' ? '6만원대' :
                           groupBuy.plan_info === '5G_premium' ? '7만원대' :
+                          groupBuy.plan_info === '5G_premium_plus' ? '8만원대' :
                           groupBuy.plan_info === '5G_special' ? '9만원대' :
-                          groupBuy.plan_info === '5G_platinum' ? '10만원대' :
+                          groupBuy.plan_info === '5G_platinum' ? '10만원이상' :
+                          groupBuy.plan_info === '5G_basic' ? '3만원대' :
                           '5만원대'
                         }</span>
                       </div>

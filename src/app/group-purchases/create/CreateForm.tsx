@@ -487,7 +487,14 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
         );
         
         if (tokenResponse && Array.isArray(tokenResponse)) {
-          setProducts(tokenResponse);
+          // 출시일 기준 최신순 정렬 (release_date가 없는 경우 맨 뒤로)
+          const sortedProducts = tokenResponse.sort((a, b) => {
+            if (!a.release_date && !b.release_date) return 0;
+            if (!a.release_date) return 1;
+            if (!b.release_date) return -1;
+            return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+          });
+          setProducts(sortedProducts);
         }
       } catch (error) {
         console.error('상품 데이터 가져오기 오류:', error);
@@ -589,11 +596,12 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
         // plan_info를 SelectItem value 형식으로 변환
         const planInfo = initialData.telecom_detail.plan_info;
         let telecomPlan = '';
-        if (planInfo === '3만원대') telecomPlan = '5G_basic';
-        else if (planInfo === '5만원대') telecomPlan = '5G_standard';
+        if (planInfo === '5만원대') telecomPlan = '5G_standard';
+        else if (planInfo === '6만원대') telecomPlan = '5G_basic_plus';
         else if (planInfo === '7만원대') telecomPlan = '5G_premium';
+        else if (planInfo === '8만원대') telecomPlan = '5G_premium_plus';
         else if (planInfo === '9만원대') telecomPlan = '5G_special';
-        else if (planInfo === '10만원대') telecomPlan = '5G_platinum';
+        else if (planInfo === '10만원이상') telecomPlan = '5G_platinum';
         
         form.setValue('telecom_plan', telecomPlan);
         console.log('변환된 요금제:', planInfo, '->', telecomPlan);
@@ -1553,11 +1561,12 @@ const onSubmit = async (values: FormData) => {
                                   <SelectValue placeholder="요금제 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="5G_basic">3만원대</SelectItem>
                                   <SelectItem value="5G_standard">5만원대</SelectItem>
+                                  <SelectItem value="5G_basic_plus">6만원대</SelectItem>
                                   <SelectItem value="5G_premium">7만원대</SelectItem>
+                                  <SelectItem value="5G_premium_plus">8만원대</SelectItem>
                                   <SelectItem value="5G_special">9만원대</SelectItem>
-                                  <SelectItem value="5G_platinum">10만원대</SelectItem>
+                                  <SelectItem value="5G_platinum">10만원이상</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>

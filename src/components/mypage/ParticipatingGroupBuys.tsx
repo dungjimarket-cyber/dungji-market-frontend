@@ -237,9 +237,11 @@ export default function ParticipatingGroupBuys() {
       switch(plan) {
         case '5G_basic': return '3만원대';
         case '5G_standard': return '5만원대';
+        case '5G_basic_plus': return '6만원대';
         case '5G_premium': return '7만원대';
+        case '5G_premium_plus': return '8만원대';
         case '5G_special': return '9만원대';
-        case '5G_platinum': return '10만원대';
+        case '5G_platinum': return '10만원이상';
         default: return plan;
       }
     };
