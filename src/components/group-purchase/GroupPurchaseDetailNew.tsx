@@ -2033,6 +2033,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         isOpen={showBidHistoryModal}
         onClose={() => setShowBidHistoryModal(false)}
         groupBuyId={groupBuy.id}
+        currentUserId={user?.id ? parseInt(user.id) : undefined}
+        isSeller={isSeller}
+        isParticipant={isParticipant}
+        hasBid={hasBid}
+        groupBuyStatus={groupBuyData.status}
+        isAuthenticated={isAuthenticated}
       />
 
       {/* 최종선택 모달 */}

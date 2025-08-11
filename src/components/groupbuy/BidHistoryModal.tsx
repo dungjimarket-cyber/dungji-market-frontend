@@ -36,7 +36,9 @@ interface BidHistoryModalProps {
   currentUserId?: number;
   isSeller?: boolean;
   isParticipant?: boolean;  // 공구 참여 여부 추가
+  hasBid?: boolean;          // 입찰 여부 추가
   groupBuyStatus?: string;   // 공구 상태 추가
+  isAuthenticated?: boolean; // 로그인 여부 추가
 }
 
 /**
@@ -49,7 +51,9 @@ export default function BidHistoryModal({
   currentUserId,
   isSeller = false,
   isParticipant = false,
-  groupBuyStatus
+  hasBid = false,
+  groupBuyStatus,
+  isAuthenticated = false
 }: BidHistoryModalProps) {
   const [bids, setBids] = useState<BidData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,14 +153,16 @@ export default function BidHistoryModal({
                   const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
                   const isWinner = index === 0;
                   
-                  // 모집종료 여부 확인
-                  const isRecruitingEnded = groupBuyStatus && 
-                    ['final_selection_buyers', 'final_selection_seller', 'in_progress', 'completed', 'cancelled'].includes(groupBuyStatus);
-                  
-                  // 금액 표시 로직 (구성표 기준)
+                  // 금액 표시 로직
+                  // 1. 참여자(구매회원) 또는 입찰자(판매회원)는 모든 금액 정상 표시
+                  // 2. 미참여/미입찰 회원 또는 비회원은 마스킹 처리
                   const shouldShowAmount = 
-                    isMyBid ||  // 본인 입찰은 항상 표시
-                    (isParticipant && isRecruitingEnded);  // 참여자이면서 모집종료 후
+                    isMyBid ||           // 본인 입찰은 항상 표시
+                    isParticipant ||     // 공구 참여자는 정상 표시
+                    hasBid;              // 입찰한 판매자는 정상 표시
+                  
+                  // 비로그인 사용자는 항상 마스킹
+                  const shouldMask = !isAuthenticated || (!isParticipant && !hasBid && !isMyBid);
                   
                   return (
                     <TableRow 
@@ -190,9 +196,9 @@ export default function BidHistoryModal({
                       <TableCell className="text-right font-medium">
                         {typeof bid.amount === 'string' 
                           ? bid.amount 
-                          : shouldShowAmount
-                            ? `${bid.amount.toLocaleString()}원`  // 정상 표기
-                            : `${formatBidAmount(bid.amount, false, 999)}원`  // 마스킹
+                          : shouldMask
+                            ? `${formatBidAmount(bid.amount, false, 999)}원`  // 마스킹
+                            : `${bid.amount.toLocaleString()}원`  // 정상 표기
                         }
                       </TableCell>
                       {isSeller && (
