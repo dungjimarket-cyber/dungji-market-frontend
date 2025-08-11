@@ -16,6 +16,7 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
+  created_at?: string;
   creator_name?: string;
   host_username?: string;
   product_details: {
@@ -61,6 +62,7 @@ interface GroupPurchaseCardProps {
   isParticipant?: boolean; // 참여 여부
   hasBid?: boolean; // 입찰 여부
   priority?: boolean; // 이미지 우선순위
+  isCompletedTab?: boolean; // 공구완료 탭인지 여부
 }
 
 /**
@@ -68,11 +70,12 @@ interface GroupPurchaseCardProps {
  * @param groupBuy - 공구 정보
  * @param onJoin - 참여하기 버튼 클릭 핸들러 (사용하지 않음, 상세 페이지로 이동)
  */
-export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = false, priority = false }: GroupPurchaseCardProps) {
+export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = false, priority = false, isCompletedTab = false }: GroupPurchaseCardProps) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
-  const isNew = new Date(groupBuy.start_time) > new Date(Date.now() - 24 * 60 * 60 * 1000);
+  // NEW 배지: created_at 기준 24시간 이내
+  const isNew = groupBuy.created_at ? new Date(groupBuy.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) : false;
   
   // 실제 상태를 시간 기반으로 계산
   const actualStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
@@ -244,6 +247,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
    * 상세 페이지로 이동
    */
   const handleViewDetail = () => {
+    // 공구완료 탭에서 비참여자는 접근 불가
+    if (isCompletedTab && !isParticipant && !hasBid) {
+      return; // 클릭 무시
+    }
+    
     // 로그인하지 않은 경우 바로 상세 페이지로 이동
     if (!isAuthenticated || !user) {
       router.push(`/groupbuys/${groupBuy.id}`);
@@ -279,9 +287,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     router.push(`/groupbuys/${groupBuy.id}`);
   };
 
+  // 공구완료 탭에서 비참여자인 경우 비활성화 스타일 적용
+  const isDisabled = isCompletedTab && !isParticipant && !hasBid;
+  
   return (
     <div 
-      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+      className={`bg-white rounded-2xl overflow-hidden shadow-lg transition-shadow duration-300 ${
+        isDisabled 
+          ? 'opacity-50 cursor-not-allowed' 
+          : 'hover:shadow-xl cursor-pointer'
+      }`}
       onClick={handleViewDetail}>
       {/* 메인 이미지 - 단독 표시 */}
       <div className="relative h-64 w-full bg-gray-50">

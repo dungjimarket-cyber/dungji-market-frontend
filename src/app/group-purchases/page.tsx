@@ -83,23 +83,25 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
-        // 공구완료 탭: 구매완료+판매완료가 모두 완료된 건만 (completed만)
+        // 공구완료 탭: buyer_completed와 seller_completed가 모두 true인 건만
         params.append('status', 'completed');
-      } else if (currentTab === 'all') {
-        // 전체 탭: 모집중/입찰중과 완료된 건만 (진행중 단계는 제외)
-        params.append('status', 'recruiting,bidding,completed');
+        params.append('buyer_completed', 'true');
+        params.append('seller_completed', 'true');
       } else {
-        // 인기순, 최신순 탭은 진행중인 것만 (recruiting, bidding)
+        // 전체/인기/최신 탭: 모집중/입찰중 상태만 (활성 공구)
         params.append('status', 'recruiting,bidding');
       }
       
       // 탭별 정렬 설정
       if (currentTab === 'popular') {
-        // 인기순: 참여자 많은 순으로 정렬
-        params.append('ordering', '-current_participants');
+        // 인기순: 참여자수 > 입찰수 > 등록일 순
+        params.append('ordering', '-current_participants,-bid_count,-created_at');
+      } else if (currentTab === 'completed') {
+        // 공구완료: 완료일시 최신순
+        params.append('ordering', '-completed_at');
       } else {
-        // 나머지 탭들은 모두 최신순으로 정렬
-        params.append('ordering', '-start_time');
+        // 전체, 최신: 등록일시 최신순
+        params.append('ordering', '-created_at');
       }
       
       // 사용자 필터 추가
@@ -362,6 +364,7 @@ function GroupPurchasesPageContent() {
                       groupBuy={groupBuy}
                       isParticipant={userParticipations.includes(groupBuy.id)}
                       hasBid={userBids.includes(groupBuy.id)}
+                      isCompletedTab={activeTab === 'completed'}
                     />
                   ))
                 )}
