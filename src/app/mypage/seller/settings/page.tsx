@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, Save, Phone, Upload } from 'lucide-react';
-import RegionDropdownWithCode from '@/components/address/RegionDropdownWithCode';
+import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -31,7 +31,6 @@ export default function SellerSettings() {
     phone: '',
     addressProvince: '',
     addressCity: '',
-    addressCityCode: '',
     businessNumber1: '',
     businessNumber2: '',
     businessNumber3: '',
@@ -106,7 +105,6 @@ export default function SellerSettings() {
           phone: formattedPhone,
           addressProvince: '',
           addressCity: '',
-          addressCityCode: '',
           businessNumber1: businessNum1,
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
@@ -131,8 +129,7 @@ export default function SellerSettings() {
             setFormData(prev => ({
               ...prev,
               addressProvince: '세종특별자치시',
-              addressCity: '세종특별자치시',
-              addressCityCode: regionCode
+              addressCity: '세종특별자치시'
             }));
           } else {
             // full_name에서 시/도와 시/군/구 추출
@@ -155,16 +152,14 @@ export default function SellerSettings() {
               setFormData(prev => ({
                 ...prev,
                 addressProvince: provinceName,
-                addressCity: cityName,
-                addressCityCode: regionCode
+                addressCity: cityName
               }));
             } else if (regionName) {
               // full_name이 없거나 부족한 경우 name을 사용
               setFormData(prev => ({
                 ...prev,
                 addressProvince: '',
-                addressCity: regionName,
-                addressCityCode: regionCode
+                addressCity: regionName
               }));
             }
           }
@@ -203,11 +198,12 @@ export default function SellerSettings() {
     setNicknameError('');
     
     try {
+      const token = await tokenUtils.getAccessToken();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
+          ...(token && { 'Authorization': `Bearer ${token}` })
         },
         body: JSON.stringify({ nickname })
       });
@@ -283,16 +279,51 @@ export default function SellerSettings() {
         updateData.phone = cleanPhone;
       }
 
-      // 주소 정보 처리 - RegionDropdownWithCode에서 제공한 code 사용
-      if (formData.addressProvince && formData.addressCityCode) {
-        updateData.address_region_id = formData.addressCityCode;
-      } else if (formData.addressProvince && formData.addressCity) {
-        toast({
-          variant: 'destructive', 
-          title: '지역 설정 오류',
-          description: '선택한 지역을 찾을 수 없습니다.'
-        });
-        return;
+      // 주소 정보 처리 - 일반회원과 동일한 방식으로 처리
+      if (formData.addressProvince && formData.addressCity) {
+        try {
+          // 모든 지역 데이터 가져오기
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+          const regionsData = await regionsResponse.json();
+          
+          // 시/군/구 레벨에서 일치하는 지역 찾기
+          let cityRegion;
+          
+          if (formData.addressProvince === '세종특별자치시') {
+            // 세종시는 특별한 처리 필요
+            cityRegion = regionsData.find((r: any) => 
+              r.level === 1 && 
+              r.name === '세종특별자치시' &&
+              r.full_name === '세종특별자치시'
+            );
+          } else {
+            // 일반적인 시/도의 경우
+            cityRegion = regionsData.find((r: any) => 
+              (r.level === 1 || r.level === 2) && 
+              r.name === formData.addressCity && 
+              r.full_name.includes(formData.addressProvince)
+            );
+          }
+          
+          if (cityRegion) {
+            // 백엔드는 code를 primary key로 사용하므로 code를 전송
+            updateData.address_region_id = cityRegion.code;
+          } else {
+            toast({
+              variant: 'destructive',
+              title: '지역 설정 오류',
+              description: '선택한 지역을 찾을 수 없습니다.'
+            });
+            return;
+          }
+        } catch (err) {
+          toast({
+            variant: 'destructive',
+            title: '지역 정보 오류',
+            description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
+          });
+          return;
+        }
       }
 
       // API 호출
@@ -315,8 +346,8 @@ export default function SellerSettings() {
           formDataWithFile.append('address_region_id', updateData.address_region_id);
         }
         
-        // 파일 추가
-        formDataWithFile.append('remote_sales_cert', formData.businessRegFile);
+        // 파일 추가 - 백엔드 필드명에 맞춰 수정
+        formDataWithFile.append('remote_sales_certification', formData.businessRegFile);
         
         // multipart/form-data로 전송
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
@@ -449,16 +480,14 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="businessAddress">사업장주소/영업활동지역</Label>
-                  <RegionDropdownWithCode
+                  <RegionDropdown
                     selectedProvince={formData.addressProvince}
                     selectedCity={formData.addressCity}
-                    selectedCityCode={formData.addressCityCode}
-                    onSelect={(province, city, cityCode) => {
+                    onSelect={(province, city) => {
                       setFormData(prev => ({
                         ...prev,
                         addressProvince: province,
-                        addressCity: city,
-                        addressCityCode: cityCode
+                        addressCity: city
                       }));
                     }}
                     required
