@@ -19,7 +19,7 @@ import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 export default function SellerSettings() {
   const router = useRouter();
@@ -166,11 +166,7 @@ export default function SellerSettings() {
         }
       } catch (error) {
         console.error('판매자 프로필 로드 오류:', error);
-        toast({
-          variant: 'destructive',
-          title: '프로필 로드 실패',
-          description: '프로필 정보를 불러오는 중 오류가 발생했습니다.'
-        });
+        toast.error('프로필 정보를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
@@ -215,10 +211,7 @@ export default function SellerSettings() {
       } else {
         setNicknameError('');
         setNicknameAvailable(true);
-        toast({
-          title: '✅ 사용 가능한 닉네임입니다',
-          variant: 'default'
-        });
+        toast.success('사용 가능한 닉네임입니다');
       }
     } catch (error) {
       console.error('닉네임 중복 확인 오류:', error);
@@ -250,11 +243,7 @@ export default function SellerSettings() {
     
     // 닉네임 중복체크 확인
     if (formData.nickname !== profile?.nickname && !nicknameAvailable) {
-      toast({
-        variant: 'destructive',
-        title: '저장 실패',
-        description: '닉네임 중복체크를 해주세요.'
-      });
+      toast.error('닉네임 중복체크를 해주세요.');
       return;
     }
     
@@ -309,19 +298,11 @@ export default function SellerSettings() {
             // 백엔드는 code를 primary key로 사용하므로 code를 전송
             updateData.address_region_id = cityRegion.code;
           } else {
-            toast({
-              variant: 'destructive',
-              title: '지역 설정 오류',
-              description: '선택한 지역을 찾을 수 없습니다.'
-            });
+            toast.error('선택한 지역을 찾을 수 없습니다.');
             return;
           }
         } catch (err) {
-          toast({
-            variant: 'destructive',
-            title: '지역 정보 오류',
-            description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
-          });
+          toast.error('지역 정보를 가져오는 중 오류가 발생했습니다.');
           return;
         }
       }
@@ -329,8 +310,8 @@ export default function SellerSettings() {
       // API 호출
       let updateSuccess = false;
       
-      // 파일이 있는 경우 FormData로 전송
-      if (formData.businessRegFile && formData.isRemoteSales) {
+      // 파일이 있는 경우 또는 비대면 판매 옵션이 켜진 경우 FormData로 전송
+      if (formData.businessRegFile || formData.isRemoteSales) {
         const formDataWithFile = new FormData();
         
         // 각 필드를 FormData에 추가
@@ -346,8 +327,10 @@ export default function SellerSettings() {
           formDataWithFile.append('address_region_id', updateData.address_region_id);
         }
         
-        // 파일 추가 - 백엔드 필드명에 맞춰 수정
-        formDataWithFile.append('remote_sales_certification', formData.businessRegFile);
+        // 파일이 있는 경우에만 추가
+        if (formData.businessRegFile) {
+          formDataWithFile.append('remote_sales_certification', formData.businessRegFile);
+        }
         
         // multipart/form-data로 전송
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
@@ -373,11 +356,7 @@ export default function SellerSettings() {
       }
       
       if (updateSuccess) {
-        toast({
-          title: '✅ 수정되었습니다',
-          description: '판매자 정보가 성공적으로 저장되었습니다.',
-          variant: 'default'
-        });
+        toast.success('판매자 정보가 성공적으로 저장되었습니다.');
         
         // 프로필 정보 새로고침
         const updatedData = await getSellerProfile();
@@ -385,11 +364,7 @@ export default function SellerSettings() {
       }
     } catch (error) {
       console.error('프로필 저장 오류:', error);
-      toast({
-        variant: 'destructive',
-        title: '프로필 저장 실패',
-        description: '프로필 정보를 저장하는 중 오류가 발생했습니다.'
-      });
+      toast.error('프로필 정보를 저장하는 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
     }
@@ -405,7 +380,7 @@ export default function SellerSettings() {
 
   return (
     <div className="container py-8 max-w-4xl mx-auto">
-      <div className="flex items-center mb-6">
+        <div className="flex items-center mb-6">
         <Button 
           variant="ghost" 
           className="mr-2"
