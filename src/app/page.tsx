@@ -184,7 +184,7 @@ function HomeContent() {
         <MobileHeader />
       </div>
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-20 md:pb-8">
       {/* 배너 캐러셀을 맨 위로 이동 */}
       <section className="mb-8">
         <BannerCarousel />
