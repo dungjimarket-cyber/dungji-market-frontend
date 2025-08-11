@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Package, Phone, AlertTriangle, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
 
 /**
  * 거래중 컴포넌트
@@ -19,6 +20,8 @@ export default function TradingGroupBuys() {
   const router = useRouter();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchTrading = async () => {
@@ -94,79 +97,98 @@ export default function TradingGroupBuys() {
   }
 
   return (
-    <div className="space-y-4">
-      {groupBuys.map((groupBuy) => (
-        <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow border-green-200">
-          <CardContent className="p-4">
-            <div className="flex gap-4">
-              {/* 상품 이미지 */}
-              <div className="relative w-24 h-24 flex-shrink-0">
-                <Image
-                  src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
-                  alt={groupBuy.product_details?.name || '상품'}
-                  fill
-                  className="object-cover rounded-md"
-                />
-              </div>
-
-              {/* 공구 정보 */}
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-1">
-                  {groupBuy.product_details?.name}
-                </h3>
-                
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                  <span className="flex items-center gap-1">
-                    <Package className="h-4 w-4" />
-                    구매확정 {groupBuy.confirmed_buyers || 0}명
-                  </span>
-                  <span className="text-green-600 font-medium">
-                    거래 진행중
-                  </span>
+    <>
+      <div className="space-y-4">
+        {groupBuys.map((groupBuy) => (
+          <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow border-green-200">
+            <CardContent className="p-4">
+              <div className="flex gap-4">
+                {/* 상품 이미지 */}
+                <div className="relative w-24 h-24 flex-shrink-0">
+                  <Image
+                    src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
+                    alt={groupBuy.product_details?.name || '상품'}
+                    fill
+                    className="object-cover rounded-md"
+                  />
                 </div>
 
-                <div className="mb-3">
-                  <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
-                  <span className="font-semibold text-green-600">
-                    {groupBuy.winning_bid_amount?.toLocaleString() || 0}원
-                  </span>
-                </div>
-
-                {/* 액션 버튼들 */}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => router.push(`/groupbuys/${groupBuy.id}/buyers`)}
-                  >
-                    <Phone className="h-4 w-4 mr-1" />
-                    구매자 정보보기
-                  </Button>
+                {/* 공구 정보 */}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg mb-1">
+                    {groupBuy.product_details?.name}
+                  </h3>
                   
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-orange-600 border-orange-300 hover:bg-orange-50"
-                    onClick={() => router.push(`/noshow-report/create?groupbuy=${groupBuy.id}`)}
-                  >
-                    <AlertTriangle className="h-4 w-4 mr-1" />
-                    노쇼신고
-                  </Button>
-                  
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => handleCompleteSale(groupBuy.id)}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    판매완료
-                  </Button>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <span className="flex items-center gap-1">
+                      <Package className="h-4 w-4" />
+                      구매확정 {groupBuy.confirmed_buyers || 0}명
+                    </span>
+                    <span className="text-green-600 font-medium">
+                      거래 진행중
+                    </span>
+                  </div>
+
+                  <div className="mb-3">
+                    <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
+                    <span className="font-semibold text-green-600">
+                      {groupBuy.winning_bid_amount?.toLocaleString() || 0}원
+                    </span>
+                  </div>
+
+                  {/* 액션 버튼들 */}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedGroupBuyId(groupBuy.id);
+                        setIsContactModalOpen(true);
+                      }}
+                    >
+                      <Phone className="h-4 w-4 mr-1" />
+                      구매자 정보보기
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                      onClick={() => router.push(`/noshow-report/create?groupbuy=${groupBuy.id}`)}
+                    >
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      노쇼신고
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleCompleteSale(groupBuy.id)}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      판매완료
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      {/* 구매자 정보 모달 */}
+      {selectedGroupBuyId && (
+        <ContactInfoModal
+          isOpen={isContactModalOpen}
+          onClose={() => {
+            setIsContactModalOpen(false);
+            setSelectedGroupBuyId(null);
+          }}
+          groupBuyId={selectedGroupBuyId}
+          accessToken={accessToken}
+          isSeller={true}
+        />
+      )}
+    </>
   );
 }
