@@ -126,9 +126,9 @@ export default function TradingGroupBuys() {
                 </div>
 
                 <div className="mb-3">
-                  <span className="text-sm text-gray-600">거래금액: </span>
+                  <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
                   <span className="font-semibold text-green-600">
-                    {groupBuy.winning_bid_amount?.toLocaleString()}원
+                    {groupBuy.winning_bid_amount?.toLocaleString() || 0}원
                   </span>
                 </div>
 

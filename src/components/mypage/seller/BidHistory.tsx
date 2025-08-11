@@ -127,10 +127,7 @@ export default function BidHistory() {
                     <span className="sm:hidden">{new Date(bid.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}</span>
                   </span>
                   <span className="font-medium text-green-600">
-                    {formatNumberWithCommas(bid.amount)}원
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-gray-500">
-                    {bid.bid_type === 'support' ? '지원금' : '가격'} 입찰
+                    입찰금액: {formatNumberWithCommas(bid.amount)}원
                   </span>
                 </div>
               </div>

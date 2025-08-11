@@ -113,7 +113,7 @@ export default function WaitingBuyerSelection() {
                   <div>
                     <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
                     <span className="font-semibold text-green-600">
-                      {groupBuy.winning_bid_amount?.toLocaleString()}원
+                      {(groupBuy.winning_bid_amount || 0).toLocaleString()}원
                     </span>
                   </div>
                   
