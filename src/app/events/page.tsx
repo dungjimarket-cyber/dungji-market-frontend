@@ -68,10 +68,10 @@ export default function EventListPage() {
             >
               <div className="aspect-[16/9] relative bg-gray-100">
                 <Image
-                  src={event.thumbnail_url || '/placeholder.png'}
+                  src={`${event.thumbnail_url || '/placeholder.png'}${event.thumbnail_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
                   alt={event.title}
                   fill
-                  className="object-contain sm:object-cover"
+                  className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   quality={85}
                 />

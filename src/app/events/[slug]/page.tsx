@@ -79,10 +79,10 @@ export default function EventDetailPage() {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="aspect-[16/9] relative bg-gray-100">
           <Image
-            src={event.thumbnail_url || '/placeholder.png'}
+            src={`${event.thumbnail_url || '/placeholder.png'}${event.thumbnail_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
             alt={event.title}
             fill
-            className="object-contain sm:object-cover"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
           />
           {event.is_active && (
@@ -107,7 +107,7 @@ export default function EventDetailPage() {
             <div className="mb-6 relative">
               <div className="relative w-full aspect-auto">
                 <Image
-                  src={event.content_image_url}
+                  src={`${event.content_image_url}${event.content_image_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
                   alt={`${event.title} 상세 이미지`}
                   width={1200}
                   height={1600}

@@ -88,25 +88,38 @@ export default function BannerCarousel() {
   if (!currentBanner) {
     return null;
   }
+  
+  // 디버깅: 배너 링크 확인
+  console.log('[BannerCarousel] 현재 배너:', {
+    title: currentBanner.title,
+    target_url: currentBanner.target_url,
+    image_url: currentBanner.image_url
+  });
 
   return (
     <div className="relative w-full overflow-hidden rounded-lg">
       {/* 배너 컨테이너 */}
       <div className="relative h-64 sm:h-96 md:h-[400px] lg:h-[500px] bg-gray-100">
         {/* 배너 이미지 */}
-        {currentBanner.target_url && currentBanner.target_url !== '#' ? (
+        {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
           <Link 
-            href={currentBanner.target_url.startsWith('http') ? currentBanner.target_url : `/${currentBanner.target_url.replace(/^\//, '')}`}
+            href={
+              currentBanner.target_url.startsWith('http') 
+                ? currentBanner.target_url 
+                : currentBanner.target_url.startsWith('/') 
+                  ? currentBanner.target_url 
+                  : `/${currentBanner.target_url}`
+            }
             className="block w-full h-full"
             target={currentBanner.target_url.startsWith('http') ? '_blank' : '_self'}
             rel={currentBanner.target_url.startsWith('http') ? 'noopener noreferrer' : undefined}
           >
             <div className="relative w-full h-full">
               <Image
-                src={currentBanner.image_url}
+                src={`${currentBanner.image_url}${currentBanner.image_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
                 alt={currentBanner.title}
                 fill
-                className="object-contain sm:object-cover"
+                className="object-cover"
                 priority={currentIndex === 0}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
               />
