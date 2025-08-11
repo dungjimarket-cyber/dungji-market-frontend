@@ -160,7 +160,7 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
-              placeholder="지역명을 검색하세요 (예: 하남시, 강남구)"
+              placeholder="통합검색 (상품명, 제목, 지역 등)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => {
@@ -199,7 +199,7 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
             className="flex items-center gap-2"
           >
             <Filter size={16} />
-            필터 {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
+            검색필터 {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
           </Button>
           
           {getActiveFilterCount() > 0 && (

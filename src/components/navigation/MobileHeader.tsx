@@ -22,7 +22,7 @@ export function MobileHeader() {
         </Link>
         
         {/* 검색창 */}
-        <SearchBar className="flex-1" placeholder="둥지마켓에서 검색하기" />
+        <SearchBar className="flex-1" placeholder="통합검색" showMyRegionButton={true} />
         
         {/* 장바구니 아이콘 */}
         <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors">

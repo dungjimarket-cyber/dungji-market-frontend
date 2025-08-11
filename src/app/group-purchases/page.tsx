@@ -83,10 +83,11 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
-        // 공구완료 탭: 완료된 공구들 (ended, final_selection, seller_confirmation, completed, cancelled)
-        params.append('status', 'ended,final_selection,seller_confirmation,completed,cancelled');
+        // 공구완료 탭: 구매완료+판매완료가 모두 완료된 건만 (completed만)
+        params.append('status', 'completed');
       } else if (currentTab === 'all') {
-        // 전체 탭은 모든 상태 포함 - 상태 필터 없음
+        // 전체 탭: 모집중/입찰중과 완료된 건만 (진행중 단계는 제외)
+        params.append('status', 'recruiting,bidding,completed');
       } else {
         // 인기순, 최신순 탭은 진행중인 것만 (recruiting, bidding)
         params.append('status', 'recruiting,bidding');
@@ -109,9 +110,9 @@ function GroupPurchasesPageContent() {
             if (key === 'sort') {
               return;
             }
-            // 지역 검색 필터
+            // 통합 검색 필터 (제목, 상품명, 지역 등)
             else if (key === 'search') {
-              params.append('region_search', value);
+              params.append('search', value);
             }
             // 구매방식 필터 변환
             else if (key === 'purchaseType') {
