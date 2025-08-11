@@ -290,7 +290,7 @@ export default function PurchaseConfirmedGroupBuys() {
                       </Button>
                     </div>
                   ) : (
-                    <Link href={`/reviews/write?groupbuy=${groupBuy.id}`} className="w-full">
+                    <Link href={`/review/create?groupbuy=${groupBuy.id}`} className="w-full">
                       <Button size="sm" className="w-full">
                         후기작성
                       </Button>

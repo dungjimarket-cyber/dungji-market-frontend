@@ -1682,7 +1682,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <p className="font-semibold text-purple-800">구매완료</p>
                 </div>
                 <Button
-                  onClick={() => router.push(`/reviews/write?groupbuy=${groupBuy.id}`)}
+                  onClick={() => router.push(`/review/create?groupbuy=${groupBuy.id}`)}
                   className="w-full py-3 bg-purple-600 hover:bg-purple-700"
                 >
                   후기작성
