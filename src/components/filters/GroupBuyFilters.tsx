@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { X, Filter, Search } from 'lucide-react';
+import { X, Filter, Search, MapPin } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ interface GroupBuyFiltersProps {
 export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   
   // 필터 옵션들
@@ -188,6 +190,30 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
             className="px-6"
           >
             검색
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (!user) {
+                alert('로그인이 필요합니다.');
+                router.push('/login');
+                return;
+              }
+              
+              // 사용자의 지역 정보를 기반으로 필터링
+              if (user.address_region) {
+                const regionName = user.address_region.name || user.address_region.full_name;
+                handleFilterChange('region', regionName);
+                setSearchQuery(regionName);
+              } else {
+                alert('내 지역 정보가 설정되지 않았습니다. 마이페이지에서 지역을 설정해주세요.');
+                router.push('/mypage');
+              }
+            }}
+            className="flex items-center gap-1 px-4"
+          >
+            <MapPin className="w-4 h-4" />
+            <span>내지역</span>
           </Button>
         </div>
         
