@@ -83,8 +83,10 @@ function GroupPurchasesPageContent() {
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
-        // 공구완료 탭: completed 상태만
+        // 공구완료 탭: completed 상태이면서 구매완료와 판매완료가 모두 true인 건만
         params.append('status', 'completed');
+        params.append('buyer_completed', 'true');
+        params.append('seller_completed', 'true');
       } else {
         // 전체/인기/최신 탭: 모집중/입찰중 상태만 (활성 공구)
         params.append('status', 'recruiting,bidding');
@@ -94,8 +96,11 @@ function GroupPurchasesPageContent() {
       if (currentTab === 'popular') {
         // 인기순: 참여자 많은 순으로 정렬
         params.append('ordering', '-current_participants');
+      } else if (currentTab === 'completed') {
+        // 공구완료: 완료시간 최신순 (백엔드가 completed_at을 지원하는지 확인 필요)
+        params.append('ordering', '-completed_at');
       } else {
-        // 전체, 최신, 완료: 시작시간 최신순 (백엔드가 지원하는 필드)
+        // 전체, 최신: 시작시간 최신순
         params.append('ordering', '-start_time');
       }
       
