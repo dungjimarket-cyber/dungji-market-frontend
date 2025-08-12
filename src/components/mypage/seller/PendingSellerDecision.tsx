@@ -109,15 +109,12 @@ export default function PendingSellerDecision() {
                     <Users className="h-4 w-4" />
                     구매확정 {groupBuy.confirmed_buyers || 0}/{groupBuy.current_participants}명
                   </span>
-                  <span className="text-orange-600 font-medium">
-                    판매 최종선택 필요
-                  </span>
                 </div>
 
                 {/* 남은 시간 표시 */}
                 {groupBuy.seller_selection_end && (
                   <div className="mb-2 bg-orange-100 rounded px-2 py-1 inline-block">
-                    <span className="text-sm text-orange-700">선택 마감: </span>
+                    <span className="text-sm text-orange-700">남은시간: </span>
                     <CountdownTimer
                       endTime={groupBuy.seller_selection_end}
                       format="compact"
@@ -135,13 +132,30 @@ export default function PendingSellerDecision() {
                     </span>
                   </div>
                   
-                  <Button
-                    size="sm"
-                    className="bg-orange-500 hover:bg-orange-600"
-                    onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
-                  >
-                    선택하러 가기
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const confirmRate = groupBuy.current_participants > 0 
+                          ? Math.round(((groupBuy.confirmed_buyers || 0) / groupBuy.current_participants) * 100)
+                          : 0;
+                        toast.info(
+                          `구매확정률: ${confirmRate}%\n구매확정: ${groupBuy.confirmed_buyers || 0}명 / 총 참여자: ${groupBuy.current_participants}명`,
+                          { duration: 5000 }
+                        );
+                      }}
+                    >
+                      구매확정률 확인하기
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-orange-500 hover:bg-orange-600"
+                      onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
+                    >
+                      선택하러 가기
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
