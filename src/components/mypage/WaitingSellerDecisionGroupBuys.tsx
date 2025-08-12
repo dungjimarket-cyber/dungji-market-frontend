@@ -15,13 +15,17 @@ interface WaitingSellerGroupBuy {
   id: number;
   title: string;
   product_name: string;
-  winning_bid_amount: number;
+  winning_bid_amount?: number;
+  highest_bid_amount?: number;
+  final_bid_amount?: number;
+  bid_amount?: number;
   seller_selection_end: string;
   created_at: string;
   buyer_decision: 'confirmed' | 'cancelled' | 'pending';
   buyer_decision_at?: string;
   confirmed_participants: number;
   total_participants: number;
+  [key: string]: any; // 디버깅용: 다른 필드 허용
 }
 
 export default function WaitingSellerDecisionGroupBuys() {
@@ -52,6 +56,18 @@ export default function WaitingSellerDecisionGroupBuys() {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('판매자 최종선택 대기중 공구 데이터:', data);
+          // 디버깅: 각 공구의 금액 관련 필드 확인
+          data.forEach((gb: any) => {
+            console.log(`공구 ${gb.id} 금액 필드:`, {
+              winning_bid_amount: gb.winning_bid_amount,
+              highest_bid_amount: gb.highest_bid_amount,
+              final_bid_amount: gb.final_bid_amount,
+              bid_amount: gb.bid_amount,
+              my_bid_amount: gb.my_bid_amount,
+              selected_bid_amount: gb.selected_bid_amount
+            });
+          });
           setGroupBuys(data);
         } else if (response.status === 404) {
           // API가 아직 없는 경우
@@ -122,7 +138,15 @@ export default function WaitingSellerDecisionGroupBuys() {
             <div className="mb-4">
               <p className="text-sm text-gray-500 mb-1">최종 낙찰지원금</p>
               <p className="text-xl font-bold text-blue-600">
-                {formatNumberWithCommas(groupBuy.winning_bid_amount)}원
+                {formatNumberWithCommas(
+                  groupBuy.winning_bid_amount || 
+                  groupBuy.highest_bid_amount || 
+                  groupBuy.final_bid_amount || 
+                  groupBuy.bid_amount || 
+                  groupBuy.selected_bid_amount ||
+                  groupBuy.my_bid_amount ||
+                  0
+                )}원
               </p>
             </div>
 
