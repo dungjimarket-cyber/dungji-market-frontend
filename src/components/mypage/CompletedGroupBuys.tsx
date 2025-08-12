@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, MessageSquare, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -146,8 +146,9 @@ export default function CompletedGroupBuys() {
           </CardHeader>
           <CardContent>
             <div className="flex justify-between items-center">
-              <Badge variant="secondary" className="bg-gray-100">
-                공구종료
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                구매완료
               </Badge>
               <div className="flex gap-2">
                 <Button
@@ -157,33 +158,40 @@ export default function CompletedGroupBuys() {
                 >
                   공구보기
                 </Button>
-                {!groupBuy.has_review && (
-                  (() => {
-                    const creatorId = typeof groupBuy.creator === 'object' 
-                      ? groupBuy.creator?.id 
-                      : groupBuy.creator;
-                    const isMyGroupBuy = user?.id === creatorId;
-                    
-                    if (isMyGroupBuy) {
-                      return (
-                        <div className="text-sm text-gray-500">
-                          내가 만든 공구
-                        </div>
-                      );
-                    }
-                    
+                {(() => {
+                  const creatorId = typeof groupBuy.creator === 'object' 
+                    ? groupBuy.creator?.id 
+                    : groupBuy.creator;
+                  const isMyGroupBuy = user?.id === creatorId;
+                  
+                  if (groupBuy.has_review) {
                     return (
-                      <Button
-                        size="sm"
-                        onClick={() => handleWriteReview(groupBuy.id, groupBuy.product_details.id)}
-                        className="flex items-center gap-1"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        후기작성
-                      </Button>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        후기작성 완료
+                      </Badge>
                     );
-                  })()
-                )}
+                  }
+                  
+                  if (isMyGroupBuy) {
+                    return (
+                      <div className="text-sm text-gray-500">
+                        내가 만든 공구
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <Button
+                      size="sm"
+                      onClick={() => handleWriteReview(groupBuy.id, groupBuy.product_details.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      후기작성
+                    </Button>
+                  );
+                })()}
               </div>
             </div>
           </CardContent>
