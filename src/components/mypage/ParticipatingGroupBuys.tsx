@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Tabs removed - showing all participating groupbuys in one list
 import { Badge } from '@/components/ui/badge';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Pagination } from '@/components/ui/Pagination';
@@ -64,11 +64,9 @@ export default function ParticipatingGroupBuys() {
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'created_at' | 'end_time' | 'participants'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // 최신순이 기본
-  const [activeTab, setActiveTab] = useState('active'); // 'active' 또는 'completed' 탭 상태
   
   // 페이징 상태
-  const [activePage, setActivePage] = useState(1);
-  const [completedPage, setCompletedPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   // 인증 로딩 상태일 때는 로딩 표시
@@ -143,32 +141,14 @@ export default function ParticipatingGroupBuys() {
     }
   });
   
-  // 공구 상태에 따라 필터링
-  // 진행중: 모집중, 입찰중만 포함 (최종선택중 제외)
-  const activeGroupBuys = sortedGroupBuys.filter(groupBuy => {
-    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
-    return ['recruiting', 'bidding'].includes(status);
-  });
-  
-  // 종료된 공구: 최종선택중, 판매자확정대기, 완료, 만료, 취소 포함
-  const completedGroupBuys = sortedGroupBuys.filter(groupBuy => {
-    const status = groupBuy.calculated_status || calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
-    return ['final_selection', 'seller_confirmation', 'completed', 'expired', 'canceled'].includes(status);
-  });
-  
   // 페이징된 데이터
-  const paginatedActiveGroupBuys = activeGroupBuys.slice(
-    (activePage - 1) * itemsPerPage,
-    activePage * itemsPerPage
-  );
-  const paginatedCompletedGroupBuys = completedGroupBuys.slice(
-    (completedPage - 1) * itemsPerPage,
-    completedPage * itemsPerPage
+  const paginatedGroupBuys = sortedGroupBuys.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
   
   // 총 페이지 수 계산
-  const activeTotalPages = Math.ceil(activeGroupBuys.length / itemsPerPage);
-  const completedTotalPages = Math.ceil(completedGroupBuys.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedGroupBuys.length / itemsPerPage);
 
   if (loading) return <p className="text-gray-500">로딩 중...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -376,23 +356,12 @@ export default function ParticipatingGroupBuys() {
 
   return (
     <div>
-      <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
-          <TabsTrigger value="active" className="text-center">
-            진행중인 공구 
-            {activeGroupBuys.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{activeGroupBuys.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="completed" className="text-center">
-            종료된 공구
-            {completedGroupBuys.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{completedGroupBuys.length}</Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <div className="flex justify-end mb-4 gap-2">
+      {/* 정렬 옵션 */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm text-gray-600">
+          총 {groupBuys.length}개의 참여중인 공구
+        </div>
+        <div className="flex gap-2">
           <select 
             className="px-2 py-1 border rounded text-sm"
             value={sortBy}
@@ -411,41 +380,21 @@ export default function ParticipatingGroupBuys() {
             <option value="asc">오름차순</option>
           </select>
         </div>
+      </div>
 
-        <TabsContent value="active" className="mt-0">
-          {activeGroupBuys.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">진행중인 공구가 없습니다.</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {paginatedActiveGroupBuys.map(renderGroupBuyCard)}
-              </div>
-              <Pagination
-                currentPage={activePage}
-                totalPages={activeTotalPages}
-                onPageChange={setActivePage}
-              />
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="completed" className="mt-0">
-          {completedGroupBuys.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">종료된 공구가 없습니다.</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {paginatedCompletedGroupBuys.map(renderGroupBuyCard)}
-              </div>
-              <Pagination
-                currentPage={completedPage}
-                totalPages={completedTotalPages}
-                onPageChange={setCompletedPage}
-              />
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
+      {/* 공구 목록 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {paginatedGroupBuys.map(renderGroupBuyCard)}
+      </div>
+      
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }
