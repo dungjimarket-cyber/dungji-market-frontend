@@ -1,5 +1,6 @@
 import React from 'react';
 import { TelecomProductDetail } from '@/types/product';
+import { getPlanDisplay } from '@/lib/telecom-utils';
 
 interface TelecomProductInfoProps {
   detail: TelecomProductDetail;
@@ -81,7 +82,7 @@ const TelecomProductInfo: React.FC<TelecomProductInfoProps> = ({ detail }) => {
       <div className="grid grid-cols-2 gap-2">
         <div className="info-item">
           <span className="text-gray-500 text-sm">요금제:</span>
-          <span className="font-medium">{detail.plan_info}</span>
+          <span className="font-medium">{getPlanDisplay(detail.plan_info)}</span>
         </div>
         <div className="info-item">
           <span className="text-gray-500 text-sm">약정:</span>

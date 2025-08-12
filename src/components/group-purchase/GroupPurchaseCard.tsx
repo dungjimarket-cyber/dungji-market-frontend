@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react';
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
+import { getPlanDisplay } from '@/lib/telecom-utils';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { SimplifiedGroupBuyButton } from '@/components/groupbuy/SimplifiedGroupBuyButton';
@@ -445,7 +446,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           )}
           {groupBuy.telecom_detail?.plan_info && (
             <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-sm font-medium">
-              {groupBuy.telecom_detail.plan_info}
+              {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
             </span>
           )}
         </div>

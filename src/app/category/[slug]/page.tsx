@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getPlanDisplay } from '@/lib/telecom-utils';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
@@ -254,7 +255,7 @@ export default function CategoryPage() {
                             <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
                             <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
                           </div>
-                          <p className="text-sm font-medium">요금제: {groupBuy.product_details?.plan_info || '5만원대'}</p>
+                          <p className="text-sm font-medium">요금제: {getPlanDisplay(groupBuy.product_details?.plan_info || '5G_standard')}</p>
                         </div>
                         <div className="flex justify-between items-center pt-2">
                           <div>

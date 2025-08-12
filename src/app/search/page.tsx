@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getPlanDisplay } from '@/lib/telecom-utils';
 
 const API_URL = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')}`;
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -214,7 +215,7 @@ export default function SearchPage() {
                             <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
                             <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
                           </div>
-                          <p className="text-xs sm:text-sm font-medium">요금제: {groupBuy.product_details?.plan_info || '5만원대'}</p>
+                          <p className="text-xs sm:text-sm font-medium">요금제: {getPlanDisplay(groupBuy.product_details?.plan_info || '5G_standard')}</p>
                         </div>
                         <div className="flex justify-between items-center pt-2">
                           <div>

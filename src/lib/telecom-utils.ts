@@ -50,19 +50,19 @@ export const getPlanDisplay = (plan: string): string => {
 
   // 시스템 코드를 사용자 친화적인 표시명으로 변환
   const planMap: Record<string, string> = {
-    // 5G 요금제
-    '5G_basic': '5G 베이직 (3만원대)',
-    '5G_standard': '5G 스탠다드 (5만원대)',
-    '5G_basic_plus': '5G 베이직 플러스 (6만원대)',
-    '5G_premium': '5G 프리미엄 (7만원대)',
-    '5G_premium_plus': '5G 프리미엄 플러스 (8만원대)',
-    '5G_special': '5G 스페셜 (9만원대)',
-    '5G_platinum': '5G 플래티넘 (10만원 이상)',
+    // 5G 요금제 - 등록 폼과 동일하게 표시
+    '5G_basic': '3만원대',
+    '5G_standard': '5만원대',
+    '5G_basic_plus': '6만원대',
+    '5G_premium': '7만원대',
+    '5G_premium_plus': '8만원대',
+    '5G_special': '9만원대',
+    '5G_platinum': '10만원이상',
     
     // LTE 요금제
-    'LTE_basic': 'LTE 베이직 (2만원대)',
-    'LTE_standard': 'LTE 스탠다드 (3만원대)',
-    'LTE_premium': 'LTE 프리미엄 (5만원대)',
+    'LTE_basic': '2만원대',
+    'LTE_standard': '3만원대',
+    'LTE_premium': '5만원대',
     
     // 시니어/키즈 요금제
     'senior_basic': '시니어 베이직',
