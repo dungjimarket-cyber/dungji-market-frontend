@@ -20,7 +20,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 import { formatBidAmount } from '@/lib/utils/maskAmount';
 
@@ -95,17 +95,6 @@ export default function BidHistoryModal({
     fetchBidHistory();
   }, [groupBuyId, isOpen]);
 
-  // 입찰 상태별 색상 및 아이콘
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'selected':
-        return <Badge className="bg-green-500"><CheckCircle className="w-4 h-4 mr-1" /> 확정</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive"><AlertTriangle className="w-4 h-4 mr-1" /> 포기</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-gray-100"><Clock className="w-4 h-4 mr-1" /> 대기중</Badge>;
-    }
-  };
 
   // 입찰 유형에 따른 표시 문구
   const getBidTypeText = (bidType: string) => {
@@ -207,11 +196,6 @@ export default function BidHistoryModal({
                             : `${bid.amount.toLocaleString()}원`  // 정상 표기
                         }
                       </TableCell>
-                      {isSeller && (
-                        <TableCell className="text-center">
-                          {getStatusBadge(bid.status || 'pending')}
-                        </TableCell>
-                      )}
                       <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
                     </TableRow>
                   );
