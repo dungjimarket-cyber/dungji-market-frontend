@@ -56,9 +56,10 @@ export default function WaitingSellerDecisionGroupBuys() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('판매자 최종선택 대기중 공구 데이터:', data);
-          // 디버깅: 각 공구의 금액 관련 필드 확인
-          data.forEach((gb: any) => {
+          console.log('판매자 최종선택 대기중 공구 전체 응답:', data);
+          // 디버깅: 각 공구의 전체 데이터와 금액 관련 필드 확인
+          data.forEach((gb: any, index: number) => {
+            console.log(`공구 ${gb.id} (${index}) 전체 데이터:`, gb);
             console.log(`공구 ${gb.id} 금액 필드:`, {
               winning_bid_amount: gb.winning_bid_amount,
               highest_bid_amount: gb.highest_bid_amount,
