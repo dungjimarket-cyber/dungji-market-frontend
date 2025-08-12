@@ -10,6 +10,7 @@ import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import BidConfirmModal from '@/components/groupbuy/BidConfirmModal';
 import { getRegistrationTypeText, calculateGroupBuyStatus, getStatusText } from '@/lib/groupbuy-utils';
+import { getPlanDisplay } from '@/lib/telecom-utils';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
@@ -1207,7 +1208,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           )}
           {groupBuy.telecom_detail?.plan_info && (
             <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
-              요금제 : {groupBuy.telecom_detail.plan_info}
+              요금제 : {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
             </span>
           )}
         </div>
