@@ -31,8 +31,8 @@ const nextConfig = {
         hostname: 'images.samsung.com',
       },
     ],
-    // 이미지 캐시 최소화
-    minimumCacheTTL: 0,
+    // 이미지 캐시 설정 (60초로 설정하여 빠른 업데이트 반영)
+    minimumCacheTTL: 60,
   },
   // TypeScript 타입 검사 활성화
 }

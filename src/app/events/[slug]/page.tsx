@@ -38,9 +38,6 @@ export default function EventDetailPage() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}/`, {
         cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
       });
       if (response.ok) {
         const data = await response.json();
@@ -90,7 +87,6 @@ export default function EventDetailPage() {
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
             priority
-            unoptimized
           />
           {event.is_active && (
             <div className="absolute top-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
@@ -122,7 +118,6 @@ export default function EventDetailPage() {
                   style={{ maxWidth: '100%', height: 'auto' }}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
                   quality={90}
-                  unoptimized
                 />
               </div>
             </div>

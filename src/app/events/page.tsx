@@ -13,7 +13,9 @@ interface Event {
   thumbnail_url: string;
   start_date: string;
   end_date: string;
-  is_active: boolean;
+  is_active?: boolean;
+  is_valid?: boolean;
+  status?: string;
   view_count: number;
 }
 
@@ -25,13 +27,15 @@ export default function EventListPage() {
     fetchEvents();
   }, []);
 
+  // 이미지 로드 오류 처리
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = '/placeholder.png';
+  };
+
   const fetchEvents = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/`, {
         cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
       });
       if (response.ok) {
         const data = await response.json();
@@ -80,9 +84,8 @@ export default function EventListPage() {
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   quality={85}
                   priority={false}
-                  unoptimized
                 />
-                {event.is_active && (
+                {(event.is_active || event.is_valid || event.status === 'ongoing') && (
                   <div className="absolute top-2 right-2 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                     진행중
                   </div>
