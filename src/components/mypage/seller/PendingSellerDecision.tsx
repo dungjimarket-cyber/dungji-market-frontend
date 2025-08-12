@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Users, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * 판매확정/포기 선택하기 컴포넌트
@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 export default function PendingSellerDecision() {
   const { accessToken } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -140,10 +141,10 @@ export default function PendingSellerDecision() {
                         const confirmRate = groupBuy.current_participants > 0 
                           ? Math.round(((groupBuy.confirmed_buyers || 0) / groupBuy.current_participants) * 100)
                           : 0;
-                        toast.info(
-                          `구매확정률: ${confirmRate}%\n구매확정: ${groupBuy.confirmed_buyers || 0}명 / 총 참여자: ${groupBuy.current_participants}명`,
-                          { duration: 5000 }
-                        );
+                        toast({
+                          title: `구매확정률: ${confirmRate}%`,
+                          description: `구매확정: ${groupBuy.confirmed_buyers || 0}명 / 총 참여자: ${groupBuy.current_participants}명`,
+                        });
                       }}
                     >
                       구매확정률 확인하기
