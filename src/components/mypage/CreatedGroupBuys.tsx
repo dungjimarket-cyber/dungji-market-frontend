@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime } from '@/lib/groupbuy-utils';
+import { getCarrierDisplay, getSubscriptionTypeDisplay, getPlanDisplay } from '@/lib/telecom-utils';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -279,29 +280,25 @@ export default function CreatedGroupBuys() {
                       <p className="text-sm font-medium">{groupBuy.product_details?.name}</p>
                       <div className="flex items-center text-xs text-gray-500 mt-1">
                         <span className="mr-2">{
-                          // 공구의 명시적 필드 우선 사용
-                          groupBuy.telecom_carrier || 
-                          groupBuy.product_details?.carrier || 
-                          'SKT'
+                          getCarrierDisplay(
+                            groupBuy.telecom_carrier || 
+                            groupBuy.product_details?.carrier || 
+                            'SKT'
+                          )
                         }</span>
                         <span>{
-                          // 가입유형 표시
-                          groupBuy.subscription_type === 'new' ? '신규가입' :
-                          groupBuy.subscription_type === 'transfer' ? '번호이동' :
-                          groupBuy.subscription_type === 'change' ? '기기변경' :
-                          groupBuy.product_details?.registration_type || 
-                          '번호이동'
+                          getSubscriptionTypeDisplay(
+                            groupBuy.subscription_type || 
+                            groupBuy.product_details?.registration_type || 
+                            'transfer'
+                          )
                         }</span>
                         <span className="ml-2">{
-                          // 요금제 표시
-                          groupBuy.plan_info === '5G_standard' ? '5만원대' :
-                          groupBuy.plan_info === '5G_basic_plus' ? '6만원대' :
-                          groupBuy.plan_info === '5G_premium' ? '7만원대' :
-                          groupBuy.plan_info === '5G_premium_plus' ? '8만원대' :
-                          groupBuy.plan_info === '5G_special' ? '9만원대' :
-                          groupBuy.plan_info === '5G_platinum' ? '10만원이상' :
-                          groupBuy.plan_info === '5G_basic' ? '3만원대' :
-                          '5만원대'
+                          getPlanDisplay(
+                            groupBuy.plan_info || 
+                            groupBuy.product_details?.plan_info || 
+                            '5G_standard'
+                          )
                         }</span>
                       </div>
                       <p className="text-sm font-bold mt-1">

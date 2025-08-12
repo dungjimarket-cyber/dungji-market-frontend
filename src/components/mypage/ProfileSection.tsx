@@ -55,6 +55,8 @@ interface ExtendedUser {
   is_business_verified?: boolean;
   business_number?: string;
   is_remote_sales?: boolean;
+  sns_type?: string;  // 소셜 로그인 타입
+  provider?: string;  // 소셜 로그인 제공자 (호환성)
 }
 
 export default function ProfileSection() {
@@ -501,15 +503,22 @@ export default function ProfileSection() {
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">이메일</label>
-              <button
-                onClick={() => {
-                  setIsEditing(true);
-                  setEditField('email');
-                }}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                수정
-              </button>
+              {/* 소셜 로그인 사용자는 이메일 수정 불가 */}
+              {user?.sns_type === 'email' || !user?.sns_type ? (
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditField('email');
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  수정
+                </button>
+              ) : (
+                <span className="text-xs text-gray-500">
+                  {getLoginProviderLabel(user)} 계정 연결됨
+                </span>
+              )}
             </div>
             
             {isEditing && editField === 'email' ? (

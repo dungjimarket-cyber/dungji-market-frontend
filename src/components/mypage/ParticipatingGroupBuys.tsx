@@ -13,6 +13,7 @@ import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTim
 import { Badge } from '@/components/ui/badge';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Pagination } from '@/components/ui/Pagination';
+import { getCarrierDisplay, getSubscriptionTypeDisplay, getPlanDisplay } from '@/lib/telecom-utils';
 
 interface Product {
   id: number;
@@ -191,40 +192,7 @@ export default function ParticipatingGroupBuys() {
                       (product as any)?.telecom_carrier || 
                       (product as any)?.subscription_type;
     
-    // 통신사 정보
-    const getCarrierDisplay = (carrier: string) => {
-      switch(carrier) {
-        case 'SKT': return 'SKT';
-        case 'KT': return 'KT';
-        case 'LGU': return 'LG U+';
-        case 'MVNO': return '알뜰폰';
-        default: return carrier;
-      }
-    };
-    
-    // 가입유형 표시
-    const getSubscriptionTypeDisplay = (type: string) => {
-      switch(type) {
-        case 'new': return '신규가입';
-        case 'transfer': return '번호이동';
-        case 'change': return '기기변경';
-        default: return type;
-      }
-    };
-    
-    // 요금제 표시
-    const getPlanDisplay = (plan: string) => {
-      switch(plan) {
-        case '5G_basic': return '3만원대';
-        case '5G_standard': return '5만원대';
-        case '5G_basic_plus': return '6만원대';
-        case '5G_premium': return '7만원대';
-        case '5G_premium_plus': return '8만원대';
-        case '5G_special': return '9만원대';
-        case '5G_platinum': return '10만원이상';
-        default: return plan;
-      }
-    };
+    // 통신사 관련 유틸리티 함수는 telecom-utils에서 import하여 사용
     
     return (
       <Link href={`/groupbuys/${groupBuy.id}`} key={groupBuy.id}>

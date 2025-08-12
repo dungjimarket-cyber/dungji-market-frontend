@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getCarrierDisplay, getSubscriptionTypeDisplay, getPlanDisplay } from '@/lib/telecom-utils';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -609,18 +610,17 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 <div className="flex flex-wrap gap-2 mt-3">
                   {groupBuy.telecom_detail.telecom_carrier && (
                     <span className="bg-blue-600 text-white px-4 py-2 rounded-lg text-base font-medium">
-                      {groupBuy.telecom_detail.telecom_carrier}
+                      {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier)}
                     </span>
                   )}
                   {groupBuy.telecom_detail.subscription_type && (
                     <span className="bg-purple-600 text-white px-4 py-2 rounded-lg text-base font-medium">
-                      {groupBuy.telecom_detail.subscription_type_korean || 
-                       getRegistrationTypeText(groupBuy.telecom_detail.subscription_type)}
+                      {getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
                     </span>
                   )}
                   {groupBuy.telecom_detail.plan_info && (
                     <span className="bg-green-600 text-white px-4 py-2 rounded-lg text-base font-medium">
-                      {groupBuy.telecom_detail.plan_info}
+                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
                     </span>
                   )}
                 </div>

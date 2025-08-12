@@ -112,27 +112,18 @@ export default function WaitingSellerDecisionGroupBuys() {
         >
           <CardHeader className="pb-3">
             <div className="flex justify-between items-start">
-              <div>
+              <div className="flex-1">
                 <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
                 <p className="text-sm text-gray-500 mt-1">{groupBuy.product_name}</p>
               </div>
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
-                판매자 대기중
-              </Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-sm text-gray-500">최종 낙찰지원금</p>
-                <p className="font-bold">{formatNumberWithCommas(groupBuy.winning_bid_amount)}원</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">구매확정 인원</p>
-                <p className="font-bold">
-                  {groupBuy.confirmed_participants}/{groupBuy.total_participants}명
-                </p>
-              </div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 mb-1">최종 낙찰지원금</p>
+              <p className="text-xl font-bold text-blue-600">
+                {formatNumberWithCommas(groupBuy.winning_bid_amount)}원
+              </p>
             </div>
 
             {/* 내 결정 상태 */}

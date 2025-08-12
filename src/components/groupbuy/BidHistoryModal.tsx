@@ -125,6 +125,19 @@ export default function BidHistoryModal({
           <DialogTitle className="text-xl font-bold">공구 입찰 내역</DialogTitle>
           <DialogDescription>
             이 공구에 등록된 입찰 내역 상위 10개를 확인할 수 있습니다.
+            {bids.length > 0 && bids[0] && (
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-900">최종 낙찰 지원금</span>
+                  <span className="text-lg font-bold text-blue-700">
+                    {typeof bids[0].amount === 'string' 
+                      ? bids[0].amount 
+                      : `${bids[0].amount.toLocaleString()}원`
+                    }
+                  </span>
+                </div>
+              </div>
+            )}
           </DialogDescription>
         </DialogHeader>
         
@@ -153,17 +166,10 @@ export default function BidHistoryModal({
                   const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
                   const isWinner = index === 0;
                   
-                  // 금액 표시 로직
-                  // 모집중(recruiting) 상태일 때는 본인 입찰만 정상 표시, 나머지는 마스킹
-                  // 모집 종료 후에는 참여자/입찰자는 정상 표시
-                  const isRecruiting = groupBuyStatus === 'recruiting';
-                  
-                  const shouldShowAmount = 
-                    isMyBid ||           // 본인 입찰은 항상 표시
-                    (!isRecruiting && (isParticipant || hasBid));  // 모집 종료 후 참여자/입찰자는 정상 표시
-                  
-                  // 마스킹 조건: 모집중이거나, 비로그인이거나, 미참여/미입찰자
-                  const shouldMask = !shouldShowAmount;
+                  // 금액 표시 로직 - 상위 10개는 모두 정상 표기
+                  // 참여자/낙찰자는 1위부터 10위까지 정상 금액 표기
+                  const shouldShowAmount = isParticipant || hasBid || isMyBid;
+                  const shouldMask = false;  // 상위 10개는 마스킹 하지 않음
                   
                   return (
                     <TableRow 
