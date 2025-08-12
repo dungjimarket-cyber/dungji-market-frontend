@@ -36,7 +36,12 @@ export default function EventDetailPage() {
 
   const fetchEventDetail = async (slug: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}/`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}/`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setEvent(data);
@@ -79,11 +84,13 @@ export default function EventDetailPage() {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="aspect-[16/9] relative bg-gray-100">
           <Image
-            src={`${event.thumbnail_url || '/placeholder.png'}${event.thumbnail_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
+            src={event.thumbnail_url || '/placeholder.png'}
             alt={event.title}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+            priority
+            unoptimized
           />
           {event.is_active && (
             <div className="absolute top-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
@@ -107,7 +114,7 @@ export default function EventDetailPage() {
             <div className="mb-6 relative">
               <div className="relative w-full aspect-auto">
                 <Image
-                  src={`${event.content_image_url}${event.content_image_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
+                  src={event.content_image_url}
                   alt={`${event.title} 상세 이미지`}
                   width={1200}
                   height={1600}
@@ -115,6 +122,7 @@ export default function EventDetailPage() {
                   style={{ maxWidth: '100%', height: 'auto' }}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
                   quality={90}
+                  unoptimized
                 />
               </div>
             </div>

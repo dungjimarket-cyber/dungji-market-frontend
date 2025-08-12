@@ -31,6 +31,8 @@ const nextConfig = {
         hostname: 'images.samsung.com',
       },
     ],
+    // 이미지 캐시 최소화
+    minimumCacheTTL: 0,
   },
   // TypeScript 타입 검사 활성화
 }

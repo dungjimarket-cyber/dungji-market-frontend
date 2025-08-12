@@ -27,7 +27,12 @@ export default function EventListPage() {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setEvents(data);
@@ -68,12 +73,14 @@ export default function EventListPage() {
             >
               <div className="aspect-[16/9] relative bg-gray-100">
                 <Image
-                  src={`${event.thumbnail_url || '/placeholder.png'}${event.thumbnail_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
+                  src={event.thumbnail_url || '/placeholder.png'}
                   alt={event.title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   quality={85}
+                  priority={false}
+                  unoptimized
                 />
                 {event.is_active && (
                   <div className="absolute top-2 right-2 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
