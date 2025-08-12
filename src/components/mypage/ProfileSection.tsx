@@ -502,23 +502,24 @@ export default function ProfileSection() {
           {/* 이메일 섹션 */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">이메일</label>
-              {/* 소셜 로그인 사용자는 이메일 수정 불가 */}
-              {user?.sns_type === 'email' || !user?.sns_type ? (
-                <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    setEditField('email');
-                  }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  수정
-                </button>
-              ) : (
-                <span className="text-xs text-gray-500">
-                  {getLoginProviderLabel(user)} 계정 연결됨
-                </span>
-              )}
+              <label className="block text-sm font-medium text-gray-700">
+                이메일
+                {user?.sns_type && user?.sns_type !== 'email' && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({getLoginProviderLabel(user)} 계정 연결됨)
+                  </span>
+                )}
+              </label>
+              {/* 모든 사용자 이메일 수정 가능 */}
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditField('email');
+                }}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                수정
+              </button>
             </div>
             
             {isEditing && editField === 'email' ? (
