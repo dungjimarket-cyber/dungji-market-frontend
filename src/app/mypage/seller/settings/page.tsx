@@ -19,10 +19,11 @@ import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SellerSettings() {
   const router = useRouter();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -166,7 +167,11 @@ export default function SellerSettings() {
         }
       } catch (error) {
         console.error('판매자 프로필 로드 오류:', error);
-        toast.error('프로필 정보를 불러오는 중 오류가 발생했습니다.');
+        toast({
+          variant: 'destructive',
+          title: '오류',
+          description: '프로필 정보를 불러오는 중 오류가 발생했습니다.'
+        });
       } finally {
         setLoading(false);
       }
@@ -211,7 +216,10 @@ export default function SellerSettings() {
       } else {
         setNicknameError('');
         setNicknameAvailable(true);
-        toast.success('사용 가능한 닉네임입니다');
+        toast({
+          title: '확인 완료',
+          description: '사용 가능한 닉네임입니다'
+        });
       }
     } catch (error) {
       console.error('닉네임 중복 확인 오류:', error);
@@ -243,7 +251,11 @@ export default function SellerSettings() {
     
     // 닉네임 중복체크 확인
     if (formData.nickname !== profile?.nickname && !nicknameAvailable) {
-      toast.error('닉네임 중복체크를 해주세요.');
+      toast({
+        variant: 'destructive',
+        title: '확인 필요',
+        description: '닉네임 중복체크를 해주세요.'
+      });
       return;
     }
     
@@ -298,11 +310,19 @@ export default function SellerSettings() {
             // 백엔드는 code를 primary key로 사용하므로 code를 전송
             updateData.address_region_id = cityRegion.code;
           } else {
-            toast.error('선택한 지역을 찾을 수 없습니다.');
+            toast({
+              variant: 'destructive',
+              title: '오류',
+              description: '선택한 지역을 찾을 수 없습니다.'
+            });
             return;
           }
         } catch (err) {
-          toast.error('지역 정보를 가져오는 중 오류가 발생했습니다.');
+          toast({
+            variant: 'destructive',
+            title: '오류',
+            description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
+          });
           return;
         }
       }
@@ -356,7 +376,10 @@ export default function SellerSettings() {
       }
       
       if (updateSuccess) {
-        toast.success('판매자 정보가 성공적으로 저장되었습니다.');
+        toast({
+          title: '저장 완료',
+          description: '판매자 정보가 성공적으로 저장되었습니다.'
+        });
         
         // 프로필 정보 새로고침
         const updatedData = await getSellerProfile();
@@ -364,7 +387,11 @@ export default function SellerSettings() {
       }
     } catch (error) {
       console.error('프로필 저장 오류:', error);
-      toast.error('프로필 정보를 저장하는 중 오류가 발생했습니다.');
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '프로필 정보를 저장하는 중 오류가 발생했습니다.'
+      });
     } finally {
       setSaving(false);
     }
