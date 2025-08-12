@@ -147,6 +147,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [isBidding, setIsBidding] = useState(false);
   const [highestBidAmount, setHighestBidAmount] = useState<number | null>(groupBuy.highest_bid_amount || null);
   const [totalBids, setTotalBids] = useState<number>(groupBuy.total_bids || 0);
+  const [currentParticipants, setCurrentParticipants] = useState<number>(groupBuy.current_participants);
   const [showBidConfirmModal, setShowBidConfirmModal] = useState(false);
   const [remainingTokens, setRemainingTokens] = useState<number>(0);
   const [hasUnlimitedSubscription, setHasUnlimitedSubscription] = useState(false);
@@ -834,6 +835,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const handleJoinSuccess = () => {
     setIsParticipant(true);
     setShowJoinModal(false);
+    // 실시간으로 참여인원 +1 업데이트
+    setCurrentParticipants(prev => prev + 1);
     router.refresh();
   };
 
@@ -1050,6 +1053,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
         if (response.ok) {
           setIsParticipant(false);
+          // 실시간으로 참여인원 -1 업데이트
+          setCurrentParticipants(prev => Math.max(0, prev - 1));
           toast({
             title: '공구 나가기 완료',
             description: '공구에서 나왔습니다.',
@@ -1099,7 +1104,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   // 남은 자리 계산
-  const remainingSlots = groupBuy.max_participants - groupBuy.current_participants;
+  const remainingSlots = groupBuy.max_participants - currentParticipants;
 
   return (
     <EndedGroupBuyAccessControl
@@ -1437,7 +1442,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-lg p-4 text-center">
             <p className="text-gray-500 text-sm mb-1">참여인원</p>
-            <p className="text-2xl font-bold">{groupBuy.current_participants}/{groupBuy.max_participants}</p>
+            <p className="text-2xl font-bold">{currentParticipants}/{groupBuy.max_participants}</p>
             <p className="text-xs text-gray-500 mt-1">명</p>
           </div>
           <div className="bg-white rounded-lg p-4">
@@ -1821,7 +1826,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 가능</h3>
                 <p className="text-sm text-yellow-700">모집과 입찰이 동시에 진행중입니다. 지금 입찰하세요!</p>
                 <div className="mt-2 text-sm text-gray-600">
-                  <div>• 현재 참여자: {groupBuy.current_participants}/{groupBuy.max_participants}명</div>
+                  <div>• 현재 참여자: {currentParticipants}/{groupBuy.max_participants}명</div>
                   <div>• 공구 종료까지 입찰 가능합니다</div>
                 </div>
               </div>
@@ -2094,7 +2099,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 groupBuyId={groupBuy.id}
                 endTime={groupBuy.final_selection_end}
                 bidAmount={selectedBidAmount || undefined}
-                participantCount={groupBuy.current_participants}
+                participantCount={currentParticipants}
                 onSelectionMade={() => {
                   setShowFinalSelectionModal(false);
                   // 페이지 새로고침 또는 상태 업데이트
@@ -2221,7 +2226,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <>
                     판매 포기시 패널티가 부과될 수 있습니다.<br />
                     포기하시겠습니까?
-                    {groupBuy.current_participants <= 1 && (
+                    {currentParticipants <= 1 && (
                       <span className="text-sm text-blue-600 mt-2 block">
                         (구매자가 1명 이하일 경우 패널티는 부과되지 않습니다)
                       </span>

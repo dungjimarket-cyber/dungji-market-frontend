@@ -553,7 +553,7 @@ export default function SellerSettings() {
                   </div>
                   {formData.isRemoteSales && (
                     <div className="mt-3 p-4 border rounded-lg bg-gray-50">
-                      <Label htmlFor="businessRegFile" className="text-sm font-medium">비대면 판매가능 인증 파일</Label>
+                      <Label htmlFor="businessRegFile" className="text-sm font-medium">인증서 업로드</Label>
                       
                       {/* 기존 인증서가 있는 경우 */}
                       {formData.existingCertification && !formData.deleteCertification ? (
@@ -562,7 +562,6 @@ export default function SellerSettings() {
                             <div className="flex items-center gap-2">
                               <FileText className="h-5 w-5 text-blue-500" />
                               <div>
-                                <p className="text-sm font-medium">인증서 등록됨</p>
                                 <a 
                                   href={formData.existingCertification} 
                                   target="_blank" 

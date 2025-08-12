@@ -159,25 +159,12 @@ export default function CompletedGroupBuys() {
                   공구보기
                 </Button>
                 {(() => {
-                  const creatorId = typeof groupBuy.creator === 'object' 
-                    ? groupBuy.creator?.id 
-                    : groupBuy.creator;
-                  const isMyGroupBuy = user?.id === creatorId;
-                  
                   if (groupBuy.has_review) {
                     return (
                       <Badge variant="outline" className="bg-blue-50 text-blue-700">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         후기작성 완료
                       </Badge>
-                    );
-                  }
-                  
-                  if (isMyGroupBuy) {
-                    return (
-                      <div className="text-sm text-gray-500">
-                        내가 만든 공구
-                      </div>
                     );
                   }
                   
