@@ -26,6 +26,8 @@ export interface SellerProfile {
   isRemoteSales?: boolean;
   remoteSalesCertification?: string | null;
   remoteSalesVerified?: boolean;
+  remoteSalesStatus?: 'pending' | 'approved' | 'rejected' | null;
+  remoteSalesRejectionReason?: string | null;
   addressRegion?: {
     code: string;
     name: string;

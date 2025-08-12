@@ -6,9 +6,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Settings, LogOut, User, Star, Ticket } from 'lucide-react';
+import { Settings, LogOut, User, Star, Ticket, CheckCircle2, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import bidTokenService, { BidTokenResponse } from '@/lib/bid-token-service';
+import { getSellerProfile } from '@/lib/api/sellerService';
+import { SellerProfile } from '@/types/seller';
 
 /**
  * 판매자 프로필 섹션
@@ -17,21 +19,27 @@ export default function ProfileSection() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
+  const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBidTokens = async () => {
+    const fetchData = async () => {
       try {
-        const data = await bidTokenService.getBidTokens();
-        setBidTokens(data);
+        // 입찰권 정보와 판매자 프로필 정보를 동시에 가져오기
+        const [tokenData, profileData] = await Promise.all([
+          bidTokenService.getBidTokens(),
+          getSellerProfile()
+        ]);
+        setBidTokens(tokenData);
+        setSellerProfile(profileData);
       } catch (error) {
-        console.error('입찰권 정보 조회 오류:', error);
+        console.error('데이터 조회 오류:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBidTokens();
+    fetchData();
   }, []);
 
   const handleLogout = () => {
@@ -43,6 +51,18 @@ export default function ProfileSection() {
 
   return (
     <>
+      {/* 비대면 판매 인증 알림 */}
+      {(sellerProfile?.remoteSalesVerified || sellerProfile?.remoteSalesStatus === 'approved') && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <span className="text-sm font-medium text-green-800">
+              ✅ 전국 배송 가능 - 비대면 판매 인증 완료
+            </span>
+          </div>
+        </div>
+      )}
+      
       {/* 프로필 카드 */}
       <Card className="mb-6">
         <CardContent className="p-4 sm:p-6">
@@ -80,6 +100,13 @@ export default function ProfileSection() {
                     본인인증 완료
                   </Badge>
                   <Badge variant="outline">사업자 인증</Badge>
+                  {/* 비대면 판매 인증 뱃지 */}
+                  {(sellerProfile?.remoteSalesVerified || sellerProfile?.remoteSalesStatus === 'approved') && (
+                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                      <Trophy className="h-3 w-3 mr-1" />
+                      비대면 판매 인증
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>

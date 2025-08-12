@@ -590,10 +590,26 @@ export default function SellerSettings() {
                               삭제
                             </Button>
                           </div>
-                          {profile?.remoteSalesVerified && (
+                          {/* 인증 상태 표시 */}
+                          {profile?.remoteSalesStatus === 'pending' && (
+                            <div className="text-xs text-amber-600 mt-2 p-2 bg-amber-50 rounded">
+                              📋 비대면 판매 인증 심사중
+                              <p className="text-xs text-gray-600 mt-1">관리자 확인 후 인증이 완료됩니다. (1~2일 소요)</p>
+                            </div>
+                          )}
+                          {profile?.remoteSalesStatus === 'approved' || profile?.remoteSalesVerified && (
                             <p className="text-xs text-green-600 mt-2">
-                              ✓ 비대면 판매 인증 완료
+                              ✅ 비대면 판매 인증 완료
                             </p>
+                          )}
+                          {profile?.remoteSalesStatus === 'rejected' && (
+                            <div className="text-xs text-red-600 mt-2 p-2 bg-red-50 rounded">
+                              ❌ 인증 반려
+                              {profile?.remoteSalesRejectionReason && (
+                                <p className="text-xs text-gray-600 mt-1">사유: {profile.remoteSalesRejectionReason}</p>
+                              )}
+                              <p className="text-xs text-gray-600 mt-1">새로운 인증서를 업로드해주세요.</p>
+                            </div>
                           )}
                         </div>
                       ) : (
