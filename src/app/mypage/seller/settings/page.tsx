@@ -14,7 +14,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Save, Phone, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Phone, Upload, FileText, Trash2 } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
@@ -36,7 +36,9 @@ export default function SellerSettings() {
     businessNumber2: '',
     businessNumber3: '',
     isRemoteSales: false,
-    businessRegFile: null as File | null
+    businessRegFile: null as File | null,
+    existingCertification: null as string | null,
+    deleteCertification: false
   });
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
@@ -110,7 +112,9 @@ export default function SellerSettings() {
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
           isRemoteSales: data.isRemoteSales || false,
-          businessRegFile: null
+          businessRegFile: null,
+          existingCertification: data.remoteSalesCertification || null,
+          deleteCertification: false
         });
         
         // address_region에서 시/도와 시/군/구 추출
@@ -330,8 +334,8 @@ export default function SellerSettings() {
       // API 호출
       let updateSuccess = false;
       
-      // 파일이 있는 경우 또는 비대면 판매 옵션이 켜진 경우 FormData로 전송
-      if (formData.businessRegFile || formData.isRemoteSales) {
+      // 파일이 있는 경우 또는 비대면 판매 옵션이 켜진 경우 또는 삭제 요청이 있는 경우 FormData로 전송
+      if (formData.businessRegFile || formData.isRemoteSales || formData.deleteCertification) {
         const formDataWithFile = new FormData();
         
         // 각 필드를 FormData에 추가
@@ -347,9 +351,14 @@ export default function SellerSettings() {
           formDataWithFile.append('address_region_id', updateData.address_region_id);
         }
         
-        // 파일이 있는 경우에만 추가
+        // 파일이 있는 경우 추가
         if (formData.businessRegFile) {
           formDataWithFile.append('remote_sales_certification', formData.businessRegFile);
+        }
+        
+        // 삭제 요청이 있는 경우 추가
+        if (formData.deleteCertification) {
+          formDataWithFile.append('delete_remote_sales_certification', 'true');
         }
         
         // multipart/form-data로 전송
@@ -544,26 +553,95 @@ export default function SellerSettings() {
                   </div>
                   {formData.isRemoteSales && (
                     <div className="mt-3 p-4 border rounded-lg bg-gray-50">
-                      <Label htmlFor="businessRegFile" className="text-sm font-medium">비대면 판매가능 인증 파일 업로드</Label>
-                      <div className="mt-2">
-                        <Input
-                          id="businessRegFile"
-                          type="file"
-                          accept="image/*,.pdf"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            setFormData(prev => ({ ...prev, businessRegFile: file }));
-                          }}
-                        />
-                        {formData.businessRegFile && (
-                          <p className="text-sm text-green-600 mt-2">
-                            ✓ 파일 선택됨: {formData.businessRegFile.name}
+                      <Label htmlFor="businessRegFile" className="text-sm font-medium">비대면 판매가능 인증 파일</Label>
+                      
+                      {/* 기존 인증서가 있는 경우 */}
+                      {formData.existingCertification && !formData.deleteCertification ? (
+                        <div className="mt-2 p-3 bg-white rounded border">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-5 w-5 text-blue-500" />
+                              <div>
+                                <p className="text-sm font-medium">인증서 등록됨</p>
+                                <a 
+                                  href={formData.existingCertification} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
+                                  파일 보기
+                                </a>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('인증서를 삭제하시겠습니까?')) {
+                                  setFormData(prev => ({ 
+                                    ...prev, 
+                                    deleteCertification: true,
+                                    businessRegFile: null
+                                  }));
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              삭제
+                            </Button>
+                          </div>
+                          {profile?.remoteSalesVerified && (
+                            <p className="text-xs text-green-600 mt-2">
+                              ✓ 비대면 판매 인증 완료
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        /* 새 파일 업로드 */
+                        <div className="mt-2">
+                          <Input
+                            id="businessRegFile"
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                businessRegFile: file,
+                                deleteCertification: false
+                              }));
+                            }}
+                          />
+                          {formData.businessRegFile && (
+                            <p className="text-sm text-green-600 mt-2">
+                              ✓ 새 파일 선택됨: {formData.businessRegFile.name}
+                            </p>
+                          )}
+                          {formData.deleteCertification && (
+                            <div className="mt-2 p-2 bg-yellow-50 rounded">
+                              <p className="text-sm text-yellow-800">
+                                ⚠️ 기존 인증서가 삭제됩니다. 새 인증서를 업로드하거나 취소하세요.
+                              </p>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mt-2"
+                                onClick={() => setFormData(prev => ({ 
+                                  ...prev, 
+                                  deleteCertification: false
+                                }))}
+                              >
+                                취소
+                              </Button>
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            ※ 비대면 판매가 가능한 영업소 인증 서류를 업로드해주세요.
                           </p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                          ※ 비대면 판매가 가능한 영업소 인증 서류를 업로드해주세요.
-                        </p>
-                      </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -24,6 +24,8 @@ export interface SellerProfile {
   username?: string;
   businessNumber?: string;
   isRemoteSales?: boolean;
+  remoteSalesCertification?: string | null;
+  remoteSalesVerified?: boolean;
   addressRegion?: {
     code: string;
     name: string;
