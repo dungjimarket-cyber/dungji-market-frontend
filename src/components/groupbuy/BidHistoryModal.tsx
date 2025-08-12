@@ -157,7 +157,6 @@ export default function BidHistoryModal({
                 <TableRow>
                   <TableHead className="w-20 text-center">순위</TableHead>
                   <TableHead className="text-right">금액</TableHead>
-                  {isSeller && <TableHead className="text-center">상태</TableHead>}
                   <TableHead className="text-center">등록일</TableHead>
                 </TableRow>
               </TableHeader>

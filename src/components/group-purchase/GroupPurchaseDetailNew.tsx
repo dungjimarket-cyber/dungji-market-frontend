@@ -1291,9 +1291,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <p className="text-base text-gray-700 font-medium">
                   총 {groupBuyData.total_bids_count || 0}개 입찰
                 </p>
-                {/* 입찰 내역 보기 & 구매확정 인원 보기 버튼 - 마감 후에만 표시 */}
+                {/* 입찰 내역 보기 버튼 - 최종 낙찰 지원금 하단 중앙 배치 */}
                 {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
-                  <div className="flex gap-2">
+                  <div className="flex justify-center mt-4">
                     <Button
                       onClick={() => setShowBidHistoryModal(true)}
                       variant="outline"
@@ -1302,37 +1302,39 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     >
                       입찰 내역 보기
                     </Button>
-                    {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 */}
-                    {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
-                      <Button
-                        onClick={async () => {
-                          try {
-                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                              headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                              }
-                            });
-                            if (res.ok) {
-                              const data = await res.json();
-                              setBuyerConfirmationData(data);
-                              setShowBuyerConfirmationModal(true);
+                  </div>
+                )}
+                {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 - 별도 배치 */}
+                {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
+                  <div className="flex justify-center mt-3">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                            headers: {
+                              'Authorization': `Bearer ${accessToken}`,
                             }
-                          } catch (error) {
-                            console.error('구매자 확정률 조회 실패:', error);
-                            toast({
-                              title: '오류',
-                              description: '구매자 확정률을 조회할 수 없습니다.',
-                              variant: 'destructive'
-                            });
+                          });
+                          if (res.ok) {
+                            const data = await res.json();
+                            setBuyerConfirmationData(data);
+                            setShowBuyerConfirmationModal(true);
                           }
-                        }}
-                        variant="outline"
-                        size="default"
-                        className="px-6"
-                      >
-                        구매확정 인원 보기
-                      </Button>
-                    )}
+                        } catch (error) {
+                          console.error('구매자 확정률 조회 실패:', error);
+                          toast({
+                            title: '오류',
+                            description: '구매자 확정률을 조회할 수 없습니다.',
+                            variant: 'destructive'
+                          });
+                        }
+                      }}
+                      variant="outline"
+                      size="default"
+                      className="px-6"
+                    >
+                      구매자확정률 확인하기
+                    </Button>
                   </div>
                 )}
               </div>
@@ -1380,7 +1382,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                           }}
                           className="text-xs text-blue-600 hover:underline"
                         >
-                          구매자 확정률 확인
+                          구매자확정률 확인하기
                         </button>
                       </>
                     )}
@@ -1721,7 +1723,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   variant="outline"
                   className="w-full py-3"
                 >
-                  구매자 확정률 실시간 확인
+                  구매자확정률 확인하기
                 </Button>
               </>
             )}
