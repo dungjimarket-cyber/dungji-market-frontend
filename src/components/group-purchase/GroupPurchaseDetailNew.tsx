@@ -1406,8 +1406,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div> */}
       </div>
 
-      {/* 할부금 및 위약금 안내사항 - 통신 카테고리일 때만 표시 */}
-      {groupBuy.product_details?.category_name === 'telecom' && (
+      {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 */}
+      {(groupBuy.product_details?.category_name === 'telecom' || 
+        groupBuy.product_details?.category_name === '휴대폰') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">

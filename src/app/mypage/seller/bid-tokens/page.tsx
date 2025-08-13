@@ -28,7 +28,7 @@ export default function BidTokensPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
 
-  // 상품 가격 정보 (실제 서비스에서는 서버에서 가져오거나 환경 변수로 설정)
+  // 상품 가격 정보
   const priceInfo = {
     'single': 1990, // 입찰권 단품 가격 (원)
     'unlimited': 29900 // 무제한 구독제(30일) 가격 (원)
@@ -66,7 +66,7 @@ export default function BidTokensPage() {
     loadBidTokens();
   }, [isAuthenticated, router]);
 
-  // 입찰권 구매 처리
+  // 토스페이먼츠 결제 요청
   const handlePurchase = async () => {
     if (tokenType === 'single' && quantity <= 0) {
       toast({
@@ -79,29 +79,38 @@ export default function BidTokensPage() {
 
     try {
       setPurchasing(true);
-      const purchaseData: PurchaseBidTokenRequest = {
-        token_type: tokenType,
-        quantity: tokenType === 'unlimited' ? 1 : quantity
-      };
-
-      const result = await bidTokenService.purchaseBidTokens(purchaseData);
       
-      // 입찰권 정보 새로고침
-      const updatedData = await bidTokenService.getBidTokens();
-      setBidTokens(updatedData);
-      
-      toast({
-        title: '입찰권 구매 완료',
-        description: `${tokenType === 'unlimited' ? '무제한 구독제(30일)' : '입찰권 단품'} 
-                      ${tokenType !== 'unlimited' ? quantity + '개' : ''} 구매가 완료되었습니다.`,
-        variant: 'default',
+      // 결제 요청 생성
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+        },
+        body: JSON.stringify({
+          token_type: tokenType,
+          quantity: tokenType === 'unlimited' ? 1 : quantity
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('결제 요청 생성 실패');
+      }
+
+      const paymentData = await response.json();
+      
+      // 토스페이먼츠 결제창으로 이동
+      // 결제 정보를 세션 스토리지에 저장
+      sessionStorage.setItem('payment_order', JSON.stringify(paymentData));
+      
+      // 결제 페이지로 이동
+      router.push(`/payment/checkout?orderId=${paymentData.orderId}`);
       
     } catch (error) {
-      console.error('입찰권 구매 오류:', error);
+      console.error('결제 요청 오류:', error);
       toast({
-        title: '입찰권 구매 실패',
-        description: '입찰권 구매 과정에서 오류가 발생했습니다. 다시 시도해주세요.',
+        title: '결제 요청 실패',
+        description: '결제 요청 생성 중 오류가 발생했습니다. 다시 시도해주세요.',
         variant: 'destructive',
       });
     } finally {
