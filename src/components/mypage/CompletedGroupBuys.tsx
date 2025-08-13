@@ -24,6 +24,18 @@ interface CompletedGroupBuy {
     base_price: number;
     image_url: string;
   };
+  product_info?: {
+    id: number;
+    name: string;
+    base_price: number;
+    image_url: string;
+  };
+  product?: {
+    id: number;
+    name: string;
+    base_price: number;
+    image_url?: string;
+  };
   has_review?: boolean;
   creator?: {
     id: number;
@@ -135,10 +147,10 @@ export default function CompletedGroupBuys() {
                   </span>
                 </div>
               </div>
-              {groupBuy.product_details.image_url && (
+              {(groupBuy.product_info?.image_url || groupBuy.product_details?.image_url || groupBuy.product?.image_url) && (
                 <img
-                  src={groupBuy.product_details.image_url}
-                  alt={groupBuy.product_details.name}
+                  src={groupBuy.product_info?.image_url || groupBuy.product_details?.image_url || groupBuy.product?.image_url}
+                  alt={groupBuy.product_info?.name || groupBuy.product_details?.name || groupBuy.product?.name}
                   className="w-20 h-20 object-cover rounded-md ml-4"
                 />
               )}

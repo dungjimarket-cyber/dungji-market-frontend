@@ -37,6 +37,7 @@ interface GroupBuy {
   max_participants: number;
   end_time: string;
   product: Product;
+  product_info?: Product; // API에서 전체 상품 정보 포함
   seller_name?: string;
   seller_phone?: string;
   final_price?: number;
@@ -190,14 +191,14 @@ export default function PurchaseConfirmedGroupBuys() {
             <div className="flex gap-4">
               <div className="w-20 h-20 relative flex-shrink-0">
                 <Image
-                  src={groupBuy.product?.image_url || '/placeholder.png'}
-                  alt={groupBuy.product?.name || '상품 이미지'}
+                  src={groupBuy.product_info?.image_url || groupBuy.product?.image_url || '/placeholder.png'}
+                  alt={groupBuy.product_info?.name || groupBuy.product?.name || '상품 이미지'}
                   fill
                   className="object-cover rounded"
                 />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">{groupBuy.product?.name}</p>
+                <p className="text-sm font-medium">{groupBuy.product_info?.name || groupBuy.product?.name}</p>
                 
                 {/* 확정 상태 표시 - 거래중 상태이므로 판매자 확정 완료 */}
                 {groupBuy.status === 'in_progress' && groupBuy.seller_confirmed ? (

@@ -38,6 +38,8 @@ interface GroupBuy {
   max_participants: number;
   end_time: string;
   product_details: Product;
+  product_info?: Product; // API에서 전체 상품 정보 포함
+  product?: Product; // 하위 호환성
   bids?: Bid[];
   final_selection_deadline?: string;
   is_leader?: boolean;
@@ -156,14 +158,14 @@ export default function PendingSelectionGroupBuys() {
             <div className="flex gap-4">
               <div className="w-20 h-20 relative flex-shrink-0">
                 <Image
-                  src={groupBuy.product_details?.image_url || '/placeholder.png'}
-                  alt={groupBuy.product_details?.name || '상품 이미지'}
+                  src={groupBuy.product_info?.image_url || groupBuy.product_details?.image_url || groupBuy.product?.image_url || '/placeholder.png'}
+                  alt={groupBuy.product_info?.name || groupBuy.product_details?.name || groupBuy.product?.name || '상품 이미지'}
                   fill
                   className="object-cover rounded"
                 />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">{groupBuy.product_details?.name}</p>
+                <p className="text-sm font-medium">{groupBuy.product_info?.name || groupBuy.product_details?.name || groupBuy.product?.name}</p>
                 <p className="text-sm text-gray-500 mt-1">
                   참여자 {groupBuy.current_participants}/{groupBuy.max_participants}명
                 </p>

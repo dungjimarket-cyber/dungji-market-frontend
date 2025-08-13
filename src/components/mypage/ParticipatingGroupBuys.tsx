@@ -45,6 +45,7 @@ interface GroupBuy {
   final_selection_end?: string;
   product: Product;
   product_details?: Product; // 하위 호환성
+  product_info?: Product; // API에서 전체 상품 정보 포함
   calculated_status?: string;
   remaining_seconds?: number;
   telecom_detail?: TelecomDetail;
@@ -185,7 +186,7 @@ export default function ParticipatingGroupBuys() {
     }
     
     // 통신 상품 정보 가져오기 (하위 호환성 유지)
-    const product = groupBuy.product_details || groupBuy.product;
+    const product = groupBuy.product_info || groupBuy.product_details || groupBuy.product;
     const isElectronics = product?.category?.detail_type === 'electronics';
     const isTelecom = product?.category?.detail_type === 'telecom' || 
                       groupBuy.telecom_detail || 
