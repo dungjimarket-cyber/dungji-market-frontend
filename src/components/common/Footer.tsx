@@ -48,6 +48,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/refund-policy" className="text-sm text-gray-600 hover:text-emerald-600">
+                  환불정책
+                </Link>
+              </li>
+              <li>
                 <Link href="/faq" className="text-sm text-gray-600 hover:text-emerald-600">
                   자주 묻는 질문
                 </Link>
