@@ -18,11 +18,12 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <h3 className="font-bold text-gray-700 mb-3">둥지마켓</h3>
-            <p className="text-sm text-gray-600 mb-1">대표: 홍길동</p>
-            <p className="text-sm text-gray-600 mb-1">사업자등록번호: 123-45-67890</p>
-            <p className="text-sm text-gray-600 mb-1">통신판매업신고: 제2023-서울강남-1234호</p>
-            <p className="text-sm text-gray-600 mb-1">주소: 서울특별시 강남구 테헤란로 123</p>
-            <p className="text-sm text-gray-600">고객센터: 1234-5678 (평일 10:00-18:00)</p>
+            <p className="text-sm text-gray-600 mb-1">상호: 둥지마켓</p>
+            <p className="text-sm text-gray-600 mb-1">사업자등록번호: 275-23-02159</p>
+            <p className="text-sm text-gray-600 mb-1">통신판매업신고: (준비중)</p>
+            <p className="text-sm text-gray-600 mb-1">주소: 경기도 하남시 검단산로 239, B1층 26호</p>
+            <p className="text-sm text-gray-600 mb-1">(창우동, 하남시 벤처집착시설)</p>
+            <p className="text-sm text-gray-600">고객센터: (준비중)</p>
           </div>
           
           {/* Links */}

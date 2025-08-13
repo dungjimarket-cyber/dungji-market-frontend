@@ -122,10 +122,10 @@ export default function PrivacyPage() {
           <div className="bg-blue-50 p-6 rounded-lg">
             <p className="font-semibold mb-2">개인정보 보호책임자</p>
             <ul className="space-y-1 text-gray-600">
-              <li>성명: 홍길동</li>
-              <li>직책: 개인정보보호팀장</li>
+              <li>회사명: 둥지마켓</li>
+              <li>담당부서: 개인정보보호팀</li>
               <li>이메일: privacy@dungjimarket.com</li>
-              <li>전화: 1234-5678</li>
+              <li>전화: (준비중)</li>
             </ul>
           </div>
         </section>
