@@ -22,6 +22,9 @@ interface GroupBuyWithBid {
   created_at: string;
   bid_created_at?: string;
   status: string;
+  display_status?: string;  // 백엔드에서 계산된 표시 상태
+  my_bid_rank?: number;     // 내 입찰 순위
+  total_bidders?: number;   // 전체 입찰자 수
 }
 
 /**
@@ -64,15 +67,30 @@ export default function BidHistory() {
     fetchBidHistory();
   }, [accessToken]);
 
-  const getStatusBadge = (bidStatus: string, isSelected: boolean) => {
-    if (isSelected) {
-      return <Badge className="bg-yellow-100 text-yellow-700">낙찰</Badge>;
-    } else if (bidStatus === 'pending') {
+  const getStatusBadge = (gb: GroupBuyWithBid) => {
+    // display_status가 있으면 우선 사용 (백엔드에서 계산된 상태)
+    if (gb.display_status) {
+      switch (gb.display_status) {
+        case '낙찰':
+          return <Badge className="bg-green-100 text-green-700">낙찰</Badge>;
+        case '낙찰실패':
+          return <Badge className="bg-gray-100 text-gray-700">낙찰실패</Badge>;
+        case '입찰중':
+          return <Badge className="bg-blue-100 text-blue-700">입찰중</Badge>;
+        default:
+          return <Badge>{gb.display_status}</Badge>;
+      }
+    }
+    
+    // display_status가 없으면 기존 로직 사용
+    if (gb.is_selected) {
+      return <Badge className="bg-green-100 text-green-700">낙찰</Badge>;
+    } else if (gb.bid_status === 'pending') {
       return <Badge className="bg-blue-100 text-blue-700">입찰중</Badge>;
-    } else if (bidStatus === 'rejected') {
+    } else if (gb.bid_status === 'rejected') {
       return <Badge className="bg-gray-100 text-gray-700">미선정</Badge>;
     }
-    return <Badge>{bidStatus}</Badge>;
+    return <Badge>{gb.bid_status}</Badge>;
   };
 
   if (loading) {
@@ -115,7 +133,7 @@ export default function BidHistory() {
                   <h3 className="font-medium text-sm sm:text-base truncate">
                     {gb.product_details?.name || gb.title}
                   </h3>
-                  {getStatusBadge(gb.bid_status, gb.is_selected)}
+                  {getStatusBadge(gb)}
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
@@ -127,6 +145,12 @@ export default function BidHistory() {
                   <span className="font-medium text-green-600">
                     입찰금액: {formatNumberWithCommas(gb.my_bid_amount)}원
                   </span>
+                  {/* 순위 정보 표시 */}
+                  {gb.my_bid_rank && gb.display_status === '낙찰실패' && (
+                    <span className="text-xs text-gray-500">
+                      ({gb.my_bid_rank}위/{gb.total_bidders}명)
+                    </span>
+                  )}
                 </div>
               </div>
               
