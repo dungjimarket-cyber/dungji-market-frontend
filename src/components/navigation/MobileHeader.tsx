@@ -1,6 +1,5 @@
 'use client';
 
-import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { SearchBar } from '../search/SearchBar';
 import Image from 'next/image';
@@ -23,11 +22,7 @@ export function MobileHeader() {
         
         {/* 검색창 */}
         <SearchBar className="flex-1" placeholder="통합검색" showMyRegionButton={true} />
-        
-        {/* 장바구니 아이콘 */}
-        <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <ShoppingCart className="w-5 h-5 text-gray-700" />
-        </Link>
+                
       </div>
     </header>
   );
