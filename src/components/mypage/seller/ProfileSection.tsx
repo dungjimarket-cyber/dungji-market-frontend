@@ -167,9 +167,9 @@ export default function ProfileSection() {
               )}
             </div>
 
-            <Link href="/bid-tickets" className="w-full sm:w-auto">
+            <Link href="/mypage/seller/bid-tokens" className="w-full sm:w-auto">
               <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
-                입찰권 구매하기
+                입찰권 관리
               </Button>
             </Link>
           </div>

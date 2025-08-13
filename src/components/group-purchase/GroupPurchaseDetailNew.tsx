@@ -2131,7 +2131,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogAction
               onClick={() => router.push('/mypage/seller/bid-tokens')}
             >
-              입찰권 구매하기
+              입찰권 관리 페이지로 이동
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
