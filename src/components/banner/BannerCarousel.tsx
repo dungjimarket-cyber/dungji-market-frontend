@@ -144,7 +144,7 @@ export default function BannerCarousel() {
         ) : (
           <div className="relative w-full h-full">
             <Image
-              src={currentBanner.image_url}
+              src={`${currentBanner.image_url}${currentBanner.image_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
               alt={currentBanner.title}
               fill
               className="object-contain sm:object-cover"
