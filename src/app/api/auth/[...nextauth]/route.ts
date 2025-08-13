@@ -50,18 +50,18 @@ const authOptions: NextAuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none', // 카카오톡 브라우저 호환성을 위해 none으로 변경
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, // sameSite none일 때는 secure 필수
         maxAge: 24 * 60 * 60, // 24시간
       },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
-        sameSite: 'lax',
+        sameSite: 'none', // 카카오톡 브라우저 호환성
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         maxAge: 24 * 60 * 60,
       },
     },
@@ -69,9 +69,9 @@ const authOptions: NextAuthOptions = {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none', // 카카오톡 브라우저 호환성
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
       }
     },
   },

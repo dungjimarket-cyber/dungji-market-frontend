@@ -8,6 +8,7 @@ import MobileNavbar from '@/components/common/MobileNavbar';
 import Footer from '@/components/common/Footer';
 import { Analytics } from "@vercel/analytics/next"
 import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
+import KakaoInAppBrowserHandler from '@/components/common/KakaoInAppBrowserHandler';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -59,6 +60,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${inter.className} min-h-screen relative`}>
         <Providers>
+          <KakaoInAppBrowserHandler />
           <Toaster />
           <RoleUpdateNotice />
           <DesktopNavbar />
