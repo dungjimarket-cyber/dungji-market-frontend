@@ -190,6 +190,26 @@ function BidsListClient() {
 
   // 입찰 상태에 따른 텍스트 표시
   const statusText = (status: string, bid?: any) => {
+    // display_status가 있으면 우선 사용 (백엔드에서 계산된 상태)
+    if (bid?.display_status) {
+      return bid.display_status;
+    }
+    
+    // 모집기간 중인 경우
+    if (bid?.status === 'recruiting') {
+      return '입찰중';
+    }
+    
+    // 순위 기반 상태 표시
+    if (bid?.my_bid_rank) {
+      if (bid.my_bid_rank === 1) {
+        return '낙찰';
+      } else {
+        return '낙찰실패';
+      }
+    }
+    
+    // 기존 로직 폴백
     switch (status) {
       case 'pending': return '입찰 진행중';
       case 'selected': 
@@ -214,6 +234,26 @@ function BidsListClient() {
   };
 
   const statusColor = (status: string, bid?: any) => {
+    // display_status가 있으면 우선 사용
+    if (bid?.display_status) {
+      switch (bid.display_status) {
+        case '낙찰': return 'bg-green-100 text-green-800';
+        case '낙찰실패': return 'bg-gray-100 text-gray-800';
+        case '입찰중': return 'bg-blue-100 text-blue-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+    
+    // 순위 기반 색상
+    if (bid?.my_bid_rank) {
+      if (bid.my_bid_rank === 1) {
+        return 'bg-green-100 text-green-800';
+      } else {
+        return 'bg-gray-100 text-gray-800';
+      }
+    }
+    
+    // 기존 로직 폴백
     switch (status) {
       case 'pending': return 'bg-blue-100 text-blue-800';
       case 'selected': 
@@ -314,13 +354,36 @@ function BidsListClient() {
                 <div>
                   <p className="text-sm text-gray-600">입찰 금액:</p>
                   <p className="font-medium text-lg">
-                    {typeof bid.amount === 'string' 
-                      ? bid.amount 
-                      : `${formatNumberWithCommas(bid.amount)}원`
+                    {typeof bid.my_bid_amount !== 'undefined' 
+                      ? `${formatNumberWithCommas(bid.my_bid_amount)}원`
+                      : typeof bid.amount === 'string' 
+                        ? bid.amount 
+                        : `${formatNumberWithCommas(bid.amount)}원`
                     }
                   </p>
                 </div>
               </div>
+              
+              {/* 순위 정보 표시 */}
+              {bid.my_bid_rank && bid.display_status === '낙찰실패' && (
+                <div className="bg-yellow-50 p-3 rounded-md mb-3 border border-yellow-200">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">내 순위: {bid.my_bid_rank}위</span> / 전체 {bid.total_bidders}명
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    아쉽지만 낙찰되지 못했습니다 😢 다음 기회에 도전해보세요!
+                  </p>
+                </div>
+              )}
+              
+              {/* 낙찰 축하 메시지 */}
+              {bid.my_bid_rank === 1 && bid.display_status === '낙찰' && (
+                <div className="bg-green-50 p-3 rounded-md mb-3 border border-green-200">
+                  <p className="text-sm text-green-700 font-medium">
+                    🎉 축하합니다! 낙찰되셨습니다!
+                  </p>
+                </div>
+              )}
               
               {bid.message && (
                 <div className="bg-gray-50 p-3 rounded-md mb-3">

@@ -138,6 +138,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [myBidRank, setMyBidRank] = useState<{ rank: number; total: number } | null>(null);
   const [isMyBidSelected, setIsMyBidSelected] = useState(false);
   const [myBidFinalDecision, setMyBidFinalDecision] = useState<'pending' | 'confirmed' | 'cancelled' | null>(null);
+  const [myBidInfo, setMyBidInfo] = useState<any>(null); // 서버에서 받은 내 입찰 정보
   const [showBidHistoryModal, setShowBidHistoryModal] = useState(false);
   const [showNoBidTokenDialog, setShowNoBidTokenDialog] = useState(false);
   const [bidHistory, setBidHistory] = useState<any[]>([]);
@@ -193,9 +194,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           console.log('인증된 사용자로 가져온 공구 데이터:', {
             winning_bid_amount: data.winning_bid_amount,
             bid_ranking: data.bid_ranking,
+            my_bid_info: data.my_bid_info,
             status: data.status
           });
           setGroupBuyData(data);
+          
+          // 내 입찰 정보 설정
+          if (data.my_bid_info) {
+            setMyBidInfo(data.my_bid_info);
+            setMyBidRank({ rank: data.my_bid_info.rank, total: data.my_bid_info.total_bidders });
+          }
         }
       } catch (error) {
         console.error('공구 데이터 재조회 오류:', error);
