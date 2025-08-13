@@ -135,7 +135,7 @@ function NoShowReportContent() {
       if (user?.role === 'buyer') {
         // 구매자가 신고 → 판매자 노쇼
         reportType = 'seller_noshow';
-        const bidResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/winning-bid/`, {
+        const bidResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/winning_bid/`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`
           }
