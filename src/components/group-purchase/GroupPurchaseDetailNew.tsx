@@ -1406,6 +1406,32 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div> */}
       </div>
 
+      {/* 할부금 및 위약금 안내사항 - 통신 카테고리일 때만 표시 */}
+      {groupBuy.product_details?.category_name === 'telecom' && (
+        <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-amber-800 mb-2">중요 안내사항</h3>
+              <div className="space-y-2 text-sm text-amber-700">
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 mt-0.5">⚠️</span>
+                  <p>기존 사용하시던 기기의 남은 할부금과 약정기간 이전 해지시 위약금은 가입자 본인 부담입니다.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 mt-0.5">⚠️</span>
+                  <p>자세한 내용은 해당 통신사 어플 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 공구 정보 섹션 */}
       <div className="border-t border-gray-200">
         {/* 공구 주최자 */}
