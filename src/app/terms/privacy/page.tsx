@@ -256,10 +256,11 @@ export default function PrivacyPolicyPage() {
             <div className="border rounded p-4 bg-gray-50">
               <h3 className="font-semibold mb-2">개인정보 보호책임자</h3>
               <ul className="space-y-1">
-                <li>성명: 홍길동</li>
-                <li>직책: 개인정보보호팀장</li>
+                <li>성명: 정동훈</li>
+                <li>직책: 대표</li>
                 <li>이메일: privacy@dungjimarket.com</li>
-                <li>전화번호: 02-1234-5678</li>
+                <li>사업자등록번호: 275-23-02159</li>
+                <li>주소: 경기도 하남시 검단산로 239, B1층 26호</li>
               </ul>
             </div>
           </section>

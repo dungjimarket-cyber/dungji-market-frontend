@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, AlertCircle, Upload, X } from 'lucide-react';
 import Link from 'next/link';
@@ -20,13 +19,12 @@ function NoShowReportContent() {
   const groupbuyId = searchParams.get('groupbuy') || searchParams.get('groupbuyId') || searchParams.get('groupbuy_id');
   
   const [loading, setLoading] = useState(false);
-  const [reportType, setReportType] = useState<'buyer_noshow' | 'seller_noshow'>('seller_noshow');
   const [content, setContent] = useState('');
   const [groupbuyInfo, setGroupbuyInfo] = useState<any>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
-  const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string>('');
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -130,10 +128,13 @@ function NoShowReportContent() {
     setLoading(true);
 
     try {
-      // 신고 대상 결정
+      // 신고자의 role에 따라 자동으로 신고 유형 결정
       let reportedUserId;
-      if (reportType === 'seller_noshow') {
-        // 판매자 노쇼: 선택된 입찰의 판매자 찾기
+      let reportType: 'buyer_noshow' | 'seller_noshow';
+      
+      if (user?.role === 'buyer') {
+        // 구매자가 신고 → 판매자 노쇼
+        reportType = 'seller_noshow';
         const bidResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/winning-bid/`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`
@@ -147,13 +148,17 @@ function NoShowReportContent() {
           toast.error('선택된 판매자를 찾을 수 없습니다.');
           return;
         }
-      } else {
-        // 구매자 노쇼: 선택된 구매자 ID 사용
+      } else if (user?.role === 'seller') {
+        // 판매자가 신고 → 구매자 노쇼
+        reportType = 'buyer_noshow';
         if (!selectedBuyerId) {
           toast.error('신고할 구매자를 선택해주세요.');
           return;
         }
         reportedUserId = parseInt(selectedBuyerId);
+      } else {
+        toast.error('신고 권한이 없습니다.');
+        return;
       }
 
       // FormData 생성 (파일 업로드 포함)
@@ -239,34 +244,8 @@ function NoShowReportContent() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 신고 유형 선택 */}
-            <div className="space-y-3">
-              <Label>신고 유형</Label>
-              <RadioGroup 
-                value={reportType} 
-                onValueChange={(value) => setReportType(value as 'buyer_noshow' | 'seller_noshow')}
-              >
-                {user?.role === 'buyer' && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="seller_noshow" id="seller_noshow" />
-                    <Label htmlFor="seller_noshow">
-                      판매자가 약속된 시간에 나타나지 않았어요 (판매자 노쇼)
-                    </Label>
-                  </div>
-                )}
-                {user?.role === 'seller' && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="buyer_noshow" id="buyer_noshow" />
-                    <Label htmlFor="buyer_noshow">
-                      구매자가 약속된 시간에 나타나지 않았어요 (구매자 노쇼)
-                    </Label>
-                  </div>
-                )}
-              </RadioGroup>
-            </div>
-
-            {/* 구매자 선택 (판매자가 구매자 노쇼 신고 시) */}
-            {user?.role === 'seller' && reportType === 'buyer_noshow' && participants.length > 0 && (
+            {/* 구매자 선택 (판매자가 신고 시) */}
+            {user?.role === 'seller' && participants.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="buyer-select">신고할 구매자 선택</Label>
                 <Select value={selectedBuyerId} onValueChange={setSelectedBuyerId}>
@@ -287,25 +266,33 @@ function NoShowReportContent() {
               </div>
             )}
 
-            {/* 안내 문구 */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-gray-700">
-                {user?.role === 'buyer' ? (
-                  <>판매자가 연락이 닿지 않거나, 낙찰된 금액대로 상품을 제공하지 않는 경우 등,
-                  신고 내용을 최대한 자세히 적어주세요. 증빙자료가 있다면 첨부 부탁드립니다.</>
-                ) : (
-                  <>구매자가 연락이 닿지 않거나, 정당한 사유 없이 거래를 중단한 경우 등,
-                  신고 내용을 자세히 작성해 주시고 증빙자료가 있다면 첨부 부탁드립니다.</>
-                )}
-              </p>
+            {/* 신고 사유 입력 안내 */}
+            <div className="space-y-2">
+              <Label htmlFor="content">📝 신고 사유 (필수)</Label>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                <p className="text-sm text-gray-700 mb-2">
+                  {user?.role === 'buyer' ? 
+                    '판매자의 거래 거부 사유를 구체적으로 작성해주세요.' :
+                    '구매자의 거래 거부 사유를 구체적으로 작성해주세요.'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  예시:
+                </p>
+                <ul className="text-xs text-gray-600 list-disc list-inside ml-2">
+                  <li>약속 시간에 나타나지 않음</li>
+                  <li>연락이 두절됨</li>
+                  <li>약속된 가격으로 {user?.role === 'buyer' ? '판매' : '구매'} 거부</li>
+                  <li>상품이 준비되지 않았다고 거래 취소</li>
+                  <li>기타 부당한 거래 거부</li>
+                </ul>
+              </div>
             </div>
 
             {/* 신고 내용 */}
             <div className="space-y-2">
-              <Label htmlFor="content">신고 내용</Label>
               <Textarea
                 id="content"
-                placeholder="노쇼 상황을 자세히 설명해주세요. (최소 20자 이상)
+                placeholder="신고 사유를 자세히 설명해주세요. (최소 20자 이상)
 예: 약속 시간, 장소, 연락 시도 내용 등"
                 rows={6}
                 value={content}
@@ -390,7 +377,7 @@ function NoShowReportContent() {
                   loading || 
                   !content.trim() || 
                   content.trim().length < 20 ||
-                  (user?.role === 'seller' && reportType === 'buyer_noshow' && !selectedBuyerId)
+                  (user?.role === 'seller' && !selectedBuyerId)
                 }
                 className="bg-orange-600 hover:bg-orange-700"
               >

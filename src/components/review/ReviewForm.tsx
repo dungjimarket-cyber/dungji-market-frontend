@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * 리뷰 작성 및 수정 폼 컴포넌트
+ * 후기 작성 및 수정 폼 컴포넌트
  */
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,9 +16,9 @@ import { useRouter } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 
 interface ReviewFormProps {
-  /** 리뷰를 작성할 그룹구매 ID */
+  /** 후기를 작성할 그룹구매 ID */
   groupbuyId: number | string;
-  /** 수정할 리뷰 ID (수정 모드에서만 사용) */
+  /** 수정할 후기 ID (수정 모드에서만 사용) */
   reviewId?: number | string;
   /** 초기 별점 (수정 모드에서만 사용) */
   initialRating?: number;
@@ -26,7 +26,7 @@ interface ReviewFormProps {
   initialContent?: string;
   /** 초기 구매 여부 (수정 모드에서만 사용) */
   initialIsPurchased?: boolean;
-  /** 리뷰 작성/수정 완료 후 호출될 콜백 함수 */
+  /** 후기 작성/수정 완료 후 호출될 콜백 함수 */
   onComplete?: () => void;
   /** 작성 취소 시 호출될 콜백 함수 */
   onCancel?: () => void;
@@ -35,13 +35,13 @@ interface ReviewFormProps {
 }
 
 /**
- * 리뷰 작성 및 수정 폼 컴포넌트
+ * 후기 작성 및 수정 폼 컴포넌트
  * 
  * @example
- * // 새 리뷰 작성
+ * // 새 후기 작성
  * <ReviewForm groupbuyId={123} onComplete={() => fetchReviews()} />
  * 
- * // 기존 리뷰 수정
+ * // 기존 후기 수정
  * <ReviewForm
  *   groupbuyId={123}
  *   reviewId={456}
@@ -87,7 +87,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     }
     
     if (!content.trim()) {
-      toast.error('리뷰 내용을 입력해주세요.');
+      toast.error('후기 내용을 입력해주세요.');
+      return;
+    }
+    
+    if (content.trim().length < 10) {
+      toast.error('후기 내용은 최소 10자 이상 작성해주세요.');
       return;
     }
     
@@ -102,17 +107,31 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       };
       
       if (isEditMode && reviewId) {
-        // 리뷰 수정
+        // 후기 수정
         await updateReview(reviewId, {
           rating,
           content: content.trim(),
           is_purchased: isPurchased,
         }, accessToken);
-        toast.success('리뷰가 수정되었습니다.');
+        
+        // 수정 완료 팝업
+        toast.success('✅ 후기가 수정되었습니다.');
+        
+        // 마이페이지로 이동
+        setTimeout(() => {
+          router.push('/mypage?tab=purchase-completed');
+        }, 1000);
       } else {
-        // 새 리뷰 작성
+        // 새 후기 작성
         await createReview(reviewData, accessToken);
-        toast.success('리뷰가 등록되었습니다.');
+        
+        // 작성 완료 팝업
+        toast.success('✅ 후기가 작성되었습니다.');
+        
+        // 마이페이지로 이동
+        setTimeout(() => {
+          router.push('/mypage?tab=purchase-completed');
+        }, 1000);
       }
       
       // 성공 시 콜백 호출 및 폼 초기화
@@ -123,7 +142,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         setIsPurchased(false);
       }
     } catch (error: any) {
-      toast.error(error.message || '리뷰 저장 중 오류가 발생했습니다.');
+      toast.error(error.message || '후기 저장 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +152,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   if (!isAuthenticated) {
     return (
       <div className="p-4 text-center border rounded-lg bg-gray-50">
-        <p className="text-gray-600">리뷰를 작성하려면 로그인이 필요합니다.</p>
+        <p className="text-gray-600">후기를 작성하려면 로그인이 필요합니다.</p>
       </div>
     );
   }
@@ -142,7 +161,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg bg-white">
       <div>
         <h3 className="text-lg font-medium mb-2">
-          {isEditMode ? '리뷰 수정하기' : '리뷰 작성하기'}
+          {isEditMode ? '후기 수정하기' : '후기 작성하기'}
         </h3>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">별점:</span>
@@ -157,7 +176,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       
       <div>
         <Textarea
-          placeholder="리뷰 내용을 입력해주세요. (최소 10자 이상)"
+          placeholder="후기 내용을 입력해주세요. (최소 10자 이상)"
           minLength={10}
           maxLength={500}
           value={content}
@@ -199,34 +218,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           {isSubmitting 
             ? '저장 중...' 
             : isEditMode 
-              ? '리뷰 수정' 
-              : '리뷰 등록'}
+              ? '수정하기' 
+              : '작성완료'}
         </Button>
       </div>
       
-      {/* 노쇼 신고 섹션 - 수정 모드가 아닐 때만 표시 */}
-      {!isEditMode && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-start space-x-2">
-            <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 font-medium">거래 상대방이 나타나지 않으셨나요?</p>
-              <p className="text-xs text-gray-600 mt-1">
-                약속된 거래 시간에 상대방이 나타나지 않은 경우 노쇼 신고를 할 수 있습니다.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2 text-orange-600 border-orange-300 hover:bg-orange-50"
-                onClick={() => router.push(`/noshow-report/create?groupbuyId=${groupbuyId}`)}
-              >
-                노쇼 신고하기
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 노쇼 신고 섹션 제거 - 구매완료 상태에서는 표시하지 않음 */}
     </form>
   );
 };

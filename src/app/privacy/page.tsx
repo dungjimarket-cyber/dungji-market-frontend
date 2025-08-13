@@ -123,9 +123,10 @@ export default function PrivacyPage() {
             <p className="font-semibold mb-2">개인정보 보호책임자</p>
             <ul className="space-y-1 text-gray-600">
               <li>회사명: 둥지마켓</li>
-              <li>담당부서: 개인정보보호팀</li>
+              <li>대표: 정동훈</li>
+              <li>사업자등록번호: 275-23-02159</li>
+              <li>주소: 경기도 하남시 검단산로 239, B1층 26호</li>
               <li>이메일: privacy@dungjimarket.com</li>
-              <li>전화: (준비중)</li>
             </ul>
           </div>
         </section>
@@ -133,13 +134,13 @@ export default function PrivacyPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">9. 개인정보처리방침의 변경</h2>
           <p className="text-gray-600">
-            이 개인정보처리방침은 2024년 1월 1일부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.
+            이 개인정보처리방침은 2025년 1월 28일부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.
           </p>
         </section>
 
         <div className="mt-12 p-6 bg-gray-100 rounded-lg">
           <p className="text-center text-gray-600">
-            시행일자: 2024년 1월 1일
+            시행일자: 2025년 1월 28일
           </p>
         </div>
       </div>

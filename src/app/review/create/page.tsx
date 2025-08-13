@@ -7,34 +7,50 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { getGroupbuyReviews } from '@/lib/review-service';
 
 function ReviewCreateContent() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const groupbuyId = searchParams.get('groupbuy') || searchParams.get('groupBuyId') || searchParams.get('groupbuy_id');
   const [groupBuyData, setGroupBuyData] = useState<any>(null);
+  const [existingReview, setExistingReview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (groupbuyId) {
-      const fetchGroupBuyData = async () => {
+      const fetchData = async () => {
         try {
+          // 공구 정보 가져오기
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/`);
           if (response.ok) {
             const data = await response.json();
             setGroupBuyData(data);
           }
+          
+          // 기존 후기 확인
+          if (user?.id) {
+            const reviewsData = await getGroupbuyReviews(groupbuyId);
+            const myReview = reviewsData.reviews?.find((review: any) => 
+              review.user?.id === user.id || review.user === user.id
+            );
+            if (myReview) {
+              setExistingReview(myReview);
+            }
+          }
         } catch (error) {
-          console.error('공구 정보 로드 실패:', error);
+          console.error('데이터 로드 실패:', error);
         } finally {
           setLoading(false);
         }
       };
 
-      fetchGroupBuyData();
+      fetchData();
     } else {
       setLoading(false);
     }
-  }, [groupbuyId]);
+  }, [groupbuyId, user]);
 
   if (!groupbuyId) {
     return (
@@ -79,17 +95,27 @@ function ReviewCreateContent() {
       
       <Card>
         <CardHeader>
-          <CardTitle>공구 후기 작성</CardTitle>
+          <CardTitle>
+            {existingReview ? '공구 후기 수정' : '공구 후기 작성'}
+          </CardTitle>
+          {groupBuyData && (
+            <p className="text-sm text-gray-600 mt-1">
+              {groupBuyData.title}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <ReviewForm 
             groupbuyId={parseInt(groupbuyId)} 
+            reviewId={existingReview?.id}
+            initialRating={existingReview?.rating || 5}
+            initialContent={existingReview?.content || ''}
+            initialIsPurchased={existingReview?.is_purchased || false}
             creatorId={groupBuyData?.creator?.id || groupBuyData?.creator}
           />
         </CardContent>
       </Card>
       
-      {/* 노쇼 신고 안내 카드 - 구매완료 상태에서는 표시하지 않음 */}
     </div>
   );
 }
