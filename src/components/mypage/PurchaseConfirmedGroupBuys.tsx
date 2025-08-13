@@ -37,7 +37,6 @@ interface GroupBuy {
   max_participants: number;
   end_time: string;
   product: Product;
-  creator?: number | { id: number };
   seller_name?: string;
   seller_phone?: string;
   final_price?: number;
@@ -291,21 +290,12 @@ export default function PurchaseConfirmedGroupBuys() {
                       </Button>
                     </div>
                   ) : (
-                    // 공구 생성자가 아닌 경우에만 후기 작성 버튼 표시
-                    (() => {
-                      const creatorId = typeof groupBuy.creator === 'object' ? groupBuy.creator?.id : groupBuy.creator;
-                      return user?.id !== creatorId;
-                    })() ? (
-                      <Link href={`/review/create?groupbuy=${groupBuy.id}`} className="w-full">
-                        <Button size="sm" className="w-full">
-                          후기작성
-                        </Button>
-                      </Link>
-                    ) : (
-                      <div className="text-center text-sm text-gray-500 py-2">
-                        자신이 만든 공구에는 후기를 작성할 수 없습니다.
-                      </div>
-                    )
+                    // 본인이 만든 공구에도 후기 작성 가능
+                    <Link href={`/review/create?groupbuy=${groupBuy.id}`} className="w-full">
+                      <Button size="sm" className="w-full">
+                        후기작성
+                      </Button>
+                    </Link>
                   )}
                 </div>
               </div>

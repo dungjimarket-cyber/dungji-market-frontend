@@ -69,7 +69,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
   const isEditMode = !!reviewId;
-  const isCreator = user?.id && creatorId && (String(user.id) === String(creatorId));
+  // 본인이 만든 공구에도 후기 작성 가능
+  // const isCreator = user?.id && creatorId && (String(user.id) === String(creatorId));
 
   /**
    * 폼 제출 처리
@@ -148,9 +149,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       
       if (error.message) {
         // 백엔드 에러 메시지 추출
-        if (error.message.includes('자신이 만든 공구')) {
-          errorMessage = '자신이 만든 공구에는 후기를 작성할 수 없습니다.';
-        } else if (error.message.includes('이미 후기를 작성')) {
+        if (error.message.includes('이미 후기를 작성')) {
           errorMessage = '이미 이 공구에 대한 후기를 작성하셨습니다.';
         } else if (error.message.includes('구매 완료된 공구')) {
           errorMessage = '구매 완료된 공구에만 후기를 작성할 수 있습니다.';
@@ -174,30 +173,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     );
   }
   
-  // 공구 생성자인 경우
-  if (isCreator && !isEditMode) {
-    return (
-      <div className="p-4 border rounded-lg bg-yellow-50">
-        <div className="flex items-start space-x-2">
-          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-gray-700 font-medium">후기 작성 불가</p>
-            <p className="text-sm text-gray-600 mt-1">
-              자신이 만든 공구에는 후기를 작성할 수 없습니다.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => router.push('/mypage')}
-            >
-              마이페이지로 돌아가기
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // 공구 생성자에게도 후기 작성 허용
+  // if (isCreator && !isEditMode) {
+  //   return (
+  //     <div className="p-4 border rounded-lg bg-yellow-50">
+  //       ...
+  //     </div>
+  //   );
+  // }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg bg-white">
