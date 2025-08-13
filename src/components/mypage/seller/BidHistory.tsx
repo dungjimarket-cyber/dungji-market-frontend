@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowRight, TrendingUp, Calendar } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 
@@ -67,32 +66,6 @@ export default function BidHistory() {
     fetchBidHistory();
   }, [accessToken]);
 
-  const getStatusBadge = (gb: GroupBuyWithBid) => {
-    // display_status가 있으면 우선 사용 (백엔드에서 계산된 상태)
-    if (gb.display_status) {
-      switch (gb.display_status) {
-        case '낙찰':
-          return <Badge className="bg-green-100 text-green-700">낙찰</Badge>;
-        case '낙찰실패':
-          return <Badge className="bg-gray-100 text-gray-700">낙찰실패</Badge>;
-        case '입찰중':
-          return <Badge className="bg-blue-100 text-blue-700">입찰중</Badge>;
-        default:
-          return <Badge>{gb.display_status}</Badge>;
-      }
-    }
-    
-    // display_status가 없으면 기존 로직 사용
-    if (gb.is_selected) {
-      return <Badge className="bg-green-100 text-green-700">낙찰</Badge>;
-    } else if (gb.bid_status === 'pending') {
-      return <Badge className="bg-blue-100 text-blue-700">입찰중</Badge>;
-    } else if (gb.bid_status === 'rejected') {
-      return <Badge className="bg-gray-100 text-gray-700">미선정</Badge>;
-    }
-    return <Badge>{gb.bid_status}</Badge>;
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -129,12 +102,9 @@ export default function BidHistory() {
           <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                  <h3 className="font-medium text-sm sm:text-base truncate">
-                    {gb.product_details?.name || gb.title}
-                  </h3>
-                  {getStatusBadge(gb)}
-                </div>
+                <h3 className="font-medium text-sm sm:text-base truncate mb-2">
+                  {gb.product_details?.name || gb.title}
+                </h3>
                 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                   <span className="flex items-center gap-1">

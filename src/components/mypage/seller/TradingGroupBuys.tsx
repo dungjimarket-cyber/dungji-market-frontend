@@ -141,6 +141,14 @@ export default function TradingGroupBuys() {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
+                    >
+                      공구보기
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => {
                         setSelectedGroupBuyId(groupBuy.id);
                         setIsContactModalOpen(true);
