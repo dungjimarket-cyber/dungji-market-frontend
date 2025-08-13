@@ -375,6 +375,7 @@ export default function ProfileSection() {
             provider: profileData.sns_type, // 호환성을 위해 provider도 추가
             phone_number: profileData.phone_number,
             region: profileData.region,
+            address_region: profileData.address_region, // 주요활동지역 필드 추가
             business_number: profileData.business_number,
           };
           
