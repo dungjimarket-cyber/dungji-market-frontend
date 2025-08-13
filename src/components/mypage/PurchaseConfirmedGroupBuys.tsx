@@ -37,6 +37,7 @@ interface GroupBuy {
   max_participants: number;
   end_time: string;
   product: Product;
+  creator?: number | { id: number };
   seller_name?: string;
   seller_phone?: string;
   final_price?: number;
@@ -52,7 +53,7 @@ interface GroupBuy {
  * 사용자가 구매확정을 선택하고 판매자의 판매확정을 기다리는 공구들을 표시
  */
 export default function PurchaseConfirmedGroupBuys() {
-  const { isAuthenticated, isLoading, accessToken } = useAuth();
+  const { isAuthenticated, isLoading, accessToken, user } = useAuth();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
@@ -290,11 +291,21 @@ export default function PurchaseConfirmedGroupBuys() {
                       </Button>
                     </div>
                   ) : (
-                    <Link href={`/review/create?groupbuy=${groupBuy.id}`} className="w-full">
-                      <Button size="sm" className="w-full">
-                        후기작성
-                      </Button>
-                    </Link>
+                    // 공구 생성자가 아닌 경우에만 후기 작성 버튼 표시
+                    (() => {
+                      const creatorId = typeof groupBuy.creator === 'object' ? groupBuy.creator?.id : groupBuy.creator;
+                      return user?.id !== creatorId;
+                    })() ? (
+                      <Link href={`/review/create?groupbuy=${groupBuy.id}`} className="w-full">
+                        <Button size="sm" className="w-full">
+                          후기작성
+                        </Button>
+                      </Link>
+                    ) : (
+                      <div className="text-center text-sm text-gray-500 py-2">
+                        자신이 만든 공구에는 후기를 작성할 수 없습니다.
+                      </div>
+                    )
                   )}
                 </div>
               </div>
