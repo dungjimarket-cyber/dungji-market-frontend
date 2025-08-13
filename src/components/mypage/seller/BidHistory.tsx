@@ -20,6 +20,7 @@ interface GroupBuyWithBid {
   bid_status: string;
   is_selected: boolean;
   created_at: string;
+  bid_created_at?: string;
   status: string;
 }
 
@@ -120,8 +121,8 @@ export default function BidHistory() {
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    <span className="hidden sm:inline">{new Date(gb.created_at).toLocaleDateString()}</span>
-                    <span className="sm:hidden">{new Date(gb.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}</span>
+                    <span className="hidden sm:inline">{new Date(gb.bid_created_at || gb.created_at).toLocaleDateString()}</span>
+                    <span className="sm:hidden">{new Date(gb.bid_created_at || gb.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}</span>
                   </span>
                   <span className="font-medium text-green-600">
                     입찰금액: {formatNumberWithCommas(gb.my_bid_amount)}원
