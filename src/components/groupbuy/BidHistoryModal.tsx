@@ -168,23 +168,29 @@ export default function BidHistoryModal({
                         <div className="flex items-center justify-center gap-2">
                           <Badge 
                             variant={index < 3 ? "default" : "outline"} 
-                            className={
+                            className={`whitespace-nowrap ${
                               index === 0 ? "bg-yellow-500" : 
                               index === 1 ? "bg-gray-400" : 
                               index === 2 ? "bg-amber-600" : ""
-                            }
+                            }`}
                           >
                             {index + 1}위
                           </Badge>
                           {isMyBid && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-xs whitespace-nowrap">
                               내 입찰
                             </Badge>
                           )}
-                          {isWinner && (
-                            <Badge className="bg-green-500 text-xs">
+                          {isWinner ? (
+                            <Badge className="bg-green-500 text-xs whitespace-nowrap">
                               낙찰
                             </Badge>
+                          ) : (
+                            index < 10 && (
+                              <Badge variant="outline" className="text-xs text-gray-500 whitespace-nowrap">
+                                낙찰실패
+                              </Badge>
+                            )
                           )}
                         </div>
                       </TableCell>

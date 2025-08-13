@@ -203,7 +203,7 @@ export default function PendingSelectionGroupBuys() {
                   ) : (
                     <Link href={`/groupbuys/${groupBuy.id}`}>
                       <Button size="sm" variant="outline" className="w-full">
-                        공구보기
+                        구매확정/포기 선택하러가기
                       </Button>
                     </Link>
                   )}

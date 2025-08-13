@@ -154,7 +154,7 @@ export default function PendingSellerDecision() {
                       className="bg-orange-500 hover:bg-orange-600"
                       onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
                     >
-                      선택하러 가기
+                      판매확정/포기 선택하러가기
                     </Button>
                   </div>
                 </div>

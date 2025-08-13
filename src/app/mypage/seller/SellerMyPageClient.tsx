@@ -40,6 +40,9 @@ export default function SellerMyPageClient() {
   const [tradingCount, setTradingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [cancelledCount, setCancelledCount] = useState(0);
+  
+  // 아코디언 열림 상태 관리
+  const [accordionValue, setAccordionValue] = useState<string | undefined>();
 
   // 각 카테고리별 데이터 개수 가져오기
   useEffect(() => {
@@ -152,6 +155,23 @@ export default function SellerMyPageClient() {
       }
     }
   }, [isAuthenticated, user, router]);
+  
+  // URL 해시에 따라 아코디언 자동 열기
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) {
+        setAccordionValue(hash);
+      }
+    };
+    
+    // 초기 로드 시 해시 확인
+    handleHashChange();
+    
+    // 해시 변경 이벤트 리스너
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   if (isLoading || pageLoading) {
     return (
@@ -173,7 +193,13 @@ export default function SellerMyPageClient() {
       <div className="mt-8 space-y-4">
         <h2 className="text-xl font-semibold mb-4">판매 활동</h2>
         
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion 
+          type="single" 
+          collapsible 
+          className="w-full"
+          value={accordionValue}
+          onValueChange={setAccordionValue}
+        >
           {/* 1. 입찰내역 */}
           <AccordionItem value="bid-history">
             <AccordionTrigger className="hover:no-underline">

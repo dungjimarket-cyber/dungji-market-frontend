@@ -109,7 +109,7 @@ export function TradeStatusButtons({
               className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
             >
               <AlertTriangle className="h-4 w-4 mr-2" />
-              노쇼신고하기
+              노쇼신고
             </Button>
             <Button
               onClick={onComplete}
@@ -131,7 +131,7 @@ export function TradeStatusButtons({
               onClick={() => router.push(`/review/create?groupbuy_id=${groupBuyId}`)}
               className="w-full py-3 bg-purple-600 hover:bg-purple-700"
             >
-              후기작성
+              구매후기
             </Button>
           </>
         );
@@ -225,7 +225,7 @@ export function TradeStatusButtons({
               className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
             >
               <AlertTriangle className="h-4 w-4 mr-2" />
-              노쇼신고하기
+              노쇼신고
             </Button>
             <Button
               onClick={onComplete}

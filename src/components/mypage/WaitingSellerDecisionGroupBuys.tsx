@@ -170,7 +170,7 @@ export default function WaitingSellerDecisionGroupBuys() {
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="h-4 w-4 text-purple-600" />
                 <span className="text-sm font-medium text-purple-800">
-                  판매자 최종선택 마감시간
+                  판매자 최종선택 남은시간
                 </span>
               </div>
               <CountdownTimer
@@ -179,7 +179,7 @@ export default function WaitingSellerDecisionGroupBuys() {
                 urgent={60} // 1시간 미만일 때 urgent
               />
               <p className="text-xs text-purple-600 mt-2">
-                판매자가 판매확정/포기를 결정하는 중입니다.
+                낙찰자가 판매 확정 여부를 결정중입니다.
               </p>
             </div>
           </CardContent>

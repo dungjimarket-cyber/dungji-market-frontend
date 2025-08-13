@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface EndedGroupBuyAccessControlProps {
   status: string;
@@ -19,6 +20,12 @@ export function EndedGroupBuyAccessControl({
   children
 }: EndedGroupBuyAccessControlProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // 클라이언트 사이드에서 마운트 확인
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
   
   // 종료된 공구인지 확인 (모집 종료 후 모든 상태)
   const isEndedGroupBuy = [
@@ -28,6 +35,11 @@ export function EndedGroupBuyAccessControl({
     'completed',
     'cancelled'
   ].includes(status);
+  
+  // 로딩 중일 때는 일단 children 렌더링 (깜빡임 방지)
+  if (isLoading) {
+    return <>{children}</>;
+  }
   
   // 접근 제한 체크
   const shouldRestrictAccess = isEndedGroupBuy && (!isAuthenticated || !isParticipant);

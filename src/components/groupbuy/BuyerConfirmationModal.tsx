@@ -96,15 +96,14 @@ export function BuyerConfirmationModal({
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
                   <p className="text-sm text-orange-700">
-                    현재 확정률이 50% 이하입니다. 판매자가 판매를 포기하더라도 패널티가 부과되지 않으며, 
-                    해당 공구에 사용된 입찰권은 환불 처리됩니다.
+                    확정률이 50% 이하입니다. 판매포기시 패널티가 부과되지 않습니다.
                   </p>
                 </div>
               ) : (
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
                   <p className="text-sm text-green-700">
-                    확정률이 50%를 초과했습니다. 판매자가 판매를 포기할 경우 패널티가 부과됩니다.
+                    확정률이 50% 초과했습니다. 판매포기시 패널티가 부과됩니다.
                   </p>
                 </div>
               )}
