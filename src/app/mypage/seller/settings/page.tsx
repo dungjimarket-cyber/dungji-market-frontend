@@ -43,6 +43,7 @@ export default function SellerSettings() {
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
+  const [remoteSalesStatus, setRemoteSalesStatus] = useState<any>(null);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -80,6 +81,21 @@ export default function SellerSettings() {
         // 판매자 프로필 정보 가져오기
         const data = await getSellerProfile();
         setProfile(data);
+        
+        // 비대면 판매인증 상태 조회
+        try {
+          const statusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/remote-sales-status/`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            setRemoteSalesStatus(statusData);
+          }
+        } catch (err) {
+          console.error('비대면 판매인증 상태 조회 실패:', err);
+        }
         
         // 휴대폰 번호 포맷팅
         const formattedPhone = data.phone ? formatPhoneNumber(data.phone) : '';
@@ -555,6 +571,15 @@ export default function SellerSettings() {
                     <div className="mt-3 p-4 border rounded-lg bg-gray-50">
                       <Label htmlFor="businessRegFile" className="text-sm font-medium">인증서 업로드</Label>
                       
+                      {/* 인증 상태가 없는 경우 안내 메시지 */}
+                      {!formData.existingCertification && !remoteSalesStatus?.status && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded">
+                          <p className="text-xs text-blue-600">
+                            💡 비대면 판매 인증서를 업로드하면 관리자 승인 후 비대면 판매가 가능합니다.
+                          </p>
+                        </div>
+                      )}
+                      
                       {/* 기존 인증서가 있는 경우 */}
                       {formData.existingCertification && !formData.deleteCertification ? (
                         <div className="mt-2 p-3 bg-white rounded border">
@@ -591,24 +616,40 @@ export default function SellerSettings() {
                             </Button>
                           </div>
                           {/* 인증 상태 표시 */}
-                          {profile?.remoteSalesStatus === 'pending' && (
+                          {remoteSalesStatus?.status === 'pending' && (
                             <div className="text-xs text-amber-600 mt-2 p-2 bg-amber-50 rounded">
                               📋 비대면 판매 인증 심사중
                               <p className="text-xs text-gray-600 mt-1">관리자 확인 후 인증이 완료됩니다. (1~2일 소요)</p>
+                              {remoteSalesStatus.submitted_at && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  제출일: {new Date(remoteSalesStatus.submitted_at).toLocaleDateString('ko-KR')}
+                                </p>
+                              )}
                             </div>
                           )}
-                          {profile?.remoteSalesStatus === 'approved' || profile?.remoteSalesVerified && (
-                            <p className="text-xs text-green-600 mt-2">
+                          {remoteSalesStatus?.status === 'approved' && (
+                            <div className="text-xs text-green-600 mt-2 p-2 bg-green-50 rounded">
                               ✅ 비대면 판매 인증 완료
-                            </p>
+                              {remoteSalesStatus.expires_at && (
+                                <p className="text-xs text-gray-600 mt-1">
+                                  만료일: {new Date(remoteSalesStatus.expires_at).toLocaleDateString('ko-KR')}
+                                </p>
+                              )}
+                            </div>
                           )}
-                          {profile?.remoteSalesStatus === 'rejected' && (
+                          {remoteSalesStatus?.status === 'rejected' && (
                             <div className="text-xs text-red-600 mt-2 p-2 bg-red-50 rounded">
                               ❌ 인증 반려
-                              {profile?.remoteSalesRejectionReason && (
-                                <p className="text-xs text-gray-600 mt-1">사유: {profile.remoteSalesRejectionReason}</p>
+                              {remoteSalesStatus.rejection_reason && (
+                                <p className="text-xs text-gray-600 mt-1">사유: {remoteSalesStatus.rejection_reason}</p>
                               )}
                               <p className="text-xs text-gray-600 mt-1">새로운 인증서를 업로드해주세요.</p>
+                            </div>
+                          )}
+                          {remoteSalesStatus?.status === 'expired' && (
+                            <div className="text-xs text-orange-600 mt-2 p-2 bg-orange-50 rounded">
+                              ⚠️ 인증 만료
+                              <p className="text-xs text-gray-600 mt-1">비대면 판매 인증이 만료되었습니다. 재인증이 필요합니다.</p>
                             </div>
                           )}
                         </div>
