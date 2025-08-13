@@ -76,6 +76,7 @@ export default function AdminPage() {
   
   const [groupPurchases, setGroupPurchases] = useState<any[]>([]);
   const [sellers, setSellers] = useState<any[]>([]);
+  const [sellersWithDetails, setSellersWithDetails] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
   const [statistics, setStatistics] = useState<any>(null);
@@ -152,9 +153,18 @@ export default function AdminPage() {
       const groupPurchasesData = await fetchWithAuth('/admin/group_purchases/');
       setGroupPurchases(groupPurchasesData);
       
-      // 셀러 목록 로드
+      // 셀러 목록 로드 (기존 API)
       const sellersData = await fetchWithAuth('/admin/sellers/');
       setSellers(sellersData);
+      
+      // 셀러 상세 정보 포함 목록 로드 (새 API)
+      try {
+        const sellersDetailData = await fetchWithAuth('/admin/sellers_with_details/');
+        setSellersWithDetails(sellersDetailData);
+      } catch (error) {
+        console.error('셀러 상세 정보 로드 실패:', error);
+        setSellersWithDetails(sellersData); // 실패시 기본 데이터 사용
+      }
       
       // 상품 목록 로드
       const productsData = await fetchWithAuth('/products/');
@@ -789,7 +799,76 @@ export default function AdminPage() {
         
         {/* 셀러 관리 탭 */}
         <TabsContent value="sellers">
-          <div className="grid gap-6 md:grid-cols-2">
+          {/* 셀러 목록 카드를 먼저 표시 */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>판매회원 목록</CardTitle>
+              <CardDescription>
+                시스템에 등록된 모든 판매회원 목록입니다. 클릭하여 상세 관리 페이지로 이동합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2">ID</th>
+                      <th className="text-left py-2">닉네임</th>
+                      <th className="text-left py-2">이메일</th>
+                      <th className="text-left py-2">입찰권</th>
+                      <th className="text-left py-2">구독권</th>
+                      <th className="text-left py-2">사업자인증</th>
+                      <th className="text-left py-2">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sellersWithDetails.length > 0 ? (
+                      sellersWithDetails.map((seller) => (
+                        <tr key={seller.id} className="border-b hover:bg-gray-50">
+                          <td className="py-2">{seller.id}</td>
+                          <td className="py-2">{seller.nickname || seller.username}</td>
+                          <td className="py-2 text-sm">{seller.email}</td>
+                          <td className="py-2">{seller.bid_tokens_count || 0}개</td>
+                          <td className="py-2">
+                            {seller.has_subscription ? (
+                              <span className="text-green-600 font-medium">활성</span>
+                            ) : (
+                              <span className="text-gray-400">없음</span>
+                            )}
+                          </td>
+                          <td className="py-2">
+                            {seller.is_business_verified ? (
+                              <span className="text-blue-600 font-medium">인증</span>
+                            ) : (
+                              <span className="text-gray-400">미인증</span>
+                            )}
+                          </td>
+                          <td className="py-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => router.push(`/admin/seller/${seller.id}`)}
+                            >
+                              관리
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="py-4 text-center">
+                          등록된 판매회원이 없습니다.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* 빠른 입찰권 부여 카드 */}
+          <div className="grid gap-6 md:grid-cols-1">
             {/* 입찰권 부여 카드 */}
             <Card>
               <CardHeader>
@@ -856,48 +935,6 @@ export default function AdminPage() {
                   ) : '입찰권 부여'}
                 </Button>
               </CardFooter>
-            </Card>
-            
-            {/* 셀러 목록 카드 */}
-            <Card>
-              <CardHeader>
-                <CardTitle>셀러 목록</CardTitle>
-                <CardDescription>
-                  시스템에 등록된 모든 셀러 사용자 목록입니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">ID</th>
-                        <th className="text-left py-2">이름</th>
-                        <th className="text-left py-2">이메일</th>
-                        <th className="text-left py-2">활성 입찰권 수</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sellers.length > 0 ? (
-                        sellers.map((seller) => (
-                          <tr key={seller.id} className="border-b hover:bg-gray-50">
-                            <td className="py-2">{seller.id}</td>
-                            <td className="py-2">{seller.username}</td>
-                            <td className="py-2">{seller.email}</td>
-                            <td className="py-2">{seller.active_tokens_count || 0}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="py-4 text-center">
-                            등록된 셀러가 없습니다.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
             </Card>
           </div>
         </TabsContent>
