@@ -82,7 +82,7 @@ export default function BidTicketsPage() {
   }
 
   // 판매회원이 아닌 경우 안내 메시지 표시
-  if (user?.user_type !== '판매') {
+  if (user?.role !== 'seller' && user?.user_type !== '판매') {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="w-full max-w-2xl mx-auto">
