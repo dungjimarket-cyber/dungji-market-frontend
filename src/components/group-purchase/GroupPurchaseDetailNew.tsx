@@ -1586,6 +1586,44 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       </div>
       
+      {/* 판매자 입찰 정보 - 낙찰 실패 시 안내 메시지 강화 */}
+      {isSeller && myBidInfo && groupBuyData.status !== 'recruiting' && (
+        <div className={`mx-4 mt-4 p-4 rounded-lg border ${
+          myBidInfo.status === 'won' 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-yellow-50 border-yellow-200'
+        }`}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className={`font-medium flex items-center ${
+              myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
+            }`}>
+              <Gavel className="w-5 h-5 mr-2" />
+              내 입찰 결과
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm">
+              <span className="font-medium">내 순위:</span> {myBidInfo.rank}위 / 전체 {myBidInfo.total_bidders}명
+            </div>
+            <div className="text-sm">
+              <span className="font-medium">입찰 금액:</span> {myBidInfo.amount.toLocaleString()}원
+            </div>
+            {myBidInfo.status === 'won' ? (
+              <div className="mt-3 p-3 bg-green-100 rounded-md">
+                <p className="text-green-800 font-medium">🎉 {myBidInfo.message}</p>
+              </div>
+            ) : (
+              <div className="mt-3 p-3 bg-yellow-100 rounded-md">
+                <p className="text-yellow-800">{myBidInfo.message}</p>
+                <p className="text-sm text-yellow-700 mt-2">
+                  다음 공구에서 더 좋은 조건으로 입찰해보세요! 💪
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
       {/* 판매자 입찰 정보 - 히든 처리 */}
       {/* {isSeller && (
         <div className="mx-4 mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
