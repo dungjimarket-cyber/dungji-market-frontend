@@ -10,6 +10,7 @@ import { Loader2, AlertCircle, Users, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { useToast } from '@/hooks/use-toast';
+import { BuyerConfirmationModal } from '@/components/groupbuy/BuyerConfirmationModal';
 
 /**
  * 판매확정/포기 선택하기 컴포넌트
@@ -21,6 +22,8 @@ export default function PendingSellerDecision() {
   const { toast } = useToast();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedGroupBuy, setSelectedGroupBuy] = useState<GroupBuy | null>(null);
 
   useEffect(() => {
     const fetchPendingDecision = async () => {
@@ -138,29 +141,8 @@ export default function PendingSellerDecision() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        const confirmRate = groupBuy.current_participants > 0 
-                          ? Math.round(((groupBuy.confirmed_buyers || 0) / groupBuy.current_participants) * 100)
-                          : 0;
-                        
-                        const message = confirmRate > 50
-                          ? "확정률이 50% 초과했습니다. 판매포기시 패널티가 부과됩니다."
-                          : "확정률이 50% 이하입니다. 판매포기시 패널티가 부과되지 않습니다.";
-                        
-                        toast({
-                          title: "구매자 확정 현황",
-                          description: (
-                            <div className="space-y-2">
-                              <div>
-                                <p>참여인원: {groupBuy.current_participants}명</p>
-                                <p>구매확정 인원: {groupBuy.confirmed_buyers || 0}명</p>
-                                <p>확정률: {confirmRate}%</p>
-                              </div>
-                              <div className={`text-sm font-medium ${confirmRate > 50 ? 'text-red-600' : 'text-green-600'}`}>
-                                {message}
-                              </div>
-                            </div>
-                          ),
-                        });
+                        setSelectedGroupBuy(groupBuy);
+                        setShowConfirmationModal(true);
                       }}
                     >
                       구매확정률 확인하기
@@ -179,6 +161,22 @@ export default function PendingSellerDecision() {
           </CardContent>
         </Card>
       ))}
+      
+      {/* 구매확정률 모달 */}
+      {selectedGroupBuy && (
+        <BuyerConfirmationModal
+          isOpen={showConfirmationModal}
+          onClose={() => {
+            setShowConfirmationModal(false);
+            setSelectedGroupBuy(null);
+          }}
+          totalParticipants={selectedGroupBuy.current_participants}
+          confirmedCount={selectedGroupBuy.confirmed_buyers || 0}
+          confirmationRate={selectedGroupBuy.current_participants > 0 
+            ? Math.round(((selectedGroupBuy.confirmed_buyers || 0) / selectedGroupBuy.current_participants) * 100)
+            : 0}
+        />
+      )}
     </div>
   );
 }
