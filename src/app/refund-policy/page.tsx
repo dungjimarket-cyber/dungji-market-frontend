@@ -260,7 +260,7 @@ export default function RefundPolicyPage() {
                   <strong>고객센터 신청</strong>
                   <ul className="list-disc list-inside ml-6 mt-1">
                     <li>평일 09:00~18:00</li>
-                    <li>전화: 010-8952-1866 (비즈링 준비중)</li>
+                    <li>전화: 070-4507-4492</li>
                     <li>이메일: dungjimarket@gmail.com</li>
                   </ul>
                 </li>
@@ -442,7 +442,7 @@ export default function RefundPolicyPage() {
           <div className="space-y-2">
             <p className="font-medium">둥지마켓 고객센터</p>
             <ul className="text-gray-700 space-y-1">
-              <li>• 전화: <a href="tel:010-8952-1866" className="text-blue-600 hover:underline">010-8952-1866</a> (평일 09:00~18:00)</li>
+              <li>• 전화: <a href="tel:070-4507-4492" className="text-blue-600 hover:underline">070-4507-4492</a> (평일 09:00~18:00)</li>
               <li>• 이메일: <a href="mailto:dungjimarket@gmail.com" className="text-blue-600 hover:underline">dungjimarket@gmail.com</a></li>
               <li>• 카카오톡: @둥지마켓</li>
             </ul>

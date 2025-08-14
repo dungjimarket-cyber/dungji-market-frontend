@@ -24,7 +24,7 @@ export default function Footer() {
             <p className="text-sm text-gray-600 mb-1">주소: 경기도 하남시 검단산로 239, B1층 26호</p>
             <p className="text-sm text-gray-600 mb-1">(창우동, 하남시 벤처집착시설)</p>
             <p className="text-sm text-gray-600">
-              고객센터: <a href="tel:010-8952-1866" className="text-emerald-600 hover:text-emerald-700 font-medium">010-8952-1866</a>
+              고객센터: <a href="tel:070-4507-4492" className="text-emerald-600 hover:text-emerald-700 font-medium">070-4507-4492</a>
             </p>
           </div>
           
