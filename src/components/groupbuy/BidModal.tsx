@@ -470,7 +470,7 @@ export default function BidModal({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">
-            {existingBid ? '다시 입찰하기' : '입찰하기'}
+            {existingBid ? '견적 수정하기' : '견적 제안하기'}
           </DialogTitle>
           <DialogDescription className="sr-only">
             입찰 확인 팝업

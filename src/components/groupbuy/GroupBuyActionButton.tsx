@@ -76,9 +76,9 @@ export default function GroupBuyActionButton({
     if (isSeller) {
       // 이미 입찰한 경우
       if (isParticipating) {
-        return '다시 입찰하기';
+        return '견적 수정하기';
       }
-      return '공구 입찰하기';
+      return '견적 제안하기';
     }
     
     // 일반회원인 경우

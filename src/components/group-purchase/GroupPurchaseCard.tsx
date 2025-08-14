@@ -204,7 +204,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     // 판매회원
     if (user?.role === 'seller') {
       if (status === 'recruiting') {
-        return hasBid ? '다시 입찰하기' : '공구 입찰하기';
+        return hasBid ? '견적 수정하기' : '견적 제안하기';
       }
       if (status === 'final_selection_buyers' || 
           status === 'final_selection_seller' || 

@@ -35,7 +35,7 @@ export default function BidConfirmModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg">{isRebid ? '다시 입찰하기' : '입찰하기'}</DialogTitle>
+          <DialogTitle className="text-lg">{isRebid ? '견적 수정하기' : '견적 제안하기'}</DialogTitle>
           <DialogDescription className="sr-only">
             입찰 확인 팝업
           </DialogDescription>

@@ -58,7 +58,7 @@ export function SimplifiedGroupBuyButton({
     if (userRole === 'seller') {
       // 모집중
       if (status === 'recruiting') {
-        return hasBid ? '다시 입찰하기' : '공구 입찰하기';
+        return hasBid ? '견적 수정하기' : '견적 제안하기';
       }
       
       // 종료 후 모든 진행 단계 → "진행상황 확인"

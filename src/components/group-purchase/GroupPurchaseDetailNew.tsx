@@ -2014,9 +2014,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       입찰 중...
                     </span>
                   ) : hasBid && myBidAmount ? (
-                    '다시 입찰하기'
+                    '견적 수정하기'
                   ) : (
-                    '공구 입찰하기'
+                    '견적 제안하기'
                   )}
                 </button>
               </div>

@@ -103,7 +103,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                     size="lg"
                   >
                     <Gavel className="mr-2 h-5 w-5" />
-                    공구 입찰하기
+                    견적 제안하기
                   </Button>
                   
                   <Button

@@ -808,7 +808,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                   }}
                   disabled={isClosed || hasBidTokens === false || !isValidBidStatus}
                 >
-                  <PlusCircle className="w-4 h-4 mr-1" /> {hasBid ? '다시 입찰하기' : '입찰하기'}
+                  <PlusCircle className="w-4 h-4 mr-1" /> {hasBid ? '견적 수정하기' : '견적 제안하기'}
                 </Button>
                 {(isClosed || hasBidTokens === false || !isValidBidStatus) && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md">
