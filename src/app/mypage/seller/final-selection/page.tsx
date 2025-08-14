@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, Clock } from 'lucide-react';
+import { ArrowLeft, Loader2, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { toast } from '@/components/ui/use-toast';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
@@ -239,11 +239,11 @@ export default function SellerFinalSelection() {
         </div>
       )}
 
-      {/* 구매확정 인원 통계 모달 */}
+      {/* 구매확정 인원 통계 모달 - 상세페이지와 동일한 디자인 적용 */}
       <Dialog open={showStatsModal} onOpenChange={setShowStatsModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>구매확정 인원 현황</DialogTitle>
+            <DialogTitle className="text-xl font-bold">구매자 확정 현황</DialogTitle>
           </DialogHeader>
           
           {loadingStats ? (
@@ -251,58 +251,82 @@ export default function SellerFinalSelection() {
               <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
             </div>
           ) : confirmationStats ? (
-            <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">전체 참여인원</span>
-                  <span className="font-bold">{confirmationStats.total_participants}명</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-green-600">구매확정</span>
-                  <span className="font-bold text-green-600">{confirmationStats.confirmed_count}명</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-red-600">구매포기</span>
-                  <span className="font-bold text-red-600">{confirmationStats.cancelled_count}명</span>
-                </div>
-                {confirmationStats.pending_count > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">미결정</span>
-                    <span className="font-bold text-gray-500">{confirmationStats.pending_count}명</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className={`p-4 rounded-lg ${
-                confirmationStats.confirmation_rate <= 50 
-                  ? 'bg-blue-50 border border-blue-200' 
-                  : 'bg-green-50 border border-green-200'
-              }`}>
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">구매확정률</p>
-                  <p className="text-2xl font-bold ${
-                    confirmationStats.confirmation_rate <= 50 ? 'text-blue-600' : 'text-green-600'
-                  }">
-                    {confirmationStats.confirmation_rate}%
-                  </p>
+            <div className="py-4">
+              {/* 메인 통계 카드 */}
+              <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 mb-6 border border-blue-200 shadow-sm">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-600 mb-1">전체 참여인원</p>
+                  <p className="text-3xl font-bold text-blue-700">{confirmationStats.total_participants}명</p>
                 </div>
                 
-                {confirmationStats.has_penalty_exemption && (
-                  <div className="mt-3 p-2 bg-white rounded">
-                    <p className="text-xs text-blue-600 text-center">
-                      구매확정률이 50% 이하이므로 판매포기 시<br/>
-                      패널티 없이 해당 공구 입찰권이 환불됩니다.
-                    </p>
+                {/* 확정/포기 통계 */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/80 rounded-lg p-4 text-center">
+                    <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-1">구매확정</p>
+                    <p className="text-2xl font-bold text-green-600">{confirmationStats.confirmed_count}명</p>
+                    <p className="text-xs text-gray-500 mt-1">({confirmationStats.confirmation_rate}%)</p>
                   </div>
-                )}
+                  
+                  <div className="bg-white/80 rounded-lg p-4 text-center">
+                    <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-1">구매포기</p>
+                    <p className="text-2xl font-bold text-red-600">{confirmationStats.cancelled_count}명</p>
+                    <p className="text-xs text-gray-500 mt-1">({100 - confirmationStats.confirmation_rate}%)</p>
+                  </div>
+                </div>
               </div>
-              
-              <Button 
-                className="w-full" 
-                onClick={() => setShowStatsModal(false)}
-              >
-                확인
-              </Button>
+
+              {/* 확정률 진행바 섹션 */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">구매 확정률</span>
+                  <span className={`text-lg font-bold ${
+                    confirmationStats.confirmation_rate > 50 ? 'text-green-600' : 'text-orange-600'
+                  }`}>
+                    {confirmationStats.confirmation_rate}%
+                  </span>
+                </div>
+                
+                {/* 진행바 */}
+                <div className="relative">
+                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-700 ease-out ${
+                        confirmationStats.confirmation_rate > 50 
+                          ? 'bg-gradient-to-r from-green-400 to-green-500' 
+                          : 'bg-gradient-to-r from-orange-400 to-orange-500'
+                      }`}
+                      style={{ width: `${confirmationStats.confirmation_rate}%` }}
+                    />
+                  </div>
+                  
+                  {/* 50% 기준선 표시 */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-4 w-0.5 bg-gray-400" />
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                    <span className="text-xs text-gray-500">50%</span>
+                  </div>
+                </div>
+                
+                {/* 패널티 안내 메시지 */}
+                <div className="mt-8 pt-4 border-t border-gray-200">
+                  {confirmationStats.confirmation_rate <= 50 ? (
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
+                      <p className="text-sm text-orange-700">
+                        확정률이 50% 이하입니다. 판매포기시 패널티가 부과되지 않습니다.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
+                      <p className="text-sm text-green-700">
+                        확정률이 50% 초과했습니다. 판매포기시 패널티가 부과됩니다.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
