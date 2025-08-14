@@ -31,7 +31,7 @@ const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 };
 
 /**
- * 셀러 입찰 목록 페이지 컴포넌트
+ * 셀러 견적 목록 페이지 컴포넌트
  */
 export default function SellerBidsPage() {
   return (
@@ -42,7 +42,7 @@ export default function SellerBidsPage() {
 }
 
 /**
- * 입찰 목록 로딩 스켈레톤 컴포넌트
+ * 견적 목록 로딩 스켈레톤 컴포넌트
  */
 function BidsListSkeleton() {
   return (
@@ -53,7 +53,7 @@ function BidsListSkeleton() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold">입찰 내역</h1>
+        <h1 className="text-2xl font-bold">견적 내역</h1>
       </div>
       
       <div className="mb-6 flex flex-col md:flex-row gap-4">
@@ -81,7 +81,7 @@ function BidsListSkeleton() {
 }
 
 /**
- * 입찰 목록 클라이언트 컴포넌트
+ * 견적 목록 클라이언트 컴포넌트
  */
 function BidsListClient() {
   const router = useRouter();
@@ -105,12 +105,12 @@ function BidsListClient() {
     }
   }, [filterFromUrl]);
 
-  // 입찰 목록 조회
+  // 견적 목록 조회
   useEffect(() => {
     const fetchBids = async () => {
       try {
         setLoading(true);
-        console.log('입찰 목록 조회 파라미터:', { page, searchQuery, filter });
+        console.log('견적 목록 조회 파라미터:', { page, searchQuery, filter });
         
         // API 호출을 위한 인증 헤더 확인
         const token = await tokenUtils.getAccessToken();
@@ -124,7 +124,7 @@ function BidsListClient() {
         
         if (filter !== 'all') {
           if (filter === 'final_selection') {
-            // 최종선택 대기중인 입찰 (selected 상태이면서 final_decision이 pending)
+            // 최종선택 대기중인 견적 (selected 상태이면서 final_decision이 pending)
             params.status = 'selected';
             params.final_decision = 'pending';
           } else {
@@ -148,14 +148,14 @@ function BidsListClient() {
           }
           
           // 디버깅용 출력
-          console.log('포맷팅 전 입찰 데이터:', formattedBids);
+          console.log('포맷팅 전 견적 데이터:', formattedBids);
           
           setBids(formattedBids);
           setTotalCount(formattedBids.length);
           setLoading(false);
           return;
         } catch (apiError) {
-          console.error('입찰 목록 조회 오류:', apiError);
+          console.error('견적 목록 조회 오류:', apiError);
           setBids([]);
           setTotalCount(0);
           
@@ -163,14 +163,14 @@ function BidsListClient() {
           if (toast) {
             toast({
               title: '데이터 로딩 실패',
-              description: '입찰 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.',
+              description: '견적 목록을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.',
               variant: 'destructive',
             });
           }
           setLoading(false);
         }
       } catch (error) {
-        console.error('입찰 목록 조회 오류:', error);
+        console.error('견적 목록 조회 오류:', error);
         setLoading(false);
       }
     };
@@ -188,7 +188,7 @@ function BidsListClient() {
     router.push(`/mypage/seller/bids?page=1&filter=${value}&search=${encodeURIComponent(searchQuery)}`);
   };
 
-  // 입찰 상태에 따른 텍스트 표시
+  // 견적 상태에 따른 텍스트 표시
   const statusText = (status: string, bid?: any) => {
     // display_status가 있으면 우선 사용 (백엔드에서 계산된 상태)
     if (bid?.display_status) {
@@ -197,7 +197,7 @@ function BidsListClient() {
     
     // 모집기간 중인 경우
     if (bid?.status === 'recruiting') {
-      return '입찰중';
+      return '견적중';
     }
     
     // 순위 기반 상태 표시
@@ -211,7 +211,7 @@ function BidsListClient() {
     
     // 기존 로직 폴백
     switch (status) {
-      case 'pending': return '입찰 진행중';
+      case 'pending': return '견적 진행중';
       case 'selected': 
         // final_decision 상태에 따라 다르게 표시
         if (bid?.final_decision === 'pending') {
@@ -228,9 +228,9 @@ function BidsListClient() {
     }
   };
 
-  // 입찰 유형에 따른 표시 문구
+  // 견적 유형에 따른 표시 문구
   const getBidTypeText = (bidType: string) => {
-    return bidType === 'support' ? '지원금 입찰' : '가격 입찰';
+    return bidType === 'support' ? '지원금 견적' : '가격 견적';
   };
 
   const statusColor = (status: string, bid?: any) => {
@@ -239,7 +239,7 @@ function BidsListClient() {
       switch (bid.display_status) {
         case '낙찰': return 'bg-green-100 text-green-800';
         case '낙찰실패': return 'bg-gray-100 text-gray-800';
-        case '입찰중': return 'bg-blue-100 text-blue-800';
+        case '견적중': return 'bg-blue-100 text-blue-800';
         default: return 'bg-gray-100 text-gray-800';
       }
     }
@@ -284,7 +284,7 @@ function BidsListClient() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold">입찰 내역</h1>
+        <h1 className="text-2xl font-bold">견적 내역</h1>
         <span className="ml-2 text-sm text-gray-500">총 {totalCount}건</span>
       </div>
       
@@ -311,7 +311,7 @@ function BidsListClient() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">모든 상태</SelectItem>
-            <SelectItem value="pending">입찰 진행중</SelectItem>
+            <SelectItem value="pending">견적 진행중</SelectItem>
             <SelectItem value="final_selection">최종선택 대기중</SelectItem>
             <SelectItem value="selected">낙찰됨</SelectItem>
             <SelectItem value="confirmed">판매 확정</SelectItem>
@@ -323,7 +323,7 @@ function BidsListClient() {
       {bids.length === 0 ? (
         <Card className="text-center p-8 mb-4">
           <CardContent className="pt-6">
-            <p className="text-lg text-gray-500">입찰 내역이 없습니다.</p>
+            <p className="text-lg text-gray-500">견적 내역이 없습니다.</p>
           </CardContent>
         </Card>
       ) : (
@@ -348,11 +348,11 @@ function BidsListClient() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 <div>
-                  <p className="text-sm text-gray-600">입찰 유형:</p>
-                  <p className="font-medium">{getBidTypeText(bid.bid_type) || '가격 입찰'}</p>
+                  <p className="text-sm text-gray-600">견적 유형:</p>
+                  <p className="font-medium">{getBidTypeText(bid.bid_type) || '가격 견적'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">입찰 금액:</p>
+                  <p className="text-sm text-gray-600">견적 금액:</p>
                   <p className="font-medium text-lg">
                     {typeof bid.my_bid_amount !== 'undefined' 
                       ? `${formatNumberWithCommas(bid.my_bid_amount)}원`
@@ -392,7 +392,7 @@ function BidsListClient() {
               )}
               <div className="flex justify-between items-center text-sm">
                 <div className="text-gray-600">
-                  <span className="font-medium">입찰시간:</span> {new Date(bid.created_at).toLocaleString('ko-KR', {
+                  <span className="font-medium">견적시간:</span> {new Date(bid.created_at).toLocaleString('ko-KR', {
                     year: 'numeric',
                     month: 'numeric',
                     day: 'numeric',

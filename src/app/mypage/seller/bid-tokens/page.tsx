@@ -122,9 +122,9 @@ export default function BidTokensPage() {
   const getTokenTypeInfo = (type: string) => {
     switch(type) {
       case 'single':
-        return '견적티켓 단품은 공구에 1회 입찰시 사용됩니다.';
+        return '견적티켓 단품은 공구에 1회 견적 제안시 사용됩니다.';
       case 'unlimited':
-        return '무제한 구독제는 30일간 모든 공구에 무제한 입찰이 가능합니다.';
+        return '무제한 구독제는 30일간 모든 공구에 무제한 견적 제안이 가능합니다.';
       default:
         return '';
     }

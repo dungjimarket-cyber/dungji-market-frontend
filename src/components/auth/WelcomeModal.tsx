@@ -89,7 +89,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                     숨겨진 고수들의 향연! 🚀
                   </h3>
                   <p className="text-gray-600">
-                    공구 입찰에 참여하고,
+                    공구 견적에 참여하고,
                     <br />
                     <span className="text-pink-600 font-semibold">대량 판매 기회</span>를 획득하세요!
                   </p>

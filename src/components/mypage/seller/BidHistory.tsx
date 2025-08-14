@@ -22,13 +22,13 @@ interface GroupBuyWithBid {
   bid_created_at?: string;
   status: string;
   display_status?: string;  // 백엔드에서 계산된 표시 상태
-  my_bid_rank?: number;     // 내 입찰 순위
-  total_bidders?: number;   // 전체 입찰자 수
+  my_bid_rank?: number;     // 내 견적 순위
+  total_bidders?: number;   // 전체 견적자 수
 }
 
 /**
- * 입찰내역 컴포넌트
- * 판매자가 입찰한 최근 5개 공구를 간략하게 표시
+ * 견적내역 컴포넌트
+ * 판매자가 견적을 제안한 최근 5개 공구를 간략하게 표시
  */
 export default function BidHistory() {
   const { accessToken } = useAuth();
@@ -57,7 +57,7 @@ export default function BidHistory() {
           setGroupBuys(data.slice(0, 5));
         }
       } catch (error) {
-        console.error('입찰내역 조회 오류:', error);
+        console.error('견적내역 조회 오류:', error);
       } finally {
         setLoading(false);
       }
@@ -79,7 +79,7 @@ export default function BidHistory() {
       <Card className="p-6">
         <div className="text-center text-gray-500">
           <TrendingUp className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-          <p className="text-sm">아직 입찰한 공구가 없습니다.</p>
+          <p className="text-sm">아직 견적을 제안한 공구가 없습니다.</p>
           <Button 
             className="mt-4" 
             onClick={() => router.push('/group-purchases')}
@@ -113,7 +113,7 @@ export default function BidHistory() {
                     <span className="sm:hidden">{new Date(gb.bid_created_at || gb.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}</span>
                   </span>
                   <span className="font-medium text-green-600">
-                    입찰금액: {formatNumberWithCommas(gb.my_bid_amount)}원
+                    견적금액: {formatNumberWithCommas(gb.my_bid_amount)}원
                   </span>
                   {/* 순위 정보 표시 */}
                   {gb.my_bid_rank && gb.display_status === '낙찰실패' && (
@@ -138,7 +138,7 @@ export default function BidHistory() {
           onClick={() => router.push('/mypage/seller/bids')}
           className="w-full"
         >
-          전체 입찰내역 보기
+          전체 견적내역 보기
         </Button>
       </div>
     </div>

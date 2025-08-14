@@ -1313,7 +1313,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <p className="text-base text-gray-700 font-medium">
                   총 {groupBuyData.total_bids_count || 0}개 입찰
                 </p>
-                {/* 입찰 내역 보기 버튼과 구매자 확정률 버튼을 나란히 배치 */}
+                {/* 견적 내역 보기 버튼과 구매자 확정률 버튼을 나란히 배치 */}
                 {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
                   <div className="flex justify-center items-center gap-3 mt-4">
                     <Button
@@ -1322,7 +1322,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       size="default"
                       className="px-6"
                     >
-                      입찰 내역 보기
+                      견적 내역 보기
                     </Button>
                     
                     {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 - 입찰내역보기 우측에 나란히 배치 */}
@@ -1379,7 +1379,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                         onClick={() => setShowBidHistoryModal(true)}
                         className="text-xs text-blue-600 hover:underline"
                       >
-                        입찰 내역 보기
+                        견적 내역 보기
                       </button>
                     )}
                     {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 */}
@@ -1671,7 +1671,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               onClick={() => setShowBidHistoryModal(true)}
               className="text-sm text-blue-600 hover:underline mt-2"
             >
-              전체 입찰 내역 보기
+              전체 견적 내역 보기
             </button>
           </div>
         </div>

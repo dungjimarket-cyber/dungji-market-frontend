@@ -24,8 +24,8 @@ import { Loader2 } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 import { formatBidAmount } from '@/lib/utils/maskAmount';
 
-// 구성표에 따른 입찰 금액 표시 규칙 적용
-// 1위부터 10위까지 정상 금액 표기, 본인 입찰은 항상 정상 표기
+// 구성표에 따른 견적 금액 표시 규칙 적용
+// 1위부터 10위까지 정상 금액 표기, 본인 견적은 항상 정상 표기
 
 // 여기서는 BidData 인터페이스를 API 서비스에서 가져와 사용합니다
 
@@ -36,13 +36,13 @@ interface BidHistoryModalProps {
   currentUserId?: number;
   isSeller?: boolean;
   isParticipant?: boolean;  // 공구 참여 여부 추가
-  hasBid?: boolean;          // 입찰 여부 추가
+  hasBid?: boolean;          // 견적 여부 추가
   groupBuyStatus?: string;   // 공구 상태 추가
   isAuthenticated?: boolean; // 로그인 여부 추가
 }
 
 /**
- * 공구 입찰 내역 확인 모달 컴포넌트
+ * 공구 견적 내역 확인 모달 컴포넌트
  */
 export default function BidHistoryModal({
   isOpen,
@@ -59,7 +59,7 @@ export default function BidHistoryModal({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 입찰 기록 조회
+    // 견적 기록 조회
     const fetchBidHistory = async () => {
       if (!groupBuyId || !isOpen) return;
       
@@ -70,23 +70,23 @@ export default function BidHistoryModal({
         // 금액 순으로 정렬 (겹치는 경우 날짜 순)
         const sortedData = [...data].sort((a, b) => {
           if (a.bid_type === b.bid_type) {
-            // 같은 입찰 유형인 경우 금액 비교 (가격 입찰은 낮은 순, 지원금 입찰은 높은 순)
+            // 같은 견적 유형인 경우 금액 비교 (가격 견적은 낮은 순, 지원금 견적은 높은 순)
             const aAmount = typeof a.amount === 'string' ? 0 : a.amount;
             const bAmount = typeof b.amount === 'string' ? 0 : b.amount;
             
             if (a.bid_type === 'price') {
-              return aAmount - bAmount; // 가격 입찰은 낮은 순으로
+              return aAmount - bAmount; // 가격 견적은 낮은 순으로
             } else {
-              return bAmount - aAmount; // 지원금 입찰은 높은 순으로
+              return bAmount - aAmount; // 지원금 견적은 높은 순으로
             }
           }
-          // 입찰 유형이 다르면 가격 입찰을 우선
+          // 견적 유형이 다르면 가격 견적을 우선
           return a.bid_type === 'price' ? -1 : 1;
         });
         
         setBids(sortedData);
       } catch (error) {
-        console.error('입찰 기록 조회 중 오류 발생:', error);
+        console.error('견적 기록 조회 중 오류 발생:', error);
       } finally {
         setIsLoading(false);
       }
@@ -96,9 +96,9 @@ export default function BidHistoryModal({
   }, [groupBuyId, isOpen]);
 
 
-  // 입찰 유형에 따른 표시 문구
+  // 견적 유형에 따른 표시 문구
   const getBidTypeText = (bidType: string) => {
-    return bidType === 'support' ? '지원금 입찰' : '가격 입찰';
+    return bidType === 'support' ? '지원금 견적' : '가격 견적';
   };
 
   // 날짜 형식 변환
@@ -111,9 +111,9 @@ export default function BidHistoryModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">공구 입찰 내역</DialogTitle>
+          <DialogTitle className="text-xl font-bold">공구 견적 내역</DialogTitle>
           <DialogDescription>
-            이 공구에 등록된 입찰 내역 상위 10개를 확인할 수 있습니다.
+            이 공구에 등록된 견적 내역 상위 10개를 확인할 수 있습니다.
             {bids.length > 0 && bids[0] && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center justify-between">
@@ -133,11 +133,11 @@ export default function BidHistoryModal({
         {isLoading ? (
           <div className="flex justify-center items-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <span className="ml-2">입찰 기록을 불러오는 중...</span>
+            <span className="ml-2">견적 기록을 불러오는 중...</span>
           </div>
         ) : bids.length === 0 ? (
           <div className="bg-gray-50 p-6 rounded-lg text-center">
-            <p className="text-gray-500">등록된 입찰 내역이 없습니다.</p>
+            <p className="text-gray-500">등록된 견적 내역이 없습니다.</p>
           </div>
         ) : (
           <div className="rounded-md border">
@@ -178,7 +178,7 @@ export default function BidHistoryModal({
                           </Badge>
                           {isMyBid && (
                             <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                              내 입찰
+                              내 견적
                             </Badge>
                           )}
                           {isWinner ? (
