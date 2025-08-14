@@ -30,7 +30,7 @@ export default function BidTokensPage() {
 
   // 상품 가격 정보
   const priceInfo = {
-    'single': 1990, // 입찰권 단품 가격 (원)
+    'single': 1990, // 견적티켓 단품 가격 (원)
     'unlimited': 29900 // 무제한 구독제(30일) 가격 (원)
   };
 
@@ -39,7 +39,7 @@ export default function BidTokensPage() {
     return tokenType === 'unlimited' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
   };
 
-  // 입찰권 정보 로드
+  // 견적티켓 정보 로드
   useEffect(() => {
     async function loadBidTokens() {
       if (!isAuthenticated) {
@@ -52,10 +52,10 @@ export default function BidTokensPage() {
         const data = await bidTokenService.getBidTokens();
         setBidTokens(data);
       } catch (error) {
-        console.error('입찰권 정보 로드 오류:', error);
+        console.error('견적티켓 정보 로드 오류:', error);
         toast({
-          title: '입찰권 정보 로드 실패',
-          description: '입찰권 정보를 불러오는데 문제가 발생했습니다. 다시 시도해주세요.',
+          title: '견적티켓 정보 로드 실패',
+          description: '견적티켓 정보를 불러오는데 문제가 발생했습니다. 다시 시도해주세요.',
           variant: 'destructive',
         });
       } finally {
@@ -71,7 +71,7 @@ export default function BidTokensPage() {
     if (tokenType === 'single' && quantity <= 0) {
       toast({
         title: '유효하지 않은 수량',
-        description: '1개 이상의 입찰권을 선택해주세요.',
+        description: '1개 이상의 견적티켓을 선택해주세요.',
         variant: 'destructive',
       });
       return;
@@ -118,11 +118,11 @@ export default function BidTokensPage() {
     }
   };
 
-  // 입찰권 유형에 따른 정보 텍스트
+  // 견적티켓 유형에 따른 정보 텍스트
   const getTokenTypeInfo = (type: string) => {
     switch(type) {
       case 'single':
-        return '입찰권 단품은 공구에 1회 입찰시 사용됩니다.';
+        return '견적티켓 단품은 공구에 1회 입찰시 사용됩니다.';
       case 'unlimited':
         return '무제한 구독제는 30일간 모든 공구에 무제한 입찰이 가능합니다.';
       default:
@@ -138,7 +138,7 @@ export default function BidTokensPage() {
   return (
     <div className="container py-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">입찰권 관리</h1>
+        <h1 className="text-2xl font-bold">견적티켓 관리</h1>
         <Button variant="outline" onClick={() => router.back()}>
           돌아가기
         </Button>
@@ -148,7 +148,7 @@ export default function BidTokensPage() {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">나의 입찰권 현황</CardTitle>
+              <CardTitle className="text-lg">나의 견적티켓 현황</CardTitle>
             </CardHeader>
             <CardContent>
               {bidTokens && (
@@ -156,7 +156,7 @@ export default function BidTokensPage() {
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Star className="h-4 w-4 mr-2 text-yellow-400" />
-                      입찰권 단품
+                      견적티켓 단품
                     </span>
                     <span className="font-semibold">{bidTokens.single_tokens}개</span>
                   </div>
@@ -181,7 +181,7 @@ export default function BidTokensPage() {
                   )}
                   <Separator />
                   <div className="flex justify-between items-center font-bold">
-                    <span>총 보유 입찰권</span>
+                    <span>총 보유 견적티켓</span>
                     <span>
                       {bidTokens.unlimited_subscription ? (
                         <span className="flex items-center">
@@ -233,12 +233,12 @@ export default function BidTokensPage() {
         <div className="md:col-span-3">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">입찰권 구매</CardTitle>
+              <CardTitle className="text-lg">견적티켓 구매</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div>
-                  <Label className="text-base">입찰권 유형</Label>
+                  <Label className="text-base">견적티켓 유형</Label>
                   <RadioGroup
                     value={tokenType}
                     onValueChange={(value) => 
@@ -250,7 +250,7 @@ export default function BidTokensPage() {
                         value="single"
                         id="single"
                       />
-                      <Label htmlFor="single">입찰권 단품</Label>
+                      <Label htmlFor="single">견적티켓 단품</Label>
                     </div>
                     <div>
                       <RadioGroupItem

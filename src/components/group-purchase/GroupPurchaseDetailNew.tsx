@@ -412,7 +412,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
   }, [isAuthenticated, accessToken, groupBuy.id, isBuyerFinalSelection, isSellerFinalSelection, groupBuyData.status]);
 
-  // 입찰권 정보 가져오기
+  // 견적티켓 정보 가져오기
   const fetchBidTokenInfo = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bid-tokens/`, {
@@ -432,7 +432,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         });
       }
     } catch (error) {
-      console.error('입찰권 정보 조회 오류:', error);
+      console.error('견적티켓 정보 조회 오류:', error);
     }
   };
 
@@ -730,7 +730,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       setBidAmount(roundedAmount);
     }
 
-    // 입찰권/구독권이 없는 경우 바로 구매 화면으로 이동
+    // 견적티켓/구독권이 없는 경우 바로 구매 화면으로 이동
     if (!hasUnlimitedSubscription && remainingTokens === 0) {
       setShowNoBidTokenDialog(true);
       return;
@@ -780,7 +780,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       } else {
         const errorData = await response.json();
         
-        if (errorData.detail?.includes('입찰권') || errorData.detail?.includes('사용 가능한 입찰권이 없습니다')) {
+        if (errorData.detail?.includes('입찰권') || errorData.detail?.includes('견적티켓') || errorData.detail?.includes('사용 가능한 입찰권이 없습니다') || errorData.detail?.includes('사용 가능한 견적티켓이 없습니다')) {
           setShowNoBidTokenDialog(true);
         } else {
           toast({
@@ -2043,7 +2043,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
               <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 입찰 안내사항</h4>
               <div className="text-sm text-gray-700 space-y-1">
-                <div>• 입찰 시 입찰권 1개가 소모됩니다.</div>
+                <div>• 입찰 시 견적티켓 1개가 소모됩니다.</div>
                 <div>• 최소 입찰 단위는 1,000원입니다.</div>
                 <div>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
                 <div>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</div>
@@ -2197,14 +2197,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 입찰권 부족 다이얼로그 */}
+      {/* 견적티켓 부족 다이얼로그 */}
       <AlertDialog open={showNoBidTokenDialog} onOpenChange={setShowNoBidTokenDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>입찰권 부족</AlertDialogTitle>
+            <AlertDialogTitle>견적티켓 부족</AlertDialogTitle>
             <AlertDialogDescription>
-              입찰하려면 입찰권이 필요합니다. 
-              입찰권을 구매하시겠습니까?
+              입찰하려면 견적티켓이 필요합니다. 
+              견적티켓을 구매하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2212,7 +2212,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogAction
               onClick={() => router.push('/mypage/seller/bid-tokens')}
             >
-              입찰권 관리 페이지로 이동
+              견적티켓 관리 페이지로 이동
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2225,7 +2225,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogTitle>입찰 취소 확인</AlertDialogTitle>
             <AlertDialogDescription>
               정말로 입찰을 취소하시겠습니까?
-              취소 후에는 입찰권이 환불되지 않습니다.
+              취소 후에는 견적티켓이 환불되지 않습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
