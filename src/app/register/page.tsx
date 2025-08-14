@@ -492,9 +492,10 @@ function RegisterPageContent() {
           {!socialProvider && !memberType && (
             <div className="mb-6">
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                <p className="text-sm text-blue-800">
-                  <strong>일반회원(참새)</strong>은 공구에 참여하여 상품을 구매할 수 있습니다.<br/>
-                  <strong>판매회원(어미새)</strong>은 공구에 입찰하여 상품을 판매할 수 있습니다.
+                <p className="text-sm text-blue-800 text-center">
+                  어떤 회원이 되고 싶으신가요?<br/>
+                  - 일반회원 🐦 최저가로 상품을 구매하고 싶어요<br/>
+                  - 판매회원 🦅 믿음직한 판매자가 되어 고객을 만나고 싶어요
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -511,7 +512,7 @@ function RegisterPageContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
-                  <div className="font-semibold text-lg">일반회원</div>
+                  <div className="font-semibold text-lg">구매하기 (일반회원)</div>
                   <div className="text-sm text-gray-600 mt-2">공구에 참여하여 상품 구매</div>
                 </button>
                 <button
@@ -528,7 +529,7 @@ function RegisterPageContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <div className="font-semibold text-lg">판매회원</div>
+                  <div className="font-semibold text-lg">판매하기 (판매회원)</div>
                   <div className="text-sm text-gray-600 mt-2">공구에 입찰하여 상품 판매</div>
                 </button>
               </div>

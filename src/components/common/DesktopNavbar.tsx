@@ -34,9 +34,14 @@ export default function DesktopNavbar() {
             
             {/* 비로그인 시 */}
             {!isAuthenticated && (
-              <Link href="/register" className="text-gray-600 hover:text-gray-900">
-                회원가입
-              </Link>
+              <>
+                <Link href="/register" className="text-gray-600 hover:text-gray-900">
+                  공구 등록하기
+                </Link>
+                <Link href="/register" className="text-gray-600 hover:text-gray-900">
+                  회원가입
+                </Link>
+              </>
             )}
             
             {/* 구매회원(buyer) 로그인 시 */}

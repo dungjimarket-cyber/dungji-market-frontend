@@ -242,7 +242,7 @@ const getCategoryLabel = (categoryType?: string): string => {
 const getCategoryDescription = (categoryType?: string): string => {
   switch (categoryType) {
     case 'telecom':
-      return '통신사, 가입유형, 요금제를 선택하여 최적의 통신 상품을 구매하세요.';
+      return '📱 통신사,가입유형,요금제를 선택하시고 최고의 지원금을 받아보세요!';
     case 'electronics':
       return '제조사와 보증 기간 정보를 입력하여 가전 제품 공동구매를 시작하세요.';
     case 'rental':
@@ -250,7 +250,7 @@ const getCategoryDescription = (categoryType?: string): string => {
     case 'subscription':
       return '결제 주기를 선택하여 구독 서비스를 더 유리한 조건으로 이용하세요.';
     default:
-      return '통신사, 가입유형, 요금제를 선택하여 최적의 통신 상품을 구매하세요.';
+      return '📱 통신사,가입유형,요금제를 선택하시고 최고의 지원금을 받아보세요!';
   }
 };
 
@@ -1518,10 +1518,10 @@ const onSubmit = async (values: FormData) => {
                   <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
                     <p className="text-sm text-gray-700">
                       <CheckCircle2 className="h-4 w-4 inline-block mr-1 text-green-600" />
-                      공구 지역은 최대 2곳까지 선택 가능합니다.
+                      🏠 가까운 판매자를 만나보세요
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
-                      선택한 지역의 판매회원만 입찰이 가능합니다.
+                      원하는 지역 최대 2곳을 선택하면, 해당 지역 판매자만 입찰에 참여합니다.
                     </p>
                   </div>
                 </div>
