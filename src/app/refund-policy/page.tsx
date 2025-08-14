@@ -68,7 +68,7 @@ export default function RefundPolicyPage() {
                       <td className="border border-gray-200 px-4 py-2">환불 불가</td>
                     </tr>
                     <tr className="bg-gray-50">
-                      <td className="border border-gray-200 px-4 py-2">입찰 참여 후 (사용)</td>
+                      <td className="border border-gray-200 px-4 py-2">견적 참여 후 (사용)</td>
                       <td className="border border-gray-200 px-4 py-2 text-center">❌ 불가</td>
                       <td className="border border-gray-200 px-4 py-2">환불 불가</td>
                     </tr>
@@ -78,9 +78,9 @@ export default function RefundPolicyPage() {
 
               <h4 className="font-medium mt-4 mb-2">견적티켓 사용 기준</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>공구 입찰에 1회라도 참여한 경우 "사용"으로 간주</li>
-                <li>입찰 후 취소하더라도 이미 사용한 것으로 처리</li>
-                <li>입찰 실패로 반환된 견적티켓은 미사용으로 처리</li>
+                <li>공구 견적에 1회라도 참여한 경우 "사용"으로 간주</li>
+                <li>견적 후 취소하더라도 이미 사용한 것으로 처리</li>
+                <li>견적 실패로 반환된 견적티켓은 미사용으로 처리</li>
               </ul>
             </div>
 
@@ -215,7 +215,7 @@ export default function RefundPolicyPage() {
             <div>
               <h4 className="font-medium mb-2">1. 견적티켓</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>입찰에 1회 이상 참여한 경우</li>
+                <li>견적에 1회 이상 참여한 경우</li>
                 <li>구매 후 30일 경과</li>
                 <li>이벤트/프로모션으로 무료 지급된 견적티켓</li>
               </ul>
@@ -225,7 +225,7 @@ export default function RefundPolicyPage() {
               <h4 className="font-medium mb-2">2. 구독권</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>정기결제 갱신 후 24시간 경과</li>
-                <li>해당 결제 기간 중 입찰 참여 이력이 있는 경우</li>
+                <li>해당 결제 기간 중 견적 참여 이력이 있는 경우</li>
                 <li>부정한 방법으로 취득한 구독권</li>
               </ul>
             </div>
