@@ -642,7 +642,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             const canCancel = groupBuyData.status === 'recruiting' && now < endTime;
             setCanCancelBid(canCancel);
             
-            // 내 입찰 순위 계산
+            // 내 견적 순위 계산
             const sortedForRank = [...bids].sort((a: any, b: any) => b.amount - a.amount);
             const myRank = sortedForRank.findIndex((bid: any) => bid.id === myBid.id) + 1;
             setMyBidRank({
@@ -1926,12 +1926,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             {/* 입찰 현황 */}
             {(topBids.length > 0 || myBidRank) && (
               <div className="bg-gray-50 p-3 rounded-lg">
-                <h4 className="text-sm font-medium mb-2">현재 입찰 현황</h4>
+                <h4 className="text-sm font-medium mb-2">견적 제안 현황</h4>
                 
                 {myBidRank && hasBid && (
                   <div className="mb-2 py-1 px-2 bg-blue-50 border border-blue-100 rounded">
                     <span className="text-sm font-medium text-blue-700">
-                      내 입찰 순위: 총 {myBidRank.total}개 중 {myBidRank.rank}위
+                      내 견적 순위: 총 {myBidRank.total}개 중 {myBidRank.rank}위
                     </span>
                   </div>
                 )}
@@ -1951,22 +1951,22 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                           <div key={bid.id} className={`flex text-sm ${isMyBid ? 'font-bold' : ''}`}>
                             <span className={`${isMyBid ? 'text-blue-600' : ''} flex items-center gap-2`}>
                               <span>{index + 1}위</span>
+                              <span className={`ml-2 ${isMyBid ? 'text-blue-600' : ''}`}>
+                                {isMyBid
+                                  ? `${bid.amount.toLocaleString()}원`
+                                  : maskAmount(bid.amount) + '원'}
+                              </span>
                               {isMyBid && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">
+                                <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold ml-2">
                                   내순위
                                 </span>
                               )}
-                            </span>
-                            <span className={`ml-2 ${isMyBid ? 'text-blue-600' : ''}`}>
-                              {isMyBid
-                                ? `${bid.amount.toLocaleString()}원`
-                                : maskAmount(bid.amount) + '원'}
                             </span>
                           </div>
                         );
                       })}
                     </div>
-                    <p className="text-sm font-semibold text-blue-800 mt-2 bg-blue-50 p-2 rounded border border-blue-200">❗ 앞자리를 제외한 입찰가는 비공개입니다.</p>
+                    <p className="text-sm font-semibold text-blue-800 mt-2 bg-blue-50 p-2 rounded border border-blue-200">❗ 앞자리를 제외한 견적금액은 비공개 처리됩니다.</p>
                   </>
                 )}
               </div>
@@ -2023,7 +2023,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               
               {/* <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-3">
                 <p className="text-sm font-medium text-blue-900 mb-2">💰 입찰 금액은 1,000원 단위로 입력됩니다.</p>
-                <p className="text-sm font-semibold text-blue-800 mb-1">❗ 앞자리를 제외한 입찰가는 비공개입니다.</p>
+                <p className="text-sm font-semibold text-blue-800 mb-1">❗ 앞자리를 제외한 견적금액은 비공개 처리됩니다.</p>
               </div> */}
             </div>
             )}
@@ -2034,19 +2034,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 onClick={() => setShowCancelBidDialog(true)}
                 className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
               >
-                입찰 취소하기
+                견적 철회하기
               </button>
             )}
             
-            {/* 입찰 안내사항 - v3.0: 모집중과 입찰중 모두 */}
+            {/* 견적 안내사항 - v3.0: 모집중과 견적중 모두 */}
             {groupBuyData.status === 'recruiting' && (
             <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 입찰 안내사항</h4>
+              <h4 className="text-sm font-semibold text-gray-800 mb-2">📝 견적 안내사항</h4>
               <div className="text-sm text-gray-700 space-y-1">
-                <div>• 입찰 시 견적티켓 1개가 소모됩니다.</div>
-                <div>• 최소 입찰 단위는 1,000원입니다.</div>
-                <div>• 입찰 취소는 입찰 마감 시간 이전에만 가능합니다.</div>
-                <div>• 중복 입찰 시 기존 입찰금액이 자동으로 수정됩니다.</div>
+                <div>• 견적 제안 시 견적티켓 1개가 소모됩니다.</div>
+                <div>• 최소 견적 단위는 1,000원입니다.</div>
+                <div>• 견적 철회는 마감 시간 이전에만 가능합니다.</div>
+                <div>• 견적 수정 시 기존 견적금액이 자동으로 수정됩니다.</div>
               </div>
             </div>
             )}

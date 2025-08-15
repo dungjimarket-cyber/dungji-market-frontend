@@ -290,9 +290,9 @@ export default function BidModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">공동구매 입찰하기</DialogTitle>
+          <DialogTitle className="text-xl font-bold">공동구매 견적 제안하기</DialogTitle>
           <DialogDescription>
-            <span className="font-medium text-black">{productName}</span> 공동구매에 입찰 정보를 입력해 주세요.
+            <span className="font-medium text-black">{productName}</span> 공동구매에 견적 정보를 입력해 주세요.
           </DialogDescription>
         </DialogHeader>
         
@@ -301,7 +301,7 @@ export default function BidModal({
           {existingBid && (
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
               <p className="text-amber-800 text-sm font-medium">
-                이미 이 공구에 입찰하셨습니다. 새로운 금액으로 입찰하시거나 입찰을 취소하실 수 있습니다.
+                이미 이 공구에 견적을 제안하셨습니다. 새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
               </p>
               <Button 
                 variant="destructive" 
@@ -310,14 +310,14 @@ export default function BidModal({
                   e.preventDefault();
                   if (!existingBid?.id) return;
                   
-                  if (!confirm('입찰을 취소하시겠습니까?')) return;
+                  if (!confirm('견적을 철회하시겠습니까?')) return;
                   
                   try {
                     setCancelLoading(true);
                     await cancelBid(existingBid.id);
                     toast({
-                      title: '입찰 취소 완료',
-                      description: '입찰이 성공적으로 취소되었습니다.',
+                      title: '견적 철회 완료',
+                      description: '견적이 성공적으로 철회되었습니다.',
                       variant: 'default'
                     });
                     setExistingBid(null);
@@ -326,8 +326,8 @@ export default function BidModal({
                     onClose();
                   } catch (error: any) {
                     toast({
-                      title: '입찰 취소 실패',
-                      description: error.response?.data?.detail || '입찰 취소 중 오류가 발생했습니다.',
+                      title: '견적 철회 실패',
+                      description: error.response?.data?.detail || '견적 철회 중 오류가 발생했습니다.',
                       variant: 'destructive'
                     });
                   } finally {
@@ -343,7 +343,7 @@ export default function BidModal({
                     취소 중...
                   </>
                 ) : (
-                  '입찰 취소하기'
+                  '견적 철회하기'
                 )}
               </Button>
             </div>
@@ -362,7 +362,7 @@ export default function BidModal({
           
           {/* 입찰 유형 선택 */}
           <div className="space-y-2">
-            <Label>입찰 유형</Label>
+            <Label>견적 유형</Label>
             <div className="p-2 bg-gray-50 rounded-md border border-gray-200">
               {isTelecom ? (
                 // 통신/렌탈 카테고리: 지원금 입찰만 표시
@@ -372,7 +372,7 @@ export default function BidModal({
                     value="support" 
                     {...register('bidType')} 
                   />
-                  <p className="text-sm font-medium">지원금 입찰 - 공구 참여자들에게 제공할 지원금을 제안합니다</p>
+                  <p className="text-sm font-medium">지원금 견적 - 공구 참여자들에게 제공할 지원금을 제안합니다</p>
                 </div>
               ) : (
                 // 그 외 카테고리: 가격 입찰만 표시
@@ -382,7 +382,7 @@ export default function BidModal({
                     value="price" 
                     {...register('bidType')} 
                   />
-                  <p className="text-sm font-medium">가격 입찰 - 제품을 판매할 가격을 제안합니다</p>
+                  <p className="text-sm font-medium">가격 견적 - 제품을 판매할 가격을 제안합니다</p>
                 </div>
               )}
             </div>
@@ -401,7 +401,7 @@ export default function BidModal({
                 valueAsNumber: true
               })}
               type="number"
-              placeholder={bidType === 'price' ? '판매 가격을 입력하세요' : '지원금을 입력하세요'}
+              placeholder={bidType === 'price' ? '견적 금액을 입력하세요' : '견적 금액을 입력하세요'}
               className="mt-1"
               onChange={(e) => {
                 // 숫자 입력 시 자동으로 콤마 표시 (UI에만 적용)
@@ -432,7 +432,7 @@ export default function BidModal({
                 </div>
               )}
               <div className="text-gray-500 text-sm">
-                앞자리를 제외한 입찰가는 비공개입니다.
+                앞자리를 제외한 견적금액은 비공개 처리됩니다.
               </div>
             </div>
           </div>
@@ -458,7 +458,7 @@ export default function BidModal({
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리 중
                 </>
-              ) : '입찰하기'}
+              ) : '견적 제안하기'}
             </Button>
           </DialogFooter>
         </form>
@@ -480,7 +480,7 @@ export default function BidModal({
         <div className="space-y-3 py-4">
           {/* 나의 입찰금액 */}
           <div className="text-sm text-gray-700">
-            <span>나의 입찰금액 : </span>
+            <span>나의 견적금액 : </span>
             <span className="font-medium">
               {pendingBidData && pendingBidData.amount ? formatNumberWithCommas(Number(pendingBidData.amount)) : '0'}원
             </span>
@@ -489,10 +489,10 @@ export default function BidModal({
           {/* 확인 메시지 */}
           <div className="text-sm text-gray-700">
             {existingBid
-              ? '"다시 입찰 하시겠습니까?"'
+              ? '"견적을 수정하시겠습니까?"'
               : bidTokenInfo?.unlimited_subscription
-                ? '"입찰 하시겠습니까?"'
-                : '"견적티켓 1개가 소모됩니다. 입찰 하시겠습니까?"'
+                ? '"견적을 제안하시겠습니까?"'
+                : '"견적티켓 1개가 소모됩니다. 견적을 제안하시겠습니까?"'
             }
           </div>
           
@@ -533,7 +533,7 @@ export default function BidModal({
           </div>
           
           <p className="text-xs text-gray-500">
-            입찰 금액은 1,000원 단위로 입력됩니다.
+            최소 견적 단위는 1,000원입니다.
           </p>
         </div>
       </DialogContent>
