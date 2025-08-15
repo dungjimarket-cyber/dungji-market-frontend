@@ -69,14 +69,16 @@ export default function GroupBuyActionButtons({
         // 오류 응답 처리
         const errorData = await response.json().catch(() => ({}));
         
-        // 입찰 있어서 나가기 불가능한 경우
+        // 견적 있어서 나가기 불가능한 경우
         if (errorData.error && (
+          errorData.error.includes('견적이 있어 나가기가 불가합니다') ||
           errorData.error.includes('입찰이 있어 나가기가 불가합니다') ||
           errorData.error.includes('has bids') ||
+          errorData.error.includes('견적 중') ||
           errorData.error.includes('입찰 중')
         )) {
           setShowLeaveRestrictionDialog(true);
-          throw new Error('입찰이 진행되어 나가기가 불가합니다.');
+          throw new Error('견적이 진행되어 나가기가 불가합니다.');
         }
         
         throw new Error(errorData.error || errorData.detail || '나가기에 실패했습니다.');
@@ -93,7 +95,7 @@ export default function GroupBuyActionButtons({
     })
     .catch(err => {
       // 나가기 제한 안내 팝업이 표시되는 경우에는 토스트 에러 메시지는 표시하지 않음
-      if (!err.message.includes('입찰이 진행되어 나가기가 불가합니다')) {
+      if (!err.message.includes('견적이 진행되어 나가기가 불가합니다')) {
         toast.error(err.message || '나가기에 실패했습니다.');
       }
       console.error('나가기 오류:', err);
@@ -131,7 +133,7 @@ export default function GroupBuyActionButtons({
           <AlertDialogHeader>
             <AlertDialogTitle>나가기 불가 안내</AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              입찰이 진행되어 나가기가 불가합니다. 입찰 종료후 최종선택을 통해 진행여부를 결정해주세요.
+              견적이 진행되어 나가기가 불가합니다. 견적 종료후 최종선택을 통해 진행여부를 결정해주세요.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

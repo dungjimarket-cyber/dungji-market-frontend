@@ -38,7 +38,7 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
   useEffect(() => {
     const fetchWinningBid = async () => {
       try {
-        // 낙찰된 입찰 정보 가져오기
+        // 최고 견적 정보 가져오기
         const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/winning_bid/`
         );
@@ -65,7 +65,7 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <p className="text-gray-500">낙찰 정보를 불러오는 중...</p>
+          <p className="text-gray-500">최고 견적 정보를 불러오는 중...</p>
         </CardContent>
       </Card>
     );
@@ -88,7 +88,7 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* 낙찰자 정보 */}
+        {/* 최고 견적 판매자 정보 */}
         <div className="flex items-start gap-4 p-4 bg-white rounded-lg">
           <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
             {bid.seller.profile_image ? (
@@ -127,7 +127,7 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
           
           <Badge className="bg-yellow-500 text-white">
             <Trophy className="w-3 h-3 mr-1" />
-            낙찰
+            최고 견적
           </Badge>
         </div>
 
@@ -151,7 +151,7 @@ export function WinningBidDisplay({ groupBuyId, status }: WinningBidDisplayProps
         <div className="flex items-center justify-between pt-2">
           <div className="text-sm text-gray-600">
             <Clock className="w-4 h-4 inline mr-1" />
-            낙찰일시: {new Date(bid.created_at).toLocaleString('ko-KR')}
+            선정일시: {new Date(bid.created_at).toLocaleString('ko-KR')}
           </div>
           
           {status === 'completed' ? (

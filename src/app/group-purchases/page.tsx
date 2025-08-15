@@ -88,7 +88,7 @@ function GroupPurchasesPageContent() {
         params.append('buyer_completed', 'true');
         params.append('seller_completed', 'true');
       } else {
-        // 전체/인기/최신 탭: 모집중/입찰중 상태만 (활성 공구)
+        // 전체/인기/최신 탭: 모집중/견적중 상태만 (활성 공구)
         params.append('status', 'recruiting,bidding');
       }
       

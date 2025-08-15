@@ -34,8 +34,8 @@ export function calculateGroupBuyStatus(status: string, startTimeStr: string, en
   }
   
   // 마감 시간 전이면 백엔드 상태를 그대로 사용
-  // recruiting: 입찰이 없는 상태 (모집중)
-  // bidding: 입찰이 있는 상태 (입찰중)
+  // recruiting: 견적이 없는 상태 (모집중)
+  // bidding: 견적이 있는 상태 (견적중)
   return status;
 }
 
@@ -50,7 +50,7 @@ export function getStatusText(status: string): string {
     case 'recruiting':
       return '모집중';
     case 'bidding':
-      return '입찰중';
+      return '견적중';
     case 'final_selection':
       return '최종선택중';
     case 'final_selection_buyers':
