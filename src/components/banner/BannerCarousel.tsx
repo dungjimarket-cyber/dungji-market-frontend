@@ -172,14 +172,12 @@ export default function BannerCarousel() {
 function BannerImage({ currentBanner, currentIndex }: { currentBanner: Banner; currentIndex: number }) {
   return (
     <div className="relative w-full h-full">
-      <Image
+      {/* Temporary fix: Use regular img tag to bypass Next.js image optimization */}
+      <img
         src={`${currentBanner.image_url}${currentBanner.image_url?.includes('?') ? '&' : '?'}t=${Date.now()}`}
         alt={currentBanner.title}
-        fill
-        className="object-contain"
-        priority={currentIndex === 0}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
-        style={{ objectPosition: 'center' }}
+        className="absolute inset-0 w-full h-full object-contain"
+        loading={currentIndex === 0 ? "eager" : "lazy"}
       />
       
       {/* 배경색 채우기 (이미지가 contain일 때 빈 공간 채우기) */}
