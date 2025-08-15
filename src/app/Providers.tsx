@@ -1,6 +1,7 @@
 'use client';
 
 import { AuthProvider } from '@/contexts/AuthContext';
+import { PartnerProvider } from '@/contexts/PartnerContext';
 import { SessionProvider } from 'next-auth/react';
 import AuthDataSync from '@/components/auth/AuthDataSync';
 
@@ -17,9 +18,11 @@ export default function Providers({
   return (
     <SessionProvider>
       <AuthProvider>
-        {/* 인증 데이터 동기화 (쿠키 -> 로컬스토리지) */}
-        <AuthDataSync />
-        {children}
+        <PartnerProvider>
+          {/* 인증 데이터 동기화 (쿠키 -> 로컬스토리지) */}
+          <AuthDataSync />
+          {children}
+        </PartnerProvider>
       </AuthProvider>
     </SessionProvider>
   );

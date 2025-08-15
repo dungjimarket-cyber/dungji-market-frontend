@@ -35,6 +35,16 @@ export function formatPrice(price: number | undefined): string {
 }
 
 /**
+ * 통화를 포맷팅하는 함수
+ * @param amount 포맷팅할 금액
+ * @returns 포맷팅된 통화 문자열 (예: 123,456원)
+ */
+export function formatCurrency(amount: number | undefined): string {
+  if (amount === undefined || amount === null) return '0원';
+  return `${formatNumberWithCommas(amount)}원`;
+}
+
+/**
  * Date 객체를 한국 시간(KST) 형식의 문자열로 변환
  * Django 백엔드와 호환되도록 한국 시간 기준으로 반환
  * @param date Date 객체
