@@ -75,7 +75,8 @@ export default function GroupBuyActionButtons({
           errorData.error.includes('입찰이 있어 나가기가 불가합니다') ||
           errorData.error.includes('has bids') ||
           errorData.error.includes('견적 중') ||
-          errorData.error.includes('입찰 중')
+          errorData.error.includes('입찰 중') ||
+          errorData.error.includes('견적 제안 중')
         )) {
           setShowLeaveRestrictionDialog(true);
           throw new Error('견적이 진행되어 나가기가 불가합니다.');

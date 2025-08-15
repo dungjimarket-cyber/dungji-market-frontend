@@ -1905,26 +1905,26 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             {groupBuyData.status === 'recruiting' && !hasBid ? (
               // v3.0: 모집과 입찰 동시 진행
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                <h3 className="font-medium text-yellow-800 mb-1">판매회원 입찰 가능</h3>
-                <p className="text-sm text-yellow-700">모집과 입찰이 동시에 진행중입니다. 지금 입찰하세요!</p>
+                <h3 className="font-medium text-yellow-800 mb-1">판매회원 견적 제안 가능</h3>
+                <p className="text-sm text-yellow-700">모집과 견적 제안이 동시에 진행중입니다. 지금 견적을 제안하세요!</p>
                 <div className="mt-2 text-sm text-gray-600">
                   <div>• 현재 참여자: {currentParticipants}/{groupBuy.max_participants}명</div>
-                  <div>• 공구 종료까지 입찰 가능합니다</div>
+                  <div>• 공구 종료까지 견적 제안 가능합니다</div>
                 </div>
               </div>
             ) : null}
             
-            {/* 입찰 타입 표시 - v3.0: recruiting 상태에서 표시 */}
+            {/* 견적 타입 표시 - v3.0: recruiting 상태에서 표시 */}
             {groupBuyData.status === 'recruiting' && !hasBid && (
               <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
-                <div className="text-sm font-medium">입찰 유형:</div>
+                <div className="text-sm font-medium">견적 유형:</div>
                 <div className="text-sm font-medium px-3 py-1 bg-blue-600 text-white rounded-md">
-                  {isTelecom ? '지원금 입찰' : '가격 입찰'}
+                  {isTelecom ? '지원금 견적' : '가격 견적'}
                 </div>
               </div>
             )}
             
-            {/* 입찰 현황 */}
+            {/* 견적 현황 */}
             {(topBids.length > 0 || myBidRank) && (
               <div className="bg-gray-50 p-3 rounded-lg">
                 <h4 className="text-sm font-medium mb-2">견적 제안 현황</h4>
@@ -1973,10 +1973,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
             
-            {/* 입찰 입력 폼 - v3.0: 모집중과 입찰중 모두 표시 */}
+            {/* 견적 입력 폼 - v3.0: 모집중과 견적중 모두 표시 */}
             {groupBuyData.status === 'recruiting' && (
             <div className="flex flex-col w-full">
-              {/* 입찰 유형별 안내 문구 */}
+              {/* 견적 유형별 안내 문구 */}
               {bidType === 'support' && (
                 <div className="text-gray-500 text-sm mb-2 p-2 bg-blue-50 border border-blue-100 rounded-md">
                   <div>카드 제휴할인이나 증정품을 제외한 순수 현금지원금입니다 (공시지원금+추가지원금)</div>
@@ -2012,7 +2012,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   {isBidding ? (
                     <span className="flex items-center">
                       <Loader2 className="animate-spin w-4 h-4 mr-2" />
-                      입찰 중...
+                      견적 제안 중...
                     </span>
                   ) : hasBid && myBidAmount ? (
                     '견적 수정하기'
@@ -2029,7 +2029,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
             )}
             
-            {/* 입찰 취소 버튼 - v3.0: 모집중과 입찰중 모두 */}
+            {/* 견적 취소 버튼 - v3.0: 모집중과 견적중 모두 */}
             {groupBuyData.status === 'recruiting' && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
               <button
                 onClick={() => setShowCancelBidDialog(true)}

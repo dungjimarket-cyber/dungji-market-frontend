@@ -41,7 +41,7 @@ interface BidFormData {
 }
 
 /**
- * 판매자(사업자회원)가 공구에 입찰하는 모달 컴포넌트
+ * 판매자(사업자회원)가 공구에 견적을 제안하는 모달 컴포넌트
  */
 export default function BidModal({
   isOpen,
@@ -78,10 +78,10 @@ export default function BidModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>입찰 불가</DialogTitle>
+            <DialogTitle>견적 제안 불가</DialogTitle>
           </DialogHeader>
           <DialogDescription>
-            마감된 공구에는 입찰할 수 없습니다.
+            마감된 공구에는 견적을 제안할 수 없습니다.
           </DialogDescription>
           <DialogFooter>
             <Button onClick={onClose}>닫기</Button>
@@ -149,7 +149,7 @@ export default function BidModal({
       if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
         toast({
           title: '견적티켓이 필요합니다',
-          description: '입찰하시려면 견적티켓을 구매해주세요.',
+          description: '견적을 제안하시려면 견적티켓을 구매해주세요.',
           variant: 'default'
         });
         router.push('/mypage/seller/bid-tokens');
@@ -183,11 +183,11 @@ export default function BidModal({
 
       toast({
         title: result.is_updated 
-          ? '입찰이 성공적으로 수정되었습니다' 
-          : '입찰이 성공적으로 등록되었습니다',
+          ? '견적이 성공적으로 수정되었습니다' 
+          : '견적이 성공적으로 등록되었습니다',
         description: result.is_updated
-          ? '기존 입찰 정보가 새로운 금액으로 업데이트되었습니다.'
-          : '입찰 내역은 마이페이지에서 확인할 수 있습니다.',
+          ? '기존 견적 정보가 새로운 금액으로 업데이트되었습니다.'
+          : '견적 내역은 마이페이지에서 확인할 수 있습니다.',
         variant: 'default'
       });
       reset();
@@ -202,7 +202,7 @@ export default function BidModal({
       
       // 에러 메시지 추출 및 가공
       let errorMessage = '서버 오류가 발생했습니다. 다시 시도해 주세요.';
-      let errorTitle = '입찰 등록에 실패했습니다';
+      let errorTitle = '견적 등록에 실패했습니다';
       
       if (error.response?.data) {
         const errorData = error.response.data;
@@ -267,7 +267,7 @@ export default function BidModal({
             title: '견적티켓 구매하기',
             description: (
               <div className="flex flex-col">
-                <p>견적티켓을 구매하시면 더 많은 공구에 입찰할 수 있습니다.</p>
+                <p>견적티켓을 구매하시면 더 많은 공구에 견적을 제안할 수 있습니다.</p>
                 <Button
                   className="mt-2"
                   onClick={() => router.push('/mypage/seller/bid-tokens')}
@@ -473,12 +473,12 @@ export default function BidModal({
             {existingBid ? '견적 수정하기' : '견적 제안하기'}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            입찰 확인 팝업
+            견적 확인 팝업
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-3 py-4">
-          {/* 나의 입찰금액 */}
+          {/* 나의 견적금액 */}
           <div className="text-sm text-gray-700">
             <span>나의 견적금액 : </span>
             <span className="font-medium">

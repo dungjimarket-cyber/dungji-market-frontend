@@ -37,7 +37,7 @@ export default function BidConfirmModal({
         <DialogHeader>
           <DialogTitle className="text-lg">{isRebid ? '견적 수정하기' : '견적 제안하기'}</DialogTitle>
           <DialogDescription className="sr-only">
-            입찰 확인 팝업
+            견적 확인 팝업
           </DialogDescription>
         </DialogHeader>
         
@@ -53,7 +53,7 @@ export default function BidConfirmModal({
             </p>
           </div>
 
-          {/* 입찰권/구독권 안내 */}
+          {/* 견적티켓/구독권 안내 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <div className="mt-0.5">
@@ -70,9 +70,9 @@ export default function BidConfirmModal({
                 ) : (
                   <>
                     <p className="font-medium text-blue-900 mb-1">
-                      입찰권 1개가 소모됩니다. {isRebid ? '다시 견적을 제안하시겠습니까?' : '견적을 제안하시겠습니까?'}
+                      견적티켓 1개가 소모됩니다. {isRebid ? '다시 견적을 제안하시겠습니까?' : '견적을 제안하시겠습니까?'}
                     </p>
-                    <p className="text-blue-700">남은 입찰권 갯수 <span className="font-bold text-orange-600">{remainingTokens}개</span></p>
+                    <p className="text-blue-700">남은 견적티켓 갯수 <span className="font-bold text-orange-600">{remainingTokens}개</span></p>
                   </>
                 )}
               </div>
