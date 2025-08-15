@@ -99,7 +99,7 @@ export default function BannerCarousel() {
   return (
     <div className="relative w-full overflow-hidden rounded-lg">
       {/* 배너 컨테이너 - aspect ratio로 이미지 비율 유지 */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] bg-gray-100">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         {/* 배너 이미지 */}
         {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
           <Link 
@@ -181,7 +181,7 @@ function BannerImage({ currentBanner, currentIndex }: { currentBanner: Banner; c
       />
       
       {/* 배경색 채우기 (이미지가 contain일 때 빈 공간 채우기) */}
-      <div className="absolute inset-0 -z-10 bg-gray-100" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50" />
       
       {/* 배너 텍스트 (선택사항) */}
       {currentBanner.event_detail && (

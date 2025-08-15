@@ -111,7 +111,7 @@ export function SimplifiedGroupBuyButton({
     
     if (userRole === 'seller') {
       if (status === 'recruiting' && hasBid) {
-        return { text: '입찰완료', variant: 'default' as const, color: 'bg-green-500' };
+        return { text: '✅견적제안완료', variant: 'default' as const, color: 'bg-green-500' };
       }
       if (status === 'final_selection_buyers') {
         return { text: '구매자 선택 대기', variant: 'secondary' as const, color: 'bg-blue-500' };

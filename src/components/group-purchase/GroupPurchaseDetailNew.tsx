@@ -1119,6 +1119,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       status={groupBuyData.status}
       isAuthenticated={!!user}
       isParticipant={isParticipant || hasBid}
+      hasWinningBid={hasWinningBid}
     >
       <div className="min-h-screen bg-white">
       {/* 헤더 */}
@@ -1277,23 +1278,23 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress') && (
                 <div className="mb-6 p-4 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-lg border-2 border-orange-300 shadow-sm">
                   <p className="text-xl font-bold text-orange-700">
-                    🎉 축하합니다! 낙찰되셨습니다 🎉
+                    🎉 축하합니다! 최종 선정되셨습니다 🎉
                   </p>
                 </div>
               )}
               
-              {/* 구매자 최종선택 단계부터는 중앙에 "최종 낙찰되었습니다" 문구 추가 */}
+              {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 */}
               {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (
                 <div className="mb-4">
                   <p className="text-2xl font-bold text-center text-green-700 mb-2">
-                    ✅ 최종 낙찰되었습니다
+                    ✅ 견적이 최종 선정되었습니다
                   </p>
                 </div>
               )}
               
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Crown className="h-6 w-6 text-orange-500" />
-                <p className="text-xl font-bold text-gray-800">최종 낙찰 지원금</p>
+                <p className="text-xl font-bold text-gray-800">선정된 최종 지원금</p>
               </div>
               <p className="text-5xl font-bold text-orange-600 mb-1">
                 {/* 최종선택 단계 이후부터는 참여자와 판매회원에게 정상 금액 표시, 미참여자는 마스킹 */}
@@ -1789,7 +1790,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <p className="font-semibold text-yellow-800">구매자 최종선택 대기중</p>
                 </div>
                 <div className="p-3 bg-orange-100 rounded-lg text-center mb-3">
-                  <p className="text-2xl font-bold text-orange-600">🎉 최종 낙찰되었습니다!</p>
+                  <p className="text-2xl font-bold text-orange-600">🎉 견적이 최종 선정되었습니다!</p>
                 </div>
                 <Button
                   onClick={async () => {
@@ -2022,7 +2023,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
               
               {/* <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-3">
-                <p className="text-sm font-medium text-blue-900 mb-2">💰 입찰 금액은 1,000원 단위로 입력됩니다.</p>
+                <p className="text-sm font-medium text-blue-900 mb-2">💰 견적 금액은 1,000원 단위로 입력됩니다.</p>
                 <p className="text-sm font-semibold text-blue-800 mb-1">❗ 앞자리를 제외한 견적금액은 비공개 처리됩니다.</p>
               </div> */}
             </div>

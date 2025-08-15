@@ -45,11 +45,11 @@ export default function BidConfirmModal({
           {/* 입찰 금액 표시 */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">나의 입찰금액</span>
+              <span className="text-sm text-gray-600">내가 입력한 견적 금액</span>
               <span className="text-xl font-bold">{bidAmount.toLocaleString()} 원</span>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              입찰 금액은 1,000원 단위로 입력됩니다.
+              견적 금액은 1,000원 단위로 입력됩니다.
             </p>
           </div>
 
@@ -63,14 +63,14 @@ export default function BidConfirmModal({
                 {hasUnlimitedSubscription ? (
                   <>
                     <p className="font-medium text-blue-900 mb-1">
-                      {isRebid ? '다시 입찰 하시겠습니까?' : '입찰 하시겠습니까?'}
+                      {isRebid ? '다시 견적을 제안하시겠습니까?' : '견적을 제안하시겠습니까?'}
                     </p>
                     <p className="text-blue-700">무제한 구독권 이용중</p>
                   </>
                 ) : (
                   <>
                     <p className="font-medium text-blue-900 mb-1">
-                      입찰권 1개가 소모됩니다. {isRebid ? '다시 입찰 하시겠습니까?' : '입찰 하시겠습니까?'}
+                      입찰권 1개가 소모됩니다. {isRebid ? '다시 견적을 제안하시겠습니까?' : '견적을 제안하시겠습니까?'}
                     </p>
                     <p className="text-blue-700">남은 입찰권 갯수 <span className="font-bold text-orange-600">{remainingTokens}개</span></p>
                   </>

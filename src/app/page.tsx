@@ -173,14 +173,14 @@ function HomeContent() {
         <MobileHeader />
       </div>
       
-      <div className="container mx-auto px-4 py-8 pb-20 md:pb-8">
-      {/* 배너 캐러셀을 맨 위로 이동 */}
-      <section className="mb-8">
+      <div className="container mx-auto px-4 py-2 md:py-8 pb-20 md:pb-8">
+      {/* 배너 캐러셀을 맨 위로 이동 - 모바일에서 간격 줄임 */}
+      <section className="mb-4 md:mb-8">
         <BannerCarousel />
       </section>
 
-      {/* 검색 섹션 추가 */}
-      <section className="mb-8">
+      {/* 검색 섹션 - 모바일에서는 헤더에 있으므로 숨김 */}
+      <section className="mb-6 md:mb-8 hidden md:block">
         <SearchBar 
           className="max-w-2xl mx-auto"
           placeholder="통합검색 (상품명, 지역, 통신사 등)"

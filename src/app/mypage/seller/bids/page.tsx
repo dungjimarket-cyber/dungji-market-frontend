@@ -364,23 +364,12 @@ function BidsListClient() {
                 </div>
               </div>
               
-              {/* 순위 정보 표시 */}
-              {bid.my_bid_rank && bid.display_status === '낙찰실패' && (
-                <div className="bg-yellow-50 p-3 rounded-md mb-3 border border-yellow-200">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-medium">내 순위: {bid.my_bid_rank}위</span> / 전체 {bid.total_bidders}명
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    아쉽지만 낙찰되지 못했습니다 😢 다음 기회에 도전해보세요!
-                  </p>
-                </div>
-              )}
               
               {/* 낙찰 축하 메시지 */}
               {bid.my_bid_rank === 1 && bid.display_status === '낙찰' && (
                 <div className="bg-green-50 p-3 rounded-md mb-3 border border-green-200">
                   <p className="text-sm text-green-700 font-medium">
-                    🎉 축하합니다! 낙찰되셨습니다!
+                    🎉 축하합니다! 최종 선정되셨습니다!
                   </p>
                 </div>
               )}

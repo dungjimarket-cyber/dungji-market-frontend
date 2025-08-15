@@ -130,17 +130,18 @@ export default function TradingGroupBuys() {
                   </div>
 
                   <div className="mb-3">
-                    <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
+                    <span className="text-sm text-gray-600">최종 선정 지원금: </span>
                     <span className="font-semibold text-green-600">
                       {groupBuy.winning_bid_amount?.toLocaleString() || 0}원
                     </span>
                   </div>
 
-                  {/* 액션 버튼들 */}
-                  <div className="flex gap-2">
+                  {/* 액션 버튼들 - 모바일에서 그리드로 배치 */}
+                  <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
                     <Button
                       size="sm"
                       variant="outline"
+                      className="flex-1 sm:flex-initial"
                       onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
                     >
                       공구보기
@@ -149,6 +150,7 @@ export default function TradingGroupBuys() {
                     <Button
                       size="sm"
                       variant="outline"
+                      className="flex-1 sm:flex-initial"
                       onClick={() => {
                         setSelectedGroupBuyId(groupBuy.id);
                         setIsContactModalOpen(true);
@@ -161,7 +163,7 @@ export default function TradingGroupBuys() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                      className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
                       onClick={() => router.push(`/noshow-report/create?groupbuy=${groupBuy.id}`)}
                     >
                       <AlertTriangle className="h-4 w-4 mr-1" />
@@ -170,11 +172,11 @@ export default function TradingGroupBuys() {
                     
                     <Button
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
                       onClick={() => handleCompleteSale(groupBuy.id)}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      판매완료
+                      판맨완료
                     </Button>
                   </div>
                 </div>

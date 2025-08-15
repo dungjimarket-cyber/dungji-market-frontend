@@ -21,7 +21,7 @@ import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRi
 /**
  * 판매자 마이페이지 클라이언트 컴포넌트
  * 6개 카테고리로 구성:
- * 1. 견적내역
+ * 1. 견적제안 내역
  * 2. 구매자 최종선택 대기중
  * 3. 판매확정/포기 선택하기
  * 4. 거래중
@@ -200,13 +200,13 @@ export default function SellerMyPageClient() {
           value={accordionValue}
           onValueChange={setAccordionValue}
         >
-          {/* 1. 견적내역 */}
+          {/* 1. 견적제안 내역 */}
           <AccordionItem value="bid-history">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Gavel className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">견적내역</span>
+                  <span className="font-medium text-sm sm:text-base">견적제안 내역</span>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
                   <span className="text-xs sm:text-sm text-gray-500">총 {bidHistoryCount}건</span>

@@ -10,6 +10,7 @@ interface EndedGroupBuyAccessControlProps {
   status: string;
   isAuthenticated: boolean;
   isParticipant: boolean; // 일반회원 참여 또는 판매회원 입찰 여부
+  hasWinningBid?: boolean; // 판매회원의 낙찰 여부
   children: React.ReactNode;
 }
 
@@ -17,6 +18,7 @@ export function EndedGroupBuyAccessControl({
   status,
   isAuthenticated,
   isParticipant,
+  hasWinningBid = false,
   children
 }: EndedGroupBuyAccessControlProps) {
   const router = useRouter();
@@ -41,8 +43,10 @@ export function EndedGroupBuyAccessControl({
     return <>{children}</>;
   }
   
-  // 접근 제한 체크
-  const shouldRestrictAccess = isEndedGroupBuy && (!isAuthenticated || !isParticipant);
+  // 접근 제한 체크 - 판매확정/포기 선택 단계에서는 낙찰자에게 접근 허용
+  const isSellerFinalSelection = status === 'final_selection_seller';
+  const hasAccessAsWinner = isSellerFinalSelection && hasWinningBid && isAuthenticated;
+  const shouldRestrictAccess = isEndedGroupBuy && (!isAuthenticated || (!isParticipant && !hasAccessAsWinner));
   
   if (shouldRestrictAccess) {
     return (

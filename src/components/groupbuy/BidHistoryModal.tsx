@@ -117,7 +117,7 @@ export default function BidHistoryModal({
             {bids.length > 0 && bids[0] && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-900">최종 낙찰 지원금</span>
+                  <span className="text-sm font-medium text-blue-900">최종 선정 지원금</span>
                   <span className="text-lg font-bold text-blue-700">
                     {typeof bids[0].amount === 'string' 
                       ? bids[0].amount 
@@ -181,16 +181,10 @@ export default function BidHistoryModal({
                               내 견적
                             </Badge>
                           )}
-                          {isWinner ? (
+                          {isWinner && (
                             <Badge className="bg-green-500 text-xs whitespace-nowrap">
-                              낙찰
+                              최종선정
                             </Badge>
-                          ) : (
-                            index < 10 && (
-                              <Badge variant="outline" className="text-xs text-gray-500 whitespace-nowrap">
-                                낙찰실패
-                              </Badge>
-                            )
                           )}
                         </div>
                       </TableCell>

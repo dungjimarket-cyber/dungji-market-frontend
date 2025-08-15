@@ -10,19 +10,17 @@ import Image from 'next/image';
  */
 export function MobileHeader() {
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm px-4 py-2">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 bg-white shadow-sm px-3 py-1">
+      <div className="flex items-center gap-2">
         {/* 로고 */}
         <Link href="/" className="flex-shrink-0">
           <div className="flex items-center">
-            <Image src="/logo.png" alt="둥지마켓" width={80} height={80} />
-            {/* <span className="text-xl font-bold">둥지마켓</span> */}
+            <Image src="/logo.png" alt="둥지마켓" width={60} height={60} />
           </div>
         </Link>
         
-        {/* 검색창 */}
-        {/* <SearchBar className="flex-1" placeholder="통합검색" showMyRegionButton={true} /> */}
-                
+        {/* 검색창 & 내지역 버튼 */}
+        <SearchBar className="flex-1" placeholder="통합검색" showMyRegionButton={true} />
       </div>
     </header>
   );

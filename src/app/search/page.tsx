@@ -177,7 +177,7 @@ export default function SearchPage() {
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {groupBuy.status === 'recruiting' ? '모집중' :
-                         groupBuy.status === 'bidding' ? '입찰중' :
+                         groupBuy.status === 'bidding' ? '견적받는중' :
                          groupBuy.status === 'final_selection_buyers' ? '구매자 최종선택중' :
                          groupBuy.status === 'final_selection_seller' ? '판매자 최종선택중' :
                          groupBuy.status === 'completed' ? '완료' : '취소됨'}

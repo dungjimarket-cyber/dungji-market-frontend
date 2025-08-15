@@ -198,7 +198,7 @@ export default function SellerFinalSelection() {
               <CardContent className="px-3 sm:px-6">
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <div>
-                    <p className="text-xs sm:text-sm text-gray-500">최종 낙찰지원금</p>
+                    <p className="text-xs sm:text-sm text-gray-500">최종 선정 지원금</p>
                     <p className="font-bold text-base sm:text-lg text-orange-600">{groupbuy.bid_amount.toLocaleString()}원</p>
                   </div>
                   <div>
