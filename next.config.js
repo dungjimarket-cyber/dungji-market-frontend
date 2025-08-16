@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Vercel 무료 플랜 이미지 최적화 한도 초과로 인한 임시 비활성화
+    unoptimized: true,
     remotePatterns: [
       { 
         protocol: 'https',
