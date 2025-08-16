@@ -212,7 +212,7 @@ export default function ProfileSection() {
     // 업데이트할 데이터 객체 준비
     const updateData: {
       email?: string,
-      username?: string,
+      nickname?: string,  // username이 아닌 nickname 필드 사용
       phone_number?: string,
       address_region_id?: number | null,
       address_province?: string,
@@ -224,38 +224,14 @@ export default function ProfileSection() {
     if (editField === 'email') {
       updateData.email = email;
     } else if (editField === 'nickname') {
-      // 닉네임 변경 시 중복 체크
+      // 닉네임 변경
       if (!nickname) {
         setNicknameError('닉네임을 입력해주세요.');
         return;
       }
       
-      // 닉네임 중복 체크 (현재 사용자의 닉네임과 다른 경우만)
-      if (nickname !== user?.username) {
-        try {
-          const checkResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ nickname: nickname }),
-          });
-          
-          const checkData = await checkResponse.json();
-          
-          if (!checkData.available) {
-            setNicknameError('이미 사용 중인 닉네임입니다.');
-            // 닉네임 필드로 스크롤
-            nicknameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-          }
-        } catch (err) {
-          setNicknameError('닉네임 중복 확인 중 오류가 발생했습니다.');
-          return;
-        }
-      }
-      
-      updateData.username = nickname; // 백엔드에서는 username 필드 사용
+      // nickname 필드를 업데이트 (username은 아이디이므로 변경하지 않음)
+      updateData.nickname = nickname;
     } else if (editField === 'phone_number') {
       updateData.phone_number = phoneNumber;
     } else if (editField === 'address') {
@@ -341,7 +317,7 @@ export default function ProfileSection() {
         
         // 프로필 정보 상태 업데이트
         setEmail(profileData.email);
-        setNickname(profileData.username);
+        setNickname(profileData.nickname || profileData.username);  // nickname 우선, 없으면 username
         setPhoneNumber(profileData.phone_number || '');
         setAddressRegion(profileData.address_region || null);
         
@@ -474,7 +450,7 @@ export default function ProfileSection() {
                     onClick={() => {
                       setIsEditing(false);
                       setEditField(null);
-                      setNickname(user?.username || '');
+                      setNickname(user?.nickname || user?.username || '');  // nickname 우선
                       setNicknameError('');
                     }}
                     className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
