@@ -42,7 +42,13 @@ export default function BidTokensPage() {
   // 견적티켓 정보 로드
   useEffect(() => {
     async function loadBidTokens() {
-      if (!isAuthenticated) {
+      // 인증 상태가 확정되지 않았으면 대기
+      if (isAuthenticated === undefined) {
+        return;
+      }
+      
+      // 인증되지 않은 경우에만 리다이렉트
+      if (isAuthenticated === false) {
         router.push('/login');
         return;
       }
