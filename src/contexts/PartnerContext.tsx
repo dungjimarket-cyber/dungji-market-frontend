@@ -117,7 +117,7 @@ export const PartnerProvider: React.FC<PartnerProviderProps> = ({ children }) =>
       }
 
       const [summaryResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/partners/dashboard/summary/`, {
+        fetch(`${API_BASE_URL}/partners/dashboard/summary/`, {
           headers: getAuthHeader(),
         }),
       ]);

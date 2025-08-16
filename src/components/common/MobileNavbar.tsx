@@ -50,7 +50,7 @@ export default function MobileNavbar() {
               <button className="bg-green-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-md mb-1">
                 <FaStore className="text-xl" />
               </button>
-              <span className="text-xs mt-0.5">입찰 내역</span>
+              <span className="text-xs mt-0.5">견적 내역</span>
             </>
           ) : (
             <>

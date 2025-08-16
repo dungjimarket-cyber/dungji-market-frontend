@@ -2296,8 +2296,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   </>
                 ) : (
                   <>
-                    최종 낙찰지원금: {groupBuy.winning_bid_amount?.toLocaleString()}원<br />
-                    최종 낙찰지원금으로 공동구매를 최종 진행하시겠습니까?<br />
+                    선정된 최종 지원금: {groupBuy.winning_bid_amount?.toLocaleString()}원<br />
+                    선정된 최종 지원금으로 공동구매를 최종 진행하시겠습니까?<br />
                     <span className="text-sm text-gray-600 mt-2 block">
                       (구매를 확정하시면 판매자 정보를 열람하실 수 있습니다)
                     </span>

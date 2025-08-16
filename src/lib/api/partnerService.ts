@@ -19,7 +19,7 @@ const getAuthHeader = (): HeadersInit => {
 
 class PartnerService {
   async login(partnerId: string, password: string) {
-    const response = await fetch(`${API_BASE_URL}/api/partners/auth/login/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/auth/login/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ class PartnerService {
   }
 
   async getDashboardSummary(): Promise<DashboardSummary> {
-    const response = await fetch(`${API_BASE_URL}/api/partners/dashboard/summary/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/dashboard/summary/`, {
       headers: getAuthHeader(),
     });
 
@@ -63,7 +63,7 @@ class PartnerService {
     });
 
     const response = await fetch(
-      `${API_BASE_URL}/api/partners/members/?${searchParams.toString()}`,
+      `${API_BASE_URL}/partners/members/?${searchParams.toString()}`,
       {
         headers: getAuthHeader(),
       }
@@ -77,7 +77,7 @@ class PartnerService {
   }
 
   async getReferralLink(): Promise<ReferralLink> {
-    const response = await fetch(`${API_BASE_URL}/api/partners/referral-link/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/referral-link/`, {
       headers: getAuthHeader(),
     });
 
@@ -89,7 +89,7 @@ class PartnerService {
   }
 
   async getAccountInfo(): Promise<PartnerAccount> {
-    const response = await fetch(`${API_BASE_URL}/api/partners/account/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/account/`, {
       headers: getAuthHeader(),
     });
 
@@ -105,7 +105,7 @@ class PartnerService {
     account_number: string;
     account_holder: string;
   }) {
-    const response = await fetch(`${API_BASE_URL}/api/partners/account/update/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/account/update/`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ class PartnerService {
   }
 
   async getSettlements(): Promise<PaginatedResponse<PartnerSettlement>> {
-    const response = await fetch(`${API_BASE_URL}/api/partners/settlements/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/settlements/`, {
       headers: getAuthHeader(),
     });
 
@@ -139,7 +139,7 @@ class PartnerService {
     tax_invoice: boolean;
     memo?: string;
   }) {
-    const response = await fetch(`${API_BASE_URL}/api/partners/settlements/request/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/settlements/request/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ class PartnerService {
     });
 
     const response = await fetch(
-      `${API_BASE_URL}/api/partners/export/?${searchParams.toString()}`,
+      `${API_BASE_URL}/partners/export/?${searchParams.toString()}`,
       {
         headers: getAuthHeader(),
       }
@@ -182,7 +182,7 @@ class PartnerService {
   }
 
   async getNotifications(): Promise<PaginatedResponse<PartnerNotification>> {
-    const response = await fetch(`${API_BASE_URL}/api/partners/notifications/`, {
+    const response = await fetch(`${API_BASE_URL}/partners/notifications/`, {
       headers: getAuthHeader(),
     });
 
@@ -195,7 +195,7 @@ class PartnerService {
 
   async markNotificationRead(notificationId: number) {
     const response = await fetch(
-      `${API_BASE_URL}/api/partners/notifications/${notificationId}/read/`,
+      `${API_BASE_URL}/partners/notifications/${notificationId}/read/`,
       {
         method: 'POST',
         headers: getAuthHeader(),
@@ -211,7 +211,7 @@ class PartnerService {
 
   async markAllNotificationsRead() {
     const response = await fetch(
-      `${API_BASE_URL}/api/partners/notifications/read-all/`,
+      `${API_BASE_URL}/partners/notifications/read-all/`,
       {
         method: 'POST',
         headers: getAuthHeader(),
@@ -227,7 +227,7 @@ class PartnerService {
 
   async getStatistics(period: 'month' | 'week' = 'month'): Promise<PartnerStats[]> {
     const response = await fetch(
-      `${API_BASE_URL}/api/partners/statistics/?period=${period}`,
+      `${API_BASE_URL}/partners/statistics/?period=${period}`,
       {
         headers: getAuthHeader(),
       }
