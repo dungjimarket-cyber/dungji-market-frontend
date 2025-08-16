@@ -103,7 +103,7 @@ export default function CompletedSales() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm text-gray-600">최종 낙찰지원금: </span>
+                    <span className="text-sm text-gray-600">최종 선정 지원금: </span>
                     <span className="font-semibold text-purple-600">
                       {groupBuy.winning_bid_amount?.toLocaleString() || 0}원
                     </span>
