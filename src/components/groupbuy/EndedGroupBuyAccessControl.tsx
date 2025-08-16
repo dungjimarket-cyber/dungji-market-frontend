@@ -23,10 +23,16 @@ export function EndedGroupBuyAccessControl({
 }: EndedGroupBuyAccessControlProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialCheck, setIsInitialCheck] = useState(true);
   
   // 클라이언트 사이드에서 마운트 확인
   useEffect(() => {
     setIsLoading(false);
+    // 초기 체크 완료 후 300ms 후에 권한 체크 시작
+    const timer = setTimeout(() => {
+      setIsInitialCheck(false);
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
   
   // 종료된 공구인지 확인 (모집 종료 후 모든 상태)
@@ -38,14 +44,15 @@ export function EndedGroupBuyAccessControl({
     'cancelled'
   ].includes(status);
   
-  // 로딩 중일 때는 일단 children 렌더링 (깜빡임 방지)
-  if (isLoading) {
+  // 로딩 중이거나 초기 체크 중일 때는 일단 children 렌더링 (깜빡임 방지)
+  if (isLoading || isInitialCheck) {
     return <>{children}</>;
   }
   
   // 접근 제한 체크 - 판매확정/포기 선택 단계에서는 낙찰자에게 접근 허용
   const isSellerFinalSelection = status === 'final_selection_seller';
-  const hasAccessAsWinner = isSellerFinalSelection && hasWinningBid && isAuthenticated;
+  // 판매자 최종선택 단계에서는 판매자도 접근 허용 (hasWinningBid 체크 대기)
+  const hasAccessAsWinner = isSellerFinalSelection && isAuthenticated;
   const shouldRestrictAccess = isEndedGroupBuy && (!isAuthenticated || (!isParticipant && !hasAccessAsWinner));
   
   if (shouldRestrictAccess) {
@@ -88,7 +95,7 @@ export function EndedGroupBuyAccessControl({
                   접근 권한이 없습니다
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  해당 공구 참여자(구매회원) 또는 입찰자(판매회원)만 확인 가능합니다.
+                  해당 공구 참여자(구매회원) 또는 견적 제안자(판매회원)만 확인 가능합니다.
                 </p>
                 <div className="space-y-3">
                   <Button 

@@ -10,7 +10,9 @@ import {
   PaginatedResponse,
 } from '@/types/partner';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// API_BASE_URL이 이미 /api를 포함하고 있는지 확인
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 
 const getAuthHeader = (): HeadersInit => {
   const token = localStorage.getItem('partner_token');
