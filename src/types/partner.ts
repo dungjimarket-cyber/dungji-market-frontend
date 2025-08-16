@@ -9,9 +9,9 @@ export interface Partner {
   active_subscribers: number;
   available_settlement_amount: number;
   created_at: string;
-  bank_name?: string;
-  account_number?: string;
-  account_holder?: string;
+  bank_name: string;
+  account_number: string;
+  account_holder: string;
 }
 
 export interface DashboardSummary {

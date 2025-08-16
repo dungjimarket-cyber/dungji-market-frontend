@@ -2102,7 +2102,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             공동 구매 가이드라인
           </button>
           <p className="text-xs text-gray-500 mt-2">
-            • 입찰 진행중에는 나가기가 제한되니 신중한 참여 부탁드립니다.
+            • 견적제안 진행중에는 나가기가 제한되니 신중한 참여 부탁드립니다.
           </p>
         </div>
       </div>
