@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePartner } from '@/contexts/PartnerContext';
 import { partnerService } from '@/lib/api/partnerService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -20,9 +21,9 @@ import {
   FileSpreadsheet,
   FileText,
   Calendar,
-  Filter
+  Filter,
+  AlertCircle
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,7 @@ const formatOptions = [
 ];
 
 export default function ExportPage() {
-  const { partner } = usePartner();
+  const { partner, isLoading: isPartnerLoading, error: partnerError } = usePartner();
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -56,6 +57,13 @@ export default function ExportPage() {
     end_date: '',
     status_filter: '',
   });
+
+  // Set error if partner context has error
+  useEffect(() => {
+    if (partnerError) {
+      setError(partnerError);
+    }
+  }, [partnerError]);
 
   const handleExport = async () => {
     if (!partner) return;
@@ -113,6 +121,35 @@ export default function ExportPage() {
       end_date: '',
     }));
   };
+
+  if (isPartnerLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-96" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!partner) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            파트너 정보를 불러올 수 없습니다. 다시 로그인해주세요.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
