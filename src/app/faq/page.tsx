@@ -1,8 +1,9 @@
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Megaphone } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface FAQItem {
   question: string;
@@ -98,7 +99,23 @@ export default function FAQPage() {
       </div>
       
       <h1 className="text-3xl font-bold mb-2">📚 둥지마켓 자주묻는 질문 (FAQ)</h1>
-      <p className="text-gray-600 mb-8">둥지마켓 이용 방법과 자주 묻는 질문들을 모았습니다.</p>
+      <p className="text-gray-600 mb-4">둥지마켓 이용 방법과 자주 묻는 질문들을 모았습니다.</p>
+      
+      {/* 빠른 링크 버튼들 */}
+      <div className="mb-8 flex flex-wrap gap-3">
+        <Link href="/notices">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Megaphone className="w-4 h-4" />
+            공지사항
+          </Button>
+        </Link>
+        <Link href="/inquiries">
+          <Button variant="outline" className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" />
+            1:1 문의
+          </Button>
+        </Link>
+      </div>
       
       <Accordion type="single" collapsible className="w-full">
         {faqData.map((item, index) => (

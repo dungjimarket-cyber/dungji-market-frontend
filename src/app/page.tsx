@@ -173,7 +173,7 @@ function HomeContent() {
         <MobileHeader />
       </div>
       
-      <div className="container mx-auto px-4 py-2 md:py-8 pb-20 md:pb-8">
+      <div className="container mx-auto px-4 py-2 md:py-8 pb-24 md:pb-8 max-w-full overflow-x-hidden">
       {/* 배너 캐러셀을 맨 위로 이동 - 모바일에서 간격 줄임 */}
       <section className="mb-4 md:mb-8">
         <BannerCarousel />

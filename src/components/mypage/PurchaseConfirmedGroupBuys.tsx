@@ -138,6 +138,14 @@ export default function PurchaseConfirmedGroupBuys() {
   };
 
   const handleNoShowReport = (groupBuyId: number) => {
+    if (!groupBuyId) {
+      toast({
+        title: '오류',
+        description: '공구 정보를 찾을 수 없습니다.',
+        variant: 'destructive'
+      });
+      return;
+    }
     router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
   };
 

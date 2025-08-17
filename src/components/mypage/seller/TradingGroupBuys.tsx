@@ -164,7 +164,13 @@ export default function TradingGroupBuys() {
                       size="sm"
                       variant="outline"
                       className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
-                      onClick={() => router.push(`/noshow-report/create?groupbuy=${groupBuy.id}`)}
+                      onClick={() => {
+                        if (!groupBuy.id) {
+                          console.error('groupBuy.id is missing');
+                          return;
+                        }
+                        router.push(`/noshow-report/create?groupbuy=${groupBuy.id}`);
+                      }}
                     >
                       <AlertTriangle className="h-4 w-4 mr-1" />
                       노쇼신고
@@ -176,7 +182,7 @@ export default function TradingGroupBuys() {
                       onClick={() => handleCompleteSale(groupBuy.id)}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      판맨완료
+                      판매완료
                     </Button>
                   </div>
                 </div>

@@ -104,9 +104,16 @@ export function TradeStatusButtons({
               판매자 정보보기
             </Button>
             <Button
-              onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`)}
+              onClick={() => {
+                if (!groupBuyId) {
+                  console.error('groupBuyId is missing');
+                  return;
+                }
+                router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
+              }}
               variant="outline"
               className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
+              disabled={!groupBuyId}
             >
               <AlertTriangle className="h-4 w-4 mr-2" />
               노쇼신고
@@ -220,9 +227,16 @@ export function TradeStatusButtons({
               구매자 정보보기
             </Button>
             <Button
-              onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`)}
+              onClick={() => {
+                if (!groupBuyId) {
+                  console.error('groupBuyId is missing');
+                  return;
+                }
+                router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
+              }}
               variant="outline"
               className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
+              disabled={!groupBuyId}
             >
               <AlertTriangle className="h-4 w-4 mr-2" />
               노쇼신고

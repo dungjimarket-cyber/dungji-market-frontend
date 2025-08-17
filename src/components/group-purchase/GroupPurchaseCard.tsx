@@ -326,7 +326,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                   return (
                     <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                       <CheckCircle className="w-4 h-4" />
-                      <span>참여중</span>
+                      <span>참여완료</span>
                     </div>
                   );
                 }
@@ -334,7 +334,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                   return (
                     <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                       <CheckCircle className="w-4 h-4" />
-                      <span>✅견적제안완료</span>
+                      <span>견적완료</span>
                     </div>
                   );
                 }
