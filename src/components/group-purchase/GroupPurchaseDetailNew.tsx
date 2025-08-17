@@ -1435,14 +1435,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-amber-800 mb-2">중요 안내사항</h3>
-              <div className="space-y-2 text-sm text-amber-700">
+              <div className="space-y-2 text-sm text-amber-700 text-left">
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 mt-0.5">⚠️</span>
-                  <p>기존 사용하시던 기기의 남은 할부금과 약정기간 이전 해지시 위약금은 가입자 본인 부담입니다.</p>
+                  <p className="text-left">기존 사용하시던 기기의 남은 할부금과 약정기간 이전 해지시 위약금은 가입자 본인 부담입니다.</p>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 mt-0.5">⚠️</span>
-                  <p>자세한 내용은 해당 통신사 어플 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                  <p className="text-left">자세한 내용은 해당 통신사 어플 또는 고객센터를 통해 확인 부탁드립니다.</p>
                 </div>
               </div>
             </div>

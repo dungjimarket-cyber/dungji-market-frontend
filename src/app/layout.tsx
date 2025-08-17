@@ -58,7 +58,7 @@ export default function RootLayout({
    */
   return (
     <html lang="ko">
-      <body className={`${inter.className} min-h-screen relative`}>
+      <body className={`${inter.className} min-h-screen relative overflow-x-hidden`}>
         <Providers>
           <KakaoInAppBrowserHandler />
           <Toaster />

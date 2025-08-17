@@ -120,7 +120,7 @@ export default function SellerSettings() {
         }
         
         setFormData({
-          nickname: data.nickname || data.username || '',
+          nickname: data.nickname || '',
           phone: formattedPhone,
           addressProvince: '',
           addressCity: '',
@@ -452,6 +452,16 @@ export default function SellerSettings() {
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
+                {/* 아이디 표시 (수정 불가) */}
+                <div className="space-y-2">
+                  <Label>아이디</Label>
+                  <Input
+                    value={profile?.username || ''}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                  <p className="text-xs text-gray-500">아이디는 변경할 수 없습니다</p>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="nickname">닉네임 (상호명)</Label>

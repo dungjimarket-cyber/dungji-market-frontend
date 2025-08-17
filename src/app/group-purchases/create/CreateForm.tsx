@@ -1515,13 +1515,13 @@ const onSubmit = async (values: FormData) => {
                   />
                   
                   {/* 지역 선택 안내 메시지 */}
-                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-md">
                     <p className="text-sm text-gray-700">
                       <CheckCircle2 className="h-4 w-4 inline-block mr-1 text-green-600" />
                       🏠 가까운 판매자를 만나보세요
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
-                      원하는 지역 최대 2곳을 선택하면, 해당 지역 판매자만 입찰에 참여합니다.
+                      원하는 지역 최대 2곳을 선택하면, 해당 지역 판매자만 견적 제안이 가능합니다.
                     </p>
                   </div>
                 </div>

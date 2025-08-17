@@ -513,7 +513,6 @@ function RegisterPageContent() {
                     </svg>
                   </div>
                   <div className="font-semibold text-lg">구매하기 (일반회원)</div>
-                  <div className="text-sm text-gray-600 mt-2">공구에 참여하여 상품 구매</div>
                 </button>
                 <button
                   type="button"
@@ -530,7 +529,6 @@ function RegisterPageContent() {
                     </svg>
                   </div>
                   <div className="font-semibold text-lg">판매하기 (판매회원)</div>
-                  <div className="text-sm text-gray-600 mt-2">공구에 입찰하여 상품 판매</div>
                 </button>
               </div>
             </div>

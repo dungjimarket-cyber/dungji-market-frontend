@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* iOS Safe area padding */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* 프리텐다드 폰트 CDN 추가 */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
