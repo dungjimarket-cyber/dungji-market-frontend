@@ -60,14 +60,14 @@ export default function BannerCarousel() {
 
   if (loading) {
     return (
-      <div className="w-full aspect-[16/9] sm:aspect-[21/9] bg-gray-100 animate-pulse rounded-lg" />
+      <div className="w-full aspect-[16/9] sm:aspect-[18/9] bg-gray-100 animate-pulse rounded-lg" />
     );
   }
 
   if (error) {
     console.log('[BannerCarousel] 오류 발생:', error);
     return (
-      <div className="w-full aspect-[16/9] sm:aspect-[21/9] bg-red-100 rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-[16/9] sm:aspect-[18/9] bg-red-100 rounded-lg flex items-center justify-center">
         <p className="text-red-600">{error}</p>
       </div>
     );
@@ -76,7 +76,7 @@ export default function BannerCarousel() {
   if (banners.length === 0) {
     console.log('[BannerCarousel] 배너가 없음');
     return (
-      <div className="w-full aspect-[16/9] sm:aspect-[21/9] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-[16/9] sm:aspect-[18/9] bg-gray-100 rounded-lg flex items-center justify-center">
         <p className="text-gray-600">표시할 배너가 없습니다.</p>
       </div>
     );
@@ -99,7 +99,7 @@ export default function BannerCarousel() {
   return (
     <div className="relative w-full overflow-hidden rounded-lg">
       {/* 배너 컨테이너 - aspect ratio로 이미지 비율 유지 */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[18/9] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         {/* 배너 이미지 */}
         {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
           <Link 
