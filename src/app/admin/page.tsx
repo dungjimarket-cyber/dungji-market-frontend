@@ -47,6 +47,99 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   return response.json();
 };
 
+// 문의 아이템 컴포넌트
+const InquiryItem = ({ inquiry, onAnswer }: { inquiry: any; onAnswer: (id: string, answer: string) => void }) => {
+  const [isAnswering, setIsAnswering] = useState(false);
+  const [answer, setAnswer] = useState(inquiry.answer || '');
+
+  const handleSubmitAnswer = () => {
+    if (!answer.trim()) return;
+    onAnswer(inquiry.id, answer);
+    setIsAnswering(false);
+  };
+
+  return (
+    <div className="border rounded-lg p-4 space-y-3">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-semibold">{inquiry.title}</h3>
+            <span className={`px-2 py-1 rounded-full text-xs ${
+              inquiry.status === 'answered' 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-yellow-100 text-yellow-700'
+            }`}>
+              {inquiry.status === 'answered' ? '답변완료' : '답변대기'}
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-2">
+            작성자: {inquiry.user?.nickname || inquiry.user?.username || '알 수 없음'}
+          </p>
+          <p className="text-sm text-gray-500 mb-3">
+            작성일: {new Date(inquiry.created_at).toLocaleString()}
+          </p>
+          <div className="mb-3">
+            <p className="text-sm font-medium mb-1">문의내용:</p>
+            <p className="text-sm whitespace-pre-wrap bg-gray-50 p-3 rounded">
+              {inquiry.content}
+            </p>
+          </div>
+          
+          {inquiry.answer && (
+            <div className="mb-3">
+              <p className="text-sm font-medium mb-1">답변내용:</p>
+              <p className="text-sm whitespace-pre-wrap bg-blue-50 p-3 rounded">
+                {inquiry.answer}
+              </p>
+              {inquiry.answered_at && (
+                <p className="text-xs text-gray-500 mt-1">
+                  답변일: {new Date(inquiry.answered_at).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+          
+          {!inquiry.answer && !isAnswering && (
+            <Button 
+              onClick={() => setIsAnswering(true)}
+              size="sm"
+              className="mt-2"
+            >
+              답변하기
+            </Button>
+          )}
+          
+          {isAnswering && (
+            <div className="mt-3 space-y-2">
+              <Textarea
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder="답변을 입력해주세요..."
+                rows={4}
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleSubmitAnswer} size="sm">
+                  답변 등록
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setIsAnswering(false);
+                    setAnswer(inquiry.answer || '');
+                  }} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 파일 업로드 API 호출 함수
 const uploadFileWithAuth = async (url: string, formData: FormData) => {
   const token = localStorage.getItem('dungji_auth_token');
@@ -80,6 +173,7 @@ export default function AdminPage() {
   const [sellersWithDetails, setSellersWithDetails] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [inquiries, setInquiries] = useState<any[]>([]);
   const [statistics, setStatistics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [bidCount, setBidCount] = useState<number>(1);
@@ -189,6 +283,10 @@ export default function AdminPage() {
       // 사업자 인증 대기 목록 로드
       const verificationsData = await fetchWithAuth('/admin/pending_business_verifications/');
       setPendingVerifications(verificationsData.results || []);
+      
+      // 문의 목록 로드
+      const inquiriesData = await fetchWithAuth('/inquiries/');
+      setInquiries(inquiriesData);
       
       // 통계 정보 로드
       const statsData = await fetchWithAuth('/admin/statistics/');
@@ -576,6 +674,34 @@ export default function AdminPage() {
     }
   };
 
+  // 문의 답변 처리 함수
+  const handleAnswerInquiry = async (inquiryId: string, answer: string) => {
+    try {
+      await fetchWithAuth(`/inquiries/${inquiryId}/`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          answer: answer.trim(),
+          status: 'answered'
+        })
+      });
+
+      // 성공 시 문의 목록 다시 로드
+      const inquiriesData = await fetchWithAuth('/inquiries/');
+      setInquiries(inquiriesData);
+
+      toast({
+        title: '답변 완료',
+        description: '문의에 대한 답변이 성공적으로 등록되었습니다.',
+      });
+    } catch (error: any) {
+      toast({
+        title: '답변 등록 실패',
+        description: error.message || '답변 등록 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -649,6 +775,7 @@ export default function AdminPage() {
           <TabsTrigger value="winner-selection">낙찰자 선정</TabsTrigger>
           <TabsTrigger value="sellers">셀러 관리</TabsTrigger>
           <TabsTrigger value="products">상품 관리</TabsTrigger>
+          <TabsTrigger value="inquiries">1:1 문의 관리</TabsTrigger>
         </TabsList>
         
         {/* 사업자 인증 관리 탭 */}
@@ -1141,6 +1268,35 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* 1:1 문의 관리 탭 */}
+        <TabsContent value="inquiries">
+          <Card>
+            <CardHeader>
+              <CardTitle>1:1 문의 관리</CardTitle>
+              <CardDescription>
+                사용자들의 문의사항을 확인하고 답변을 등록할 수 있습니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {inquiries.length > 0 ? (
+                <div className="space-y-4">
+                  {inquiries.map((inquiry) => (
+                    <InquiryItem 
+                      key={inquiry.id} 
+                      inquiry={inquiry} 
+                      onAnswer={handleAnswerInquiry}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-8">
+                  등록된 문의사항이 없습니다.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
       

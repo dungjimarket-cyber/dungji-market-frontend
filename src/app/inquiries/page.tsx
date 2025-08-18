@@ -6,6 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { MessageSquare, Send, Clock, CheckCircle } from 'lucide-react';
@@ -29,6 +39,8 @@ export default function InquiriesPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -55,7 +67,7 @@ export default function InquiriesPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim() || !content.trim()) {
@@ -63,6 +75,11 @@ export default function InquiriesPage() {
       return;
     }
 
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmedSubmit = async () => {
+    setShowConfirmDialog(false);
     setSubmitting(true);
 
     try {
@@ -79,11 +96,10 @@ export default function InquiriesPage() {
       });
 
       if (response.ok) {
-        toast.success('문의가 등록되었습니다.');
         setTitle('');
         setContent('');
         setShowForm(false);
-        fetchInquiries();
+        setShowSuccessDialog(true);
       } else {
         toast.error('문의 등록에 실패했습니다.');
       }
@@ -93,6 +109,11 @@ export default function InquiriesPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessDialog(false);
+    fetchInquiries();
   };
 
   if (!isAuthenticated) {
@@ -246,6 +267,41 @@ export default function InquiriesPage() {
           ))
         )}
       </div>
+
+      {/* 제출 확인 다이얼로그 */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>문의 제출 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              문의하신 내용을 제출하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>아니오</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmedSubmit} disabled={submitting}>
+              {submitting ? '제출 중...' : '예'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 성공 알림 다이얼로그 */}
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>문의 접수 완료</AlertDialogTitle>
+            <AlertDialogDescription>
+              1:1문의 내용이 정상 접수되었습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleSuccessClose}>
+              확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
