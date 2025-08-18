@@ -166,11 +166,14 @@ export default function TradingGroupBuys() {
                       className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
                       onClick={() => {
                         if (!groupBuy.id) {
-                          console.error('groupBuy.id is missing');
+                          console.error('groupBuy.id is missing:', groupBuy);
+                          toast.error('공구 정보를 찾을 수 없습니다.');
                           return;
                         }
+                        console.log('Navigating to no-show report with groupBuy.id:', groupBuy.id);
                         router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
                       }}
+                      disabled={!groupBuy.id}
                     >
                       <AlertTriangle className="h-4 w-4 mr-1" />
                       노쇼신고

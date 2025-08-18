@@ -186,7 +186,8 @@ function NoShowReportContent() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          'Authorization': `Bearer ${accessToken}`,
+          'X-Requested-With': 'XMLHttpRequest'
           // Content-Type은 설정하지 않음 (FormData가 자동으로 설정)
         },
         body: formData
@@ -201,8 +202,29 @@ function NoShowReportContent() {
           router.push('/mypage');
         }
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || errorData.detail || '신고 접수에 실패했습니다.');
+        let errorMessage = '신고 접수에 실패했습니다.';
+        try {
+          const errorData = await response.json();
+          console.error('노쇼 신고 오류 응답:', errorData);
+          
+          // 구체적인 오류 메시지 처리
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.detail) {
+            errorMessage = errorData.detail;
+          } else if (errorData.content) {
+            errorMessage = Array.isArray(errorData.content) ? errorData.content.join(', ') : errorData.content;
+          } else if (errorData.evidence_image) {
+            errorMessage = Array.isArray(errorData.evidence_image) ? errorData.evidence_image.join(', ') : errorData.evidence_image;
+          } else if (errorData.reported_user) {
+            errorMessage = Array.isArray(errorData.reported_user) ? errorData.reported_user.join(', ') : errorData.reported_user;
+          }
+        } catch (parseError) {
+          console.error('응답 파싱 오류:', parseError);
+          errorMessage = `HTTP ${response.status}: 신고 처리 중 오류가 발생했습니다.`;
+        }
+        
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error('노쇼 신고 오류:', error);

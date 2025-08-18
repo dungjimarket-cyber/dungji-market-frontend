@@ -139,6 +139,7 @@ export default function PurchaseConfirmedGroupBuys() {
 
   const handleNoShowReport = (groupBuyId: number) => {
     if (!groupBuyId) {
+      console.error('groupBuyId is missing:', groupBuyId);
       toast({
         title: '오류',
         description: '공구 정보를 찾을 수 없습니다.',
@@ -146,6 +147,7 @@ export default function PurchaseConfirmedGroupBuys() {
       });
       return;
     }
+    console.log('Navigating to no-show report with groupBuyId:', groupBuyId);
     router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
   };
 
@@ -293,6 +295,7 @@ export default function PurchaseConfirmedGroupBuys() {
                         variant="destructive"
                         className="flex-1"
                         onClick={() => handleNoShowReport(groupBuy.id)}
+                        disabled={!groupBuy.id}
                       >
                         <AlertTriangle className="w-3 h-3 mr-1" />
                         노쇼 신고하기

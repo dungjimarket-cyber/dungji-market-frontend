@@ -106,9 +106,10 @@ export function TradeStatusButtons({
             <Button
               onClick={() => {
                 if (!groupBuyId) {
-                  console.error('groupBuyId is missing');
+                  console.error('TradeStatusButtons (buyer): groupBuyId is missing:', groupBuyId);
                   return;
                 }
+                console.log('TradeStatusButtons (buyer): Navigating to no-show report with groupBuyId:', groupBuyId);
                 router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
               }}
               variant="outline"
@@ -229,9 +230,10 @@ export function TradeStatusButtons({
             <Button
               onClick={() => {
                 if (!groupBuyId) {
-                  console.error('groupBuyId is missing');
+                  console.error('TradeStatusButtons (seller): groupBuyId is missing:', groupBuyId);
                   return;
                 }
+                console.log('TradeStatusButtons (seller): Navigating to no-show report with groupBuyId:', groupBuyId);
                 router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
               }}
               variant="outline"
