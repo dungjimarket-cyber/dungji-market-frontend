@@ -70,7 +70,11 @@ interface Product {
     detail_type: 'none' | 'telecom' | 'electronics' | 'rental' | 'subscription' | 'internet' | 'internet_tv';
   };
   image_url?: string;
-  extra_data?: any;
+  extra_data?: {
+    carrier?: string;
+    subscription_type?: string;
+    [key: string]: any;
+  };
 }
 
 interface CreateFormProps {
@@ -175,6 +179,29 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         const data = await response.json();
         console.log('Loaded products:', data.length, data);
         console.log('Phone products:', data.filter((p: Product) => p.category_name === '휴대폰'));
+        
+        // 인터넷/인터넷+TV 상품 상세 분석
+        const internetProducts = data.filter((p: Product) => 
+          p.category_detail_type === 'internet' || p.category?.detail_type === 'internet'
+        );
+        const internetTvProducts = data.filter((p: Product) => 
+          p.category_detail_type === 'internet_tv' || p.category?.detail_type === 'internet_tv'
+        );
+        
+        console.log('Internet products:', internetProducts.length, internetProducts.map((p: Product) => ({
+          name: p.name,
+          category_detail_type: p.category_detail_type,
+          category: p.category,
+          extra_data: p.extra_data
+        })));
+        
+        console.log('Internet+TV products:', internetTvProducts.length, internetTvProducts.map((p: Product) => ({
+          name: p.name,
+          category_detail_type: p.category_detail_type,
+          category: p.category,
+          extra_data: p.extra_data
+        })));
+        
         setProducts(data);
       }
     } catch (error) {
@@ -210,15 +237,31 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           product.category?.detail_type === 'internet';
         if (!isInternet) return false;
         
-        // 서브 탭 필터링 (인터넷) - extra_data가 있는 경우만 필터링
-        if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
-          const carrier = product.extra_data.carrier.toUpperCase();
+        // 서브 탭 필터링 (인터넷) - carrier 정보 확인
+        if (subTab !== 'all') {
+          let carrierInfo = '';
+          
+          // 1. extra_data에서 carrier 정보 확인
+          if (product.extra_data && product.extra_data.carrier) {
+            carrierInfo = product.extra_data.carrier.toUpperCase();
+          } else {
+            // 2. 상품명에서 통신사 정보 추출
+            const productName = product.name.toUpperCase();
+            if (productName.includes('SK') || productName.includes('SK브로드밴드')) {
+              carrierInfo = 'SK';
+            } else if (productName.includes('KT')) {
+              carrierInfo = 'KT';
+            } else if (productName.includes('LG') || productName.includes('LGU')) {
+              carrierInfo = 'LG';
+            }
+          }
+          
           const normalizedSubTab = subTab.toUpperCase();
           
           // 각 통신사별 매칭 로직 (다양한 표기법 지원)
-          if (normalizedSubTab === 'SK' && !['SK', 'SKT', 'SK브로드밴드'].includes(carrier)) return false;
-          if (normalizedSubTab === 'KT' && !['KT', 'KT텔레콤'].includes(carrier)) return false;
-          if (normalizedSubTab === 'LGU' && !['LGU', 'LG', 'LG유플러스', 'LG U+'].includes(carrier)) return false;
+          if (normalizedSubTab === 'SK' && !['SK', 'SKT', 'SK브로드밴드'].includes(carrierInfo)) return false;
+          if (normalizedSubTab === 'KT' && !['KT', 'KT텔레콤'].includes(carrierInfo)) return false;
+          if (normalizedSubTab === 'LGU' && !['LGU', 'LG', 'LG유플러스', 'LG U+'].includes(carrierInfo)) return false;
         }
         
         // 가입 유형 필터링 - extra_data와 subscription_type이 있는 경우만 필터링
@@ -235,15 +278,31 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                             product.category?.detail_type === 'internet_tv';
         if (!isInternetTV) return false;
         
-        // 서브 탭 필터링 (인터넷+TV) - extra_data가 있는 경우만 필터링
-        if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
-          const carrier = product.extra_data.carrier.toUpperCase();
+        // 서브 탭 필터링 (인터넷+TV) - carrier 정보 확인
+        if (subTab !== 'all') {
+          let carrierInfo = '';
+          
+          // 1. extra_data에서 carrier 정보 확인
+          if (product.extra_data && product.extra_data.carrier) {
+            carrierInfo = product.extra_data.carrier.toUpperCase();
+          } else {
+            // 2. 상품명에서 통신사 정보 추출
+            const productName = product.name.toUpperCase();
+            if (productName.includes('SK') || productName.includes('SK브로드밴드')) {
+              carrierInfo = 'SK';
+            } else if (productName.includes('KT')) {
+              carrierInfo = 'KT';
+            } else if (productName.includes('LG') || productName.includes('LGU')) {
+              carrierInfo = 'LG';
+            }
+          }
+          
           const normalizedSubTab = subTab.toUpperCase();
           
           // 각 통신사별 매칭 로직 (다양한 표기법 지원)
-          if (normalizedSubTab === 'SK' && !['SK', 'SKT', 'SK브로드밴드'].includes(carrier)) return false;
-          if (normalizedSubTab === 'KT' && !['KT', 'KT텔레콤'].includes(carrier)) return false;
-          if (normalizedSubTab === 'LGU' && !['LGU', 'LG', 'LG유플러스', 'LG U+'].includes(carrier)) return false;
+          if (normalizedSubTab === 'SK' && !['SK', 'SKT', 'SK브로드밴드'].includes(carrierInfo)) return false;
+          if (normalizedSubTab === 'KT' && !['KT', 'KT텔레콤'].includes(carrierInfo)) return false;
+          if (normalizedSubTab === 'LGU' && !['LGU', 'LG', 'LG유플러스', 'LG U+'].includes(carrierInfo)) return false;
         }
         
         // 가입 유형 필터링 - extra_data와 subscription_type이 있는 경우만 필터링
@@ -262,16 +321,36 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     console.log(`Filtered products for ${mainTab}/${subTab}/${internetSubscriptionType}:`, filtered.length, filtered);
     
     // 디버깅: 인터넷/인터넷+TV 탭에서 carrier 정보 확인
-    if ((mainTab === 'internet' || mainTab === 'internet_tv') && subTab !== 'all') {
-      const productsWithCarrier = filtered.filter(p => p.extra_data?.carrier);
-      console.log(`Products with carrier info:`, productsWithCarrier.map(p => ({
+    if ((mainTab === 'internet' || mainTab === 'internet_tv')) {
+      const allInternetProducts = products.filter(p => 
+        (mainTab === 'internet' && (p.category_detail_type === 'internet' || p.category?.detail_type === 'internet')) ||
+        (mainTab === 'internet_tv' && (p.category_detail_type === 'internet_tv' || p.category?.detail_type === 'internet_tv'))
+      );
+      
+      console.log(`All ${mainTab} products:`, allInternetProducts.map((p: Product) => ({
         name: p.name,
-        carrier: p.extra_data?.carrier,
-        subscription_type: p.extra_data?.subscription_type
+        category_detail_type: p.category_detail_type,
+        category: p.category,
+        extra_data_carrier: p.extra_data?.carrier,
+        extracted_carrier: extractCarrierFromName(p.name)
+      })));
+      
+      console.log(`Filtered ${mainTab} products for ${subTab}:`, filtered.map((p: Product) => ({
+        name: p.name,
+        carrier: p.extra_data?.carrier
       })));
     }
     
     return filtered;
+  };
+
+  // 상품명에서 통신사 정보 추출하는 헬퍼 함수
+  const extractCarrierFromName = (productName: string): string => {
+    const name = productName.toUpperCase();
+    if (name.includes('SK') || name.includes('SK브로드밴드')) return 'SK';
+    if (name.includes('KT')) return 'KT';
+    if (name.includes('LG') || name.includes('LGU')) return 'LG';
+    return '';
   };
 
   // 메인 탭 변경 시 서브 탭 초기화
