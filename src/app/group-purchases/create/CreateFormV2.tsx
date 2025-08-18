@@ -277,26 +277,114 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
     try {
-      // min_participants를 항상 1로 설정
+      // 데이터 유효성 검증
+      if (!selectedProduct) {
+        toast({
+          variant: 'destructive',
+          title: '상품 선택 필요',
+          description: '공구에 등록할 상품을 선택해주세요.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (selectedRegions.length === 0) {
+        toast({
+          variant: 'destructive',
+          title: '지역 선택 필요',
+          description: '최소 1개 이상의 지역을 선택해주세요.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 종료 시간 계산
+      const endTime = new Date();
+      endTime.setHours(endTime.getHours() + sliderHours);
+
+      // API 전송 데이터 구성
       const submitData = {
-        ...values,
-        min_participants: 1
+        product: parseInt(values.product || '0'),
+        title: values.title || generateTitle(),
+        description: values.description || '',
+        min_participants: 1, // 항상 1로 고정
+        max_participants: parseInt(values.max_participants?.toString() || '10'),
+        end_time: endTime.toISOString(),
+        regions: selectedRegions.map(region => ({
+          province: region.province,
+          city: region.city
+        })),
+        // 통신 관련 정보 (휴대폰인 경우)
+        ...(mainTab === 'phone' && {
+          telecom_carrier: values.telecom_carrier,
+          subscription_type: values.subscription_type,
+          plan_info: values.plan_info,
+          contract_period: values.contract_period || '24'
+        })
       };
       
-      // API 호출 로직...
-      console.log('폼 제출:', submitData);
+      console.log('폼 제출 데이터:', submitData);
+
+      // API 호출
+      const session = await getSession();
+      if (!session?.user?.accessToken) {
+        toast({
+          variant: 'destructive',
+          title: '인증 오류',
+          description: '로그인이 필요합니다.',
+        });
+        setIsSubmitting(false);
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.user.accessToken}`,
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API 오류:', errorData);
+        
+        // 특정 오류 메시지 처리
+        let errorMessage = '공구 등록 중 오류가 발생했습니다.';
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+
+        toast({
+          variant: 'destructive',
+          title: '공구 등록 실패',
+          description: errorMessage,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const result = await response.json();
+      console.log('공구 등록 성공:', result);
       
       // 성공 시 처리
-      setShowSuccessDialog(true);
-      setCreatedGroupBuyId(1); // 실제 ID로 대체
+      setCreatedGroupBuyId(result.id);
       setCreatedProductName(selectedProduct?.name || '');
       setCreatedProductImage(selectedProduct?.image_url || '');
+      setShowSuccessDialog(true);
+
     } catch (error) {
       console.error('공구 등록 실패:', error);
       toast({
         variant: 'destructive',
         title: '공구 등록 실패',
-        description: '공구 등록 중 오류가 발생했습니다.',
+        description: error instanceof Error ? error.message : '공구 등록 중 오류가 발생했습니다.',
       });
     } finally {
       setIsSubmitting(false);
