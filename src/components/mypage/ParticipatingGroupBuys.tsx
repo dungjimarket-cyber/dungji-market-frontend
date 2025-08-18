@@ -267,9 +267,29 @@ export default function ParticipatingGroupBuys() {
                   </div>
                 )}
                 
-                <p className="text-sm font-bold mt-1">
-                  {product?.base_price?.toLocaleString() || '0'}원
-                </p>
+                {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 가격 표시 */}
+                {product?.category?.name !== '인터넷' && product?.category?.name !== '인터넷+TV' && (
+                  <p className="text-sm font-bold mt-1">
+                    {product?.base_price?.toLocaleString() || '0'}원
+                  </p>
+                )}
+                
+                {/* 인터넷/인터넷+TV 카테고리인 경우 통신사 정보만 표시 */}
+                {(product?.category?.name === '인터넷' || product?.category?.name === '인터넷+TV') && (
+                  <div className="mt-1 space-y-1">
+                    {groupBuy.telecom_detail?.telecom_carrier && (
+                      <p className="text-sm font-medium text-blue-600">
+                        {groupBuy.telecom_detail.telecom_carrier}
+                      </p>
+                    )}
+                    {(groupBuy.telecom_detail?.subscription_type_korean || groupBuy.telecom_detail?.subscription_type) && (
+                      <p className="text-xs text-purple-600">
+                        {groupBuy.telecom_detail.subscription_type_korean || 
+                         getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
+                      </p>
+                    )}
+                  </div>
+                )}
                 
                 <div className="mt-2">
                   <Progress value={progress} className="h-1" />

@@ -28,6 +28,7 @@ interface Product {
   name: string;
   base_price: number;
   image_url?: string;
+  category_name?: string;
   carrier?: string;
   registration_type?: string;
   subscription_type_korean?: string;
@@ -305,9 +306,30 @@ export default function CreatedGroupBuys() {
                           )
                         }</span>
                       </div>
-                      <p className="text-sm font-bold mt-1">
-                        {groupBuy.product_details?.base_price?.toLocaleString() || '0'}원
-                      </p>
+                      {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 가격 표시 */}
+                      {groupBuy.product_details?.category_name !== '인터넷' && 
+                       groupBuy.product_details?.category_name !== '인터넷+TV' && (
+                        <p className="text-sm font-bold mt-1">
+                          {groupBuy.product_details?.base_price?.toLocaleString() || '0'}원
+                        </p>
+                      )}
+                      
+                      {/* 인터넷/인터넷+TV 카테고리인 경우 통신사/가입유형만 표시 */}
+                      {(groupBuy.product_details?.category_name === '인터넷' || 
+                        groupBuy.product_details?.category_name === '인터넷+TV') && (
+                        <div className="mt-1 space-y-1">
+                          {groupBuy.telecom_carrier && (
+                            <p className="text-sm font-medium text-blue-600">
+                              {getCarrierDisplay(groupBuy.telecom_carrier)}
+                            </p>
+                          )}
+                          {groupBuy.subscription_type_korean && (
+                            <p className="text-xs text-purple-600">
+                              {groupBuy.subscription_type_korean}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       
                       <div className="mt-2">
                         <Progress value={progress} className="h-1" />
