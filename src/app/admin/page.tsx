@@ -828,13 +828,13 @@ export default function AdminPage() {
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2">ID</th>
-                      <th className="text-left py-2">닉네임</th>
-                      <th className="text-left py-2">이메일</th>
-                      <th className="text-left py-2">견적티켓</th>
-                      <th className="text-left py-2">구독권</th>
-                      <th className="text-left py-2">사업자인증</th>
-                      <th className="text-left py-2">관리</th>
+                      <th className="text-left py-2">사용자 ID</th>
+                      <th className="text-left py-2">사용자명</th>
+                      <th className="text-left py-2">이메일 주소</th>
+                      <th className="text-left py-2">보유 견적티켓</th>
+                      <th className="text-left py-2">구독권 상태</th>
+                      <th className="text-left py-2">사업자 인증 상태</th>
+                      <th className="text-left py-2">상세 관리</th>
                     </tr>
                   </thead>
                   <tbody>
