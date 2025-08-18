@@ -247,7 +247,7 @@ function GroupPurchasesPageContent() {
     let hasRefreshParam = false;
     
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search'].includes(key)) {
+      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region'].includes(key)) {
         filters[key] = value;
       }
       if (key === 'refresh') {
