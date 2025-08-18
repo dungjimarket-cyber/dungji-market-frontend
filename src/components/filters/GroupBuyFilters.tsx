@@ -43,7 +43,7 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
   // 필터 옵션들
   const filterOptions: FilterOptions = {
     categories: ['휴대폰', '인터넷', '인터넷+TV'],
-    manufacturers: ['삼성', '애플', 'LG', '샤오미', '구글'],
+    manufacturers: ['삼성', '애플'],
     carriers: ['SKT', 'KT', 'LG U+', 'SK브로드밴드'],
     purchaseTypes: ['신규가입', '번호이동', '기기변경', '통신사이동'],
     priceRanges: ['5만원대', '6만원대', '7만원대', '8만원대', '9만원대', '10만원 이상'],
