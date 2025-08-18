@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
@@ -2106,11 +2107,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         {/* 가이드라인 링크 */}
         <div className="text-center mt-6">
-          <button className="text-sm text-blue-600 underline">
-            공동 구매 가이드라인
-          </button>
+          <Link href="/guidelines" className="text-sm text-blue-600 underline hover:text-blue-800">
+            📋 공동 구매 가이드라인 확인하기
+          </Link>
           <p className="text-xs text-gray-500 mt-2">
-            • 견적제안 진행중에는 나가기가 제한되니 신중한 참여 부탁드립니다.
+            • 공구 참여 전 가이드라인을 꼭 확인해주세요
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            • 견적 제안 진행 중에는 중도 포기가 제한되니 신중한 참여 부탁드립니다
           </p>
         </div>
       </div>
