@@ -57,6 +57,16 @@ export default function Footer() {
                   자주 묻는 질문
                 </Link>
               </li>
+              <li>
+                <Link href="/notices" className="text-sm text-gray-600 hover:text-emerald-600">
+                  공지사항
+                </Link>
+              </li>
+              <li>
+                <Link href="/inquiries" className="text-sm text-gray-600 hover:text-emerald-600">
+                  1:1 문의
+                </Link>
+              </li>
             </ul>
           </div>
           

@@ -31,6 +31,12 @@ export default function DesktopNavbar() {
             <Link href="/events" className="text-gray-600 hover:text-gray-900">
               이벤트
             </Link>
+            <Link href="/notices" className="text-gray-600 hover:text-gray-900">
+              공지사항
+            </Link>
+            <Link href="/inquiries" className="text-gray-600 hover:text-gray-900">
+              1:1문의
+            </Link>
             
             {/* 비로그인 시 */}
             {!isAuthenticated && (
