@@ -393,11 +393,20 @@ function RegisterPageContent() {
         }
       }
       
-      // 선택 필드 - address_region_id 처리
+      // 선택 필드 - address_region_id 처리 (일반회원도 지역 선택 시 저장됨)
       if (formData.region_province && formData.region_city) {
         try {
+          console.log('지역 정보 저장 시도:', { 
+            province: formData.region_province, 
+            city: formData.region_city, 
+            role: formData.role 
+          });
+          
           // 모든 지역 데이터 가져오기
           const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+          if (!regionsResponse.ok) {
+            throw new Error('지역 데이터 조회 실패');
+          }
           const regionsData = await regionsResponse.json();
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
@@ -421,11 +430,16 @@ function RegisterPageContent() {
           
           if (cityRegion) {
             submitData.append('address_region_id', cityRegion.code);
+            console.log('지역 정보 저장됨:', { code: cityRegion.code, name: cityRegion.full_name });
+          } else {
+            console.warn('지역 정보를 찾을 수 없음:', { province: formData.region_province, city: formData.region_city });
           }
         } catch (err) {
           console.error('지역 정보 로드 오류:', err);
-          // 지역 정보를 가져올 수 없는 경우 그냥 진행
+          // 지역 정보를 가져올 수 없는 경우에도 다른 정보들은 저장 진행
         }
+      } else {
+        console.log('지역 정보 미선택:', { province: formData.region_province, city: formData.region_city });
       }
       
       // 판매자 전용 필드
