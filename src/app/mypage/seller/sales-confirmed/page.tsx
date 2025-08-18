@@ -218,7 +218,7 @@ export default function SellerSalesConfirmed() {
                     size="sm"
                     onClick={() => handleCompleteTransaction(groupbuy.id)}
                   >
-                    거래완료
+                    판매완료
                   </Button>
                   
                   <Button 
