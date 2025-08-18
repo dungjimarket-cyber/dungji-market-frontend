@@ -120,8 +120,8 @@ function GroupPurchasesPageContent() {
                 params.append('category', '휴대폰');
               } else if (value === 'internet') {
                 params.append('category', '인터넷');
-              } else if (value === 'electronics') {
-                params.append('category', '전자제품');
+              } else if (value === 'internet_tv') {
+                params.append('category', '인터넷+TV');
               } else {
                 params.append('category', value);
               }
@@ -130,7 +130,15 @@ function GroupPurchasesPageContent() {
             else if (key === 'search') {
               params.append('search', value);
             }
-            // 브랜드 필터
+            // 제조사 필터
+            else if (key === 'manufacturer') {
+              params.append('manufacturer', value);
+            }
+            // 요금제 필터
+            else if (key === 'plan') {
+              params.append('plan_info', value);
+            }
+            // 브랜드 필터 (호환성)
             else if (key === 'brand') {
               params.append('manufacturer', value);
             }
@@ -264,7 +272,7 @@ function GroupPurchasesPageContent() {
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'search', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'region'].includes(key)) {
+      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'search', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'region', 'plan'].includes(key)) {
         filters[key] = value;
       }
     });
@@ -322,7 +330,7 @@ function GroupPurchasesPageContent() {
     let hasRefreshParam = false;
     
     searchParams.forEach((value, key) => {
-      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory'].includes(key)) {
+      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'plan'].includes(key)) {
         filters[key] = value;
       }
       if (key === 'refresh') {
@@ -396,6 +404,11 @@ function GroupPurchasesPageContent() {
           <div className="px-4 py-6 border-b border-gray-100">
             <h1 className="text-2xl font-bold text-gray-900">공구 둘러보기</h1>
             <p className="text-sm text-gray-600 mt-1">다양한 공동구매에 참여해보세요</p>
+          </div>
+
+          {/* 통합 검색바 */}
+          <div className="px-4 pt-6">
+            <UnifiedSearchBar onSearchChange={handleSearchChange} />
           </div>
 
           {/* 필터 컴포넌트 */}
