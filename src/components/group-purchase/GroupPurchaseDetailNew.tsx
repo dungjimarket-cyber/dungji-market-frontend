@@ -1216,23 +1216,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="flex flex-wrap gap-2 mb-6">
           <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
             가입유형 : {
-              (() => {
-                console.log('[DEBUG] 가입유형 데이터 확인:', {
-                  'product_details.subscription_type_korean': groupBuy.product_details?.subscription_type_korean,
-                  'telecom_detail.subscription_type_korean': groupBuy.telecom_detail?.subscription_type_korean,
-                  'product_details.registration_type_korean': groupBuy.product_details?.registration_type_korean,
-                  'product_details.category_name': groupBuy.product_details?.category_name,
-                  'product_details.registration_type': groupBuy.product_details?.registration_type,
-                  'telecom_detail.subscription_type': groupBuy.telecom_detail?.subscription_type,
-                  'telecom_detail': groupBuy.telecom_detail
-                });
-                
-                return groupBuy.product_details?.subscription_type_korean || 
-                       groupBuy.telecom_detail?.subscription_type_korean ||
-                       groupBuy.product_details?.registration_type_korean || 
-                       getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) ||
-                       (groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV' ? '통신사이동' : '번호이동');
-              })()
+              groupBuy.product_details?.subscription_type_korean || 
+              groupBuy.telecom_detail?.subscription_type_korean ||
+              groupBuy.product_details?.registration_type_korean || 
+              getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) ||
+              '정보 없음'
             }
           </span>
           {groupBuy.telecom_detail?.telecom_carrier && (

@@ -254,20 +254,10 @@ export default function CategoryPage() {
                           <div className="flex space-x-2 text-sm">
                             <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_carrier || groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
                             <span className="font-medium text-blue-500">유형: {
-                              (() => {
-                                console.log('[DEBUG] 카테고리 페이지 가입유형 데이터:', {
-                                  'product_details.subscription_type_korean': groupBuy.product_details?.subscription_type_korean,
-                                  'telecom_detail.subscription_type_korean': groupBuy.telecom_detail?.subscription_type_korean,
-                                  'product_details.registration_type': groupBuy.product_details?.registration_type,
-                                  'product_details.category_name': groupBuy.product_details?.category_name,
-                                  'telecom_detail': groupBuy.telecom_detail
-                                });
-                                
-                                return groupBuy.product_details?.subscription_type_korean || 
-                                       groupBuy.telecom_detail?.subscription_type_korean ||
-                                       groupBuy.product_details?.registration_type || 
-                                       (groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV' ? '통신사이동' : '번호이동');
-                              })()
+                              groupBuy.product_details?.subscription_type_korean || 
+                              groupBuy.telecom_detail?.subscription_type_korean ||
+                              groupBuy.product_details?.registration_type ||
+                              '정보 없음'
                             }</span>
                           </div>
                         </div>

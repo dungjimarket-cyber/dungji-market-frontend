@@ -281,8 +281,8 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                 유형: {
                   groupBuy.product_details.subscription_type_korean || 
                   groupBuy.telecom_detail?.subscription_type_korean ||
-                  groupBuy.product_details.registration_type || 
-                  (groupBuy.product_details.category_name === '인터넷' || groupBuy.product_details.category_name === '인터넷+TV' ? '통신사이동' : '번호이동')
+                  groupBuy.product_details.registration_type ||
+                  '정보 없음'
                 }
               </p>
               <p className="text-xl font-bold mt-2">
