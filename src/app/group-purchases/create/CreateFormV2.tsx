@@ -533,11 +533,22 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
           }
         }
 
-        toast({
-          variant: 'destructive',
-          title: '공구 등록 실패',
-          description: errorMessage,
-        });
+        // 중복 오류인 경우 전용 팝업 표시
+        if (errorMessage.includes('중복') || errorMessage.includes('이미 존재') || 
+            errorMessage.includes('duplicate') || errorMessage.includes('already exists') ||
+            errorMessage.includes('제한') || errorMessage.includes('공구등록이 제한') ||
+            errorMessage.includes('같은 상품') || errorMessage.includes('동일한 상품')) {
+          setErrorDialogTitle('중복 상품 등록 제한');
+          setErrorDialogMessage(`${errorMessage}\n\n해당 상품으로는 이미 공동구매가 진행중입니다. 다른 상품을 선택해주세요.`);
+          setShowDuplicateProductDialog(true);
+        } else {
+          // 일반 오류인 경우 토스트 메시지 표시
+          toast({
+            variant: 'destructive',
+            title: '공구 등록 실패',
+            description: errorMessage,
+          });
+        }
         setIsSubmitting(false);
         return;
       }
