@@ -111,14 +111,24 @@ export default function MultiRegionSelector({
       )}
 
       {/* 안내 메시지 */}
-      {regions.length === 0 && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-sm text-amber-700">
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-blue-800">
             <MapPin className="h-4 w-4 inline-block mr-1" />
-            지역을 선택하면 해당 지역에 사는 사람들에게 공구가 노출됩니다.
+            지역 설정 안내
           </p>
+          <div className="text-sm text-blue-700 space-y-1">
+            <p>• 최대 3개 지역까지 선택 가능합니다</p>
+            <p>• 선택하신 지역에 거주하는 분들에게 공구가 우선 노출됩니다</p>
+            <p>• 지역 선택은 공구 성공률을 높이는 데 도움이 됩니다</p>
+          </div>
+          {regions.length === 0 && (
+            <p className="text-sm text-blue-600 font-medium mt-2">
+              지역을 선택해주세요!
+            </p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

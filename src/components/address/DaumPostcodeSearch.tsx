@@ -116,9 +116,9 @@ export default function DaumPostcodeSearch({
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="default"
       onClick={handleClick}
-      className="w-full"
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
     >
       <MapPinIcon className="h-4 w-4 mr-2" />
       {buttonText}
