@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { GroupBuyConsentManager } from '@/components/admin/GroupBuyConsentManager';
 import WinnerSelection from '@/components/admin/WinnerSelection';
+import { ProductRegistrationForm } from '@/components/admin/ProductRegistrationForm';
 
 // 견적티켓 유형 정의
 const TOKEN_TYPES = [
@@ -94,6 +95,21 @@ export default function AdminPage() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedRejectUser, setSelectedRejectUser] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+
+  // 상품 목록 재로드 함수
+  const fetchProducts = async () => {
+    try {
+      const productsData = await fetchWithAuth('/products/');
+      setProducts(productsData);
+    } catch (error) {
+      console.error('상품 목록 로드 실패:', error);
+      toast({
+        title: '오류',
+        description: '상품 목록을 불러오는데 실패했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // 관리자 권한 확인
   useEffect(() => {
@@ -946,7 +962,20 @@ export default function AdminPage() {
         
         {/* 상품 관리 탭 */}
         <TabsContent value="products">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6">
+            {/* 새 상품 등록 카드 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>새 상품 등록</CardTitle>
+                <CardDescription>
+                  인터넷, 인터넷+TV 등 새로운 상품을 등록합니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProductRegistrationForm onSuccess={fetchProducts} />
+              </CardContent>
+            </Card>
+
             {/* 이미지 업로드 카드 */}
             <Card>
               <CardHeader>

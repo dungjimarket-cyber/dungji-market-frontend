@@ -1238,7 +1238,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           })}
         </div>
         <div className="text-sm text-gray-500 mb-6">
-          • 가입약정 기간은 24개월 입니다
+          {/* 인터넷 상품인 경우 36개월, 나머지는 24개월 */}
+          • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
         </div>
 
         {/* 최종선택 타이머 - 공구 상태 정보 섹션으로 통합 이동 */}

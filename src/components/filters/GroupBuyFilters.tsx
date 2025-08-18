@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 
 interface FilterOptions {
+  categories: string[];
   manufacturers: string[];
   carriers: string[];
   purchaseTypes: string[];
@@ -41,15 +42,17 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
   
   // 필터 옵션들
   const filterOptions: FilterOptions = {
+    categories: ['휴대폰', '인터넷', '인터넷+TV'],
     manufacturers: ['삼성', '애플', 'LG', '샤오미', '구글'],
-    carriers: ['SKT', 'KT', 'LG U+'],
-    purchaseTypes: ['신규가입', '번호이동', '기기변경'],
+    carriers: ['SKT', 'KT', 'LG U+', 'SK브로드밴드'],
+    purchaseTypes: ['신규가입', '번호이동', '기기변경', '통신사이동'],
     priceRanges: ['5만원대', '6만원대', '7만원대', '8만원대', '9만원대', '10만원 이상'],
     sortOptions: ['최신순', '인기순(참여자많은순)']
   };
 
   // 현재 적용된 필터들
   const [filters, setFilters] = useState({
+    category: searchParams.get('category') || 'all',
     manufacturer: searchParams.get('manufacturer') || 'all',
     carrier: searchParams.get('carrier') || 'all',
     purchaseType: searchParams.get('purchaseType') || 'all',
@@ -85,6 +88,7 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
    */
   const clearAllFilters = () => {
     const clearedFilters = {
+      category: 'all',
       manufacturer: 'all',
       carrier: 'all',
       purchaseType: 'all',
@@ -246,6 +250,27 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
         {/* 필터 옵션들 */}
         {isExpanded && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {/* 카테고리 필터 */}
+            <div>
+              <label className="text-sm font-medium mb-1 block">카테고리</label>
+              <Select
+                value={filters.category}
+                onValueChange={(value) => handleFilterChange('category', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="카테고리 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {filterOptions.categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* 정렬 옵션 - hideSort가 false일 때만 표시 */}
             {!hideSort && (
               <div>

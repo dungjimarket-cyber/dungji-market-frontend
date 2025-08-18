@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
 import { toKSTString } from '@/lib/utils';
-import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon } from "lucide-react";
+import { SmartphoneIcon, TvIcon, BoxIcon, CreditCardIcon, AlertCircleIcon, CheckCircle2, AlertTriangleIcon, WifiIcon, MonitorIcon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,7 +61,7 @@ interface Product {
   category?: {
     id: number;
     name: string;
-    detail_type: 'none' | 'telecom' | 'electronics' | 'rental' | 'subscription';
+    detail_type: 'none' | 'telecom' | 'electronics' | 'rental' | 'subscription' | 'internet' | 'internet_tv';
   };
   image_url?: string;
 }
@@ -213,6 +213,10 @@ const getCategoryColorClass = (categoryType?: string): string => {
       return 'bg-orange-50 border-orange-200';
     case 'subscription':
       return 'bg-purple-50 border-purple-200';
+    case 'internet':
+      return 'bg-cyan-50 border-cyan-200';
+    case 'internet_tv':
+      return 'bg-indigo-50 border-indigo-200';
     default:
       return 'bg-blue-50 border-blue-200';
   }
@@ -224,15 +228,19 @@ const getCategoryColorClass = (categoryType?: string): string => {
 const getCategoryLabel = (categoryType?: string): string => {
   switch (categoryType) {
     case 'telecom':
-      return '통신 상품';
+      return '휴대폰';
     case 'electronics':
       return '가전 제품';
     case 'rental':
       return '렌탈 상품';
     case 'subscription':
       return '구독 서비스';
+    case 'internet':
+      return '인터넷';
+    case 'internet_tv':
+      return '인터넷+TV';
     default:
-      return '통신 상품';
+      return '휴대폰';
   }
 };
 
@@ -242,15 +250,19 @@ const getCategoryLabel = (categoryType?: string): string => {
 const getCategoryDescription = (categoryType?: string): string => {
   switch (categoryType) {
     case 'telecom':
-      return '📱 통신사,가입유형,요금제를 선택하시고 최고의 지원금을 받아보세요!';
+      return '📱 통신사, 가입유형, 요금제를 선택하시고 최고의 지원금을 받아보세요!';
     case 'electronics':
       return '제조사와 보증 기간 정보를 입력하여 가전 제품 공동구매를 시작하세요.';
     case 'rental':
       return '렌탈 기간을 선택하여 더 저렴한 조건으로 렌탈 상품을 이용하세요.';
     case 'subscription':
       return '결제 주기를 선택하여 구독 서비스를 더 유리한 조건으로 이용하세요.';
+    case 'internet':
+      return '🌐 통신사와 가입유형을 선택하고 최고의 인터넷 지원금을 받아보세요!';
+    case 'internet_tv':
+      return '📺 인터넷+TV 결합상품으로 더 큰 혜택을 받아보세요!';
     default:
-      return '📱 통신사,가입유형,요금제를 선택하시고 최고의 지원금을 받아보세요!';
+      return '📱 통신사, 가입유형, 요금제를 선택하시고 최고의 지원금을 받아보세요!';
   }
 };
 
@@ -267,6 +279,10 @@ const getCategoryIcon = (categoryType?: string) => {
       return <BoxIcon className="h-5 w-5 text-orange-500" />;
     case 'subscription':
       return <CreditCardIcon className="h-5 w-5 text-purple-500" />;
+    case 'internet':
+      return <WifiIcon className="h-5 w-5 text-cyan-500" />;
+    case 'internet_tv':
+      return <MonitorIcon className="h-5 w-5 text-indigo-500" />;
     default:
       return <SmartphoneIcon className="h-5 w-5 text-blue-500" />;
   }
@@ -1156,6 +1172,13 @@ const onSubmit = async (values: FormData) => {
           contract_period: '24개월' // 약정기간 24개월로 고정
         };
         console.log('통신사 정보 전송:', productDetails);
+      } else if (selectedProduct.category?.detail_type === 'internet' || selectedProduct.category?.detail_type === 'internet_tv') {
+        productDetails = {
+          telecom_carrier: values.telecom_carrier || '',
+          subscription_type: values.subscription_type || '',
+          contract_period: '36개월' // 인터넷은 약정기간 36개월로 고정
+        };
+        console.log('인터넷 정보 전송:', productDetails);
       } else if (selectedProduct.category?.detail_type === 'electronics') {
         productDetails = {
           manufacturer: values.manufacturer || '',
@@ -1612,6 +1635,52 @@ const onSubmit = async (values: FormData) => {
                                   <SelectItem value="5G_premium_plus">8만원대</SelectItem>
                                   <SelectItem value="5G_special">9만원대</SelectItem>
                                   <SelectItem value="5G_platinum">10만원이상</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+
+                  {/* 인터넷/인터넷+TV 상품일 경우 */}
+                  {(selectedProduct.category?.detail_type === 'internet' || selectedProduct.category?.detail_type === 'internet_tv') && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="telecom_carrier"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
+                                <SelectTrigger className="bg-gray-50 h-12">
+                                  <SelectValue placeholder="통신사 선택" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="KT">KT</SelectItem>
+                                  <SelectItem value="SK">SK브로드밴드</SelectItem>
+                                  <SelectItem value="LGU">LG U+</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="subscription_type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
+                                <SelectTrigger className="bg-gray-50 h-12">
+                                  <SelectValue placeholder="가입유형 선택" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="new">신규가입</SelectItem>
+                                  <SelectItem value="transfer">통신사이동</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormControl>
