@@ -40,6 +40,7 @@ interface JoinGroupBuyModalProps {
       base_price: number;
       telecom_carrier?: string;
       subscription_type_korean?: string;
+      category_name?: string;
     };
   };
 }
@@ -273,7 +274,11 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                 통신사: {groupBuy.product_details.telecom_carrier || groupBuy.product_details.carrier || 'SK텔래콤'}
               </p>
               <p className="text-gray-600 mb-2">
-                유형: {groupBuy.product_details.subscription_type_korean || groupBuy.product_details.registration_type || '번호이동'}
+                유형: {
+                  groupBuy.product_details.subscription_type_korean || 
+                  groupBuy.product_details.registration_type || 
+                  (groupBuy.product_details.category_name === '인터넷' || groupBuy.product_details.category_name === '인터넷+TV' ? '통신사이동' : '번호이동')
+                }
               </p>
               <p className="text-xl font-bold mt-2">
                 {groupBuy.product_details.base_price.toLocaleString()}원

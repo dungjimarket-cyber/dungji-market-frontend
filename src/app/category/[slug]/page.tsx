@@ -253,7 +253,11 @@ export default function CategoryPage() {
                         <div className="flex flex-col">
                           <div className="flex space-x-2 text-sm">
                             <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_carrier || groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
-                            <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.subscription_type_korean || groupBuy.product_details?.registration_type || '번호이동'}</span>
+                            <span className="font-medium text-blue-500">유형: {
+                              groupBuy.product_details?.subscription_type_korean || 
+                              groupBuy.product_details?.registration_type || 
+                              (groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV' ? '통신사이동' : '번호이동')
+                            }</span>
                           </div>
                         </div>
                         <div className="flex justify-between items-center pt-2">
