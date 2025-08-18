@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MainHeader } from '@/components/navigation/MainHeader';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
-import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
+import { CategoryTabFilters } from '@/components/filters/CategoryTabFilters';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -112,11 +112,69 @@ function GroupPurchasesPageContent() {
             if (key === 'sort') {
               return;
             }
+            // 카테고리 필터
+            else if (key === 'category') {
+              // 카테고리를 백엔드 필터에 맞게 변환
+              if (value === 'phone') {
+                params.append('category', '휴대폰');
+              } else if (value === 'internet') {
+                params.append('category', '인터넷');
+              } else if (value === 'electronics') {
+                params.append('category', '전자제품');
+              } else {
+                params.append('category', value);
+              }
+            }
             // 통합 검색 필터 (제목, 상품명, 지역 등)
             else if (key === 'search') {
               params.append('search', value);
             }
-            // 구매방식 필터 변환
+            // 브랜드 필터
+            else if (key === 'brand') {
+              params.append('manufacturer', value);
+            }
+            // 가격대 필터
+            else if (key === 'priceRange') {
+              params.append('price_range', value);
+            }
+            // 주요 기능 필터
+            else if (key === 'feature') {
+              params.append('features', value);
+            }
+            // 상품 상태 필터
+            else if (key === 'condition') {
+              params.append('condition', value);
+            }
+            // 통신사 필터
+            else if (key === 'carrier') {
+              let carrierCode = value;
+              if (value === 'LG U+') carrierCode = 'LGU';
+              params.append('telecom_carrier', carrierCode);
+            }
+            // 가입 유형 필터
+            else if (key === 'subscriptionType') {
+              let subscriptionType = '';
+              if (value === '신규') subscriptionType = 'new';
+              else if (value === '번호이동') subscriptionType = 'transfer';
+              else if (value === '기기변경') subscriptionType = 'change';
+              
+              if (subscriptionType) {
+                params.append('subscription_type', subscriptionType);
+              }
+            }
+            // 인터넷 속도 필터
+            else if (key === 'speed') {
+              params.append('internet_speed', value);
+            }
+            // 지역 필터
+            else if (key === 'region') {
+              params.append('region', value);
+            }
+            // 제품 분류 필터
+            else if (key === 'subCategory') {
+              params.append('sub_category', value);
+            }
+            // 구매방식 필터 변환 (기존 호환성)
             else if (key === 'purchaseType') {
               let subscriptionType = '';
               if (value === '신규가입') subscriptionType = 'new';
@@ -127,17 +185,7 @@ function GroupPurchasesPageContent() {
                 params.append('subscription_type', subscriptionType);
               }
             }
-            // 요금제 필터 변환
-            else if (key === 'priceRange') {
-              params.append('plan_info', value);
-            }
-            // 통신사 필터
-            else if (key === 'carrier') {
-              let carrierCode = value;
-              if (value === 'LG U+') carrierCode = 'LGU';
-              params.append('telecom_carrier', carrierCode);
-            }
-            // 제조사 필터
+            // 제조사 필터 (기존 호환성)
             else if (key === 'manufacturer') {
               params.append('manufacturer', value);
             }
@@ -180,6 +228,15 @@ function GroupPurchasesPageContent() {
   };
 
   /**
+   * 카테고리 변경 처리
+   */
+  const handleCategoryChange = (category: string) => {
+    // 카테고리 변경 시 기존 필터들을 초기화하고 해당 카테고리의 공구만 로드
+    const categoryFilters = { category };
+    fetchGroupBuys(categoryFilters, activeTab);
+  };
+
+  /**
    * 탭 변경 처리
    */
   const handleTabChange = useCallback((tab: string) => {
@@ -189,7 +246,7 @@ function GroupPurchasesPageContent() {
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'search'].includes(key)) {
+      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'search', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'region'].includes(key)) {
         filters[key] = value;
       }
     });
@@ -247,7 +304,7 @@ function GroupPurchasesPageContent() {
     let hasRefreshParam = false;
     
     searchParams.forEach((value, key) => {
-      if (['manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region'].includes(key)) {
+      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory'].includes(key)) {
         filters[key] = value;
       }
       if (key === 'refresh') {
@@ -325,7 +382,10 @@ function GroupPurchasesPageContent() {
 
           {/* 필터 컴포넌트 */}
           <div className="px-4 py-4">
-            <GroupBuyFilters onFiltersChange={handleFiltersChange} />
+            <CategoryTabFilters 
+              onFiltersChange={handleFiltersChange}
+              onCategoryChange={handleCategoryChange}
+            />
           </div>
 
           {/* 탭 메뉴 */}
