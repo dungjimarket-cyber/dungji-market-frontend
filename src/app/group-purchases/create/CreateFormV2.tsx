@@ -519,6 +519,18 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
           errorMessage = errorData.message;
         } else if (typeof errorData === 'string') {
           errorMessage = errorData;
+        } else if (errorData.product && Array.isArray(errorData.product)) {
+          // 상품 관련 validation 오류 처리
+          errorMessage = errorData.product[0];
+        } else if (typeof errorData === 'object') {
+          // 다른 field validation 오류들 처리
+          const firstErrorField = Object.keys(errorData)[0];
+          const firstError = errorData[firstErrorField];
+          if (Array.isArray(firstError)) {
+            errorMessage = firstError[0];
+          } else {
+            errorMessage = firstError;
+          }
         }
 
         toast({
