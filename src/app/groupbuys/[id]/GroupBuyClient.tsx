@@ -552,13 +552,29 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           </div>
 
           {/* 상품 기본 정보 */}
-          <div className="mb-4">
-            <p className="text-sm text-gray-500">출고가</p>
-            <p className="text-2xl font-bold mb-2">
-              ₩{new Intl.NumberFormat('ko-KR').format(groupBuyState?.product_details?.base_price || 0)}원
-            </p>
-            <p className="text-sm text-gray-700">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
-          </div>
+          {(groupBuyState?.product_details?.category_name === '인터넷' || groupBuyState?.product_details?.category_name === '인터넷+TV') ? (
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 mb-3">통신사별 요금제 확인하기</p>
+              <a
+                href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 transition-colors"
+              >
+                <span>SK브로드밴드 요금제</span>
+                <span className="ml-2">→</span>
+              </a>
+              <p className="text-sm text-gray-700 mt-3">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <p className="text-sm text-gray-500">출고가</p>
+              <p className="text-2xl font-bold mb-2">
+                ₩{new Intl.NumberFormat('ko-KR').format(groupBuyState?.product_details?.base_price || 0)}원
+              </p>
+              <p className="text-sm text-gray-700">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
+            </div>
+          )}
 
           {/* 총 지원금 정보 */}
           <div className="mb-4">

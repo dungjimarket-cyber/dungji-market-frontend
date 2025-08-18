@@ -252,19 +252,32 @@ export default function CategoryPage() {
                       <div className="mt-2 space-y-2">
                         <div className="flex flex-col">
                           <div className="flex space-x-2 text-sm">
-                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
-                            <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.registration_type || '번호이동'}</span>
+                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_carrier || groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
+                            <span className="font-medium text-blue-500">유형: {groupBuy.product_details?.subscription_type_korean || groupBuy.product_details?.registration_type || '번호이동'}</span>
                           </div>
-                          <p className="text-sm font-medium">요금제: {getPlanDisplay(groupBuy.product_details?.plan_info || '5G_standard')}</p>
                         </div>
                         <div className="flex justify-between items-center pt-2">
-                          <div>
-                            <p className="text-sm text-gray-500">출고가</p>
-                            <p className="text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</p>
-                            <p className="text-xs text-gray-600 mt-1">
+                          {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? (
+                            <div className="flex-1">
+                              <a
+                                href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                              >
+                                <span>통신사 요금제 확인</span>
+                                <span className="ml-1">→</span>
+                              </a>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-sm text-gray-500">출고가</p>
+                              <p className="text-xl font-bold">{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</p>
+                              <p className="text-xs text-gray-600 mt-1">
                               {groupBuy.product_details?.contract_info || '2년 약정'}
-                            </p>
-                          </div>
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

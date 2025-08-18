@@ -17,6 +17,11 @@ export interface GroupBuyProduct {
   plan_info?: string;
   contract_info?: string;
   
+  // 인터넷/인터넷+TV 관련 필드 (CreateFormV2에서 사용)
+  telecom_carrier?: string;
+  subscription_type?: string;
+  subscription_type_korean?: string;
+  
   // 상세 객체 참조
   telecom_detail?: TelecomDetail;
   electronics_detail?: ElectronicsDetail;

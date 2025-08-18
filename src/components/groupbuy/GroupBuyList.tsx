@@ -212,10 +212,24 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                   </div>
                   <div className="mt-2 space-y-2 h-24">
                     <div className="flex justify-between items-center pt-2">
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-500">출고가</p>
-                        <p className="text-lg sm:text-xl font-bold truncate">{groupBuy.product_details?.base_price?.toLocaleString() || '1,200,000'}원</p>
-                      </div>
+                      {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? (
+                        <div className="flex-1">
+                          <a
+                            href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-2 py-1 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                          >
+                            <span>통신사 요금제 확인</span>
+                            <span className="ml-1">→</span>
+                          </a>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-xs sm:text-sm text-gray-500">출고가</p>
+                          <p className="text-lg sm:text-xl font-bold truncate">{groupBuy.product_details?.base_price?.toLocaleString() || '1,200,000'}원</p>
+                        </div>
+                      )}
                       <div className="text-xs sm:text-sm text-gray-600 truncate max-w-[100px]">
                         {groupBuy.product_details?.contract_info || '2년 약정'}
                       </div>
