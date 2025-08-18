@@ -285,9 +285,13 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                   '정보 없음'
                 }
               </p>
-              <p className="text-xl font-bold mt-2">
-                {groupBuy.product_details.base_price.toLocaleString()}원
-              </p>
+              {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 가격 표시 */}
+              {groupBuy.product_details.category_name !== '인터넷' && 
+               groupBuy.product_details.category_name !== '인터넷+TV' && (
+                <p className="text-xl font-bold mt-2">
+                  {groupBuy.product_details.base_price.toLocaleString()}원
+                </p>
+              )}
             </div>
             <DialogFooter className="sm:justify-between">
               <Button variant="outline" onClick={handleClose} disabled={loading}>

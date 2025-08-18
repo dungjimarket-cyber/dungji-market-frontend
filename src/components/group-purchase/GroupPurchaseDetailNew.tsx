@@ -1492,7 +1492,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
                   <div className="text-left leading-relaxed">
                     <p>기존 사용하시던 기기의 남은 할부금과</p>
-                    <p>약정기간 이전 해지시 위약금은 가입자 본인 부담입니다.</p>
+                    <p>약정기간 이전 해지시 위약금은 본인 부담입니다.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">

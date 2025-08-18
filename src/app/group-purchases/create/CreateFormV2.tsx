@@ -938,6 +938,15 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   onSelectionChange={setSelectedRegions}
                   maxSelections={3}
                 />
+                {/* 지역 선택 안내 텍스트 */}
+                <div className="bg-sky-50 border border-sky-200 rounded-lg p-4">
+                  <div className="text-sky-800">
+                    <h4 className="font-medium mb-2">가까운 판매자를 만나보세요</h4>
+                    <p className="text-sm text-sky-700">
+                      원하는 지역 최대3곳을 선택하면, 해당 지역 판매자가 견적을 제안해 드립니다.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* 참여 인원 */}
@@ -986,7 +995,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               </div>
 
               {/* 제출 버튼 */}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
