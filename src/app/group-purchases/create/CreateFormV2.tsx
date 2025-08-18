@@ -207,16 +207,16 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       } else if (mainTab === 'internet') {
         if (!product.category || product.category.detail_type !== 'internet') return false;
         
-        // 서브 탭 필터링 (인터넷)
-        if (subTab !== 'all' && product.extra_data) {
+        // 서브 탭 필터링 (인터넷) - extra_data가 있는 경우만 필터링
+        if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
           const carrier = product.extra_data.carrier;
           if (subTab === 'sk' && carrier !== 'SK') return false;
           if (subTab === 'kt' && carrier !== 'KT') return false;
           if (subTab === 'lgu' && carrier !== 'LGU') return false;
         }
         
-        // 가입 유형 필터링
-        if (product.extra_data) {
+        // 가입 유형 필터링 - extra_data와 subscription_type이 있는 경우만 필터링
+        if (product.extra_data && product.extra_data.subscription_type) {
           const subscriptionType = product.extra_data.subscription_type;
           if (internetSubscriptionType === 'transfer' && subscriptionType !== 'transfer') return false;
           if (internetSubscriptionType === 'new' && subscriptionType !== 'new') return false;
@@ -226,16 +226,16 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       } else if (mainTab === 'internet_tv') {
         if (!product.category || product.category.detail_type !== 'internet_tv') return false;
         
-        // 서브 탭 필터링 (인터넷+TV)
-        if (subTab !== 'all' && product.extra_data) {
+        // 서브 탭 필터링 (인터넷+TV) - extra_data가 있는 경우만 필터링
+        if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
           const carrier = product.extra_data.carrier;
           if (subTab === 'sk' && carrier !== 'SK') return false;
           if (subTab === 'kt' && carrier !== 'KT') return false;
           if (subTab === 'lgu' && carrier !== 'LGU') return false;
         }
         
-        // 가입 유형 필터링
-        if (product.extra_data) {
+        // 가입 유형 필터링 - extra_data와 subscription_type이 있는 경우만 필터링
+        if (product.extra_data && product.extra_data.subscription_type) {
           const subscriptionType = product.extra_data.subscription_type;
           if (internetSubscriptionType === 'transfer' && subscriptionType !== 'transfer') return false;
           if (internetSubscriptionType === 'new' && subscriptionType !== 'new') return false;
