@@ -97,7 +97,9 @@ export default function ProfileSection() {
       
       // 프로필 정보 상태 업데이트
       setEmail(user.email || '');
-      setNickname(user.nickname || user.username || '');
+      // nickname 필드가 있으면 사용, 없으면 username 사용, 둘 다 없으면 이메일 앞부분 사용
+      const displayNickname = user.nickname || user.username || (user.email ? user.email.split('@')[0] : '');
+      setNickname(displayNickname);
       setPhoneNumber(user.phone_number || '');
       setAddressRegion(user.address_region || null);
             
@@ -136,35 +138,15 @@ export default function ProfileSection() {
     }
   }, [user]); // user가 변경될 때만 업데이트
   
-  // 이메일, 닉네임, 지역, 회원구분 필드 초기화 (선택적 백업 용도)
+  // 회원구분 필드 초기화 (선택적 백업 용도)
   useEffect(() => {
-    if (user?.email) {
-      setEmail(user.email);
-    }
-    
-    // 닉네임 초기화 - username 또는 nickname 또는 이메일 앞부분 사용
-    if (user?.username) {
-      setNickname(user.username);
-    } else if (user?.nickname) {
-      setNickname(user.nickname);
-    } else if (user?.email) {
-      // 닉네임이 없는 경우 이메일 앞부분을 기본 닉네임으로 사용
-      const defaultNickname = user.email.split('@')[0];
-      setNickname(defaultNickname);
-    }
-    
-    // 지역 정보 초기화 - 구버전 호환용 코드 (삭제 예정)
-    if (user?.region) {
-      setRegion(user.region);
-    }
-    
     // 회원구분 초기화
     if (user?.user_type) {
       setUserType(user.user_type);
     } else {
       setUserType('일반');
     }
-  }, [user?.email, user?.username, user?.nickname, user?.user_type]);
+  }, [user?.user_type]);
   
   // 지역 목록 가져오기
   useEffect(() => {
@@ -410,14 +392,15 @@ export default function ProfileSection() {
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">프로필 정보</h3>
           
-          {/* 아이디 섹션 (수정 불가) */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
-            <div className="p-2 bg-gray-50 rounded-md">
-              <span className="font-medium">{user?.username || '아이디 정보 없음'}</span>
-              <span className="text-xs text-gray-500 ml-2">(변경 불가)</span>
+          {/* 아이디 섹션 - 카카오 계정이 아닌 경우에만 표시 */}
+          {user?.sns_type !== 'kakao' && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
+              <div className="p-2 bg-white border border-gray-300 rounded-md">
+                <span className="font-medium">{user?.username || '아이디 정보 없음'}</span>
+              </div>
             </div>
-          </div>
+          )}
           
           {/* 닉네임 섹션 */}
           <div className="mb-4">
@@ -458,7 +441,8 @@ export default function ProfileSection() {
                     onClick={() => {
                       setIsEditing(false);
                       setEditField(null);
-                      setNickname(user?.nickname || user?.username || '');  // nickname 우선
+                      // 원래 닉네임으로 되돌리기 - nickname 우선, 없으면 username
+                      setNickname(user?.nickname || user?.username || '');
                       setNicknameError('');
                     }}
                     className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"

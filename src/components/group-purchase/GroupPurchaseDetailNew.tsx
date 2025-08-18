@@ -234,6 +234,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
+  const isInternetCategory = groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV';
+  const isSupportBidType = isTelecom || isInternetCategory;
   
   // 디버깅 로그
   console.log('공구 상태 체크:', {
@@ -1969,7 +1971,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
                 <div className="text-sm font-medium">견적 유형:</div>
                 <div className="text-sm font-medium px-3 py-1 bg-blue-600 text-white rounded-md">
-                  {isTelecom ? '지원금 견적' : '가격 견적'}
+                  {isSupportBidType ? '지원금 견적' : '가격 견적'}
                 </div>
               </div>
             )}
