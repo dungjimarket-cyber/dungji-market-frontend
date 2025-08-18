@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface FilterOptions {
   categories: string[];
@@ -250,158 +251,185 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
         {/* 적용된 필터 배지들 */}
         {renderActiveFilters()}
 
-        {/* 필터 옵션들 */}
+        {/* 필터 옵션들 - 탭 방식 */}
         {isExpanded && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {/* 카테고리 필터 */}
-            <div>
-              <label className="text-sm font-medium mb-1 block">카테고리</label>
-              <Select
-                value={filters.category}
-                onValueChange={(value) => handleFilterChange('category', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="카테고리 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="basic">기본</TabsTrigger>
+              <TabsTrigger value="product">상품</TabsTrigger>
+              <TabsTrigger value="service">서비스</TabsTrigger>
+              <TabsTrigger value="location">지역</TabsTrigger>
+            </TabsList>
+            
+            {/* 기본 필터 탭 */}
+            <TabsContent value="basic" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 카테고리 필터 */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block">카테고리</label>
+                  <Select
+                    value={filters.category}
+                    onValueChange={(value) => handleFilterChange('category', value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="카테고리 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      {filterOptions.categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* 정렬 옵션 - hideSort가 false일 때만 표시 */}
-            {!hideSort && (
-              <div>
-                <label className="text-sm font-medium mb-1 block">정렬</label>
-                <Select
-                  value={filters.sort}
-                  onValueChange={(value) => handleFilterChange('sort', value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="정렬 방식 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    {filterOptions.sortOptions.map((sortOption) => (
-                      <SelectItem key={sortOption} value={sortOption}>
-                        {sortOption}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* 정렬 옵션 - hideSort가 false일 때만 표시 */}
+                {!hideSort && (
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">정렬</label>
+                    <Select
+                      value={filters.sort}
+                      onValueChange={(value) => handleFilterChange('sort', value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="정렬 방식 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        {filterOptions.sortOptions.map((sortOption) => (
+                          <SelectItem key={sortOption} value={sortOption}>
+                            {sortOption}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-            )}
+            </TabsContent>
 
-            {/* 제조사 필터 */}
-            <div>
-              <label className="text-sm font-medium mb-1 block">제조사</label>
-              <Select
-                value={filters.manufacturer}
-                onValueChange={(value) => handleFilterChange('manufacturer', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="제조사 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.manufacturers.map((manufacturer) => (
-                    <SelectItem key={manufacturer} value={manufacturer}>
-                      {manufacturer}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* 상품 필터 탭 */}
+            <TabsContent value="product" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 제조사 필터 */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block">제조사</label>
+                  <Select
+                    value={filters.manufacturer}
+                    onValueChange={(value) => handleFilterChange('manufacturer', value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="제조사 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      {filterOptions.manufacturers.map((manufacturer) => (
+                        <SelectItem key={manufacturer} value={manufacturer}>
+                          {manufacturer}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* 통신사 필터 */}
-            <div>
-              <label className="block text-sm font-medium mb-2">통신사</label>
-              <Select
-                value={filters.carrier}
-                onValueChange={(value) => handleFilterChange('carrier', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="통신사 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.carriers.map((carrier) => (
-                    <SelectItem key={carrier} value={carrier}>
-                      {carrier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* 요금제 필터 */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">요금제</label>
+                  <Select
+                    value={filters.priceRange}
+                    onValueChange={(value) => handleFilterChange('priceRange', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="요금제 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      {filterOptions.priceRanges.map((range) => (
+                        <SelectItem key={range} value={range}>
+                          {range}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
 
-            {/* 구매방식 필터 */}
-            <div>
-              <label className="block text-sm font-medium mb-2">구매방식</label>
-              <Select
-                value={filters.purchaseType}
-                onValueChange={(value) => handleFilterChange('purchaseType', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="구매방식 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.purchaseTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* 서비스 필터 탭 */}
+            <TabsContent value="service" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 통신사 필터 */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">통신사</label>
+                  <Select
+                    value={filters.carrier}
+                    onValueChange={(value) => handleFilterChange('carrier', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="통신사 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      {filterOptions.carriers.map((carrier) => (
+                        <SelectItem key={carrier} value={carrier}>
+                          {carrier}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* 요금제 필터 */}
-            <div>
-              <label className="block text-sm font-medium mb-2">요금제</label>
-              <Select
-                value={filters.priceRange}
-                onValueChange={(value) => handleFilterChange('priceRange', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="요금제 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.priceRanges.map((range) => (
-                    <SelectItem key={range} value={range}>
-                      {range}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* 구매방식 필터 */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">구매방식</label>
+                  <Select
+                    value={filters.purchaseType}
+                    onValueChange={(value) => handleFilterChange('purchaseType', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="구매방식 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      {filterOptions.purchaseTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
 
-            {/* 지역 필터 */}
-            <div>
-              <label className="block text-sm font-medium mb-2">지역</label>
-              <Select
-                value={filters.region}
-                onValueChange={(value) => handleFilterChange('region', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="지역 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체 지역</SelectItem>
-                  {regions.map((region) => (
-                    <SelectItem key={region.name} value={region.name}>
-                      {region.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+            {/* 지역 필터 탭 */}
+            <TabsContent value="location" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 gap-4">
+                {/* 지역 필터 */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">지역</label>
+                  <Select
+                    value={filters.region}
+                    onValueChange={(value) => handleFilterChange('region', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="지역 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 지역</SelectItem>
+                      {regions.map((region) => (
+                        <SelectItem key={region.name} value={region.name}>
+                          {region.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         )}
       </CardContent>
     </Card>
