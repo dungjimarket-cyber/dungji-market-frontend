@@ -187,7 +187,11 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     return products.filter(product => {
       // 메인 탭 필터링
       if (mainTab === 'phone') {
-        if (!product.category || product.category.detail_type !== 'telecom') return false;
+        // 휴대폰은 카테고리명이 '휴대폰'이거나 detail_type이 'telecom'인 경우
+        const isPhone = product.category_name === '휴대폰' || 
+                       product.category?.detail_type === 'telecom' ||
+                       (product.category?.detail_type === 'none' && product.category_name === '휴대폰');
+        if (!isPhone) return false;
         
         // 서브 탭 필터링 (휴대폰)
         if (subTab === 'samsung') {
