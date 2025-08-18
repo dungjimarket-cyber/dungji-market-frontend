@@ -396,9 +396,7 @@ export default function ProfileSection() {
           {user?.sns_type !== 'kakao' && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
-              <div className="p-2 bg-white border border-gray-300 rounded-md">
-                <span className="font-medium">{user?.username || '아이디 정보 없음'}</span>
-              </div>
+              <span className="font-medium text-lg">{user?.username || '아이디 정보 없음'}</span>
             </div>
           )}
           

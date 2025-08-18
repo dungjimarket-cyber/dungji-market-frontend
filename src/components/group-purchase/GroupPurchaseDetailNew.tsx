@@ -1179,16 +1179,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <p className="text-sm font-medium text-blue-800 mb-3">통신사별 요금제 확인하기</p>
               <div className="grid grid-cols-1 gap-2">
                 <a
-                  href="https://www.tworld.co.kr/web/product/plan/list"
+                  href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
                 >
-                  <span>SK텔레콤 요금제</span>
+                  <span>SK브로드밴드 요금제</span>
                   <span>→</span>
                 </a>
                 <a
-                  href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                  href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
@@ -1197,7 +1197,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <span>→</span>
                 </a>
                 <a
-                  href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                  href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
@@ -1234,15 +1234,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <p className="text-xs font-medium text-gray-700 mb-2">통신사별 요금제 알아보기</p>
                   <div className="space-y-1">
                     <a
-                      href="https://www.tworld.co.kr/web/product/plan/list"
+                      href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
                     >
-                      SK텔레콤 →
+                      SK브로드밴드 →
                     </a>
                     <a
-                      href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                      href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
@@ -1250,7 +1250,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       KT →
                     </a>
                     <a
-                      href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                      href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"

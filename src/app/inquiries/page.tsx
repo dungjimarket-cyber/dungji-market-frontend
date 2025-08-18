@@ -117,6 +117,9 @@ export default function InquiriesPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">1:1 문의</h1>
         <p className="text-gray-600">궁금한 점이나 불편한 점을 문의해주세요.</p>
+        <p className="text-sm text-blue-600 mt-2">
+          파일전송이 필요하시거나, 실시간 상담을 원하실 경우 카카오톡 문의하기를 이용해 주세요.
+        </p>
       </div>
 
       {!showForm ? (
@@ -133,6 +136,15 @@ export default function InquiriesPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="author">작성자</Label>
+                <Input
+                  id="author"
+                  value={user?.nickname || user?.username || ''}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
               <div>
                 <Label htmlFor="title">제목</Label>
                 <Input
@@ -157,7 +169,7 @@ export default function InquiriesPage() {
               <div className="flex gap-2">
                 <Button type="submit" disabled={submitting}>
                   <Send className="w-4 h-4 mr-2" />
-                  {submitting ? '전송 중...' : '문의 전송'}
+                  {submitting ? '작성 중...' : '작성완료'}
                 </Button>
                 <Button 
                   type="button" 
