@@ -55,6 +55,11 @@ interface GroupBuy {
   region_type?: string;
   region?: string;
   region_name?: string;
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>; // 다중 지역 정보
 }
 
 /**
@@ -260,8 +265,12 @@ export default function ParticipatingGroupBuys() {
                   </div>
                 )}
                 
-                {/* 지역 정보 표시 */}
-                {groupBuy.region_name && (
+                {/* 지역 정보 표시 - 다중 지역 지원 */}
+                {(groupBuy.regions && groupBuy.regions.length > 0) ? (
+                  <div className="text-xs text-gray-500 mt-1">
+                    <span>📍 {groupBuy.regions.map(region => region.name).join(', ')}</span>
+                  </div>
+                ) : groupBuy.region_name && (
                   <div className="text-xs text-gray-500 mt-1">
                     <span>📍 {groupBuy.region_name}</span>
                   </div>

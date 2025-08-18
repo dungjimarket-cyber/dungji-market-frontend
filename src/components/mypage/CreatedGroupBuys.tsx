@@ -52,6 +52,14 @@ interface GroupBuy {
   subscription_type?: string; // 가입유형 (new, transfer, change)
   subscription_type_korean?: string; // 가입유형 한글명 (백엔드에서 제공)
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
+  
+  // 지역 관련 필드
+  region_name?: string; // 기존 단일 지역 이름
+  regions?: Array<{
+    id: number;
+    name: string;
+    parent?: string;
+  }>; // 다중 지역 정보
 }
 
 /**
@@ -328,6 +336,17 @@ export default function CreatedGroupBuys() {
                               {groupBuy.subscription_type_korean}
                             </p>
                           )}
+                        </div>
+                      )}
+                      
+                      {/* 지역 정보 표시 - 다중 지역 지원 */}
+                      {(groupBuy.regions && groupBuy.regions.length > 0) ? (
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span>📍 {groupBuy.regions.map(region => region.name).join(', ')}</span>
+                        </div>
+                      ) : groupBuy.region_name && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span>📍 {groupBuy.region_name}</span>
                         </div>
                       )}
                       

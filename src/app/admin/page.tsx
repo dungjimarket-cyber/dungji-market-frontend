@@ -668,13 +668,13 @@ export default function AdminPage() {
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <h3 className="font-semibold mb-2">
-                            {user.username || user.email?.split('@')[0] || '알 수 없음'}
-                            {user.nickname && user.nickname !== user.username && (
+                            {user.actual_username || user.username || user.email?.split('@')[0] || '알 수 없음'}
+                            {user.nickname && user.nickname !== (user.actual_username || user.username) && (
                               <span className="text-sm text-gray-500 font-normal"> ({user.nickname})</span>
                             )}
                           </h3>
                           <div className="space-y-1 text-sm">
-                            <p><span className="text-muted-foreground">아이디:</span> {user.username || user.email?.split('@')[0] || '알 수 없음'}</p>
+                            <p><span className="text-muted-foreground">아이디:</span> {user.actual_username || user.username || user.email?.split('@')[0] || '알 수 없음'}</p>
                             <p><span className="text-muted-foreground">이메일:</span> {user.email}</p>
                             <p><span className="text-muted-foreground">사업자번호:</span> {user.business_reg_number}</p>
                             <p><span className="text-muted-foreground">가입일:</span> {new Date(user.date_joined).toLocaleDateString()}</p>
@@ -849,8 +849,8 @@ export default function AdminPage() {
                         <tr key={seller.id} className="border-b hover:bg-gray-50">
                           <td className="py-2">{seller.id}</td>
                           <td className="py-2">
-                            {seller.username || seller.email?.split('@')[0] || '알 수 없음'}
-                            {seller.nickname && seller.nickname !== seller.username && (
+                            {seller.actual_username || seller.username || seller.email?.split('@')[0] || '알 수 없음'}
+                            {seller.nickname && seller.nickname !== (seller.actual_username || seller.username) && (
                               <div className="text-xs text-gray-500">({seller.nickname})</div>
                             )}
                           </td>
