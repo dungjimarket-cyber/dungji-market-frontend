@@ -50,7 +50,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { getRegions, searchRegionsByName, Region } from '@/lib/api/regionService';
-import { getSession } from 'next-auth/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 
@@ -320,15 +319,16 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         return;
       }
 
-      if (selectedRegions.length === 0) {
-        toast({
-          variant: 'destructive',
-          title: '지역 선택 필요',
-          description: '최소 1개 이상의 지역을 선택해주세요.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
+      // 지역 선택은 선택사항으로 변경 (기존 폼과 동일하게)
+      // if (selectedRegions.length === 0) {
+      //   toast({
+      //     variant: 'destructive',
+      //     title: '지역 선택 필요',
+      //     description: '최소 1개 이상의 지역을 선택해주세요.',
+      //   });
+      //   setIsSubmitting(false);
+      //   return;
+      // }
 
       // 종료 시간 계산
       const endTime = new Date();
@@ -379,9 +379,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       
       console.log('폼 제출 데이터:', submitData);
 
-      // API 호출
-      const session = await getSession();
-      if (!session?.user?.accessToken) {
+      // API 호출 - useAuth 훅 사용
+      if (!user || !accessToken) {
         toast({
           variant: 'destructive',
           title: '인증 오류',
@@ -396,7 +395,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.user.accessToken}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify(submitData),
       });
