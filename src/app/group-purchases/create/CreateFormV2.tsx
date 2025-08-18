@@ -64,6 +64,7 @@ interface Product {
   name: string;
   base_price: number;
   category_name: string;
+  category_detail_type?: 'none' | 'telecom' | 'electronics' | 'rental' | 'subscription' | 'internet' | 'internet_tv';
   category?: {
     id: number;
     name: string;
@@ -205,7 +206,10 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         }
         return true; // 'all' 선택 시 모든 휴대폰 상품
       } else if (mainTab === 'internet') {
-        if (!product.category || product.category.detail_type !== 'internet') return false;
+        // category_detail_type 필드를 직접 체크 (API가 category를 ID로 반환하는 경우)
+        const isInternet = product.category_detail_type === 'internet' || 
+                          product.category?.detail_type === 'internet';
+        if (!isInternet) return false;
         
         // 서브 탭 필터링 (인터넷) - extra_data가 있는 경우만 필터링
         if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
@@ -224,7 +228,10 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         
         return true;
       } else if (mainTab === 'internet_tv') {
-        if (!product.category || product.category.detail_type !== 'internet_tv') return false;
+        // category_detail_type 필드를 직접 체크 (API가 category를 ID로 반환하는 경우)
+        const isInternetTV = product.category_detail_type === 'internet_tv' || 
+                            product.category?.detail_type === 'internet_tv';
+        if (!isInternetTV) return false;
         
         // 서브 탭 필터링 (인터넷+TV) - extra_data가 있는 경우만 필터링
         if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
