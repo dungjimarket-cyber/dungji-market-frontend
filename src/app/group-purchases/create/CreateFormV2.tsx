@@ -156,7 +156,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       product: '',
       title: '',
       description: '',
-      min_participants: 2,
+      min_participants: 1, // 최소 인원은 항상 1로 고정
       max_participants: 10,
       end_time_option: 'slider',
       sliderHours: 24,
@@ -277,8 +277,14 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
     try {
+      // min_participants를 항상 1로 설정
+      const submitData = {
+        ...values,
+        min_participants: 1
+      };
+      
       // API 호출 로직...
-      console.log('폼 제출:', values);
+      console.log('폼 제출:', submitData);
       
       // 성공 시 처리
       setShowSuccessDialog(true);
@@ -677,46 +683,25 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               {/* 참여 인원 */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">참여 인원</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="min_participants"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>최소 인원</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="1"
-                            max="10"
-                            placeholder="2"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="max_participants"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>최대 인원</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="1"
-                            max="10"
-                            placeholder="10"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="max_participants"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>최대 인원</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          placeholder="10"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* 시간 설정 */}
