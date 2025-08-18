@@ -988,7 +988,7 @@ function RegisterPageContent() {
                         onChange={handleBusinessRegNumberChange}
                         maxLength={12}
                       />
-                      <p className="text-xs text-gray-500 mt-1">사업자 확인용, 거래 사고 방지를 위한 최소한의 인증절차</p>
+                      <p className="text-xs text-gray-500 mt-1">사업자 등록번호는 판매자 신뢰도 확보 및 거래 안전을 위해 수집됩니다</p>
                     </div>
 
                     {/* 비대면 판매가능 영업소 인증 */}
