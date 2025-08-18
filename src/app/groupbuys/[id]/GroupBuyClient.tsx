@@ -741,9 +741,9 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         <Alert className="bg-yellow-50 border-yellow-200 mb-4">
           <AlertTriangle className="h-4 w-4 text-yellow-500" />
           <AlertDescription className="text-sm text-yellow-700">
-            <Link href="/guidelines" className="underline">
-              공동 구매 가이드라인
-            </Link>
+            <a href="https://doongji-market-1vi5n3i.gamma.site/" target="_blank" rel="noopener noreferrer" className="underline">
+              이용 가이드
+            </a>
           </AlertDescription>
         </Alert>
 

@@ -14,7 +14,7 @@ export default function GuidelinesPage() {
           <Link href="/" className="mr-2">
             <ArrowLeft size={24} />
           </Link>
-          <h1 className="text-lg font-medium">공동 구매 가이드라인</h1>
+          <h1 className="text-lg font-medium">이용 가이드</h1>
         </div>
         <p className="text-sm text-gray-500 mt-1">공구 참여 전 꼭 읽어보세요</p>
       </div>

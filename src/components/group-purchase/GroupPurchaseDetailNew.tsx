@@ -2151,9 +2151,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         {/* 가이드라인 링크 */}
         <div className="text-center mt-6">
-          <Link href="/guidelines" className="text-sm text-blue-600 underline hover:text-blue-800">
-            📋 공동 구매 가이드라인 확인하기
-          </Link>
+          <a href="https://doongji-market-1vi5n3i.gamma.site/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline hover:text-blue-800">
+            📋 이용 가이드 확인하기
+          </a>
           <p className="text-xs text-gray-500 mt-2">
             • 공구 참여 전 가이드라인을 꼭 확인해주세요
           </p>
