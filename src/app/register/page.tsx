@@ -61,6 +61,7 @@ function RegisterPageContent() {
     // 판매자 전용 필드
     business_name: '',
     business_reg_number: '',
+    seller_category: '',
     is_remote_sales: false,
     business_reg_image: null as File | null,
     
@@ -446,6 +447,7 @@ function RegisterPageContent() {
       if (formData.role === 'seller') {
         submitData.append('business_name', formData.business_name || formData.nickname);
         submitData.append('business_reg_number', formData.business_reg_number);
+        submitData.append('seller_category', formData.seller_category);
         submitData.append('is_remote_sales_enabled', formData.is_remote_sales.toString());
         
         // 사업장 주소 추가 - 시/도와 시/군/구를 합쳐서 전송
@@ -985,6 +987,29 @@ function RegisterPageContent() {
                 {formData.role === 'seller' && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium text-gray-900">사업자 정보</h3>
+                    
+                    {/* 판매회원 구분 */}
+                    <div>
+                      <label htmlFor="seller_category" className="block text-sm font-medium text-gray-700 mb-1">
+                        판매회원 구분 <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        id="seller_category"
+                        name="seller_category"
+                        required={formData.role === 'seller'}
+                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.seller_category}
+                        onChange={handleChange}
+                      >
+                        <option value="">판매 유형을 선택해주세요</option>
+                        <option value="electronics">전자제품 판매</option>
+                        <option value="telecom">통신상품판매</option>
+                        <option value="rental">렌탈 서비스</option>
+                        <option value="subscription">구독 서비스</option>
+                        <option value="other">기타</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">주요 판매 상품 유형을 선택해주세요</p>
+                    </div>
                     
                     {/* 사업자등록번호 */}
                     <div>
