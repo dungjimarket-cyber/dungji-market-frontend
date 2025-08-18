@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 
 // 대분류 카테고리 정의
-type MainCategory = 'phone' | 'internet' | 'electronics';
+type MainCategory = 'phone' | 'internet' | 'internet_tv';
 
 interface MainCategoryItem {
   id: MainCategory;
@@ -28,22 +28,20 @@ interface MainCategoryItem {
 // 카테고리별 필터 옵션 정의
 interface CategoryFilterOptions {
   phone: {
-    brands: string[];
-    priceRanges: string[];
-    features: string[];
-    conditions: string[];
+    manufacturers: string[];
+    carriers: string[];
+    subscriptionTypes: string[];
+    plans: string[];
   };
   internet: {
     carriers: string[];
     subscriptionTypes: string[];
     speeds: string[];
-    regions: string[];
   };
-  electronics: {
-    categories: string[];
-    brands: string[];
-    priceRanges: string[];
-    conditions: string[];
+  internet_tv: {
+    carriers: string[];
+    subscriptionTypes: string[];
+    speeds: string[];
   };
 }
 
@@ -76,8 +74,8 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
       bgColor: 'bg-green-50 border-green-200'
     },
     {
-      id: 'electronics',
-      name: '전자제품',
+      id: 'internet_tv',
+      name: '인터넷+TV',
       icon: Monitor,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50 border-purple-200'
@@ -87,28 +85,20 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
   // 카테고리별 필터 옵션
   const filterOptions: CategoryFilterOptions = {
     phone: {
-      brands: ['삼성', '애플', 'LG', '샤오미', '구글', '소니', '화웨이', '오포', '비보'],
-      priceRanges: [
-        '10만원 이하', '10만원대', '20만원대', '30만원대', '40만원대',
-        '50만원대', '60만원대', '70만원대', '80만원대', '90만원대', '100만원 이상'
-      ],
-      features: ['5G', '무선충전', '방수', '고화질카메라', '대용량배터리', '빠른충전'],
-      conditions: ['새제품', '리퍼제품', '중고A급', '중고B급']
+      manufacturers: ['삼성', '애플'],
+      carriers: ['SKT', 'KT', 'LG U+'],
+      subscriptionTypes: ['기기변경', '번호이동', '신규가입'],
+      plans: ['5만원대', '6만원대', '7만원대', '8만원대', '9만원대', '10만원이상']
     },
     internet: {
-      carriers: ['SKT', 'KT', 'LGU+', 'MVNO'],
-      subscriptionTypes: ['신규', '번호이동', '기기변경'],
-      speeds: ['100Mbps', '500Mbps', '1Gbps', '5Gbps', '10Gbps'],
-      regions: ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주']
+      carriers: ['SK', 'KT', 'LG U+'],
+      subscriptionTypes: ['통신사이동', '신규가입'],
+      speeds: ['100M', '200M', '500M', '1G', '2.5G']
     },
-    electronics: {
-      categories: ['TV', '냉장고', '세탁기', '에어컨', '청소기', '오디오', '게임기', '카메라'],
-      brands: ['삼성', 'LG', '소니', '파나소닉', '다이슨', '필립스', '샤프', '하이어'],
-      priceRanges: [
-        '10만원 이하', '10-30만원', '30-50만원', '50-100만원',
-        '100-200만원', '200-300만원', '300만원 이상'
-      ],
-      conditions: ['새제품', '리퍼제품', '전시상품', '중고A급', '중고B급']
+    internet_tv: {
+      carriers: ['SK', 'KT', 'LG U+'],
+      subscriptionTypes: ['통신사이동', '신규가입'],
+      speeds: ['100M', '200M', '500M', '1G', '2.5G']
     }
   };
 
@@ -217,84 +207,84 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
       case 'phone':
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 브랜드 */}
+            {/* 제조사 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">브랜드</label>
+              <label className="text-sm font-medium text-gray-700">제조사</label>
               <Select
-                value={currentFilters.brand || 'all'}
-                onValueChange={(value) => handleFilterChange('brand', value)}
+                value={currentFilters.manufacturer || 'all'}
+                onValueChange={(value) => handleFilterChange('manufacturer', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="브랜드 선택" />
+                  <SelectValue placeholder="제조사 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.phone.brands.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
-                      {brand}
+                  {filterOptions.phone.manufacturers.map((manufacturer) => (
+                    <SelectItem key={manufacturer} value={manufacturer}>
+                      {manufacturer}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 가격대 */}
+            {/* 통신사 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">가격대</label>
+              <label className="text-sm font-medium text-gray-700">통신사</label>
               <Select
-                value={currentFilters.priceRange || 'all'}
-                onValueChange={(value) => handleFilterChange('priceRange', value)}
+                value={currentFilters.carrier || 'all'}
+                onValueChange={(value) => handleFilterChange('carrier', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="가격대 선택" />
+                  <SelectValue placeholder="통신사 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.phone.priceRanges.map((range) => (
-                    <SelectItem key={range} value={range}>
-                      {range}
+                  {filterOptions.phone.carriers.map((carrier) => (
+                    <SelectItem key={carrier} value={carrier}>
+                      {carrier}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 주요 기능 */}
+            {/* 가입유형 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">주요 기능</label>
+              <label className="text-sm font-medium text-gray-700">가입유형</label>
               <Select
-                value={currentFilters.feature || 'all'}
-                onValueChange={(value) => handleFilterChange('feature', value)}
+                value={currentFilters.subscriptionType || 'all'}
+                onValueChange={(value) => handleFilterChange('subscriptionType', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="기능 선택" />
+                  <SelectValue placeholder="가입유형 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.phone.features.map((feature) => (
-                    <SelectItem key={feature} value={feature}>
-                      {feature}
+                  {filterOptions.phone.subscriptionTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 상품 상태 */}
+            {/* 요금제 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">상품 상태</label>
+              <label className="text-sm font-medium text-gray-700">요금제</label>
               <Select
-                value={currentFilters.condition || 'all'}
-                onValueChange={(value) => handleFilterChange('condition', value)}
+                value={currentFilters.plan || 'all'}
+                onValueChange={(value) => handleFilterChange('plan', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="상태 선택" />
+                  <SelectValue placeholder="요금제 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.phone.conditions.map((condition) => (
-                    <SelectItem key={condition} value={condition}>
-                      {condition}
+                  {filterOptions.phone.plans.map((plan) => (
+                    <SelectItem key={plan} value={plan}>
+                      {plan}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -305,7 +295,7 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
 
       case 'internet':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* 통신사 */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">통신사</label>
@@ -327,9 +317,9 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
               </Select>
             </div>
 
-            {/* 가입 유형 */}
+            {/* 가입유형 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">가입 유형</label>
+              <label className="text-sm font-medium text-gray-700">가입유형</label>
               <Select
                 value={currentFilters.subscriptionType || 'all'}
                 onValueChange={(value) => handleFilterChange('subscriptionType', value)}
@@ -348,9 +338,9 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
               </Select>
             </div>
 
-            {/* 속도 */}
+            {/* 인터넷 속도 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">인터넷 속도</label>
+              <label className="text-sm font-medium text-gray-700">인터넷속도</label>
               <Select
                 value={currentFilters.speed || 'all'}
                 onValueChange={(value) => handleFilterChange('speed', value)}
@@ -368,111 +358,69 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
                 </SelectContent>
               </Select>
             </div>
-
-            {/* 지역 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">지역</label>
-              <Select
-                value={currentFilters.region || 'all'}
-                onValueChange={(value) => handleFilterChange('region', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="지역 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.internet.regions.map((region) => (
-                    <SelectItem key={region} value={region}>
-                      {region}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         );
 
-      case 'electronics':
+      case 'internet_tv':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 카테고리 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* 통신사 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">제품 분류</label>
+              <label className="text-sm font-medium text-gray-700">통신사</label>
               <Select
-                value={currentFilters.subCategory || 'all'}
-                onValueChange={(value) => handleFilterChange('subCategory', value)}
+                value={currentFilters.carrier || 'all'}
+                onValueChange={(value) => handleFilterChange('carrier', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="분류 선택" />
+                  <SelectValue placeholder="통신사 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.electronics.categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                  {filterOptions.internet_tv.carriers.map((carrier) => (
+                    <SelectItem key={carrier} value={carrier}>
+                      {carrier}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 브랜드 */}
+            {/* 가입유형 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">브랜드</label>
+              <label className="text-sm font-medium text-gray-700">가입유형</label>
               <Select
-                value={currentFilters.brand || 'all'}
-                onValueChange={(value) => handleFilterChange('brand', value)}
+                value={currentFilters.subscriptionType || 'all'}
+                onValueChange={(value) => handleFilterChange('subscriptionType', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="브랜드 선택" />
+                  <SelectValue placeholder="가입유형 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.electronics.brands.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
-                      {brand}
+                  {filterOptions.internet_tv.subscriptionTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 가격대 */}
+            {/* 인터넷 속도 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">가격대</label>
+              <label className="text-sm font-medium text-gray-700">인터넷속도</label>
               <Select
-                value={currentFilters.priceRange || 'all'}
-                onValueChange={(value) => handleFilterChange('priceRange', value)}
+                value={currentFilters.speed || 'all'}
+                onValueChange={(value) => handleFilterChange('speed', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="가격대 선택" />
+                  <SelectValue placeholder="속도 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.electronics.priceRanges.map((range) => (
-                    <SelectItem key={range} value={range}>
-                      {range}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 상품 상태 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">상품 상태</label>
-              <Select
-                value={currentFilters.condition || 'all'}
-                onValueChange={(value) => handleFilterChange('condition', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="상태 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {filterOptions.electronics.conditions.map((condition) => (
-                    <SelectItem key={condition} value={condition}>
-                      {condition}
+                  {filterOptions.internet_tv.speeds.map((speed) => (
+                    <SelectItem key={speed} value={speed}>
+                      {speed}
                     </SelectItem>
                   ))}
                 </SelectContent>

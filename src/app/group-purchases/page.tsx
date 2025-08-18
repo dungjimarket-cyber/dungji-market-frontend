@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { MainHeader } from '@/components/navigation/MainHeader';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
 import { CategoryTabFilters } from '@/components/filters/CategoryTabFilters';
+import { UnifiedSearchBar } from '@/components/filters/UnifiedSearchBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -234,6 +235,23 @@ function GroupPurchasesPageContent() {
     // 카테고리 변경 시 기존 필터들을 초기화하고 해당 카테고리의 공구만 로드
     const categoryFilters = { category };
     fetchGroupBuys(categoryFilters, activeTab);
+  };
+
+  /**
+   * 통합 검색 변경 처리
+   */
+  const handleSearchChange = (search: string, region: string) => {
+    const searchFilters: Record<string, string> = {};
+    
+    if (search) {
+      searchFilters.search = search;
+    }
+    
+    if (region) {
+      searchFilters.region = region;
+    }
+    
+    fetchGroupBuys(searchFilters, activeTab);
   };
 
   /**
