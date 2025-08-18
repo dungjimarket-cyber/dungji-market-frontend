@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { X, Filter, Search, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { regions } from '@/lib/regions';
 import {
   Select,
   SelectContent,
@@ -58,7 +59,8 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
     purchaseType: searchParams.get('purchaseType') || 'all',
     priceRange: searchParams.get('priceRange') || 'all',
     sort: searchParams.get('sort') || 'all', // 기본값은 all로 변경
-    search: searchParams.get('search') || '' // 검색어 추가
+    search: searchParams.get('search') || '', // 검색어 추가
+    region: searchParams.get('region') || 'all' // 지역 필터 추가
   });
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
@@ -94,7 +96,8 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
       purchaseType: 'all',
       priceRange: 'all',
       sort: 'all', // 기본값을 all로 변경
-      search: ''
+      search: '',
+      region: 'all' // 지역 필터도 초기화
     };
     setSearchQuery('');
     setFilters(clearedFilters);
@@ -372,6 +375,27 @@ export function GroupBuyFilters({ onFiltersChange, hideSort = true }: GroupBuyFi
                   {filterOptions.priceRanges.map((range) => (
                     <SelectItem key={range} value={range}>
                       {range}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 지역 필터 */}
+            <div>
+              <label className="block text-sm font-medium mb-2">지역</label>
+              <Select
+                value={filters.region}
+                onValueChange={(value) => handleFilterChange('region', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="지역 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체 지역</SelectItem>
+                  {regions.map((region) => (
+                    <SelectItem key={region.name} value={region.name}>
+                      {region.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
