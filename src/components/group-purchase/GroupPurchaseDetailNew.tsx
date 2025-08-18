@@ -1638,7 +1638,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <p className="text-gray-500 text-sm mb-2 text-center">거래 상태</p>
                 <p className="text-xl font-bold text-center">
                   {groupBuyData.status === 'in_progress' && '거래중'}
-                  {groupBuyData.status === 'completed' && '거래완료'}
+                  {groupBuyData.status === 'completed' && '판매완료'}
                   {groupBuyData.status === 'cancelled' && '취소됨'}
                 </p>
               </>
