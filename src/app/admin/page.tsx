@@ -667,8 +667,14 @@ export default function AdminPage() {
                     <div key={user.id} className="border rounded-lg p-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <h3 className="font-semibold mb-2">{user.nickname || user.username}</h3>
+                          <h3 className="font-semibold mb-2">
+                            {user.username || user.email?.split('@')[0] || '알 수 없음'}
+                            {user.nickname && user.nickname !== user.username && (
+                              <span className="text-sm text-gray-500 font-normal"> ({user.nickname})</span>
+                            )}
+                          </h3>
                           <div className="space-y-1 text-sm">
+                            <p><span className="text-muted-foreground">아이디:</span> {user.username || user.email?.split('@')[0] || '알 수 없음'}</p>
                             <p><span className="text-muted-foreground">이메일:</span> {user.email}</p>
                             <p><span className="text-muted-foreground">사업자번호:</span> {user.business_reg_number}</p>
                             <p><span className="text-muted-foreground">가입일:</span> {new Date(user.date_joined).toLocaleDateString()}</p>
@@ -829,7 +835,7 @@ export default function AdminPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-2">사용자 ID</th>
-                      <th className="text-left py-2">사용자명</th>
+                      <th className="text-left py-2">아이디</th>
                       <th className="text-left py-2">이메일 주소</th>
                       <th className="text-left py-2">보유 견적티켓</th>
                       <th className="text-left py-2">구독권 상태</th>
@@ -842,7 +848,12 @@ export default function AdminPage() {
                       sellersWithDetails.map((seller) => (
                         <tr key={seller.id} className="border-b hover:bg-gray-50">
                           <td className="py-2">{seller.id}</td>
-                          <td className="py-2">{seller.nickname || seller.username}</td>
+                          <td className="py-2">
+                            {seller.username || seller.email?.split('@')[0] || '알 수 없음'}
+                            {seller.nickname && seller.nickname !== seller.username && (
+                              <div className="text-xs text-gray-500">({seller.nickname})</div>
+                            )}
+                          </td>
                           <td className="py-2 text-sm">{seller.email}</td>
                           <td className="py-2">{seller.bid_tokens_count || 0}개</td>
                           <td className="py-2">
