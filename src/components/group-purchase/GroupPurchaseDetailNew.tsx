@@ -1163,11 +1163,50 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           {groupBuy.product_details?.name || '상품명 없음'}
         </h2>
         
-        {/* 가격 */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-sm text-gray-500">출고가</span>
-          <span className="text-2xl font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
-        </div>
+        {/* 가격 - 인터넷/인터넷+TV 카테고리가 아닌 경우에만 표시 */}
+        {groupBuy.product_details?.category_name !== '인터넷' &&
+         groupBuy.product_details?.category_name !== '인터넷+TV' ? (
+          <div className="flex items-baseline gap-2 mb-4">
+            <span className="text-sm text-gray-500">출고가</span>
+            <span className="text-2xl font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
+          </div>
+        ) : (
+          /* 인터넷/인터넷+TV 카테고리인 경우 통신사 요금제 확인 링크 표시 */
+          <div className="mb-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-blue-800 mb-3">통신사별 요금제 확인하기</p>
+              <div className="grid grid-cols-1 gap-2">
+                <a
+                  href="https://www.tworld.co.kr/web/product/plan/list"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                >
+                  <span>SK텔레콤 요금제</span>
+                  <span>→</span>
+                </a>
+                <a
+                  href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                >
+                  <span>KT 요금제</span>
+                  <span>→</span>
+                </a>
+                <a
+                  href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                >
+                  <span>LG유플러스 요금제</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 태그들 */}
         <div className="flex flex-wrap gap-2 mb-6">
@@ -1221,7 +1260,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             </div>
           )}
-          {groupBuy.telecom_detail?.plan_info && (
+          {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 요금제 정보 표시 */}
+          {groupBuy.telecom_detail?.plan_info && 
+           groupBuy.product_details?.category_name !== '인터넷' &&
+           groupBuy.product_details?.category_name !== '인터넷+TV' && (
             <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
               요금제 : {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
             </span>

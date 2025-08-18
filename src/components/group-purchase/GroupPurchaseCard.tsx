@@ -472,7 +472,10 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
             </span>
           )}
-          {groupBuy.telecom_detail?.plan_info && (
+          {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 요금제 정보 표시 */}
+          {groupBuy.telecom_detail?.plan_info && 
+           groupBuy.product_details?.category_name !== '인터넷' &&
+           groupBuy.product_details?.category_name !== '인터넷+TV' && (
             <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-sm font-medium">
               {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
             </span>

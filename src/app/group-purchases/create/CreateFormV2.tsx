@@ -418,17 +418,45 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       
       if (mainTab === 'phone') {
         // 휴대폰: telecom 카테고리로 처리
+        const getSubscriptionTypeKorean = (type: string): string => {
+          switch (type) {
+            case 'new': return '신규가입';
+            case 'transfer': return '번호이동';
+            case 'change': return '기기변경';
+            default: return '';
+          }
+        };
+        
         productDetails = {
           telecom_carrier: values.telecom_carrier || '',
           telecom_plan: values.telecom_plan || '',
           subscription_type: values.subscription_type || '',
+          subscription_type_korean: getSubscriptionTypeKorean(values.subscription_type || ''),
           contract_period: '24개월' // 약정기간 24개월로 고정
         };
       } else if (mainTab === 'internet' || mainTab === 'internet_tv') {
-        // 인터넷/인터넷+TV
+        // 인터넷/인터넷+TV: 서브탭에서 통신사 정보 매핑
+        const getCarrierFromSubTab = (subTab: string): string => {
+          switch (subTab.toLowerCase()) {
+            case 'sk': return 'SK';
+            case 'kt': return 'KT';
+            case 'lgu': return 'LG U+';
+            default: return '';
+          }
+        };
+        
+        const getSubscriptionTypeKorean = (type: string): string => {
+          switch (type) {
+            case 'transfer': return '통신사이동';
+            case 'new': return '신규가입';
+            default: return '';
+          }
+        };
+        
         productDetails = {
-          telecom_carrier: values.telecom_carrier || '',
+          telecom_carrier: getCarrierFromSubTab(subTab),
           subscription_type: internetSubscriptionType || '',
+          subscription_type_korean: getSubscriptionTypeKorean(internetSubscriptionType || ''),
           contract_period: '36개월' // 인터넷은 약정기간 36개월로 고정
         };
       }
