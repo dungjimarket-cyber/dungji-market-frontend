@@ -213,10 +213,13 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         
         // 서브 탭 필터링 (인터넷) - extra_data가 있는 경우만 필터링
         if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
-          const carrier = product.extra_data.carrier;
-          if (subTab === 'sk' && carrier !== 'SK') return false;
-          if (subTab === 'kt' && carrier !== 'KT') return false;
-          if (subTab === 'lgu' && carrier !== 'LGU') return false;
+          const carrier = product.extra_data.carrier.toUpperCase();
+          const normalizedSubTab = subTab.toUpperCase();
+          
+          // 각 통신사별 매칭 로직 (다양한 표기법 지원)
+          if (normalizedSubTab === 'SK' && !['SK', 'SKT', 'SK브로드밴드'].includes(carrier)) return false;
+          if (normalizedSubTab === 'KT' && !['KT', 'KT텔레콤'].includes(carrier)) return false;
+          if (normalizedSubTab === 'LGU' && !['LGU', 'LG', 'LG유플러스', 'LG U+'].includes(carrier)) return false;
         }
         
         // 가입 유형 필터링 - extra_data와 subscription_type이 있는 경우만 필터링
@@ -235,10 +238,13 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         
         // 서브 탭 필터링 (인터넷+TV) - extra_data가 있는 경우만 필터링
         if (subTab !== 'all' && product.extra_data && product.extra_data.carrier) {
-          const carrier = product.extra_data.carrier;
-          if (subTab === 'sk' && carrier !== 'SK') return false;
-          if (subTab === 'kt' && carrier !== 'KT') return false;
-          if (subTab === 'lgu' && carrier !== 'LGU') return false;
+          const carrier = product.extra_data.carrier.toUpperCase();
+          const normalizedSubTab = subTab.toUpperCase();
+          
+          // 각 통신사별 매칭 로직 (다양한 표기법 지원)
+          if (normalizedSubTab === 'SK' && !['SK', 'SKT', 'SK브로드밴드'].includes(carrier)) return false;
+          if (normalizedSubTab === 'KT' && !['KT', 'KT텔레콤'].includes(carrier)) return false;
+          if (normalizedSubTab === 'LGU' && !['LGU', 'LG', 'LG유플러스', 'LG U+'].includes(carrier)) return false;
         }
         
         // 가입 유형 필터링 - extra_data와 subscription_type이 있는 경우만 필터링
@@ -254,7 +260,18 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       return false;
     });
     
-    console.log(`Filtered products for ${mainTab}/${subTab}:`, filtered.length, filtered);
+    console.log(`Filtered products for ${mainTab}/${subTab}/${internetSubscriptionType}:`, filtered.length, filtered);
+    
+    // 디버깅: 인터넷/인터넷+TV 탭에서 carrier 정보 확인
+    if ((mainTab === 'internet' || mainTab === 'internet_tv') && subTab !== 'all') {
+      const productsWithCarrier = filtered.filter(p => p.extra_data?.carrier);
+      console.log(`Products with carrier info:`, productsWithCarrier.map(p => ({
+        name: p.name,
+        carrier: p.extra_data?.carrier,
+        subscription_type: p.extra_data?.subscription_type
+      })));
+    }
+    
     return filtered;
   };
 
@@ -262,6 +279,21 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const handleMainTabChange = (value: string) => {
     setMainTab(value as 'phone' | 'internet' | 'internet_tv');
     setSubTab('all'); // 서브 탭을 '전체'로 초기화
+    setInternetSubscriptionType('transfer'); // 인터넷 가입 유형도 초기화
+    form.setValue('product', ''); // 상품 선택 초기화
+    setSelectedProduct(null);
+  };
+
+  // 서브 탭 변경 시 상품 선택 초기화
+  const handleSubTabChange = (value: string) => {
+    setSubTab(value as 'all' | 'samsung' | 'apple' | 'sk' | 'kt' | 'lgu');
+    form.setValue('product', ''); // 상품 선택 초기화
+    setSelectedProduct(null);
+  };
+
+  // 인터넷 가입 유형 변경 시 상품 선택 초기화
+  const handleInternetSubscriptionTypeChange = (value: 'transfer' | 'new') => {
+    setInternetSubscriptionType(value);
     form.setValue('product', ''); // 상품 선택 초기화
     setSelectedProduct(null);
   };
@@ -435,21 +467,21 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     <Button
                       type="button"
                       variant={subTab === 'all' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('all')}
+                      onClick={() => handleSubTabChange('all')}
                     >
                       전체
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'samsung' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('samsung')}
+                      onClick={() => handleSubTabChange('samsung')}
                     >
                       갤럭시
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'apple' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('apple')}
+                      onClick={() => handleSubTabChange('apple')}
                     >
                       아이폰
                     </Button>
@@ -563,28 +595,28 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     <Button
                       type="button"
                       variant={subTab === 'all' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('all')}
+                      onClick={() => handleSubTabChange('all')}
                     >
                       전체
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'sk' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('sk')}
+                      onClick={() => handleSubTabChange('sk')}
                     >
                       SK
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'kt' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('kt')}
+                      onClick={() => handleSubTabChange('kt')}
                     >
                       KT
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'lgu' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('lgu')}
+                      onClick={() => handleSubTabChange('lgu')}
                     >
                       LGU+
                     </Button>
@@ -596,7 +628,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <Button
                         type="button"
                         variant={internetSubscriptionType === 'transfer' ? 'default' : 'outline'}
-                        onClick={() => setInternetSubscriptionType('transfer')}
+                        onClick={() => handleInternetSubscriptionTypeChange('transfer')}
                         className="flex-1"
                       >
                         통신사이동
@@ -604,7 +636,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <Button
                         type="button"
                         variant={internetSubscriptionType === 'new' ? 'default' : 'outline'}
-                        onClick={() => setInternetSubscriptionType('new')}
+                        onClick={() => handleInternetSubscriptionTypeChange('new')}
                         className="flex-1"
                       >
                         신규가입
@@ -663,28 +695,28 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     <Button
                       type="button"
                       variant={subTab === 'all' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('all')}
+                      onClick={() => handleSubTabChange('all')}
                     >
                       전체
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'sk' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('sk')}
+                      onClick={() => handleSubTabChange('sk')}
                     >
                       SK
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'kt' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('kt')}
+                      onClick={() => handleSubTabChange('kt')}
                     >
                       KT
                     </Button>
                     <Button
                       type="button"
                       variant={subTab === 'lgu' ? 'default' : 'outline'}
-                      onClick={() => setSubTab('lgu')}
+                      onClick={() => handleSubTabChange('lgu')}
                     >
                       LGU+
                     </Button>
@@ -696,7 +728,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <Button
                         type="button"
                         variant={internetSubscriptionType === 'transfer' ? 'default' : 'outline'}
-                        onClick={() => setInternetSubscriptionType('transfer')}
+                        onClick={() => handleInternetSubscriptionTypeChange('transfer')}
                         className="flex-1"
                       >
                         통신사이동
@@ -704,7 +736,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <Button
                         type="button"
                         variant={internetSubscriptionType === 'new' ? 'default' : 'outline'}
-                        onClick={() => setInternetSubscriptionType('new')}
+                        onClick={() => handleInternetSubscriptionTypeChange('new')}
                         className="flex-1"
                       >
                         신규가입
