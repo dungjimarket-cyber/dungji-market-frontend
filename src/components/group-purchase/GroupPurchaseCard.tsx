@@ -434,7 +434,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           ) : (
             groupBuy.regions && groupBuy.regions.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {groupBuy.regions.slice(0, 2).map((region, index) => {
+                {groupBuy.regions.map((region, index) => {
                   let displayName = region.name || region.full_name || '';
                   displayName = displayName
                     .replace('특별시', '시')
