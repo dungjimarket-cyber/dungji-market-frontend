@@ -212,9 +212,10 @@ export default function SearchPage() {
                       <div className="mt-2 space-y-2">
                         <div className="flex flex-col">
                           <div className="flex space-x-2 text-xs sm:text-sm">
-                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_carrier || groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
+                            <span className="font-medium text-red-500">통신사: {groupBuy.product_details?.telecom_carrier || groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details?.carrier || 'SK텔레콤'}</span>
                             <span className="font-medium text-blue-500">유형: {
                               groupBuy.product_details?.subscription_type_korean || 
+                              groupBuy.telecom_detail?.subscription_type_korean ||
                               groupBuy.product_details?.registration_type || 
                               (groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV' ? '통신사이동' : '번호이동')
                             }</span>
