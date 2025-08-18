@@ -64,6 +64,8 @@ interface GroupBuy {
     registration_type_korean?: string;
     plan_info?: string;
     contract_info?: string;
+    telecom_carrier?: string;
+    subscription_type_korean?: string;
   };
   telecom_detail?: {
     telecom_carrier: string;
@@ -1213,9 +1215,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* 태그들 */}
         <div className="flex flex-wrap gap-2 mb-6">
           <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
-            가입유형 : {groupBuy.product_details?.registration_type_korean || 
-                     groupBuy.telecom_detail?.subscription_type_korean || 
-                     getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type || '신규가입')}
+            가입유형 : {
+              groupBuy.product_details?.subscription_type_korean || 
+              groupBuy.telecom_detail?.subscription_type_korean ||
+              groupBuy.product_details?.registration_type_korean || 
+              getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) ||
+              (groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV' ? '통신사이동' : '번호이동')
+            }
           </span>
           {groupBuy.telecom_detail?.telecom_carrier && (
             <div className="relative inline-flex items-center group">
