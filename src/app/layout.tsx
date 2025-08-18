@@ -58,13 +58,13 @@ export default function RootLayout({
    */
   return (
     <html lang="ko">
-      <body className={`${inter.className} min-h-screen relative overflow-x-hidden`}>
+      <body className={`${inter.className} min-h-screen relative`}>
         <Providers>
           <KakaoInAppBrowserHandler />
           <Toaster />
           <RoleUpdateNotice />
           <DesktopNavbar />
-          <main className="flex-1 pb-16 md:pb-0 min-h-[calc(100vh-400px)]">
+          <main className="flex-1 pb-20 md:pb-0 min-h-[calc(100vh-400px)]">
             {children}
           </main>
           <MobileNavbar />

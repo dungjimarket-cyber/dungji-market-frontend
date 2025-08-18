@@ -345,8 +345,8 @@ export default function ProfileSection() {
           const updatedUser = {
             ...authUser,
             email: profileData.email,
-            username: profileData.username,
-            nickname: profileData.nickname,
+            username: profileData.username, // ID는 변경되지 않음
+            nickname: profileData.nickname, // 닉네임만 변경됨
             sns_type: profileData.sns_type,
             provider: profileData.sns_type, // 호환성을 위해 provider도 추가
             phone_number: profileData.phone_number,
@@ -410,7 +410,15 @@ export default function ProfileSection() {
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">프로필 정보</h3>
           
-          {/* 닉네임 섹션 */}
+          {/* 아이디 섹션 (수정 불가) */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
+            <div className="p-2 bg-gray-50 rounded-md">
+              <span className="font-medium">{user?.username || '아이디 정보 없음'}</span>
+              <span className="text-xs text-gray-500 ml-2">(변경 불가)</span>
+            </div>
+          </div>
+          
           {/* 닉네임 섹션 */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">

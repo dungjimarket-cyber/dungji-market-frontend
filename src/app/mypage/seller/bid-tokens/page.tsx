@@ -48,7 +48,9 @@ export default function BidTokensPage() {
       }
       
       // 인증되지 않은 경우에만 리다이렉트
-      if (isAuthenticated === false) {
+      // 토큰이 로컬스토리지에 있는지도 체크
+      const token = localStorage.getItem('dungji_auth_token');
+      if (isAuthenticated === false && !token) {
         router.push('/login');
         return;
       }
@@ -59,11 +61,17 @@ export default function BidTokensPage() {
         setBidTokens(data);
       } catch (error) {
         console.error('견적티켓 정보 로드 오류:', error);
-        toast({
-          title: '견적티켓 정보 로드 실패',
-          description: '견적티켓 정보를 불러오는데 문제가 발생했습니다. 다시 시도해주세요.',
-          variant: 'destructive',
-        });
+        
+        // 401 에러인 경우에만 로그인 페이지로 리다이렉트
+        if (error instanceof Error && error.message.includes('401')) {
+          router.push('/login');
+        } else {
+          toast({
+            title: '견적티켓 정보 로드 실패',
+            description: '견적티켓 정보를 불러오는데 문제가 발생했습니다. 다시 시도해주세요.',
+            variant: 'destructive',
+          });
+        }
       } finally {
         setLoading(false);
       }

@@ -135,17 +135,27 @@ function NoShowReportContent() {
       if (user?.role === 'buyer') {
         // 구매자가 신고 → 판매자 노쇼
         reportType = 'seller_noshow';
-        const bidResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/winning-bid/`, {
+        
+        // 공구 정보에서 선택된 입찰 정보 확인
+        const bidsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/bids/`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`
           }
         });
         
-        if (bidResponse.ok) {
-          const bidData = await bidResponse.json();
-          reportedUserId = bidData.seller.id;
+        if (bidsResponse.ok) {
+          const bidsData = await bidsResponse.json();
+          // accepted 상태의 입찰 찾기
+          const acceptedBid = bidsData.find((bid: any) => bid.status === 'accepted');
+          
+          if (acceptedBid) {
+            reportedUserId = acceptedBid.seller.id || acceptedBid.seller;
+          } else {
+            toast.error('선택된 판매자를 찾을 수 없습니다.');
+            return;
+          }
         } else {
-          toast.error('선택된 판매자를 찾을 수 없습니다.');
+          toast.error('판매자 정보를 가져올 수 없습니다.');
           return;
         }
       } else if (user?.role === 'seller') {

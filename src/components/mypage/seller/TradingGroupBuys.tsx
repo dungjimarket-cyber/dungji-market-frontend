@@ -169,7 +169,7 @@ export default function TradingGroupBuys() {
                           console.error('groupBuy.id is missing');
                           return;
                         }
-                        router.push(`/noshow-report/create?groupbuy=${groupBuy.id}`);
+                        router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
                       }}
                     >
                       <AlertTriangle className="h-4 w-4 mr-1" />

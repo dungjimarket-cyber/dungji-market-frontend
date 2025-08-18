@@ -9,6 +9,12 @@
   }
 }
 
+/* Prevent horizontal scroll */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* 프리텐다드 폰트 CDN 추가 */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
@@ -48,15 +54,14 @@
 .btn-animated span {
   position: relative;
   z-index: 2;
-  font-size: clamp(0.65rem, 0.8vw + 0.4rem, 0.9rem);
-  white-space: normal;
-  word-wrap: break-word;
-  line-height: 1.2;
+  font-size: clamp(0.75rem, 1vw + 0.5rem, 1rem);
+  white-space: nowrap;
+  line-height: 1.4;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  max-height: 2.4em;
+  padding: 0.25rem 0;
 }
 
 /* 버튼 타입별 스타일 */

@@ -28,8 +28,8 @@ export default function MobileNavbar() {
   }, [user]);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 w-full pb-safe">
-      <div className="flex justify-around items-center h-20 pb-2 max-w-screen-lg mx-auto px-2">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 pb-safe">
+      <div className="flex justify-around items-center h-20 pb-2 w-full px-2">
         <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2">
           <FaHome className="text-xl mb-1" />
           <span className="text-xs">홈</span>
