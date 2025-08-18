@@ -173,6 +173,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Loaded products:', data.length, data);
+        console.log('Phone products:', data.filter((p: Product) => p.category_name === '휴대폰'));
         setProducts(data);
       }
     } catch (error) {
@@ -184,7 +186,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
   // 필터링된 상품 목록 가져오기
   const getFilteredProducts = () => {
-    return products.filter(product => {
+    const filtered = products.filter(product => {
       // 메인 탭 필터링
       if (mainTab === 'phone') {
         // 휴대폰은 카테고리명이 '휴대폰'이거나 detail_type이 'telecom'인 경우
@@ -244,6 +246,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       
       return false;
     });
+    
+    console.log(`Filtered products for ${mainTab}/${subTab}:`, filtered.length, filtered);
+    return filtered;
   };
 
   // 메인 탭 변경 시 서브 탭 초기화
@@ -431,9 +436,19 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>요금제</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="예: 5G 프리미엄 플러스" />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="요금제 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="5G_standard">5만원대</SelectItem>
+                            <SelectItem value="5G_basic_plus">6만원대</SelectItem>
+                            <SelectItem value="5G_premium">7만원대</SelectItem>
+                            <SelectItem value="5G_premium_plus">8만원대</SelectItem>
+                            <SelectItem value="5G_special">9만원대</SelectItem>
+                            <SelectItem value="5G_platinum">10만원이상</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
