@@ -30,6 +30,7 @@ interface TelecomDetail {
   id?: number;
   telecom_carrier: string;
   subscription_type: string;
+  subscription_type_korean?: string;
   plan_info: string;
   contract_period?: number;
 }
@@ -229,7 +230,7 @@ export default function ParticipatingGroupBuys() {
                           {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier)}
                         </span>
                         <span className="mr-2">
-                          {getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
+                          {groupBuy.telecom_detail.subscription_type_korean || getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
                         </span>
                         <span>
                           {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
@@ -242,7 +243,7 @@ export default function ParticipatingGroupBuys() {
                           <span className="mr-2">{getCarrierDisplay((product as any).telecom_carrier)}</span>
                         )}
                         {(product as any)?.subscription_type && (
-                          <span className="mr-2">{getSubscriptionTypeDisplay((product as any).subscription_type)}</span>
+                          <span className="mr-2">{(product as any).subscription_type_korean || getSubscriptionTypeDisplay((product as any).subscription_type)}</span>
                         )}
                         {(product as any)?.plan_info && (
                           <span>{getPlanDisplay((product as any).plan_info)}</span>

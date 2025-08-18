@@ -30,6 +30,7 @@ interface Product {
   image_url?: string;
   carrier?: string;
   registration_type?: string;
+  subscription_type_korean?: string;
   plan_info?: string;
 }
 
@@ -48,6 +49,7 @@ interface GroupBuy {
   // 통신 관련 공구 정보 (명시적 필드)
   telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
   subscription_type?: string; // 가입유형 (new, transfer, change)
+  subscription_type_korean?: string; // 가입유형 한글명 (백엔드에서 제공)
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
 }
 
@@ -287,6 +289,8 @@ export default function CreatedGroupBuys() {
                           )
                         }</span>
                         <span>{
+                          groupBuy.subscription_type_korean || 
+                          groupBuy.product_details?.subscription_type_korean ||
                           getSubscriptionTypeDisplay(
                             groupBuy.subscription_type || 
                             groupBuy.product_details?.registration_type || 

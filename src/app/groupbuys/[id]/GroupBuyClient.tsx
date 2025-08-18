@@ -631,7 +631,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                   )}
                   {groupBuy.telecom_detail.subscription_type && (
                     <span className="bg-purple-600 text-white px-4 py-2 rounded-lg text-base font-medium">
-                      {getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
+                      {groupBuy.telecom_detail.subscription_type_korean || getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
                     </span>
                   )}
                   {groupBuy.telecom_detail.plan_info && (
