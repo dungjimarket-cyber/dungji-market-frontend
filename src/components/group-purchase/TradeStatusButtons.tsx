@@ -246,7 +246,7 @@ export function TradeStatusButtons({
               className="w-full py-3 bg-green-600 hover:bg-green-700"
             >
               <Package className="h-4 w-4 mr-2" />
-              판매완료
+              거래완료
             </Button>
           </div>
         );
@@ -254,7 +254,7 @@ export function TradeStatusButtons({
       case 'completed':
         return (
           <div className="p-4 bg-purple-50 rounded-lg text-center">
-            <p className="font-semibold text-purple-800">판매완료</p>
+            <p className="font-semibold text-purple-800">거래완료</p>
           </div>
         );
 

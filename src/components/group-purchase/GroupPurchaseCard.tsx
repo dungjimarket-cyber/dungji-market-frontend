@@ -313,9 +313,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
         
-        {/* 공구 상태 배지 - 우측 상단 (모집중이 아닌 경우 제거) */}
-        {groupBuy.status !== 'completed' && groupBuy.status !== 'cancelled' && (
-          <div className="absolute top-4 right-4">
+        {/* 공구 상태 배지 - 우측 상단 */}
+        <div className="absolute top-4 right-4">
             {(() => {
               const status = groupBuy.status;
               
@@ -346,6 +345,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 );
               }
               
+              // 견적중 상태
+              if (status === 'bidding') {
+                return (
+                  <div className="flex items-center gap-1 bg-purple-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <Gavel className="w-4 h-4" />
+                    <span>견적중</span>
+                  </div>
+                );
+              }
+              
               // 진행 상태별 배지
               if (status === 'final_selection_buyers') {
                 return (
@@ -372,10 +381,29 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 );
               }
               
+              // 완료 상태
+              if (status === 'completed') {
+                return (
+                  <div className="flex items-center gap-1 bg-gray-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>완료</span>
+                  </div>
+                );
+              }
+              
+              // 취소 상태
+              if (status === 'cancelled') {
+                return (
+                  <div className="flex items-center gap-1 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                    <Clock className="w-4 h-4" />
+                    <span>취소</span>
+                  </div>
+                );
+              }
+              
               return null;
             })()}
-          </div>
-        )}
+        </div>
         
         {/* 추가 정보 배지 - 왼쪽 상단 */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
