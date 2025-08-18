@@ -108,7 +108,7 @@ const getFormSchema = (mode: string) => z.object({
   region_type: z.enum(['local', 'nationwide']).optional(),
   telecom_carrier: z.string().optional(),
   subscription_type: z.string().optional(),
-  plan_info: z.string().optional(),
+  telecom_plan: z.string().optional(),
   contract_period: z.string().optional(),
 });
 
@@ -334,7 +334,35 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       const endTime = new Date();
       endTime.setHours(endTime.getHours() + sliderHours);
 
-      // API 전송 데이터 구성
+      // 상품 상세 정보 구성 (기존 폼과 동일한 구조)
+      let productDetails = {};
+      
+      if (mainTab === 'phone') {
+        // 휴대폰: telecom 카테고리로 처리
+        productDetails = {
+          telecom_carrier: values.telecom_carrier || '',
+          telecom_plan: values.telecom_plan || '',
+          subscription_type: values.subscription_type || '',
+          contract_period: '24개월' // 약정기간 24개월로 고정
+        };
+      } else if (mainTab === 'internet' || mainTab === 'internet_tv') {
+        // 인터넷/인터넷+TV
+        productDetails = {
+          telecom_carrier: values.telecom_carrier || '',
+          subscription_type: internetSubscriptionType || '',
+          contract_period: '36개월' // 인터넷은 약정기간 36개월로 고정
+        };
+      }
+
+      // 빈 값 제거
+      const cleanProductDetails: Record<string, any> = {};
+      Object.entries(productDetails).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          cleanProductDetails[key] = value;
+        }
+      });
+
+      // API 전송 데이터 구성 (기존 폼과 동일한 구조)
       const submitData = {
         product: parseInt(values.product || '0'),
         title: values.title || generateTitle(),
@@ -346,13 +374,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
           province: region.province,
           city: region.city
         })),
-        // 통신 관련 정보 (휴대폰인 경우)
-        ...(mainTab === 'phone' && {
-          telecom_carrier: values.telecom_carrier,
-          subscription_type: values.subscription_type,
-          plan_info: values.plan_info,
-          contract_period: values.contract_period || '24'
-        })
+        product_details: cleanProductDetails
       };
       
       console.log('폼 제출 데이터:', submitData);
@@ -565,7 +587,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   {/* 요금제 */}
                   <FormField
                     control={form.control}
-                    name="plan_info"
+                    name="telecom_plan"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>요금제</FormLabel>
