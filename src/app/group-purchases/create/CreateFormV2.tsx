@@ -657,7 +657,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           <SelectTrigger>
                             <SelectValue placeholder="상품을 선택해주세요" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[300px] overflow-y-auto">
                             {getFilteredProducts().map((product) => (
                               <SelectItem key={product.id} value={product.id.toString()}>
                                 {product.name} ({product.base_price.toLocaleString()}원)
@@ -681,7 +681,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           <SelectTrigger>
                             <SelectValue placeholder="통신사 선택" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[200px] overflow-y-auto">
                             <SelectItem value="SKT">SKT</SelectItem>
                             <SelectItem value="KT">KT</SelectItem>
                             <SelectItem value="LGU">LG U+</SelectItem>
@@ -703,7 +703,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           <SelectTrigger>
                             <SelectValue placeholder="가입 유형 선택" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[200px] overflow-y-auto">
                             <SelectItem value="new">신규가입</SelectItem>
                             <SelectItem value="transfer">번호이동</SelectItem>
                             <SelectItem value="change">기기변경</SelectItem>
@@ -725,7 +725,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           <SelectTrigger>
                             <SelectValue placeholder="요금제 선택" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[250px] overflow-y-auto">
                             <SelectItem value="5G_standard">5만원대</SelectItem>
                             <SelectItem value="5G_basic_plus">6만원대</SelectItem>
                             <SelectItem value="5G_premium">7만원대</SelectItem>
@@ -826,7 +826,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           <SelectTrigger>
                             <SelectValue placeholder="상품을 선택해주세요" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[300px] overflow-y-auto">
                             {getFilteredProducts().map((product) => (
                               <SelectItem key={product.id} value={product.id.toString()}>
                                 {product.name}
@@ -926,7 +926,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           <SelectTrigger>
                             <SelectValue placeholder="상품을 선택해주세요" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[300px] overflow-y-auto">
                             {getFilteredProducts().map((product) => (
                               <SelectItem key={product.id} value={product.id.toString()}>
                                 {product.name}
@@ -1007,14 +1007,14 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               </div>
 
               {/* 제출 버튼 */}
-              <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-lg font-semibold py-6 h-auto" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    등록 중...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <span className="text-lg">등록 중...</span>
                   </>
                 ) : (
-                  '공구 등록'
+                  <span className="text-lg">공구 등록</span>
                 )}
               </Button>
             </form>
