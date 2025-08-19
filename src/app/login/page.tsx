@@ -111,10 +111,22 @@ function LoginForm() {
         setErrorMessage(result.errorMessage || '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.');
         setErrorCode(result.errorCode || 'unknown');
         
+        // 사업자번호 검증 실패 시 특별한 처리
+        let toastTitle = '로그인 실패';
+        let toastDescription = result.errorMessage || '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.';
+        
+        if (result.errorCode === 'business_verification_failed') {
+          toastTitle = '사업자번호 검증 실패';
+          toastDescription = result.errorMessage + '\n\n판매회원은 유효한 사업자번호가 필요합니다.';
+        } else if (result.errorCode === 'business_verification_required') {
+          toastTitle = '사업자번호 미등록';
+          toastDescription = result.errorMessage + '\n\n판매회원 계정에 사업자번호가 등록되지 않았습니다.';
+        }
+        
         toast({
           variant: 'destructive',
-          title: '로그인 실패',
-          description: result.errorMessage || '아이디 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.'
+          title: toastTitle,
+          description: toastDescription
         });
       }
     } catch (err) {
@@ -200,6 +212,15 @@ function LoginForm() {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-red-700">{errorMessage}</p>
+                      
+                      {/* 사업자번호 검증 실패 시 추가 안내 */}
+                      {(errorCode === 'business_verification_failed' || errorCode === 'business_verification_required') && (
+                        <div className="mt-2 text-xs text-red-600">
+                          <p>• 판매회원은 로그인 시마다 사업자번호 유효성을 검사합니다.</p>
+                          <p>• 사업자번호가 폐업되거나 유효하지 않으면 로그인이 제한됩니다.</p>
+                          <p>• 문의사항은 고객센터(1566-0025)로 연락주세요.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -539,6 +539,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             errorMessage = errorData.detail;
           }
+          
+          // 사업자번호 검증 실패 처리
+          if (errorData.business_verification_failed) {
+            errorCode = 'business_verification_failed';
+            
+            // 검증 상태에 따른 상세 메시지
+            switch (errorData.verification_status) {
+              case 'closed':
+                errorMessage = '폐업한 사업자번호로 등록된 계정입니다. 사업자번호를 확인하거나 고객센터로 문의해주세요.';
+                break;
+              case 'invalid':
+                errorMessage = '등록되지 않은 사업자번호로 등록된 계정입니다. 사업자번호를 확인하거나 고객센터로 문의해주세요.';
+                break;
+              case 'error':
+                errorMessage = '사업자번호 검증 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                break;
+              case 'system_error':
+                errorMessage = '사업자번호 검증 중 시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                break;
+              default:
+                errorMessage = errorData.detail;
+            }
+          }
+          
+          // 사업자번호 등록 필요
+          if (errorData.business_verification_required) {
+            errorCode = 'business_verification_required';
+            errorMessage = '등록된 사업자번호가 없습니다. 고객센터로 문의해주세요.';
+          }
         } else if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
           const msg = errorData.non_field_errors[0];
           // 영어 메시지도 처리

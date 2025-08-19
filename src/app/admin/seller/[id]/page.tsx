@@ -261,7 +261,7 @@ export default function SellerDetailPage() {
               <p className="font-medium">{sellerDetail.seller.id}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">사용자명</p>
+              <p className="text-sm text-muted-foreground">아이디</p>
               <p className="font-medium">{sellerDetail.seller.username}</p>
             </div>
             <div>
