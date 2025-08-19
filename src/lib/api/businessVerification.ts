@@ -2,7 +2,7 @@
  * 사업자번호 검증 API 서비스
  */
 
-import { fetchWrapper } from './fetch';
+import { fetchWithAuth } from './fetch';
 
 // API 응답 타입 정의
 export interface BusinessVerificationResult {
@@ -59,7 +59,7 @@ export interface BusinessNumberFormatCheck {
  */
 export async function checkBusinessNumberFormat(businessNumber: string): Promise<BusinessNumberFormatCheck> {
   try {
-    const response = await fetchWrapper('/auth/business/check-format/', {
+    const response = await fetchWithAuth('/auth/business/check-format/', {
       method: 'POST',
       body: JSON.stringify({
         business_number: businessNumber
@@ -102,7 +102,7 @@ export async function verifyBusinessNumber(
       requestBody.business_name = businessName;
     }
 
-    const response = await fetchWrapper('/auth/business/verify/', {
+    const response = await fetchWithAuth('/auth/business/verify/', {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
@@ -129,7 +129,7 @@ export async function verifyBusinessNumber(
  */
 export async function getBusinessVerificationHistory(limit: number = 10): Promise<BusinessVerificationHistory> {
   try {
-    const response = await fetchWrapper(`/auth/business/history/?limit=${limit}`, {
+    const response = await fetchWithAuth(`/auth/business/history/?limit=${limit}`, {
       method: 'GET'
     });
 
