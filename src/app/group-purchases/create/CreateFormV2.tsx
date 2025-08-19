@@ -1007,7 +1007,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               </div>
 
               {/* 제출 버튼 */}
-              <Button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-lg font-semibold py-6 h-auto" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-lg font-semibold py-6 h-auto" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
