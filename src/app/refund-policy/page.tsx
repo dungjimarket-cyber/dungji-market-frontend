@@ -113,9 +113,8 @@ export default function RefundPolicyPage() {
           
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-medium mb-3">4.1 무제한 구독권 (정기결제)</h3>
+              <h3 className="text-xl font-medium mb-3">4.1 구독권 환불 기준</h3>
               
-              <h4 className="font-medium mb-2">최초 결제 환불 정책</h4>
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse border border-gray-200">
                   <thead>
@@ -127,80 +126,63 @@ export default function RefundPolicyPage() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="border border-gray-200 px-4 py-2">결제 후 24시간 이내 + 미사용</td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">✅ 가능</td>
-                      <td className="border border-gray-200 px-4 py-2">100% 전액 환불</td>
-                    </tr>
-                    <tr className="bg-gray-50">
                       <td className="border border-gray-200 px-4 py-2">결제 후 7일 이내 + 미사용</td>
                       <td className="border border-gray-200 px-4 py-2 text-center">✅ 가능</td>
                       <td className="border border-gray-200 px-4 py-2">100% 전액 환불</td>
                     </tr>
+                    <tr className="bg-gray-50">
+                      <td className="border border-gray-200 px-4 py-2">결제 후 7일 이내 + 1회 이상 사용</td>
+                      <td className="border border-gray-200 px-4 py-2 text-center">✅ 가능</td>
+                      <td className="border border-gray-200 px-4 py-2">일할 계산 후 부분 환불</td>
+                    </tr>
                     <tr>
-                      <td className="border border-gray-200 px-4 py-2">결제 후 7일 경과 OR 1회 이상 사용</td>
+                      <td className="border border-gray-200 px-4 py-2">결제 후 7일 경과 OR 다수 사용</td>
                       <td className="border border-gray-200 px-4 py-2 text-center">❌ 불가</td>
-                      <td className="border border-gray-200 px-4 py-2">환불 불가 (해지만 가능)</td>
+                      <td className="border border-gray-200 px-4 py-2">환불 불가</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-
-              <h4 className="font-medium mt-4 mb-2">정기결제 갱신 후 정책</h4>
-              <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li><strong>갱신된 결제는 환불 불가</strong> (업계 표준 정책)</li>
-                <li>해지 신청으로 다음 결제 방지</li>
-                <li>해지 후에도 결제 기간까지 정상 이용</li>
-              </ul>
             </div>
 
             <div>
-              <h3 className="text-xl font-medium mb-3">4.2 구독 해지 방식</h3>
+              <h3 className="text-xl font-medium mb-3">4.2 환불 불가 조건</h3>
+              <p className="text-gray-700 mb-3">다음의 경우 환불이 불가합니다:</p>
               
-              <h4 className="font-medium mb-2">정기결제 해지 (기본 방식)</h4>
-              <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>현재 결제 기간까지 서비스 이용 가능</li>
-                <li>다음 결제일부터 자동 갱신 중단</li>
-                <li>별도 위약금 없음</li>
-                <li><strong>이미 결제된 당월 요금은 환불 불가</strong> (서비스는 계속 이용 가능)</li>
-              </ul>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">구매 후 7일 경과</h4>
+                  <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                    <li>구독권 구매일로부터 7일이 경과한 경우</li>
+                  </ul>
+                </div>
 
-              <h4 className="font-medium mt-4 mb-2">예시</h4>
-              <div className="bg-gray-100 p-3 rounded text-sm font-mono">
-                1월 15일 결제 (월 9,900원) → 1월 20일 해지 신청<br/>
-                - 1월 15일~2월 14일까지 서비스 정상 이용<br/>
-                - 2월 15일부터 자동결제 중단<br/>
-                - 1월분 요금 환불 없음
+                <div>
+                  <h4 className="font-medium mb-2">이용약관 위반</h4>
+                  <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                    <li>회원이 이용약관을 위반하여 서비스 이용이 제한된 경우</li>
+                    <li>부정한 방법으로 서비스를 이용한 경우</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">혜택 악용</h4>
+                  <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                    <li>환불을 목적으로 반복적으로 구매/환불을 시도하는 경우</li>
+                    <li>프로모션 혜택을 받은 후 즉시 환불을 요청하는 경우</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-xl font-medium mb-3">4.3 프로모션/할인 구독권</h3>
+              <h3 className="text-xl font-medium mb-3">4.3 구독 기간 만료</h3>
               
-              <h4 className="font-medium mb-2">특별 규정</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>프로모션 가격으로 구매한 구독권도 동일한 해지 정책 적용</li>
-                <li>무료 체험 기간 중 해지: 즉시 해지되며 무료 기간도 종료</li>
-                <li>연간 구독: 해지 신청 시 다음 연도부터 갱신 중단</li>
+                <li>구독권은 구매한 기간(30일) 만료 시 자동으로 종료됩니다</li>
+                <li>재구매를 원하시는 경우 새로 구매하셔야 합니다</li>
+                <li>별도의 해지 절차는 필요하지 않습니다</li>
               </ul>
-
-              <h4 className="font-medium mt-4 mb-2">해지 신청 방법</h4>
-              <ol className="list-decimal list-inside text-gray-700 space-y-2">
-                <li>
-                  <strong>앱/웹에서 해지</strong>
-                  <ul className="list-disc list-inside ml-6 mt-1">
-                    <li>마이페이지 &gt; 구독 관리 &gt; 자동결제 해지</li>
-                    <li>24시간 즉시 처리</li>
-                  </ul>
-                </li>
-                <li>
-                  <strong>결제 수단별 해지</strong>
-                  <ul className="list-disc list-inside ml-6 mt-1">
-                    <li>구글 플레이: 구독 관리에서 직접 해지</li>
-                    <li>앱스토어: 구독 관리에서 직접 해지</li>
-                    <li>신용카드/계좌: 둥지마켓에서 해지</li>
-                  </ul>
-                </li>
-              </ol>
             </div>
           </div>
         </section>
