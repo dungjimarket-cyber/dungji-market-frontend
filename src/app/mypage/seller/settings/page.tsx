@@ -538,32 +538,33 @@ export default function SellerSettings() {
                       id="businessNumber1"
                       name="businessNumber1"
                       value={formData.businessNumber1}
-                      onChange={handleChange}
+                      disabled
                       placeholder="123"
                       maxLength={3}
-                      className="flex-1"
+                      className="flex-1 bg-gray-50"
                     />
                     <span className="text-gray-500">-</span>
                     <Input
                       id="businessNumber2"
                       name="businessNumber2"
                       value={formData.businessNumber2}
-                      onChange={handleChange}
+                      disabled
                       placeholder="45"
                       maxLength={2}
-                      className="flex-1"
+                      className="flex-1 bg-gray-50"
                     />
                     <span className="text-gray-500">-</span>
                     <Input
                       id="businessNumber3"
                       name="businessNumber3"
                       value={formData.businessNumber3}
-                      onChange={handleChange}
+                      disabled
                       placeholder="67890"
                       maxLength={5}
-                      className="flex-1"
+                      className="flex-1 bg-gray-50"
                     />
                   </div>
+                  <p className="text-xs text-gray-400">*사업자등록번호를 변경하시려면, 고객센터를 통해 문의 부탁드립니다.</p>
                 </div>
 
                 <div className="space-y-2">
