@@ -601,7 +601,10 @@ function RegisterPageContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
-                  <div className="font-semibold text-lg">구매하기 (일반회원)</div>
+                  <div className="font-semibold text-base sm:text-lg">
+                    <span className="block">구매하기</span>
+                    <span className="text-sm sm:text-base">(일반회원)</span>
+                  </div>
                 </button>
                 <button
                   type="button"
@@ -617,7 +620,10 @@ function RegisterPageContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <div className="font-semibold text-lg">판매하기 (판매회원)</div>
+                  <div className="font-semibold text-base sm:text-lg">
+                    <span className="block">판매하기</span>
+                    <span className="text-sm sm:text-base">(판매회원)</span>
+                  </div>
                 </button>
               </div>
             </div>
