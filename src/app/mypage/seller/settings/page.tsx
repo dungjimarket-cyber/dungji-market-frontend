@@ -44,6 +44,8 @@ export default function SellerSettings() {
   const [nicknameError, setNicknameError] = useState('');
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
   const [remoteSalesStatus, setRemoteSalesStatus] = useState<any>(null);
+  const [isBusinessNumberVerified, setIsBusinessNumberVerified] = useState(false);
+  const [verifyingBusinessNumber, setVerifyingBusinessNumber] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -104,6 +106,7 @@ export default function SellerSettings() {
         let businessNum1 = '';
         let businessNum2 = '';
         let businessNum3 = '';
+        let isVerified = false;
         
         if (data.businessNumber) {
           const cleanBusinessNum = data.businessNumber.replace(/-/g, '');
@@ -111,6 +114,8 @@ export default function SellerSettings() {
             businessNum1 = cleanBusinessNum.slice(0, 3);
             businessNum2 = cleanBusinessNum.slice(3, 5);
             businessNum3 = cleanBusinessNum.slice(5, 10);
+            // 사업자등록번호가 있고 10자리가 완성되어 있으면 인증된 것으로 간주
+            isVerified = true;
           } else {
             const businessNumParts = data.businessNumber.split('-');
             businessNum1 = businessNumParts[0] || '';
@@ -118,6 +123,8 @@ export default function SellerSettings() {
             businessNum3 = businessNumParts[2] || '';
           }
         }
+        
+        setIsBusinessNumberVerified(isVerified);
         
         setFormData({
           nickname: data.nickname || '',
@@ -260,8 +267,78 @@ export default function SellerSettings() {
       setFormData(prev => ({ ...prev, nickname: value }));
       setNicknameAvailable(false); // 닉네임 변경시 재확인 필요
       setNicknameError('');
+    } else if (name === 'businessNumber1' || name === 'businessNumber2' || name === 'businessNumber3') {
+      // 사업자등록번호 입력 처리 - 숫자만 허용
+      const numericValue = value.replace(/[^0-9]/g, '');
+      if (name === 'businessNumber1' && numericValue.length <= 3) {
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+      } else if (name === 'businessNumber2' && numericValue.length <= 2) {
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+      } else if (name === 'businessNumber3' && numericValue.length <= 5) {
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+      }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // 사업자등록번호 유효성 검증 함수
+  const verifyBusinessNumber = async () => {
+    const businessNumber = `${formData.businessNumber1}${formData.businessNumber2}${formData.businessNumber3}`;
+    
+    if (businessNumber.length !== 10) {
+      toast({
+        variant: 'destructive',
+        title: '확인 필요',
+        description: '사업자등록번호 10자리를 모두 입력해주세요.'
+      });
+      return;
+    }
+    
+    setVerifyingBusinessNumber(true);
+    
+    try {
+      const token = await tokenUtils.getAccessToken();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/validate-business-number/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
+        body: JSON.stringify({ business_number: businessNumber })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.valid) {
+          setIsBusinessNumberVerified(true);
+          toast({
+            title: '인증 완료',
+            description: '사업자등록번호가 확인되었습니다.'
+          });
+        } else {
+          toast({
+            variant: 'destructive',
+            title: '인증 실패',
+            description: data.message || '유효하지 않은 사업자등록번호입니다.'
+          });
+        }
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '오류',
+          description: '사업자등록번호 확인 중 오류가 발생했습니다.'
+        });
+      }
+    } catch (error) {
+      console.error('사업자등록번호 검증 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '사업자등록번호 확인 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setVerifyingBusinessNumber(false);
     }
   };
 
@@ -533,38 +610,68 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="businessNumber1">사업자등록번호</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="businessNumber1"
-                      name="businessNumber1"
-                      value={formData.businessNumber1}
-                      disabled
-                      placeholder="123"
-                      maxLength={3}
-                      className="flex-1 bg-gray-50"
-                    />
-                    <span className="text-gray-500">-</span>
-                    <Input
-                      id="businessNumber2"
-                      name="businessNumber2"
-                      value={formData.businessNumber2}
-                      disabled
-                      placeholder="45"
-                      maxLength={2}
-                      className="flex-1 bg-gray-50"
-                    />
-                    <span className="text-gray-500">-</span>
-                    <Input
-                      id="businessNumber3"
-                      name="businessNumber3"
-                      value={formData.businessNumber3}
-                      disabled
-                      placeholder="67890"
-                      maxLength={5}
-                      className="flex-1 bg-gray-50"
-                    />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        id="businessNumber1"
+                        name="businessNumber1"
+                        value={formData.businessNumber1}
+                        onChange={handleChange}
+                        disabled={isBusinessNumberVerified}
+                        placeholder="123"
+                        maxLength={3}
+                        className={`flex-1 ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
+                      />
+                      <span className="text-gray-500">-</span>
+                      <Input
+                        id="businessNumber2"
+                        name="businessNumber2"
+                        value={formData.businessNumber2}
+                        onChange={handleChange}
+                        disabled={isBusinessNumberVerified}
+                        placeholder="45"
+                        maxLength={2}
+                        className={`flex-1 ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
+                      />
+                      <span className="text-gray-500">-</span>
+                      <Input
+                        id="businessNumber3"
+                        name="businessNumber3"
+                        value={formData.businessNumber3}
+                        onChange={handleChange}
+                        disabled={isBusinessNumberVerified}
+                        placeholder="67890"
+                        maxLength={5}
+                        className={`flex-1 ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
+                      />
+                    </div>
+                    {!isBusinessNumberVerified && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={verifyBusinessNumber}
+                        disabled={verifyingBusinessNumber}
+                        className="w-full sm:w-auto whitespace-nowrap"
+                      >
+                        {verifyingBusinessNumber ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            확인 중...
+                          </>
+                        ) : (
+                          '유효성 검사'
+                        )}
+                      </Button>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-400">*사업자등록번호를 변경하시려면, 고객센터를 통해 문의 부탁드립니다.</p>
+                  {isBusinessNumberVerified ? (
+                    <p className="text-xs text-green-600">✓ 사업자등록번호가 인증되었습니다.</p>
+                  ) : (
+                    <p className="text-xs text-gray-400">사업자등록번호를 입력하고 유효성 검사를 진행해주세요.</p>
+                  )}
+                  {isBusinessNumberVerified && (
+                    <p className="text-xs text-gray-400">*사업자등록번호를 변경하시려면, 고객센터를 통해 문의 부탁드립니다.</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
