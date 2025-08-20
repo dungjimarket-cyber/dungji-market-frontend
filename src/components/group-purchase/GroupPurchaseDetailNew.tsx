@@ -1506,6 +1506,43 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       )}
 
+      {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 */}
+      {(groupBuy.product_details?.category_name === '인터넷' || 
+        groupBuy.product_details?.category_name === '인터넷+TV') && (
+        <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-amber-800 mb-2">⚠️ 중요 안내사항</h3>
+              <div className="space-y-3 text-sm text-amber-700">
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
+                  <div className="text-left leading-relaxed">
+                    <p className="break-keep">기존 사용 중인 인터넷 또는 TV 서비스의 약정기간 이전 해지 시 위약금은 본인 부담입니다.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
+                  <div className="text-left leading-relaxed">
+                    <p className="break-keep">설치비, 철거비, 이전설치비 등의 추가 비용이 발생할 수 있습니다.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
+                  <div className="text-left leading-relaxed">
+                    <p className="break-keep">자세한 내용은 해당 통신사 홈페이지 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 공구 정보 섹션 */}
       <div className="border-t border-gray-200">
         {/* 공구 주최자 */}

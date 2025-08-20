@@ -66,6 +66,7 @@ function RegisterPageContent() {
     seller_category: '',
     is_remote_sales: false,
     business_reg_image: null as File | null,
+    referral_code: '', // 추천인 코드
     
     // 약관 동의
     terms_agreed: false,
@@ -446,6 +447,11 @@ function RegisterPageContent() {
       submitData.append('role', formData.role);
       submitData.append('marketing_agreed', formData.marketing_agreed.toString());
       
+      // 추천인 코드 (있는 경우만)
+      if (formData.referral_code) {
+        submitData.append('referral_code', formData.referral_code);
+      }
+      
       // 이메일 로그인인 경우
       if (signupType === 'email') {
         submitData.append('username', formData.username); // 아이디
@@ -742,6 +748,30 @@ function RegisterPageContent() {
                     <label htmlFor="marketing_agreed_social" className="ml-2 text-sm text-gray-700">
                       (선택) 마케팅 정보 수신에 동의합니다
                     </label>
+                  </div>
+                </div>
+                
+                {/* 추천인 코드 (소셜 가입 시) */}
+                <div className="mb-4">
+                  <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
+                    추천인 코드 <span className="text-gray-500">(선택)</span>
+                  </label>
+                  <input
+                    id="referral_code_social"
+                    name="referral_code"
+                    type="text"
+                    className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="추천인 코드를 입력하세요"
+                    value={formData.referral_code}
+                    onChange={handleChange}
+                  />
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      💎 <strong>특별 혜택!</strong> 유효한 추천인 코드를 입력하고 가입하시면 <strong>견적티켓 10매를 추가로 지급</strong>해드립니다!
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      ※ 둥지파트너스 운영 준비 중으로, 향후 더욱 다양한 혜택이 제공될 예정입니다.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1180,6 +1210,36 @@ function RegisterPageContent() {
                         </p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* 추천인 코드 (판매자만) */}
+                {formData.role === 'seller' && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-medium text-gray-900">둥지파트너스 추천인 코드</h3>
+                    
+                    <div>
+                      <label htmlFor="referral_code" className="block text-sm font-medium text-gray-700 mb-1">
+                        추천인 코드 <span className="text-gray-500">(선택)</span>
+                      </label>
+                      <input
+                        id="referral_code"
+                        name="referral_code"
+                        type="text"
+                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="추천인 코드를 입력하세요"
+                        value={formData.referral_code}
+                        onChange={handleChange}
+                      />
+                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          💎 <strong>특별 혜택!</strong> 유효한 추천인 코드를 입력하고 가입하시면 <strong>견적티켓 10매를 추가로 지급</strong>해드립니다!
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          ※ 둥지파트너스 운영 준비 중으로, 향후 더욱 다양한 혜택이 제공될 예정입니다.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
