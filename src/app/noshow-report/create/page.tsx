@@ -61,15 +61,31 @@ function NoShowReportContent() {
 
   const fetchParticipants = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
+      // Try the preferred endpoint first
+      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
       });
       
+      // If that fails, try the participations endpoint
+      if (!response.ok) {
+        console.log('Trying alternative participations endpoint...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/participations/?groupbuy=${groupbuyId}`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+      }
+      
       if (response.ok) {
         const data = await response.json();
-        setParticipants(data);
+        // Handle both response formats
+        const participantsData = Array.isArray(data) ? data : (data.results || data);
+        setParticipants(participantsData);
+        console.log('Participants fetched successfully:', participantsData);
+      } else {
+        console.error('Failed to fetch participants:', response.status);
       }
     } catch (error) {
       console.error('참여자 목록 조회 실패:', error);
@@ -286,8 +302,8 @@ function NoShowReportContent() {
                   </SelectTrigger>
                   <SelectContent>
                     {participants.map((participant) => (
-                      <SelectItem key={participant.id} value={participant.id.toString()}>
-                        {participant.username || participant.nickname || `참여자 ${participant.id}`}
+                      <SelectItem key={participant.id || participant.user?.id} value={(participant.id || participant.user?.id).toString()}>
+                        {participant.username || participant.nickname || participant.user?.username || participant.user?.nickname || `참여자 ${participant.id || participant.user?.id}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
