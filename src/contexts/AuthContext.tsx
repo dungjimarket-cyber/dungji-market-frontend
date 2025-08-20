@@ -29,6 +29,7 @@ type User = {
   address_region?: any; // 활동 지역 객체 (신버전)
   business_number?: string; // 사업자등록번호
   business_address?: string; // 사업장 주소
+  is_business_verified?: boolean; // 사업자 인증 완료 여부
 };
 
 /**

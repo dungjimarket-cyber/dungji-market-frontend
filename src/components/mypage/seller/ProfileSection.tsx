@@ -99,7 +99,12 @@ export default function ProfileSection() {
                   <Badge variant="outline">
                     본인인증 완료
                   </Badge>
-                  <Badge variant="outline">사업자 인증</Badge>
+                  <Badge 
+                    variant="outline" 
+                    className={user.is_business_verified ? 'bg-green-50 text-green-700 border-green-300' : 'text-gray-500 border-gray-300'}
+                  >
+                    {user.is_business_verified ? '✓ 사업자 인증 완료' : '사업자 인증 대기'}
+                  </Badge>
                   {/* 비대면 판매 인증 뱃지 */}
                   {(sellerProfile?.remoteSalesVerified || sellerProfile?.remoteSalesStatus === 'approved') && (
                     <Badge variant="default" className="bg-green-500 hover:bg-green-600">

@@ -17,11 +17,11 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "둥지마켓 - 공동구매 플랫폼",
-  description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
+  title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
+  description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
   openGraph: {
-    title: "둥지마켓 - 공동구매 플랫폼",
-    description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
+    title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
+    description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
     url: process.env.NEXTAUTH_URL || 'https://dungji-market.com',
     siteName: '둥지마켓',
     images: [
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "둥지마켓 - 공동구매 플랫폼",
-    description: "둥지마켓은 공동구매 플랫폼입니다. 다양한 상품을 저렴한 가격에 구매하세요.",
+    title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
+    description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
     images: ['/logo.png'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
