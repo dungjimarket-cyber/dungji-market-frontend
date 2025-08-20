@@ -779,14 +779,6 @@ function RegisterPageContent() {
                     value={formData.referral_code}
                     onChange={handleChange}
                   />
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      💎 <strong>특별 혜택!</strong> 유효한 추천인 코드를 입력하고 가입하시면 <strong>견적티켓 10매를 추가로 지급</strong>해드립니다!
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      ※ 둥지파트너스 운영 준비 중으로, 향후 더욱 다양한 혜택이 제공될 예정입니다.
-                    </p>
-                  </div>
                 </div>
               </div>
               
@@ -1246,14 +1238,6 @@ function RegisterPageContent() {
                         value={formData.referral_code}
                         onChange={handleChange}
                       />
-                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          💎 <strong>특별 혜택!</strong> 유효한 추천인 코드를 입력하고 가입하시면 <strong>견적티켓 10매를 추가로 지급</strong>해드립니다!
-                        </p>
-                        <p className="text-xs text-blue-600 mt-1">
-                          ※ 둥지파트너스 운영 준비 중으로, 향후 더욱 다양한 혜택이 제공될 예정입니다.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 )}
