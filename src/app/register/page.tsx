@@ -795,13 +795,25 @@ function RegisterPageContent() {
                 {/* 판매회원 카카오 가입 안내 및 추천인 코드 */}
                 {memberType === 'seller' && (
                   <>
-                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="text-sm font-semibold text-blue-800 mb-2">📋 판매회원 가입 안내</h4>
-                      <div className="text-sm text-blue-700 space-y-1">
-                        <p>• 카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</p>
-                        <p>• 견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</p>
-                        <p>• 닉네임은 카카오톡 프로필명으로 자동 설정됩니다</p>
-                      </div>
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                        <span>📋</span>
+                        <span>판매회원 가입 안내</span>
+                      </h4>
+                      <ul className="text-xs text-blue-700 space-y-2">
+                        <li className="flex items-start">
+                          <span className="inline-block mt-0.5 mr-2">•</span>
+                          <span>카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="inline-block mt-0.5 mr-2">•</span>
+                          <span>견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="inline-block mt-0.5 mr-2">•</span>
+                          <span>닉네임은 카카오톡 프로필명으로 자동 설정됩니다</span>
+                        </li>
+                      </ul>
                     </div>
                     
                     {/* 추천인 코드 (판매회원 소셜 가입 시) */}
