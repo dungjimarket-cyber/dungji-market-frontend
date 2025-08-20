@@ -580,12 +580,29 @@ function RegisterPageContent() {
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                <p className="text-sm text-blue-800 text-center">
-                  어떤 회원이 되고 싶으신가요?<br/>
-                  - 일반회원 🐦 공동구매 참여하고 견적 받기<br/>
-                  - 판매회원 🦅 견적 제안하고 판매 기회 얻기
-                </p>
+              <div className="bg-gray-50 p-6 rounded-xl mb-6">
+                <h3 className="text-lg font-bold text-gray-900 text-center mb-3 relative">
+                  <span className="inline-block">어떤 회원이 되고 싶으신가요?</span>
+                </h3>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 mx-auto mb-4 rounded-full"></div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/50 transition-colors">
+                    <span className="text-xl">🛒</span>
+                    <div className="flex-1">
+                      <span className="font-semibold text-blue-600 text-sm">일반회원</span>
+                      <span className="text-gray-600 text-xs ml-1">공동구매 참여하고 견적 받기</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/50 transition-colors">
+                    <span className="text-xl">💼</span>
+                    <div className="flex-1">
+                      <span className="font-semibold text-green-600 text-sm">판매회원</span>
+                      <span className="text-gray-600 text-xs ml-1">견적 제안하고 판매 기회 얻기</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <button
