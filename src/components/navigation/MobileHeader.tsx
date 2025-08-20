@@ -10,8 +10,8 @@ import Image from 'next/image';
  */
 export function MobileHeader() {
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm px-3 py-1">
-      <div className="flex items-center gap-2">
+    <header className="sticky top-0 z-50 bg-white shadow-sm px-4 py-1">
+      <div className="flex items-center gap-2 max-w-full">
         {/* 로고 */}
         <Link href="/" className="flex-shrink-0">
           <div className="flex items-center">
@@ -20,7 +20,7 @@ export function MobileHeader() {
         </Link>
         
         {/* 검색창 & 내지역 버튼 */}
-        <SearchBar className="flex-1" placeholder="통합검색" showMyRegionButton={true} />
+        <SearchBar className="flex-1 min-w-0" placeholder="통합검색" showMyRegionButton={true} />
       </div>
     </header>
   );

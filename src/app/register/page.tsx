@@ -12,6 +12,7 @@ import Image from 'next/image';
 // import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
 // import { useToast } from '@/components/ui/use-toast'; // 휴대폰 인증 기능 임시 비활성화
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
+import { verifyBusinessNumberForRegistration, type BusinessVerificationRegistrationResult } from '@/lib/api/businessVerification';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -61,6 +62,7 @@ function RegisterPageContent() {
     // 판매자 전용 필드
     business_name: '',
     business_reg_number: '',
+    representative_name: '',
     seller_category: '',
     is_remote_sales: false,
     business_reg_image: null as File | null,
@@ -87,6 +89,9 @@ function RegisterPageContent() {
   // const [verificationCode] = useState(''); // 휴대폰 인증 기능 임시 비활성화
   // const [showVerificationInput] = useState(false); // 휴대폰 인증 기능 임시 비활성화
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [businessVerified, setBusinessVerified] = useState(false);
+  const [businessVerificationResult, setBusinessVerificationResult] = useState<BusinessVerificationRegistrationResult | null>(null);
+  const [businessVerificationLoading, setBusinessVerificationLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -111,6 +116,12 @@ function RegisterPageContent() {
       if (name === 'email') {
         setEmailChecked(false);
         setEmailAvailable(false);
+      }
+      
+      // 사업자등록번호가 변경되면 검증 상태 리셋
+      if (name === 'business_reg_number') {
+        setBusinessVerified(false);
+        setBusinessVerificationResult(null);
       }
     }
   };
@@ -251,6 +262,45 @@ function RegisterPageContent() {
   const handleBusinessRegNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatBusinessRegNumber(e.target.value);
     setFormData(prev => ({ ...prev, business_reg_number: formatted }));
+    
+    // 사업자등록번호가 변경되면 검증 상태 리셋
+    setBusinessVerified(false);
+    setBusinessVerificationResult(null);
+  };
+
+  // 사업자등록번호 검증
+  const verifyBusinessNumber = async () => {
+    if (!formData.business_reg_number) {
+      setError('사업자등록번호를 입력해주세요.');
+      return;
+    }
+
+    setBusinessVerificationLoading(true);
+    setError('');
+
+    try {
+      const result = await verifyBusinessNumberForRegistration(
+        formData.business_reg_number,
+        formData.username
+      );
+
+      setBusinessVerificationResult(result);
+
+      if (result.verified && result.valid) {
+        setBusinessVerified(true);
+        setError('');
+      } else {
+        setBusinessVerified(false);
+        setError(result.message || result.error || '사업자등록번호 검증에 실패했습니다.');
+      }
+    } catch (err: any) {
+      console.error('사업자등록번호 검증 오류:', err);
+      setBusinessVerified(false);
+      setBusinessVerificationResult(null);
+      setError('사업자등록번호 검증 중 오류가 발생했습니다.');
+    } finally {
+      setBusinessVerificationLoading(false);
+    }
   };
 
   // 휴대폰 인증 기능 임시 비활성화 - 사용하지 않는 함수들 주석 처리
@@ -361,6 +411,22 @@ function RegisterPageContent() {
         return;
       }
       
+      if (!formData.representative_name) {
+        setError('대표자명을 입력해주세요.');
+        setIsLoading(false);
+        const representativeNameInput = document.getElementById('representative_name');
+        scrollToInputField(representativeNameInput);
+        return;
+      }
+      
+      if (!businessVerified) {
+        setError('사업자등록번호 유효성 검사를 완료해주세요.');
+        setIsLoading(false);
+        const businessRegInput = document.getElementById('business_reg_number');
+        scrollToInputField(businessRegInput);
+        return;
+      }
+      
       // 판매자는 사업장 주소 필수
       if (!formData.region_province || !formData.region_city) {
         setError('사업장 주소를 선택해주세요.');
@@ -447,6 +513,7 @@ function RegisterPageContent() {
       if (formData.role === 'seller') {
         submitData.append('business_name', formData.business_name || formData.nickname);
         submitData.append('business_reg_number', formData.business_reg_number);
+        submitData.append('representative_name', formData.representative_name);
         submitData.append('seller_category', formData.seller_category);
         submitData.append('is_remote_sales_enabled', formData.is_remote_sales.toString());
         
@@ -774,60 +841,62 @@ function RegisterPageContent() {
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                           이메일 <span className="text-gray-500">(선택)</span>
                         </label>
-                        <div className="flex gap-2">
-                          <input
-                            id="email"
-                            name="email"
-                            type="text"
-                            className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="이메일 입력"
-                            value={formData.email.split('@')[0] || ''}
-                            onChange={(e) => {
-                              const emailPrefix = e.target.value;
-                              let fullEmail = emailPrefix;
-                              if (formData.emailDomain === 'direct' && formData.customEmailDomain) {
-                                fullEmail = emailPrefix + '@' + formData.customEmailDomain;
-                              } else if (formData.emailDomain && formData.emailDomain !== 'direct') {
-                                fullEmail = emailPrefix + '@' + formData.emailDomain;
-                              }
-                              setFormData(prev => ({ ...prev, email: fullEmail }));
-                              setEmailChecked(false);
-                              setEmailAvailable(false);
-                            }}
-                          />
-                          <span className="flex items-center text-gray-700">@</span>
-                          <select
-                            id="emailDomain"
-                            name="emailDomain"
-                            value={formData.emailDomain}
-                            onChange={(e) => {
-                              const domain = e.target.value;
-                              setFormData(prev => ({ 
-                                ...prev, 
-                                emailDomain: domain,
-                                email: domain === 'direct' ? prev.email.split('@')[0] || '' : (prev.email.split('@')[0] || '') + '@' + domain
-                              }));
-                              setEmailChecked(false);
-                              setEmailAvailable(false);
-                            }}
-                            className="appearance-none rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">선택하세요</option>
-                            <option value="naver.com">naver.com</option>
-                            <option value="gmail.com">gmail.com</option>
-                            <option value="daum.net">daum.net</option>
-                            <option value="nate.com">nate.com</option>
-                            <option value="kakao.com">kakao.com</option>
-                            <option value="hanmail.net">hanmail.net</option>
-                            <option value="hotmail.com">hotmail.com</option>
-                            <option value="direct">직접입력</option>
-                          </select>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              id="email"
+                              name="email"
+                              type="text"
+                              className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="이메일 입력"
+                              value={formData.email.split('@')[0] || ''}
+                              onChange={(e) => {
+                                const emailPrefix = e.target.value;
+                                let fullEmail = emailPrefix;
+                                if (formData.emailDomain === 'direct' && formData.customEmailDomain) {
+                                  fullEmail = emailPrefix + '@' + formData.customEmailDomain;
+                                } else if (formData.emailDomain && formData.emailDomain !== 'direct') {
+                                  fullEmail = emailPrefix + '@' + formData.emailDomain;
+                                }
+                                setFormData(prev => ({ ...prev, email: fullEmail }));
+                                setEmailChecked(false);
+                                setEmailAvailable(false);
+                              }}
+                            />
+                            <span className="flex items-center text-gray-700">@</span>
+                            <select
+                              id="emailDomain"
+                              name="emailDomain"
+                              value={formData.emailDomain}
+                              onChange={(e) => {
+                                const domain = e.target.value;
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  emailDomain: domain,
+                                  email: domain === 'direct' ? prev.email.split('@')[0] || '' : (prev.email.split('@')[0] || '') + '@' + domain
+                                }));
+                                setEmailChecked(false);
+                                setEmailAvailable(false);
+                              }}
+                              className="min-w-0 w-32 sm:w-auto appearance-none rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              <option value="">선택</option>
+                              <option value="naver.com">naver.com</option>
+                              <option value="gmail.com">gmail.com</option>
+                              <option value="daum.net">daum.net</option>
+                              <option value="nate.com">nate.com</option>
+                              <option value="kakao.com">kakao.com</option>
+                              <option value="hanmail.net">hanmail.net</option>
+                              <option value="hotmail.com">hotmail.com</option>
+                              <option value="direct">직접입력</option>
+                            </select>
+                          </div>
                           {formData.emailDomain === 'direct' && (
                             <input
                               id="customEmailDomain"
                               name="customEmailDomain"
                               type="text"
-                              placeholder="도메인 입력"
+                              placeholder="도메인 입력 (예: company.co.kr)"
                               value={formData.customEmailDomain}
                               onChange={(e) => {
                                 const customDomain = e.target.value;
@@ -839,16 +908,16 @@ function RegisterPageContent() {
                                 setEmailChecked(false);
                                 setEmailAvailable(false);
                               }}
-                              className="appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                           )}
                           {formData.email && formData.email.includes('@') && (
                             <button
                               type="button"
                               onClick={checkEmail}
-                              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                             >
-                              중복확인
+                              이메일 중복확인
                             </button>
                           )}
                         </div>
@@ -1002,11 +1071,9 @@ function RegisterPageContent() {
                         onChange={handleChange}
                       >
                         <option value="">판매 유형을 선택해주세요</option>
-                        <option value="electronics">전자제품 판매</option>
-                        <option value="telecom">통신상품판매</option>
-                        <option value="rental">렌탈 서비스</option>
-                        <option value="subscription">구독 서비스</option>
-                        <option value="other">기타</option>
+                        <option value="telecom">통신상품판매(휴대폰,인터넷,TV개통 등)</option>
+                        <option value="rental">렌탈서비스판매(정수기,비데,매트리스 등)</option>
+                        <option value="electronics">가전제품판매(냉장고,세탁기,컴퓨터 등)</option>
                       </select>
                       <p className="text-xs text-gray-500 mt-1">주요 판매 상품 유형을 선택해주세요</p>
                     </div>
@@ -1016,18 +1083,67 @@ function RegisterPageContent() {
                       <label htmlFor="business_reg_number" className="block text-sm font-medium text-gray-700 mb-1">
                         사업자등록번호 <span className="text-red-500">*</span>
                       </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="business_reg_number"
+                          name="business_reg_number"
+                          type="text"
+                          required={formData.role === 'seller'}
+                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="000-00-00000"
+                          value={formData.business_reg_number}
+                          onChange={handleBusinessRegNumberChange}
+                          maxLength={12}
+                        />
+                        <button
+                          type="button"
+                          onClick={verifyBusinessNumber}
+                          disabled={businessVerificationLoading}
+                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {businessVerificationLoading ? '검증중...' : '유효성검사'}
+                        </button>
+                      </div>
+                      {businessVerificationResult && (
+                        <div className={`mt-2 p-2 rounded-md ${businessVerified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                          <p className={`text-sm flex items-center gap-2 ${businessVerified ? 'text-green-700' : 'text-red-700'}`}>
+                            {businessVerified ? (
+                              <>
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span className="font-medium">인증완료: {businessVerificationResult.message}</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                                <span className="font-medium">인증실패: {businessVerificationResult.message || businessVerificationResult.error}</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">사업자 등록번호는 판매자 신뢰도 확보 및 거래 안전을 위해 수집됩니다</p>
+                    </div>
+                    
+                    {/* 대표자명 */}
+                    <div>
+                      <label htmlFor="representative_name" className="block text-sm font-medium text-gray-700 mb-1">
+                        사업자등록증상 대표자명 <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        id="business_reg_number"
-                        name="business_reg_number"
+                        id="representative_name"
+                        name="representative_name"
                         type="text"
                         required={formData.role === 'seller'}
                         className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="000-00-00000"
-                        value={formData.business_reg_number}
-                        onChange={handleBusinessRegNumberChange}
-                        maxLength={12}
+                        placeholder="대표자명을 입력하세요"
+                        value={formData.representative_name}
+                        onChange={handleChange}
                       />
-                      <p className="text-xs text-gray-500 mt-1">사업자 등록번호는 판매자 신뢰도 확보 및 거래 안전을 위해 수집됩니다</p>
+                      <p className="text-xs text-gray-500 mt-1">사업자등록증에 기재된 대표자명과 동일하게 입력해주세요</p>
                     </div>
 
                     {/* 비대면 판매가능 영업소 인증 */}

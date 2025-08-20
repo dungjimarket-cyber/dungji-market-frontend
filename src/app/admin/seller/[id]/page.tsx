@@ -12,6 +12,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, ArrowLeft, Plus, Minus, Calendar, CreditCard } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
+// Helper function to convert seller category code to label
+function getSellerCategoryLabel(category?: string) {
+  switch (category) {
+    case 'telecom':
+      return '통신상품판매(휴대폰,인터넷,TV개통 등)';
+    case 'rental':
+      return '렌탈서비스판매(정수기,비데,매트리스 등)';
+    case 'electronics':
+      return '가전제품판매(냉장고,세탁기,컴퓨터 등)';
+    default:
+      return category || '정보 없음';
+  }
+}
+
 interface SellerDetail {
   seller: {
     id: string;
@@ -19,6 +33,7 @@ interface SellerDetail {
     nickname: string;
     email: string;
     phone_number: string;
+    seller_category?: string;
     is_business_verified: boolean;
     business_reg_number: string;
     date_joined: string;
@@ -271,6 +286,10 @@ export default function SellerDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">전화번호</p>
               <p className="font-medium">{sellerDetail.seller.phone_number || '-'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">판매회원 구분</p>
+              <p className="font-medium">{getSellerCategoryLabel(sellerDetail.seller.seller_category)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">사업자번호</p>

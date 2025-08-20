@@ -18,6 +18,20 @@ import { GroupBuyConsentManager } from '@/components/admin/GroupBuyConsentManage
 import WinnerSelection from '@/components/admin/WinnerSelection';
 import { ProductRegistrationForm } from '@/components/admin/ProductRegistrationForm';
 
+// Helper function to convert seller category code to label
+function getSellerCategoryLabel(category: string) {
+  switch (category) {
+    case 'telecom':
+      return '통신상품판매';
+    case 'rental':
+      return '렌탈서비스판매';
+    case 'electronics':
+      return '가전제품판매';
+    default:
+      return category || '정보 없음';
+  }
+}
+
 // 견적티켓 유형 정의
 const TOKEN_TYPES = [
   { value: 'single', label: '견적티켓 단품 (1,990원)' },
@@ -964,6 +978,7 @@ export default function AdminPage() {
                       <th className="text-left py-2">사용자 ID</th>
                       <th className="text-left py-2">아이디</th>
                       <th className="text-left py-2">이메일 주소</th>
+                      <th className="text-left py-2">판매회원 구분</th>
                       <th className="text-left py-2">보유 견적티켓</th>
                       <th className="text-left py-2">구독권 상태</th>
                       <th className="text-left py-2">사업자 인증 상태</th>
@@ -982,6 +997,7 @@ export default function AdminPage() {
                             )}
                           </td>
                           <td className="py-2 text-sm">{seller.email}</td>
+                          <td className="py-2 text-sm">{getSellerCategoryLabel(seller.seller_category)}</td>
                           <td className="py-2">{seller.bid_tokens_count || 0}개</td>
                           <td className="py-2">
                             {seller.has_subscription ? (
@@ -1010,7 +1026,7 @@ export default function AdminPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="py-4 text-center">
+                        <td colSpan={8} className="py-4 text-center">
                           등록된 판매회원이 없습니다.
                         </td>
                       </tr>

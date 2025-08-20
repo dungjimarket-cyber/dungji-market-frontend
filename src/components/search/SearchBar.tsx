@@ -50,18 +50,18 @@ export function SearchBar({
   };
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 w-full ${className}`}>
       <form 
         onSubmit={handleSearch}
-        className="flex-1 flex items-center bg-gray-100 rounded-full overflow-hidden px-3 py-2"
+        className="flex-1 min-w-0 flex items-center bg-gray-100 rounded-full overflow-hidden px-3 py-2"
       >
-        <Search className="w-5 h-5 text-gray-400 mr-2" />
+        <Search className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" />
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder={placeholder}
-          className="bg-transparent border-none outline-none flex-1 text-sm"
+          className="bg-transparent border-none outline-none flex-1 text-sm min-w-0"
         />
       </form>
       
@@ -71,10 +71,10 @@ export function SearchBar({
           onClick={handleMyRegionClick}
           variant="outline"
           size="sm"
-          className="flex items-center gap-1 rounded-full px-4"
+          className="flex items-center gap-1 rounded-full px-3 py-1 flex-shrink-0 text-xs"
         >
-          <MapPin className="w-4 h-4" />
-          <span>내지역</span>
+          <MapPin className="w-3 h-3" />
+          <span className="whitespace-nowrap">내지역</span>
         </Button>
       )}
     </div>

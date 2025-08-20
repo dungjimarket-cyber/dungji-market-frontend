@@ -25,6 +25,19 @@ function getLoginProviderLabel(user: any) {
   return type;
 }
 
+function getSellerCategoryLabel(category: string) {
+  switch (category) {
+    case 'telecom':
+      return '통신상품판매(휴대폰,인터넷,TV개통 등)';
+    case 'rental':
+      return '렌탈서비스판매(정수기,비데,매트리스 등)';
+    case 'electronics':
+      return '가전제품판매(냉장고,세탁기,컴퓨터 등)';
+    default:
+      return category || '정보 없음';
+  }
+}
+
 /**
  * 사용자 프로필 섹션 컴포넌트
  * 마이페이지에 표시되는 사용자 정보 섹션
@@ -52,6 +65,7 @@ interface ExtendedUser {
     level: number;
   };
   role?: string;
+  seller_category?: string;
   is_business_verified?: boolean;
   business_number?: string;
   is_remote_sales?: boolean;
@@ -70,6 +84,7 @@ export default function ProfileSection() {
   const [addressProvince, setAddressProvince] = useState('');
   const [addressCity, setAddressCity] = useState('');
   const [role, setRole] = useState('');
+  const [sellerCategory, setSellerCategory] = useState('');
   const [isBusinessVerified, setIsBusinessVerified] = useState(false);
   const [businessNumber, setBusinessNumber] = useState('');  // 사업자등록번호
   const [isRemoteSales, setIsRemoteSales] = useState(false);
@@ -125,6 +140,7 @@ export default function ProfileSection() {
       }
       
       setRole(user.role || 'buyer');
+      setSellerCategory(user.seller_category || '');
       setIsBusinessVerified(user.is_business_verified || false);
       setRegion(user.region || '');
       setUserType(user.user_type || '일반');
@@ -671,6 +687,15 @@ export default function ProfileSection() {
           {/* 판매회원 추가 정보 섹션 */}
           {role === 'seller' && (
             <>
+              {/* 판매회원 구분 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  판매회원 구분
+                </label>
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">{getSellerCategoryLabel(sellerCategory)}</span>
+                </div>
+              </div>
 
               {/* 사업자등록번호 */}
               <div className="mb-4">

@@ -4,6 +4,24 @@
 
 import { fetchWithAuth } from './fetch';
 
+// 회원가입용 사업자번호 검증 응답 타입
+export interface BusinessVerificationRegistrationResult {
+  valid: boolean;
+  verified: boolean;
+  business_number?: string;
+  formatted_number?: string;
+  status?: 'valid' | 'invalid' | 'error';
+  message: string;
+  error?: string;
+  business_info?: {
+    business_name?: string;
+    representative_name?: string;
+    business_status?: string;
+    business_type?: string;
+    is_test_account?: boolean;
+  };
+}
+
 // API 응답 타입 정의
 export interface BusinessVerificationResult {
   verification_id: number;
@@ -186,4 +204,43 @@ export function validateBusinessNumberChecksum(businessNumber: string): boolean 
   const checkDigit = (10 - (sum % 10)) % 10;
 
   return checkDigit === parseInt(cleanNumber[9]);
+}
+
+/**
+ * 회원가입용 사업자번호 검증 (인증 불필요)
+ */
+export async function verifyBusinessNumberForRegistration(
+  businessNumber: string,
+  username?: string
+): Promise<BusinessVerificationRegistrationResult> {
+  try {
+    const requestBody: any = {
+      business_number: businessNumber
+    };
+    
+    if (username) {
+      requestBody.username = username;
+    }
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/business/verify-registration/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await response.json();
+
+    // HTTP 상태가 400, 500이어도 응답 데이터를 반환 (검증 실패 정보 포함)
+    return data;
+  } catch (error) {
+    console.error('회원가입용 사업자번호 검증 오류:', error);
+    return {
+      valid: false,
+      verified: false,
+      message: '네트워크 오류가 발생했습니다.',
+      error: error instanceof Error ? error.message : '알 수 없는 오류'
+    };
+  }
 }

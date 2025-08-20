@@ -66,12 +66,29 @@ export default function SellerTermsPage() {
 
           <h2 className="text-xl font-semibold mb-3">제6조 (이용 제한 및 자격 정지)</h2>
           <p className="mb-2">회사는 아래의 사유가 발생할 경우 판매회원의 견적제안 권한을 일시 정지하거나, 판매회원 자격을 박탈할 수 있습니다.</p>
+          
+          <h3 className="text-lg font-semibold mb-2 mt-4">1. 자격 요건 관련</h3>
+          <ul className="list-disc pl-6 mb-4 space-y-2">
+            <li>사업자등록 상태 이상 발생 (휴업, 폐업, 말소 등)</li>
+            <li>정기 검증 시 사업자 정보 불일치 또는 허위 확인</li>
+            <li>사업자 자격 검증 요청에 대한 미협조 또는 거부</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold mb-2 mt-4">2. 서비스 이용 관련</h3>
           <ul className="list-disc pl-6 mb-4 space-y-2">
             <li>판매 확정 후 판매 거부</li>
             <li>반복적인 견적철회 기능 사용 또는 허위 금액 입력</li>
             <li>어뷰징 또는 플랫폼 질서 위반 행위</li>
             <li>고객정보 오·남용, 비공식 거래 유도</li>
             <li>기타 회사 정책 위반 행위</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold mb-2 mt-4">3. 정기 검증 절차</h3>
+          <ul className="list-disc pl-6 mb-4 space-y-2">
+            <li>회사는 6개월 주기로 판매회원의 사업자등록 상태를 자동 검증할 수 있습니다.</li>
+            <li>검증 결과 이상이 발견될 경우, 회원에게 7일간의 소명 기회를 부여합니다.</li>
+            <li>소명 기간 내 정상화되지 않을 경우, 판매회원 자격이 자동 정지됩니다.</li>
+            <li>정지된 계정은 사업자 상태 정상화 후 재활성화 신청이 가능합니다.</li>
           </ul>
 
           <h2 className="text-xl font-semibold mb-3">제7조 (개인정보의 수집 및 이용)</h2>
