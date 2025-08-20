@@ -753,33 +753,35 @@ function RegisterPageContent() {
                   </div>
                 </div>
                 
-                {/* 판매회원 카카오 가입 안내 */}
+                {/* 판매회원 카카오 가입 안내 및 추천인 코드 */}
                 {memberType === 'seller' && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="text-sm font-semibold text-blue-800 mb-2">📋 판매회원 가입 안내</h4>
-                    <div className="text-sm text-blue-700 space-y-1">
-                      <p>• 카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</p>
-                      <p>• 견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</p>
-                      <p>• 닉네임은 카카오톡 프로필명으로 자동 설정됩니다</p>
+                  <>
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-800 mb-2">📋 판매회원 가입 안내</h4>
+                      <div className="text-sm text-blue-700 space-y-1">
+                        <p>• 카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</p>
+                        <p>• 견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</p>
+                        <p>• 닉네임은 카카오톡 프로필명으로 자동 설정됩니다</p>
+                      </div>
                     </div>
-                  </div>
+                    
+                    {/* 추천인 코드 (판매회원 소셜 가입 시) */}
+                    <div className="mb-4">
+                      <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
+                        추천인 코드 <span className="text-gray-500">(선택)</span>
+                      </label>
+                      <input
+                        id="referral_code_social"
+                        name="referral_code"
+                        type="text"
+                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="추천인 코드를 입력하세요"
+                        value={formData.referral_code}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </>
                 )}
-                
-                {/* 추천인 코드 (소셜 가입 시) */}
-                <div className="mb-4">
-                  <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
-                    추천인 코드 <span className="text-gray-500">(선택)</span>
-                  </label>
-                  <input
-                    id="referral_code_social"
-                    name="referral_code"
-                    type="text"
-                    className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="추천인 코드를 입력하세요"
-                    value={formData.referral_code}
-                    onChange={handleChange}
-                  />
-                </div>
               </div>
               
               <SocialLoginButtons 
