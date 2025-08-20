@@ -131,7 +131,7 @@ export default function RefundPolicyPage() {
                       <td className="border border-gray-200 px-4 py-2">100% 전액 환불</td>
                     </tr>
                     <tr className="bg-gray-50">
-                      <td className="border border-gray-200 px-4 py-2">결제 후 7일 경과 OR 다수 사용</td>
+                      <td className="border border-gray-200 px-4 py-2">결제 후 7일 경과</td>
                       <td className="border border-gray-200 px-4 py-2 text-center">❌ 불가</td>
                       <td className="border border-gray-200 px-4 py-2">환불 불가</td>
                     </tr>
