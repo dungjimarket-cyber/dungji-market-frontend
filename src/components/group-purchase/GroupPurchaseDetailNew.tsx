@@ -722,6 +722,44 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
 
+    // 판매회원 필수 정보 완성도 체크
+    if (user?.role === 'seller') {
+      const missingFields = [];
+      const sellerUser = user as any; // 임시 타입 캐스팅
+      
+      // 필수 정보 체크
+      if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
+        missingFields.push('닉네임 또는 상호명');
+      }
+      if (!sellerUser.address_region) {
+        missingFields.push('사업장주소지/영업활동지역');
+      }
+      if (!sellerUser.user_type) {
+        missingFields.push('판매회원구분');
+      }
+      if (!sellerUser.first_name) {
+        missingFields.push('사업자등록증상 대표자명');
+      }
+      if (!sellerUser.business_number) {
+        missingFields.push('사업자등록번호');
+      }
+      if (!sellerUser.is_business_verified) {
+        missingFields.push('사업자등록번호 인증');
+      }
+      
+      if (missingFields.length > 0) {
+        toast({
+          title: '필수 정보 입력 필요',
+          description: `견적 제안을 위해 ${missingFields[0]} 등의 필수 정보를 완료해주세요.`,
+          variant: 'destructive',
+        });
+        
+        // 내정보 페이지로 이동
+        router.push('/mypage/seller/settings');
+        return;
+      }
+    }
+
     // 1,000원 단위로 반올림
     const numAmount = typeof bidAmount === 'number' ? bidAmount : parseInt(bidAmount.toString(), 10);
     const roundedAmount = Math.round(numAmount / 1000) * 1000;
@@ -1420,8 +1458,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
               <p className="text-3xl font-bold text-orange-500">
-                <span>{highestBidAmount && highestBidAmount > 0 ? maskAmount(highestBidAmount) : '0'}</span>
-                <span className="text-lg">원</span>
+                {highestBidAmount && highestBidAmount > 0 ? (
+                  <>
+                    <span>{maskAmount(highestBidAmount)}</span>
+                    <span className="text-lg">원</span>
+                  </>
+                ) : (
+                  <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
+                )}
               </p>
               {totalBids > 0 && (
                 <>

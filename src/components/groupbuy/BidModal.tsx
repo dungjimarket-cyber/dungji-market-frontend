@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { formatNumberWithCommas } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface BidModalProps {
   isOpen: boolean;
@@ -57,6 +58,7 @@ export default function BidModal({
 }: BidModalProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   // 휴대폰 카테고리(category_id=1 또는 category_name='휴대폰')는 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
   const isTelecom = productCategory === '휴대폰' || productCategory === '1';
@@ -143,6 +145,44 @@ export default function BidModal({
 
   // 입찰 제출 핸들러
   const onSubmit = async (data: BidFormData) => {
+    // 판매회원 필수 정보 완성도 체크
+    if (user?.role === 'seller') {
+      const missingFields = [];
+      const sellerUser = user as any; // 임시 타입 캐스팅
+      
+      // 필수 정보 체크
+      if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
+        missingFields.push('닉네임 또는 상호명');
+      }
+      if (!sellerUser.address_region) {
+        missingFields.push('사업장주소지/영업활동지역');
+      }
+      if (!sellerUser.user_type) {
+        missingFields.push('판매회원구분');
+      }
+      if (!sellerUser.first_name) {
+        missingFields.push('사업자등록증상 대표자명');
+      }
+      if (!sellerUser.business_number) {
+        missingFields.push('사업자등록번호');
+      }
+      if (!sellerUser.is_business_verified) {
+        missingFields.push('사업자등록번호 인증');
+      }
+      
+      if (missingFields.length > 0) {
+        toast({
+          title: '필수 정보 입력 필요',
+          description: `견적 제안을 위해 ${missingFields[0]} 등의 필수 정보를 완료해주세요.`,
+          variant: 'destructive',
+        });
+        
+        // 내정보 페이지로 이동
+        router.push('/mypage/seller/settings');
+        return;
+      }
+    }
+    
     // 기존 입찰이 없는 경우에만 견적티켓 확인
     if (!existingBid) {
       // 견적티켓/구독권이 없는 경우 견적티켓 구매 페이지로 이동

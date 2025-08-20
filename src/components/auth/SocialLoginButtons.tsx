@@ -10,13 +10,14 @@ interface SocialLoginButtonsContentProps {
   requireTermsAgreement?: boolean;
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
+  memberType?: 'buyer' | 'seller';
 }
 
 /**
  * useSearchParams를 사용하는 내부 컴포넌트
  * Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 분리하고 Suspense로 감싸야 함
  */
-function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacyAgreed }: SocialLoginButtonsContentProps) {
+function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacyAgreed, memberType }: SocialLoginButtonsContentProps) {
   const [loading, setLoading] = useState<string>('');
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -84,7 +85,16 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
       }
       
       // 소셜 로그인 URL 구성 (백엔드의 새 엔드포인트에 맞게 수정)
-      const socialLoginUrl = `${backendUrl}/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?callbackUrl=' + encodeURIComponent(redirectUrl))}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      const callbackParams = new URLSearchParams({
+        callbackUrl: redirectUrl
+      });
+      
+      // memberType이 있으면 추가
+      if (memberType) {
+        callbackParams.set('memberType', memberType);
+      }
+      
+      const socialLoginUrl = `${backendUrl}/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?' + callbackParams.toString())}&redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       // 디버그 정보 출력
       console.log(`소셜 로그인 URL: ${socialLoginUrl}`);
@@ -135,13 +145,14 @@ interface SocialLoginButtonsProps {
   requireTermsAgreement?: boolean;
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
+  memberType?: 'buyer' | 'seller';
 }
 
 /**
  * 소셜 로그인 버튼 컴포넌트
  * JWT 기반 인증을 위해 Django 백엔드의 소셜 로그인 엔드포인트로 연결합니다.
  */
-export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed, privacyAgreed }: SocialLoginButtonsProps) {
+export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed, privacyAgreed, memberType }: SocialLoginButtonsProps) {
   return (
     <Suspense fallback={<div className="flex flex-col gap-4 w-full items-center justify-center">
       <Loader2 className="h-5 w-5 animate-spin" />
@@ -150,6 +161,7 @@ export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed,
         requireTermsAgreement={requireTermsAgreement}
         termsAgreed={termsAgreed}
         privacyAgreed={privacyAgreed}
+        memberType={memberType}
       />
     </Suspense>
   );

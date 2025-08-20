@@ -24,6 +24,8 @@ function SocialCallbackContent() {
   const callbackUrl = searchParams.get('callbackUrl') || '/';
   // 신규 사용자 여부 확인
   const isNewUser = searchParams.get('is_new_user') === 'true';
+  // 멤버 타입 확인 (판매회원 카카오 가입)
+  const memberType = searchParams.get('memberType') as 'buyer' | 'seller' | null;
   
   useEffect(() => {
     /**
@@ -283,6 +285,15 @@ function SocialCallbackContent() {
           setStatus('환영합니다! 회원가입이 완료되었습니다.');
           setShowWelcomeModal(true);
           return; // 모달이 닫힐 때까지 대기
+        }
+        
+        // 3.6. 판매회원 카카오 가입인 경우 추가 정보 입력 필요 확인
+        if (memberType === 'seller' && userRole === 'seller') {
+          // 판매회원이지만 추가 정보가 필요한지 확인하기 위해 회원가입 페이지로 리다이렉트
+          setStatus('판매회원 추가 정보 입력이 필요합니다. 이동 중...');
+          const registerUrl = `/register?provider=kakao&email=${encodeURIComponent(userEmail)}&socialId=${encodeURIComponent(userId)}&memberType=seller`;
+          router.push(registerUrl);
+          return;
         }
         
         // 4. 최종 리다이렉트

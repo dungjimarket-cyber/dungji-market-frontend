@@ -14,6 +14,22 @@ declare module 'next-auth' {
       access: string;
       refresh: string;
     };
+    // 판매회원 필드
+    address_region?: {
+      id?: string;
+      code?: string;
+      name?: string;
+      full_name?: string;
+      level?: number;
+    };
+    seller_category?: string;
+    representative_name?: string;
+    business_reg_number?: string;
+    business_verified?: boolean;
+    user_type?: string;
+    first_name?: string;
+    business_number?: string;
+    is_business_verified?: boolean;
   }
 
   interface Session {

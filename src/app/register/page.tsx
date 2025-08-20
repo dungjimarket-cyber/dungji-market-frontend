@@ -608,7 +608,7 @@ function RegisterPageContent() {
                   onClick={() => {
                     setMemberType('seller');
                     setFormData(prev => ({ ...prev, role: 'seller' }));
-                    setSignupType('email'); // 판매회원은 이메일 가입만 가능
+                    // 판매회원도 이제 가입 방식 선택 가능
                   }}
                   className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
                 >
@@ -623,8 +623,8 @@ function RegisterPageContent() {
             </div>
           )}
 
-          {/* 회원가입 방식 선택 (일반회원만) */}
-          {!socialProvider && memberType === 'buyer' && signupType === null && (
+          {/* 회원가입 방식 선택 (일반회원과 판매회원) */}
+          {!socialProvider && memberType && signupType === null && (
             <div className="mb-6">
               <button
                 onClick={() => setMemberType(null)}
@@ -686,7 +686,9 @@ function RegisterPageContent() {
             <div className="mb-6">
               {/* 카카오톡 간편가입 약관 동의 */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">(주)둥지마켓 약관 동의</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  (주)둥지마켓 약관 동의 {memberType === 'seller' && <span className="text-blue-600">(판매회원)</span>}
+                </h3>
                 
                 <div className="space-y-2">
                   {/* 전체 동의 체크박스 */}
@@ -720,7 +722,7 @@ function RegisterPageContent() {
                       onChange={(e) => setFormData(prev => ({ ...prev, terms_agreed: e.target.checked }))}
                     />
                     <label htmlFor="terms_agreed_social" className="ml-2 text-sm text-gray-700">
-                      <span className="text-red-500">*</span> (필수) <a href="/terms/general" target="_blank" className="underline text-blue-600 hover:text-blue-800">이용약관</a>에 동의합니다
+                      <span className="text-red-500">*</span> (필수) <a href={memberType === 'seller' ? "/terms/seller" : "/terms/general"} target="_blank" className="underline text-blue-600 hover:text-blue-800">{memberType === 'seller' ? '판매회원 이용약관' : '이용약관'}</a>에 동의합니다
                     </label>
                   </div>
                   
@@ -751,6 +753,18 @@ function RegisterPageContent() {
                   </div>
                 </div>
                 
+                {/* 판매회원 카카오 가입 안내 */}
+                {memberType === 'seller' && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2">📋 판매회원 가입 안내</h4>
+                    <div className="text-sm text-blue-700 space-y-1">
+                      <p>• 카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</p>
+                      <p>• 견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</p>
+                      <p>• 닉네임은 카카오톡 프로필명으로 자동 설정됩니다</p>
+                    </div>
+                  </div>
+                )}
+                
                 {/* 추천인 코드 (소셜 가입 시) */}
                 <div className="mb-4">
                   <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
@@ -780,6 +794,7 @@ function RegisterPageContent() {
                 requireTermsAgreement={true}
                 termsAgreed={formData.terms_agreed}
                 privacyAgreed={formData.privacy_agreed}
+                memberType={memberType || undefined}
               />
             </div>
           )}
