@@ -567,12 +567,14 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               <p className="text-sm text-gray-700 mt-3">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
             </div>
           ) : (
-            <div className="mb-4">
-              <p className="text-sm text-gray-500">출고가</p>
-              <p className="text-2xl font-bold mb-2">
-                ₩{new Intl.NumberFormat('ko-KR').format(groupBuyState?.product_details?.base_price || 0)}원
-              </p>
-              <p className="text-sm text-gray-700">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">기기 출고가</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  {new Intl.NumberFormat('ko-KR').format(groupBuyState?.product_details?.base_price || 0)}원
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
             </div>
           )}
 
