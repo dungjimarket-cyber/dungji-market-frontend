@@ -31,6 +31,7 @@ export default function SellerSettings() {
     nickname: '',
     phone: '',
     email: '',
+    representativeName: '',
     addressProvince: '',
     addressCity: '',
     businessNumber1: '',
@@ -131,6 +132,7 @@ export default function SellerSettings() {
           nickname: data.nickname || '',
           phone: formattedPhone,
           email: data.email || '',
+          representativeName: data.representativeName || '',
           addressProvince: '',
           addressCity: '',
           businessNumber1: businessNum1,
@@ -378,6 +380,11 @@ export default function SellerSettings() {
         updateData.email = formData.email;
       }
       
+      // 대표자명 추가
+      if (formData.representativeName) {
+        updateData.representative_name = formData.representativeName;
+      }
+      
       // 전화번호가 변경된 경우에만 포함 (기존 전화번호와 비교)
       const originalPhone = profile?.phone?.replace(/-/g, '');
       if (cleanPhone !== originalPhone && cleanPhone) {
@@ -449,6 +456,10 @@ export default function SellerSettings() {
         
         if (updateData.email) {
           formDataWithFile.append('email', updateData.email);
+        }
+        
+        if (updateData.representative_name) {
+          formDataWithFile.append('representative_name', updateData.representative_name);
         }
         
         if (updateData.address_region_id) {
@@ -632,6 +643,25 @@ export default function SellerSettings() {
                     }}
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="representativeName">
+                    사업자등록증상 대표자명 {!formData.representativeName && <span className="text-red-500">*</span>}
+                  </Label>
+                  <Input
+                    id="representativeName"
+                    name="representativeName"
+                    value={formData.representativeName}
+                    onChange={handleChange}
+                    placeholder="사업자등록증상 대표자명을 입력하세요"
+                    required={!formData.representativeName}
+                  />
+                  {!formData.representativeName ? (
+                    <p className="text-xs text-red-500">사업자등록증에 명시된 대표자명을 정확히 입력해주세요 (필수)</p>
+                  ) : (
+                    <p className="text-xs text-gray-500">사업자등록증에 명시된 대표자명</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
