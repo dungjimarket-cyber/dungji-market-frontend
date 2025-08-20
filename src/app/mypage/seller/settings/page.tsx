@@ -660,7 +660,7 @@ export default function SellerSettings() {
                     required={!formData.representativeName}
                   />
                   {!formData.representativeName ? (
-                    <p className="text-xs text-red-500">사업자등록증에 명시된 대표자명을 정확히 입력해주세요 (필수)</p>
+                    <p className="text-xs text-red-500">* 사업자등록증에 명시된 대표자명을 정확히 입력해주세요</p>
                   ) : (
                     <p className="text-xs text-gray-500">사업자등록증에 명시된 대표자명</p>
                   )}
