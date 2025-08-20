@@ -648,57 +648,70 @@ function RegisterPageContent() {
 
           {/* 회원가입 방식 선택 (일반회원과 판매회원) */}
           {!socialProvider && memberType && signupType === null && (
-            <div className="mb-6">
+            <div className="relative">
+              {/* 뒤로가기 버튼 - 절대 위치 */}
               <button
                 onClick={() => setMemberType(null)}
-                className="mb-4 text-sm text-gray-600 hover:text-gray-800 flex items-center"
+                className="absolute -top-12 left-0 text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
               >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
-                뒤로가기
+                <span className="text-sm">뒤로가기</span>
               </button>
               
-              <div className="grid grid-cols-2 gap-4">
+              {/* 회원가입 방식 선택 카드 */}
+              <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                {/* 아이디/비밀번호 가입 카드 */}
                 <button
                   type="button"
                   onClick={() => setSignupType('email')}
-                  className={`relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg ${
-                    signupType === 'email' 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 scale-105 shadow-md' 
-                      : 'border-gray-300 hover:border-gray-400 bg-white hover:scale-105'
-                  }`}
+                  className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-8 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
-                  {signupType === 'email' && (
-                    <div className="absolute top-2 right-2">
-                      <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                  <Mail className="w-8 h-8 mx-auto mb-3 text-blue-600" />
-                  <div className="font-semibold text-lg">아이디/비밀번호 가입</div>
-                  <div className="text-sm text-gray-600 mt-2">이메일과 비밀번호로 가입</div>
+                  {/* 아이콘 컨테이너 */}
+                  <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* 카드 제목 */}
+                  <div className="font-bold text-lg text-gray-900 mb-2 leading-tight">
+                    아이디/비밀번호<br/>
+                    회원가입
+                  </div>
+                  
+                  {/* 카드 설명 */}
+                  <div className="text-sm text-gray-600 leading-relaxed">
+                    아이디와 비밀번호로<br/>
+                    가입
+                  </div>
                 </button>
+                
+                {/* 카카오톡 간편가입 카드 */}
                 <button
                   type="button"
                   onClick={() => setSignupType('social')}
-                  className={`relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg ${
-                    signupType === 'social' 
-                      ? 'border-yellow-500 bg-yellow-50 text-yellow-700 scale-105 shadow-md' 
-                      : 'border-gray-300 hover:border-gray-400 bg-white hover:scale-105'
-                  }`}
+                  className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-8 text-center transition-all hover:border-yellow-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
-                  {signupType === 'social' && (
-                    <div className="absolute top-2 right-2">
-                      <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="w-8 h-8 mx-auto mb-3 text-3xl">💬</div>
-                  <div className="font-semibold text-lg">카카오톡 간편가입</div>
-                  <div className="text-sm text-gray-600 mt-2">3초 만에 간편하게 가입</div>
+                  {/* 아이콘 컨테이너 */}
+                  <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-[#FEE500] flex items-center justify-center">
+                    <svg className="w-10 h-10" fill="#3C1E1E" viewBox="0 0 24 24">
+                      <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* 카드 제목 */}
+                  <div className="font-bold text-lg text-gray-900 mb-2 leading-tight">
+                    카카오톡<br/>
+                    간편가입
+                  </div>
+                  
+                  {/* 카드 설명 */}
+                  <div className="text-sm text-gray-600 leading-relaxed">
+                    3초 만에 간편하게<br/>
+                    가입
+                  </div>
                 </button>
               </div>
             </div>
