@@ -570,7 +570,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-baseline justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">기기 출고가</span>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-base font-medium text-gray-900">
                   {new Intl.NumberFormat('ko-KR').format(groupBuyState?.product_details?.base_price || 0)}원
                 </span>
               </div>
