@@ -583,8 +583,8 @@ function RegisterPageContent() {
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
                 <p className="text-sm text-blue-800 text-center">
                   어떤 회원이 되고 싶으신가요?<br/>
-                  - 일반회원 🐦 최저가로 상품을 구매하고 싶어요<br/>
-                  - 판매회원 🦅 믿음직한 판매자가 되어 고객을 만나고 싶어요
+                  - 일반회원 🐦 공동구매 참여하고 견적 받기<br/>
+                  - 판매회원 🦅 견적 제안하고 판매 기회 얻기
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
