@@ -221,6 +221,14 @@ export default function BidModal({
       
       const result = await createBid(bidData);
 
+      // 견적티켓 정보 실시간 업데이트
+      try {
+        const updatedTokenInfo = await bidTokenService.getBidTokens();
+        setBidTokenInfo(updatedTokenInfo);
+      } catch (error) {
+        console.error('견적티켓 정보 업데이트 오류:', error);
+      }
+
       toast({
         title: result.is_updated 
           ? '견적이 성공적으로 수정되었습니다' 
@@ -355,6 +363,15 @@ export default function BidModal({
                   try {
                     setCancelLoading(true);
                     await cancelBid(existingBid.id);
+                    
+                    // 견적티켓 정보 실시간 업데이트 (철회 시)
+                    try {
+                      const updatedTokenInfo = await bidTokenService.getBidTokens();
+                      setBidTokenInfo(updatedTokenInfo);
+                    } catch (error) {
+                      console.error('견적티켓 정보 업데이트 오류:', error);
+                    }
+                    
                     toast({
                       title: '견적 철회 완료',
                       description: '견적이 성공적으로 철회되었습니다.',

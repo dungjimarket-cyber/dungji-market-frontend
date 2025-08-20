@@ -817,6 +817,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           description: '입찰이 성공적으로 완료되었습니다.',
         });
         
+        // 견적티켓 정보 실시간 업데이트
+        await fetchBidTokenInfo();
         await checkBidStatus();
         await fetchTopBids();
         router.refresh();
