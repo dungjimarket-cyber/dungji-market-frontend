@@ -665,33 +665,7 @@ function RegisterPageContent() {
               
               {/* 회원가입 방식 선택 카드 - 모바일에서도 가로 정렬 */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {/* 아이디/비밀번호 가입 카드 */}
-                <button
-                  type="button"
-                  onClick={() => setSignupType('email')}
-                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 sm:p-8 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
-                >
-                  {/* 아이콘 컨테이너 */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                    </svg>
-                  </div>
-                  
-                  {/* 카드 제목 */}
-                  <div className="font-bold text-base sm:text-lg text-gray-900 mb-2 leading-tight">
-                    아이디/비밀번호<br/>
-                    회원가입
-                  </div>
-                  
-                  {/* 카드 설명 */}
-                  <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                    아이디와 비밀번호로<br/>
-                    가입
-                  </div>
-                </button>
-                
-                {/* 카카오톡 간편가입 카드 */}
+                {/* 카카오톡 간편가입 카드 - 왼쪽 */}
                 <button
                   type="button"
                   onClick={() => setSignupType('social')}
@@ -713,6 +687,32 @@ function RegisterPageContent() {
                   {/* 카드 설명 */}
                   <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                     3초 만에 간편하게<br/>
+                    가입
+                  </div>
+                </button>
+                
+                {/* 아이디/비밀번호 가입 카드 - 오른쪽 */}
+                <button
+                  type="button"
+                  onClick={() => setSignupType('email')}
+                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 sm:p-8 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                >
+                  {/* 아이콘 컨테이너 */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* 카드 제목 */}
+                  <div className="font-bold text-base sm:text-lg text-gray-900 mb-2 leading-tight">
+                    아이디/비밀번호<br/>
+                    회원가입
+                  </div>
+                  
+                  {/* 카드 설명 */}
+                  <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    아이디와 비밀번호로<br/>
                     가입
                   </div>
                 </button>
