@@ -30,6 +30,7 @@ export default function SellerSettings() {
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
+    email: '',
     addressProvince: '',
     addressCity: '',
     businessNumber1: '',
@@ -129,6 +130,7 @@ export default function SellerSettings() {
         setFormData({
           nickname: data.nickname || '',
           phone: formattedPhone,
+          email: data.email || '',
           addressProvince: '',
           addressCity: '',
           businessNumber1: businessNum1,
@@ -371,6 +373,11 @@ export default function SellerSettings() {
         is_remote_sales: formData.isRemoteSales
       };
       
+      // 이메일 추가
+      if (formData.email) {
+        updateData.email = formData.email;
+      }
+      
       // 전화번호가 변경된 경우에만 포함 (기존 전화번호와 비교)
       const originalPhone = profile?.phone?.replace(/-/g, '');
       if (cleanPhone !== originalPhone && cleanPhone) {
@@ -438,6 +445,10 @@ export default function SellerSettings() {
         
         if (updateData.phone) {
           formDataWithFile.append('phone', updateData.phone);
+        }
+        
+        if (updateData.email) {
+          formDataWithFile.append('email', updateData.email);
         }
         
         if (updateData.address_region_id) {
@@ -590,6 +601,21 @@ export default function SellerSettings() {
                     />
                   </div>
                   <p className="text-xs text-gray-500">하이픈(-)을 포함하여 입력해주세요</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">
+                    이메일
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
+                  />
+                  <p className="text-xs text-gray-500">비밀번호 찾기 및 중요 안내사항 수신에 필요합니다</p>
                 </div>
 
                 <div className="space-y-2">
