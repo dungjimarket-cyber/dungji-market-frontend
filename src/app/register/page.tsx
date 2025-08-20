@@ -1138,9 +1138,16 @@ function RegisterPageContent() {
                           type="button"
                           onClick={verifyBusinessNumber}
                           disabled={businessVerificationLoading}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {businessVerificationLoading ? '검증중...' : '유효성검사'}
+                          {businessVerificationLoading ? (
+                            <span className="text-xs sm:text-sm">검증중...</span>
+                          ) : (
+                            <>
+                              <span className="sm:hidden">유효성검사</span>
+                              <span className="hidden sm:inline">유효성검사</span>
+                            </>
+                          )}
                         </button>
                       </div>
                       {businessVerificationResult && (
