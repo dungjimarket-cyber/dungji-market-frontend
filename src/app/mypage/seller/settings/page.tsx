@@ -598,7 +598,7 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">
-                    휴대폰번호
+                    휴대폰번호 <span className="text-red-500">*</span>
                   </Label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-500" />
@@ -630,7 +630,9 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="businessAddress">사업장주소/영업활동지역</Label>
+                  <Label htmlFor="businessAddress">
+                    사업장주소/영업활동지역 <span className="text-red-500">*</span>
+                  </Label>
                   <RegionDropdown
                     selectedProvince={formData.addressProvince}
                     selectedCity={formData.addressCity}
@@ -647,7 +649,7 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="representativeName">
-                    사업자등록증상 대표자명 {!formData.representativeName && <span className="text-red-500">*</span>}
+                    사업자등록증상 대표자명 <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="representativeName"
@@ -665,7 +667,9 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="businessNumber1">사업자등록번호</Label>
+                  <Label htmlFor="businessNumber1">
+                    사업자등록번호 <span className="text-red-500">*</span>
+                  </Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <div className="flex items-center gap-2 flex-1">
                       <Input
