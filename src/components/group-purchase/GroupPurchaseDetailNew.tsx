@@ -1895,9 +1895,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   판매자정보보기
                 </Button>
                 <Button
-                  onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`)}
+                  onClick={() => {
+                    console.log('Buyer no-show report button clicked, groupBuy.id:', groupBuy.id);
+                    if (!groupBuy.id) {
+                      console.error('No groupBuy.id available for navigation');
+                      return;
+                    }
+                    router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
+                  }}
                   variant="outline"
                   className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                  disabled={!groupBuy.id}
                 >
                   노쇼신고
                 </Button>
@@ -2020,9 +2028,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   구매자정보보기
                 </Button>
                 <Button
-                  onClick={() => router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`)}
+                  onClick={() => {
+                    console.log('Seller no-show report button clicked, groupBuy.id:', groupBuy.id);
+                    if (!groupBuy.id) {
+                      console.error('No groupBuy.id available for navigation');
+                      return;
+                    }
+                    router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
+                  }}
                   variant="outline"
                   className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                  disabled={!groupBuy.id}
                 >
                   노쇼신고하기
                 </Button>

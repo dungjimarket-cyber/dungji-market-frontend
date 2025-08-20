@@ -892,7 +892,7 @@ function RegisterPageContent() {
                               id="email"
                               name="email"
                               type="text"
-                              className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              className="w-28 sm:flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                               placeholder="이메일 입력"
                               value={formData.email.split('@')[0] || ''}
                               onChange={(e) => {
@@ -923,7 +923,7 @@ function RegisterPageContent() {
                                 setEmailChecked(false);
                                 setEmailAvailable(false);
                               }}
-                              className="min-w-0 w-32 sm:w-auto appearance-none rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              className="min-w-0 w-24 sm:w-auto appearance-none rounded-md px-2 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             >
                               <option value="">선택</option>
                               <option value="naver.com">naver.com</option>
