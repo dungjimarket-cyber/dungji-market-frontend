@@ -648,11 +648,11 @@ function RegisterPageContent() {
 
           {/* 회원가입 방식 선택 (일반회원과 판매회원) */}
           {!socialProvider && memberType && signupType === null && (
-            <div className="relative">
-              {/* 뒤로가기 버튼 - 절대 위치 */}
+            <div className="space-y-6">
+              {/* 뒤로가기 버튼 */}
               <button
                 onClick={() => setMemberType(null)}
-                className="absolute -top-12 left-0 text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
+                className="text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
@@ -660,29 +660,32 @@ function RegisterPageContent() {
                 <span className="text-sm">뒤로가기</span>
               </button>
               
-              {/* 회원가입 방식 선택 카드 */}
-              <div className="flex flex-col sm:flex-row gap-4 mt-2">
+              {/* 제목 */}
+              <h2 className="text-2xl font-bold text-gray-900 text-center">둥지마켓 회원가입</h2>
+              
+              {/* 회원가입 방식 선택 카드 - 모바일에서도 가로 정렬 */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {/* 아이디/비밀번호 가입 카드 */}
                 <button
                   type="button"
                   onClick={() => setSignupType('email')}
-                  className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-8 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 sm:p-8 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
                   {/* 아이콘 컨테이너 */}
-                  <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                     </svg>
                   </div>
                   
                   {/* 카드 제목 */}
-                  <div className="font-bold text-lg text-gray-900 mb-2 leading-tight">
+                  <div className="font-bold text-base sm:text-lg text-gray-900 mb-2 leading-tight">
                     아이디/비밀번호<br/>
                     회원가입
                   </div>
                   
                   {/* 카드 설명 */}
-                  <div className="text-sm text-gray-600 leading-relaxed">
+                  <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                     아이디와 비밀번호로<br/>
                     가입
                   </div>
@@ -692,23 +695,23 @@ function RegisterPageContent() {
                 <button
                   type="button"
                   onClick={() => setSignupType('social')}
-                  className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-8 text-center transition-all hover:border-yellow-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 sm:p-8 text-center transition-all hover:border-yellow-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
                   {/* 아이콘 컨테이너 */}
-                  <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-[#FEE500] flex items-center justify-center">
-                    <svg className="w-10 h-10" fill="#3C1E1E" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl bg-[#FEE500] flex items-center justify-center">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="#3C1E1E" viewBox="0 0 24 24">
                       <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
                     </svg>
                   </div>
                   
                   {/* 카드 제목 */}
-                  <div className="font-bold text-lg text-gray-900 mb-2 leading-tight">
+                  <div className="font-bold text-base sm:text-lg text-gray-900 mb-2 leading-tight">
                     카카오톡<br/>
                     간편가입
                   </div>
                   
                   {/* 카드 설명 */}
-                  <div className="text-sm text-gray-600 leading-relaxed">
+                  <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                     3초 만에 간편하게<br/>
                     가입
                   </div>
