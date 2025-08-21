@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
 import { partnerService } from '@/lib/api/partnerService';
 import { ReferralRecord, PartnerStats, ReferralLink } from '@/types/partner';
@@ -22,11 +23,14 @@ import {
 
 export default function PartnerDashboardNew() {
   const { partner, summary, isLoading } = usePartner();
+  const searchParams = useSearchParams();
   const [recentMembers, setRecentMembers] = useState<ReferralRecord[]>([]);
   const [referralLink, setReferralLink] = useState<ReferralLink | null>(null);
   const [stats, setStats] = useState<PartnerStats[]>([]);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'link' | 'settlements'>('dashboard');
+  
+  // URL 쿼리 파라미터에서 탭 상태 가져오기
+  const activeTab = (searchParams.get('tab') || 'dashboard') as 'dashboard' | 'members' | 'link' | 'settlements';
 
   useEffect(() => {
     loadDashboardData();
@@ -88,36 +92,6 @@ export default function PartnerDashboardNew() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
-            {[
-              { id: 'dashboard', label: '대시보드', icon: BarChart3 },
-              { id: 'members', label: '회원 관리', icon: Users },
-              { id: 'link', label: '추천링크', icon: QrCode },
-              { id: 'settlements', label: '정산 관리', icon: CreditCard },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center py-4 px-2 border-b-2 text-sm font-medium ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'dashboard' && (

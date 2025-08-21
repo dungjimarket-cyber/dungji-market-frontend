@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PartnerProvider } from '@/contexts/PartnerContext';
-import { LogOut, Home, Users, Link2, CreditCard } from 'lucide-react';
+import { LogOut, Home, Users, Link2, CreditCard, BarChart3, QrCode } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 
 export default function PartnerLayoutClient({
@@ -12,6 +12,9 @@ export default function PartnerLayoutClient({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const currentTab = searchParams.get('tab') || 'dashboard';
 
   useEffect(() => {
     // 쿠키에서 localStorage로 파트너 토큰 이동
@@ -84,35 +87,51 @@ export default function PartnerLayoutClient({
               </span>
             </div>
             
-            {/* 네비게이션 메뉴 */}
-            <nav className="hidden md:flex items-center space-x-8">
+            {/* 데스크톱 네비게이션 메뉴 */}
+            <nav className="hidden md:flex items-center space-x-6">
               <button
                 onClick={() => router.push('/partner-dashboard')}
-                className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors"
+                className={`flex items-center space-x-2 transition-colors ${
+                  pathname === '/partner-dashboard' && !searchParams.get('tab')
+                    ? 'text-purple-600 font-medium'
+                    : 'text-gray-700 hover:text-purple-600'
+                }`}
               >
-                <Home className="w-4 h-4" />
+                <BarChart3 className="w-4 h-4" />
                 <span>대시보드</span>
               </button>
               <button
                 onClick={() => router.push('/partner-dashboard?tab=members')}
-                className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors"
+                className={`flex items-center space-x-2 transition-colors ${
+                  currentTab === 'members'
+                    ? 'text-purple-600 font-medium'
+                    : 'text-gray-700 hover:text-purple-600'
+                }`}
               >
                 <Users className="w-4 h-4" />
-                <span>추천 회원</span>
+                <span>회원 관리</span>
               </button>
               <button
                 onClick={() => router.push('/partner-dashboard?tab=link')}
-                className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors"
+                className={`flex items-center space-x-2 transition-colors ${
+                  currentTab === 'link'
+                    ? 'text-purple-600 font-medium'
+                    : 'text-gray-700 hover:text-purple-600'
+                }`}
               >
-                <Link2 className="w-4 h-4" />
-                <span>추천 링크</span>
+                <QrCode className="w-4 h-4" />
+                <span>추천링크</span>
               </button>
               <button
                 onClick={() => router.push('/partner-dashboard?tab=settlements')}
-                className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors"
+                className={`flex items-center space-x-2 transition-colors ${
+                  currentTab === 'settlements'
+                    ? 'text-purple-600 font-medium'
+                    : 'text-gray-700 hover:text-purple-600'
+                }`}
               >
                 <CreditCard className="w-4 h-4" />
-                <span>정산 내역</span>
+                <span>정산 관리</span>
               </button>
             </nav>
 
@@ -129,12 +148,62 @@ export default function PartnerLayoutClient({
       </header>
 
       {/* 메인 콘텐츠 */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         {children}
       </main>
 
-      {/* 둥지 파트너스 전용 푸터 */}
-      <footer className="bg-white border-t mt-12">
+      {/* 모바일 하단 네비게이션 */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50">
+        <div className="grid grid-cols-4 h-16">
+          <button
+            onClick={() => router.push('/partner-dashboard')}
+            className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
+              pathname === '/partner-dashboard' && !searchParams.get('tab')
+                ? 'text-purple-600'
+                : 'text-gray-600'
+            }`}
+          >
+            <BarChart3 className="w-5 h-5" />
+            <span className="text-xs">대시보드</span>
+          </button>
+          <button
+            onClick={() => router.push('/partner-dashboard?tab=members')}
+            className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
+              currentTab === 'members'
+                ? 'text-purple-600'
+                : 'text-gray-600'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span className="text-xs">회원관리</span>
+          </button>
+          <button
+            onClick={() => router.push('/partner-dashboard?tab=link')}
+            className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
+              currentTab === 'link'
+                ? 'text-purple-600'
+                : 'text-gray-600'
+            }`}
+          >
+            <QrCode className="w-5 h-5" />
+            <span className="text-xs">추천링크</span>
+          </button>
+          <button
+            onClick={() => router.push('/partner-dashboard?tab=settlements')}
+            className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
+              currentTab === 'settlements'
+                ? 'text-purple-600'
+                : 'text-gray-600'
+            }`}
+          >
+            <CreditCard className="w-5 h-5" />
+            <span className="text-xs">정산관리</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* 둥지 파트너스 전용 푸터 (데스크톱만) */}
+      <footer className="hidden md:block bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-sm text-gray-600">
             <p>© 2025 둥지 파트너스. All rights reserved.</p>
