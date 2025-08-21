@@ -88,32 +88,6 @@ export default function PartnerDashboardNew() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <img className="h-8 w-auto" src="/logo.png" alt="둥지마켓" />
-              </div>
-              <div className="ml-4">
-                <h1 className="text-xl font-semibold text-gray-900">둥지파트너스</h1>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                안녕하세요, <span className="font-medium">{partner?.partner_name}</span>님
-              </span>
-              <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {partner?.partner_name?.charAt(0) || 'P'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Navigation Tabs */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
