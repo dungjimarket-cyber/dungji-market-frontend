@@ -92,7 +92,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/seller_detail/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/sellers/${sellerId}/`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -131,7 +131,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/adjust_bid_tokens/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/adjust/`,
         {
           method: 'POST',
           headers: {
@@ -139,8 +139,9 @@ export default function SellerDetailPage() {
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            adjustment_type: adjustmentType,
-            quantity: adjustmentQuantity,
+            seller_id: sellerId,
+            action: adjustmentType,
+            amount: adjustmentQuantity,
             reason: adjustmentReason,
           }),
         }
@@ -187,7 +188,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/grant_subscription/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/grant-subscription/`,
         {
           method: 'POST',
           headers: {
@@ -195,7 +196,8 @@ export default function SellerDetailPage() {
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            duration_days: subscriptionDays,
+            seller_id: sellerId,
+            days: subscriptionDays,
             reason: subscriptionReason,
           }),
         }
