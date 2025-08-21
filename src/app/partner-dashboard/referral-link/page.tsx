@@ -80,8 +80,12 @@ export default function ReferralLinkPage() {
   const downloadQRCode = () => {
     if (!referralLink?.qr_code_url) return;
 
+    const qrCodeUrl = referralLink.qr_code_url.startsWith('http') 
+      ? referralLink.qr_code_url 
+      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${referralLink.qr_code_url}`;
+
     const link = document.createElement('a');
-    link.href = referralLink.qr_code_url;
+    link.href = qrCodeUrl;
     link.download = `둥지마켓_추천링크_QR_${referralLink.partner_code}.png`;
     document.body.appendChild(link);
     link.click();
@@ -232,9 +236,16 @@ export default function ReferralLinkPage() {
               {referralLink?.qr_code_url ? (
                 <div className="p-4 bg-white rounded-lg border">
                   <img
-                    src={referralLink.qr_code_url}
+                    src={referralLink.qr_code_url.startsWith('http') 
+                      ? referralLink.qr_code_url 
+                      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${referralLink.qr_code_url}`
+                    }
                     alt="추천 링크 QR 코드"
                     className="w-48 h-48"
+                    onError={(e) => {
+                      console.error('QR 코드 로딩 실패');
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
               ) : (

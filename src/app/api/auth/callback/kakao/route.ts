@@ -139,26 +139,43 @@ export async function GET(request: Request) {
         // Next.js 14부터는 cookies()를 사용할 때도 await 필요
         const cookieStore = await cookies();
         
-        // 접근 토큰 저장
-        cookieStore.set('accessToken', data.jwt.access, { 
-          maxAge: 60 * 60 * 24, // 1일
-          path: '/',
-          sameSite: 'lax',
-        });
-        
-        // 추가 호환성을 위한 토큰 저장
-        cookieStore.set('dungji_auth_token', data.jwt.access, {
-          maxAge: 60 * 60 * 24,
-          path: '/',
-          sameSite: 'lax',
-        });
-        
-        if (data.jwt.refresh) {
-          cookieStore.set('refreshToken', data.jwt.refresh, {
-            maxAge: 60 * 60 * 24 * 7, // 7일
+        // 파트너 로그인인 경우 파트너 토큰으로 저장
+        if (userRole === 'partner') {
+          cookieStore.set('partner_token', data.jwt.access, { 
+            maxAge: 60 * 60 * 24, // 1일
             path: '/',
             sameSite: 'lax',
           });
+          
+          if (data.jwt.refresh) {
+            cookieStore.set('partner_refresh_token', data.jwt.refresh, {
+              maxAge: 60 * 60 * 24 * 7, // 7일
+              path: '/',
+              sameSite: 'lax',
+            });
+          }
+        } else {
+          // 일반 사용자 토큰 저장
+          cookieStore.set('accessToken', data.jwt.access, { 
+            maxAge: 60 * 60 * 24, // 1일
+            path: '/',
+            sameSite: 'lax',
+          });
+          
+          // 추가 호환성을 위한 토큰 저장
+          cookieStore.set('dungji_auth_token', data.jwt.access, {
+            maxAge: 60 * 60 * 24,
+            path: '/',
+            sameSite: 'lax',
+          });
+          
+          if (data.jwt.refresh) {
+            cookieStore.set('refreshToken', data.jwt.refresh, {
+              maxAge: 60 * 60 * 24 * 7, // 7일
+              path: '/',
+              sameSite: 'lax',
+            });
+          }
         }
       } catch (cookieError) {
         console.error('❌ 쿠키 설정 오류:', cookieError);
