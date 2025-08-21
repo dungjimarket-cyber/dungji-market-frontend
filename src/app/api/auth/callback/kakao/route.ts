@@ -67,15 +67,35 @@ export async function GET(request: Request) {
     const name = profile.nickname || '';
     const profileImage = profile.profile_image_url || '';
     
+    // state로부터 role 정보 추출
+    let userRole = 'buyer'; // 기본값
+    let callbackUrl = '/'; // 기본값
+    
+    if (state) {
+      try {
+        const stateData = JSON.parse(decodeURIComponent(state));
+        if (stateData.role) {
+          userRole = stateData.role;
+        }
+        if (stateData.callbackUrl) {
+          callbackUrl = stateData.callbackUrl;
+        }
+      } catch (e) {
+        console.error('state 파싱 오류:', e, 'state:', state);
+      }
+    }
+    
     console.log('카카오 정보 처리:', {
       kakaoId,
       email,
       emailProvided: kakaoAccount.email ? '제공됨' : '자동생성',
       name,
-      profileImage: profileImage ? '있음' : '없음'
+      profileImage: profileImage ? '있음' : '없음',
+      userRole, // role 정보 추가
+      callbackUrl
     });
     
-    // 백엔드에 필요한 형식으로 데이터 전송
+    // 백엔드에 필요한 형식으로 데이터 전송 (role 포함)
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
       method: 'POST',
       headers: {
@@ -87,6 +107,7 @@ export async function GET(request: Request) {
         email: email,
         name: name,
         profile_image: profileImage,
+        role: userRole, // role 정보 추가
       }),
     });
     
@@ -145,24 +166,8 @@ export async function GET(request: Request) {
       }
     }
     
-    // 상태 파라미터로부터 리다이렉트 URL 결정
-    // 기본값은 홈페이지
-    let redirectUrl = '/';
-    
-    if (state) {
-      try {
-        // state는 원래 요청된 콜백 URL
-        const decodedState = decodeURIComponent(state);
-        // 여기서는 /auth/social-callback?callbackUrl=/XXX 형식으로 온다고 가정
-        const callbackUrl = new URL(decodedState);
-        const finalCallbackUrl = callbackUrl.searchParams.get('callbackUrl');
-        if (finalCallbackUrl) {
-          redirectUrl = finalCallbackUrl;
-        }
-      } catch (e) {
-        console.error('리다이렉트 URL 파싱 오류:', e);
-      }
-    }
+    // 리다이렉트 URL은 이미 state에서 추출됨
+    let redirectUrl = callbackUrl;
     
     console.log('최종 리다이렉트 URL:', redirectUrl);
     return NextResponse.redirect(new URL(redirectUrl, request.url));
