@@ -90,6 +90,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
 
   const fetchSellers = async () => {
     try {
+      console.log('판매자 목록 조회 시작...');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/sellers/`, {
         headers: {
           'Authorization': `Bearer ${accessToken || localStorage.getItem('dungji_auth_token')}`,
@@ -97,7 +98,11 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('판매자 목록 조회 성공:', data.length, '명');
         setSellers(data);
+      } else {
+        const errorData = await response.json();
+        console.error('판매자 목록 조회 실패:', errorData);
       }
     } catch (error) {
       console.error('Failed to fetch sellers:', error);
@@ -111,6 +116,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
 
   const fetchTokenHistory = async (sellerId: number) => {
     try {
+      console.log(`토큰 히스토리 조회 시작 (sellerId: ${sellerId})...`);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/history/${sellerId}/`,
         {
@@ -121,7 +127,11 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
       );
       if (response.ok) {
         const data = await response.json();
+        console.log('토큰 히스토리 조회 성공:', data.length, '건');
         setTokenHistory(data);
+      } else {
+        const errorData = await response.json();
+        console.error('토큰 히스토리 조회 실패:', errorData);
       }
     } catch (error) {
       console.error('Failed to fetch token history:', error);
@@ -148,6 +158,14 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
 
     setLoading(true);
     try {
+      const requestData = {
+        seller_id: selectedSeller.id,
+        action: adjustmentType,
+        amount: adjustmentAmount,
+        reason: adjustmentReason,
+      };
+      console.log('견적티켓 조정 요청:', requestData);
+      
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/adjust/`,
         {
@@ -156,35 +174,38 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken || localStorage.getItem('dungji_auth_token')}`,
           },
-          body: JSON.stringify({
-            seller_id: selectedSeller.id,
-            action: adjustmentType,
-            amount: adjustmentAmount,
-            reason: adjustmentReason,
-          }),
+          body: JSON.stringify(requestData),
         }
       );
 
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('견적티켓 조정 응답:', responseData);
+        
         toast({
           title: '성공',
           description: `견적티켓이 ${adjustmentType === 'add' ? '추가' : '차감'}되었습니다.`,
         });
         
-        // Refresh seller data
-        await fetchSellers();
-        await fetchTokenHistory(selectedSeller.id);
+        // Refresh seller data with delay to ensure DB update
+        setTimeout(async () => {
+          await fetchSellers();
+          await fetchTokenHistory(selectedSeller.id);
+        }, 500);
         
         // Reset form
         setAdjustmentAmount(1);
         setAdjustmentReason('');
       } else {
-        throw new Error('Failed to adjust tokens');
+        const errorData = await response.json();
+        console.error('견적티켓 조정 실패:', errorData);
+        throw new Error(errorData.detail || 'Failed to adjust tokens');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('견적티켓 조정 오류:', error);
       toast({
         title: '오류',
-        description: '견적티켓 조정에 실패했습니다.',
+        description: error.message || '견적티켓 조정에 실패했습니다.',
         variant: 'destructive',
       });
     } finally {
@@ -206,6 +227,13 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
 
     setLoading(true);
     try {
+      const requestData = {
+        seller_id: selectedSeller.id,
+        days: subscriptionDays,
+        reason: adjustmentReason,
+      };
+      console.log('구독권 부여 요청:', requestData);
+      
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/grant-subscription/`,
         {
@@ -214,34 +242,38 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken || localStorage.getItem('dungji_auth_token')}`,
           },
-          body: JSON.stringify({
-            seller_id: selectedSeller.id,
-            days: subscriptionDays,
-            reason: adjustmentReason,
-          }),
+          body: JSON.stringify(requestData),
         }
       );
 
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('구독권 부여 응답:', responseData);
+        
         toast({
           title: '성공',
           description: `${subscriptionDays}일 구독권이 부여되었습니다.`,
         });
         
-        // Refresh data
-        await fetchSellers();
-        await fetchTokenHistory(selectedSeller.id);
+        // Refresh data with delay to ensure DB update
+        setTimeout(async () => {
+          await fetchSellers();
+          await fetchTokenHistory(selectedSeller.id);
+        }, 500);
         
         // Reset form
         setSubscriptionDays(30);
         setAdjustmentReason('');
       } else {
-        throw new Error('Failed to grant subscription');
+        const errorData = await response.json();
+        console.error('구독권 부여 실패:', errorData);
+        throw new Error(errorData.detail || 'Failed to grant subscription');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('구독권 부여 오류:', error);
       toast({
         title: '오류',
-        description: '구독권 부여에 실패했습니다.',
+        description: error.message || '구독권 부여에 실패했습니다.',
         variant: 'destructive',
       });
     } finally {
