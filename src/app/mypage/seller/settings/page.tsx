@@ -31,13 +31,12 @@ export default function SellerSettings() {
     nickname: '',
     phone: '',
     email: '',
-    representativeName: '',
+    representativeName: '', // 대표자명 필드
     addressProvince: '',
     addressCity: '',
     businessNumber1: '',
     businessNumber2: '',
     businessNumber3: '',
-    representativeName: '', // 대표자명 필드 추가
     isRemoteSales: false,
     businessRegFile: null as File | null,
     existingCertification: null as string | null,
@@ -133,13 +132,12 @@ export default function SellerSettings() {
           nickname: data.nickname || '',
           phone: formattedPhone,
           email: data.email || '',
-          representativeName: data.representativeName || '',
+          representativeName: data.representativeName || '', // 대표자명 설정
           addressProvince: '',
           addressCity: '',
           businessNumber1: businessNum1,
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
-          representativeName: data.representativeName || '', // 대표자명 설정
           isRemoteSales: data.isRemoteSales || false,
           businessRegFile: null,
           existingCertification: data.remoteSalesCertification || null,
