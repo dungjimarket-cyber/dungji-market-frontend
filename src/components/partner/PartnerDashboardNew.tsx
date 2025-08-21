@@ -40,15 +40,39 @@ export default function PartnerDashboardNew() {
     if (!partner) return;
 
     try {
-      const [membersData, linkData, statsData] = await Promise.all([
-        partnerService.getReferralMembers({ limit: 10 }),
-        partnerService.getReferralLink(),
-        partnerService.getStatistics('month')
-      ]);
+      // 각 API를 개별적으로 호출하여 하나가 실패해도 다른 데이터는 로드되도록 함
+      const membersPromise = partnerService.getReferralMembers({ limit: 10 })
+        .then(data => {
+          setRecentMembers(data.results || []);
+          return data;
+        })
+        .catch(err => {
+          console.error('회원 데이터 로딩 실패:', err);
+          return null;
+        });
 
-      setRecentMembers(membersData.results || []);
-      setReferralLink(linkData);
-      setStats(statsData || []);
+      const linkPromise = partnerService.getReferralLink()
+        .then(data => {
+          setReferralLink(data);
+          return data;
+        })
+        .catch(err => {
+          console.error('추천 링크 로딩 실패:', err);
+          // 추천 링크가 없을 수 있으므로 null 반환
+          return null;
+        });
+
+      const statsPromise = partnerService.getStatistics('month')
+        .then(data => {
+          setStats(data || []);
+          return data;
+        })
+        .catch(err => {
+          console.error('통계 데이터 로딩 실패:', err);
+          return null;
+        });
+
+      await Promise.all([membersPromise, linkPromise, statsPromise]);
     } catch (error) {
       console.error('대시보드 데이터 로딩 실패:', error);
     }
@@ -64,19 +88,32 @@ export default function PartnerDashboardNew() {
     }
   };
 
-  const downloadQRCode = () => {
+  const downloadQRCode = async () => {
     if (!referralLink?.qr_code_url) return;
 
-    const qrCodeUrl = referralLink.qr_code_url.startsWith('http') 
-      ? referralLink.qr_code_url 
-      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${referralLink.qr_code_url}`;
+    try {
+      const qrCodeUrl = referralLink.qr_code_url.startsWith('http') 
+        ? referralLink.qr_code_url 
+        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${referralLink.qr_code_url}`;
 
-    const link = document.createElement('a');
-    link.href = qrCodeUrl;
-    link.download = `둥지마켓_파트너_QR_${referralLink.partner_code}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // QR 코드 이미지를 fetch하여 blob으로 변환
+      const response = await fetch(qrCodeUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `둥지파트너스_QR_${referralLink.partner_code}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // 메모리 해제
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('QR 코드 다운로드 실패:', error);
+      alert('QR 코드 다운로드에 실패했습니다.');
+    }
   };
 
   if (isLoading) {
@@ -333,8 +370,47 @@ function MembersTab({ recentMembers }: any) {
 
 // Link Tab Component
 function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: any) {
+  // 추천 링크가 아직 없는 경우
+  if (!referralLink) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="text-center py-12">
+            <QrCode className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              추천 링크가 아직 생성되지 않았습니다
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              파트너 코드가 자동으로 생성되며, 추천 링크로 회원을 초대할 수 있습니다.
+            </p>
+            <div className="inline-flex items-center px-4 py-2 bg-gray-100 rounded-lg">
+              <span className="text-sm text-gray-600">로딩 중...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* 상단 안내 메시지 */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <ExternalLink className="h-5 w-5 text-blue-400" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-blue-800">
+              추천 링크로 회원을 초대하세요
+            </h3>
+            <div className="mt-2 text-sm text-blue-700">
+              <p>아래 링크나 QR 코드를 통해 가입한 회원에 대해 수수료를 받을 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-6">
         {/* Referral Link */}
         <div className="bg-white rounded-lg shadow p-6">
@@ -409,16 +485,29 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
           
           <div className="text-center">
             {referralLink?.qr_code_url ? (
-              <div className="inline-block p-4 bg-white rounded-lg border border-gray-200">
-                <img
-                  src={referralLink.qr_code_url.startsWith('http') 
-                    ? referralLink.qr_code_url 
-                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${referralLink.qr_code_url}`
-                  }
-                  alt="추천 링크 QR 코드"
-                  className="w-48 h-48"
-                />
-              </div>
+              <>
+                <div className="inline-block p-4 bg-white rounded-lg border-2 border-gray-200">
+                  <img
+                    src={referralLink.qr_code_url.startsWith('http') 
+                      ? referralLink.qr_code_url 
+                      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${referralLink.qr_code_url}`
+                    }
+                    alt="추천 링크 QR 코드"
+                    className="w-48 h-48"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div class="w-48 h-48 flex items-center justify-center text-gray-400"><svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2m-2 0a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H6a1 1 0 01-1-1V8z"></path></svg></div>';
+                      }
+                    }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  QR 코드를 스캔하면 추천 링크로 이동합니다
+                </p>
+              </>
             ) : (
               <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center mx-auto">
                 <QrCode className="h-16 w-16 text-gray-400" />
@@ -433,6 +522,52 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
               <Download className="h-4 w-4 mr-2" />
               QR 코드 다운로드
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 사용 방법 안내 */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">사용 방법</h3>
+        <div className="space-y-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600">
+                1
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-900">링크 공유하기</p>
+              <p className="mt-1 text-sm text-gray-500">
+                위의 추천 링크나 단축 링크를 복사하여 SNS, 메신저, 블로그 등에 공유하세요.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600">
+                2
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-900">QR 코드 활용</p>
+              <p className="mt-1 text-sm text-gray-500">
+                오프라인 행사나 명함에 QR 코드를 추가하여 쉽게 회원을 초대할 수 있습니다.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600">
+                3
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-900">수수료 받기</p>
+              <p className="mt-1 text-sm text-gray-500">
+                추천 링크로 가입한 회원이 구독권이나 견적티켓을 구매하면 수수료가 지급됩니다.
+              </p>
+            </div>
           </div>
         </div>
       </div>
