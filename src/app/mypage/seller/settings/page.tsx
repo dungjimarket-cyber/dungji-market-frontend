@@ -301,7 +301,7 @@ export default function SellerSettings() {
     
     try {
       const token = await tokenUtils.getAccessToken();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/validate-business-number/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/business/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

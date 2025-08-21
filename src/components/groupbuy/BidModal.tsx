@@ -21,6 +21,7 @@ import { formatNumberWithCommas } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { tokenUtils } from '@/lib/tokenUtils';
 
 interface BidModalProps {
   isOpen: boolean;
@@ -60,6 +61,7 @@ export default function BidModal({
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   // 휴대폰 카테고리(category_id=1 또는 category_name='휴대폰')는 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
   const isTelecom = productCategory === '휴대폰' || productCategory === '1';
   const defaultBidType = isTelecom ? 'support' : 'price';
@@ -105,6 +107,20 @@ export default function BidModal({
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 사용자 프로필 새로 가져오기
+        if (user?.role === 'seller') {
+          const token = await tokenUtils.getAccessToken();
+          const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            setUserProfile(profileData);
+          }
+        }
+        
         // 판매자의 입찰 목록 조회
         const bids = await getSellerBids();
         // 현재 공구에 대한 대기 중인 입찰이 있는지 확인
@@ -148,22 +164,20 @@ export default function BidModal({
     // 판매회원 필수 정보 완성도 체크
     if (user?.role === 'seller') {
       const missingFields = [];
-      const sellerUser = user as any; // 임시 타입 캐스팅
+      const sellerUser = userProfile || user; // 새로 가져온 프로필 사용
       
-      // 필수 정보 체크
+      // 필수 정보 체크 - 백엔드 필드명과 일치하도록 수정
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
         missingFields.push('닉네임 또는 상호명');
       }
       if (!sellerUser.address_region) {
         missingFields.push('사업장주소지/영업활동지역');
       }
-      if (!sellerUser.user_type) {
-        missingFields.push('판매회원구분');
-      }
       if (!sellerUser.first_name) {
         missingFields.push('사업자등록증상 대표자명');
       }
-      if (!sellerUser.business_number) {
+      // business_reg_number 필드명 사용 (백엔드와 일치)
+      if (!sellerUser.business_reg_number && !sellerUser.business_number) {
         missingFields.push('사업자등록번호');
       }
       if (!sellerUser.is_business_verified) {
