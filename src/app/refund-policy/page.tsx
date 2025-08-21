@@ -58,16 +58,11 @@ export default function RefundPolicyPage() {
                       <td className="border border-gray-200 px-4 py-2">100% 전액 환불</td>
                     </tr>
                     <tr className="bg-gray-50">
-                      <td className="border border-gray-200 px-4 py-2">구매 후 7일 경과 + 미사용</td>
-                      <td className="border border-gray-200 px-4 py-2 text-center">✅ 가능</td>
-                      <td className="border border-gray-200 px-4 py-2">90% 환불 (10% 수수료 공제)</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-200 px-4 py-2">구매 후 30일 경과 + 미사용</td>
+                      <td className="border border-gray-200 px-4 py-2">구매 후 7일 경과</td>
                       <td className="border border-gray-200 px-4 py-2 text-center">❌ 불가</td>
                       <td className="border border-gray-200 px-4 py-2">환불 불가</td>
                     </tr>
-                    <tr className="bg-gray-50">
+                    <tr>
                       <td className="border border-gray-200 px-4 py-2">견적 참여 후 (사용)</td>
                       <td className="border border-gray-200 px-4 py-2 text-center">❌ 불가</td>
                       <td className="border border-gray-200 px-4 py-2">환불 불가</td>
@@ -84,26 +79,6 @@ export default function RefundPolicyPage() {
               </ul>
             </div>
 
-            <div>
-              <h3 className="text-xl font-medium mb-3">3.2 견적티켓 패키지 (묶음 상품)</h3>
-              
-              <h4 className="font-medium mb-2">환불 정책</h4>
-              <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li><strong>전체 미사용</strong>: 일반 견적티켓과 동일한 정책 적용</li>
-                <li><strong>부분 사용</strong>: 사용하지 않은 견적티켓에 한해 부분 환불
-                  <div className="mt-1 ml-6 text-sm">
-                    계산식: (전체 구매금액 ÷ 총 견적티켓 수) × 미사용 견적티켓 수 × 환불률
-                  </div>
-                </li>
-              </ul>
-
-              <h4 className="font-medium mt-4 mb-2">예시</h4>
-              <div className="bg-gray-100 p-3 rounded text-sm font-mono">
-                10개 패키지 10,000원 구매 → 3개 사용 후 환불 신청<br/>
-                - 미사용: 7개<br/>
-                - 환불액: (10,000원 ÷ 10개) × 7개 × 90% = 6,300원
-              </div>
-            </div>
           </div>
         </section>
 
@@ -193,7 +168,7 @@ export default function RefundPolicyPage() {
               <h4 className="font-medium mb-2">1. 견적티켓</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>견적에 1회 이상 참여한 경우</li>
-                <li>구매 후 30일 경과</li>
+                <li>구매 후 7일 경과</li>
                 <li>이벤트/프로모션으로 무료 지급된 견적티켓</li>
               </ul>
             </div>

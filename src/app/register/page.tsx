@@ -93,6 +93,45 @@ function RegisterPageContent() {
   const [businessVerified, setBusinessVerified] = useState(false);
   const [businessVerificationResult, setBusinessVerificationResult] = useState<BusinessVerificationRegistrationResult | null>(null);
   const [businessVerificationLoading, setBusinessVerificationLoading] = useState(false);
+  const [kakaoInfo, setKakaoInfo] = useState<any>(null);
+
+  // 카카오 정보 읽기
+  useEffect(() => {
+    const isFromKakao = searchParams.get('from') === 'kakao';
+    if (isFromKakao) {
+      // 쿠키에서 카카오 정보 읽기
+      const cookies = document.cookie.split(';');
+      const kakaoTempCookie = cookies.find(c => c.trim().startsWith('kakao_temp_info='));
+      
+      if (kakaoTempCookie) {
+        try {
+          const kakaoData = JSON.parse(decodeURIComponent(kakaoTempCookie.split('=')[1]));
+          setKakaoInfo(kakaoData);
+          setSignupType('social');
+          
+          // 이메일 정보 설정
+          if (kakaoData.email && !kakaoData.email.includes('@kakao.user')) {
+            const domain = extractEmailDomain(kakaoData.email);
+            const isCommonDomain = ['naver.com', 'gmail.com', 'daum.net', 'nate.com', 'kakao.com', 'hanmail.net', 'hotmail.com'].includes(domain);
+            
+            setFormData(prev => ({
+              ...prev,
+              email: kakaoData.email.split('@')[0] || '',
+              emailDomain: isCommonDomain ? domain : (domain ? 'direct' : ''),
+              customEmailDomain: isCommonDomain ? '' : domain,
+              social_provider: 'kakao',
+              social_id: kakaoData.sns_id
+            }));
+          }
+          
+          // 쿠키 삭제
+          document.cookie = 'kakao_temp_info=; path=/; max-age=0';
+        } catch (error) {
+          console.error('카카오 정보 파싱 오류:', error);
+        }
+      }
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -439,6 +478,84 @@ function RegisterPageContent() {
     }
 
     try {
+      // 카카오 가입인 경우 특별 처리
+      if (kakaoInfo && formData.social_provider === 'kakao') {
+        // 카카오 SNS 로그인 API 호출
+        const kakaoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sns_id: kakaoInfo.sns_id,
+            sns_type: 'kakao',
+            email: kakaoInfo.email,
+            name: formData.nickname || kakaoInfo.name,
+            profile_image: kakaoInfo.profile_image,
+            role: formData.role, // buyer or seller
+          }),
+        });
+
+        if (!kakaoResponse.ok) {
+          const errorData = await kakaoResponse.json();
+          throw new Error(errorData.error || errorData.detail || '카카오 회원가입에 실패했습니다.');
+        }
+
+        const kakaoData = await kakaoResponse.json();
+        
+        // JWT 토큰 저장
+        if (kakaoData.jwt?.access) {
+          localStorage.setItem('accessToken', kakaoData.jwt.access);
+          if (kakaoData.jwt.refresh) {
+            localStorage.setItem('refreshToken', kakaoData.jwt.refresh);
+          }
+          
+          // 추가 정보 업데이트 (전화번호, 지역 등)
+          if (formData.phone || formData.region_city) {
+            const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${kakaoData.jwt.access}`,
+              },
+              body: JSON.stringify({
+                phone_number: formData.phone,
+                address_region_id: formData.region_city || formData.region_province,
+              }),
+            });
+            
+            if (!updateResponse.ok) {
+              console.error('프로필 업데이트 실패');
+            }
+          }
+          
+          // 판매자인 경우 추가 정보 업데이트
+          if (formData.role === 'seller' && formData.business_reg_number) {
+            const sellerUpdateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${kakaoData.jwt.access}`,
+              },
+              body: JSON.stringify({
+                business_reg_number: formData.business_reg_number,
+                representative_name: formData.representative_name,
+              }),
+            });
+            
+            if (!sellerUpdateResponse.ok) {
+              console.error('판매자 정보 업데이트 실패');
+            }
+          }
+          
+          // 환영 모달 표시
+          setShowWelcomeModal(true);
+        }
+        
+        return;
+      }
+      
+      // 기존 회원가입 처리 (이메일 가입)
       const submitData = new FormData();
       
       // 공통 필드
@@ -577,15 +694,51 @@ function RegisterPageContent() {
             둥지마켓 회원가입
           </h2>
 
+          {/* 카카오 로그인에서 온 경우 안내 메시지 */}
+          {kakaoInfo && (
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-yellow-800">카카오 계정 연동 회원가입</h3>
+                  <p className="mt-1 text-xs text-yellow-700">
+                    카카오 계정으로 간편하게 가입하실 수 있습니다. 회원 유형을 선택하고 추가 정보를 입력해주세요.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                <p className="text-sm text-blue-800 text-center">
-                  어떤 회원이 되고 싶으신가요?<br/>
-                  - 일반회원 🐦 최저가로 상품을 구매하고 싶어요<br/>
-                  - 판매회원 🦅 믿음직한 판매자가 되어 고객을 만나고 싶어요
-                </p>
+              <div className="bg-gray-50 p-6 rounded-xl mb-6">
+                <h3 className="text-lg font-bold text-gray-900 text-center mb-3 relative">
+                  <span className="inline-block">어떤 회원이 되고 싶으신가요?</span>
+                </h3>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 mx-auto mb-4 rounded-full"></div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/50 transition-colors">
+                    <span className="text-xl">🛒</span>
+                    <div className="flex-1">
+                      <span className="font-semibold text-blue-600 text-sm">일반회원</span>
+                      <span className="text-gray-600 text-xs ml-1">공동구매 참여하고 견적 받기</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/50 transition-colors">
+                    <span className="text-xl">💼</span>
+                    <div className="flex-1">
+                      <span className="font-semibold text-green-600 text-sm">판매회원</span>
+                      <span className="text-gray-600 text-xs ml-1">견적 제안하고 판매 기회 얻기</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <button
@@ -601,7 +754,10 @@ function RegisterPageContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
-                  <div className="font-semibold text-lg">구매하기 (일반회원)</div>
+                  <div className="font-semibold text-base sm:text-lg">
+                    <span className="block">구매하기</span>
+                    <span className="text-sm sm:text-base">(일반회원)</span>
+                  </div>
                 </button>
                 <button
                   type="button"
@@ -617,7 +773,10 @@ function RegisterPageContent() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <div className="font-semibold text-lg">판매하기 (판매회원)</div>
+                  <div className="font-semibold text-base sm:text-lg">
+                    <span className="block">판매하기</span>
+                    <span className="text-sm sm:text-base">(판매회원)</span>
+                  </div>
                 </button>
               </div>
             </div>
@@ -625,57 +784,73 @@ function RegisterPageContent() {
 
           {/* 회원가입 방식 선택 (일반회원과 판매회원) */}
           {!socialProvider && memberType && signupType === null && (
-            <div className="mb-6">
+            <div className="space-y-6">
+              {/* 뒤로가기 버튼 */}
               <button
                 onClick={() => setMemberType(null)}
-                className="mb-4 text-sm text-gray-600 hover:text-gray-800 flex items-center"
+                className="text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
               >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
-                뒤로가기
+                <span className="text-sm">뒤로가기</span>
               </button>
               
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setSignupType('email')}
-                  className={`relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg ${
-                    signupType === 'email' 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 scale-105 shadow-md' 
-                      : 'border-gray-300 hover:border-gray-400 bg-white hover:scale-105'
-                  }`}
-                >
-                  {signupType === 'email' && (
-                    <div className="absolute top-2 right-2">
-                      <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                  <Mail className="w-8 h-8 mx-auto mb-3 text-blue-600" />
-                  <div className="font-semibold text-lg">아이디/비밀번호 가입</div>
-                  <div className="text-sm text-gray-600 mt-2">이메일과 비밀번호로 가입</div>
-                </button>
+              {/* 제목 */}
+              <h2 className="text-2xl font-bold text-gray-900 text-center">둥지마켓 회원가입</h2>
+              
+              {/* 회원가입 방식 선택 카드 - 모바일에서도 가로 정렬 */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {/* 카카오톡 간편가입 카드 - 왼쪽 */}
                 <button
                   type="button"
                   onClick={() => setSignupType('social')}
-                  className={`relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg ${
-                    signupType === 'social' 
-                      ? 'border-yellow-500 bg-yellow-50 text-yellow-700 scale-105 shadow-md' 
-                      : 'border-gray-300 hover:border-gray-400 bg-white hover:scale-105'
-                  }`}
+                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 sm:p-8 text-center transition-all hover:border-yellow-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
-                  {signupType === 'social' && (
-                    <div className="absolute top-2 right-2">
-                      <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="w-8 h-8 mx-auto mb-3 text-3xl">💬</div>
-                  <div className="font-semibold text-lg">카카오톡 간편가입</div>
-                  <div className="text-sm text-gray-600 mt-2">3초 만에 간편하게 가입</div>
+                  {/* 아이콘 컨테이너 */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl bg-[#FEE500] flex items-center justify-center">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="#3C1E1E" viewBox="0 0 24 24">
+                      <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* 카드 제목 */}
+                  <div className="font-bold text-base sm:text-lg text-gray-900 mb-2 leading-tight">
+                    카카오톡<br/>
+                    간편가입
+                  </div>
+                  
+                  {/* 카드 설명 */}
+                  <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    3초 만에 간편하게<br/>
+                    가입
+                  </div>
+                </button>
+                
+                {/* 아이디/비밀번호 가입 카드 - 오른쪽 */}
+                <button
+                  type="button"
+                  onClick={() => setSignupType('email')}
+                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 sm:p-8 text-center transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                >
+                  {/* 아이콘 컨테이너 */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* 카드 제목 */}
+                  <div className="font-bold text-base sm:text-lg text-gray-900 mb-2 leading-tight">
+                    아이디/비밀번호<br/>
+                    회원가입
+                  </div>
+                  
+                  {/* 카드 설명 */}
+                  <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    아이디와 비밀번호로<br/>
+                    가입
+                  </div>
                 </button>
               </div>
             </div>
@@ -753,41 +928,47 @@ function RegisterPageContent() {
                   </div>
                 </div>
                 
-                {/* 판매회원 카카오 가입 안내 */}
+                {/* 판매회원 카카오 가입 안내 및 추천인 코드 */}
                 {memberType === 'seller' && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="text-sm font-semibold text-blue-800 mb-2">📋 판매회원 가입 안내</h4>
-                    <div className="text-sm text-blue-700 space-y-1">
-                      <p>• 카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</p>
-                      <p>• 견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</p>
-                      <p>• 닉네임은 카카오톡 프로필명으로 자동 설정됩니다</p>
+                  <>
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                        <span>📋</span>
+                        <span>판매회원 가입 안내</span>
+                      </h4>
+                      <ul className="text-xs text-blue-700 space-y-2">
+                        <li className="flex items-start">
+                          <span className="inline-block mt-0.5 mr-2">•</span>
+                          <span>카카오톡으로 간편하게 가입하신 후, 마이페이지에서 추가 정보를 입력해주세요</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="inline-block mt-0.5 mr-2">•</span>
+                          <span>견적 제안을 위해서는 사업자등록번호 인증 등이 완료되어야 합니다</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="inline-block mt-0.5 mr-2">•</span>
+                          <span>닉네임은 카카오톡 프로필명으로 자동 설정됩니다</span>
+                        </li>
+                      </ul>
                     </div>
-                  </div>
+                    
+                    {/* 추천인 코드 (판매회원 소셜 가입 시) */}
+                    <div className="mb-4">
+                      <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
+                        추천인 코드 <span className="text-gray-500">(선택)</span>
+                      </label>
+                      <input
+                        id="referral_code_social"
+                        name="referral_code"
+                        type="text"
+                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="추천인 코드를 입력하세요"
+                        value={formData.referral_code}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </>
                 )}
-                
-                {/* 추천인 코드 (소셜 가입 시) */}
-                <div className="mb-4">
-                  <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
-                    추천인 코드 <span className="text-gray-500">(선택)</span>
-                  </label>
-                  <input
-                    id="referral_code_social"
-                    name="referral_code"
-                    type="text"
-                    className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="추천인 코드를 입력하세요"
-                    value={formData.referral_code}
-                    onChange={handleChange}
-                  />
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      💎 <strong>특별 혜택!</strong> 유효한 추천인 코드를 입력하고 가입하시면 <strong>견적티켓 10매를 추가로 지급</strong>해드립니다!
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      ※ 둥지파트너스 운영 준비 중으로, 향후 더욱 다양한 혜택이 제공될 예정입니다.
-                    </p>
-                  </div>
-                </div>
               </div>
               
               <SocialLoginButtons 
@@ -1148,9 +1329,16 @@ function RegisterPageContent() {
                           type="button"
                           onClick={verifyBusinessNumber}
                           disabled={businessVerificationLoading}
-                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {businessVerificationLoading ? '검증중...' : '유효성검사'}
+                          {businessVerificationLoading ? (
+                            <span className="text-xs sm:text-sm">검증중...</span>
+                          ) : (
+                            <>
+                              <span className="sm:hidden">유효성검사</span>
+                              <span className="hidden sm:inline">유효성검사</span>
+                            </>
+                          )}
                         </button>
                       </div>
                       {businessVerificationResult && (
@@ -1250,14 +1438,6 @@ function RegisterPageContent() {
                         value={formData.referral_code}
                         onChange={handleChange}
                       />
-                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          💎 <strong>특별 혜택!</strong> 유효한 추천인 코드를 입력하고 가입하시면 <strong>견적티켓 10매를 추가로 지급</strong>해드립니다!
-                        </p>
-                        <p className="text-xs text-blue-600 mt-1">
-                          ※ 둥지파트너스 운영 준비 중으로, 향후 더욱 다양한 혜택이 제공될 예정입니다.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 )}

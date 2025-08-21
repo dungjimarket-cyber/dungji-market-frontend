@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PartnerProvider } from '@/contexts/PartnerContext';
-import PartnerSidebar from '@/components/partner/PartnerSidebar';
 
 export default function PartnerDashboardLayout({
   children,
@@ -60,19 +59,7 @@ export default function PartnerDashboardLayout({
 
   return (
     <PartnerProvider>
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex">
-          {/* Sidebar */}
-          <PartnerSidebar />
-          
-          {/* Main Content */}
-          <main className="flex-1 lg:ml-64">
-            <div className="px-4 sm:px-6 lg:px-8 py-8">
-              {children}
-            </div>
-          </main>
-        </div>
-      </div>
+      {children}
     </PartnerProvider>
   );
 }
