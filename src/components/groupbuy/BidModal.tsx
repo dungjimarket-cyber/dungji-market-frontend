@@ -183,18 +183,17 @@ export default function BidModal({
       }
     }
     
-    // 기존 입찰이 없는 경우에만 견적티켓 확인
-    if (!existingBid) {
-      // 견적티켓/구독권이 없는 경우 견적티켓 구매 페이지로 이동
-      if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
-        toast({
-          title: '견적티켓이 필요합니다',
-          description: '견적을 제안하시려면 견적티켓을 구매해주세요.',
-          variant: 'default'
-        });
-        router.push('/mypage/seller/bid-tokens');
-        return;
-      }
+    // 견적 수정/제안 시 항상 견적티켓 확인 (기획 요구사항에 따라 변경)
+    if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
+      toast({
+        title: '견적티켓이 필요합니다',
+        description: existingBid 
+          ? '견적을 수정하시려면 견적티켓을 구매해주세요.' 
+          : '견적을 제안하시려면 견적티켓을 구매해주세요.',
+        variant: 'default'
+      });
+      router.push('/mypage/seller/bid-tokens');
+      return;
     }
     
     // 입찰 확인 팝업 표시
@@ -351,7 +350,7 @@ export default function BidModal({
               <p className="text-amber-800 text-sm font-medium">
                 ✅ 이미 이 공구에 견적을 제안하셨습니다. 
                 <br />
-                📝 견적 수정 시 추가 견적티켓은 소모되지 않습니다.
+                📝 견적 수정 시에도 견적티켓 1개가 소모됩니다.
                 <br />
                 새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
               </p>
@@ -550,7 +549,9 @@ export default function BidModal({
           {/* 확인 메시지 */}
           <div className="text-sm text-gray-700">
             {existingBid
-              ? '"견적을 수정하시겠습니까?" (견적티켓은 소모되지 않습니다)'
+              ? bidTokenInfo?.unlimited_subscription
+                ? '"견적을 수정하시겠습니까?"'
+                : '"견적티켓 1개가 소모됩니다. 견적을 수정하시겠습니까?"'
               : bidTokenInfo?.unlimited_subscription
                 ? '"견적을 제안하시겠습니까?"'
                 : '"견적티켓 1개가 소모됩니다. 견적을 제안하시겠습니까?"'
@@ -589,7 +590,14 @@ export default function BidModal({
             {bidTokenInfo?.unlimited_subscription ? (
               <span>무제한 구독권 이용중</span>
             ) : (
-              <span>남은 견적티켓 갯수 {bidTokenInfo?.single_tokens || 0}개</span>
+              <span>
+                남은 견적티켓 갯수 {bidTokenInfo?.single_tokens || 0}개
+                {existingBid && (
+                  <span className="text-orange-600 block">
+                    (수정 후 {Math.max(0, (bidTokenInfo?.single_tokens || 0) - 1)}개)
+                  </span>
+                )}
+              </span>
             )}
           </div>
           
