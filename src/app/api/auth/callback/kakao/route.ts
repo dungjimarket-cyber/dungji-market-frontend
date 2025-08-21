@@ -73,15 +73,26 @@ export async function GET(request: Request) {
     
     if (state) {
       try {
-        const stateData = JSON.parse(decodeURIComponent(state));
-        if (stateData.role) {
-          userRole = stateData.role;
-        }
-        if (stateData.callbackUrl) {
-          callbackUrl = stateData.callbackUrl;
+        // state가 JSON 문자열인지 확인
+        if (state.startsWith('{')) {
+          // JSON 형식인 경우
+          const stateData = JSON.parse(decodeURIComponent(state));
+          if (stateData.role) {
+            userRole = stateData.role;
+          }
+          if (stateData.redirectUrl) {
+            callbackUrl = stateData.redirectUrl;
+          } else if (stateData.callbackUrl) {
+            callbackUrl = stateData.callbackUrl;
+          }
+        } else {
+          // 이전 버전 호환성 - state가 단순 URL인 경우
+          callbackUrl = decodeURIComponent(state);
         }
       } catch (e) {
         console.error('state 파싱 오류:', e, 'state:', state);
+        // 파싱 실패 시 state를 그대로 callbackUrl로 사용
+        callbackUrl = decodeURIComponent(state);
       }
     }
     

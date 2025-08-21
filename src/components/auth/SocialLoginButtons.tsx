@@ -80,8 +80,12 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
         console.log('개발 환경 리디렉트 URI 사용:', redirectUri);
       }
       
-      // state에 콜백 URL 저장
-      const state = redirectUrl;
+      // state에 콜백 URL과 memberType(role) 정보를 JSON으로 저장
+      const stateData = {
+        redirectUrl: redirectUrl,
+        role: memberType || 'buyer' // memberType이 없으면 기본값 buyer
+      };
+      const state = JSON.stringify(stateData);
       
       // 카카오 OAuth URL 직접 생성
       const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
@@ -90,7 +94,7 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
       console.log(`카카오 OAuth URL: ${kakaoAuthUrl}`);
       console.log(`카카오 클라이언트 ID: ${kakaoClientId}`);
       console.log(`리디렉트 URI: ${redirectUri}`);
-      console.log(`State (콜백 URL): ${state}`);
+      console.log(`State 데이터:`, stateData);
       
       // 카카오 OAuth URL로 직접 리디렉션
       window.location.href = kakaoAuthUrl;
