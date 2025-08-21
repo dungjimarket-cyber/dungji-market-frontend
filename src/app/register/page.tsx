@@ -331,7 +331,12 @@ function RegisterPageContent() {
         setError('');
       } else {
         setBusinessVerified(false);
-        setError(result.message || result.error || '사업자등록번호 검증에 실패했습니다.');
+        // 중복 체크 에러인 경우 특별 처리
+        if (result.is_duplicate) {
+          setError('⚠️ ' + (result.message || '이미 등록된 사업자등록번호입니다. 동일한 사업자번호로는 하나의 계정만 생성할 수 있습니다.'));
+        } else {
+          setError(result.message || result.error || '사업자등록번호 검증에 실패했습니다.');
+        }
       }
     } catch (err: any) {
       console.error('사업자등록번호 검증 오류:', err);
