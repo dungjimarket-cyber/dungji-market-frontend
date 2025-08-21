@@ -122,6 +122,41 @@ GOOGLE_CLIENT_SECRET
 - Responsive design with mobile-first approach
 - Dark mode not currently implemented
 
+## Development Workflow
+
+**IMPORTANT: After implementing any feature or fix, ALWAYS follow this workflow:**
+
+1. **Build the project** to check for compilation errors:
+   ```bash
+   npm run build
+   ```
+
+2. **Test the changes** locally if applicable:
+   ```bash
+   npm run dev
+   # Test the feature in the browser
+   ```
+
+3. **Commit and push** the changes:
+   ```bash
+   git add -A
+   git commit -m "type: description of changes
+   
+   - Detail 1
+   - Detail 2
+   
+   🤖 Generated with [Claude Code](https://claude.ai/code)
+   
+   Co-Authored-By: Claude <noreply@anthropic.com>"
+   git push origin main
+   ```
+
+**This workflow ensures:**
+- Code compiles without errors before deployment
+- Changes are tested locally
+- All changes are properly versioned and deployed
+- Vercel automatically deploys on push to main
+
 ## Testing Approach
 - Unit tests for utilities and hooks
 - Integration tests for critical user flows
