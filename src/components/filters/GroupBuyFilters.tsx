@@ -2,13 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ChevronDown } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 interface FilterOption {
@@ -29,7 +22,7 @@ interface GroupBuyFiltersProps {
 
 /**
  * 공구 둘러보기 필터 컴포넌트
- * 이미지처럼 팝오버 형태의 필터를 제공
+ * 버튼 토글 형태의 필터를 제공
  */
 export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBuyFiltersProps) {
   // 필터 그룹 정의
@@ -138,7 +131,6 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
 
   // 선택된 필터 상태
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
-  const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
 
   // 현재 카테고리의 필터 그룹
   const currentFilterGroups = filterGroups[category] || filterGroups.phone;
@@ -169,125 +161,41 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
   };
 
   /**
-   * 특정 그룹의 모든 필터 초기화
+   * 필터가 선택되었는지 확인
    */
-  const clearGroupFilters = (groupId: string) => {
-    setSelectedFilters(prev => {
-      const newFilters = { ...prev };
-      delete newFilters[groupId];
-      onFiltersChange?.(newFilters);
-      return newFilters;
-    });
-  };
-
-  /**
-   * 팝오버 열기/닫기
-   */
-  const togglePopover = (groupId: string) => {
-    setOpenPopovers(prev => ({
-      ...prev,
-      [groupId]: !prev[groupId]
-    }));
-  };
-
-  /**
-   * 선택된 필터 개수 계산
-   */
-  const getSelectedCount = (groupId: string) => {
-    return selectedFilters[groupId]?.length || 0;
-  };
-
-  /**
-   * 선택된 필터 레이블 가져오기
-   */
-  const getSelectedLabels = (groupId: string) => {
-    const group = currentFilterGroups.find(g => g.id === groupId);
-    const selected = selectedFilters[groupId] || [];
-    
-    if (selected.length === 0) return group?.label || '';
-    if (selected.length === 1) {
-      const option = group?.options.find(o => o.value === selected[0]);
-      return option?.label || '';
-    }
-    
-    return `${group?.label} ${selected.length}개`;
+  const isFilterSelected = (groupId: string, value: string) => {
+    return selectedFilters[groupId]?.includes(value) || false;
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {currentFilterGroups.map((group) => {
-        const hasSelection = getSelectedCount(group.id) > 0;
-        
-        return (
-          <Popover 
-            key={group.id}
-            open={openPopovers[group.id] || false}
-            onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, [group.id]: open }))}
-          >
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-9 px-3 font-normal border-gray-200",
-                  hasSelection && "bg-purple-50 border-purple-300 text-purple-700"
-                )}
-              >
-                <span className="mr-1">{getSelectedLabels(group.id)}</span>
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2" align="start">
-              <div className="space-y-1">
-                {group.options.map((option) => {
-                  const isSelected = selectedFilters[group.id]?.includes(option.value);
-                  
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => toggleFilter(group.id, option.value)}
-                      className={cn(
-                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                        isSelected 
-                          ? "bg-purple-100 text-purple-700 font-medium" 
-                          : "hover:bg-gray-100"
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-                
-                {getSelectedCount(group.id) > 0 && (
-                  <>
-                    <div className="border-t my-1" />
-                    <button
-                      onClick={() => clearGroupFilters(group.id)}
-                      className="w-full text-left px-3 py-2 rounded-md text-sm text-gray-500 hover:bg-gray-100"
-                    >
-                      초기화
-                    </button>
-                  </>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-        );
-      })}
-      
-      {/* 선택된 필터 요약 */}
-      {Object.keys(selectedFilters).length > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setSelectedFilters({});
-            onFiltersChange?.({});
-          }}
-          className="h-9 px-2 text-gray-500"
-        >
-          전체 초기화
-        </Button>
-      )}
+    <div className="space-y-4">
+      {currentFilterGroups.map((group) => (
+        <div key={group.id} className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">{group.label}</h3>
+          <div className="flex flex-wrap gap-2">
+            {group.options.map((option) => {
+              const isSelected = isFilterSelected(group.id, option.value);
+              
+              return (
+                <Button
+                  key={option.value}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleFilter(group.id, option.value)}
+                  className={cn(
+                    "h-8 px-3 font-normal transition-all",
+                    isSelected
+                      ? "bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:border-purple-700"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  {option.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

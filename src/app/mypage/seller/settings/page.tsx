@@ -108,7 +108,6 @@ export default function SellerSettings() {
         let businessNum1 = '';
         let businessNum2 = '';
         let businessNum3 = '';
-        let isVerified = false;
         
         if (data.businessNumber) {
           const cleanBusinessNum = data.businessNumber.replace(/-/g, '');
@@ -116,8 +115,6 @@ export default function SellerSettings() {
             businessNum1 = cleanBusinessNum.slice(0, 3);
             businessNum2 = cleanBusinessNum.slice(3, 5);
             businessNum3 = cleanBusinessNum.slice(5, 10);
-            // 사업자등록번호가 있고 10자리가 완성되어 있으면 인증된 것으로 간주
-            isVerified = true;
           } else {
             const businessNumParts = data.businessNumber.split('-');
             businessNum1 = businessNumParts[0] || '';
@@ -126,7 +123,8 @@ export default function SellerSettings() {
           }
         }
         
-        setIsBusinessNumberVerified(isVerified);
+        // 백엔드에서 받은 인증 상태 사용
+        setIsBusinessNumberVerified(data.businessVerified || false);
         
         setFormData({
           nickname: data.nickname || '',
@@ -381,10 +379,6 @@ export default function SellerSettings() {
         updateData.email = formData.email;
       }
       
-      // 대표자명 추가
-      if (formData.representativeName) {
-        updateData.representative_name = formData.representativeName;
-      }
       
       // 전화번호가 변경된 경우에만 포함 (기존 전화번호와 비교)
       const originalPhone = profile?.phone?.replace(/-/g, '');
@@ -449,7 +443,6 @@ export default function SellerSettings() {
         // 각 필드를 FormData에 추가
         formDataWithFile.append('nickname', updateData.nickname);
         formDataWithFile.append('business_number', updateData.business_number);
-        formDataWithFile.append('representative_name', updateData.representative_name); // 대표자명 추가
         formDataWithFile.append('is_remote_sales', String(updateData.is_remote_sales));
         
         if (updateData.phone) {
@@ -736,18 +729,6 @@ export default function SellerSettings() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="representativeName">사업자등록증상 대표자명</Label>
-                  <Input
-                    id="representativeName"
-                    name="representativeName"
-                    value={formData.representativeName}
-                    onChange={handleChange}
-                    placeholder="사업자등록증에 기재된 대표자명을 입력하세요"
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500">사업자등록증에 기재된 대표자명과 동일하게 입력해주세요</p>
-                </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
