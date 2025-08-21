@@ -35,6 +35,7 @@ export default function SellerSettings() {
     businessNumber1: '',
     businessNumber2: '',
     businessNumber3: '',
+    representativeName: '', // 대표자명 필드 추가
     isRemoteSales: false,
     businessRegFile: null as File | null,
     existingCertification: null as string | null,
@@ -127,6 +128,7 @@ export default function SellerSettings() {
           businessNumber1: businessNum1,
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
+          representativeName: data.representativeName || '', // 대표자명 설정
           isRemoteSales: data.isRemoteSales || false,
           businessRegFile: null,
           existingCertification: data.remoteSalesCertification || null,
@@ -291,6 +293,7 @@ export default function SellerSettings() {
       const updateData: any = {
         nickname: formData.nickname,
         business_number: businessNumber,
+        representative_name: formData.representativeName, // 대표자명 추가
         is_remote_sales: formData.isRemoteSales
       };
       
@@ -357,6 +360,7 @@ export default function SellerSettings() {
         // 각 필드를 FormData에 추가
         formDataWithFile.append('nickname', updateData.nickname);
         formDataWithFile.append('business_number', updateData.business_number);
+        formDataWithFile.append('representative_name', updateData.representative_name); // 대표자명 추가
         formDataWithFile.append('is_remote_sales', String(updateData.is_remote_sales));
         
         if (updateData.phone) {
@@ -564,6 +568,19 @@ export default function SellerSettings() {
                       className="flex-1"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="representativeName">사업자등록증상 대표자명</Label>
+                  <Input
+                    id="representativeName"
+                    name="representativeName"
+                    value={formData.representativeName}
+                    onChange={handleChange}
+                    placeholder="사업자등록증에 기재된 대표자명을 입력하세요"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">사업자등록증에 기재된 대표자명과 동일하게 입력해주세요</p>
                 </div>
 
                 <div className="space-y-2">

@@ -349,7 +349,11 @@ export default function BidModal({
           {existingBid && (
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
               <p className="text-amber-800 text-sm font-medium">
-                이미 이 공구에 견적을 제안하셨습니다. 새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
+                ✅ 이미 이 공구에 견적을 제안하셨습니다. 
+                <br />
+                📝 견적 수정 시 추가 견적티켓은 소모되지 않습니다.
+                <br />
+                새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
               </p>
               <Button 
                 variant="destructive" 
@@ -546,7 +550,7 @@ export default function BidModal({
           {/* 확인 메시지 */}
           <div className="text-sm text-gray-700">
             {existingBid
-              ? '"견적을 수정하시겠습니까?"'
+              ? '"견적을 수정하시겠습니까?" (견적티켓은 소모되지 않습니다)'
               : bidTokenInfo?.unlimited_subscription
                 ? '"견적을 제안하시겠습니까?"'
                 : '"견적티켓 1개가 소모됩니다. 견적을 제안하시겠습니까?"'
