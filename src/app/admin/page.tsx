@@ -364,11 +364,13 @@ export default function AdminPage() {
     
     setAddingBidPermission(true);
     try {
-      const response = await fetchWithAuth(`/admin/add_bid_permission/${selectedSellerId}/`, {
+      const response = await fetchWithAuth(`/admin/bid-tokens/adjust/`, {
         method: 'POST',
         body: JSON.stringify({ 
-          bid_count: bidCount,
-          token_type: selectedTokenType
+          seller_id: selectedSellerId,
+          action: 'add',
+          amount: bidCount,
+          reason: `관리자 부여 (${TOKEN_TYPES.find(type => type.value === selectedTokenType)?.label || '견적티켓'})`
         }),
       });
       

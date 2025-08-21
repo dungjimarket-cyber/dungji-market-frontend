@@ -92,7 +92,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/seller_detail/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/sellers/${sellerId}/`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
