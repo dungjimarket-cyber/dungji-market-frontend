@@ -93,6 +93,45 @@ function RegisterPageContent() {
   const [businessVerified, setBusinessVerified] = useState(false);
   const [businessVerificationResult, setBusinessVerificationResult] = useState<BusinessVerificationRegistrationResult | null>(null);
   const [businessVerificationLoading, setBusinessVerificationLoading] = useState(false);
+  const [kakaoInfo, setKakaoInfo] = useState<any>(null);
+
+  // 카카오 정보 읽기
+  useEffect(() => {
+    const isFromKakao = searchParams.get('from') === 'kakao';
+    if (isFromKakao) {
+      // 쿠키에서 카카오 정보 읽기
+      const cookies = document.cookie.split(';');
+      const kakaoTempCookie = cookies.find(c => c.trim().startsWith('kakao_temp_info='));
+      
+      if (kakaoTempCookie) {
+        try {
+          const kakaoData = JSON.parse(decodeURIComponent(kakaoTempCookie.split('=')[1]));
+          setKakaoInfo(kakaoData);
+          setSignupType('social');
+          
+          // 이메일 정보 설정
+          if (kakaoData.email && !kakaoData.email.includes('@kakao.user')) {
+            const domain = extractEmailDomain(kakaoData.email);
+            const isCommonDomain = ['naver.com', 'gmail.com', 'daum.net', 'nate.com', 'kakao.com', 'hanmail.net', 'hotmail.com'].includes(domain);
+            
+            setFormData(prev => ({
+              ...prev,
+              email: kakaoData.email.split('@')[0] || '',
+              emailDomain: isCommonDomain ? domain : (domain ? 'direct' : ''),
+              customEmailDomain: isCommonDomain ? '' : domain,
+              social_provider: 'kakao',
+              social_id: kakaoData.sns_id
+            }));
+          }
+          
+          // 쿠키 삭제
+          document.cookie = 'kakao_temp_info=; path=/; max-age=0';
+        } catch (error) {
+          console.error('카카오 정보 파싱 오류:', error);
+        }
+      }
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -439,6 +478,84 @@ function RegisterPageContent() {
     }
 
     try {
+      // 카카오 가입인 경우 특별 처리
+      if (kakaoInfo && formData.social_provider === 'kakao') {
+        // 카카오 SNS 로그인 API 호출
+        const kakaoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sns_id: kakaoInfo.sns_id,
+            sns_type: 'kakao',
+            email: kakaoInfo.email,
+            name: formData.nickname || kakaoInfo.name,
+            profile_image: kakaoInfo.profile_image,
+            role: formData.role, // buyer or seller
+          }),
+        });
+
+        if (!kakaoResponse.ok) {
+          const errorData = await kakaoResponse.json();
+          throw new Error(errorData.error || errorData.detail || '카카오 회원가입에 실패했습니다.');
+        }
+
+        const kakaoData = await kakaoResponse.json();
+        
+        // JWT 토큰 저장
+        if (kakaoData.jwt?.access) {
+          localStorage.setItem('accessToken', kakaoData.jwt.access);
+          if (kakaoData.jwt.refresh) {
+            localStorage.setItem('refreshToken', kakaoData.jwt.refresh);
+          }
+          
+          // 추가 정보 업데이트 (전화번호, 지역 등)
+          if (formData.phone || formData.region_city) {
+            const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${kakaoData.jwt.access}`,
+              },
+              body: JSON.stringify({
+                phone_number: formData.phone,
+                address_region_id: formData.region_city || formData.region_province,
+              }),
+            });
+            
+            if (!updateResponse.ok) {
+              console.error('프로필 업데이트 실패');
+            }
+          }
+          
+          // 판매자인 경우 추가 정보 업데이트
+          if (formData.role === 'seller' && formData.business_reg_number) {
+            const sellerUpdateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${kakaoData.jwt.access}`,
+              },
+              body: JSON.stringify({
+                business_reg_number: formData.business_reg_number,
+                representative_name: formData.representative_name,
+              }),
+            });
+            
+            if (!sellerUpdateResponse.ok) {
+              console.error('판매자 정보 업데이트 실패');
+            }
+          }
+          
+          // 환영 모달 표시
+          setShowWelcomeModal(true);
+        }
+        
+        return;
+      }
+      
+      // 기존 회원가입 처리 (이메일 가입)
       const submitData = new FormData();
       
       // 공통 필드
@@ -577,6 +694,25 @@ function RegisterPageContent() {
             둥지마켓 회원가입
           </h2>
 
+          {/* 카카오 로그인에서 온 경우 안내 메시지 */}
+          {kakaoInfo && (
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-yellow-800">카카오 계정 연동 회원가입</h3>
+                  <p className="mt-1 text-xs text-yellow-700">
+                    카카오 계정으로 간편하게 가입하실 수 있습니다. 회원 유형을 선택하고 추가 정보를 입력해주세요.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">

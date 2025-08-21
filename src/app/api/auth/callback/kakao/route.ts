@@ -107,7 +107,32 @@ export async function GET(request: Request) {
     const data = await response.json();
     console.log('토큰 요청 성공:', data);
     
-    // JWT 토큰 저장 (localStorage는 클라이언트에서만 가능하므로 쿠키로 전달)
+    // 신규 사용자이면서 회원가입이 필요한 경우
+    if (data.requires_registration) {
+      console.log('신규 사용자 - 회원가입 페이지로 리다이렉트');
+      
+      // 카카오 정보를 세션 스토리지에 저장 (회원가입 페이지에서 사용)
+      const kakaoInfo = {
+        sns_id: data.sns_id,
+        sns_type: data.sns_type,
+        email: data.email,
+        name: data.name,
+        profile_image: data.profile_image
+      };
+      
+      // 쿠키에 임시로 저장 (클라이언트에서 읽을 수 있도록)
+      const cookieStore = await cookies();
+      cookieStore.set('kakao_temp_info', JSON.stringify(kakaoInfo), {
+        maxAge: 60 * 10, // 10분
+        path: '/',
+        sameSite: 'lax',
+      });
+      
+      // 회원가입 페이지로 리다이렉트
+      return NextResponse.redirect(new URL('/register?from=kakao', request.url));
+    }
+    
+    // JWT 토큰 저장 (기존 회원인 경우)
     if (data.jwt?.access) {
       try {
         console.log('✅ JWT 토큰 추출 성공:', { 
