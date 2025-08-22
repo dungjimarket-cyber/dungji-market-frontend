@@ -893,6 +893,18 @@ export default function SellerSettings() {
               </CardFooter>
             </form>
           </Card>
+          
+          {/* 회원 탈퇴 섹션 - 최하단에 작게 표시 */}
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <div className="flex justify-end">
+              <a 
+                href="/mypage/withdraw"
+                className="text-xs text-gray-400 hover:text-red-500 hover:underline transition-colors"
+              >
+                회원 탈퇴
+              </a>
+            </div>
+          </div>
     </div>
   );
 }
