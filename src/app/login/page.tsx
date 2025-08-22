@@ -151,7 +151,17 @@ function LoginForm() {
         </div>
 
         <div className="mt-6 space-y-5">
-          <SocialLoginButtons />
+          {/* 구매회원용 카카오 로그인 */}
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600 mb-2">구매자로 둥지마켓을 이용하고 계신가요?</div>
+            <SocialLoginButtons memberType="buyer" />
+          </div>
+
+          {/* 판매회원용 카카오 로그인 */}
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600 mb-2">판매자로 견적을 제안하고 싶으신가요?</div>
+            <SocialLoginButtons memberType="seller" />
+          </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

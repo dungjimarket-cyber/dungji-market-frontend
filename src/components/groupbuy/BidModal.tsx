@@ -180,7 +180,11 @@ export default function BidModal({
       if (!sellerUser.business_reg_number && !sellerUser.business_number) {
         missingFields.push('사업자등록번호');
       }
-      // 사업자 유효성 검사는 제거 - 필수 값만 체크
+      
+      // 사업자등록번호 인증 여부 체크 (저장된 상태만 확인, 실시간 검증 X)
+      if ((sellerUser.business_reg_number || sellerUser.business_number) && !sellerUser.is_business_verified) {
+        missingFields.push('사업자등록번호 인증');
+      }
       
       if (missingFields.length > 0) {
         toast({

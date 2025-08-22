@@ -109,25 +109,35 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
     }
   };
 
+  // memberType에 따라 버튼 텍스트 결정
+  const getButtonText = () => {
+    if (memberType === 'seller') {
+      return '카카오로 계속하기(판매회원)';
+    }
+    return '카카오로 계속하기(일반회원)';
+  };
+
   return (
     <div className="flex flex-col gap-4 w-full">
       <button
         onClick={() => handleSocialLogin('kakao')}
         disabled={!!loading}
-        className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
       >
         {loading === 'kakao' ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
-          <Image
-            src="/kakao.svg"
-            alt="Kakao logo"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />
+          <>
+            <Image
+              src="/kakao.svg"
+              alt="Kakao logo"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
+            <span>{getButtonText()}</span>
+          </>
         )}
-        카카오로 계속하기
       </button>
     </div>
   );
