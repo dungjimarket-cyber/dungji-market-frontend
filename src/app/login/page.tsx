@@ -161,28 +161,15 @@ function LoginForm() {
                 <p className="text-sm text-gray-500">공동구매 참여하고 비교견적 받기!</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
-                const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
-                
-                // state에 role 정보 포함
-                const stateData = {
-                  redirectUrl: callbackUrl,
-                  role: 'buyer'
-                };
-                const state = JSON.stringify(stateData);
-                
-                const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
-                window.location.href = kakaoAuthUrl;
-              }}
+            <a 
+              href="/register?memberType=buyer" 
               className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
             >
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
               <span>일반회원 카카오로 계속하기</span>
-            </button>
+            </a>
           </div>
           
           {/* 판매회원 섹션 */}
@@ -194,28 +181,15 @@ function LoginForm() {
                 <p className="text-sm text-gray-500">대량 판매 기회 받기</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
-                const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
-                
-                // state에 role 정보 포함
-                const stateData = {
-                  redirectUrl: callbackUrl,
-                  role: 'seller'
-                };
-                const state = JSON.stringify(stateData);
-                
-                const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
-                window.location.href = kakaoAuthUrl;
-              }}
+            <a 
+              href="/register?memberType=seller" 
               className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
             >
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
               <span>판매회원 카카오로 계속하기</span>
-            </button>
+            </a>
           </div>
         </div>
 
