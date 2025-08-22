@@ -166,6 +166,11 @@ function NoShowReportContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handleSubmit 시작');
+    console.log('Content:', content);
+    console.log('Content length:', content.trim().length);
+    console.log('User role:', user?.role);
+    console.log('GroupBuy ID:', groupbuyId);
     
     if (!content.trim()) {
       toast.error('신고 내용을 입력해주세요.');
@@ -197,17 +202,28 @@ function NoShowReportContent() {
         
         if (bidsResponse.ok) {
           const bidsData = await bidsResponse.json();
-          // accepted 상태의 입찰 찾기
-          const acceptedBid = bidsData.find((bid: any) => bid.status === 'accepted');
+          console.log('Bids data:', bidsData);
+          
+          // accepted 또는 selected 상태의 입찰 찾기
+          const acceptedBid = bidsData.find((bid: any) => 
+            bid.status === 'accepted' || bid.status === 'selected' || bid.is_selected
+          );
+          
+          console.log('Accepted bid:', acceptedBid);
           
           if (acceptedBid) {
-            reportedUserId = acceptedBid.seller.id || acceptedBid.seller;
+            reportedUserId = acceptedBid.seller?.id || acceptedBid.seller_id || acceptedBid.seller;
+            console.log('Reported user ID:', reportedUserId);
           } else {
+            console.error('No accepted bid found');
             toast.error('선택된 판매자를 찾을 수 없습니다.');
+            setLoading(false);
             return;
           }
         } else {
+          console.error('Failed to fetch bids:', bidsResponse.status);
           toast.error('판매자 정보를 가져올 수 없습니다.');
+          setLoading(false);
           return;
         }
       } else if (user?.role === 'seller') {
@@ -244,6 +260,10 @@ function NoShowReportContent() {
       });
 
       // 노쇼 신고 제출
+      console.log('Submitting no-show report...');
+      console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`);
+      console.log('Access token exists:', !!accessToken);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
         method: 'POST',
         headers: {
@@ -253,6 +273,8 @@ function NoShowReportContent() {
         },
         body: formData
       });
+      
+      console.log('Response status:', response.status);
 
       if (response.ok) {
         toast.success('노쇼 신고가 접수되었습니다. 신고된 공구는 취소 처리됩니다.');
@@ -288,10 +310,11 @@ function NoShowReportContent() {
         toast.error(errorMessage);
       }
     } catch (error) {
-      console.error('노쇼 신고 오류:', error);
-      toast.error('신고 처리 중 오류가 발생했습니다.');
+      console.error('노쇼 신고 오류 (catch block):', error);
+      toast.error(`신고 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     } finally {
       setLoading(false);
+      console.log('handleSubmit 종료');
     }
   };
 
