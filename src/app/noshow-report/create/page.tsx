@@ -197,6 +197,15 @@ function NoShowReportContent() {
       if (evidenceFile) {
         formData.append('evidence_image', evidenceFile);
       }
+      
+      // 디버깅을 위한 로그
+      console.log('노쇼 신고 제출 데이터:', {
+        reported_user: reportedUserId,
+        groupbuy: groupbuyId,
+        report_type: reportType,
+        content_length: content.trim().length,
+        has_file: !!evidenceFile
+      });
 
       // 노쇼 신고 제출
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
@@ -301,11 +310,19 @@ function NoShowReportContent() {
                     <SelectValue placeholder="구매자를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    {participants.map((participant) => (
-                      <SelectItem key={participant.id || participant.user?.id} value={(participant.id || participant.user?.id).toString()}>
-                        {participant.username || participant.nickname || participant.user?.username || participant.user?.nickname || `참여자 ${participant.id || participant.user?.id}`}
-                      </SelectItem>
-                    ))}
+                    {participants.map((participant) => {
+                      // user 객체가 있으면 user.id를, 없으면 participant가 user 자체일 수 있음
+                      const userId = participant.user?.id || participant.user_id || participant.id;
+                      const displayName = participant.user?.username || participant.user?.nickname || 
+                                        participant.username || participant.nickname || 
+                                        `참여자 ${userId}`;
+                      
+                      return (
+                        <SelectItem key={userId} value={userId.toString()}>
+                          {displayName}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500">

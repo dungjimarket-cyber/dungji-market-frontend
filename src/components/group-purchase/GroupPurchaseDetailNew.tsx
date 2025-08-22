@@ -1911,11 +1911,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
 
-            {/* 4. 거래중 */}
-            {isInProgress && myParticipationFinalDecision === 'confirmed' && (
+            {/* 4. 거래중 및 판매자 최종선택 */}
+            {(isInProgress || isSellerFinalSelection) && myParticipationFinalDecision === 'confirmed' && (
               <>
                 <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
-                  <p className="font-semibold text-green-800">거래중</p>
+                  <p className="font-semibold text-green-800">
+                    {isInProgress ? '거래중' : '판매자 최종선택 대기중'}
+                  </p>
                 </div>
                 <Button
                   onClick={() => setShowContactInfoModal(true)}
@@ -2044,11 +2046,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </>
             )}
 
-            {/* 3. 거래중 */}
-            {isInProgress && myBidFinalDecision === 'confirmed' && (
+            {/* 3. 거래중 및 판매자 최종선택 */}
+            {(isInProgress || isSellerFinalSelection) && myBidFinalDecision === 'confirmed' && (
               <>
                 <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
-                  <p className="font-semibold text-green-800">거래중</p>
+                  <p className="font-semibold text-green-800">
+                    {isInProgress ? '거래중' : '판매자 최종선택중'}
+                  </p>
                 </div>
                 <Button
                   onClick={() => setShowBuyerInfoModal(true)}
