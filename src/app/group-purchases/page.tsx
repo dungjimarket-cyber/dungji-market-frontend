@@ -118,14 +118,15 @@ function GroupPurchasesPageContent() {
             // 카테고리 필터
             else if (key === 'category') {
               // 카테고리를 백엔드 필터에 맞게 변환
+              // 백엔드는 'category' 파라미터를 기대하며 카테고리 이름으로 처리
               if (value === 'phone') {
-                params.append('category_name', '휴대폰');
+                params.append('category', '휴대폰');
               } else if (value === 'internet') {
-                params.append('category_name', '인터넷');
+                params.append('category', '인터넷');
               } else if (value === 'internet_tv') {
-                params.append('category_name', '인터넷+TV');
+                params.append('category', '인터넷+TV');
               } else {
-                params.append('category_name', value);
+                params.append('category', value);
               }
             }
             // 통합 검색 필터 (제목, 상품명, 지역 등)

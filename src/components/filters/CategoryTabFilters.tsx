@@ -125,17 +125,23 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
     setCurrentFilters(filters);
   }, [searchParams]);
 
+  // 카테고리 변경 중인지 추적하는 ref
+  const categoryChangingRef = useRef(false);
+
   /**
    * 카테고리 변경 처리
    */
   const handleCategoryChange = (category: MainCategory) => {
     console.log('카테곢0리 클릭:', category);
     
-    // 이미 선택된 카테고리인 경우 무시 (더블 클릭 방지)
-    if (selectedCategory === category) {
-      console.log('이미 선택된 카테고리, 무시');
+    // 이미 선택된 카테고리이거나 변경 중인 경우 무시
+    if (selectedCategory === category || categoryChangingRef.current) {
+      console.log('이미 선택된 카테고리 또는 변경 중, 무시');
       return;
     }
+    
+    // 변경 중 플래그 설정
+    categoryChangingRef.current = true;
     
     setSelectedCategory(category);
     
@@ -150,6 +156,11 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
     setTimeout(() => {
       onCategoryChange?.(category);
       onFiltersChange?.(newFilters);
+      
+      // 변경 완료 후 플래그 해제
+      setTimeout(() => {
+        categoryChangingRef.current = false;
+      }, 100);
     }, 0);
   };
 
@@ -495,7 +506,7 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
                   : `hover:${category.bgColor} hover:border-current cursor-pointer`
               }`}
               onClick={() => handleCategoryChange(category.id)}
-              disabled={isSelected} // 이미 선택된 카테고리는 비활성화
+              disabled={isSelected || categoryChangingRef.current} // 이미 선택된 카테고리나 변경 중인 경우 비활성화
             >
               <Icon className="w-4 h-4" />
               {category.name}

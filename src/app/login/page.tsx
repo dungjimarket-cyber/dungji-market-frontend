@@ -140,36 +140,42 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-6">
+      <div className="max-w-lg w-full space-y-6">
         <div>
           <h2 className="mt-4 text-center text-2xl font-bold text-gray-900 sm:text-3xl">
-            둥지마켓에 오신 것을 환영합니다
+            환영합니다!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            소셜 로그인으로 간편하게 시작하세요
+            둥지마켓 이용을 위해 신분확인이 필요합니다
           </p>
         </div>
 
-        {/* 회원 유형 안내 및 로그인 버튼 */}
+        {/* 사용자 구분 섹션 */}
         <div className="space-y-4">
-          {/* 일반회원 섹션 */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-3">
-              <span className="text-2xl">🛒</span>
+          {/* 회원이신가요? 섹션 */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-xl">👋</span>
+              </div>
               <div>
-                <p className="font-medium text-gray-900">구매가 목적이신가요?</p>
-                <p className="text-sm text-gray-500">공동구매 참여하고 비교견적 받기!</p>
+                <h3 className="font-semibold text-gray-900">회원이신가요?</h3>
+                <p className="text-sm text-gray-500">
+                  이미 둥지마켓 회원이신 분은 로그인하세요!
+                </p>
               </div>
             </div>
+            
+            {/* 소셜 로그인 버튼 */}
             <button
               onClick={() => {
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
                 
-                // state에 role 정보 포함
+                // 기존 회원 로그인용 state
                 const stateData = {
                   redirectUrl: callbackUrl,
-                  role: 'buyer'
+                  mode: 'login'
                 };
                 const state = JSON.stringify(stateData);
                 
@@ -179,141 +185,69 @@ function LoginForm() {
               className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
             >
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
-                <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
+                <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.20 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span>일반회원 카카오로 계속하기</span>
+              <span>로그인하러 가기</span>
             </button>
           </div>
           
-          {/* 판매회원 섹션 */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-3">
-              <span className="text-2xl">💼</span>
-              <div>
-                <p className="font-medium text-gray-900">판매가 목적이신가요?</p>
-                <p className="text-sm text-gray-500">대량 판매 기회 받기</p>
+          {/* 처음이신가요? 섹션 */}
+          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg border border-orange-200 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                <span className="text-xl">🎁</span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900">처음이신가요?</h3>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    NEW
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  1분만에 가입하고
+                  <br />
+                  지금 가입하고 서비스를 경험해보세요
+                </p>
               </div>
             </div>
+            
+            {/* 회원가입 버튼 */}
             <button
               onClick={() => {
-                const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
-                const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
-                
-                // state에 role 정보 포함
-                const stateData = {
-                  redirectUrl: callbackUrl,
-                  role: 'seller'
-                };
-                const state = JSON.stringify(stateData);
-                
-                const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
-                window.location.href = kakaoAuthUrl;
+                router.push('/register');
               }}
-              className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
+              className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 font-medium shadow-md"
             >
-              <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
-                <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
-              </svg>
-              <span>판매회원 카카오로 계속하기</span>
+              회원가입 하기
             </button>
           </div>
         </div>
 
-        <div className="mt-6 space-y-5">
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+        {/* 둥지마켓 이용안내 */}
+        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <h4 className="font-medium text-blue-900 mb-2">🛡️ 둥지마켓 이용안내</h4>
+          <div className="space-y-2 text-sm text-blue-800">
+            <div className="flex items-center gap-2">
+              <span className="text-blue-600">🔒</span>
+              <span><strong>구매회원:</strong> 대량구매 참여, 견적비교</span>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">
-                또는 아이디로 로그인
-              </span>
+            <div className="flex items-center gap-2">
+              <span className="text-green-600">🏪</span>
+              <span><strong>판매회원:</strong> 대량판매 기회, 입찰 참여</span>
             </div>
           </div>
+        </div>
 
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm space-y-3">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">아이디</label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  className={`appearance-none relative block w-full px-3 py-2 border ${errorCode === 'invalid_username' || errorCode === 'invalid_credentials' ? 'border-red-500' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                  placeholder="아이디"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className={`appearance-none relative block w-full px-3 py-2 border ${errorCode === 'invalid_password' || errorCode === 'invalid_credentials' ? 'border-red-500' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                  placeholder="비밀번호"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              
-              {/* 오류 메시지 표시 */}
-              {errorMessage && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <AlertCircle className="h-5 w-5 text-red-500" />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-red-700">{errorMessage}</p>
-                      
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <button
-                disabled={loading}
-                type="submit"
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    로그인 중...
-                  </>
-                ) : (
-                  '로그인'
-                )}
-              </button>
-            </div>
-            
-            {/* 아이디/비밀번호 찾기 & 회원가입 링크 */}
-            <div className="flex justify-between items-center mt-4 px-1">
-              <button 
-                type="button" 
-                onClick={() => setFindModalOpen(true)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                아이디/비밀번호 찾기
-              </button>
-              
-              <a 
-                href="/register" 
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                회원가입
-              </a>
-            </div>
-          </form>
+        {/* 아이디/비밀번호 찾기 링크 */}
+        <div className="text-center">
+          <button 
+            type="button" 
+            onClick={() => setFindModalOpen(true)}
+            className="text-sm text-gray-500 hover:text-gray-700 underline"
+          >
+            아이디/비밀번호를 잊으셨나요?
+          </button>
         </div>
       </div>
       
