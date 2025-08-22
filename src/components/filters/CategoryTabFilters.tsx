@@ -46,6 +46,7 @@ interface CategoryFilterOptions {
 }
 
 interface CategoryTabFiltersProps {
+  initialCategory?: MainCategory;
   onFiltersChange?: (filters: Record<string, string>) => void;
   onCategoryChange?: (category: MainCategory) => void;
 }
@@ -53,7 +54,7 @@ interface CategoryTabFiltersProps {
 /**
  * 카테고리 탭 기반 필터 컴포넌트
  */
-export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: CategoryTabFiltersProps) {
+export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategoryChange }: CategoryTabFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -103,7 +104,9 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
   };
 
   // 상태 관리
-  const [selectedCategory, setSelectedCategory] = useState<MainCategory>('phone');
+  const [selectedCategory, setSelectedCategory] = useState<MainCategory>(
+    initialCategory || (searchParams.get('category') as MainCategory) || 'phone'
+  );
   const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
   const [showFilters, setShowFilters] = useState(false);
 
@@ -111,7 +114,7 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
    * URL 파라미터에서 카테고리와 필터 초기화
    */
   useEffect(() => {
-    const category = (searchParams.get('category') as MainCategory) || 'phone';
+    const category = initialCategory || (searchParams.get('category') as MainCategory) || 'phone';
     console.log('URL에서 카테고리 로드:', category);
     
     setSelectedCategory(category);
@@ -123,7 +126,7 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
       }
     });
     setCurrentFilters(filters);
-  }, [searchParams]);
+  }, [searchParams, initialCategory]);
 
   // 카테고리 변경 중인지 추적하는 ref
   const categoryChangingRef = useRef(false);

@@ -70,7 +70,9 @@ function GroupPurchasesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState<'phone' | 'internet' | 'internet_tv'>('phone');
+  // URL에서 카테고리 가져오기, 없으면 'phone' 기본값
+  const categoryFromUrl = searchParams.get('category') as 'phone' | 'internet' | 'internet_tv' | null;
+  const [selectedCategory, setSelectedCategory] = useState<'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'phone');
 
   /**
    * 공구 목록 가져오기 (필터 포함)
@@ -352,15 +354,28 @@ function GroupPurchasesPageContent() {
     // URL 쿼리 파라미터에서 필터 추출
     const filters: Record<string, string> = {};
     let hasRefreshParam = false;
+    let hasCategoryParam = false;
     
     searchParams.forEach((value, key) => {
       if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'plan'].includes(key)) {
         filters[key] = value;
+        if (key === 'category') {
+          hasCategoryParam = true;
+        }
       }
       if (key === 'refresh') {
         hasRefreshParam = true;
       }
     });
+    
+    // URL에 카테고리가 없으면 기본값으로 '휴대폰' 설정
+    if (!hasCategoryParam) {
+      filters.category = 'phone';
+      // URL을 업데이트하여 phone 카테고리가 선택되었음을 명시
+      const newUrl = new URLSearchParams(searchParams.toString());
+      newUrl.set('category', 'phone');
+      router.replace(`/group-purchases?${newUrl.toString()}`);
+    }
     
     fetchGroupBuys(filters, activeTab);
     
@@ -438,6 +453,7 @@ function GroupPurchasesPageContent() {
           {/* 카테고리 탭 */}
           <div className="px-4 py-4">
             <CategoryTabFilters 
+              initialCategory={selectedCategory}
               onFiltersChange={handleFiltersChange}
               onCategoryChange={handleCategoryChange}
             />
