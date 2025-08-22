@@ -145,17 +145,19 @@ function GroupPurchasesPageContent() {
               });
               params.append('manufacturer', manufacturers.join(','));
             }
-            // 요금제 필터
+            // 요금제 필터 (합집합 처리)
             else if (key === 'plan' || key === 'planRange') {
-              let planValue = value;
-              // GroupBuyFilters에서 온 값들과 매핑
-              if (value === '50000') planValue = '5만원대';
-              else if (value === '60000') planValue = '6만원대';
-              else if (value === '70000') planValue = '7만원대';
-              else if (value === '80000') planValue = '8만원대';
-              else if (value === '90000') planValue = '9만원대';
-              else if (value === '100000') planValue = '10만원이상';
-              params.append('plan_info', planValue);
+              // 콤마로 구분된 여러 값 처리
+              const plans = value.split(',').map(p => {
+                if (p === '50000') return '5만원대';
+                else if (p === '60000') return '6만원대';
+                else if (p === '70000') return '7만원대';
+                else if (p === '80000') return '8만원대';
+                else if (p === '90000') return '9만원대';
+                else if (p === '100000') return '10만원이상';
+                return p;
+              });
+              params.append('plan_info', plans.join(','));
             }
             // 브랜드 필터 (호환성)
             else if (key === 'brand') {
@@ -174,7 +176,7 @@ function GroupPurchasesPageContent() {
               params.append('condition', value);
             }
             // 통신사 필터 (합집합 처리)
-            else if (key === 'carrier') {
+            else if (key === 'carrier' || key === 'internet_carrier' || key === 'internet_tv_carrier') {
               // 콤마로 구분된 여러 값 처리
               const carriers = value.split(',').map(c => {
                 if (c === 'skt' || c === 'SKT') return 'SKT';
@@ -193,7 +195,7 @@ function GroupPurchasesPageContent() {
               }
             }
             // 가입 유형 필터
-            else if (key === 'subscriptionType') {
+            else if (key === 'subscriptionType' || key === 'internet_subscriptionType' || key === 'internet_tv_subscriptionType') {
               let subscriptionType = '';
               // GroupBuyFilters에서 온 값들과 매핑
               if (value === 'new_signup' || value === '신규가입') subscriptionType = 'new';
@@ -205,8 +207,9 @@ function GroupPurchasesPageContent() {
                 params.append('subscription_type', subscriptionType);
               }
             }
-            // 인터넷 속도 필터
-            else if (key === 'speed') {
+            // 인터넷 속도 필터 (합집합 처리)
+            else if (key === 'speed' || key === 'internet_speed' || key === 'internet_tv_speed') {
+              // 콤마로 구분된 여러 값 처리
               params.append('internet_speed', value);
             }
             // 지역 필터
