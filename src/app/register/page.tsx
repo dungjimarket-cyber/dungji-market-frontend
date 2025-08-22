@@ -31,7 +31,9 @@ function RegisterPageContent() {
   const socialEmail = searchParams.get('email');
   const socialId = searchParams.get('socialId');
   
-  const [memberType, setMemberType] = useState<'buyer' | 'seller' | null>(null);
+  // URL 파라미터에서 memberType 가져오기
+  const memberTypeParam = searchParams.get('memberType') as 'buyer' | 'seller' | null;
+  const [memberType, setMemberType] = useState<'buyer' | 'seller' | null>(memberTypeParam);
   const [signupType, setSignupType] = useState<SignupType | null>(socialProvider ? 'social' : null);
   
   // 이메일 도메인 추출
@@ -53,7 +55,7 @@ function RegisterPageContent() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'buyer', // 'buyer' or 'seller'
+    role: memberTypeParam || 'buyer', // 'buyer' or 'seller'
     
     // 선택 필드
     region_province: '',
