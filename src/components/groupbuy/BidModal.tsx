@@ -168,23 +168,31 @@ export default function BidModal({
       const sellerUser = userProfile || user; // 새로 가져온 프로필 사용
       console.log('[BidModal] 입찰 제출 시 사용자 데이터:', sellerUser);
       
-      // 필수 정보 체크 - 판매자 프로필 API 응답 필드명과 일치하도록 수정
+      // 필수 정보 체크 - userProfile과 user 객체 모두 지원
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
         missingFields.push('닉네임 또는 상호명');
       }
-      if (!sellerUser.addressRegion) {
+      
+      // addressRegion (seller-profile) 또는 address_region (auth profile) 체크
+      if (!sellerUser.addressRegion && !sellerUser.address_region) {
         missingFields.push('사업장주소지/영업활동지역');
       }
-      if (!sellerUser.representativeName || sellerUser.representativeName.trim() === '') {
+      
+      // representativeName (seller-profile) 또는 representative_name (auth profile) 체크
+      const repName = sellerUser.representativeName || sellerUser.representative_name || sellerUser.first_name;
+      if (!repName || repName.trim() === '') {
         missingFields.push('사업자등록증상 대표자명');
       }
-      // businessNumber 필드명 사용 (판매자 프로필 API 응답과 일치)
-      if (!sellerUser.businessNumber || sellerUser.businessNumber.trim() === '') {
+      
+      // businessNumber (seller-profile) 또는 business_number (auth profile) 체크
+      const bizNumber = sellerUser.businessNumber || sellerUser.business_number;
+      if (!bizNumber || bizNumber.trim() === '') {
         missingFields.push('사업자등록번호');
       }
       
       // 사업자등록번호 인증 여부 체크 (저장된 상태만 확인, 실시간 검증 X)
-      if (sellerUser.businessNumber && !sellerUser.businessVerified) {
+      const isVerified = sellerUser.businessVerified || sellerUser.is_business_verified;
+      if (bizNumber && !isVerified) {
         missingFields.push('사업자등록번호 인증');
       }
       
