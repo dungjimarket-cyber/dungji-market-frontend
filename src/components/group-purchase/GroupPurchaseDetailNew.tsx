@@ -735,9 +735,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       if (!sellerUser.address_region && !sellerUser.addressRegion) {
         missingFields.push('사업장주소지/영업활동지역');
       }
-      if (!sellerUser.user_type) {
-        missingFields.push('판매회원구분');
-      }
+      // user_type 체크 제거 - 판매회원은 role로 이미 구분됨
       // representativeName, representative_name, first_name 모두 체크
       const hasRepName = sellerUser.representativeName || sellerUser.representative_name || sellerUser.first_name;
       if (!hasRepName || hasRepName.trim() === '') {
