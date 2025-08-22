@@ -160,9 +160,8 @@ function SignInForm() {
           {/* 구매회원 카카오 로그인 */}
           {selectedTab === 'buyer' && (
             <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-center mb-3">
-                <p className="text-sm font-medium text-gray-700">일반회원 로그인</p>
-                <p className="text-xs text-gray-500 mt-1">공동구매 참여하고 견적 받기</p>
+              <div className="text-center mb-4">
+                <p className="text-base font-semibold text-gray-800">공동구매 참여하고 견적 받기</p>
               </div>
               <button
               onClick={() => {
@@ -192,9 +191,8 @@ function SignInForm() {
           {/* 판매회원 카카오 로그인 */}
           {selectedTab === 'seller' && (
             <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
-              <div className="text-center mb-3">
-                <p className="text-sm font-medium text-gray-700">판매회원 로그인</p>
-                <p className="text-xs text-gray-500 mt-1">견적 제안하고 판매 기회 얻기</p>
+              <div className="text-center mb-4">
+                <p className="text-base font-semibold text-gray-800">견적 제안하고 판매 기회 얻기</p>
               </div>
               <button
               onClick={() => {
