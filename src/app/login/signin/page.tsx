@@ -15,6 +15,8 @@ function SignInForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorCode, setErrorCode] = useState('');
+  const [sellerReferralCode, setSellerReferralCode] = useState('');
+  const [showSellerReferralInput, setShowSellerReferralInput] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login } = useAuth();
@@ -158,17 +160,47 @@ function SignInForm() {
           {/* 판매회원 카카오 로그인 */}
           <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
             <p className="text-sm text-gray-600 mb-2 text-center">판매회원으로 로그인</p>
+            
+            {/* 추천인 코드 입력 섹션 */}
+            {!showSellerReferralInput ? (
+              <div className="mb-3">
+                <button
+                  onClick={() => setShowSellerReferralInput(true)}
+                  className="text-xs text-blue-600 hover:text-blue-700 underline"
+                >
+                  추천인 코드가 있으신가요?
+                </button>
+              </div>
+            ) : (
+              <div className="mb-3">
+                <label className="block text-xs text-gray-600 mb-1">추천인 코드 (선택)</label>
+                <input
+                  type="text"
+                  value={sellerReferralCode}
+                  onChange={(e) => setSellerReferralCode(e.target.value)}
+                  placeholder="추천인 코드 입력"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  추천인 코드 입력 시 입찰권 10매 추가 지급
+                </p>
+              </div>
+            )}
+            
             <button
               onClick={() => {
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
                 
-                // state에 role 정보 포함
+                // state에 role과 referral_code 정보 포함
                 const stateData = {
                   redirectUrl: callbackUrl,
-                  role: 'seller'
+                  role: 'seller',
+                  referral_code: sellerReferralCode || ''
                 };
                 const state = JSON.stringify(stateData);
+                
+                console.log('판매회원 카카오 로그인 state:', stateData);
                 
                 const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
                 window.location.href = kakaoAuthUrl;
