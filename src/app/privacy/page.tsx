@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           <h2 className="text-2xl font-semibold mb-4">2. 개인정보의 수집 및 이용목적</h2>
           <ul className="list-disc list-inside space-y-2 text-gray-600">
             <li>회원 관리: 회원제 서비스 이용에 따른 본인확인, 개인 식별</li>
-            <li>서비스 제공: 공구 참여, 입찰, 거래 중개 서비스 제공</li>
+            <li>서비스 제공: 공구 참여, 공구 진행 과정 알림, 거래 중개 서비스 제공</li>
             <li>고지사항 전달: 서비스 이용에 관한 통지, 공지사항 전달</li>
             <li>마케팅 및 광고: 이벤트 등 광고성 정보 전달(선택 동의 시)</li>
             <li>서비스 개선: 접속 빈도 파악, 서비스 이용 통계</li>
