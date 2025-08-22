@@ -726,6 +726,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     if (user?.role === 'seller') {
       const missingFields = [];
       const sellerUser = user as any; // 임시 타입 캐스팅
+      console.log('[GroupPurchaseDetailNew] 판매자 정보 체크, user 객체:', sellerUser);
       
       // 필수 정보 체크 - API 응답 필드명과 호환되도록 수정
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
