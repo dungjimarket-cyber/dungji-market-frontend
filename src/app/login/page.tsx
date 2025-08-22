@@ -143,10 +143,10 @@ function LoginForm() {
       <div className="max-w-lg w-full space-y-6">
         <div>
           <h2 className="mt-4 text-center text-2xl font-bold text-gray-900 sm:text-3xl">
-            환영합니다!
+            둥지마켓에 오신걸 환영합니다
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            둥지마켓 이용을 위해 신분확인이 필요합니다
+            세상없던 중개 플랫폼!
           </p>
         </div>
 
