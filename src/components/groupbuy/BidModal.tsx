@@ -117,6 +117,7 @@ export default function BidModal({
           });
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
+            console.log('[BidModal] 판매자 프로필 데이터:', profileData);
             setUserProfile(profileData);
           }
         }
@@ -165,6 +166,7 @@ export default function BidModal({
     if (user?.role === 'seller') {
       const missingFields = [];
       const sellerUser = userProfile || user; // 새로 가져온 프로필 사용
+      console.log('[BidModal] 입찰 제출 시 사용자 데이터:', sellerUser);
       
       // 필수 정보 체크 - 판매자 프로필 API 응답 필드명과 일치하도록 수정
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
