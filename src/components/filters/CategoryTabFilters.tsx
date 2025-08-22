@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -112,6 +112,8 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
    */
   useEffect(() => {
     const category = (searchParams.get('category') as MainCategory) || 'phone';
+    console.log('URL에서 카테고리 로드:', category);
+    
     setSelectedCategory(category);
 
     const filters: Record<string, string> = {};
@@ -127,6 +129,14 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
    * 카테고리 변경 처리
    */
   const handleCategoryChange = (category: MainCategory) => {
+    console.log('카테곢0리 클릭:', category);
+    
+    // 이미 선택된 카테고리인 경우 무시 (더블 클릭 방지)
+    if (selectedCategory === category) {
+      console.log('이미 선택된 카테고리, 무시');
+      return;
+    }
+    
     setSelectedCategory(category);
     
     // 카테고리 변경 시 기존 필터 초기화
@@ -135,23 +145,50 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
     
     // URL 업데이트
     updateURL({ category }, true);
-    onCategoryChange?.(category);
-    onFiltersChange?.(newFilters);
+    
+    // 콜백 호출 (비동기로 처리하여 순서 보장)
+    setTimeout(() => {
+      onCategoryChange?.(category);
+      onFiltersChange?.(newFilters);
+    }, 0);
   };
 
+  // 디바운싱을 위한 ref
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   /**
-   * 필터 변경 처리
+   * 필터 변경 처리 (디바운싱 적용)
    */
-  const handleFilterChange = (filterType: string, value: string) => {
+  const handleFilterChange = useCallback((filterType: string, value: string) => {
+    console.log('필터 변경:', filterType, value);
+    
     const newFilters = {
       ...currentFilters,
       [filterType]: value
     };
     
+    // 즉시 UI 업데이트
     setCurrentFilters(newFilters);
-    updateURL(newFilters);
-    onFiltersChange?.(newFilters);
-  };
+    
+    // 디바운싱 적용 (300ms)
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    debounceRef.current = setTimeout(() => {
+      updateURL(newFilters);
+      onFiltersChange?.(newFilters);
+    }, 300);
+  }, [currentFilters, onFiltersChange]);
+
+  // 컴포넌트 언마운트 시 디바운싱 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   /**
    * URL 업데이트
@@ -159,8 +196,12 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
   const updateURL = (filters: Record<string, string>, categoryChanged = false) => {
     const params = new URLSearchParams();
     
-    // 카테고리 설정
-    params.set('category', selectedCategory);
+    // 카테고리 설정 (카테고리 변경 시에만 설정)
+    if (categoryChanged && filters.category) {
+      params.set('category', filters.category);
+    } else if (!categoryChanged) {
+      params.set('category', selectedCategory);
+    }
     
     // 필터 설정
     Object.entries(filters).forEach(([key, value]) => {
@@ -169,7 +210,9 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
       }
     });
     
-    router.push(`?${params.toString()}`);
+    const newUrl = `?${params.toString()}`;
+    console.log('URL 업데이트:', newUrl);
+    router.push(newUrl);
   };
 
   /**
@@ -446,12 +489,13 @@ export function CategoryTabFilters({ onFiltersChange, onCategoryChange }: Catego
             <Button
               key={category.id}
               variant={isSelected ? "default" : "outline"}
-              className={`flex items-center gap-2 px-4 py-2 ${
+              className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 ${
                 isSelected 
-                  ? `${category.color} bg-white border-2` 
-                  : `hover:${category.bgColor} hover:border-current`
+                  ? `${category.color} bg-white border-2 font-semibold cursor-default` 
+                  : `hover:${category.bgColor} hover:border-current cursor-pointer`
               }`}
               onClick={() => handleCategoryChange(category.id)}
+              disabled={isSelected} // 이미 선택된 카테고리는 비활성화
             >
               <Icon className="w-4 h-4" />
               {category.name}

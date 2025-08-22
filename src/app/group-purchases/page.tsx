@@ -119,13 +119,13 @@ function GroupPurchasesPageContent() {
             else if (key === 'category') {
               // 카테고리를 백엔드 필터에 맞게 변환
               if (value === 'phone') {
-                params.append('category', '휴대폰');
+                params.append('category_name', '휴대폰');
               } else if (value === 'internet') {
-                params.append('category', '인터넷');
+                params.append('category_name', '인터넷');
               } else if (value === 'internet_tv') {
-                params.append('category', '인터넷+TV');
+                params.append('category_name', '인터넷+TV');
               } else {
-                params.append('category', value);
+                params.append('category_name', value);
               }
             }
             // 통합 검색 필터 (제목, 상품명, 지역 등)
@@ -134,11 +134,23 @@ function GroupPurchasesPageContent() {
             }
             // 제조사 필터
             else if (key === 'manufacturer') {
-              params.append('manufacturer', value);
+              let manufacturerName = value;
+              // GroupBuyFilters에서 온 값들과 매핑
+              if (value === 'samsung') manufacturerName = '삼성';
+              else if (value === 'apple') manufacturerName = '애플';
+              params.append('manufacturer', manufacturerName);
             }
             // 요금제 필터
-            else if (key === 'plan') {
-              params.append('plan_info', value);
+            else if (key === 'plan' || key === 'planRange') {
+              let planValue = value;
+              // GroupBuyFilters에서 온 값들과 매핑
+              if (value === '50000') planValue = '5만원대';
+              else if (value === '60000') planValue = '6만원대';
+              else if (value === '70000') planValue = '7만원대';
+              else if (value === '80000') planValue = '8만원대';
+              else if (value === '90000') planValue = '9만원대';
+              else if (value === '100000') planValue = '10만원이상';
+              params.append('plan_info', planValue);
             }
             // 브랜드 필터 (호환성)
             else if (key === 'brand') {
@@ -159,15 +171,20 @@ function GroupPurchasesPageContent() {
             // 통신사 필터
             else if (key === 'carrier') {
               let carrierCode = value;
-              if (value === 'LG U+') carrierCode = 'LGU';
+              // GroupBuyFilters에서 온 값들과 매핑
+              if (value === 'skt' || value === 'SKT') carrierCode = 'SKT';
+              else if (value === 'kt' || value === 'KT') carrierCode = 'KT';
+              else if (value === 'lgu' || value === 'LG U+') carrierCode = 'LGU';
               params.append('telecom_carrier', carrierCode);
             }
             // 가입 유형 필터
             else if (key === 'subscriptionType') {
               let subscriptionType = '';
-              if (value === '신규') subscriptionType = 'new';
-              else if (value === '번호이동') subscriptionType = 'transfer';
-              else if (value === '기기변경') subscriptionType = 'change';
+              // GroupBuyFilters에서 온 값들과 매핑
+              if (value === 'new_signup' || value === '신규가입') subscriptionType = 'new';
+              else if (value === 'number_port' || value === '번호이동') subscriptionType = 'transfer';
+              else if (value === 'device_change' || value === '기기변경') subscriptionType = 'change';
+              else if (value === 'carrier_change' || value === '통신사이동') subscriptionType = 'transfer';
               
               if (subscriptionType) {
                 params.append('subscription_type', subscriptionType);
@@ -243,8 +260,11 @@ function GroupPurchasesPageContent() {
    */
   const handleCategoryChange = (category: string) => {
     // 카테고리 변경 시 기존 필터들을 초기화하고 해당 카테고리의 공구만 로드
-    const categoryFilters = { category };
+    console.log('카테고리 변경:', category);
     setSelectedCategory(category as 'phone' | 'internet' | 'internet_tv');
+    
+    // 카테고리 변경 시에는 다른 필터들을 초기화
+    const categoryFilters = { category };
     fetchGroupBuys(categoryFilters, activeTab);
   };
 
