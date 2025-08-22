@@ -140,7 +140,7 @@ function SignInForm() {
             }`}
           >
             <span className="text-lg">🛒</span>
-            <span>구매자</span>
+            <span>일반회원</span>
           </button>
           <button
             onClick={() => setSelectedTab('seller')}
@@ -151,7 +151,7 @@ function SignInForm() {
             }`}
           >
             <span className="text-lg">💼</span>
-            <span>판매자</span>
+            <span>판매회원</span>
           </button>
         </div>
 
@@ -161,7 +161,7 @@ function SignInForm() {
           {selectedTab === 'buyer' && (
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-center mb-3">
-                <p className="text-sm font-medium text-gray-700">구매자 전용 로그인</p>
+                <p className="text-sm font-medium text-gray-700">일반회원 로그인</p>
                 <p className="text-xs text-gray-500 mt-1">공동구매 참여하고 견적 받기</p>
               </div>
               <button
@@ -184,10 +184,7 @@ function SignInForm() {
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span className="flex items-center gap-2">
-                <span className="text-lg">🛒</span>
-                <span className="font-semibold">구매자 전용 로그인</span>
-              </span>
+              <span className="font-semibold">카카오로 계속하기(구매전용)</span>
             </button>
           </div>
           )}
@@ -196,7 +193,7 @@ function SignInForm() {
           {selectedTab === 'seller' && (
             <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
               <div className="text-center mb-3">
-                <p className="text-sm font-medium text-gray-700">판매자 전용 로그인</p>
+                <p className="text-sm font-medium text-gray-700">판매회원 로그인</p>
                 <p className="text-xs text-gray-500 mt-1">견적 제안하고 판매 기회 얻기</p>
               </div>
               <button
@@ -221,10 +218,7 @@ function SignInForm() {
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span className="flex items-center gap-2">
-                <span className="text-lg">💼</span>
-                <span className="font-semibold">판매자 전용 로그인</span>
-              </span>
+              <span className="font-semibold">카카오로 계속하기(판매전용)</span>
             </button>
           </div>
           )}
