@@ -152,8 +152,10 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
     const newFilters: Record<string, string> = { category };
     setCurrentFilters(newFilters);
     
-    // URL 업데이트만 하고 콜백은 호출하지 않음 (URL 변경이 자동으로 트리거)
+    // URL 업데이트와 함께 콜백 호출
     updateURL({ category }, true);
+    onFiltersChange?.({ category });
+    onCategoryChange?.(category);
     
     // 변경 완료 후 플래그 해제
     setTimeout(() => {
@@ -499,11 +501,12 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
               variant={isSelected ? "default" : "outline"}
               className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 ${
                 isSelected 
-                  ? `${category.color} bg-white border-2 font-semibold cursor-default` 
-                  : `hover:${category.bgColor} hover:border-current cursor-pointer`
+                  ? `${category.color} bg-white border-2 font-semibold` 
+                  : `hover:${category.bgColor} hover:border-current`
               }`}
-              onClick={() => handleCategoryChange(category.id)}
-              disabled={isSelected || categoryChangingRef.current} // 이미 선택된 카테고리나 변경 중인 경우 비활성화
+              onClick={() => !isSelected && !categoryChangingRef.current && handleCategoryChange(category.id)}
+              disabled={false} // 버튼은 항상 활성화 상태로 유지
+              style={{ cursor: isSelected || categoryChangingRef.current ? 'default' : 'pointer' }}
             >
               <Icon className="w-4 h-4" />
               {category.name}

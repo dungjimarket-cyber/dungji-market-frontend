@@ -262,9 +262,12 @@ function GroupPurchasesPageContent() {
    * 카테고리 변경 처리
    */
   const handleCategoryChange = (category: string) => {
-    // URL 변경이 자동으로 useEffect를 트리거하므로 여기서는 상태만 업데이트
     console.log('카테고리 변경:', category);
     setSelectedCategory(category as 'phone' | 'internet' | 'internet_tv');
+    
+    // 카테고리 변경 시 즉시 필터 적용
+    const categoryFilter = { category };
+    fetchGroupBuys(categoryFilter, activeTab);
   };
 
   /**
