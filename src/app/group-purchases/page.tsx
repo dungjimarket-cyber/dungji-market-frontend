@@ -135,13 +135,15 @@ function GroupPurchasesPageContent() {
             else if (key === 'search') {
               params.append('search', value);
             }
-            // 제조사 필터
+            // 제조사 필터 (합집합 처리)
             else if (key === 'manufacturer') {
-              let manufacturerName = value;
-              // GroupBuyFilters에서 온 값들과 매핑
-              if (value === 'samsung') manufacturerName = '삼성';
-              else if (value === 'apple') manufacturerName = '애플';
-              params.append('manufacturer', manufacturerName);
+              // 콤마로 구분된 여러 값 처리
+              const manufacturers = value.split(',').map(m => {
+                if (m === 'samsung') return '삼성';
+                else if (m === 'apple') return '애플';
+                return m;
+              });
+              params.append('manufacturer', manufacturers.join(','));
             }
             // 요금제 필터
             else if (key === 'plan' || key === 'planRange') {
@@ -171,14 +173,24 @@ function GroupPurchasesPageContent() {
             else if (key === 'condition') {
               params.append('condition', value);
             }
-            // 통신사 필터
+            // 통신사 필터 (합집합 처리)
             else if (key === 'carrier') {
-              let carrierCode = value;
-              // GroupBuyFilters에서 온 값들과 매핑
-              if (value === 'skt' || value === 'SKT') carrierCode = 'SKT';
-              else if (value === 'kt' || value === 'KT') carrierCode = 'KT';
-              else if (value === 'lgu' || value === 'LG U+') carrierCode = 'LGU';
-              params.append('telecom_carrier', carrierCode);
+              // 콤마로 구분된 여러 값 처리
+              const carriers = value.split(',').map(c => {
+                if (c === 'skt' || c === 'SKT') return 'SKT';
+                else if (c === 'kt' || c === 'KT') return 'KT';
+                else if (c === 'lgu' || c === 'LG U+') return 'LGU';
+                return c;
+              });
+              
+              // 카테고리에 따라 다른 필터 적용
+              const category = filters.category || selectedCategory;
+              if (category === 'phone') {
+                params.append('telecom_carrier', carriers.join(','));
+              } else if (category === 'internet' || category === 'internet_tv') {
+                // 인터넷/인터넷+TV는 별도 필터 사용
+                params.append('internet_carrier', carriers.join(','));
+              }
             }
             // 가입 유형 필터
             else if (key === 'subscriptionType') {
@@ -464,13 +476,37 @@ function GroupPurchasesPageContent() {
             <GroupBuyFilters 
               category={selectedCategory}
               onFiltersChange={(filters) => {
-                // 필터 변경 처리
+                // 필터 변경 처리 - 합집합을 위해 콤마로 구분한 값을 전달
                 const flatFilters: Record<string, string> = {};
+                
+                // 카테고리별로 필터 ID 맵핑
+                const filterMapping: Record<string, string> = {};
+                
+                if (selectedCategory === 'phone') {
+                  filterMapping['manufacturer'] = 'manufacturer';
+                  filterMapping['carrier'] = 'carrier';
+                  filterMapping['subscriptionType'] = 'subscriptionType';
+                  filterMapping['planRange'] = 'plan';
+                } else if (selectedCategory === 'internet') {
+                  filterMapping['internet_carrier'] = 'carrier';
+                  filterMapping['internet_subscriptionType'] = 'subscriptionType';
+                  filterMapping['speed'] = 'speed';
+                } else if (selectedCategory === 'internet_tv') {
+                  filterMapping['internet_tv_carrier'] = 'carrier';
+                  filterMapping['internet_tv_subscriptionType'] = 'subscriptionType';
+                  filterMapping['internet_tv_speed'] = 'speed';
+                }
+                
                 Object.entries(filters).forEach(([key, values]) => {
                   if (values.length > 0) {
-                    flatFilters[key] = values.join(',');
+                    const mappedKey = filterMapping[key] || key;
+                    flatFilters[mappedKey] = values.join(',');
                   }
                 });
+                
+                // 카테고리 필터 추가
+                flatFilters['category'] = selectedCategory;
+                
                 handleFiltersChange(flatFilters);
               }}
             />

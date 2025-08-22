@@ -32,6 +32,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
         id: 'manufacturer',
         label: '제조사',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'samsung', label: '삼성' },
           { value: 'apple', label: '애플' },
         ]
@@ -40,6 +41,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
         id: 'carrier',
         label: '통신사',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'skt', label: 'SKT' },
           { value: 'kt', label: 'KT' },
           { value: 'lgu', label: 'LG U+' },
@@ -49,6 +51,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
         id: 'subscriptionType',
         label: '가입유형',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'device_change', label: '기기변경' },
           { value: 'number_port', label: '번호이동' },
           { value: 'new_signup', label: '신규가입' },
@@ -58,6 +61,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
         id: 'planRange',
         label: '요금제',
         options: [
+          { value: 'all', label: '전체' },
           { value: '50000', label: '5만원대' },
           { value: '60000', label: '6만원대' },
           { value: '70000', label: '7만원대' },
@@ -69,18 +73,20 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
     ],
     internet: [
       {
-        id: 'carrier',
+        id: 'internet_carrier',
         label: '통신사',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'skt', label: 'SKT' },
           { value: 'kt', label: 'KT' },
           { value: 'lgu', label: 'LG U+' },
         ]
       },
       {
-        id: 'subscriptionType',
+        id: 'internet_subscriptionType',
         label: '가입유형',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'carrier_change', label: '통신사이동' },
           { value: 'new_signup', label: '신규가입' },
         ]
@@ -89,6 +95,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
         id: 'speed',
         label: '인터넷속도',
         options: [
+          { value: 'all', label: '전체' },
           { value: '100M', label: '100M' },
           { value: '200M', label: '200M' },
           { value: '500M', label: '500M' },
@@ -99,26 +106,29 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
     ],
     internet_tv: [
       {
-        id: 'carrier',
+        id: 'internet_tv_carrier',
         label: '통신사',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'skt', label: 'SKT' },
           { value: 'kt', label: 'KT' },
           { value: 'lgu', label: 'LG U+' },
         ]
       },
       {
-        id: 'subscriptionType',
+        id: 'internet_tv_subscriptionType',
         label: '가입유형',
         options: [
+          { value: 'all', label: '전체' },
           { value: 'carrier_change', label: '통신사이동' },
           { value: 'new_signup', label: '신규가입' },
         ]
       },
       {
-        id: 'speed',
+        id: 'internet_tv_speed',
         label: '인터넷속도',
         options: [
+          { value: 'all', label: '전체' },
           { value: '100M', label: '100M' },
           { value: '200M', label: '200M' },
           { value: '500M', label: '500M' },
@@ -139,6 +149,17 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
    * 필터 옵션 토글
    */
   const toggleFilter = (groupId: string, value: string) => {
+    // '전체' 버튼 클릭 시
+    if (value === 'all') {
+      setSelectedFilters(prev => {
+        const newFilters = { ...prev };
+        delete newFilters[groupId];
+        onFiltersChange?.(newFilters);
+        return newFilters;
+      });
+      return;
+    }
+    
     setSelectedFilters(prev => {
       const currentValues = prev[groupId] || [];
       const newValues = currentValues.includes(value)
@@ -164,8 +185,17 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
    * 필터가 선택되었는지 확인
    */
   const isFilterSelected = (groupId: string, value: string) => {
+    // '전체' 버튼은 해당 그룹에 선택된 필터가 없을 때 활성화
+    if (value === 'all') {
+      return !selectedFilters[groupId] || selectedFilters[groupId].length === 0;
+    }
     return selectedFilters[groupId]?.includes(value) || false;
   };
+
+  // 카테고리 변경 시 필터 초기화
+  useEffect(() => {
+    setSelectedFilters({});
+  }, [category]);
 
   return (
     <div className="space-y-4">
