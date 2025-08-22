@@ -9,10 +9,31 @@
   }
 }
 
-/* Prevent horizontal scroll */
+/* Prevent horizontal scroll and layout shift */
 html, body {
   max-width: 100%;
   overflow-x: hidden;
+}
+
+/* Prevent layout shift when scrollbar appears/disappears */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Alternative: Always show scrollbar on desktop to prevent layout shift */
+@media (min-width: 768px) {
+  body {
+    overflow-y: scroll;
+  }
+}
+
+/* Fix for Select dropdown portal position */
+[data-radix-popper-content-wrapper] {
+  pointer-events: none !important;
+}
+
+[data-radix-popper-content-wrapper] > * {
+  pointer-events: auto !important;
 }
 
 /* 프리텐다드 폰트 CDN 추가 */
