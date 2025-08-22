@@ -17,6 +17,7 @@ function SignInForm() {
   const [errorCode, setErrorCode] = useState('');
   const [sellerReferralCode, setSellerReferralCode] = useState('');
   const [showSellerReferralInput, setShowSellerReferralInput] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<'buyer' | 'seller'>('buyer');
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login } = useAuth();
@@ -128,15 +129,42 @@ function SignInForm() {
           </p>
         </div>
 
+        {/* 탭 선택 UI */}
+        <div className="flex rounded-lg bg-gray-100 p-1">
+          <button
+            onClick={() => setSelectedTab('buyer')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium transition-all ${
+              selectedTab === 'buyer'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <span className="text-lg">🛒</span>
+            <span>구매자</span>
+          </button>
+          <button
+            onClick={() => setSelectedTab('seller')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium transition-all ${
+              selectedTab === 'seller'
+                ? 'bg-white text-yellow-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <span className="text-lg">💼</span>
+            <span>판매자</span>
+          </button>
+        </div>
+
         {/* 카카오 로그인 섹션 */}
-        <div className="space-y-4">
+        <div className="mt-4">
           {/* 구매회원 카카오 로그인 */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🛒</span>
-              <p className="text-sm text-gray-600">구매전용</p>
-            </div>
-            <button
+          {selectedTab === 'buyer' && (
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="text-center mb-3">
+                <p className="text-sm font-medium text-gray-700">구매자 전용 로그인</p>
+                <p className="text-xs text-gray-500 mt-1">공동구매 참여하고 견적 받기</p>
+              </div>
+              <button
               onClick={() => {
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
@@ -156,18 +184,22 @@ function SignInForm() {
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span className="font-medium">구매회원 카카오로 계속하기</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">🛒</span>
+                <span className="font-semibold">구매자 전용 로그인</span>
+              </span>
             </button>
           </div>
+          )}
 
           {/* 판매회원 카카오 로그인 */}
-          <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">💼</span>
-              <p className="text-sm text-gray-600">판매전용</p>
-            </div>
-            
-            <button
+          {selectedTab === 'seller' && (
+            <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
+              <div className="text-center mb-3">
+                <p className="text-sm font-medium text-gray-700">판매자 전용 로그인</p>
+                <p className="text-xs text-gray-500 mt-1">견적 제안하고 판매 기회 얻기</p>
+              </div>
+              <button
               onClick={() => {
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
@@ -189,9 +221,13 @@ function SignInForm() {
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span className="font-medium">판매회원 카카오로 계속하기</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">💼</span>
+                <span className="font-semibold">판매자 전용 로그인</span>
+              </span>
             </button>
           </div>
+          )}
         </div>
 
         <div className="relative">
