@@ -11,13 +11,14 @@ interface SocialLoginButtonsContentProps {
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
   memberType?: 'buyer' | 'seller';
+  buttonText?: string;
 }
 
 /**
  * useSearchParams를 사용하는 내부 컴포넌트
  * Next.js 15에서는 useSearchParams를 사용하는 컴포넌트를 분리하고 Suspense로 감싸야 함
  */
-function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacyAgreed, memberType }: SocialLoginButtonsContentProps) {
+function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacyAgreed, memberType, buttonText }: SocialLoginButtonsContentProps) {
   const [loading, setLoading] = useState<string>('');
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -127,7 +128,7 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
             className="w-5 h-5"
           />
         )}
-        카카오로 계속하기
+        {buttonText || '카카오로 계속하기'}
       </button>
     </div>
   );
@@ -138,13 +139,14 @@ interface SocialLoginButtonsProps {
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
   memberType?: 'buyer' | 'seller';
+  buttonText?: string;
 }
 
 /**
  * 소셜 로그인 버튼 컴포넌트
  * JWT 기반 인증을 위해 Django 백엔드의 소셜 로그인 엔드포인트로 연결합니다.
  */
-export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed, privacyAgreed, memberType }: SocialLoginButtonsProps) {
+export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed, privacyAgreed, memberType, buttonText }: SocialLoginButtonsProps) {
   return (
     <Suspense fallback={<div className="flex flex-col gap-4 w-full items-center justify-center">
       <Loader2 className="h-5 w-5 animate-spin" />
@@ -154,6 +156,7 @@ export default function SocialLoginButtons({ requireTermsAgreement, termsAgreed,
         termsAgreed={termsAgreed}
         privacyAgreed={privacyAgreed}
         memberType={memberType}
+        buttonText={buttonText}
       />
     </Suspense>
   );

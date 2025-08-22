@@ -150,8 +150,32 @@ function LoginForm() {
           </p>
         </div>
 
+        {/* 회원 유형 안내 */}
+        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">🛒</span>
+            <div>
+              <p className="font-medium text-gray-900">구매가 목적이신가요?</p>
+              <p className="text-sm text-gray-500">공동구매 참여하고 비교견적 받기!</p>
+            </div>
+          </div>
+          <div className="border-t pt-3">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">💼</span>
+              <div>
+                <p className="font-medium text-gray-900">판매가 목적이신가요?</p>
+                <p className="text-sm text-gray-500">대량 판매 기회 받기</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-6 space-y-5">
-          <SocialLoginButtons />
+          {/* 일반회원 카카오 로그인 */}
+          <SocialLoginButtons memberType="buyer" buttonText="일반회원 카카오로 계속하기" />
+          
+          {/* 판매회원 카카오 로그인 */}
+          <SocialLoginButtons memberType="seller" buttonText="판매회원 카카오로 계속하기" />
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
