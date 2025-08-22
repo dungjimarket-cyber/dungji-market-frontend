@@ -726,24 +726,31 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     if (user?.role === 'seller') {
       const missingFields = [];
       const sellerUser = user as any; // 임시 타입 캐스팅
+      console.log('[GroupPurchaseDetailNew] 판매자 정보 체크, user 객체:', sellerUser);
       
-      // 필수 정보 체크
+      // 필수 정보 체크 - API 응답 필드명과 호환되도록 수정
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
         missingFields.push('닉네임 또는 상호명');
       }
-      if (!sellerUser.address_region) {
+      if (!sellerUser.address_region && !sellerUser.addressRegion) {
         missingFields.push('사업장주소지/영업활동지역');
       }
       if (!sellerUser.user_type) {
         missingFields.push('판매회원구분');
       }
-      if (!sellerUser.first_name) {
+      // representativeName, representative_name, first_name 모두 체크
+      const hasRepName = sellerUser.representativeName || sellerUser.representative_name || sellerUser.first_name;
+      if (!hasRepName || hasRepName.trim() === '') {
         missingFields.push('사업자등록증상 대표자명');
       }
-      if (!sellerUser.business_number) {
+      // business_number와 businessNumber 모두 체크
+      const hasBizNumber = sellerUser.business_number || sellerUser.businessNumber;
+      if (!hasBizNumber || hasBizNumber.trim() === '') {
         missingFields.push('사업자등록번호');
       }
-      if (!sellerUser.is_business_verified) {
+      // is_business_verified와 businessVerified 모두 체크
+      const isVerified = sellerUser.is_business_verified || sellerUser.businessVerified;
+      if (!isVerified) {
         missingFields.push('사업자등록번호 인증');
       }
       

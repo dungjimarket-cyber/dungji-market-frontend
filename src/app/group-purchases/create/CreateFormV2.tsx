@@ -738,6 +738,31 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       </FormItem>
                     )}
                   />
+                  
+                  {/* 요금제 알아보기 링크 */}
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-sm font-medium text-blue-900 mb-2">📱 통신사별 요금제 알아보기</p>
+                    <div className="flex flex-col gap-2">
+                      <a href="https://www.tworld.co.kr/web/product/plan/list" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        • SK : 요금제 확인하기 →
+                      </a>
+                      <a href="https://product.kt.com/wDic/index.do?CateCode=6002" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        • KT : 요금제 확인하기 →
+                      </a>
+                      <a href="https://www.lguplus.com/mobile/plan/mplan/plan-all" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        • LG U+ : 요금제 확인하기 →
+                      </a>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 {/* 인터넷 탭 콘텐츠 */}
@@ -838,6 +863,31 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       </FormItem>
                     )}
                   />
+                  
+                  {/* 인터넷 요금제 알아보기 링크 */}
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <p className="text-sm font-medium text-green-900 mb-2">🌐 통신사별 인터넷 요금제 알아보기</p>
+                    <div className="flex flex-col gap-2">
+                      <a href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-green-600 hover:text-green-800 hover:underline">
+                        • SK : 인터넷 요금제 확인하기 →
+                      </a>
+                      <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-green-600 hover:text-green-800 hover:underline">
+                        • KT : 인터넷 요금제 확인하기 →
+                      </a>
+                      <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-green-600 hover:text-green-800 hover:underline">
+                        • LG U+ : 인터넷 요금제 확인하기 →
+                      </a>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 {/* 인터넷+TV 탭 콘텐츠 */}
@@ -938,6 +988,31 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       </FormItem>
                     )}
                   />
+                  
+                  {/* 인터넷+TV 요금제 알아보기 링크 */}
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <p className="text-sm font-medium text-purple-900 mb-2">📺 통신사별 인터넷+TV 요금제 알아보기</p>
+                    <div className="flex flex-col gap-2">
+                      <a href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                        • SK : 인터넷+TV 요금제 확인하기 →
+                      </a>
+                      <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                        • KT : 인터넷+TV 요금제 확인하기 →
+                      </a>
+                      <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                        • LG U+ : 인터넷+TV 요금제 확인하기 →
+                      </a>
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
 
