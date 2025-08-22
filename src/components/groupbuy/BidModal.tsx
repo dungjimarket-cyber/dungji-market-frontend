@@ -107,10 +107,10 @@ export default function BidModal({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 사용자 프로필 새로 가져오기
+        // 판매자 프로필 새로 가져오기
         if (user?.role === 'seller') {
           const token = await tokenUtils.getAccessToken();
-          const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+          const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -166,23 +166,23 @@ export default function BidModal({
       const missingFields = [];
       const sellerUser = userProfile || user; // 새로 가져온 프로필 사용
       
-      // 필수 정보 체크 - 백엔드 필드명과 일치하도록 수정
+      // 필수 정보 체크 - 판매자 프로필 API 응답 필드명과 일치하도록 수정
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
         missingFields.push('닉네임 또는 상호명');
       }
-      if (!sellerUser.address_region) {
+      if (!sellerUser.addressRegion) {
         missingFields.push('사업장주소지/영업활동지역');
       }
-      if (!sellerUser.first_name) {
+      if (!sellerUser.representativeName || sellerUser.representativeName.trim() === '') {
         missingFields.push('사업자등록증상 대표자명');
       }
-      // business_reg_number 필드명 사용 (백엔드와 일치)
-      if (!sellerUser.business_reg_number && !sellerUser.business_number) {
+      // businessNumber 필드명 사용 (판매자 프로필 API 응답과 일치)
+      if (!sellerUser.businessNumber || sellerUser.businessNumber.trim() === '') {
         missingFields.push('사업자등록번호');
       }
       
       // 사업자등록번호 인증 여부 체크 (저장된 상태만 확인, 실시간 검증 X)
-      if ((sellerUser.business_reg_number || sellerUser.business_number) && !sellerUser.is_business_verified) {
+      if (sellerUser.businessNumber && !sellerUser.businessVerified) {
         missingFields.push('사업자등록번호 인증');
       }
       
