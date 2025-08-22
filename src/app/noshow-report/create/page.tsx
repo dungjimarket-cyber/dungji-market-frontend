@@ -26,6 +26,22 @@ function NoShowReportContent() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
   const [authChecked, setAuthChecked] = useState(false);
+  
+  // 버튼 비활성화 조건 디버깅
+  const isButtonDisabled = loading || 
+                          !content.trim() || 
+                          content.trim().length < 20 ||
+                          (user?.role === 'seller' && !selectedBuyerId);
+  
+  useEffect(() => {
+    console.log('노쇼 신고 제출 버튼 상태:');
+    console.log('- loading:', loading);
+    console.log('- content.trim():', content.trim());
+    console.log('- content.trim().length:', content.trim().length);
+    console.log('- user?.role:', user?.role);
+    console.log('- selectedBuyerId:', selectedBuyerId);
+    console.log('- isButtonDisabled:', isButtonDisabled);
+  }, [loading, content, user?.role, selectedBuyerId, isButtonDisabled]);
 
   useEffect(() => {
     // 인증 체크를 지연시켜 세션 복원 시간을 확보
@@ -469,18 +485,28 @@ function NoShowReportContent() {
                   취소
                 </Button>
               </Link>
-              <Button 
+              <button 
                 type="submit" 
-                disabled={
-                  loading || 
-                  !content.trim() || 
-                  content.trim().length < 20 ||
-                  (user?.role === 'seller' && !selectedBuyerId)
-                }
-                className="bg-orange-600 hover:bg-orange-700"
+                disabled={false}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ opacity: isButtonDisabled ? 0.5 : 1, pointerEvents: isButtonDisabled ? 'none' : 'auto' }}
+                onClick={(e) => {
+                  console.log('노쇼 신고 버튼 클릭됨');
+                  if (isButtonDisabled) {
+                    e.preventDefault();
+                    if (!content.trim()) {
+                      toast.error('신고 내용을 입력해주세요.');
+                    } else if (content.trim().length < 20) {
+                      toast.error('신고 내용은 20자 이상 작성해주세요.');
+                    } else if (user?.role === 'seller' && !selectedBuyerId) {
+                      toast.error('신고할 구매자를 선택해주세요.');
+                    }
+                    return;
+                  }
+                }}
               >
                 {loading ? '신고 접수 중...' : '노쇼 신고하기'}
-              </Button>
+              </button>
             </div>
           </form>
         </CardContent>
