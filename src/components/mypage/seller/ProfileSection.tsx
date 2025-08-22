@@ -101,9 +101,9 @@ export default function ProfileSection() {
                   </Badge>
                   <Badge 
                     variant="outline" 
-                    className={user.is_business_verified ? 'bg-green-50 text-green-700 border-green-300' : 'text-gray-500 border-gray-300'}
+                    className={sellerProfile?.businessVerified ? 'bg-green-50 text-green-700 border-green-300' : 'text-gray-500 border-gray-300'}
                   >
-                    {user.is_business_verified ? '✓ 사업자 인증 완료' : '사업자 인증 대기'}
+                    {sellerProfile?.businessVerified ? '✓ 사업자인증' : '사업자 미인증'}
                   </Badge>
                   {/* 비대면 판매 인증 뱃지 */}
                   {(sellerProfile?.remoteSalesVerified || sellerProfile?.remoteSalesStatus === 'approved') && (
