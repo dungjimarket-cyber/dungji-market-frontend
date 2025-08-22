@@ -153,7 +153,10 @@ function SignInForm() {
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span>카카오로 계속하기 (구매회원)</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">🛒</span>
+                <span className="font-semibold">구매자 전용 로그인</span>
+              </span>
             </button>
           </div>
 
@@ -161,42 +164,15 @@ function SignInForm() {
           <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
             <p className="text-sm text-gray-600 mb-2 text-center">판매회원으로 로그인</p>
             
-            {/* 추천인 코드 입력 섹션 */}
-            {!showSellerReferralInput ? (
-              <div className="mb-3">
-                <button
-                  onClick={() => setShowSellerReferralInput(true)}
-                  className="text-xs text-blue-600 hover:text-blue-700 underline"
-                >
-                  추천인 코드가 있으신가요?
-                </button>
-              </div>
-            ) : (
-              <div className="mb-3">
-                <label className="block text-xs text-gray-600 mb-1">추천인 코드 (선택)</label>
-                <input
-                  type="text"
-                  value={sellerReferralCode}
-                  onChange={(e) => setSellerReferralCode(e.target.value)}
-                  placeholder="추천인 코드 입력"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  추천인 코드 입력 시 입찰권 10매 추가 지급
-                </p>
-              </div>
-            )}
-            
             <button
               onClick={() => {
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
                 
-                // state에 role과 referral_code 정보 포함
+                // state에 role 정보 포함
                 const stateData = {
                   redirectUrl: callbackUrl,
-                  role: 'seller',
-                  referral_code: sellerReferralCode || ''
+                  role: 'seller'
                 };
                 const state = JSON.stringify(stateData);
                 
@@ -210,7 +186,10 @@ function SignInForm() {
               <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span>카카오로 계속하기 (판매회원)</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">💼</span>
+                <span className="font-semibold">판매자 전용 로그인</span>
+              </span>
             </button>
           </div>
         </div>
