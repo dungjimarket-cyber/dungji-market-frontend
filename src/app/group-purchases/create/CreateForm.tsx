@@ -1687,6 +1687,37 @@ const onSubmit = async (values: FormData) => {
                           </FormItem>
                         )}
                       />
+                      
+                      {/* 인터넷/인터넷+TV 통신사별 상품 알아보기 링크 */}
+                      <div className="col-span-2 p-3 bg-green-50 rounded-md border border-green-200">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">🌐 통신사별 상품 확인하기</h4>
+                        <div className="flex flex-wrap gap-2">
+                          <a
+                            href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                          >
+                            SK브로드밴드 →
+                          </a>
+                          <a
+                            href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                          >
+                            KT →
+                          </a>
+                          <a
+                            href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                          >
+                            LG U+ →
+                          </a>
+                        </div>
+                      </div>
                     </>
                   )}
 
@@ -1776,36 +1807,34 @@ const onSubmit = async (values: FormData) => {
                   )}
                 </div>
                 
-                {/* 통신사별 요금제 알아보기 링크 */}
+                {/* 휴대폰 카테고리 - 통신사별 요금제 알아보기 링크 */}
                 {(selectedProduct?.category?.detail_type === 'telecom' || !selectedProduct?.category?.detail_type) && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">통신사별 요금제 알아보기</h4>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">📱 통신사별 요금제 확인하기</h4>
                     <div className="flex flex-wrap gap-2">
                       <a
                         href="https://www.tworld.co.kr/web/product/plan/list"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
                         SK텔레콤 →
                       </a>
-                      <span className="text-gray-400">|</span>
                       <a
                         href="https://product.kt.com/wDic/index.do?CateCode=6002"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
                         KT →
                       </a>
-                      <span className="text-gray-400">|</span>
                       <a
                         href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        LG유플러스 →
+                        LG U+ →
                       </a>
                     </div>
                   </div>
