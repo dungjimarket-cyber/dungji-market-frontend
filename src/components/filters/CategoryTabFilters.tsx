@@ -130,6 +130,7 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
 
   // 카테고리 변경 중인지 추적하는 ref
   const categoryChangingRef = useRef(false);
+  const changeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * 카테고리 변경 처리
@@ -137,10 +138,21 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
   const handleCategoryChange = (category: MainCategory) => {
     console.log('카테고리 클릭:', category);
     
-    // 이미 선택된 카테고리이거나 변경 중인 경우 무시
-    if (selectedCategory === category || categoryChangingRef.current) {
-      console.log('이미 선택된 카테고리 또는 변경 중, 무시');
+    // 이미 선택된 카테고리인 경우 무시
+    if (selectedCategory === category) {
+      console.log('이미 선택된 카테고리, 무시');
       return;
+    }
+    
+    // 변경 중 플래그 확인
+    if (categoryChangingRef.current) {
+      console.log('카테고리 변경 중, 무시');
+      return;
+    }
+    
+    // 이전 타임아웃이 있으면 취소
+    if (changeTimeoutRef.current) {
+      clearTimeout(changeTimeoutRef.current);
     }
     
     // 변경 중 플래그 설정
@@ -157,10 +169,11 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
     onFiltersChange?.({ category });
     onCategoryChange?.(category);
     
-    // 변경 완료 후 플래그 해제
-    setTimeout(() => {
+    // 변경 완료 후 플래그 해제 (더 짧은 시간으로 조정)
+    changeTimeoutRef.current = setTimeout(() => {
       categoryChangingRef.current = false;
-    }, 300);
+      changeTimeoutRef.current = null;
+    }, 50);
   };
 
   // 디바운싱을 위한 ref
@@ -191,11 +204,15 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
     }, 300);
   }, [currentFilters, onFiltersChange]);
 
-  // 컴포넌트 언마운트 시 디바운싱 타이머 정리
+  // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
+      }
+      if (changeTimeoutRef.current) {
+        clearTimeout(changeTimeoutRef.current);
+        categoryChangingRef.current = false;
       }
     };
   }, []);
@@ -504,9 +521,9 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
                   ? `${category.color} bg-white border-2 font-semibold` 
                   : `hover:${category.bgColor} hover:border-current`
               }`}
-              onClick={() => !isSelected && !categoryChangingRef.current && handleCategoryChange(category.id)}
+              onClick={() => handleCategoryChange(category.id)}
               disabled={false} // 버튼은 항상 활성화 상태로 유지
-              style={{ cursor: isSelected || categoryChangingRef.current ? 'default' : 'pointer' }}
+              style={{ cursor: isSelected ? 'default' : 'pointer' }}
             >
               <Icon className="w-4 h-4" />
               {category.name}
