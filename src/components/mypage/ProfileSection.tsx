@@ -20,7 +20,7 @@ function getLoginProviderLabel(user: any) {
   if (type === 'google') return '구글';
   if (type === 'naver') return '네이버';
   if (type === 'apple') return '애플';
-  if (type === 'email') return '이메일';
+  if (type === 'email') return '아이디';
   if (!type) return '직접 가입';
   return type;
 }
