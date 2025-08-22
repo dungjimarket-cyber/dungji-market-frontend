@@ -25,17 +25,37 @@ function NoShowReportContent() {
   const [filePreview, setFilePreview] = useState<string>('');
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search));
-      return;
-    }
-
-    if (groupbuyId) {
-      fetchGroupbuyInfo();
-    }
-  }, [groupbuyId, isAuthenticated]);
+    // 인증 체크를 지연시켜 세션 복원 시간을 확보
+    const checkAuthAndFetch = async () => {
+      // 클라이언트 사이드에서만 실행
+      if (typeof window === 'undefined') return;
+      
+      // 1초 대기하여 인증 상태가 완전히 로드되도록 함
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 토큰 직접 체크
+      const token = accessToken || 
+                   localStorage.getItem('accessToken') || 
+                   sessionStorage.getItem('accessToken');
+      
+      if (!token) {
+        console.log('No token found, redirecting to login');
+        router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search));
+        return;
+      }
+      
+      setAuthChecked(true);
+      
+      if (groupbuyId) {
+        fetchGroupbuyInfo();
+      }
+    };
+    
+    checkAuthAndFetch();
+  }, [groupbuyId]);
 
   const fetchGroupbuyInfo = async () => {
     try {
@@ -259,6 +279,19 @@ function NoShowReportContent() {
     }
   };
 
+  // 인증 체크 중일 때 로딩 표시
+  if (!authChecked) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-gray-500">인증 확인 중...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
   if (!groupbuyId || !groupbuyInfo) {
     return (
       <div className="container mx-auto px-4 py-8">

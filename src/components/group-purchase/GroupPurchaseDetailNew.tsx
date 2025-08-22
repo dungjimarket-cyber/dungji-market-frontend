@@ -260,6 +260,23 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isFinalSelection = isBuyerFinalSelection || isSellerFinalSelection || isSellerConfirmation;
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
+  
+  // 노쇼 신고 버튼 표시 조건 디버깅
+  useEffect(() => {
+    console.log('노쇼 신고 버튼 표시 조건 체크:');
+    console.log('- groupBuyData.status:', groupBuyData.status);
+    console.log('- isInProgress:', isInProgress);
+    console.log('- isSellerFinalSelection:', isSellerFinalSelection);
+    console.log('- isSeller:', isSeller);
+    console.log('- isParticipant:', isParticipant);
+    console.log('- myParticipationFinalDecision:', myParticipationFinalDecision);
+    console.log('- myBidFinalDecision:', myBidFinalDecision);
+    console.log('구매자 노쇼 신고 버튼 표시 조건:');
+    console.log('  - !isSeller && isParticipant:', !isSeller && isParticipant);
+    console.log('  - (isInProgress || isSellerFinalSelection):', (isInProgress || isSellerFinalSelection));
+    console.log('  - myParticipationFinalDecision === "confirmed":', myParticipationFinalDecision === 'confirmed');
+    console.log('  => 최종 표시 여부:', !isSeller && isParticipant && (isInProgress || isSellerFinalSelection) && myParticipationFinalDecision === 'confirmed');
+  }, [groupBuyData.status, isInProgress, isSellerFinalSelection, isSeller, isParticipant, myParticipationFinalDecision, myBidFinalDecision]);
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
   const isInternetCategory = groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV';
   const isSupportBidType = isTelecom || isInternetCategory;
@@ -1926,7 +1943,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   판매자정보보기
                 </Button>
-                <Button
+                <button
+                  type="button"
                   onClick={() => {
                     console.log('Buyer no-show report button clicked');
                     console.log('groupBuy object:', groupBuy);
@@ -1948,12 +1966,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     console.log('Navigating to no-show report with ID:', groupBuyId);
                     router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
                   }}
-                  variant="outline"
-                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                  disabled={false}  // 강제로 활성화
+                  className="w-full py-3 text-red-600 border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer bg-white"
+                  style={{ opacity: 1, pointerEvents: 'auto' }}
                 >
                   노쇼신고
-                </Button>
+                </button>
               </>
             )}
 
@@ -2074,7 +2091,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   구매자정보보기
                 </Button>
-                <Button
+                <button
+                  type="button"
                   onClick={() => {
                     console.log('Seller no-show report button clicked');
                     console.log('groupBuy object:', groupBuy);
@@ -2096,12 +2114,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     console.log('Navigating to no-show report with ID:', groupBuyId);
                     router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
                   }}
-                  variant="outline"
-                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                  disabled={false}  // 강제로 활성화
+                  className="w-full py-3 text-red-600 border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer bg-white"
+                  style={{ opacity: 1, pointerEvents: 'auto' }}
                 >
                   노쇼신고하기
-                </Button>
+                </button>
               </>
             )}
 
