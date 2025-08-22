@@ -67,9 +67,10 @@ export async function GET(request: Request) {
     const name = profile.nickname || '';
     const profileImage = profile.profile_image_url || '';
     
-    // state로부터 role 정보 추출
+    // state로부터 role과 referral_code 정보 추출
     let userRole = 'buyer'; // 기본값
     let callbackUrl = '/'; // 기본값
+    let referralCode = ''; // 추천인 코드
     
     if (state) {
       try {
@@ -79,6 +80,9 @@ export async function GET(request: Request) {
           const stateData = JSON.parse(decodeURIComponent(state));
           if (stateData.role) {
             userRole = stateData.role;
+          }
+          if (stateData.referral_code) {
+            referralCode = stateData.referral_code;
           }
           if (stateData.redirectUrl) {
             callbackUrl = stateData.redirectUrl;
@@ -103,10 +107,11 @@ export async function GET(request: Request) {
       name,
       profileImage: profileImage ? '있음' : '없음',
       userRole, // role 정보 추가
+      referralCode, // 추천인 코드 추가
       callbackUrl
     });
     
-    // 백엔드에 필요한 형식으로 데이터 전송 (role 포함)
+    // 백엔드에 필요한 형식으로 데이터 전송 (role과 referral_code 포함)
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
       method: 'POST',
       headers: {
@@ -119,6 +124,7 @@ export async function GET(request: Request) {
         name: name,
         profile_image: profileImage,
         role: userRole, // role 정보 추가
+        referral_code: referralCode, // 추천인 코드 추가
       }),
     });
     

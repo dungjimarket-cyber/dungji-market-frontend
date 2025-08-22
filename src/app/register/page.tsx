@@ -1011,8 +1011,8 @@ function RegisterPageContent() {
                 <button
                   type="button"
                   onClick={() => {
-                    // role 정보를 포함한 카카오 로그인 시작
-                    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653'}&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao')}&response_type=code&state=${encodeURIComponent(JSON.stringify({ role: memberType, callbackUrl: '/register' }))}`;
+                    // role과 추천인 코드 정보를 포함한 카카오 로그인 시작
+                    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653'}&redirect_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao')}&response_type=code&state=${encodeURIComponent(JSON.stringify({ role: memberType, referral_code: formData.referral_code || '', callbackUrl: '/register' }))}`;
                     window.location.href = kakaoAuthUrl;
                   }}
                   className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#FEE500] hover:bg-[#FDD835] text-[#3C1E1E] font-medium rounded-lg transition-colors"
