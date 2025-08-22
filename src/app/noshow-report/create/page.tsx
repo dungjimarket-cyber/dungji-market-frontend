@@ -26,6 +26,8 @@ function NoShowReportContent() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
   const [authChecked, setAuthChecked] = useState(false);
+  const [existingReport, setExistingReport] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   // 버튼 비활성화 조건 디버깅
   const isButtonDisabled = loading || 
@@ -67,6 +69,7 @@ function NoShowReportContent() {
       
       if (groupbuyId) {
         fetchGroupbuyInfo();
+        checkExistingReport();
       }
     };
     
@@ -92,6 +95,37 @@ function NoShowReportContent() {
       }
     } catch (error) {
       console.error('공구 정보 조회 실패:', error);
+    }
+  };
+
+  // 기존 노쇼 신고 확인
+  const checkExistingReport = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/?groupbuy_id=${groupbuyId}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const reports = Array.isArray(data) ? data : (data.results || []);
+        
+        // 현재 사용자가 신고한 내역 찾기
+        const myReport = reports.find((report: any) => 
+          report.reporter?.id === user?.id || 
+          report.reporter === user?.id
+        );
+        
+        if (myReport) {
+          console.log('기존 노쇼 신고 발견:', myReport);
+          setExistingReport(myReport);
+          setContent(myReport.content || '');
+          setIsEditMode(true);
+        }
+      }
+    } catch (error) {
+      console.error('기존 노쇼 신고 확인 실패:', error);
     }
   };
 
@@ -164,6 +198,37 @@ function NoShowReportContent() {
     setFilePreview('');
   };
 
+  const handleDelete = async () => {
+    if (!existingReport) return;
+    
+    if (!confirm('정말로 노쇼 신고를 취소하시겠습니까?')) {
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/${existingReport.id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      if (response.ok) {
+        toast.success('노쇼 신고가 취소되었습니다.');
+        router.push('/mypage');
+      } else {
+        toast.error('신고 취소에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('노쇼 신고 삭제 오류:', error);
+      toast.error('신고 취소 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('handleSubmit 시작');
@@ -171,6 +236,8 @@ function NoShowReportContent() {
     console.log('Content length:', content.trim().length);
     console.log('User role:', user?.role);
     console.log('GroupBuy ID:', groupbuyId);
+    console.log('Edit mode:', isEditMode);
+    console.log('Existing report:', existingReport);
     
     if (!content.trim()) {
       toast.error('신고 내용을 입력해주세요.');
@@ -259,13 +326,19 @@ function NoShowReportContent() {
         has_file: !!evidenceFile
       });
 
-      // 노쇼 신고 제출
-      console.log('Submitting no-show report...');
-      console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`);
+      // 노쇼 신고 제출 또는 수정
+      const url = isEditMode && existingReport 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/${existingReport.id}/`
+        : `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`;
+      
+      const method = isEditMode ? 'PATCH' : 'POST';
+      
+      console.log(`${method} no-show report...`);
+      console.log('API URL:', url);
       console.log('Access token exists:', !!accessToken);
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'X-Requested-With': 'XMLHttpRequest'
@@ -277,14 +350,14 @@ function NoShowReportContent() {
       console.log('Response status:', response.status);
 
       if (response.ok) {
-        toast.success('노쇼 신고가 접수되었습니다. 신고된 공구는 취소 처리됩니다.');
+        toast.success(isEditMode ? '노쇼 신고가 수정되었습니다.' : '노쇼 신고가 접수되었습니다.');
         // 판매자인 경우 판매자 마이페이지로, 구매자인 경우 일반 마이페이지로
         if (user?.role === 'seller') {
           router.push('/mypage/seller');
         } else {
           router.push('/mypage');
         }
-      } else {
+      } else if (response.status === 400) {
         let errorMessage = '신고 접수에 실패했습니다.';
         try {
           const errorData = await response.json();
@@ -301,6 +374,13 @@ function NoShowReportContent() {
             errorMessage = Array.isArray(errorData.evidence_image) ? errorData.evidence_image.join(', ') : errorData.evidence_image;
           } else if (errorData.reported_user) {
             errorMessage = Array.isArray(errorData.reported_user) ? errorData.reported_user.join(', ') : errorData.reported_user;
+          } else if (errorData.non_field_errors) {
+            errorMessage = Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors.join(', ') : errorData.non_field_errors;
+          }
+          
+          // 중복 신고 에러 체크
+          if (errorMessage.includes('unique') || errorMessage.includes('duplicate') || errorMessage.includes('이미')) {
+            errorMessage = '이미 해당 공구에 대한 노쇼 신고를 하셨습니다.';
           }
         } catch (parseError) {
           console.error('응답 파싱 오류:', parseError);
@@ -308,6 +388,8 @@ function NoShowReportContent() {
         }
         
         toast.error(errorMessage);
+      } else {
+        toast.error(`신고 ${isEditMode ? '수정' : '접수'}에 실패했습니다.`);
       }
     } catch (error) {
       console.error('노쇼 신고 오류 (catch block):', error);
@@ -364,11 +446,23 @@ function NoShowReportContent() {
       
       <Card>
         <CardHeader>
-          <CardTitle>노쇼 신고하기</CardTitle>
+          <CardTitle>
+            {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
+          </CardTitle>
           {groupbuyInfo && (
             <p className="text-sm text-gray-600 mt-2">
               공구: {groupbuyInfo.title}
             </p>
+          )}
+          {isEditMode && existingReport && (
+            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800 font-medium">
+                ⚠️ 이미 신고한 내역이 있습니다.
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                신고 날짜: {new Date(existingReport.created_at).toLocaleDateString()}
+              </p>
+            </div>
           )}
         </CardHeader>
         <CardContent>
@@ -508,6 +602,16 @@ function NoShowReportContent() {
                   취소
                 </Button>
               </Link>
+              {isEditMode && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={loading}
+                >
+                  신고 취소
+                </Button>
+              )}
               <button 
                 type="submit" 
                 disabled={false}
@@ -528,7 +632,11 @@ function NoShowReportContent() {
                   }
                 }}
               >
-                {loading ? '신고 접수 중...' : '노쇼 신고하기'}
+                {loading ? (
+                  isEditMode ? '수정 중...' : '신고 접수 중...'
+                ) : (
+                  isEditMode ? '신고 내용 수정' : '노쇼 신고하기'
+                )}
               </button>
             </div>
           </form>
