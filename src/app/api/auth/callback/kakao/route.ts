@@ -160,8 +160,8 @@ export async function GET(request: Request) {
         sameSite: 'lax',
       });
       
-      // 회원가입 페이지로 리다이렉트
-      return NextResponse.redirect(new URL('/register?from=kakao', request.url));
+      // 회원가입 페이지로 리다이렉트 (memberType 포함)
+      return NextResponse.redirect(new URL(`/register?from=kakao&memberType=${userRole}`, request.url));
     }
     
     // JWT 토큰 저장 (기존 회원인 경우)
