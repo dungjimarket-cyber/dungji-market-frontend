@@ -13,6 +13,7 @@ export interface BusinessVerificationRegistrationResult {
   status?: 'valid' | 'invalid' | 'error';
   message: string;
   error?: string;
+  is_duplicate?: boolean;  // 중복 여부 추가
   business_info?: {
     business_name?: string;
     representative_name?: string;

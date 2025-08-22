@@ -31,7 +31,7 @@ export default function SellerSettings() {
     nickname: '',
     phone: '',
     email: '',
-    representativeName: '',
+    representativeName: '', // 대표자명 필드
     addressProvince: '',
     addressCity: '',
     businessNumber1: '',
@@ -108,7 +108,6 @@ export default function SellerSettings() {
         let businessNum1 = '';
         let businessNum2 = '';
         let businessNum3 = '';
-        let isVerified = false;
         
         if (data.businessNumber) {
           const cleanBusinessNum = data.businessNumber.replace(/-/g, '');
@@ -116,8 +115,6 @@ export default function SellerSettings() {
             businessNum1 = cleanBusinessNum.slice(0, 3);
             businessNum2 = cleanBusinessNum.slice(3, 5);
             businessNum3 = cleanBusinessNum.slice(5, 10);
-            // 사업자등록번호가 있고 10자리가 완성되어 있으면 인증된 것으로 간주
-            isVerified = true;
           } else {
             const businessNumParts = data.businessNumber.split('-');
             businessNum1 = businessNumParts[0] || '';
@@ -126,13 +123,14 @@ export default function SellerSettings() {
           }
         }
         
-        setIsBusinessNumberVerified(isVerified);
+        // 백엔드에서 받은 인증 상태 사용
+        setIsBusinessNumberVerified(data.businessVerified || false);
         
         setFormData({
           nickname: data.nickname || '',
           phone: formattedPhone,
           email: data.email || '',
-          representativeName: data.representativeName || '',
+          representativeName: data.representativeName || '', // 대표자명 설정
           addressProvince: '',
           addressCity: '',
           businessNumber1: businessNum1,
@@ -303,7 +301,7 @@ export default function SellerSettings() {
     
     try {
       const token = await tokenUtils.getAccessToken();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/validate-business-number/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/business/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -372,6 +370,7 @@ export default function SellerSettings() {
       const updateData: any = {
         nickname: formData.nickname,
         business_number: businessNumber,
+        representative_name: formData.representativeName, // 대표자명 추가
         is_remote_sales: formData.isRemoteSales
       };
       
@@ -380,10 +379,6 @@ export default function SellerSettings() {
         updateData.email = formData.email;
       }
       
-      // 대표자명 추가
-      if (formData.representativeName) {
-        updateData.representative_name = formData.representativeName;
-      }
       
       // 전화번호가 변경된 경우에만 포함 (기존 전화번호와 비교)
       const originalPhone = profile?.phone?.replace(/-/g, '');
@@ -733,6 +728,7 @@ export default function SellerSettings() {
                     <p className="text-xs text-gray-400">*사업자등록번호를 변경하시려면, 고객센터를 통해 문의 부탁드립니다.</p>
                   )}
                 </div>
+
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

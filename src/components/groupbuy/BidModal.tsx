@@ -21,6 +21,7 @@ import { formatNumberWithCommas } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { tokenUtils } from '@/lib/tokenUtils';
 
 interface BidModalProps {
   isOpen: boolean;
@@ -60,6 +61,7 @@ export default function BidModal({
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   // 휴대폰 카테고리(category_id=1 또는 category_name='휴대폰')는 지원금 입찰을 디폴트로, 그 외는 가격 입찰을 디폴트로 설정
   const isTelecom = productCategory === '휴대폰' || productCategory === '1';
   const defaultBidType = isTelecom ? 'support' : 'price';
@@ -105,6 +107,20 @@ export default function BidModal({
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 사용자 프로필 새로 가져오기
+        if (user?.role === 'seller') {
+          const token = await tokenUtils.getAccessToken();
+          const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            setUserProfile(profileData);
+          }
+        }
+        
         // 판매자의 입찰 목록 조회
         const bids = await getSellerBids();
         // 현재 공구에 대한 대기 중인 입찰이 있는지 확인
@@ -148,27 +164,23 @@ export default function BidModal({
     // 판매회원 필수 정보 완성도 체크
     if (user?.role === 'seller') {
       const missingFields = [];
-      const sellerUser = user as any; // 임시 타입 캐스팅
+      const sellerUser = userProfile || user; // 새로 가져온 프로필 사용
       
-      // 필수 정보 체크
+      // 필수 정보 체크 - 백엔드 필드명과 일치하도록 수정
       if (!sellerUser.nickname || sellerUser.nickname.trim() === '') {
         missingFields.push('닉네임 또는 상호명');
       }
       if (!sellerUser.address_region) {
         missingFields.push('사업장주소지/영업활동지역');
       }
-      if (!sellerUser.user_type) {
-        missingFields.push('판매회원구분');
-      }
       if (!sellerUser.first_name) {
         missingFields.push('사업자등록증상 대표자명');
       }
-      if (!sellerUser.business_number) {
+      // business_reg_number 필드명 사용 (백엔드와 일치)
+      if (!sellerUser.business_reg_number && !sellerUser.business_number) {
         missingFields.push('사업자등록번호');
       }
-      if (!sellerUser.is_business_verified) {
-        missingFields.push('사업자등록번호 인증');
-      }
+      // 사업자 유효성 검사는 제거 - 필수 값만 체크
       
       if (missingFields.length > 0) {
         toast({
@@ -183,18 +195,17 @@ export default function BidModal({
       }
     }
     
-    // 기존 입찰이 없는 경우에만 견적티켓 확인
-    if (!existingBid) {
-      // 견적티켓/구독권이 없는 경우 견적티켓 구매 페이지로 이동
-      if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
-        toast({
-          title: '견적티켓이 필요합니다',
-          description: '견적을 제안하시려면 견적티켓을 구매해주세요.',
-          variant: 'default'
-        });
-        router.push('/mypage/seller/bid-tokens');
-        return;
-      }
+    // 견적 수정/제안 시 항상 견적티켓 확인 (기획 요구사항에 따라 변경)
+    if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
+      toast({
+        title: '견적티켓이 필요합니다',
+        description: existingBid 
+          ? '견적을 수정하시려면 견적티켓을 구매해주세요.' 
+          : '견적을 제안하시려면 견적티켓을 구매해주세요.',
+        variant: 'default'
+      });
+      router.push('/mypage/seller/bid-tokens');
+      return;
     }
     
     // 입찰 확인 팝업 표시
@@ -349,7 +360,11 @@ export default function BidModal({
           {existingBid && (
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
               <p className="text-amber-800 text-sm font-medium">
-                이미 이 공구에 견적을 제안하셨습니다. 새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
+                ✅ 이미 이 공구에 견적을 제안하셨습니다. 
+                <br />
+                📝 견적 수정 시에도 견적티켓 1개가 소모됩니다.
+                <br />
+                새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
               </p>
               <Button 
                 variant="destructive" 
@@ -546,7 +561,9 @@ export default function BidModal({
           {/* 확인 메시지 */}
           <div className="text-sm text-gray-700">
             {existingBid
-              ? '"견적을 수정하시겠습니까?"'
+              ? bidTokenInfo?.unlimited_subscription
+                ? '"견적을 수정하시겠습니까?"'
+                : '"견적티켓 1개가 소모됩니다. 견적을 수정하시겠습니까?"'
               : bidTokenInfo?.unlimited_subscription
                 ? '"견적을 제안하시겠습니까?"'
                 : '"견적티켓 1개가 소모됩니다. 견적을 제안하시겠습니까?"'
@@ -585,7 +602,14 @@ export default function BidModal({
             {bidTokenInfo?.unlimited_subscription ? (
               <span>무제한 구독권 이용중</span>
             ) : (
-              <span>남은 견적티켓 갯수 {bidTokenInfo?.single_tokens || 0}개</span>
+              <span>
+                남은 견적티켓 갯수 {bidTokenInfo?.single_tokens || 0}개
+                {existingBid && (
+                  <span className="text-orange-600 block">
+                    (수정 후 {Math.max(0, (bidTokenInfo?.single_tokens || 0) - 1)}개)
+                  </span>
+                )}
+              </span>
             )}
           </div>
           

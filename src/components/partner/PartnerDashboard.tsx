@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import PartnerStatistics from './PartnerStatistics';
 
 interface DashboardCardProps {
   title: string;
@@ -200,6 +201,9 @@ export default function PartnerDashboard() {
           </CardHeader>
         </Card>
       </div>
+
+      {/* Statistics */}
+      <PartnerStatistics />
 
       {/* Recent Activity */}
       <Card>

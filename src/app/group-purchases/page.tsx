@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { MainHeader } from '@/components/navigation/MainHeader';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
 import { CategoryTabFilters } from '@/components/filters/CategoryTabFilters';
+import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
 import { UnifiedSearchBar } from '@/components/filters/UnifiedSearchBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -69,6 +70,7 @@ function GroupPurchasesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<'phone' | 'internet' | 'internet_tv'>('phone');
 
   /**
    * 공구 목록 가져오기 (필터 포함)
@@ -242,6 +244,7 @@ function GroupPurchasesPageContent() {
   const handleCategoryChange = (category: string) => {
     // 카테고리 변경 시 기존 필터들을 초기화하고 해당 카테고리의 공구만 로드
     const categoryFilters = { category };
+    setSelectedCategory(category as 'phone' | 'internet' | 'internet_tv');
     fetchGroupBuys(categoryFilters, activeTab);
   };
 
@@ -411,11 +414,28 @@ function GroupPurchasesPageContent() {
             <UnifiedSearchBar onSearchChange={handleSearchChange} />
           </div>
 
-          {/* 필터 컴포넌트 */}
+          {/* 카테고리 탭 */}
           <div className="px-4 py-4">
             <CategoryTabFilters 
               onFiltersChange={handleFiltersChange}
               onCategoryChange={handleCategoryChange}
+            />
+          </div>
+
+          {/* 필터 컴포넌트 - 이미지와 같은 스타일 */}
+          <div className="px-4 pb-4">
+            <GroupBuyFilters 
+              category={selectedCategory}
+              onFiltersChange={(filters) => {
+                // 필터 변경 처리
+                const flatFilters: Record<string, string> = {};
+                Object.entries(filters).forEach(([key, values]) => {
+                  if (values.length > 0) {
+                    flatFilters[key] = values.join(',');
+                  }
+                });
+                handleFiltersChange(flatFilters);
+              }}
             />
           </div>
 

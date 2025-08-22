@@ -27,35 +27,43 @@ function getSellerCategoryLabel(category?: string) {
 }
 
 interface SellerDetail {
-  seller: {
-    id: string;
-    username: string;
-    nickname: string;
-    email: string;
-    phone_number: string;
-    seller_category?: string;
-    is_business_verified: boolean;
-    business_reg_number: string;
-    date_joined: string;
-  };
-  tokens: {
+  // 기본 정보는 최상위 레벨에 있음
+  id: string;
+  username: string;
+  actual_username: string;
+  nickname: string;
+  email: string;
+  phone_number?: string;
+  seller_category?: string;
+  is_business_verified: boolean;
+  business_reg_number: string;
+  date_joined: string;
+  role: string;
+  is_active: boolean;
+  business_license_image?: string | null;
+  active_tokens_count: number;
+  
+  // 토큰 정보
+  tokens?: {
     single_tokens_count: number;
     has_subscription: boolean;
     subscription_expires_at: string | null;
   };
-  usage_history: Array<{
+  
+  // 이력 정보들
+  usage_history?: Array<{
     id: string;
     used_at: string;
     bid_id: string | null;
   }>;
-  purchase_history: Array<{
+  purchase_history?: Array<{
     id: string;
     token_type: string;
     quantity: number;
     total_price: number;
     payment_date: string;
   }>;
-  adjustment_logs: Array<{
+  adjustment_logs?: Array<{
     id: string;
     adjustment_type: string;
     quantity: number;
@@ -92,7 +100,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/seller_detail/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/sellers/${sellerId}/`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -131,7 +139,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/adjust_bid_tokens/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/adjust/`,
         {
           method: 'POST',
           headers: {
@@ -139,8 +147,9 @@ export default function SellerDetailPage() {
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            adjustment_type: adjustmentType,
-            quantity: adjustmentQuantity,
+            seller_id: sellerId,
+            action: adjustmentType,
+            amount: adjustmentQuantity,
             reason: adjustmentReason,
           }),
         }
@@ -187,7 +196,7 @@ export default function SellerDetailPage() {
     try {
       const token = localStorage.getItem('dungji_auth_token');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/grant_subscription/${sellerId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/bid-tokens/grant-subscription/`,
         {
           method: 'POST',
           headers: {
@@ -195,7 +204,8 @@ export default function SellerDetailPage() {
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            duration_days: subscriptionDays,
+            seller_id: sellerId,
+            days: subscriptionDays,
             reason: subscriptionReason,
           }),
         }
@@ -266,45 +276,45 @@ export default function SellerDetailPage() {
         <CardHeader>
           <CardTitle>회원 정보</CardTitle>
           <CardDescription>
-            {sellerDetail.seller.nickname || sellerDetail.seller.username}
+            {sellerDetail.nickname || sellerDetail.username}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">회원 ID</p>
-              <p className="font-medium">{sellerDetail.seller.id}</p>
+              <p className="font-medium">{sellerDetail.id}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">아이디</p>
-              <p className="font-medium">{sellerDetail.seller.username}</p>
+              <p className="font-medium">{sellerDetail.username}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">이메일</p>
-              <p className="font-medium">{sellerDetail.seller.email}</p>
+              <p className="font-medium">{sellerDetail.email}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">전화번호</p>
-              <p className="font-medium">{sellerDetail.seller.phone_number || '-'}</p>
+              <p className="font-medium">{sellerDetail.phone_number || '-'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">판매회원 구분</p>
-              <p className="font-medium">{getSellerCategoryLabel(sellerDetail.seller.seller_category)}</p>
+              <p className="font-medium">{getSellerCategoryLabel(sellerDetail.seller_category)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">사업자번호</p>
-              <p className="font-medium">{sellerDetail.seller.business_reg_number || '-'}</p>
+              <p className="font-medium">{sellerDetail.business_reg_number || '-'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">사업자 인증</p>
               <p className="font-medium">
-                {sellerDetail.seller.is_business_verified ? '인증완료' : '미인증'}
+                {sellerDetail.is_business_verified ? '인증완료' : '미인증'}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">가입일</p>
               <p className="font-medium">
-                {new Date(sellerDetail.seller.date_joined).toLocaleDateString()}
+                {sellerDetail.date_joined ? new Date(sellerDetail.date_joined).toLocaleDateString() : '-'}
               </p>
             </div>
           </div>
@@ -323,7 +333,7 @@ export default function SellerDetailPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">견적티켓 보유수</p>
-                  <p className="text-2xl font-bold">{sellerDetail.tokens.single_tokens_count}개</p>
+                  <p className="text-2xl font-bold">{sellerDetail.tokens?.single_tokens_count || 0}개</p>
                 </div>
                 <Button onClick={() => setShowAdjustDialog(true)}>
                   <CreditCard className="mr-2 h-4 w-4" />
@@ -334,10 +344,10 @@ export default function SellerDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">구독권 상태</p>
                   <p className="text-lg font-medium">
-                    {sellerDetail.tokens.has_subscription ? (
+                    {sellerDetail.tokens?.has_subscription ? (
                       <>
                         활성 (만료:{' '}
-                        {new Date(sellerDetail.tokens.subscription_expires_at!).toLocaleDateString()})
+                        {sellerDetail.tokens?.subscription_expires_at ? new Date(sellerDetail.tokens.subscription_expires_at).toLocaleDateString() : '-'})
                       </>
                     ) : (
                       '없음'
@@ -420,7 +430,7 @@ export default function SellerDetailPage() {
               <CardDescription>최근 20건의 사용 내역</CardDescription>
             </CardHeader>
             <CardContent>
-              {sellerDetail.usage_history.length > 0 ? (
+              {sellerDetail.usage_history && sellerDetail.usage_history.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
@@ -431,7 +441,7 @@ export default function SellerDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {sellerDetail.usage_history.map((usage) => (
+                      {sellerDetail.usage_history?.map((usage) => (
                         <tr key={usage.id} className="border-b">
                           <td className="py-2">{usage.id}</td>
                           <td className="py-2">
@@ -459,7 +469,7 @@ export default function SellerDetailPage() {
               <CardDescription>최근 20건의 구매 내역</CardDescription>
             </CardHeader>
             <CardContent>
-              {sellerDetail.purchase_history.length > 0 ? (
+              {sellerDetail.purchase_history && sellerDetail.purchase_history.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
@@ -472,7 +482,7 @@ export default function SellerDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {sellerDetail.purchase_history.map((purchase) => (
+                      {sellerDetail.purchase_history?.map((purchase) => (
                         <tr key={purchase.id} className="border-b">
                           <td className="py-2">{purchase.id}</td>
                           <td className="py-2">
@@ -504,7 +514,7 @@ export default function SellerDetailPage() {
               <CardDescription>관리자에 의한 조정 내역</CardDescription>
             </CardHeader>
             <CardContent>
-              {sellerDetail.adjustment_logs.length > 0 ? (
+              {sellerDetail.adjustment_logs && sellerDetail.adjustment_logs.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
@@ -517,7 +527,7 @@ export default function SellerDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {sellerDetail.adjustment_logs.map((log) => (
+                      {sellerDetail.adjustment_logs?.map((log) => (
                         <tr key={log.id} className="border-b">
                           <td className="py-2">
                             {new Date(log.created_at).toLocaleString()}
@@ -555,7 +565,7 @@ export default function SellerDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>견적티켓 조정</AlertDialogTitle>
             <AlertDialogDescription>
-              {sellerDetail.seller.nickname || sellerDetail.seller.username}님의 견적티켓을
+              {sellerDetail.nickname || sellerDetail.username}님의 견적티켓을
               조정합니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -629,7 +639,7 @@ export default function SellerDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>구독권 부여</AlertDialogTitle>
             <AlertDialogDescription>
-              {sellerDetail.seller.nickname || sellerDetail.seller.username}님에게 구독권을
+              {sellerDetail.nickname || sellerDetail.username}님에게 구독권을
               부여합니다.
             </AlertDialogDescription>
           </AlertDialogHeader>

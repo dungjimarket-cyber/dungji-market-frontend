@@ -125,6 +125,41 @@ export default function PartnerLogin() {
               </Button>
             </form>
 
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-2 text-gray-500">또는</span>
+              </div>
+            </div>
+
+            {/* Kakao Login */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full bg-yellow-300 hover:bg-yellow-400 border-yellow-300 text-yellow-900"
+              disabled={isLoading}
+              onClick={() => {
+                // Kakao OAuth URL with partner role
+                const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID;
+                const redirectUri = `${window.location.origin}/api/auth/callback/kakao`;
+                const state = encodeURIComponent(JSON.stringify({ 
+                  role: 'partner', 
+                  callbackUrl: '/partner-dashboard' 
+                }));
+                
+                const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${redirectUri}&response_type=code&state=${state}`;
+                window.location.href = kakaoAuthUrl;
+              }}
+            >
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3c5.799 0 10.5 3.664 10.5 8.199 0 4.535-4.701 8.199-10.5 8.199a13.124 13.124 0 01-3.188-.396l-3.637 2.351c-.239.154-.543.047-.543-.239V18.33c-1.988-1.499-3.132-3.662-3.132-6.131C1.5 6.664 6.201 3 12 3z"/>
+              </svg>
+              카카오로 로그인
+            </Button>
+
             <div className="mt-6 text-center text-sm text-gray-600">
               <p>파트너 계정이 필요하신가요?</p>
               <p className="mt-1">

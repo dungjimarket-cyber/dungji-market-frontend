@@ -67,15 +67,46 @@ export async function GET(request: Request) {
     const name = profile.nickname || '';
     const profileImage = profile.profile_image_url || '';
     
+    // state로부터 role 정보 추출
+    let userRole = 'buyer'; // 기본값
+    let callbackUrl = '/'; // 기본값
+    
+    if (state) {
+      try {
+        // state가 JSON 문자열인지 확인
+        if (state.startsWith('{')) {
+          // JSON 형식인 경우
+          const stateData = JSON.parse(decodeURIComponent(state));
+          if (stateData.role) {
+            userRole = stateData.role;
+          }
+          if (stateData.redirectUrl) {
+            callbackUrl = stateData.redirectUrl;
+          } else if (stateData.callbackUrl) {
+            callbackUrl = stateData.callbackUrl;
+          }
+        } else {
+          // 이전 버전 호환성 - state가 단순 URL인 경우
+          callbackUrl = decodeURIComponent(state);
+        }
+      } catch (e) {
+        console.error('state 파싱 오류:', e, 'state:', state);
+        // 파싱 실패 시 state를 그대로 callbackUrl로 사용
+        callbackUrl = decodeURIComponent(state);
+      }
+    }
+    
     console.log('카카오 정보 처리:', {
       kakaoId,
       email,
       emailProvided: kakaoAccount.email ? '제공됨' : '자동생성',
       name,
-      profileImage: profileImage ? '있음' : '없음'
+      profileImage: profileImage ? '있음' : '없음',
+      userRole, // role 정보 추가
+      callbackUrl
     });
     
-    // 백엔드에 필요한 형식으로 데이터 전송
+    // 백엔드에 필요한 형식으로 데이터 전송 (role 포함)
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
       method: 'POST',
       headers: {
@@ -87,6 +118,7 @@ export async function GET(request: Request) {
         email: email,
         name: name,
         profile_image: profileImage,
+        role: userRole, // role 정보 추가
       }),
     });
     
@@ -107,7 +139,32 @@ export async function GET(request: Request) {
     const data = await response.json();
     console.log('토큰 요청 성공:', data);
     
-    // JWT 토큰 저장 (localStorage는 클라이언트에서만 가능하므로 쿠키로 전달)
+    // 신규 사용자이면서 회원가입이 필요한 경우
+    if (data.requires_registration) {
+      console.log('신규 사용자 - 회원가입 페이지로 리다이렉트');
+      
+      // 카카오 정보를 세션 스토리지에 저장 (회원가입 페이지에서 사용)
+      const kakaoInfo = {
+        sns_id: data.sns_id,
+        sns_type: data.sns_type,
+        email: data.email,
+        name: data.name,
+        profile_image: data.profile_image
+      };
+      
+      // 쿠키에 임시로 저장 (클라이언트에서 읽을 수 있도록)
+      const cookieStore = await cookies();
+      cookieStore.set('kakao_temp_info', JSON.stringify(kakaoInfo), {
+        maxAge: 60 * 10, // 10분
+        path: '/',
+        sameSite: 'lax',
+      });
+      
+      // 회원가입 페이지로 리다이렉트
+      return NextResponse.redirect(new URL('/register?from=kakao', request.url));
+    }
+    
+    // JWT 토큰 저장 (기존 회원인 경우)
     if (data.jwt?.access) {
       try {
         console.log('✅ JWT 토큰 추출 성공:', { 
@@ -118,26 +175,43 @@ export async function GET(request: Request) {
         // Next.js 14부터는 cookies()를 사용할 때도 await 필요
         const cookieStore = await cookies();
         
-        // 접근 토큰 저장
-        cookieStore.set('accessToken', data.jwt.access, { 
-          maxAge: 60 * 60 * 24, // 1일
-          path: '/',
-          sameSite: 'lax',
-        });
-        
-        // 추가 호환성을 위한 토큰 저장
-        cookieStore.set('dungji_auth_token', data.jwt.access, {
-          maxAge: 60 * 60 * 24,
-          path: '/',
-          sameSite: 'lax',
-        });
-        
-        if (data.jwt.refresh) {
-          cookieStore.set('refreshToken', data.jwt.refresh, {
-            maxAge: 60 * 60 * 24 * 7, // 7일
+        // 파트너 로그인인 경우 파트너 토큰으로 저장
+        if (userRole === 'partner') {
+          cookieStore.set('partner_token', data.jwt.access, { 
+            maxAge: 60 * 60 * 24, // 1일
             path: '/',
             sameSite: 'lax',
           });
+          
+          if (data.jwt.refresh) {
+            cookieStore.set('partner_refresh_token', data.jwt.refresh, {
+              maxAge: 60 * 60 * 24 * 7, // 7일
+              path: '/',
+              sameSite: 'lax',
+            });
+          }
+        } else {
+          // 일반 사용자 토큰 저장
+          cookieStore.set('accessToken', data.jwt.access, { 
+            maxAge: 60 * 60 * 24, // 1일
+            path: '/',
+            sameSite: 'lax',
+          });
+          
+          // 추가 호환성을 위한 토큰 저장
+          cookieStore.set('dungji_auth_token', data.jwt.access, {
+            maxAge: 60 * 60 * 24,
+            path: '/',
+            sameSite: 'lax',
+          });
+          
+          if (data.jwt.refresh) {
+            cookieStore.set('refreshToken', data.jwt.refresh, {
+              maxAge: 60 * 60 * 24 * 7, // 7일
+              path: '/',
+              sameSite: 'lax',
+            });
+          }
         }
       } catch (cookieError) {
         console.error('❌ 쿠키 설정 오류:', cookieError);
@@ -145,24 +219,8 @@ export async function GET(request: Request) {
       }
     }
     
-    // 상태 파라미터로부터 리다이렉트 URL 결정
-    // 기본값은 홈페이지
-    let redirectUrl = '/';
-    
-    if (state) {
-      try {
-        // state는 원래 요청된 콜백 URL
-        const decodedState = decodeURIComponent(state);
-        // 여기서는 /auth/social-callback?callbackUrl=/XXX 형식으로 온다고 가정
-        const callbackUrl = new URL(decodedState);
-        const finalCallbackUrl = callbackUrl.searchParams.get('callbackUrl');
-        if (finalCallbackUrl) {
-          redirectUrl = finalCallbackUrl;
-        }
-      } catch (e) {
-        console.error('리다이렉트 URL 파싱 오류:', e);
-      }
-    }
+    // 리다이렉트 URL은 이미 state에서 추출됨
+    let redirectUrl = callbackUrl;
     
     console.log('최종 리다이렉트 URL:', redirectUrl);
     return NextResponse.redirect(new URL(redirectUrl, request.url));

@@ -59,19 +59,15 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
     try {
       setLoading(provider);
       
-      // Django 백엔드의 소셜 로그인 URL로 리디렉션
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-      
-      // 클라이언트가 제어하는 리디렉트 URI 생성 (가동환경에 맞게 자동 설정)
-      const callbackPath = '/api/auth/callback/kakao';
+      // 카카오 OAuth 직접 호출 (Django 백엔드를 거치지 않음)
+      const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
       
       // 카카오 개발자 콘솔에 등록된 정확한 리디렉트 URI 사용
-      // 중요: 개발자 콘솔에 등록된 URI와 정확히 일치해야 함
       const currentHost = window.location.origin;
       let redirectUri;
       
       if (process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI) {
-        // 환경 변수에 설정된 URI 우선 사용 (recommended for consistency)
+        // 환경 변수에 설정된 URI 우선 사용
         redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
         console.log('환경변수에서 카카오 리디렉트 URI 사용:', redirectUri);
       } else if (currentHost.includes('dungjimarket.com')) {
@@ -84,28 +80,24 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
         console.log('개발 환경 리디렉트 URI 사용:', redirectUri);
       }
       
-      // 소셜 로그인 URL 구성 (백엔드의 새 엔드포인트에 맞게 수정)
-      const callbackParams = new URLSearchParams({
-        callbackUrl: redirectUrl
-      });
+      // state에 콜백 URL과 memberType(role) 정보를 JSON으로 저장
+      const stateData = {
+        redirectUrl: redirectUrl,
+        role: memberType || 'buyer' // memberType이 없으면 기본값 buyer
+      };
+      const state = JSON.stringify(stateData);
       
-      // memberType이 있으면 추가
-      if (memberType) {
-        callbackParams.set('memberType', memberType);
-      }
-      
-      const socialLoginUrl = `${backendUrl}/auth/social/${provider}/?next=${encodeURIComponent(window.location.origin + '/auth/social-callback?' + callbackParams.toString())}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      // 카카오 OAuth URL 직접 생성
+      const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
       
       // 디버그 정보 출력
-      console.log(`소셜 로그인 URL: ${socialLoginUrl}`);
-      console.log(`소셜 로그인 제공자: ${provider}`);
-      console.log(`콜백 URL: ${redirectUrl}`);
-      console.log(`API URL: ${backendUrl}`);
+      console.log(`카카오 OAuth URL: ${kakaoAuthUrl}`);
+      console.log(`카카오 클라이언트 ID: ${kakaoClientId}`);
       console.log(`리디렉트 URI: ${redirectUri}`);
-      console.log(`전체 리디렉션 URL: ${socialLoginUrl}`);
+      console.log(`State 데이터:`, stateData);
       
-      // 소셜 로그인 URL로 리디렉션
-      window.location.href = socialLoginUrl;
+      // 카카오 OAuth URL로 직접 리디렉션
+      window.location.href = kakaoAuthUrl;
     } catch (error) {
       console.error(`${provider} login error:`, error);
       toast({
