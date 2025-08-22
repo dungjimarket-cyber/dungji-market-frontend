@@ -191,9 +191,7 @@ function LoginForm() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  1분만에 가입하고
-                  <br />
-                  지금 가입하고 서비스를 경험해보세요
+                  1분만에 가입하고 둥지마켓과 함께하세요~
                 </p>
               </div>
             </div>
@@ -216,11 +214,11 @@ function LoginForm() {
           <div className="space-y-2 text-sm text-blue-800">
             <div className="flex items-center gap-2">
               <span className="text-blue-600">🔒</span>
-              <span><strong>구매회원:</strong> 대량구매 참여, 견적비교</span>
+              <span><strong>일반회원:</strong> 공동구매 참여, 비교견적 받기</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-green-600">🏪</span>
-              <span><strong>판매회원:</strong> 대량판매 기회, 입찰 참여</span>
+              <span><strong>판매회원:</strong> 견적 제안하고 판매 기회 얻기</span>
             </div>
           </div>
         </div>
