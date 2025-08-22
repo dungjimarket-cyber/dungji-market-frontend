@@ -135,7 +135,7 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
    * 카테고리 변경 처리
    */
   const handleCategoryChange = (category: MainCategory) => {
-    console.log('카테곢0리 클릭:', category);
+    console.log('카테고리 클릭:', category);
     
     // 이미 선택된 카테고리이거나 변경 중인 경우 무시
     if (selectedCategory === category || categoryChangingRef.current) {
@@ -149,22 +149,16 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
     setSelectedCategory(category);
     
     // 카테고리 변경 시 기존 필터 초기화
-    const newFilters: Record<string, string> = {};
+    const newFilters: Record<string, string> = { category };
     setCurrentFilters(newFilters);
     
-    // URL 업데이트
+    // URL 업데이트만 하고 콜백은 호출하지 않음 (URL 변경이 자동으로 트리거)
     updateURL({ category }, true);
     
-    // 콜백 호출 (비동기로 처리하여 순서 보장)
+    // 변경 완료 후 플래그 해제
     setTimeout(() => {
-      onCategoryChange?.(category);
-      onFiltersChange?.(newFilters);
-      
-      // 변경 완료 후 플래그 해제
-      setTimeout(() => {
-        categoryChangingRef.current = false;
-      }, 100);
-    }, 0);
+      categoryChangingRef.current = false;
+    }, 300);
   };
 
   // 디바운싱을 위한 ref

@@ -262,13 +262,9 @@ function GroupPurchasesPageContent() {
    * 카테고리 변경 처리
    */
   const handleCategoryChange = (category: string) => {
-    // 카테고리 변경 시 기존 필터들을 초기화하고 해당 카테고리의 공구만 로드
+    // URL 변경이 자동으로 useEffect를 트리거하므로 여기서는 상태만 업데이트
     console.log('카테고리 변경:', category);
     setSelectedCategory(category as 'phone' | 'internet' | 'internet_tv');
-    
-    // 카테고리 변경 시에는 다른 필터들을 초기화
-    const categoryFilters = { category };
-    fetchGroupBuys(categoryFilters, activeTab);
   };
 
   /**
@@ -375,6 +371,7 @@ function GroupPurchasesPageContent() {
       const newUrl = new URLSearchParams(searchParams.toString());
       newUrl.set('category', 'phone');
       router.replace(`/group-purchases?${newUrl.toString()}`);
+      return; // URL 업데이트 후 리턴하여 중복 호출 방지
     }
     
     fetchGroupBuys(filters, activeTab);
@@ -391,7 +388,7 @@ function GroupPurchasesPageContent() {
       const newUrl = newSearchParams.toString() ? `?${newSearchParams.toString()}` : '';
       router.replace(`/group-purchases${newUrl}`);
     }
-  }, [activeTab, searchParams, accessToken, fetchUserParticipationsAndBids, router, fetchGroupBuys]);
+  }, [activeTab, searchParams.toString(), accessToken, router]);
 
   /**
    * 페이지가 다시 포커스될 때 데이터 새로고침

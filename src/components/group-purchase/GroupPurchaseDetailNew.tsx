@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
@@ -1927,16 +1928,29 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </Button>
                 <Button
                   onClick={() => {
-                    console.log('Buyer no-show report button clicked, groupBuy.id:', groupBuy.id);
-                    if (!groupBuy.id) {
-                      console.error('No groupBuy.id available for navigation');
+                    console.log('Buyer no-show report button clicked');
+                    console.log('groupBuy object:', groupBuy);
+                    console.log('groupBuy.id:', groupBuy?.id);
+                    console.log('groupBuyData.id:', groupBuyData?.id);
+                    
+                    const groupBuyId = groupBuy?.id || groupBuyData?.id;
+                    
+                    if (!groupBuyId) {
+                      console.error('No groupBuy ID available for navigation');
+                      toast({
+                        title: '오류',
+                        description: '공구 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.',
+                        variant: 'destructive'
+                      });
                       return;
                     }
-                    router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
+                    
+                    console.log('Navigating to no-show report with ID:', groupBuyId);
+                    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
                   }}
                   variant="outline"
                   className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                  disabled={!groupBuy.id}
+                  disabled={false}  // 강제로 활성화
                 >
                   노쇼신고
                 </Button>
@@ -2062,16 +2076,29 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </Button>
                 <Button
                   onClick={() => {
-                    console.log('Seller no-show report button clicked, groupBuy.id:', groupBuy.id);
-                    if (!groupBuy.id) {
-                      console.error('No groupBuy.id available for navigation');
+                    console.log('Seller no-show report button clicked');
+                    console.log('groupBuy object:', groupBuy);
+                    console.log('groupBuy.id:', groupBuy?.id);
+                    console.log('groupBuyData.id:', groupBuyData?.id);
+                    
+                    const groupBuyId = groupBuy?.id || groupBuyData?.id;
+                    
+                    if (!groupBuyId) {
+                      console.error('No groupBuy ID available for navigation');
+                      toast({
+                        title: '오류',
+                        description: '공구 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.',
+                        variant: 'destructive'
+                      });
                       return;
                     }
-                    router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
+                    
+                    console.log('Navigating to no-show report with ID:', groupBuyId);
+                    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
                   }}
                   variant="outline"
                   className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                  disabled={!groupBuy.id}
+                  disabled={false}  // 강제로 활성화
                 >
                   노쇼신고하기
                 </Button>
