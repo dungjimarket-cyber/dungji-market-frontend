@@ -387,6 +387,25 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
     try {
+      // 스크롤 및 포커스 헬퍼 함수
+      const scrollToAndFocus = (elementId: string) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // input, select, textarea 요소 찾아서 포커스
+          const focusableElement = element.querySelector('input, select, textarea, button[role="combobox"]') as HTMLElement;
+          if (focusableElement) {
+            setTimeout(() => {
+              focusableElement.focus();
+              // 클릭해서 드롭다운 열기 (Select 컴포넌트의 경우)
+              if (focusableElement.getAttribute('role') === 'combobox') {
+                focusableElement.click();
+              }
+            }, 500); // 스크롤 애니메이션 후 포커스
+          }
+        }
+      };
+
       // 데이터 유효성 검증
       if (!selectedProduct) {
         toast({
@@ -394,20 +413,81 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
           title: '상품 선택 필요',
           description: '공구에 등록할 상품을 선택해주세요.',
         });
+        // 현재 탭에 따라 다른 product selection ID로 스크롤
+        const productSelectionId = mainTab === 'phone' ? 'product-selection' : 'product-selection-category';
+        scrollToAndFocus(productSelectionId);
         setIsSubmitting(false);
         return;
       }
 
-      // 지역 선택은 선택사항으로 변경 (기존 폼과 동일하게)
-      // if (selectedRegions.length === 0) {
-      //   toast({
-      //     variant: 'destructive',
-      //     title: '지역 선택 필요',
-      //     description: '최소 1개 이상의 지역을 선택해주세요.',
-      //   });
-      //   setIsSubmitting(false);
-      //   return;
-      // }
+      // 지역 선택 필수 체크
+      if (regionType === 'local' && selectedRegions.length === 0) {
+        toast({
+          variant: 'destructive',
+          title: '지역 선택 필요',
+          description: '최소 1개 이상의 지역을 선택해주세요.',
+        });
+        scrollToAndFocus('region-selection');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 카테고리별 필수 필드 검증
+      if (mainTab === 'phone') {
+        // 휴대폰 필수 필드: 통신사, 가입유형, 요금제
+        if (!values.telecom_carrier) {
+          toast({
+            variant: 'destructive',
+            title: '통신사 선택 필요',
+            description: '통신사를 선택해주세요.',
+          });
+          scrollToAndFocus('telecom-carrier');
+          setIsSubmitting(false);
+          return;
+        }
+        if (!values.subscription_type) {
+          toast({
+            variant: 'destructive',
+            title: '가입유형 선택 필요',
+            description: '가입유형을 선택해주세요.',
+          });
+          scrollToAndFocus('subscription-type');
+          setIsSubmitting(false);
+          return;
+        }
+        if (!values.telecom_plan) {
+          toast({
+            variant: 'destructive',
+            title: '요금제 선택 필요',
+            description: '요금제를 선택해주세요.',
+          });
+          scrollToAndFocus('telecom-plan');
+          setIsSubmitting(false);
+          return;
+        }
+      } else if (mainTab === 'internet' || mainTab === 'internet_tv') {
+        // 인터넷/인터넷+TV 필수 필드: 통신사(서브탭), 가입유형
+        if (subTab === 'all') {
+          toast({
+            variant: 'destructive',
+            title: '통신사 선택 필요',
+            description: '통신사를 선택해주세요.',
+          });
+          scrollToAndFocus(mainTab === 'internet' ? 'internet-carrier-tabs' : 'internettv-carrier-tabs');
+          setIsSubmitting(false);
+          return;
+        }
+        if (!internetSubscriptionType) {
+          toast({
+            variant: 'destructive',
+            title: '가입유형 선택 필요',
+            description: '가입유형을 선택해주세요.',
+          });
+          scrollToAndFocus(mainTab === 'internet' ? 'internet-subscription-type' : 'internettv-subscription-type');
+          setIsSubmitting(false);
+          return;
+        }
+      }
 
       // 종료 시간 계산
       const endTime = new Date();
@@ -644,8 +724,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     control={form.control}
                     name="product"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>상품 선택</FormLabel>
+                      <FormItem id="product-selection">
+                        <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value);
@@ -675,8 +755,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     control={form.control}
                     name="telecom_carrier"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>통신사</FormLabel>
+                      <FormItem id="telecom-carrier">
+                        <FormLabel>통신사 <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
                             <SelectValue placeholder="통신사 선택" />
@@ -697,8 +777,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     control={form.control}
                     name="subscription_type"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>가입 유형</FormLabel>
+                      <FormItem id="subscription-type">
+                        <FormLabel>가입 유형 <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
                             <SelectValue placeholder="가입 유형 선택" />
@@ -719,8 +799,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     control={form.control}
                     name="telecom_plan"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>요금제</FormLabel>
+                      <FormItem id="telecom-plan">
+                        <FormLabel>요금제 <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
                             <SelectValue placeholder="요금제 선택" />
@@ -768,6 +848,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                 {/* 인터넷 탭 콘텐츠 */}
                 <TabsContent value="internet" className="space-y-4">
                   {/* 서브 탭 - 통신사 */}
+                  <div id="internet-carrier-tabs">
+                    <FormLabel>통신사 선택 <span className="text-red-500">*</span></FormLabel>
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -800,7 +883,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   </div>
 
                   {/* 가입 유형 선택 */}
-                  <div className="space-y-2">
+                  <div className="space-y-2" id="internet-subscription-type">
+                    <FormLabel>가입 유형 <span className="text-red-500">*</span></FormLabel>
                     <div className="flex gap-2">
                       <Button
                         type="button"
@@ -838,8 +922,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     control={form.control}
                     name="product"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>상품 선택</FormLabel>
+                      <FormItem id="product-selection-category">
+                        <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value);
@@ -893,6 +977,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                 {/* 인터넷+TV 탭 콘텐츠 */}
                 <TabsContent value="internet_tv" className="space-y-4">
                   {/* 서브 탭 - 통신사 */}
+                  <div id="internettv-carrier-tabs">
+                    <FormLabel>통신사 선택 <span className="text-red-500">*</span></FormLabel>
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -925,7 +1012,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   </div>
 
                   {/* 가입 유형 선택 */}
-                  <div className="space-y-2">
+                  <div className="space-y-2" id="internettv-subscription-type">
+                    <FormLabel>가입 유형 <span className="text-red-500">*</span></FormLabel>
                     <div className="flex gap-2">
                       <Button
                         type="button"
@@ -963,8 +1051,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                     control={form.control}
                     name="product"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>상품 선택</FormLabel>
+                      <FormItem id="product-selection-category">
+                        <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value);
@@ -1018,8 +1106,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
               {/* 공통 필드들 */}
               {/* 지역 선택 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">지역 선택</h3>
+              <div className="space-y-4" id="region-selection">
+                <h3 className="text-lg font-medium">지역 선택 <span className="text-red-500">*</span></h3>
                 <MultiRegionDropdown
                   selectedRegions={selectedRegions}
                   onSelectionChange={setSelectedRegions}
@@ -1037,14 +1125,14 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               </div>
 
               {/* 참여 인원 */}
-              <div className="space-y-4">
+              <div className="space-y-4" id="participants-section">
                 <h3 className="text-lg font-medium">참여 인원</h3>
                 <FormField
                   control={form.control}
                   name="max_participants"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>최대 인원</FormLabel>
+                      <FormLabel>최대 인원 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -1061,8 +1149,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               </div>
 
               {/* 시간 설정 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">시간 설정 (최소 6시간 - 최대 48시간)</h3>
+              <div className="space-y-4" id="time-section">
+                <h3 className="text-lg font-medium">시간 설정 (최소 6시간 - 최대 48시간) <span className="text-red-500">*</span></h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">마감 시간</span>
