@@ -20,8 +20,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/sk-broadband.png"
           alt="SK"
-          width={20}
-          height={20}
+          width={36}
+          height={24}
           className="object-contain"
         />
       );
@@ -31,8 +31,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/skt.png"
           alt="SKT"
-          width={24}
-          height={20}
+          width={32}
+          height={24}
           className="object-contain"
         />
       );
@@ -41,8 +41,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/kt.png"
           alt="KT"
-          width={24}
-          height={14}
+          width={32}
+          height={18}
           className="object-contain"
         />
       );
@@ -53,8 +53,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/lgu.png"
           alt="LG U+"
-          width={40}
-          height={14}
+          width={48}
+          height={18}
           className="object-contain"
         />
       );
@@ -527,7 +527,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         <div className="flex items-center gap-1.5 w-full mt-auto">
           {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="flex items-center justify-center px-2 py-1 bg-white border border-gray-300 rounded-md h-7">
+            <div className="flex items-center justify-center px-2.5 py-1.5 bg-white border border-gray-300 rounded-md h-9">
               {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
             </div>
           )}
