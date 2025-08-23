@@ -110,7 +110,7 @@ function SignInForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-2 sm:py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* 뒤로가기 버튼 */}
         <div>
@@ -133,28 +133,28 @@ function SignInForm() {
         </div>
 
         {/* 탭 선택 UI */}
-        <div className="flex rounded-lg bg-gray-100 p-1.5">
+        <div className="flex rounded-lg bg-gray-200 p-1.5">
           <button
             onClick={() => setSelectedTab('buyer')}
-            className={`flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-md font-semibold text-base transition-all ${
+            className={`flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-md font-bold text-lg transition-all ${
               selectedTab === 'buyer'
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-blue-700 shadow-md'
+                : 'text-gray-700 hover:text-gray-900'
             }`}
           >
-            <span className="text-xl">🛒</span>
-            <span className="text-base">일반회원</span>
+            <span className="text-2xl">🛒</span>
+            <span className="text-lg">일반회원</span>
           </button>
           <button
             onClick={() => setSelectedTab('seller')}
-            className={`flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-md font-semibold text-base transition-all ${
+            className={`flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-md font-bold text-lg transition-all ${
               selectedTab === 'seller'
-                ? 'bg-white text-yellow-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-amber-600 shadow-md'
+                : 'text-gray-700 hover:text-gray-900'
             }`}
           >
-            <span className="text-xl">💼</span>
-            <span className="text-base">판매회원</span>
+            <span className="text-2xl">💼</span>
+            <span className="text-lg">판매회원</span>
           </button>
         </div>
 
