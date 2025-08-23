@@ -13,6 +13,7 @@ function SignInForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [kakaoLoading, setKakaoLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorCode, setErrorCode] = useState('');
   const [sellerReferralCode, setSellerReferralCode] = useState('');
@@ -170,6 +171,7 @@ function SignInForm() {
               </div>
               <button
               onClick={() => {
+                setKakaoLoading(true);
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
                 
@@ -183,12 +185,22 @@ function SignInForm() {
                 const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
                 window.location.href = kakaoAuthUrl;
               }}
-              className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-sm text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
+              disabled={kakaoLoading}
+              className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-sm text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
-                <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
-              </svg>
-              <span className="font-medium text-sm">카카오로 계속하기(구매전용)</span>
+              {kakaoLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="font-medium text-sm">로그인 중...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
+                    <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
+                  </svg>
+                  <span className="font-medium text-sm">카카오로 계속하기(구매전용)</span>
+                </>
+              )}
             </button>
           </div>
           )}
@@ -203,6 +215,7 @@ function SignInForm() {
               </div>
               <button
               onClick={() => {
+                setKakaoLoading(true);
                 const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'a197177aee0ddaf6b827a6225aa48653';
                 const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/kakao';
                 
@@ -218,12 +231,22 @@ function SignInForm() {
                 const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
                 window.location.href = kakaoAuthUrl;
               }}
-              className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-sm text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
+              disabled={kakaoLoading}
+              className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-sm text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
-                <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
-              </svg>
-              <span className="font-medium text-sm">카카오로 계속하기(판매전용)</span>
+              {kakaoLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="font-medium text-sm">로그인 중...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
+                    <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
+                  </svg>
+                  <span className="font-medium text-sm">카카오로 계속하기(판매전용)</span>
+                </>
+              )}
             </button>
           </div>
           )}
