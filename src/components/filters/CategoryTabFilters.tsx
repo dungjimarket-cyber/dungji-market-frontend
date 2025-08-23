@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Smartphone, Wifi, Monitor } from 'lucide-react';
 
 // 대분류 카테고리 정의
-type MainCategory = 'phone' | 'internet' | 'internet_tv';
+type MainCategory = 'all' | 'phone' | 'internet' | 'internet_tv';
 
 interface MainCategoryItem {
   id: MainCategory;
@@ -31,6 +31,17 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
 
   // 대분류 카테고리 설정
   const mainCategories: MainCategoryItem[] = [
+    {
+      id: 'all' as MainCategory,
+      name: '전체',
+      icon: ({ className }: { className?: string }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+      ),
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50 border-gray-200'
+    },
     {
       id: 'phone',
       name: '휴대폰',

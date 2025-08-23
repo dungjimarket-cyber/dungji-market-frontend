@@ -71,8 +71,8 @@ function GroupPurchasesPageContent() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   // URL에서 카테고리 가져오기, 없으면 'phone' 기본값
-  const categoryFromUrl = searchParams.get('category') as 'phone' | 'internet' | 'internet_tv' | null;
-  const [selectedCategory, setSelectedCategory] = useState<'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'phone');
+  const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'phone');
   const [showFilters, setShowFilters] = useState(false);
 
   /**
@@ -120,12 +120,13 @@ function GroupPurchasesPageContent() {
             }
             // 카테고리 필터
             else if (key === 'category') {
-              // 카테고리를 백엔드 필터에 맞게 변환
-              // 백엔드는 'category' 파라미터를 기대하며 카테고리 이름으로 처리
-              if (value === 'phone') {
+              // '전체'인 경우 카테고리 필터를 추가하지 않음
+              if (value === 'all') {
+                // 전체 카테고리는 필터를 적용하지 않음
+              } else if (value === 'phone') {
                 params.append('category', '휴대폰');
               } else if (value === 'internet') {
-                params.append('category', '인터넷');
+                params.append('category', '인터녧');
               } else if (value === 'internet_tv') {
                 params.append('category', '인터넷+TV');
               } else {
@@ -279,7 +280,7 @@ function GroupPurchasesPageContent() {
    */
   const handleCategoryChange = (category: string) => {
     console.log('카테고리 변경:', category);
-    setSelectedCategory(category as 'phone' | 'internet' | 'internet_tv');
+    setSelectedCategory(category as 'all' | 'phone' | 'internet' | 'internet_tv');
     
     // 카테고리 변경 시 즉시 필터 적용
     const categoryFilter = { category };
@@ -469,41 +470,43 @@ function GroupPurchasesPageContent() {
             />
           </div>
 
-          {/* 조건필터 버튼 */}
-          <div className="px-4 pb-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`w-fit py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border ${
-                showFilters 
-                  ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' 
-                  : 'bg-white text-blue-600 border-blue-400 hover:bg-blue-50'
-              }`}
-            >
-              <svg 
-                className="w-5 h-5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+          {/* 조건필터 버튼 - '전체' 카테고리가 아닐 때만 표시 */}
+          {selectedCategory !== 'all' && (
+            <div className="px-4 pb-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`w-fit py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border ${
+                  showFilters 
+                    ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' 
+                    : 'bg-white text-blue-600 border-blue-400 hover:bg-blue-50'
+                }`}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              <span>검색필터</span>
-              <svg 
-                className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span>검색필터</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          )}
 
-          {/* 필터 컴포넌트 - 조건필터 버튼 클릭 시에만 표시 */}
-          {showFilters && (
+          {/* 필터 컴포넌트 - 조건필터 버튼 클릭 시에만 표시 (전체 카테고리가 아닐 때) */}
+          {showFilters && selectedCategory !== 'all' && (
             <div className="px-4 pb-4">
               <GroupBuyFilters 
-              category={selectedCategory}
+              category={selectedCategory === 'all' ? 'phone' : selectedCategory}
               onFiltersChange={(filters) => {
                 // 필터 변경 처리 - 합집합을 위해 콤마로 구분한 값을 전달
                 const flatFilters: Record<string, string> = {};
