@@ -81,22 +81,33 @@ function GroupPurchasesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  
+  // 페이징 관련 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 12; // 한 페이지당 표시할 아이템 수
   // URL에서 카테고리 가져오기, 없으면 'all' 기본값
   const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
   const [showFilters, setShowFilters] = useState(false);
 
   /**
-   * 공구 목록 가져오기 (필터 포함)
+   * 공구 목록 가져오기 (필터 포함 및 페이징)
    */
-  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string) => {
+  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string, page: number = 1) => {
     setLoading(true);
     setError('');
     const currentTab = tabValue || activeTab;
-    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters);
+    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'page:', page);
     
     try {
       const params = new URLSearchParams();
+      
+      // 페이징 파라미터 추가
+      const offset = (page - 1) * itemsPerPage;
+      params.append('limit', itemsPerPage.toString());
+      params.append('offset', offset.toString());
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
@@ -289,10 +300,24 @@ function GroupPurchasesPageContent() {
       
       let data = await response.json();
       
-      // 프론트엔드에서 추가 필터링은 제거 - 백엔드에서 처리하도록 함
-      // 전체 탭은 모든 공구 표시
+      // API 응답이 페이징 정보를 포함하는 경우 처리
+      if (data.results && Array.isArray(data.results)) {
+        // Django REST Framework 페이징 응답 형식
+        setGroupBuys(data.results);
+        setTotalCount(data.count || 0);
+        setTotalPages(Math.ceil((data.count || 0) / itemsPerPage));
+      } else if (Array.isArray(data)) {
+        // 페이징 없는 배열 응답
+        setGroupBuys(data);
+        setTotalCount(data.length);
+        setTotalPages(Math.ceil(data.length / itemsPerPage));
+      } else {
+        setGroupBuys([]);
+        setTotalCount(0);
+        setTotalPages(1);
+      }
       
-      setGroupBuys(data);
+      setCurrentPage(page);
     } catch (err) {
       console.error('공구 목록 로딩 실패:', err);
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
@@ -300,13 +325,14 @@ function GroupPurchasesPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, accessToken]);
+  }, [activeTab, accessToken, itemsPerPage]);
 
   /**
    * 필터 변경 처리
    */
   const handleFiltersChange = (filters: Record<string, string>) => {
-    fetchGroupBuys(filters, activeTab);
+    setCurrentPage(1); // 필터 변경 시 첫 페이지로
+    fetchGroupBuys(filters, activeTab, 1);
   };
 
   /**
@@ -488,15 +514,15 @@ function GroupPurchasesPageContent() {
     <div className="min-h-screen bg-gray-50">
       <MainHeader title="공구 둘러보기" />
       
-      <div className="pt-16 pb-20">
+      <div className="pt-14 md:pt-16 pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* 통합 검색바 */}
-          <div className="px-4 pt-4">
+          <div className="px-4 pt-2 md:pt-4">
             <UnifiedSearchBar onSearchChange={handleSearchChange} />
           </div>
 
           {/* 카테고리 탭 */}
-          <div className="px-4 py-4">
+          <div className="px-4 py-2 md:py-4">
             <CategoryTabFilters 
               initialCategory={selectedCategory}
               onFiltersChange={handleFiltersChange}
@@ -620,6 +646,79 @@ function GroupPurchasesPageContent() {
                   ))
                 )}
               </div>
+              
+              {/* 페이지네이션 */}
+              {!loading && totalPages > 1 && (
+                <div className="mt-8 flex justify-center items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const newPage = Math.max(1, currentPage - 1);
+                      setCurrentPage(newPage);
+                      const filters: Record<string, string> = {};
+                      searchParams.forEach((value, key) => {
+                        filters[key] = value;
+                      });
+                      fetchGroupBuys(filters, activeTab, newPage);
+                    }}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            setCurrentPage(pageNum);
+                            const filters: Record<string, string> = {};
+                            searchParams.forEach((value, key) => {
+                              filters[key] = value;
+                            });
+                            fetchGroupBuys(filters, activeTab, pageNum);
+                          }}
+                          className={`px-3 py-1 rounded-md ${
+                            currentPage === pageNum
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 hover:bg-gray-300'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      const newPage = Math.min(totalPages, currentPage + 1);
+                      setCurrentPage(newPage);
+                      const filters: Record<string, string> = {};
+                      searchParams.forEach((value, key) => {
+                        filters[key] = value;
+                      });
+                      fetchGroupBuys(filters, activeTab, newPage);
+                    }}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                  </button>
+                </div>
+              )}
             </div>
           </Tabs>
         </div>
