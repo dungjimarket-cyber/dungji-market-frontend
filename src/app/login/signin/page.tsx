@@ -161,7 +161,9 @@ function SignInForm() {
           {selectedTab === 'buyer' && (
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-center mb-3">
-                <p className="text-sm font-medium text-gray-700">공동구매 참여하고 견적 받기</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  🚀 공동구매 참여하고 💰 최고 지원금 받기!
+                </p>
               </div>
               <button
               onClick={() => {
@@ -192,7 +194,9 @@ function SignInForm() {
           {selectedTab === 'seller' && (
             <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
               <div className="text-center mb-3">
-                <p className="text-sm font-medium text-gray-700">견적 제안하고 판매 기회 얻기</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  🚀 신규 고객 만나고 💰 매출 올리기!
+                </p>
               </div>
               <button
               onClick={() => {
