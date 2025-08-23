@@ -479,8 +479,21 @@ function GroupPurchasesPageContent() {
           <div className="px-4 pb-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors flex items-center justify-center gap-2"
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-sm border-2 ${
+                showFilters 
+                  ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
+                  : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-50'
+              }`}
             >
+              <svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span>조건필터</span>
               <svg 
                 className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
                 fill="none" 
@@ -489,7 +502,6 @@ function GroupPurchasesPageContent() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
-              조건필터
             </button>
           </div>
 
