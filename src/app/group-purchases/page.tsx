@@ -506,7 +506,7 @@ function GroupPurchasesPageContent() {
           {showFilters && selectedCategory !== 'all' && (
             <div className="px-4 pb-4">
               <GroupBuyFilters 
-              category={selectedCategory === 'all' ? 'phone' : selectedCategory}
+              category={selectedCategory as 'phone' | 'internet' | 'internet_tv'}
               onFiltersChange={(filters) => {
                 // 필터 변경 처리 - 합집합을 위해 콤마로 구분한 값을 전달
                 const flatFilters: Record<string, string> = {};
