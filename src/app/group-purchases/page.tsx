@@ -226,23 +226,38 @@ function GroupPurchasesPageContent() {
                 }
               });
             }
-            // 가입 유형 필터
+            // 가입 유형 필터 (합집합 처리)
             else if (key === 'subscriptionType' || key === 'internet_subscriptionType' || key === 'internet_tv_subscriptionType') {
-              let subscriptionType = '';
-              // GroupBuyFilters에서 온 값들과 매핑
-              if (value === 'new_signup' || value === '신규가입') subscriptionType = 'new';
-              else if (value === 'number_port' || value === '번호이동') subscriptionType = 'transfer';
-              else if (value === 'device_change' || value === '기기변경') subscriptionType = 'change';
-              else if (value === 'carrier_change' || value === '통신사이동') subscriptionType = 'transfer';
+              console.log('가입유형 필터 처리 - key:', key, 'value:', value);
+              // 콤마로 구분된 여러 값 처리
+              const subscriptionTypes = value.split(',');
               
-              if (subscriptionType) {
-                params.append('subscription_type', subscriptionType);
-              }
+              // 각 가입유형을 개별 파라미터로 추가 (OR 조건)
+              subscriptionTypes.forEach(type => {
+                let subscriptionType = '';
+                // GroupBuyFilters에서 온 값들과 매핑
+                if (type === 'new_signup' || type === '신규가입') subscriptionType = 'new';
+                else if (type === 'number_port' || type === '번호이동') subscriptionType = 'transfer';
+                else if (type === 'device_change' || type === '기기변경') subscriptionType = 'change';
+                else if (type === 'carrier_change' || type === '통신사이동') subscriptionType = 'transfer';
+                
+                if (subscriptionType) {
+                  console.log('추가되는 가입유형 파라미터:', subscriptionType);
+                  params.append('subscription_type', subscriptionType);
+                }
+              });
             }
             // 인터넷 속도 필터 (합집합 처리)
             else if (key === 'speed' || key === 'internet_speed' || key === 'internet_tv_speed') {
+              console.log('속도 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 여러 값 처리
-              params.append('internet_speed', value);
+              const speeds = value.split(',');
+              
+              // 각 속도를 개별 파라미터로 추가 (OR 조건)
+              speeds.forEach(speed => {
+                console.log('추가되는 속도 파라미터:', speed);
+                params.append('internet_speed', speed);
+              });
             }
             // 지역 필터
             else if (key === 'region') {
@@ -550,13 +565,13 @@ function GroupPurchasesPageContent() {
                   filterMapping['subscriptionType'] = 'subscriptionType';
                   filterMapping['planRange'] = 'plan';
                 } else if (selectedCategory === 'internet') {
-                  filterMapping['internet_carrier'] = 'carrier';
-                  filterMapping['internet_subscriptionType'] = 'subscriptionType';
+                  filterMapping['internet_carrier'] = 'internet_carrier';
+                  filterMapping['internet_subscriptionType'] = 'internet_subscriptionType';
                   filterMapping['speed'] = 'speed';
                 } else if (selectedCategory === 'internet_tv') {
-                  filterMapping['internet_tv_carrier'] = 'carrier';
-                  filterMapping['internet_tv_subscriptionType'] = 'subscriptionType';
-                  filterMapping['internet_tv_speed'] = 'speed';
+                  filterMapping['internet_tv_carrier'] = 'internet_tv_carrier';
+                  filterMapping['internet_tv_subscriptionType'] = 'internet_tv_subscriptionType';
+                  filterMapping['internet_tv_speed'] = 'internet_tv_speed';
                 }
                 
                 Object.entries(filters).forEach(([key, values]) => {
