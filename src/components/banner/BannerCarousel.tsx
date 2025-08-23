@@ -37,7 +37,7 @@ export default function BannerCarousel() {
 
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-    }, 5000); // 5초마다 변경
+    }, 8000); // 8초마다 변경
 
     return () => clearInterval(interval);
   }, [banners.length]);
