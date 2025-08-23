@@ -40,7 +40,7 @@ export function MainHeader({
   };
 
   return (
-    <header className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-4 flex items-center justify-between">
+    <header className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-3 md:py-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
         {showBackButton && (
           <button

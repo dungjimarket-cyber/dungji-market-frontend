@@ -556,15 +556,15 @@ function GroupPurchasesPageContent() {
     <div className="min-h-screen bg-gray-50">
       <MainHeader title="공구 둘러보기" />
       
-      <div className="pt-14 md:pt-16 pb-20">
+      <div className="pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* 통합 검색바 */}
-          <div className="px-4 pt-2 md:pt-4">
+          <div className="px-4 pt-2 md:pt-3">
             <UnifiedSearchBar onSearchChange={handleSearchChange} />
           </div>
 
           {/* 카테고리 탭 */}
-          <div className="px-4 py-2 md:py-4">
+          <div className="px-4 py-1.5 md:py-3">
             <CategoryTabFilters 
               initialCategory={selectedCategory}
               onFiltersChange={handleFiltersChange}
