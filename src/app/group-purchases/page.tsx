@@ -455,14 +455,8 @@ function GroupPurchasesPageContent() {
       
       <div className="pt-16 pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
-          {/* 페이지 헤더 */}
-          <div className="px-4 py-6 border-b border-gray-100">
-            <h1 className="text-2xl font-bold text-gray-900">공구 둘러보기</h1>
-            <p className="text-sm text-gray-600 mt-1">다양한 공동구매에 참여해보세요</p>
-          </div>
-
           {/* 통합 검색바 */}
-          <div className="px-4 pt-6">
+          <div className="px-4 pt-4">
             <UnifiedSearchBar onSearchChange={handleSearchChange} />
           </div>
 
