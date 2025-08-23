@@ -538,7 +538,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         {/* 카테고리별 정보 표시 - 하단에 고정 */}
         <div className="flex items-center gap-1.5 w-full mt-auto">
           {/* 휴대폰 상품 정보 */}
-          {groupBuy.product_info?.category_detail_type === 'telecom' && groupBuy.telecom_detail && (
+          {((groupBuy.product_info?.category_detail_type === 'telecom' ||
+             groupBuy.product_details?.category_detail_type === 'telecom') && 
+            groupBuy.telecom_detail) && (
             <>
               {/* 통신사 표시 */}
               <div className="flex items-center justify-center px-1.5 py-1 bg-white border border-gray-300 rounded-md h-9">
@@ -568,9 +570,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           )}
           
           {/* 인터넷/TV 상품 정보 */}
-          {(groupBuy.product_info?.category_detail_type === 'internet' || 
-            groupBuy.product_info?.category_detail_type === 'internet_tv') && 
-           groupBuy.internet_detail && (
+          {((groupBuy.product_info?.category_detail_type === 'internet' || 
+             groupBuy.product_info?.category_detail_type === 'internet_tv' ||
+             groupBuy.product_details?.category_detail_type === 'internet' ||
+             groupBuy.product_details?.category_detail_type === 'internet_tv') && 
+            groupBuy.internet_detail) && (
             <>
               {/* 통신사 표시 */}
               <div className="flex items-center justify-center px-1.5 py-1 bg-white border border-gray-300 rounded-md h-9">
@@ -638,7 +642,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           )}
           
           {/* 기존 telecom_detail 기반 표시 (fallback) */}
-          {!groupBuy.product_info?.category_detail_type && groupBuy.telecom_detail?.telecom_carrier && (
+          {!groupBuy.product_info?.category_detail_type && 
+           !groupBuy.product_details?.category_detail_type && 
+           groupBuy.telecom_detail?.telecom_carrier && (
             <>
               <div className="flex items-center justify-center px-1.5 py-1 bg-white border border-gray-300 rounded-md h-9">
                 {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
