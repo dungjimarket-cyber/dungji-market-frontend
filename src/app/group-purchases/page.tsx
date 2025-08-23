@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useState, useEffect, Suspense, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MainHeader } from '@/components/navigation/MainHeader';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
@@ -82,32 +82,40 @@ function GroupPurchasesPageContent() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   
-  // 페이징 관련 상태
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const itemsPerPage = 12; // 한 페이지당 표시할 아이템 수
+  // 무한 스크롤 관련 상태
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const itemsPerPage = 12; // 한 번에 로드할 아이템 수
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   // URL에서 카테고리 가져오기, 없으면 'all' 기본값
   const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
   const [showFilters, setShowFilters] = useState(false);
 
   /**
-   * 공구 목록 가져오기 (필터 포함 및 페이징)
+   * 공구 목록 가져오기 (필터 포함 및 무한 스크롤)
    */
-  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string, page: number = 1) => {
-    setLoading(true);
+  const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string, isLoadMore: boolean = false) => {
+    if (!isLoadMore) {
+      setLoading(true);
+      setOffset(0);
+      setHasMore(true);
+    } else {
+      setLoadingMore(true);
+    }
     setError('');
     const currentTab = tabValue || activeTab;
-    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'page:', page);
+    const currentOffset = isLoadMore ? offset : 0;
+    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'offset:', currentOffset);
     
     try {
       const params = new URLSearchParams();
       
-      // 페이징 파라미터 추가
-      const offset = (page - 1) * itemsPerPage;
+      // 무한 스크롤 파라미터 추가
       params.append('limit', itemsPerPage.toString());
-      params.append('offset', offset.toString());
+      params.append('offset', currentOffset.toString());
       
       // 기본 상태 설정 - 탭에 따라
       if (currentTab === 'completed') {
@@ -300,39 +308,42 @@ function GroupPurchasesPageContent() {
       
       let data = await response.json();
       
-      // API 응답이 페이징 정보를 포함하는 경우 처리
+      // API 응답 처리
+      let newItems: GroupBuy[] = [];
       if (data.results && Array.isArray(data.results)) {
         // Django REST Framework 페이징 응답 형식
-        setGroupBuys(data.results);
-        setTotalCount(data.count || 0);
-        setTotalPages(Math.ceil((data.count || 0) / itemsPerPage));
+        newItems = data.results;
+        setHasMore(data.next !== null);
       } else if (Array.isArray(data)) {
         // 페이징 없는 배열 응답
-        setGroupBuys(data);
-        setTotalCount(data.length);
-        setTotalPages(Math.ceil(data.length / itemsPerPage));
-      } else {
-        setGroupBuys([]);
-        setTotalCount(0);
-        setTotalPages(1);
+        newItems = data;
+        setHasMore(newItems.length === itemsPerPage);
       }
       
-      setCurrentPage(page);
+      if (isLoadMore) {
+        // 더 불러오기: 기존 데이터에 추가
+        setGroupBuys(prev => [...prev, ...newItems]);
+        setOffset(prev => prev + newItems.length);
+      } else {
+        // 새로운 검색: 데이터 교체
+        setGroupBuys(newItems);
+        setOffset(newItems.length);
+      }
     } catch (err) {
       console.error('공구 목록 로딩 실패:', err);
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       toast.error('공구 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [activeTab, accessToken, itemsPerPage]);
+  }, [activeTab, accessToken, itemsPerPage, offset]);
 
   /**
    * 필터 변경 처리
    */
   const handleFiltersChange = (filters: Record<string, string>) => {
-    setCurrentPage(1); // 필터 변경 시 첫 페이지로
-    fetchGroupBuys(filters, activeTab, 1);
+    fetchGroupBuys(filters, activeTab, false);
   };
 
   /**
@@ -469,6 +480,37 @@ function GroupPurchasesPageContent() {
       router.replace(`/group-purchases${newUrl}`);
     }
   }, [activeTab, searchParams.toString(), accessToken, router]);
+
+  /**
+   * 무한 스크롤을 위한 Intersection Observer 설정
+   */
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+    
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          console.log('Loading more items...');
+          const filters: Record<string, string> = {};
+          searchParams.forEach((value, key) => {
+            filters[key] = value;
+          });
+          fetchGroupBuys(filters, activeTab, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadingMore, loading, searchParams, activeTab, fetchGroupBuys]);
 
   /**
    * 페이지가 다시 포커스될 때 데이터 새로고침
@@ -647,78 +689,18 @@ function GroupPurchasesPageContent() {
                 )}
               </div>
               
-              {/* 페이지네이션 */}
-              {!loading && totalPages > 1 && (
-                <div className="mt-8 flex justify-center items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const newPage = Math.max(1, currentPage - 1);
-                      setCurrentPage(newPage);
-                      const filters: Record<string, string> = {};
-                      searchParams.forEach((value, key) => {
-                        filters[key] = value;
-                      });
-                      fetchGroupBuys(filters, activeTab, newPage);
-                    }}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    이전
-                  </button>
-                  
-                  <div className="flex gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => {
-                            setCurrentPage(pageNum);
-                            const filters: Record<string, string> = {};
-                            searchParams.forEach((value, key) => {
-                              filters[key] = value;
-                            });
-                            fetchGroupBuys(filters, activeTab, pageNum);
-                          }}
-                          className={`px-3 py-1 rounded-md ${
-                            currentPage === pageNum
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 hover:bg-gray-300'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
+              {/* 무한 스크롤 로더 */}
+              <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+                {loadingMore && (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="text-gray-600">더 불러오는 중...</span>
                   </div>
-                  
-                  <button
-                    onClick={() => {
-                      const newPage = Math.min(totalPages, currentPage + 1);
-                      setCurrentPage(newPage);
-                      const filters: Record<string, string> = {};
-                      searchParams.forEach((value, key) => {
-                        filters[key] = value;
-                      });
-                      fetchGroupBuys(filters, activeTab, newPage);
-                    }}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    다음
-                  </button>
-                </div>
-              )}
+                )}
+                {!hasMore && groupBuys.length > 0 && (
+                  <p className="text-gray-500">모든 공구를 불러왔습니다</p>
+                )}
+              </div>
             </div>
           </Tabs>
         </div>
