@@ -133,28 +133,28 @@ function SignInForm() {
         </div>
 
         {/* 탭 선택 UI */}
-        <div className="flex rounded-lg bg-gray-100 p-1">
+        <div className="flex rounded-lg bg-gray-100 p-1.5">
           <button
             onClick={() => setSelectedTab('buyer')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-md font-semibold text-base transition-all ${
               selectedTab === 'buyer'
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <span className="text-lg">🛒</span>
-            <span>일반회원</span>
+            <span className="text-xl">🛒</span>
+            <span className="text-base">일반회원</span>
           </button>
           <button
             onClick={() => setSelectedTab('seller')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-md font-semibold text-base transition-all ${
               selectedTab === 'seller'
                 ? 'bg-white text-yellow-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <span className="text-lg">💼</span>
-            <span>판매회원</span>
+            <span className="text-xl">💼</span>
+            <span className="text-base">판매회원</span>
           </button>
         </div>
 
@@ -183,12 +183,12 @@ function SignInForm() {
                 const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
                 window.location.href = kakaoAuthUrl;
               }}
-              className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
+              className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-sm text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
             >
-              <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span className="font-semibold">카카오로 계속하기(구매전용)</span>
+              <span className="font-medium text-sm">카카오로 계속하기(구매전용)</span>
             </button>
           </div>
           )}
@@ -218,12 +218,12 @@ function SignInForm() {
                 const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
                 window.location.href = kakaoAuthUrl;
               }}
-              className="flex items-center justify-center gap-3 w-full px-4 py-3 text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
+              className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-sm text-[#191919] bg-[#FEE500] border border-[#FEE500] rounded-lg hover:bg-[#FDD800] transition-colors font-medium"
             >
-              <svg className="w-5 h-5" fill="#3C1E1E" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
                 <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
               </svg>
-              <span className="font-semibold">카카오로 계속하기(판매전용)</span>
+              <span className="font-medium text-sm">카카오로 계속하기(판매전용)</span>
             </button>
           </div>
           )}
