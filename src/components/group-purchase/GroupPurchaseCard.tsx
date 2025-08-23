@@ -464,19 +464,19 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </div>
         
         {/* 통신사, 가입유형, 요금제 정보 - 한 줄로 표시 */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1">
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-lg flex-shrink-0">
-              <span className="text-xs font-medium text-blue-600">통신사</span>
-              <span className="text-sm font-bold text-blue-800 whitespace-nowrap">
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-lg">
+              <span className="text-[10px] font-medium text-blue-600">통신사</span>
+              <span className="text-xs font-bold text-blue-800">
                 {groupBuy.telecom_detail.telecom_carrier}
               </span>
             </div>
           )}
           {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-lg flex-shrink-0">
-              <span className="text-xs font-medium text-purple-600">가입</span>
-              <span className="text-sm font-bold text-purple-800 whitespace-nowrap">
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-lg">
+              <span className="text-[10px] font-medium text-purple-600">가입</span>
+              <span className="text-xs font-bold text-purple-800">
                 {groupBuy.product_details?.registration_type_korean || 
                  groupBuy.telecom_detail?.subscription_type_korean || 
                  getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
@@ -487,9 +487,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           {groupBuy.telecom_detail?.plan_info && 
            groupBuy.product_details?.category_name !== '인터넷' &&
            groupBuy.product_details?.category_name !== '인터넷+TV' && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-lg flex-shrink-0">
-              <span className="text-xs font-medium text-green-600">요금</span>
-              <span className="text-sm font-bold text-green-800 whitespace-nowrap">
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-lg">
+              <span className="text-[10px] font-medium text-green-600">요금</span>
+              <span className="text-xs font-bold text-green-800">
                 {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
               </span>
             </div>
