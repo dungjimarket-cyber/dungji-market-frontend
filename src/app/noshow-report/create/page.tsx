@@ -612,32 +612,17 @@ function NoShowReportContent() {
                   신고 취소
                 </Button>
               )}
-              <button 
+              <Button 
                 type="submit" 
-                disabled={false}
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ opacity: isButtonDisabled ? 0.5 : 1, pointerEvents: isButtonDisabled ? 'none' : 'auto' }}
-                onClick={(e) => {
-                  console.log('노쇼 신고 버튼 클릭됨');
-                  if (isButtonDisabled) {
-                    e.preventDefault();
-                    if (!content.trim()) {
-                      toast.error('신고 내용을 입력해주세요.');
-                    } else if (content.trim().length < 20) {
-                      toast.error('신고 내용은 20자 이상 작성해주세요.');
-                    } else if (user?.role === 'seller' && !selectedBuyerId) {
-                      toast.error('신고할 구매자를 선택해주세요.');
-                    }
-                    return;
-                  }
-                }}
+                disabled={isButtonDisabled}
+                className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   isEditMode ? '수정 중...' : '신고 접수 중...'
                 ) : (
                   isEditMode ? '신고 내용 수정' : '노쇼 신고하기'
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         </CardContent>
