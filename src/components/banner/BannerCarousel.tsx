@@ -60,14 +60,14 @@ export default function BannerCarousel() {
 
   if (loading) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[20/6] bg-gray-100 animate-pulse rounded-lg" />
+      <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-gray-100 animate-pulse md:rounded-lg" />
     );
   }
 
   if (error) {
     console.log('[BannerCarousel] 오류 발생:', error);
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[20/6] bg-red-100 rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-red-100 md:rounded-lg flex items-center justify-center">
         <p className="text-red-600">{error}</p>
       </div>
     );
@@ -76,7 +76,7 @@ export default function BannerCarousel() {
   if (banners.length === 0) {
     console.log('[BannerCarousel] 배너가 없음');
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[20/6] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-gray-100 md:rounded-lg flex items-center justify-center">
         <p className="text-gray-600">표시할 배너가 없습니다.</p>
       </div>
     );
@@ -97,9 +97,9 @@ export default function BannerCarousel() {
   });
 
   return (
-    <div className="relative w-full overflow-hidden rounded-lg">
+    <div className="relative w-full overflow-hidden md:rounded-lg">
       {/* 배너 컨테이너 - aspect ratio로 이미지 비율 유지 */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[20/6] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/5] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         {/* 배너 이미지 */}
         {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
           <Link 
@@ -128,20 +128,20 @@ export default function BannerCarousel() {
                 e.preventDefault();
                 goToPrevious();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 z-10"
+              className="absolute left-0 md:left-4 top-0 md:top-1/2 h-full md:h-auto w-16 md:w-auto md:-translate-y-1/2 bg-gradient-to-r from-black/20 to-transparent md:bg-white/80 hover:from-black/30 md:hover:bg-white text-white md:text-gray-800 md:p-2 md:rounded-full md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
               aria-label="이전 배너"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-6 h-6 md:w-5 md:h-5" />
             </button>
             <button
               onClick={(e) => {
                 e.preventDefault();
                 goToNext();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 z-10"
+              className="absolute right-0 md:right-4 top-0 md:top-1/2 h-full md:h-auto w-16 md:w-auto md:-translate-y-1/2 bg-gradient-to-l from-black/20 to-transparent md:bg-white/80 hover:from-black/30 md:hover:bg-white text-white md:text-gray-800 md:p-2 md:rounded-full md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
               aria-label="다음 배너"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-6 h-6 md:w-5 md:h-5" />
             </button>
           </>
         )}
