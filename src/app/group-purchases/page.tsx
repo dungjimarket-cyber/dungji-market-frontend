@@ -27,6 +27,7 @@ interface GroupBuy {
     base_price: number;
     image_url: string;
     category_name: string;
+    category_detail_type?: string;
     carrier?: string;
     registration_type?: string;
     registration_type_korean?: string;
@@ -40,6 +41,16 @@ interface GroupBuy {
     plan_info: string;
     contract_period?: string;
   };
+  internet_detail?: {
+    carrier: string;
+    carrier_display: string;
+    subscription_type: string;
+    subscription_type_display: string;
+    speed: string;
+    has_tv: boolean;
+    contract_period?: string;
+  };
+  product_info?: any;
   creator: {
     id: number;
     username: string;
