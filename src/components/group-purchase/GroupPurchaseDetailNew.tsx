@@ -1299,71 +1299,99 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
-        {/* 태그들 */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
-            가입유형 : {
-              groupBuy.product_details?.subscription_type_korean || 
-              groupBuy.telecom_detail?.subscription_type_korean ||
-              groupBuy.product_details?.registration_type_korean || 
-              getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) ||
-              '정보 없음'
-            }
-          </span>
+        {/* 통신사, 가입유형 정보 - 공구 목록 스타일로 */}
+        <div className="flex items-center gap-2 mb-6">
+          {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="relative inline-flex items-center group">
-              <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
-                통신사 : {groupBuy.telecom_detail.telecom_carrier}
-                <button className="ml-1 text-gray-400 hover:text-gray-600">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              </span>
-              
-              {/* 툴팁 - 통신사별 요금제 링크 */}
-              <div className="absolute top-full left-0 mt-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
-                <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px]">
-                  <p className="text-xs font-medium text-gray-700 mb-2">통신사별 요금제 알아보기</p>
-                  <div className="space-y-1">
-                    <a
-                      href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      SK브로드밴드 →
-                    </a>
-                    <a
-                      href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      KT →
-                    </a>
-                    <a
-                      href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-xs text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      LG유플러스 →
-                    </a>
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center justify-center px-3 py-2 bg-white border-2 border-gray-400 rounded-lg h-11">
+              {(() => {
+                const carrier = groupBuy.telecom_detail.telecom_carrier;
+                const categoryName = groupBuy.product_details?.category_name;
+                const isInternetCategory = categoryName === '인터넷' || categoryName === '인터넷+TV';
+                
+                switch(carrier) {
+                  case 'SK':
+                  case 'SKB':
+                  case 'SK브로드밴드':
+                    return (
+                      <Image
+                        src="/logos/sk-broadband.png"
+                        alt="SK"
+                        width={42}
+                        height={28}
+                        className="object-contain"
+                      />
+                    );
+                  case 'SKT':
+                    return (
+                      <Image
+                        src="/logos/skt.png"
+                        alt="SKT"
+                        width={38}
+                        height={28}
+                        className="object-contain"
+                      />
+                    );
+                  case 'KT':
+                    return (
+                      <Image
+                        src="/logos/kt.png"
+                        alt="KT"
+                        width={38}
+                        height={22}
+                        className="object-contain"
+                      />
+                    );
+                  case 'LGU':
+                  case 'LG U+':
+                  case 'LGU+':
+                    return (
+                      <Image
+                        src="/logos/lgu.png"
+                        alt="LG U+"
+                        width={56}
+                        height={22}
+                        className="object-contain"
+                      />
+                    );
+                  default:
+                    return (
+                      <span className="text-sm font-bold text-gray-700">{carrier}</span>
+                    );
+                }
+              })()}
             </div>
           )}
-          {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 요금제 정보 표시 */}
-          {groupBuy.telecom_detail?.plan_info && 
-           groupBuy.product_details?.category_name !== '인터넷' &&
-           groupBuy.product_details?.category_name !== '인터넷+TV' && (
-            <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
-              요금제 : {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-            </span>
+          
+          {/* 가입유형 */}
+          {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
+            <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-11">
+              <span className="text-sm font-bold text-purple-800">
+                {
+                  groupBuy.product_details?.subscription_type_korean || 
+                  groupBuy.telecom_detail?.subscription_type_korean ||
+                  groupBuy.product_details?.registration_type_korean || 
+                  getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) ||
+                  '정보 없음'
+                }
+              </span>
+            </div>
           )}
         </div>
+        
+        {/* 요금제 정보 - 하단에 별도 표시 (휴대폰만) */}
+        {groupBuy.telecom_detail?.plan_info && 
+         groupBuy.product_details?.category_name !== '인터넷' &&
+         groupBuy.product_details?.category_name !== '인터넷+TV' && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-green-700">요금제</span>
+              <span className="text-base font-bold text-green-900">
+                {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
