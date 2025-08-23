@@ -110,7 +110,7 @@ function SignInForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* 뒤로가기 버튼 */}
         <div>
@@ -121,11 +121,14 @@ function SignInForm() {
         </div>
 
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-3 sm:mt-6 text-center text-3xl font-extrabold text-gray-900">
             로그인
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             둥지마켓 이용을 위해 로그인해주세요
+          </p>
+          <p className="mt-1 text-center text-xs text-gray-500">
+            스마트한 공동구매 플랫폼
           </p>
         </div>
 
