@@ -479,10 +479,10 @@ function GroupPurchasesPageContent() {
           <div className="px-4 pb-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-sm border-2 ${
+              className={`w-fit py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border ${
                 showFilters 
-                  ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
-                  : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-50'
+                  ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' 
+                  : 'bg-white text-blue-600 border-blue-400 hover:bg-blue-50'
               }`}
             >
               <svg 
