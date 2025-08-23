@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { MessageSquare, Send, Clock, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Inquiry {
   id: number;
@@ -33,6 +34,7 @@ interface Inquiry {
 
 export default function InquiriesPage() {
   const { isAuthenticated, accessToken, user } = useAuth();
+  const router = useRouter();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -136,11 +138,21 @@ export default function InquiriesPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">1:1 문의</h1>
-        <p className="text-gray-600">궁금한 점이나 불편한 점을 문의해주세요.</p>
-        <p className="text-sm text-blue-600 mt-2">
-          파일전송이 필요하시거나, 실시간 상담을 원하실 경우 카카오톡 문의하기를 이용해 주세요.
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">1:1 문의</h1>
+            <p className="text-gray-600">궁금한 점이나 불편한 점을 문의해주세요.</p>
+            <p className="text-sm text-blue-600 mt-2">
+              파일전송이 필요하시거나, 실시간 상담을 원하실 경우 카카오톡 문의하기를 이용해 주세요.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/mypage/withdraw')}
+            className="text-sm text-red-600 hover:text-red-700 hover:underline whitespace-nowrap"
+          >
+            회원 탈퇴
+          </button>
+        </div>
       </div>
 
       {!showForm ? (

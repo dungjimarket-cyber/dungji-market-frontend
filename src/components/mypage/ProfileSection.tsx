@@ -859,16 +859,6 @@ export default function ProfileSection() {
             <span>{error}</span>
           </div>
         )}
-        
-        {/* 회원 탈퇴 버튼 */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <button
-            onClick={() => router.push('/mypage/withdraw')}
-            className="text-sm text-red-600 hover:text-red-700 hover:underline"
-          >
-            회원 탈퇴
-          </button>
-        </div>
       </div>
     </div>
   );
