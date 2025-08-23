@@ -1395,6 +1395,80 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           )}
         </div>
+        
+        {/* 통신사별 요금제 확인 링크 - 모든 카테고리 */}
+        {groupBuy.telecom_detail?.telecom_carrier && (
+          <div className="mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
+              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
+              <div className="flex flex-col gap-1">
+                {groupBuy.product_details?.category_name === '휴대폰' ? (
+                  // 휴대폰 요금제 링크
+                  <>
+                    <a
+                      href="https://www.tworld.co.kr/normal.do?serviceId=S_PROD2001&viewId=V_PROD0001"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                    >
+                      <span>SKT 요금제</span>
+                      <span className="ml-2">→</span>
+                    </a>
+                    <a
+                      href="https://product.kt.com/wDic/productList.do?cateCode=4001"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                    >
+                      <span>KT 요금제</span>
+                      <span className="ml-2">→</span>
+                    </a>
+                    <a
+                      href="https://www.lguplus.com/plan/5g"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                    >
+                      <span>LG U+ 요금제</span>
+                      <span className="ml-2">→</span>
+                    </a>
+                  </>
+                ) : (
+                  // 인터넷/인터넷+TV 요금제 링크
+                  <>
+                    <a
+                      href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                    >
+                      <span>SK브로드밴드</span>
+                      <span className="ml-2">→</span>
+                    </a>
+                    <a
+                      href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                    >
+                      <span>KT 인터넷</span>
+                      <span className="ml-2">→</span>
+                    </a>
+                    <a
+                      href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                    >
+                      <span>LG유플러스</span>
+                      <span className="ml-2">→</span>
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
