@@ -6,38 +6,38 @@ import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react'
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { getPlanDisplay } from '@/lib/telecom-utils';
 
-// 통신사 로고 컴포넌트
-const getCarrierLogo = (carrier: string) => {
+// 통신사 텍스트 표시 컴포넌트
+const getCarrierDisplay = (carrier: string, categoryName?: string) => {
+  // 인터넷이나 인터넷+TV 카테고리인지 확인
+  const isInternetCategory = categoryName === '인터넷' || categoryName === '인터넷+TV';
+  
+  let displayText = '';
+  let textColor = '';
+  
   switch(carrier) {
     case 'SKT':
-      return (
-        <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
-          <path d="M7 2C7 2 5 2 3 4C1 6 1 8 1 8C1 8 1 10 3 12C5 14 7 14 7 14" stroke="#E11E3C" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M7 2L13 2C13 2 15 2 15 5C15 8 13 8 13 8L7 8" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
-        </svg>
-      );
+      displayText = isInternetCategory ? 'SK' : 'SKT';
+      textColor = 'text-orange-500';
+      break;
     case 'KT':
-      return (
-        <svg width="24" height="16" viewBox="0 0 24 16" fill="none">
-          <path d="M2 2V14M2 8H7L9 6M9 10L7 8" stroke="#4A4A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M14 4V8C14 8 14 10 16 10C18 10 18 8 18 8V4" stroke="#E11E3C" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M18 2V4" stroke="#E11E3C" strokeWidth="2.5" strokeLinecap="round"/>
-        </svg>
-      );
+      displayText = 'KT';
+      textColor = 'text-blue-500';
+      break;
     case 'LGU':
     case 'LG U+':
-      return (
-        <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
-          <path d="M4 4V10C4 12 5 13 7 13C9 13 10 12 10 10V4" stroke="#E4368C" strokeWidth="2" strokeLinecap="round"/>
-          <path d="M14 6V8M14 10V12" stroke="#E4368C" strokeWidth="2" strokeLinecap="round"/>
-          <path d="M12 8H16" stroke="#E4368C" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      );
+      displayText = 'LG U+';
+      textColor = 'text-gray-600';
+      break;
     default:
-      return (
-        <span className="text-xs font-bold text-gray-600">{carrier}</span>
-      );
+      displayText = carrier;
+      textColor = 'text-gray-600';
   }
+  
+  return (
+    <span className={`text-xs font-bold ${textColor}`}>
+      {displayText}
+    </span>
+  );
 };
 
 import { useState, useEffect } from 'react';
@@ -500,18 +500,17 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         
         {/* 통신사, 가입유형, 요금제 정보 - 한 줄로 표시 */}
         <div className="flex items-center gap-1.5 w-full">
-          {/* 통신사 로고 */}
+          {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="flex items-center justify-center w-12 h-6 bg-white border border-gray-300 rounded-md">
-              {getCarrierLogo(groupBuy.telecom_detail.telecom_carrier)}
+            <div className="flex items-center justify-center px-2.5 py-1 bg-white border border-gray-300 rounded-md">
+              {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
             </div>
           )}
           
           {/* 가입유형과 요금제를 컨텐츠 크기에 맞게 배치 */}
           <div className="flex items-center gap-1">
             {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
-                <span className="text-[10px] font-medium text-purple-600">가입</span>
+              <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
                 <span className="text-xs font-bold text-purple-800">
                   {groupBuy.product_details?.registration_type_korean || 
                    groupBuy.telecom_detail?.subscription_type_korean || 
@@ -524,7 +523,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
              groupBuy.product_details?.category_name !== '인터넷' &&
              groupBuy.product_details?.category_name !== '인터넷+TV' && (
               <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
-                <span className="text-[10px] font-medium text-green-600">요금</span>
+                <span className="text-[10px] font-medium text-green-600">요금제</span>
                 <span className="text-xs font-bold text-green-800">
                   {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
                 </span>
