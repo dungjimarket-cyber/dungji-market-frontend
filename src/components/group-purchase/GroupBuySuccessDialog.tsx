@@ -34,6 +34,9 @@ export function GroupBuySuccessDialog({
           text: '둥지마켓에서 함께 구매하고 할인받으세요!',
           url: groupBuyUrl,
         });
+        // 공유 후 상세 페이지로 이동
+        onOpenChange(false);
+        router.push(`/groupbuys/${groupBuyId}`);
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           handleCopyLink();
@@ -51,6 +54,11 @@ export function GroupBuySuccessDialog({
         title: '링크 복사 완료',
         description: '공구 링크가 클립보드에 복사되었습니다.',
       });
+      // 링크 복사 후 상세 페이지로 이동
+      setTimeout(() => {
+        onOpenChange(false);
+        router.push(`/groupbuys/${groupBuyId}`);
+      }, 1000);
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -62,16 +70,21 @@ export function GroupBuySuccessDialog({
 
   const handleLater = () => {
     onOpenChange(false);
-    router.push('/group-purchases');
+    router.push(`/groupbuys/${groupBuyId}`);
   };
 
   const handleClose = () => {
     onOpenChange(false);
-    router.push('/group-purchases');
+    router.push(`/groupbuys/${groupBuyId}`);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) {
+        // 다이얼로그가 닫힐 때 상세 페이지로 이동
+        handleClose();
+      }
+    }}>
       <DialogContent className="max-w-sm p-6">
         <VisuallyHidden>
           <DialogTitle>공구 등록 완료</DialogTitle>
