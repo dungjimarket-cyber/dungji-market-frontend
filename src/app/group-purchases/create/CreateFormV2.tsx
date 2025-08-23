@@ -389,20 +389,41 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     try {
       // 스크롤 및 포커스 헬퍼 함수
       const scrollToAndFocus = (elementId: string) => {
+        console.log('Scrolling to element:', elementId);
         const element = document.getElementById(elementId);
         if (element) {
+          console.log('Element found:', element);
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          // input, select, textarea 요소 찾아서 포커스
-          const focusableElement = element.querySelector('input, select, textarea, button[role="combobox"]') as HTMLElement;
-          if (focusableElement) {
-            setTimeout(() => {
+          
+          setTimeout(() => {
+            // Radix UI Select의 trigger 버튼 찾기 (role="combobox" 또는 data-state 속성을 가진 버튼)
+            let focusableElement = element.querySelector('button[role="combobox"], button[data-state], [role="combobox"]') as HTMLElement;
+            console.log('Found with combobox selector:', focusableElement);
+            
+            // 그래도 못 찾으면 일반 input, select, textarea, button 찾기
+            if (!focusableElement) {
+              focusableElement = element.querySelector('input, select, textarea, button') as HTMLElement;
+              console.log('Found with general selector:', focusableElement);
+            }
+            
+            // 모든 버튼 요소 확인 (디버깅용)
+            const allButtons = element.querySelectorAll('button');
+            console.log('All buttons in element:', allButtons);
+            
+            if (focusableElement) {
+              console.log('Focusing element:', focusableElement);
               focusableElement.focus();
-              // 클릭해서 드롭다운 열기 (Select 컴포넌트의 경우)
-              if (focusableElement.getAttribute('role') === 'combobox') {
+              // 드롭다운 열기 시도
+              setTimeout(() => {
+                console.log('Clicking element to open dropdown');
                 focusableElement.click();
-              }
-            }, 500); // 스크롤 애니메이션 후 포커스
-          }
+              }, 100);
+            } else {
+              console.log('No focusable element found');
+            }
+          }, 500); // 스크롤 애니메이션 후 포커스
+        } else {
+          console.log('Element not found with ID:', elementId);
         }
       };
 
