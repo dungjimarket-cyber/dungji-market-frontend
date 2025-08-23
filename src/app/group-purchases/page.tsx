@@ -152,38 +152,33 @@ function GroupPurchasesPageContent() {
             else if (key === 'manufacturer') {
               console.log('제조사 필터 처리 - value:', value);
               // 콤마로 구분된 여러 값 처리
-              const manufacturers = value.split(',');
-              
-              // 각 제조사를 개별 파라미터로 추가 (OR 조건)
-              manufacturers.forEach(m => {
-                let mfgValue = m;
-                if (m === 'samsung') mfgValue = '삼성';
-                else if (m === 'apple') mfgValue = '애플';
-                
-                console.log('추가되는 제조사 파라미터:', mfgValue);
-                params.append('manufacturer', mfgValue);
+              const manufacturers = value.split(',').map(m => {
+                if (m === 'samsung') return '삼성';
+                else if (m === 'apple') return '애플';
+                return m;
               });
+              
+              console.log('변환된 제조사들:', manufacturers.join(','));
+              // 콤마로 구분된 문자열로 전송 (백엔드에서 OR 처리 기대)
+              params.append('manufacturer__in', manufacturers.join(','));
             }
             // 요금제 필터 (합집합 처리)
             else if (key === 'plan' || key === 'planRange') {
               console.log('요금제 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 여러 값 처리
-              const plans = value.split(',');
-              console.log('분리된 요금제들:', plans);
-              
-              // 각 요금제를 개별 파라미터로 추가 (OR 조건)
-              plans.forEach(p => {
-                let planValue = p;
-                if (p === '50000') planValue = '5만원대';
-                else if (p === '60000') planValue = '6만원대';
-                else if (p === '70000') planValue = '7만원대';
-                else if (p === '80000') planValue = '8만원대';
-                else if (p === '90000') planValue = '9만원대';
-                else if (p === '100000') planValue = '10만원이상';
-                
-                console.log('추가되는 요금제 파라미터:', planValue);
-                params.append('plan_info', planValue);
+              const plans = value.split(',').map(p => {
+                if (p === '50000') return '5만원대';
+                else if (p === '60000') return '6만원대';
+                else if (p === '70000') return '7만원대';
+                else if (p === '80000') return '8만원대';
+                else if (p === '90000') return '9만원대';
+                else if (p === '100000') return '10만원이상';
+                return p;
               });
+              
+              console.log('변환된 요금제들:', plans.join(','));
+              // 콤마로 구분된 문자열로 전송 (백엔드에서 OR 처리 기대)
+              params.append('telecom_detail__plan_info__in', plans.join(','));
             }
             // 브랜드 필터 (호환성)
             else if (key === 'brand') {
@@ -205,59 +200,53 @@ function GroupPurchasesPageContent() {
             else if (key === 'carrier' || key === 'internet_carrier' || key === 'internet_tv_carrier') {
               console.log('통신사 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 여러 값 처리
-              const carriers = value.split(',');
-              const category = filters.category || selectedCategory;
-              
-              // 각 통신사를 개별 파라미터로 추가 (OR 조건)
-              carriers.forEach(c => {
-                let carrierValue = c;
-                if (c === 'skt' || c === 'SKT') carrierValue = 'SKT';
-                else if (c === 'kt' || c === 'KT') carrierValue = 'KT';
-                else if (c === 'lgu' || c === 'LG U+') carrierValue = 'LGU';
-                
-                console.log('추가되는 통신사 파라미터:', carrierValue);
-                
-                // 카테고리에 따라 다른 필터 적용
-                if (category === 'phone') {
-                  params.append('telecom_carrier', carrierValue);
-                } else if (category === 'internet' || category === 'internet_tv') {
-                  // 인터넷/인터넷+TV는 별도 필터 사용
-                  params.append('internet_carrier', carrierValue);
-                }
+              const carriers = value.split(',').map(c => {
+                if (c === 'skt' || c === 'SKT') return 'SKT';
+                else if (c === 'kt' || c === 'KT') return 'KT';
+                else if (c === 'lgu' || c === 'LG U+') return 'LGU';
+                return c;
               });
+              
+              const category = filters.category || selectedCategory;
+              console.log('변환된 통신사들:', carriers.join(','));
+              
+              // 카테고리에 따라 다른 필터 적용
+              if (category === 'phone') {
+                params.append('telecom_detail__telecom_carrier__in', carriers.join(','));
+              } else if (category === 'internet' || category === 'internet_tv') {
+                // 인터넷/인터넷+TV는 별도 필터 사용
+                params.append('internet_detail__carrier__in', carriers.join(','));
+              }
             }
             // 가입 유형 필터 (합집합 처리)
             else if (key === 'subscriptionType' || key === 'internet_subscriptionType' || key === 'internet_tv_subscriptionType') {
               console.log('가입유형 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 여러 값 처리
-              const subscriptionTypes = value.split(',');
-              
-              // 각 가입유형을 개별 파라미터로 추가 (OR 조건)
-              subscriptionTypes.forEach(type => {
-                let subscriptionType = '';
+              const subscriptionTypes = value.split(',').map(type => {
                 // GroupBuyFilters에서 온 값들과 매핑
-                if (type === 'new_signup' || type === '신규가입') subscriptionType = 'new';
-                else if (type === 'number_port' || type === '번호이동') subscriptionType = 'transfer';
-                else if (type === 'device_change' || type === '기기변경') subscriptionType = 'change';
-                else if (type === 'carrier_change' || type === '통신사이동') subscriptionType = 'transfer';
+                if (type === 'new_signup' || type === '신규가입') return 'new';
+                else if (type === 'number_port' || type === '번호이동') return 'transfer';
+                else if (type === 'device_change' || type === '기기변경') return 'change';
+                else if (type === 'carrier_change' || type === '통신사이동') return 'transfer';
+                return type;
+              }).filter(Boolean);
+              
+              if (subscriptionTypes.length > 0) {
+                console.log('변환된 가입유형들:', subscriptionTypes.join(','));
+                const category = filters.category || selectedCategory;
                 
-                if (subscriptionType) {
-                  console.log('추가되는 가입유형 파라미터:', subscriptionType);
-                  params.append('subscription_type', subscriptionType);
+                if (category === 'phone') {
+                  params.append('telecom_detail__subscription_type__in', subscriptionTypes.join(','));
+                } else if (category === 'internet' || category === 'internet_tv') {
+                  params.append('internet_detail__subscription_type__in', subscriptionTypes.join(','));
                 }
-              });
+              }
             }
             // 인터넷 속도 필터 (합집합 처리)
             else if (key === 'speed' || key === 'internet_speed' || key === 'internet_tv_speed') {
               console.log('속도 필터 처리 - key:', key, 'value:', value);
-              // 콤마로 구분된 여러 값 처리
-              const speeds = value.split(',');
-              
-              // 각 속도를 개별 파라미터로 추가 (OR 조건)
-              speeds.forEach(speed => {
-                console.log('추가되는 속도 파라미터:', speed);
-                params.append('internet_speed', speed);
-              });
+              // 콤마로 구분된 값들을 그대로 전송
+              params.append('internet_detail__speed__in', value);
             }
             // 지역 필터
             else if (key === 'region') {
