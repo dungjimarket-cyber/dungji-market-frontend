@@ -76,7 +76,7 @@ function NoShowReportContent() {
     };
     
     checkAuthAndFetch();
-  }, [groupbuyId]);
+  }, [groupbuyId, user, accessToken]);
 
   const fetchGroupbuyInfo = async () => {
     try {
@@ -91,7 +91,9 @@ function NoShowReportContent() {
         setGroupbuyInfo(data);
         
         // 판매자인 경우 참여자 목록도 가져오기
+        console.log('Current user role:', user?.role);
         if (user?.role === 'seller') {
+          console.log('Fetching participants for seller...');
           fetchParticipants();
         }
       }
@@ -132,23 +134,16 @@ function NoShowReportContent() {
   };
 
   const fetchParticipants = async () => {
+    console.log('fetchParticipants called with groupbuyId:', groupbuyId);
     try {
-      // 구매확정된 참여자 목록 가져오기
-      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/confirmed_buyers/`, {
+      // 먼저 일반 participants 엔드포인트 시도
+      console.log('Trying participants endpoint...');
+      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-      
-      // 구매확정 엔드포인트가 없으면 일반 participants 엔드포인트 시도
-      if (!response.ok) {
-        console.log('Trying participants endpoint...');
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-      }
+      console.log('Participants endpoint response status:', response.status);
       
       // If that fails, try the participations endpoint
       if (!response.ok) {
@@ -158,16 +153,30 @@ function NoShowReportContent() {
             'Authorization': `Bearer ${accessToken}`
           }
         });
+        console.log('Participations endpoint response status:', response.status);
+      }
+      
+      // 마지막으로 confirmed_buyers 엔드포인트 시도
+      if (!response.ok) {
+        console.log('Trying confirmed_buyers endpoint...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/confirmed_buyers/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        console.log('Confirmed buyers endpoint response status:', response.status);
       }
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Raw participants data:', data);
         // Handle both response formats
         const participantsData = Array.isArray(data) ? data : (data.results || data);
         setParticipants(participantsData);
-        console.log('Participants fetched successfully:', participantsData);
+        console.log('Participants set successfully:', participantsData);
+        console.log('Number of participants:', participantsData.length);
       } else {
-        console.error('Failed to fetch participants:', response.status);
+        console.error('Failed to fetch participants, all endpoints failed');
         // 참여자 정보를 못 가져왔을 때 안내 메시지
         toast.error('구매자 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
       }
@@ -532,6 +541,9 @@ function NoShowReportContent() {
             {user?.role === 'seller' && (
               <div className="space-y-2">
                 <Label>노쇼한 구매자 선택 (필수)</Label>
+                <div className="text-xs text-gray-500 mb-2">
+                  디버깅: user.role={user?.role}, participants.length={participants.length}
+                </div>
                 {participants.length > 0 ? (
                   <>
                     <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
