@@ -1259,40 +1259,40 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
          groupBuy.product_details?.category_name !== '인터넷+TV' ? (
           <div className="flex items-baseline gap-2 mb-4">
             <span className="text-sm text-gray-500">출고가</span>
-            <span className="text-2xl font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
+            <span className="text-lg font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
           </div>
         ) : (
           /* 인터넷/인터넷+TV 카테고리인 경우 통신사 요금제 확인 링크 표시 */
           <div className="mb-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm font-medium text-blue-800 mb-3">통신사별 요금제 확인하기</p>
-              <div className="grid grid-cols-1 gap-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
+              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
+              <div className="flex flex-col gap-1">
                 <a
                   href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
                 >
-                  <span>SK브로드밴드 요금제</span>
-                  <span>→</span>
+                  <span>SK브로드밴드</span>
+                  <span className="ml-2">→</span>
                 </a>
                 <a
                   href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
                 >
-                  <span>KT 요금제</span>
-                  <span>→</span>
+                  <span>KT 인터넷</span>
+                  <span className="ml-2">→</span>
                 </a>
                 <a
                   href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between px-3 py-2 bg-white border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
                 >
-                  <span>LG유플러스 요금제</span>
-                  <span>→</span>
+                  <span>LG유플러스</span>
+                  <span className="ml-2">→</span>
                 </a>
               </div>
             </div>
@@ -1303,7 +1303,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="flex items-center gap-2 mb-6">
           {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="flex items-center justify-center px-3 py-2 bg-white border-2 border-gray-400 rounded-lg h-11">
+            <div className="flex items-center justify-center px-1.5 py-1 bg-white border-2 border-gray-400 rounded-lg h-11">
               {(() => {
                 const carrier = groupBuy.telecom_detail.telecom_carrier;
                 const categoryName = groupBuy.product_details?.category_name;
@@ -1363,9 +1363,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           )}
           
-          {/* "로" 텍스트 */}
+          {/* "로" 텍스트 - 붙여서 표시 */}
           {groupBuy.telecom_detail?.telecom_carrier && (groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-            <span className="text-lg font-bold text-gray-800 mx-1">로</span>
+            <span className="text-lg font-black text-red-600 -ml-1">로</span>
           )}
           
           {/* 가입유형 */}

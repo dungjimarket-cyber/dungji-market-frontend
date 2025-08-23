@@ -528,12 +528,12 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
             <>
-              <div className="flex items-center justify-center px-2.5 py-1.5 bg-white border border-gray-300 rounded-md h-9">
+              <div className="flex items-center justify-center px-1.5 py-1 bg-white border border-gray-300 rounded-md h-9">
                 {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
               </div>
               {/* "로" 텍스트 */}
               {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-                <span className="text-xs font-bold text-gray-700 mx-0.5">로</span>
+                <span className="text-xs font-black text-red-600 -ml-1">로</span>
               )}
             </>
           )}
