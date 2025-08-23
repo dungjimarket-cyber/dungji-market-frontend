@@ -369,11 +369,10 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     setSelectedProduct(null);
   };
 
-  // 인터넷 가입 유형 변경 시 상품 선택 초기화
+  // 인터넷 가입 유형 변경 시
   const handleInternetSubscriptionTypeChange = (value: 'transfer' | 'new') => {
     setInternetSubscriptionType(value);
-    form.setValue('product', ''); // 상품 선택 초기화
-    setSelectedProduct(null);
+    // 상품 선택은 유지 (초기화하지 않음)
   };
 
   // 공구 제목 자동 생성
@@ -488,11 +487,12 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         }
       } else if (mainTab === 'internet' || mainTab === 'internet_tv') {
         // 인터넷/인터넷+TV 필수 필드: 통신사(서브탭), 가입유형
-        if (subTab === 'all') {
+        // "전체" 탭에서도 상품이 선택되어 있으면 통과
+        if (subTab === 'all' && !selectedProduct) {
           toast({
             variant: 'destructive',
             title: '통신사 선택 필요',
-            description: '통신사를 선택해주세요.',
+            description: '통신사를 선택하거나 상품을 선택해주세요.',
           });
           scrollToAndFocus(mainTab === 'internet' ? 'internet-carrier-tabs' : 'internettv-carrier-tabs');
           setIsSubmitting(false);
