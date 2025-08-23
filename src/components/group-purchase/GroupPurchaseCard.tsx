@@ -5,6 +5,30 @@ import { useRouter } from 'next/navigation';
 import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react';
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { getPlanDisplay } from '@/lib/telecom-utils';
+
+// 통신사 로고 컴포넌트
+const getCarrierLogo = (carrier: string) => {
+  switch(carrier) {
+    case 'SKT':
+      return (
+        <span className="text-[10px] font-bold text-red-600">SKT</span>
+      );
+    case 'KT':
+      return (
+        <span className="text-[10px] font-bold text-blue-600">KT</span>
+      );
+    case 'LGU':
+    case 'LG U+':
+      return (
+        <span className="text-[10px] font-bold text-pink-600">LG U+</span>
+      );
+    default:
+      return (
+        <span className="text-[10px] font-bold text-gray-600">{carrier}</span>
+      );
+  }
+};
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { SimplifiedGroupBuyButton } from '@/components/groupbuy/SimplifiedGroupBuyButton';
@@ -464,36 +488,38 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </div>
         
         {/* 통신사, 가입유형, 요금제 정보 - 한 줄로 표시 */}
-        <div className="flex items-center gap-0.5 flex-nowrap">
+        <div className="flex items-center gap-1.5 w-full">
+          {/* 통신사 로고 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-md whitespace-nowrap">
-              <span className="text-[9px] font-medium text-blue-600">통신사</span>
-              <span className="text-[10px] font-bold text-blue-800">
-                {groupBuy.telecom_detail.telecom_carrier}
-              </span>
+            <div className="flex items-center justify-center w-12 h-6 bg-white border border-gray-300 rounded-md">
+              {getCarrierLogo(groupBuy.telecom_detail.telecom_carrier)}
             </div>
           )}
-          {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-            <div className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap">
-              <span className="text-[9px] font-medium text-purple-600">가입</span>
-              <span className="text-[10px] font-bold text-purple-800">
-                {groupBuy.product_details?.registration_type_korean || 
-                 groupBuy.telecom_detail?.subscription_type_korean || 
-                 getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
-              </span>
-            </div>
-          )}
-          {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 요금제 정보 표시 */}
-          {groupBuy.telecom_detail?.plan_info && 
-           groupBuy.product_details?.category_name !== '인터넷' &&
-           groupBuy.product_details?.category_name !== '인터넷+TV' && (
-            <div className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap">
-              <span className="text-[9px] font-medium text-green-600">요금</span>
-              <span className="text-[10px] font-bold text-green-800">
-                {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-              </span>
-            </div>
-          )}
+          
+          {/* 가입유형과 요금제를 나머지 공간에 배치 */}
+          <div className="flex items-center gap-1 flex-1">
+            {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap flex-1">
+                <span className="text-[10px] font-medium text-purple-600">가입</span>
+                <span className="text-xs font-bold text-purple-800">
+                  {groupBuy.product_details?.registration_type_korean || 
+                   groupBuy.telecom_detail?.subscription_type_korean || 
+                   getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
+                </span>
+              </div>
+            )}
+            {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 요금제 정보 표시 */}
+            {groupBuy.telecom_detail?.plan_info && 
+             groupBuy.product_details?.category_name !== '인터넷' &&
+             groupBuy.product_details?.category_name !== '인터넷+TV' && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap flex-1">
+                <span className="text-[10px] font-medium text-green-600">요금</span>
+                <span className="text-xs font-bold text-green-800">
+                  {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
