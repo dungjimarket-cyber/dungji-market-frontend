@@ -160,7 +160,7 @@ function GroupPurchasesPageContent() {
               
               console.log('변환된 제조사들:', manufacturers.join(','));
               // 콤마로 구분된 문자열로 전송 (백엔드에서 OR 처리 기대)
-              params.append('manufacturer__in', manufacturers.join(','));
+              params.append('manufacturer', manufacturers.join(','));
             }
             // 요금제 필터 (합집합 처리)
             else if (key === 'plan' || key === 'planRange') {
@@ -178,7 +178,7 @@ function GroupPurchasesPageContent() {
               
               console.log('변환된 요금제들:', plans.join(','));
               // 콤마로 구분된 문자열로 전송 (백엔드에서 OR 처리 기대)
-              params.append('telecom_detail__plan_info__in', plans.join(','));
+              params.append('plan_info', plans.join(','));
             }
             // 브랜드 필터 (호환성)
             else if (key === 'brand') {
@@ -212,10 +212,10 @@ function GroupPurchasesPageContent() {
               
               // 카테고리에 따라 다른 필터 적용
               if (category === 'phone') {
-                params.append('telecom_detail__telecom_carrier__in', carriers.join(','));
+                params.append('telecom_carrier', carriers.join(','));
               } else if (category === 'internet' || category === 'internet_tv') {
                 // 인터넷/인터넷+TV는 별도 필터 사용
-                params.append('internet_detail__carrier__in', carriers.join(','));
+                params.append('internet_carrier', carriers.join(','));
               }
             }
             // 가입 유형 필터 (합집합 처리)
@@ -236,9 +236,9 @@ function GroupPurchasesPageContent() {
                 const category = filters.category || selectedCategory;
                 
                 if (category === 'phone') {
-                  params.append('telecom_detail__subscription_type__in', subscriptionTypes.join(','));
+                  params.append('subscription_type', subscriptionTypes.join(','));
                 } else if (category === 'internet' || category === 'internet_tv') {
-                  params.append('internet_detail__subscription_type__in', subscriptionTypes.join(','));
+                  params.append('internet_subscription_type', subscriptionTypes.join(','));
                 }
               }
             }
@@ -246,7 +246,7 @@ function GroupPurchasesPageContent() {
             else if (key === 'speed' || key === 'internet_speed' || key === 'internet_tv_speed') {
               console.log('속도 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 값들을 그대로 전송
-              params.append('internet_detail__speed__in', value);
+              params.append('internet_speed', value);
             }
             // 지역 필터
             else if (key === 'region') {
