@@ -137,7 +137,7 @@ function GroupPurchasesPageContent() {
               } else if (value === 'phone') {
                 params.append('category', '휴대폰');
               } else if (value === 'internet') {
-                params.append('category', '인터녧');
+                params.append('category', '인터넷');
               } else if (value === 'internet_tv') {
                 params.append('category', '인터넷+TV');
               } else {
