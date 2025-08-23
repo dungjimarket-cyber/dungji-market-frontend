@@ -73,6 +73,7 @@ function GroupPurchasesPageContent() {
   // URL에서 카테고리 가져오기, 없으면 'phone' 기본값
   const categoryFromUrl = searchParams.get('category') as 'phone' | 'internet' | 'internet_tv' | null;
   const [selectedCategory, setSelectedCategory] = useState<'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'phone');
+  const [showFilters, setShowFilters] = useState(false);
 
   /**
    * 공구 목록 가져오기 (필터 포함)
@@ -474,9 +475,28 @@ function GroupPurchasesPageContent() {
             />
           </div>
 
-          {/* 필터 컴포넌트 - 이미지와 같은 스타일 */}
-          <div className="px-4 pb-4">
-            <GroupBuyFilters 
+          {/* 조건필터 버튼 */}
+          <div className="px-4 pb-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <svg 
+                className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              조건필터
+            </button>
+          </div>
+
+          {/* 필터 컴포넌트 - 조건필터 버튼 클릭 시에만 표시 */}
+          {showFilters && (
+            <div className="px-4 pb-4">
+              <GroupBuyFilters 
               category={selectedCategory}
               onFiltersChange={(filters) => {
                 // 필터 변경 처리 - 합집합을 위해 콤마로 구분한 값을 전달
@@ -513,7 +533,8 @@ function GroupPurchasesPageContent() {
                 handleFiltersChange(flatFilters);
               }}
             />
-          </div>
+            </div>
+          )}
 
           {/* 탭 메뉴 */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="px-4">
