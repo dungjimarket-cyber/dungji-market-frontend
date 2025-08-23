@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { expandSearchQuery, normalizeRegion, expandRegionSearch } from '@/lib/utils/keywordMapping';
 
 interface UnifiedSearchBarProps {
   onSearchChange?: (search: string, region: string) => void;
@@ -59,24 +60,36 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
 
   // 검색 실행
   const handleSearch = () => {
+    // 검색어 확장 (영어/한글 변형 포함)
+    const expandedQueries = searchQuery ? expandSearchQuery(searchQuery) : [];
+    const searchTerms = expandedQueries.length > 0 ? expandedQueries.join(',') : searchQuery;
+    
+    // 지역명 정규화 및 확장 (시/군/구 포함)
+    let regionSearchTerms = '';
+    if (selectedRegion !== 'all') {
+      const normalizedRegion = normalizeRegion(selectedRegion);
+      const expandedRegions = expandRegionSearch(selectedRegion);
+      regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : normalizedRegion;
+    }
+    
     const filters = {
-      search: searchQuery,
-      region: selectedRegion === 'all' ? '' : selectedRegion
+      search: searchTerms,
+      region: regionSearchTerms
     };
     
-    onSearchChange?.(searchQuery, selectedRegion === 'all' ? '' : selectedRegion);
+    onSearchChange?.(searchTerms, regionSearchTerms);
     
-    // URL 업데이트
+    // URL 업데이트 (원본 검색어는 URL에 표시)
     const params = new URLSearchParams(searchParams.toString());
     
-    if (filters.search) {
-      params.set('search', filters.search);
+    if (searchQuery) {
+      params.set('search', searchQuery);
     } else {
       params.delete('search');
     }
     
-    if (filters.region) {
-      params.set('region', filters.region);
+    if (selectedRegion !== 'all') {
+      params.set('region', selectedRegion); // URL에는 원본 표시
     } else {
       params.delete('region');
     }
@@ -95,24 +108,36 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
   const handleRegionChange = (region: string) => {
     setSelectedRegion(region);
     
+    // 검색어 확장 (영어/한글 변형 포함)
+    const expandedQueries = searchQuery ? expandSearchQuery(searchQuery) : [];
+    const searchTerms = expandedQueries.length > 0 ? expandedQueries.join(',') : searchQuery;
+    
+    // 지역명 정규화 및 확장 (시/군/구 포함)
+    let regionSearchTerms = '';
+    if (region !== 'all') {
+      const normalizedRegion = normalizeRegion(region);
+      const expandedRegions = expandRegionSearch(region);
+      regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : normalizedRegion;
+    }
+    
     // 지역 변경 시 즉시 적용
     const filters = {
-      search: searchQuery,
-      region: region === 'all' ? '' : region
+      search: searchTerms,
+      region: regionSearchTerms
     };
     
-    onSearchChange?.(searchQuery, region === 'all' ? '' : region);
+    onSearchChange?.(searchTerms, regionSearchTerms);
     
     const params = new URLSearchParams(searchParams.toString());
     
-    if (filters.search) {
-      params.set('search', filters.search);
+    if (searchQuery) {
+      params.set('search', searchQuery);
     } else {
       params.delete('search');
     }
     
-    if (filters.region) {
-      params.set('region', filters.region);
+    if (region !== 'all') {
+      params.set('region', region); // URL에는 원본 표시
     } else {
       params.delete('region');
     }
@@ -128,7 +153,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             type="text"
-            placeholder="상품명, 브랜드, 키워드로 검색하세요..."
+            placeholder="상품명, 브랜드, 키워드 검색 (한글/영어 모두 가능)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
