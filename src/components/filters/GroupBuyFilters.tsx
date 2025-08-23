@@ -56,21 +56,20 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
           { value: 'number_port', label: '번호이동' },
           { value: 'new_signup', label: '신규가입' },
         ]
+      },
+      {
+        id: 'planRange',
+        label: '요금제',
+        options: [
+          { value: 'all', label: '전체' },
+          { value: '50000', label: '5만원대' },
+          { value: '60000', label: '6만원대' },
+          { value: '70000', label: '7만원대' },
+          { value: '80000', label: '8만원대' },
+          { value: '90000', label: '9만원대' },
+          { value: '100000', label: '10만원이상' },
+        ]
       }
-      // 요금제 필터 임시 비활성화
-      // {
-      //   id: 'planRange',
-      //   label: '요금제',
-      //   options: [
-      //     { value: 'all', label: '전체' },
-      //     { value: '50000', label: '5만원대' },
-      //     { value: '60000', label: '6만원대' },
-      //     { value: '70000', label: '7만원대' },
-      //     { value: '80000', label: '8만원대' },
-      //     { value: '90000', label: '9만원대' },
-      //     { value: '100000', label: '10만원이상' },
-      //   ]
-      // }
     ],
     internet: [
       {
