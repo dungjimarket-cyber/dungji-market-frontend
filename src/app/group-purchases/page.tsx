@@ -150,27 +150,40 @@ function GroupPurchasesPageContent() {
             }
             // 제조사 필터 (합집합 처리)
             else if (key === 'manufacturer') {
+              console.log('제조사 필터 처리 - value:', value);
               // 콤마로 구분된 여러 값 처리
-              const manufacturers = value.split(',').map(m => {
-                if (m === 'samsung') return '삼성';
-                else if (m === 'apple') return '애플';
-                return m;
+              const manufacturers = value.split(',');
+              
+              // 각 제조사를 개별 파라미터로 추가 (OR 조건)
+              manufacturers.forEach(m => {
+                let mfgValue = m;
+                if (m === 'samsung') mfgValue = '삼성';
+                else if (m === 'apple') mfgValue = '애플';
+                
+                console.log('추가되는 제조사 파라미터:', mfgValue);
+                params.append('manufacturer', mfgValue);
               });
-              params.append('manufacturer', manufacturers.join(','));
             }
             // 요금제 필터 (합집합 처리)
             else if (key === 'plan' || key === 'planRange') {
+              console.log('요금제 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 여러 값 처리
-              const plans = value.split(',').map(p => {
-                if (p === '50000') return '5만원대';
-                else if (p === '60000') return '6만원대';
-                else if (p === '70000') return '7만원대';
-                else if (p === '80000') return '8만원대';
-                else if (p === '90000') return '9만원대';
-                else if (p === '100000') return '10만원이상';
-                return p;
+              const plans = value.split(',');
+              console.log('분리된 요금제들:', plans);
+              
+              // 각 요금제를 개별 파라미터로 추가 (OR 조건)
+              plans.forEach(p => {
+                let planValue = p;
+                if (p === '50000') planValue = '5만원대';
+                else if (p === '60000') planValue = '6만원대';
+                else if (p === '70000') planValue = '7만원대';
+                else if (p === '80000') planValue = '8만원대';
+                else if (p === '90000') planValue = '9만원대';
+                else if (p === '100000') planValue = '10만원이상';
+                
+                console.log('추가되는 요금제 파라미터:', planValue);
+                params.append('plan_info', planValue);
               });
-              params.append('plan_info', plans.join(','));
             }
             // 브랜드 필터 (호환성)
             else if (key === 'brand') {
@@ -190,22 +203,28 @@ function GroupPurchasesPageContent() {
             }
             // 통신사 필터 (합집합 처리)
             else if (key === 'carrier' || key === 'internet_carrier' || key === 'internet_tv_carrier') {
+              console.log('통신사 필터 처리 - key:', key, 'value:', value);
               // 콤마로 구분된 여러 값 처리
-              const carriers = value.split(',').map(c => {
-                if (c === 'skt' || c === 'SKT') return 'SKT';
-                else if (c === 'kt' || c === 'KT') return 'KT';
-                else if (c === 'lgu' || c === 'LG U+') return 'LGU';
-                return c;
-              });
-              
-              // 카테고리에 따라 다른 필터 적용
+              const carriers = value.split(',');
               const category = filters.category || selectedCategory;
-              if (category === 'phone') {
-                params.append('telecom_carrier', carriers.join(','));
-              } else if (category === 'internet' || category === 'internet_tv') {
-                // 인터넷/인터넷+TV는 별도 필터 사용
-                params.append('internet_carrier', carriers.join(','));
-              }
+              
+              // 각 통신사를 개별 파라미터로 추가 (OR 조건)
+              carriers.forEach(c => {
+                let carrierValue = c;
+                if (c === 'skt' || c === 'SKT') carrierValue = 'SKT';
+                else if (c === 'kt' || c === 'KT') carrierValue = 'KT';
+                else if (c === 'lgu' || c === 'LG U+') carrierValue = 'LGU';
+                
+                console.log('추가되는 통신사 파라미터:', carrierValue);
+                
+                // 카테고리에 따라 다른 필터 적용
+                if (category === 'phone') {
+                  params.append('telecom_carrier', carrierValue);
+                } else if (category === 'internet' || category === 'internet_tv') {
+                  // 인터넷/인터넷+TV는 별도 필터 사용
+                  params.append('internet_carrier', carrierValue);
+                }
+              });
             }
             // 가입 유형 필터
             else if (key === 'subscriptionType' || key === 'internet_subscriptionType' || key === 'internet_tv_subscriptionType') {
