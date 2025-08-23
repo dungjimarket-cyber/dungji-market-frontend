@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, AlertCircle, Upload, X } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeft, AlertCircle, Upload, X, User, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +26,7 @@ function NoShowReportContent() {
   const [filePreview, setFilePreview] = useState<string>('');
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
+  const [selectedBuyerIds, setSelectedBuyerIds] = useState<string[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
   const [existingReport, setExistingReport] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -33,7 +35,7 @@ function NoShowReportContent() {
   const isButtonDisabled = loading || 
                           !content.trim() || 
                           content.trim().length < 20 ||
-                          (user?.role === 'seller' && !selectedBuyerId);
+                          (user?.role === 'seller' && selectedBuyerIds.length === 0);
   
   useEffect(() => {
     console.log('노쇼 신고 제출 버튼 상태:');
@@ -41,9 +43,9 @@ function NoShowReportContent() {
     console.log('- content.trim():', content.trim());
     console.log('- content.trim().length:', content.trim().length);
     console.log('- user?.role:', user?.role);
-    console.log('- selectedBuyerId:', selectedBuyerId);
+    console.log('- selectedBuyerIds:', selectedBuyerIds);
     console.log('- isButtonDisabled:', isButtonDisabled);
-  }, [loading, content, user?.role, selectedBuyerId, isButtonDisabled]);
+  }, [loading, content, user?.role, selectedBuyerIds, isButtonDisabled]);
 
   useEffect(() => {
     // 인증 체크를 지연시켜 세션 복원 시간을 확보
@@ -131,12 +133,22 @@ function NoShowReportContent() {
 
   const fetchParticipants = async () => {
     try {
-      // Try the preferred endpoint first
-      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
+      // 구매확정된 참여자 목록 가져오기
+      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/confirmed_buyers/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
       });
+      
+      // 구매확정 엔드포인트가 없으면 일반 participants 엔드포인트 시도
+      if (!response.ok) {
+        console.log('Trying participants endpoint...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+      }
       
       // If that fails, try the participations endpoint
       if (!response.ok) {
@@ -156,9 +168,12 @@ function NoShowReportContent() {
         console.log('Participants fetched successfully:', participantsData);
       } else {
         console.error('Failed to fetch participants:', response.status);
+        // 참여자 정보를 못 가져왔을 때 안내 메시지
+        toast.error('구매자 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
       }
     } catch (error) {
       console.error('참여자 목록 조회 실패:', error);
+      toast.error('구매자 정보를 불러오는 중 오류가 발생했습니다.');
     }
   };
 
@@ -296,11 +311,57 @@ function NoShowReportContent() {
       } else if (user?.role === 'seller') {
         // 판매자가 신고 → 구매자 노쇼
         reportType = 'buyer_noshow';
-        if (!selectedBuyerId) {
+        if (selectedBuyerIds.length === 0) {
           toast.error('신고할 구매자를 선택해주세요.');
+          setLoading(false);
           return;
         }
-        reportedUserId = parseInt(selectedBuyerId);
+        
+        // 여러 구매자에 대해 각각 신고 제출
+        const promises = selectedBuyerIds.map(async (buyerId) => {
+          const formData = new FormData();
+          formData.append('reported_user', buyerId);
+          formData.append('groupbuy', groupbuyId || '');
+          formData.append('report_type', reportType);
+          formData.append('content', content.trim());
+          
+          if (evidenceFile) {
+            formData.append('evidence_image', evidenceFile);
+          }
+          
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+          });
+          
+          return { buyerId, response };
+        });
+        
+        try {
+          const results = await Promise.all(promises);
+          const successCount = results.filter(r => r.response.ok).length;
+          const failCount = results.length - successCount;
+          
+          if (successCount > 0) {
+            toast.success(`${successCount}명의 구매자에 대한 노쇼 신고가 접수되었습니다.`);
+            if (failCount > 0) {
+              toast.warning(`${failCount}명의 신고는 실패했습니다. (이미 신고된 구매자일 수 있습니다)`);
+            }
+            router.push('/mypage/seller');
+          } else {
+            toast.error('노쇼 신고 접수에 실패했습니다.');
+          }
+        } catch (error) {
+          console.error('노쇼 신고 오류:', error);
+          toast.error('신고 처리 중 오류가 발생했습니다.');
+        } finally {
+          setLoading(false);
+        }
+        return; // 여기서 함수 종료
       } else {
         toast.error('신고 권한이 없습니다.');
         return;
@@ -468,32 +529,61 @@ function NoShowReportContent() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 구매자 선택 (판매자가 신고 시) */}
-            {user?.role === 'seller' && participants.length > 0 && (
+            {user?.role === 'seller' && (
               <div className="space-y-2">
-                <Label htmlFor="buyer-select">신고할 구매자 선택</Label>
-                <Select value={selectedBuyerId} onValueChange={setSelectedBuyerId}>
-                  <SelectTrigger id="buyer-select">
-                    <SelectValue placeholder="구매자를 선택해주세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {participants.map((participant) => {
-                      // user 객체가 있으면 user.id를, 없으면 participant가 user 자체일 수 있음
-                      const userId = participant.user?.id || participant.user_id || participant.id;
-                      const displayName = participant.user?.username || participant.user?.nickname || 
-                                        participant.username || participant.nickname || 
-                                        `참여자 ${userId}`;
-                      
-                      return (
-                        <SelectItem key={userId} value={userId.toString()}>
-                          {displayName}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">
-                  공구에 참여한 구매자 중에서 신고할 대상을 선택해주세요.
-                </p>
+                <Label>노쇼한 구매자 선택 (필수)</Label>
+                {participants.length > 0 ? (
+                  <>
+                    <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
+                      {participants.map((participant) => {
+                        const userId = participant.user?.id || participant.user_id || participant.id;
+                        const displayName = participant.user?.username || participant.user?.nickname || 
+                                          participant.username || participant.nickname || 
+                                          `참여자 ${userId}`;
+                        const phoneNumber = participant.user?.phone_number || participant.phone_number || '연락처 없음';
+                        
+                        return (
+                          <div key={userId} className="flex items-start space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
+                            <Checkbox
+                              id={`buyer-${userId}`}
+                              checked={selectedBuyerIds.includes(userId.toString())}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedBuyerIds([...selectedBuyerIds, userId.toString()]);
+                                } else {
+                                  setSelectedBuyerIds(selectedBuyerIds.filter(id => id !== userId.toString()));
+                                }
+                              }}
+                              className="mt-1"
+                            />
+                            <label 
+                              htmlFor={`buyer-${userId}`} 
+                              className="flex-1 cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <User className="w-4 h-4 text-gray-500" />
+                                <span className="font-medium text-sm">{displayName}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <Phone className="w-3 h-3" />
+                                <span>{phoneNumber}</span>
+                              </div>
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      노쇼한 구매자를 체크해주세요. (복수 선택 가능)
+                    </p>
+                  </>
+                ) : (
+                  <div className="border rounded-lg p-4 bg-yellow-50 border-yellow-200">
+                    <p className="text-sm text-yellow-800">
+                      구매자 정보를 불러오는 중입니다...
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
