@@ -915,8 +915,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 product_details: {
                   name: groupBuyState?.product_details?.name || '',
                   image_url: groupBuyState?.product_details?.image_url || '/placeholder.png',
-                  carrier: groupBuyState?.product_details?.telecom_detail?.carrier || 'SK텔레콤',
-                  registration_type: groupBuyState?.product_details?.telecom_detail?.registration_type || '번호이동',
+                  carrier: groupBuyState?.telecom_detail?.telecom_carrier || groupBuyState?.product_details?.carrier || '',
+                  registration_type: groupBuyState?.telecom_detail?.subscription_type || groupBuyState?.product_details?.registration_type || '',
                   base_price: groupBuyState?.product_details?.base_price || 0
                 }
               }}

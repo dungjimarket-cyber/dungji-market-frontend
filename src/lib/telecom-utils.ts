@@ -7,11 +7,22 @@
  */
 export const getCarrierDisplay = (carrier: string): string => {
   switch(carrier) {
-    case 'SKT': return 'SKT';
-    case 'KT': return 'KT';
-    case 'LGU': return 'LG U+';
-    case 'MVNO': return '알뜰폰';
-    default: return carrier;
+    case 'SK':
+    case 'SKB':
+    case 'SK브로드밴드':
+      return 'SK브로드밴드';
+    case 'SKT': 
+      return 'SKT';
+    case 'KT': 
+      return 'KT';
+    case 'LGU':
+    case 'LG U+':
+    case 'LGU+':
+      return 'LG U+';
+    case 'MVNO': 
+      return '알뜰폰';
+    default: 
+      return carrier;
   }
 };
 
