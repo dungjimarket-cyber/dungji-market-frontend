@@ -428,31 +428,34 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       {/* 상품 정보 영역 - 별도 섹션 */}
       <div className="p-4 border-b">
         {/* 지역 정보 */}
-        <div className="mb-2">
-          {groupBuy.region_type === 'nationwide' ? (
-            <span className="text-amber-600 text-sm font-bold">
-              [전국 비대면]
-            </span>
-          ) : (
-            groupBuy.regions && groupBuy.regions.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {groupBuy.regions.map((region, index) => {
-                  let displayName = region.name || region.full_name || '';
-                  displayName = displayName
-                    .replace('특별시', '시')
-                    .replace('광역시', '시')
-                    .replace('특별자치시', '시')
-                    .replace('특별자치도', '도');
-                  
-                  return (
-                    <span key={index} className="text-gray-600 text-sm font-medium">
-                      [{displayName}]
-                    </span>
-                  );
-                })}
-              </div>
-            )
-          )}
+        <div className="mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500">지역</span>
+            {groupBuy.region_type === 'nationwide' ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                전국 비대면
+              </span>
+            ) : (
+              groupBuy.regions && groupBuy.regions.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {groupBuy.regions.map((region, index) => {
+                    let displayName = region.name || region.full_name || '';
+                    displayName = displayName
+                      .replace('특별시', '')
+                      .replace('광역시', '')
+                      .replace('특별자치시', '')
+                      .replace('특별자치도', '');
+                    
+                    return (
+                      <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        {displayName}
+                      </span>
+                    );
+                  })}
+                </div>
+              )
+            )}
+          </div>
         </div>
         
         {/* 상품명 */}
@@ -461,26 +464,35 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </h3>
         
         {/* 통신사, 가입유형, 요금제 정보 */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-3">
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md text-sm font-medium">
-              {groupBuy.telecom_detail.telecom_carrier}
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-lg">
+              <span className="text-xs font-medium text-blue-600">통신사</span>
+              <span className="text-sm font-bold text-blue-800">
+                {groupBuy.telecom_detail.telecom_carrier}
+              </span>
+            </div>
           )}
           {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-            <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md text-sm font-medium">
-              {groupBuy.product_details?.registration_type_korean || 
-               groupBuy.telecom_detail?.subscription_type_korean || 
-               getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-lg">
+              <span className="text-xs font-medium text-purple-600">가입</span>
+              <span className="text-sm font-bold text-purple-800">
+                {groupBuy.product_details?.registration_type_korean || 
+                 groupBuy.telecom_detail?.subscription_type_korean || 
+                 getRegistrationTypeText(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type)}
+              </span>
+            </div>
           )}
           {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 요금제 정보 표시 */}
           {groupBuy.telecom_detail?.plan_info && 
            groupBuy.product_details?.category_name !== '인터넷' &&
            groupBuy.product_details?.category_name !== '인터넷+TV' && (
-            <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-md text-sm font-medium">
-              {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-lg">
+              <span className="text-xs font-medium text-green-600">요금</span>
+              <span className="text-sm font-bold text-green-800">
+                {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+              </span>
+            </div>
           )}
         </div>
       </div>
