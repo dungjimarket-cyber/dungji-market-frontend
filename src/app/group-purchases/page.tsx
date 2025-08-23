@@ -70,9 +70,9 @@ function GroupPurchasesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  // URL에서 카테고리 가져오기, 없으면 'phone' 기본값
+  // URL에서 카테고리 가져오기, 없으면 'all' 기본값
   const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'phone');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
   const [showFilters, setShowFilters] = useState(false);
 
   /**
@@ -384,12 +384,12 @@ function GroupPurchasesPageContent() {
       }
     });
     
-    // URL에 카테고리가 없으면 기본값으로 '휴대폰' 설정
+    // URL에 카테고리가 없으면 기본값으로 '전체' 설정
     if (!hasCategoryParam) {
-      filters.category = 'phone';
-      // URL을 업데이트하여 phone 카테고리가 선택되었음을 명시
+      filters.category = 'all';
+      // URL을 업데이트하여 all 카테고리가 선택되었음을 명시
       const newUrl = new URLSearchParams(searchParams.toString());
-      newUrl.set('category', 'phone');
+      newUrl.set('category', 'all');
       router.replace(`/group-purchases?${newUrl.toString()}`);
       return; // URL 업데이트 후 리턴하여 중복 호출 방지
     }

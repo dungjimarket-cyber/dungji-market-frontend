@@ -67,14 +67,14 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
 
   // 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<MainCategory>(
-    initialCategory || (searchParams.get('category') as MainCategory) || 'phone'
+    initialCategory || (searchParams.get('category') as MainCategory) || 'all'
   );
 
   /**
    * URL 파라미터에서 카테고리 초기화
    */
   useEffect(() => {
-    const category = initialCategory || (searchParams.get('category') as MainCategory) || 'phone';
+    const category = initialCategory || (searchParams.get('category') as MainCategory) || 'all';
     console.log('URL에서 카테고리 로드:', category);
     
     setSelectedCategory(category);
