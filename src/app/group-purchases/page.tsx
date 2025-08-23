@@ -165,7 +165,16 @@ function GroupPurchasesPageContent() {
             }
             // 통합 검색 필터 (제목, 상품명, 지역 등)
             else if (key === 'search') {
-              params.append('search', value);
+              console.log('검색 필터 처리 - value:', value);
+              // 쉼표로 구분된 검색어들을 각각 처리
+              if (value.includes(',')) {
+                const searchTerms = value.split(',').filter(term => term.trim());
+                console.log('확장된 검색어들:', searchTerms);
+                // 백엔드가 OR 검색을 지원하는 경우
+                params.append('search', value);
+              } else {
+                params.append('search', value);
+              }
             }
             // 제조사 필터 (합집합 처리)
             else if (key === 'manufacturer') {
@@ -269,7 +278,16 @@ function GroupPurchasesPageContent() {
             }
             // 지역 필터
             else if (key === 'region') {
-              params.append('region', value);
+              console.log('지역 필터 처리 - value:', value);
+              // 쉼표로 구분된 지역들을 처리
+              if (value.includes(',')) {
+                const regions = value.split(',').filter(region => region.trim());
+                console.log('확장된 지역들:', regions);
+                // 백엔드가 OR 검색을 지원하는 경우
+                params.append('region', value);
+              } else {
+                params.append('region', value);
+              }
             }
             // 제품 분류 필터
             else if (key === 'subCategory') {
@@ -362,6 +380,7 @@ function GroupPurchasesPageContent() {
    * 통합 검색 변경 처리
    */
   const handleSearchChange = (search: string, region: string) => {
+    console.log('검색어 변경 - search:', search, 'region:', region);
     const searchFilters: Record<string, string> = {};
     
     if (search) {
