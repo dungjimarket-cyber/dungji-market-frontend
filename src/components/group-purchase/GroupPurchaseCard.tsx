@@ -8,17 +8,31 @@ import { getPlanDisplay } from '@/lib/telecom-utils';
 
 // 통신사 로고 이미지 컴포넌트
 const getCarrierDisplay = (carrier: string, categoryName?: string) => {
-  // 인터넷이나 인터넷+TV 카테고리인지 확인 (SK 브로드밴드 로고 사용)
+  // 인터넷이나 인터넷+TV 카테고리인지 확인
   const isInternetCategory = categoryName === '인터넷' || categoryName === '인터넷+TV';
   
   switch(carrier) {
-    case 'SKT':
+    case 'SK':
+    case 'SKB':
+    case 'SK브로드밴드':
+      // 인터넷/인터넷+TV 서비스에서 SK는 SK 브로드밴드 로고 사용
       return (
         <Image
-          src={isInternetCategory ? "/logos/sk-broadband.png" : "/logos/skt.png"}
-          alt={isInternetCategory ? "SK" : "SKT"}
-          width={isInternetCategory ? 20 : 24}
-          height={isInternetCategory ? 20 : 20}
+          src="/logos/sk-broadband.png"
+          alt="SK"
+          width={20}
+          height={20}
+          className="object-contain"
+        />
+      );
+    case 'SKT':
+      // 휴대폰 서비스에서만 SKT 로고 사용
+      return (
+        <Image
+          src="/logos/skt.png"
+          alt="SKT"
+          width={24}
+          height={20}
           className="object-contain"
         />
       );
@@ -34,6 +48,7 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
       );
     case 'LGU':
     case 'LG U+':
+    case 'LGU+':
       return (
         <Image
           src="/logos/lgu.png"
@@ -470,15 +485,15 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
       </div>
 
-      {/* 상품 정보 영역 - 별도 섹션 */}
-      <div className="p-4 border-b">
-        {/* 상품명 */}
-        <h3 className="text-gray-900 text-lg font-bold mb-3 line-clamp-2">
+      {/* 상품 정보 영역 - 고정 높이로 버튼 정렬 유지 */}
+      <div className="p-4 border-b h-[180px] flex flex-col">
+        {/* 상품명 - 2줄로 제한 */}
+        <h3 className="text-gray-900 text-lg font-bold mb-3 line-clamp-2 min-h-[56px]">
           {groupBuy.product_details?.name || '상품명 없음'}
         </h3>
         
         {/* 지역 정보 */}
-        <div className="mb-3">
+        <div className="mb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-gray-500">지역</span>
             {groupBuy.region_type === 'nationwide' ? (
@@ -508,8 +523,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           </div>
         </div>
         
-        {/* 통신사, 가입유형, 요금제 정보 - 한 줄로 표시 */}
-        <div className="flex items-center gap-1.5 w-full">
+        {/* 통신사, 가입유형, 요금제 정보 - 하단에 고정 */}
+        <div className="flex items-center gap-1.5 w-full mt-auto">
           {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
             <div className="flex items-center justify-center px-2 py-1 bg-white border border-gray-300 rounded-md h-7">
