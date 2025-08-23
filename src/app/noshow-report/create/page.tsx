@@ -421,12 +421,8 @@ function NoShowReportContent() {
 
       if (response.ok) {
         toast.success(isEditMode ? '노쇼 신고가 수정되었습니다.' : '노쇼 신고가 접수되었습니다.');
-        // 판매자인 경우 판매자 마이페이지로, 구매자인 경우 일반 마이페이지로
-        if (user?.role === 'seller') {
-          router.push('/mypage/seller');
-        } else {
-          router.push('/mypage');
-        }
+        // 구매자는 일반 마이페이지로
+        router.push('/mypage');
       } else if (response.status === 400) {
         let errorMessage = '신고 접수에 실패했습니다.';
         try {
