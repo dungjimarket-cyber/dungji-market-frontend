@@ -69,6 +69,7 @@ export interface GroupBuy {
   seller_selection_end?: string; // 판매자 최종선택 종료 시간
   product: number; // product ID
   product_details: GroupBuyProduct; // 상세 제품 정보
+  product_info?: any; // 상품 정보 (custom_values 포함)
   product_name?: string; // 상품명 백업 필드
   creator: number; // 판매자(생성자) ID
   creator_name: string; // 판매자(생성자) 이름
@@ -86,7 +87,19 @@ export interface GroupBuy {
     telecom_carrier: string;
     subscription_type: string;
     subscription_type_korean?: string;
+    subscription_type_display?: string;
     plan_info: string;
+    contract_period?: string;
+  };
+  
+  // 인터넷/TV 상세 정보
+  internet_detail?: {
+    carrier: string;
+    carrier_display: string;
+    subscription_type: string;
+    subscription_type_display: string;
+    speed: string;
+    has_tv: boolean;
     contract_period?: string;
   };
   

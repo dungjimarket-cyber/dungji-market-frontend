@@ -40,12 +40,31 @@ interface GroupBuy {
   max_participants: number;
   product: number; // product ID
   product_details?: Product; // 상세 제품 정보
+  product_info?: any; // 상품 정보 (custom_values 포함)
   
   // 통신 관련 공구 정보 (명시적 필드)
   telecom_carrier?: string; // 통신사 (SKT, KT, LGU, MVNO)
   subscription_type?: string; // 가입유형 (new, transfer, change)
   subscription_type_korean?: string; // 가입유형 한글 (신규가입, 번호이동, 기기변경)
   plan_info?: string; // 요금제 (5G_basic, 5G_standard, 5G_premium, 5G_special, 5G_platinum)
+  
+  // 휴대폰 상세 정보
+  telecom_detail?: {
+    telecom_carrier: string;
+    subscription_type: string;
+    subscription_type_display: string;
+    plan_info: string;
+  };
+  
+  // 인터넷/TV 상세 정보
+  internet_detail?: {
+    carrier: string;
+    carrier_display: string;
+    subscription_type: string;
+    subscription_type_display: string;
+    speed: string;
+    has_tv: boolean;
+  };
   
   // 방장(생성자) 정보
   creator_name?: string;
@@ -235,21 +254,34 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                       </div>
                     </div>
                     
-                    {/* 방장 이름 및 가입유형 표시 */}
+                    {/* 방장 이름 표시 */}
                     <div className="flex justify-between items-center pt-2">
                       <div className="flex items-center">
                         <p className="text-xs text-gray-500 mr-1">방장:</p>
                         <p className="text-xs font-medium truncate max-w-[100px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
                       </div>
-                      {(groupBuy.subscription_type_korean || groupBuy.product_details?.registration_type_korean) && (
-                        <div className="flex items-center">
-                          <p className="text-xs text-gray-500 mr-1">가입:</p>
-                          <p className="text-xs truncate max-w-[80px]">
-                            {groupBuy.subscription_type_korean || 
-                             groupBuy.product_details?.registration_type_korean || 
-                             getRegistrationTypeText(groupBuy.subscription_type || groupBuy.product_details?.registration_type)}
-                          </p>
-                        </div>
+                    </div>
+                    
+                    {/* 카테고리별 정보 표시 */}
+                    <div className="flex items-center gap-2 text-xs">
+                      {/* 휴대폰 상품 정보 */}
+                      {groupBuy.product_info?.category_detail_type === 'telecom' && groupBuy.telecom_detail && (
+                        <>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">{groupBuy.telecom_detail.telecom_carrier}</span>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">{groupBuy.telecom_detail.subscription_type_display}</span>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">{groupBuy.telecom_detail.plan_info}</span>
+                        </>
+                      )}
+                      
+                      {/* 인터넷/TV 상품 정보 */}
+                      {(groupBuy.product_info?.category_detail_type === 'internet' || 
+                        groupBuy.product_info?.category_detail_type === 'internet_tv') && 
+                       groupBuy.internet_detail && (
+                        <>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">{groupBuy.internet_detail.carrier_display}</span>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">{groupBuy.internet_detail.subscription_type_display}</span>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded">{groupBuy.internet_detail.speed}</span>
+                        </>
                       )}
                     </div>
                   </div>
