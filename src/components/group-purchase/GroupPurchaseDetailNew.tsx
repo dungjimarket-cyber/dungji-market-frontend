@@ -1299,7 +1299,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
-        {/* 통신사, 가입유형 정보 - 공구 목록 스타일로 */}
+        {/* 통신사, 가입유형, 요금제 정보 - 공구 목록 스타일로 */}
         <div className="flex items-center gap-2 mb-6">
           {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
@@ -1363,6 +1363,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           )}
           
+          {/* "로" 텍스트 */}
+          {groupBuy.telecom_detail?.telecom_carrier && (groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
+            <span className="text-lg font-bold text-gray-800 mx-1">로</span>
+          )}
+          
           {/* 가입유형 */}
           {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
             <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-11">
@@ -1377,21 +1382,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </span>
             </div>
           )}
-        </div>
-        
-        {/* 요금제 정보 - 하단에 별도 표시 (휴대폰만) */}
-        {groupBuy.telecom_detail?.plan_info && 
-         groupBuy.product_details?.category_name !== '인터넷' &&
-         groupBuy.product_details?.category_name !== '인터넷+TV' && (
-          <div className="mb-6 p-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg">
-            <div className="flex items-center gap-2">
+          
+          {/* 요금제 정보 - 휴대폰만 표시 */}
+          {groupBuy.telecom_detail?.plan_info && 
+           groupBuy.product_details?.category_name !== '인터넷' &&
+           groupBuy.product_details?.category_name !== '인터넷+TV' && (
+            <div className="inline-flex items-center gap-1 px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg h-11">
               <span className="text-xs font-medium text-green-700">요금제</span>
-              <span className="text-base font-bold text-green-900">
+              <span className="text-sm font-bold text-green-800">
                 {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
               </span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
