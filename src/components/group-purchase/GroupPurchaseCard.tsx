@@ -6,38 +6,48 @@ import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react'
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { getPlanDisplay } from '@/lib/telecom-utils';
 
-// 통신사 텍스트 표시 컴포넌트
+// 통신사 로고 이미지 컴포넌트
 const getCarrierDisplay = (carrier: string, categoryName?: string) => {
-  // 인터넷이나 인터넷+TV 카테고리인지 확인
+  // 인터넷이나 인터넷+TV 카테고리인지 확인 (SK 브로드밴드 로고 사용)
   const isInternetCategory = categoryName === '인터넷' || categoryName === '인터넷+TV';
-  
-  let displayText = '';
-  let textColor = '';
   
   switch(carrier) {
     case 'SKT':
-      displayText = isInternetCategory ? 'SK' : 'SKT';
-      textColor = 'text-orange-500';
-      break;
+      return (
+        <Image
+          src={isInternetCategory ? "/logos/sk-broadband.png" : "/logos/skt.png"}
+          alt={isInternetCategory ? "SK" : "SKT"}
+          width={isInternetCategory ? 20 : 24}
+          height={isInternetCategory ? 20 : 20}
+          className="object-contain"
+        />
+      );
     case 'KT':
-      displayText = 'KT';
-      textColor = 'text-blue-500';
-      break;
+      return (
+        <Image
+          src="/logos/kt.png"
+          alt="KT"
+          width={24}
+          height={14}
+          className="object-contain"
+        />
+      );
     case 'LGU':
     case 'LG U+':
-      displayText = 'LG U+';
-      textColor = 'text-gray-600';
-      break;
+      return (
+        <Image
+          src="/logos/lgu.png"
+          alt="LG U+"
+          width={40}
+          height={14}
+          className="object-contain"
+        />
+      );
     default:
-      displayText = carrier;
-      textColor = 'text-gray-600';
+      return (
+        <span className="text-xs font-bold text-gray-600">{carrier}</span>
+      );
   }
-  
-  return (
-    <span className={`text-xs font-bold ${textColor}`}>
-      {displayText}
-    </span>
-  );
 };
 
 import { useState, useEffect } from 'react';
@@ -502,7 +512,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         <div className="flex items-center gap-1.5 w-full">
           {/* 통신사 표시 - 흰색 배경 */}
           {groupBuy.telecom_detail?.telecom_carrier && (
-            <div className="flex items-center justify-center px-2.5 py-1 bg-white border border-gray-300 rounded-md">
+            <div className="flex items-center justify-center px-2 py-1 bg-white border border-gray-300 rounded-md h-7">
               {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
             </div>
           )}
