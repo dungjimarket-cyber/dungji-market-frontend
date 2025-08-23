@@ -78,6 +78,14 @@ function NoShowReportContent() {
     checkAuthAndFetch();
   }, [groupbuyId, user, accessToken]);
 
+  // 판매자일 때 참여자 목록 가져오기 위한 별도 useEffect
+  useEffect(() => {
+    if (user?.role === 'seller' && groupbuyId && accessToken && authChecked) {
+      console.log('Seller detected, fetching participants...');
+      fetchParticipants();
+    }
+  }, [user, groupbuyId, accessToken, authChecked]);
+
   const fetchGroupbuyInfo = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/`, {
@@ -89,13 +97,7 @@ function NoShowReportContent() {
       if (response.ok) {
         const data = await response.json();
         setGroupbuyInfo(data);
-        
-        // 판매자인 경우 참여자 목록도 가져오기
-        console.log('Current user role:', user?.role);
-        if (user?.role === 'seller') {
-          console.log('Fetching participants for seller...');
-          fetchParticipants();
-        }
+        console.log('Group buy info fetched:', data);
       }
     } catch (error) {
       console.error('공구 정보 조회 실패:', error);
@@ -537,9 +539,6 @@ function NoShowReportContent() {
             {user?.role === 'seller' && (
               <div className="space-y-2">
                 <Label>노쇼한 구매자 선택 (필수)</Label>
-                <div className="text-xs text-gray-500 mb-2">
-                  디버깅: user.role={user?.role}, participants.length={participants.length}
-                </div>
                 {participants.length > 0 ? (
                   <>
                     <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
@@ -587,9 +586,20 @@ function NoShowReportContent() {
                   </>
                 ) : (
                   <div className="border rounded-lg p-4 bg-yellow-50 border-yellow-200">
-                    <p className="text-sm text-yellow-800">
+                    <p className="text-sm text-yellow-800 mb-2">
                       구매자 정보를 불러오는 중입니다...
                     </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        console.log('Retry fetching participants...');
+                        fetchParticipants();
+                      }}
+                    >
+                      다시 시도
+                    </Button>
                   </div>
                 )}
               </div>
