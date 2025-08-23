@@ -27,6 +27,15 @@ html {
   }
 }
 
+/* Hide scrollbar for horizontal scroll areas */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 /* Fix for Select dropdown portal position */
 [data-radix-popper-content-wrapper] {
   pointer-events: none !important;

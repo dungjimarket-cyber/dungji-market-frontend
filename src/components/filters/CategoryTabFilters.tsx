@@ -142,8 +142,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
 
   return (
     <div className="space-y-6">
-      {/* 대분류 탭 */}
-      <div className="flex flex-wrap gap-2">
+      {/* 대분류 탭 - 모바일 최적화 */}
+      <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide">
         {mainCategories.map((category) => {
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
@@ -152,7 +152,7 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
             <Button
               key={category.id}
               variant={isSelected ? "default" : "outline"}
-              className={`flex items-center gap-2 px-4 py-2 transition-all duration-200 ${
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 transition-all duration-200 whitespace-nowrap text-xs sm:text-sm flex-shrink-0 ${
                 isSelected 
                   ? `${category.color} bg-white border-2 font-semibold` 
                   : `hover:${category.bgColor} hover:border-current`
@@ -161,8 +161,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
               disabled={false} // 버튼은 항상 활성화 상태로 유지
               style={{ cursor: isSelected ? 'default' : 'pointer' }}
             >
-              <Icon className="w-4 h-4" />
-              {category.name}
+              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>{category.name}</span>
             </Button>
           );
         })}
