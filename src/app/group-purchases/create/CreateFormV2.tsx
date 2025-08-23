@@ -847,9 +847,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
                 {/* 인터넷 탭 콘텐츠 */}
                 <TabsContent value="internet" className="space-y-4">
-                  {/* 서브 탭 - 통신사 */}
+                  {/* 상품 선택 - 통신사별 */}
                   <div id="internet-carrier-tabs">
-                    <FormLabel>통신사 선택 <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -881,6 +881,36 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       LGU+
                     </Button>
                   </div>
+                  
+                  {/* 상품 목록 */}
+                  <FormField
+                    control={form.control}
+                    name="product"
+                    render={({ field }) => (
+                      <FormItem id="product-selection-category">
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            const product = products.find(p => p.id.toString() === value);
+                            setSelectedProduct(product || null);
+                          }}
+                          value={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="상품을 선택해주세요" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px] overflow-y-auto">
+                            {getFilteredProducts().map((product) => (
+                              <SelectItem key={product.id} value={product.id.toString()}>
+                                {product.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* 가입 유형 선택 */}
                   <div className="space-y-2" id="internet-subscription-type">
@@ -916,37 +946,6 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       </div>
                     </div>
                   </div>
-
-                  {/* 상품 선택 */}
-                  <FormField
-                    control={form.control}
-                    name="product"
-                    render={({ field }) => (
-                      <FormItem id="product-selection-category">
-                        <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            const product = products.find(p => p.id.toString() === value);
-                            setSelectedProduct(product || null);
-                          }}
-                          value={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="상품을 선택해주세요" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-[300px] overflow-y-auto">
-                            {getFilteredProducts().map((product) => (
-                              <SelectItem key={product.id} value={product.id.toString()}>
-                                {product.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
                   {/* 인터넷 요금제 알아보기 링크 */}
                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -976,9 +975,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
                 {/* 인터넷+TV 탭 콘텐츠 */}
                 <TabsContent value="internet_tv" className="space-y-4">
-                  {/* 서브 탭 - 통신사 */}
+                  {/* 상품 선택 - 통신사별 */}
                   <div id="internettv-carrier-tabs">
-                    <FormLabel>통신사 선택 <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -1010,6 +1009,36 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       LGU+
                     </Button>
                   </div>
+                  
+                  {/* 상품 목록 */}
+                  <FormField
+                    control={form.control}
+                    name="product"
+                    render={({ field }) => (
+                      <FormItem id="product-selection-category">
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            const product = products.find(p => p.id.toString() === value);
+                            setSelectedProduct(product || null);
+                          }}
+                          value={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="상품을 선택해주세요" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px] overflow-y-auto">
+                            {getFilteredProducts().map((product) => (
+                              <SelectItem key={product.id} value={product.id.toString()}>
+                                {product.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* 가입 유형 선택 */}
                   <div className="space-y-2" id="internettv-subscription-type">
@@ -1045,37 +1074,6 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       </div>
                     </div>
                   </div>
-
-                  {/* 상품 선택 */}
-                  <FormField
-                    control={form.control}
-                    name="product"
-                    render={({ field }) => (
-                      <FormItem id="product-selection-category">
-                        <FormLabel>상품 선택 <span className="text-red-500">*</span></FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            const product = products.find(p => p.id.toString() === value);
-                            setSelectedProduct(product || null);
-                          }}
-                          value={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="상품을 선택해주세요" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-[300px] overflow-y-auto">
-                            {getFilteredProducts().map((product) => (
-                              <SelectItem key={product.id} value={product.id.toString()}>
-                                {product.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
                   {/* 인터넷+TV 요금제 알아보기 링크 */}
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
