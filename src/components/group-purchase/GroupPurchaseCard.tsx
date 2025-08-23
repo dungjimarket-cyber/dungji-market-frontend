@@ -11,20 +11,31 @@ const getCarrierLogo = (carrier: string) => {
   switch(carrier) {
     case 'SKT':
       return (
-        <span className="text-[10px] font-bold text-red-600">SKT</span>
+        <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
+          <path d="M7 2C7 2 5 2 3 4C1 6 1 8 1 8C1 8 1 10 3 12C5 14 7 14 7 14" stroke="#E11E3C" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M7 2L13 2C13 2 15 2 15 5C15 8 13 8 13 8L7 8" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"/>
+        </svg>
       );
     case 'KT':
       return (
-        <span className="text-[10px] font-bold text-blue-600">KT</span>
+        <svg width="24" height="16" viewBox="0 0 24 16" fill="none">
+          <path d="M2 2V14M2 8H7L9 6M9 10L7 8" stroke="#4A4A4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M14 4V8C14 8 14 10 16 10C18 10 18 8 18 8V4" stroke="#E11E3C" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M18 2V4" stroke="#E11E3C" strokeWidth="2.5" strokeLinecap="round"/>
+        </svg>
       );
     case 'LGU':
     case 'LG U+':
       return (
-        <span className="text-[10px] font-bold text-pink-600">LG U+</span>
+        <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
+          <path d="M4 4V10C4 12 5 13 7 13C9 13 10 12 10 10V4" stroke="#E4368C" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M14 6V8M14 10V12" stroke="#E4368C" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M12 8H16" stroke="#E4368C" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
       );
     default:
       return (
-        <span className="text-[10px] font-bold text-gray-600">{carrier}</span>
+        <span className="text-xs font-bold text-gray-600">{carrier}</span>
       );
   }
 };
@@ -496,10 +507,10 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             </div>
           )}
           
-          {/* 가입유형과 요금제를 나머지 공간에 배치 */}
-          <div className="flex items-center gap-1 flex-1">
+          {/* 가입유형과 요금제를 컨텐츠 크기에 맞게 배치 */}
+          <div className="flex items-center gap-1">
             {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap flex-1">
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
                 <span className="text-[10px] font-medium text-purple-600">가입</span>
                 <span className="text-xs font-bold text-purple-800">
                   {groupBuy.product_details?.registration_type_korean || 
@@ -512,7 +523,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             {groupBuy.telecom_detail?.plan_info && 
              groupBuy.product_details?.category_name !== '인터넷' &&
              groupBuy.product_details?.category_name !== '인터넷+TV' && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap flex-1">
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
                 <span className="text-[10px] font-medium text-green-600">요금</span>
                 <span className="text-xs font-bold text-green-800">
                   {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
