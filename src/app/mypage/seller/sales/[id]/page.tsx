@@ -163,7 +163,7 @@ export default function SalesDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">입찰 금액</p>
+                  <p className="text-sm text-gray-600 mb-1">견적 금액</p>
                   <p className="font-medium text-lg flex items-center">
                     <CreditCard className="w-4 h-4 mr-2 text-gray-500" />
                     {formatNumberWithCommas(bidDetail.amount)}원

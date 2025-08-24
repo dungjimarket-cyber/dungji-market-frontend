@@ -754,8 +754,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     // 999만원 이하로 제한
     if (numValue > 9999999) {
       toast({
-        title: '입찰 금액 제한',
-        description: '입찰 금액은 999만원을 초과할 수 없습니다.',
+        title: '견적 금액 제한',
+        description: '견적 금액은 999만원을 초과할 수 없습니다.',
         variant: 'destructive',
       });
       return;
@@ -768,8 +768,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const handleBidClick = async () => {
     if (!bidAmount || bidAmount === '' || (typeof bidAmount === 'number' && bidAmount < 1000)) {
       toast({
-        title: '입찰 금액 오류',
-        description: '최소 입찰 금액은 1,000원입니다.',
+        title: '견적 금액 오류',
+        description: '최소 견적 금액은 1,000원입니다.',
         variant: 'destructive',
       });
       return;
@@ -825,8 +825,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     // 반올림된 금액이 원래 금액과 다르면 알림
     if (roundedAmount !== numAmount) {
       toast({
-        title: '입찰 금액 조정',
-        description: `입찰 금액이 ${roundedAmount.toLocaleString()}원으로 조정됩니다.`,
+        title: '견적 금액 조정',
+        description: `견적 금액이 ${roundedAmount.toLocaleString()}원으로 수정됩니다.`,
       });
       setBidAmount(roundedAmount);
     }
@@ -871,8 +871,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         setMyBidId(data.id);
         
         toast({
-          title: '입찰 완료',
-          description: '입찰이 성공적으로 완료되었습니다.',
+          title: '제출 완료',
+          description: '견적 제안이 완료되었습니다.',
         });
         
         // 견적티켓 정보 실시간 업데이트
@@ -1740,7 +1740,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* <div className="text-sm text-gray-500 text-center mb-8">
           <p>*카드 제휴할인이나 증정품을 제외한 순수 지원금입니다.</p>
           <p className="mt-1">(공시지원금+추가지원금)</p>
-          <p className="mt-1">*앞자리를 제외한 입찰 금액은 비공개 입니다.</p>
+          <p className="mt-1">*앞자리를 제외한 견적 금액은 비공개 입니다.</p>
         </div> */}
       </div>
 
@@ -1977,7 +1977,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <span className="font-medium">내 순위:</span> {myBidInfo.rank}위 / 전체 {myBidInfo.total_bidders}명
             </div>
             <div className="text-sm">
-              <span className="font-medium">입찰 금액:</span> {myBidInfo.amount.toLocaleString()}원
+              <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
             </div>
             {myBidInfo.status === 'won' ? (
               <div className="mt-3 p-3 bg-green-100 rounded-md">

@@ -157,7 +157,7 @@ export default function BidManagement() {
                   <TableRow>
                     <TableHead>상품명</TableHead>
                     <TableHead>입찰 유형</TableHead>
-                    <TableHead>입찰 금액</TableHead>
+                    <TableHead>견적 금액</TableHead>
                     <TableHead>입찰시간</TableHead>
                     <TableHead>상태</TableHead>
                     <TableHead>작업</TableHead>
@@ -223,7 +223,7 @@ export default function BidManagement() {
                   <TableRow>
                     <TableHead>상품명</TableHead>
                     <TableHead>입찰 유형</TableHead>
-                    <TableHead>입찰 금액</TableHead>
+                    <TableHead>견적 금액</TableHead>
                     <TableHead>입찰시간</TableHead>
                     <TableHead>상태</TableHead>
                   </TableRow>
@@ -270,7 +270,7 @@ export default function BidManagement() {
                   <TableRow>
                     <TableHead>상품명</TableHead>
                     <TableHead>입찰 유형</TableHead>
-                    <TableHead>입찰 금액</TableHead>
+                    <TableHead>견적 금액</TableHead>
                     <TableHead>입찰시간</TableHead>
                     <TableHead>상태</TableHead>
                   </TableRow>
