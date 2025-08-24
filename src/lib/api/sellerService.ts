@@ -41,15 +41,7 @@ export const getSellerProfile = async (): Promise<SellerProfile> => {
   try {
     const headers = await getAxiosAuthHeaders();
     const response = await axios.get(`${API_URL}/users/me/seller-profile/`, { headers });
-    
-    const data = response.data;
-    
-    // 백엔드에서 제공하는 데이터만 사용 (별점 계산 없음)
-    return {
-      ...data,
-      rating: data.average_rating || data.rating || 0,
-      reviewCount: data.review_count || data.reviewCount || 0
-    };
+    return response.data;
   } catch (error: any) {
     console.error('판매자 프로필 조회 오류:', error.response?.data);
     throw error;

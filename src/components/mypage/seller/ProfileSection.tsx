@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Settings, User, Star, Ticket, CheckCircle2, Trophy } from 'lucide-react';
+import { Settings, User, Ticket, CheckCircle2, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import bidTokenService, { BidTokenResponse } from '@/lib/bid-token-service';
 import { getSellerProfile } from '@/lib/api/sellerService';
@@ -71,35 +71,6 @@ export default function ProfileSection() {
                   <Badge className="bg-blue-500">판매회원</Badge>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center text-gray-600 text-sm sm:text-base">
-                  <span>후기 별점</span>
-                  {sellerProfile?.rating && sellerProfile.rating > 0 ? (
-                    <div className="flex items-center sm:ml-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`h-3 w-3 sm:h-4 sm:w-4 ${
-                            star <= sellerProfile.rating
-                              ? 'text-yellow-400 fill-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                      <span className="ml-1 text-xs sm:text-sm">
-                        ({sellerProfile.rating.toFixed(1)})
-                      </span>
-                      {sellerProfile.reviewCount > 0 && (
-                        <span className="ml-1 text-xs text-gray-500">
-                          ({sellerProfile.reviewCount}개 리뷰)
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="sm:ml-2 text-xs sm:text-sm text-gray-500">
-                      받은 후기가 없습니다
-                    </span>
-                  )}
-                </div>
 
                 <div className="flex flex-wrap justify-center sm:justify-start mt-2 text-xs sm:text-sm gap-2">
                   <Badge variant="outline">
