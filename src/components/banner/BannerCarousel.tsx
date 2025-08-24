@@ -129,20 +129,20 @@ export default function BannerCarousel() {
                   e.preventDefault();
                   goToPrevious();
                 }}
-                className="absolute -left-12 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-auto md:h-auto bg-black/40 md:bg-white/80 hover:bg-black/60 md:hover:bg-white text-white md:text-gray-800 rounded-full md:p-2 md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
+                className="absolute left-1 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-auto md:h-auto bg-white/20 md:bg-white/80 hover:bg-white/30 md:hover:bg-white text-gray-700 md:text-gray-800 rounded-full md:p-2 md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
                 aria-label="이전 배너"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
               </button>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   goToNext();
                 }}
-                className="absolute -right-12 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-auto md:h-auto bg-black/40 md:bg-white/80 hover:bg-black/60 md:hover:bg-white text-white md:text-gray-800 rounded-full md:p-2 md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
+                className="absolute right-1 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-auto md:h-auto bg-white/20 md:bg-white/80 hover:bg-white/30 md:hover:bg-white text-gray-700 md:text-gray-800 rounded-full md:p-2 md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
                 aria-label="다음 배너"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </>
           )}
