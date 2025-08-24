@@ -101,7 +101,7 @@ export default function ProfileSection() {
                     </div>
                   ) : (
                     <span className="sm:ml-2 text-xs sm:text-sm text-gray-500">
-                      후기 이력이 없습니다
+                      받은 후기가 없습니다
                     </span>
                   )}
                 </div>
