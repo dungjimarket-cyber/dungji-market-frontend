@@ -29,52 +29,6 @@ const getAxiosAuthHeaders = async () => {
   return authHeader;
 };
 
-/**
- * 판매자의 평균 별점을 계산합니다.
- * @param sellerId 판매자 ID
- * @returns 평균 별점과 리뷰 개수
- */
-export const getSellerAverageRating = async (sellerId?: number): Promise<{ averageRating: number; reviewCount: number }> => {
-  try {
-    // 임시로 별점 계산 비활성화 - 백엔드에서 직접 제공할 때까지
-    // TODO: 백엔드에서 판매자 프로필 API에 평균 별점과 리뷰 수를 포함하도록 요청
-    console.log('별점 계산 임시 비활성화 - 성능 최적화 필요');
-    return { averageRating: 0, reviewCount: 0 };
-    
-    // 아래는 원래 로직 (주석 처리)
-    /*
-    console.log('판매자 별점 조회 시작 - sellerId:', sellerId);
-    
-    if (!sellerId) {
-      console.log('sellerId가 없습니다');
-      return { averageRating: 0, reviewCount: 0 };
-    }
-    
-    const headers = await getAxiosAuthHeaders();
-    
-    // 백엔드에서 직접 평균 별점을 제공하는 경우를 위한 대체 로직
-    try {
-      const profileResponse = await axios.get(`${API_URL}/users/${sellerId}/public_profile/`, {
-        headers
-      });
-      
-      if (profileResponse.data?.average_rating !== undefined) {
-        return {
-          averageRating: profileResponse.data.average_rating,
-          reviewCount: profileResponse.data.review_count || 0
-        };
-      }
-    } catch (err) {
-      console.log('프로필 API 호출 실패:', err);
-    }
-    
-    return { averageRating: 0, reviewCount: 0 };
-    */
-  } catch (error: any) {
-    console.error('판매자 평균 별점 조회 오류:', error);
-    return { averageRating: 0, reviewCount: 0 };
-  }
-};
 
 /**
  * 판매자 프로필 정보를 조회합니다.
@@ -86,15 +40,11 @@ export const getSellerAverageRating = async (sellerId?: number): Promise<{ avera
 export const getSellerProfile = async (): Promise<SellerProfile> => {
   try {
     const headers = await getAxiosAuthHeaders();
-    // 판매자 전용 프로필 엔드포인트 사용
     const response = await axios.get(`${API_URL}/users/me/seller-profile/`, { headers });
     
-    // API 응답 데이터를 그대로 반환 (백엔드에서 이미 올바른 필드명 사용)
     const data = response.data;
-    console.log('판매자 프로필 데이터:', data);
     
-    // 백엔드에서 직접 제공하는 별점 정보가 있으면 사용
-    // 없으면 임시로 0으로 설정 (성능 문제로 별점 계산 비활성화)
+    // 백엔드에서 제공하는 데이터만 사용 (별점 계산 없음)
     return {
       ...data,
       rating: data.average_rating || data.rating || 0,
@@ -102,7 +52,6 @@ export const getSellerProfile = async (): Promise<SellerProfile> => {
     };
   } catch (error: any) {
     console.error('판매자 프로필 조회 오류:', error.response?.data);
-    console.error('오류 상태 코드:', error.response?.status);
     throw error;
   }
 };
