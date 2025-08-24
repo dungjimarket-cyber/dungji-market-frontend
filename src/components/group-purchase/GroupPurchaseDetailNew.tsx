@@ -1364,7 +1364,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               )}
               
               {/* "로" 텍스트 */}
-              <span className="text-lg font-black text-red-600 -ml-1">로</span>
+              <span className="text-lg font-black text-black -ml-1">로</span>
               
               {/* 가입유형 */}
               {groupBuy.telecom_detail.subscription_type && (
@@ -1379,12 +1379,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               
               {/* 요금제 */}
               {groupBuy.telecom_detail.plan_info && (
-                <div className="inline-flex items-center gap-1 px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg h-11">
-                  <span className="text-xs font-medium text-green-700">요금제</span>
-                  <span className="text-sm font-bold text-green-800">
-                    {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-                  </span>
-                </div>
+                <>
+                  <span className="text-xs font-semibold text-gray-600">요금제</span>
+                  <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg h-11">
+                    <span className="text-sm font-bold text-green-800">
+                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                    </span>
+                  </div>
+                </>
               )}
             </>
           )}
@@ -1443,7 +1445,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               )}
               
               {/* "로" 텍스트 */}
-              <span className="text-lg font-black text-red-600 -ml-1">로</span>
+              <span className="text-lg font-black text-black -ml-1">로</span>
               
               {/* 가입유형 */}
               {groupBuy.internet_detail.subscription_type_display && (

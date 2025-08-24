@@ -506,8 +506,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         
         {/* 지역 정보 */}
         <div className="mb-3 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-500">지역</span>
+          <div className="flex items-start gap-2">
+            <span className="text-xs font-semibold text-gray-500 whitespace-nowrap mt-1">공구지역</span>
             {groupBuy.region_type === 'nationwide' ? (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                 전국 비대면
@@ -547,7 +547,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
               </div>
               {/* "로" 텍스트 */}
-              <span className="text-xs font-black text-red-600 -ml-1">로</span>
+              <span className="text-xs font-black text-black -ml-1">로</span>
               {/* 가입유형과 요금제 */}
               <div className="flex items-center gap-1">
                 <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
@@ -558,12 +558,14 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                   </span>
                 </div>
                 {groupBuy.telecom_detail.plan_info && (
-                  <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
-                    <span className="text-[10px] font-medium text-green-600">요금제</span>
-                    <span className="text-xs font-bold text-green-800">
-                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-                    </span>
-                  </div>
+                  <>
+                    <span className="text-[10px] font-semibold text-gray-600">요금제</span>
+                    <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
+                      <span className="text-xs font-bold text-green-800">
+                        {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             </>
@@ -624,7 +626,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 })()}
               </div>
               {/* "로" 텍스트 */}
-              <span className="text-xs font-black text-red-600 -ml-1">로</span>
+              <span className="text-xs font-black text-black -ml-1">로</span>
               {/* 가입유형과 속도 */}
               <div className="flex items-center gap-1">
                 <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
@@ -653,7 +655,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
               </div>
               {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-                <span className="text-xs font-black text-red-600 -ml-1">로</span>
+                <span className="text-xs font-black text-black -ml-1">로</span>
               )}
               <div className="flex items-center gap-1">
                 {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
@@ -668,12 +670,14 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 {groupBuy.telecom_detail?.plan_info && 
                  groupBuy.product_details?.category_name !== '인터넷' &&
                  groupBuy.product_details?.category_name !== '인터넷+TV' && (
-                  <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
-                    <span className="text-[10px] font-medium text-green-600">요금제</span>
-                    <span className="text-xs font-bold text-green-800">
-                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-                    </span>
-                  </div>
+                  <>
+                    <span className="text-[10px] font-semibold text-gray-600">요금제</span>
+                    <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
+                      <span className="text-xs font-bold text-green-800">
+                        {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             </>
