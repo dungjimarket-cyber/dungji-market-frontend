@@ -505,7 +505,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </h3>
         
         {/* 지역 정보 */}
-        <div className="mb-0.5 md:mb-1 flex-shrink-0">
+        <div className="mb-2 md:mb-0.5 flex-shrink-0">
           <div className="flex items-start gap-2">
             <span className="text-base md:text-xs font-semibold text-gray-600 whitespace-nowrap mt-0.5">공구지역</span>
             {groupBuy.region_type === 'nationwide' ? (
@@ -540,8 +540,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           </div>
         </div>
         
-        {/* 카테고리별 정보 표시 - 하단에 고정 */}
-        <div className="flex flex-col gap-1 w-full mt-auto">
+        {/* 카테고리별 정보 표시 */}
+        <div className="flex flex-col gap-1 w-full mt-2 md:mt-0.5">
           {/* 휴대폰 상품 정보 */}
           {((groupBuy.product_info?.category_detail_type === 'telecom' ||
              groupBuy.product_details?.category_detail_type === 'telecom') && 
