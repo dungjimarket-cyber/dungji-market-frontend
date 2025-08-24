@@ -1400,9 +1400,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {groupBuy.internet_detail.carrier_display && (
                 <div className="flex items-center justify-center px-1.5 py-1 bg-white border-2 border-gray-400 rounded-lg h-11">
                   {(() => {
-                    const carrier = groupBuy.internet_detail.carrier_display;
+                    const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
                     
                     switch(carrier) {
+                      case 'SK':
+                      case 'SKB':
                       case 'SK브로드밴드':
                       case 'SKT':
                         return (
@@ -1426,6 +1428,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                         );
                       case 'LG U+':
                       case 'LGU':
+                      case 'LGU+':
                         return (
                           <Image
                             src="/logos/lgu.png"
