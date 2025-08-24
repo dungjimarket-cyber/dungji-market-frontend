@@ -79,7 +79,7 @@ export default function ProfileSection() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center text-gray-600 text-sm sm:text-base">
-                  <span>평판 점수</span>
+                  <span>후기 별점</span>
                   {sellerProfile?.reviewCount && sellerProfile.reviewCount > 0 ? (
                     <div className="flex items-center sm:ml-2">
                       {[1, 2, 3, 4, 5].map((star) => (
