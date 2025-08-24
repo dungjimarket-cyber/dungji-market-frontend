@@ -579,8 +579,10 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               {/* 통신사 표시 */}
               <div className="flex items-center justify-center px-1.5 py-1 bg-white border border-gray-300 rounded-md h-9">
                 {(() => {
-                  const carrier = groupBuy.internet_detail.carrier_display;
+                  const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
                   switch(carrier) {
+                    case 'SK':
+                    case 'SKB':
                     case 'SK브로드밴드':
                     case 'SKT':
                       return (
@@ -604,6 +606,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                       );
                     case 'LG U+':
                     case 'LGU':
+                    case 'LGU+':
                       return (
                         <Image
                           src="/logos/lgu.png"
