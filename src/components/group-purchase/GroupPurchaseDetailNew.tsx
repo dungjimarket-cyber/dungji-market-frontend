@@ -1319,7 +1319,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <div className="flex items-center gap-2">
                 {/* 통신사 표시 */}
                 {groupBuy.telecom_detail.telecom_carrier && (
-                <div className="flex items-center justify-center px-1.5 py-1 bg-white border-2 border-gray-400 rounded-lg h-11">
+                <div className="flex items-center justify-center px-2 md:px-1.5 py-1 md:py-0.5 bg-white border-2 border-gray-400 rounded-lg h-9 md:h-8">
                   {(() => {
                     const carrier = groupBuy.telecom_detail.telecom_carrier;
                     
@@ -1370,7 +1370,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 
                 {/* 가입유형 */}
                 {groupBuy.telecom_detail.subscription_type && (
-                <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-11">
+                <div className="inline-flex items-center px-3 md:px-2.5 py-1.5 md:py-0.5 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-9 md:h-7">
                   <span className="text-sm font-bold text-purple-800">
                     {groupBuy.telecom_detail.subscription_type_display || 
                      groupBuy.telecom_detail.subscription_type_korean ||
@@ -1384,7 +1384,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {groupBuy.telecom_detail.plan_info && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-gray-700">요금제</span>
-                  <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg h-11">
+                  <div className="inline-flex items-center px-3 md:px-2.5 py-1.5 md:py-0.5 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg h-9 md:h-7">
                     <span className="text-sm font-bold text-green-800">
                       {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
                     </span>
@@ -1403,7 +1403,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <div className="flex items-center gap-2">
                 {/* 통신사 표시 */}
                 {groupBuy.internet_detail.carrier_display && (
-                <div className="flex items-center justify-center px-1.5 py-1 bg-white border-2 border-gray-400 rounded-lg h-11">
+                <div className="flex items-center justify-center px-2 md:px-1.5 py-1 md:py-0.5 bg-white border-2 border-gray-400 rounded-lg h-9 md:h-8">
                   {(() => {
                     const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
                     
@@ -1457,7 +1457,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 
                 {/* 가입유형 */}
                 {groupBuy.internet_detail.subscription_type_display && (
-                  <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-11">
+                  <div className="inline-flex items-center px-3 md:px-2.5 py-1.5 md:py-0.5 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-9 md:h-7">
                     <span className="text-sm font-bold text-purple-800">
                       {groupBuy.internet_detail.subscription_type_display}
                     </span>
@@ -1469,7 +1469,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {groupBuy.internet_detail.speed && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-gray-700">속도</span>
-                  <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-400 rounded-lg h-11">
+                  <div className="inline-flex items-center px-3 md:px-2.5 py-1.5 md:py-0.5 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-400 rounded-lg h-9 md:h-7">
                     <span className="text-sm font-bold text-blue-800">
                       {groupBuy.internet_detail.speed}
                     </span>
