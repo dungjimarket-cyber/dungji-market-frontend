@@ -190,17 +190,34 @@ function GroupPurchasesPageContent() {
               if (category === 'phone') {
                 // 콤마로 구분된 여러 값 처리
                 const plans = value.split(',').map(p => {
-                  if (p === '50000') return '5만원대';
-                  else if (p === '60000') return '6만원대';
-                  else if (p === '70000') return '7만원대';
-                  else if (p === '80000') return '8만원대';
-                  else if (p === '90000') return '9만원대';
-                  else if (p === '100000') return '10만원이상';
+                  // 여러 형식 시도
+                  const mappings: Record<string, string[]> = {
+                    '50000': ['5만원대', '5만원', '50000원대', '5'],
+                    '60000': ['6만원대', '6만원', '60000원대', '6'],
+                    '70000': ['7만원대', '7만원', '70000원대', '7'],
+                    '80000': ['8만원대', '8만원', '80000원대', '8'],
+                    '90000': ['9만원대', '9만원', '90000원대', '9'],
+                    '100000': ['10만원이상', '10만원', '100000원이상', '10']
+                  };
+                  
+                  // 기본 매핑 사용 (첫 번째 형식)
+                  if (mappings[p]) {
+                    console.log(`요금제 ${p} -> ${mappings[p][0]}`);
+                    return mappings[p][0];
+                  }
                   return p;
                 });
                 
-                console.log('변환된 요금제들:', plans.join(','));
+                console.log('변환된 요금제들:', plans);
+                console.log('전송할 값:', plans.join(','));
+                
+                // 방법 1: 쉼표로 구분된 단일 값
                 params.append('plan_info', plans.join(','));
+                
+                // 방법 2: 각 값을 개별적으로 추가 (백엔드가 배열을 지원하는 경우)
+                // plans.forEach(plan => {
+                //   params.append('plan_info', plan);
+                // });
               }
             }
             // 브랜드 필터 (호환성)
@@ -329,6 +346,20 @@ function GroupPurchasesPageContent() {
       }
       
       let data = await response.json();
+      
+      // 요금제 데이터 디버깅 (휴대폰 카테고리일 때만)
+      if (selectedCategory === 'phone' && data.results && data.results.length > 0) {
+        console.log('========== 휴대폰 요금제 데이터 샘플 ==========');
+        data.results.slice(0, 3).forEach((item: any, index: number) => {
+          console.log(`샘플 ${index + 1}:`, {
+            title: item.title,
+            plan_info: item.telecom_detail?.plan_info || item.product_details?.plan_info,
+            telecom_detail: item.telecom_detail,
+            product_details: item.product_details
+          });
+        });
+        console.log('==============================================');
+      }
       
       // API 응답 처리
       let newItems: GroupBuy[] = [];
