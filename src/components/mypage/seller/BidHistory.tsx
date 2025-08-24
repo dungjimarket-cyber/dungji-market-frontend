@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowRight, TrendingUp, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, ArrowRight, TrendingUp, Calendar, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatNumberWithCommas } from '@/lib/utils';
 
 interface GroupBuyWithBid {
@@ -28,13 +29,18 @@ interface GroupBuyWithBid {
 
 /**
  * 견적내역 컴포넌트
- * 판매자가 견적을 제안한 최근 5개 공구를 간략하게 표시
+ * 판매자가 견적을 제안한 공구를 페이지네이션과 검색 기능으로 표시
  */
 export default function BidHistory() {
   const { accessToken } = useAuth();
   const router = useRouter();
-  const [groupBuys, setGroupBuys] = useState<GroupBuyWithBid[]>([]);
+  const [allGroupBuys, setAllGroupBuys] = useState<GroupBuyWithBid[]>([]);
+  const [filteredGroupBuys, setFilteredGroupBuys] = useState<GroupBuyWithBid[]>([]);
+  const [displayedGroupBuys, setDisplayedGroupBuys] = useState<GroupBuyWithBid[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchBidHistory = async () => {
@@ -53,8 +59,10 @@ export default function BidHistory() {
 
         if (response.ok) {
           const data = await response.json();
-          // 최근 5개만 표시
-          setGroupBuys(data.slice(0, 5));
+          setAllGroupBuys(data);
+          setFilteredGroupBuys(data);
+          // 첫 페이지 표시
+          setDisplayedGroupBuys(data.slice(0, itemsPerPage));
         }
       } catch (error) {
         console.error('견적내역 조회 오류:', error);
@@ -66,6 +74,38 @@ export default function BidHistory() {
     fetchBidHistory();
   }, [accessToken]);
 
+  // 검색 기능
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = allGroupBuys.filter(gb => {
+        const productName = gb.product_details?.name || gb.title || '';
+        return productName.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      setFilteredGroupBuys(filtered);
+      setCurrentPage(1);
+      setDisplayedGroupBuys(filtered.slice(0, itemsPerPage));
+    } else {
+      setFilteredGroupBuys(allGroupBuys);
+      setCurrentPage(1);
+      setDisplayedGroupBuys(allGroupBuys.slice(0, itemsPerPage));
+    }
+  }, [searchTerm, allGroupBuys]);
+
+  // 페이지 변경 시 표시할 데이터 업데이트
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setDisplayedGroupBuys(filteredGroupBuys.slice(startIndex, endIndex));
+  }, [currentPage, filteredGroupBuys]);
+
+  const totalPages = Math.ceil(filteredGroupBuys.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -74,7 +114,7 @@ export default function BidHistory() {
     );
   }
 
-  if (groupBuys.length === 0) {
+  if (allGroupBuys.length === 0) {
     return (
       <Card className="p-6">
         <div className="text-center text-gray-500">
@@ -93,7 +133,34 @@ export default function BidHistory() {
 
   return (
     <div className="space-y-3">
-      {groupBuys.map((gb) => (
+      {/* 검색 바 */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="상품명으로 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {/* 검색 결과 */}
+      {searchTerm && (
+        <div className="text-sm text-gray-600 mb-2">
+          검색 결과: {filteredGroupBuys.length}개
+        </div>
+      )}
+
+      {/* 견적 목록 */}
+      {displayedGroupBuys.length === 0 ? (
+        <Card className="p-6">
+          <div className="text-center text-gray-500">
+            <p className="text-sm">검색 결과가 없습니다.</p>
+          </div>
+        </Card>
+      ) : (
+        displayedGroupBuys.map((gb) => (
         <Card 
           key={gb.id} 
           className="hover:shadow-md transition-shadow cursor-pointer"
@@ -128,19 +195,58 @@ export default function BidHistory() {
             </div>
           </CardContent>
         </Card>
-      ))}
+        ))
+      )}
       
-      {/* 전체보기 버튼 */}
-      <div className="text-center pt-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push('/mypage/seller/bids')}
-          className="w-full"
-        >
-          전체 견적내역 보기
-        </Button>
-      </div>
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <div className="flex gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNum)}
+                  className="min-w-[40px]"
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
