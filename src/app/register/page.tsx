@@ -100,6 +100,8 @@ function RegisterPageContent() {
   // 카카오 정보 읽기
   useEffect(() => {
     const isFromKakao = searchParams.get('from') === 'kakao';
+    const urlReferralCode = searchParams.get('referral_code'); // URL에서 추천인 코드 읽기
+    
     if (isFromKakao) {
       // 쿠키에서 카카오 정보 읽기
       const cookies = document.cookie.split(';');
@@ -122,8 +124,16 @@ function RegisterPageContent() {
               emailDomain: isCommonDomain ? domain : (domain ? 'direct' : ''),
               customEmailDomain: isCommonDomain ? '' : domain,
               social_provider: 'kakao',
-              social_id: kakaoData.sns_id
+              social_id: kakaoData.sns_id,
+              // 추천인 코드 설정 (URL 파라미터 우선, 없으면 쿠키에서)
+              referral_code: urlReferralCode || kakaoData.referral_code || prev.referral_code
             }));
+            
+            console.log('🎟️ [회원가입] 카카오 가입 추천인 코드 복원:', {
+              from_url: urlReferralCode,
+              from_cookie: kakaoData.referral_code,
+              final: urlReferralCode || kakaoData.referral_code || ''
+            });
           }
           
           // 쿠키 삭제

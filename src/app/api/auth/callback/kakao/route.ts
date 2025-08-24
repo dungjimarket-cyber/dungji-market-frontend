@@ -172,7 +172,8 @@ export async function GET(request: Request) {
         sns_type: data.sns_type,
         email: data.email,
         name: data.name,
-        profile_image: data.profile_image
+        profile_image: data.profile_image,
+        referral_code: referralCode // 추천인 코드 추가
       };
       
       // 쿠키에 임시로 저장 (클라이언트에서 읽을 수 있도록)
@@ -183,8 +184,12 @@ export async function GET(request: Request) {
         sameSite: 'lax',
       });
       
-      // 회원가입 페이지로 리다이렉트 (memberType 포함)
-      return NextResponse.redirect(new URL(`/register?from=kakao&memberType=${userRole}`, request.url));
+      // 회원가입 페이지로 리다이렉트 (memberType과 추천인 코드 포함)
+      let redirectUrl = `/register?from=kakao&memberType=${userRole}`;
+      if (referralCode) {
+        redirectUrl += `&referral_code=${encodeURIComponent(referralCode)}`;
+      }
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
     
     // JWT 토큰 저장 (기존 회원인 경우)
