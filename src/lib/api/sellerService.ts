@@ -36,31 +36,87 @@ const getAxiosAuthHeaders = async () => {
  */
 export const getSellerAverageRating = async (sellerId?: number): Promise<{ averageRating: number; reviewCount: number }> => {
   try {
-    const headers = await getAxiosAuthHeaders();
+    console.log('판매자 별점 조회 시작 - sellerId:', sellerId);
     
-    // 판매자가 낙찰받은 모든 공구의 리뷰를 조회
-    const response = await axios.get(`${API_URL}/reviews/seller_reviews/`, { 
-      headers,
-      params: { seller_id: sellerId }
-    });
-    
-    const reviews = response.data;
-    
-    if (!reviews || reviews.length === 0) {
+    if (!sellerId) {
+      console.log('sellerId가 없습니다');
       return { averageRating: 0, reviewCount: 0 };
     }
     
-    // 평균 별점 계산
-    const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
-    const averageRating = totalRating / reviews.length;
+    const headers = await getAxiosAuthHeaders();
     
-    return { 
-      averageRating: Math.round(averageRating * 10) / 10, // 소수점 1자리까지
-      reviewCount: reviews.length 
-    };
+    // 먼저 판매자가 낙찰받은 공구 목록을 조회
+    try {
+      // 판매 완료된 공구들의 리뷰를 조회하는 방식으로 시도
+      const groupbuysResponse = await axios.get(`${API_URL}/groupbuys/seller_completed/`, { 
+        headers 
+      });
+      
+      console.log('판매 완료 공구 응답:', groupbuysResponse.data);
+      
+      if (!groupbuysResponse.data || groupbuysResponse.data.length === 0) {
+        console.log('판매 완료된 공구가 없습니다');
+        return { averageRating: 0, reviewCount: 0 };
+      }
+      
+      // 각 공구의 리뷰를 수집
+      let allReviews: any[] = [];
+      
+      for (const groupbuy of groupbuysResponse.data) {
+        try {
+          const reviewResponse = await axios.get(`${API_URL}/reviews/groupbuy_reviews/`, {
+            params: { groupbuy_id: groupbuy.id }
+          });
+          
+          if (reviewResponse.data && reviewResponse.data.reviews) {
+            allReviews = [...allReviews, ...reviewResponse.data.reviews];
+          }
+        } catch (err) {
+          console.log(`공구 ${groupbuy.id}의 리뷰 조회 실패:`, err);
+        }
+      }
+      
+      console.log('수집된 전체 리뷰:', allReviews.length, '개');
+      
+      if (allReviews.length === 0) {
+        return { averageRating: 0, reviewCount: 0 };
+      }
+      
+      // 평균 별점 계산
+      const totalRating = allReviews.reduce((sum: number, review: any) => sum + (review.rating || 0), 0);
+      const averageRating = totalRating / allReviews.length;
+      
+      console.log('평균 별점 계산 결과:', averageRating);
+      
+      return { 
+        averageRating: Math.round(averageRating * 10) / 10,
+        reviewCount: allReviews.length 
+      };
+      
+    } catch (apiError: any) {
+      console.error('API 호출 오류:', apiError.response?.data || apiError.message);
+      
+      // 백엔드에서 직접 평균 별점을 제공하는 경우를 위한 대체 로직
+      try {
+        const profileResponse = await axios.get(`${API_URL}/users/${sellerId}/public_profile/`, {
+          headers
+        });
+        
+        if (profileResponse.data?.average_rating !== undefined) {
+          return {
+            averageRating: profileResponse.data.average_rating,
+            reviewCount: profileResponse.data.review_count || 0
+          };
+        }
+      } catch (err) {
+        console.log('대체 API도 실패:', err);
+      }
+      
+      return { averageRating: 0, reviewCount: 0 };
+    }
+    
   } catch (error: any) {
-    console.error('판매자 평균 별점 조회 오류:', error);
-    // 에러 발생시 기본값 반환
+    console.error('판매자 평균 별점 조회 전체 오류:', error);
     return { averageRating: 0, reviewCount: 0 };
   }
 };
@@ -80,9 +136,14 @@ export const getSellerProfile = async (): Promise<SellerProfile> => {
     
     // API 응답 데이터를 그대로 반환 (백엔드에서 이미 올바른 필드명 사용)
     const data = response.data;
+    console.log('판매자 프로필 데이터:', data);
+    
+    // 다양한 필드에서 sellerId 찾기
+    const sellerId = data.id || data.user_id || data.user?.id || data.seller_id;
+    console.log('추출된 sellerId:', sellerId);
     
     // 평균 별점 계산 추가
-    const { averageRating, reviewCount } = await getSellerAverageRating(data.id || data.user_id);
+    const { averageRating, reviewCount } = await getSellerAverageRating(sellerId);
     
     return {
       ...data,
