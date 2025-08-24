@@ -136,9 +136,19 @@ export default function BidTokensPage() {
   const getTokenTypeInfo = (type: string) => {
     switch(type) {
       case 'single':
-        return '견적티켓 단품은 공구에 1회 견적 제안시 사용됩니다.';
+        return (
+          <>
+            견적제안시 티켓 1매가 사용됩니다.<br/>
+            구독권 이용시 견적티켓은 사용되지 않습니다.
+          </>
+        );
       case 'unlimited':
-        return '무제한 구독제는 30일간 모든 공구에 무제한 견적 제안이 가능합니다.';
+        return (
+          <>
+            30일간 모든 공구에 무제한 견적 제안이 가능합니다.<br/>
+            구독권 이용시 견적티켓은 사용되지 않습니다.
+          </>
+        );
       default:
         return '';
     }
@@ -170,20 +180,14 @@ export default function BidTokensPage() {
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Star className="h-4 w-4 mr-2 text-yellow-400" />
-                      견적티켓 단품
+                      견적티켓
                     </span>
                     <span className="font-semibold">{bidTokens.single_tokens}개</span>
                   </div>
-                  {bidTokens.single_tokens > 0 && (
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>유효기간</span>
-                      <span>무기한</span>
-                    </div>
-                  )}
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                      무제한 구독제
+                      무제한 티켓 구독(30일)
                     </span>
                     <span className="font-semibold">{bidTokens.unlimited_subscription ? '활성화' : '비활성화'}</span>
                   </div>
@@ -264,21 +268,21 @@ export default function BidTokensPage() {
                         value="single"
                         id="single"
                       />
-                      <Label htmlFor="single">견적티켓 단품</Label>
+                      <Label htmlFor="single">견적티켓</Label>
                     </div>
                     <div>
                       <RadioGroupItem
                         value="unlimited"
                         id="unlimited"
                       />
-                      <Label htmlFor="unlimited">무제한 구독제(30일)</Label>
+                      <Label htmlFor="unlimited">무제한 구독권(30일)</Label>
                     </div>
                   </RadioGroup>
 
-                  <p className="text-sm text-gray-500 mt-2 flex items-center">
-                    <Info className="h-4 w-4 mr-1" />
-                    {getTokenTypeInfo(tokenType)}
-                  </p>
+                  <div className="text-sm text-gray-500 mt-2 flex items-start">
+                    <Info className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
+                    <div>{getTokenTypeInfo(tokenType)}</div>
+                  </div>
                 </div>
 
                 {tokenType !== 'unlimited' && (
