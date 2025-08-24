@@ -506,8 +506,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         
         {/* 지역 정보 */}
         <div className="mb-1.5 md:mb-1 flex-shrink-0">
-          <div className="flex items-start gap-2">
-            <span className="text-base md:text-xs font-semibold text-gray-600 whitespace-nowrap mt-0.5">공구지역</span>
+          <div className="flex items-center gap-2">
+            <span className="text-base md:text-xs font-semibold text-gray-600 whitespace-nowrap">공구지역</span>
             {groupBuy.region_type === 'nationwide' ? (
               <span className="inline-flex items-center px-3 md:px-2 py-1 md:py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                 전국 비대면
