@@ -77,6 +77,7 @@ export default function CancelledGroupBuys() {
   const [loading, setLoading] = useState(true);
   const [selectedGroupBuy, setSelectedGroupBuy] = useState<CancelledGroupBuy | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
 
   useEffect(() => {
     const fetchCancelledGroupBuys = async () => {
@@ -157,6 +158,42 @@ export default function CancelledGroupBuys() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    try {
+      // 모든 취소된 공구 삭제 API 호출
+      const deletePromises = groupbuys.map(gb => 
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${gb.id}/delete_cancelled/`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      );
+
+      await Promise.all(deletePromises);
+
+      // UI에서 모두 제거
+      setGroupbuys([]);
+      toast({
+        title: '전체 삭제 완료',
+        description: '모든 취소된 공구가 삭제되었습니다.'
+      });
+
+      // 페이지 새로고침
+      window.location.reload();
+    } catch (error) {
+      console.error('전체 삭제 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '전체 삭제 실패',
+        description: '전체 삭제 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setShowDeleteAllDialog(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
@@ -177,6 +214,21 @@ export default function CancelledGroupBuys() {
 
   return (
     <>
+      {/* 전체 삭제 버튼 */}
+      {groupbuys.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+            onClick={() => setShowDeleteAllDialog(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            전체 내역 삭제
+          </Button>
+        </div>
+      )}
+      
       <div className="space-y-4">
         {groupbuys.map((groupbuy) => (
           <Card 
@@ -227,12 +279,33 @@ export default function CancelledGroupBuys() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogCancel>아니오</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              삭제
+              네
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>전체 내역 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              취소된 내역을 전체 삭제합니다.<br />
+              삭제 후에는 복구할 수 없습니다. 계속하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>아니오</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteAll}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              네
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
