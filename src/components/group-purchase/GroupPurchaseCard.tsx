@@ -498,7 +498,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       </div>
 
       {/* 상품 정보 영역 - 고정 높이로 버튼 정렬 유지 */}
-      <div className="p-4 border-b h-[220px] md:h-[200px] flex flex-col">
+      <div className="p-4 border-b h-[220px] md:h-[180px] flex flex-col">
         {/* 상품명 - 2줄로 제한 */}
         <h3 className="text-gray-900 text-base md:text-sm font-bold mb-2 line-clamp-2 min-h-[48px] md:min-h-[40px]">
           {groupBuy.product_details?.name || '상품명 없음'}
@@ -541,7 +541,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </div>
         
         {/* 카테고리별 정보 표시 */}
-        <div className="flex flex-col gap-1 w-full mt-1 md:mt-1">
+        <div className="flex flex-col gap-1 md:gap-1.5 w-full mt-1 md:mt-1">
           {/* 휴대폰 상품 정보 */}
           {((groupBuy.product_info?.category_detail_type === 'telecom' ||
              groupBuy.product_details?.category_detail_type === 'telecom') && 
