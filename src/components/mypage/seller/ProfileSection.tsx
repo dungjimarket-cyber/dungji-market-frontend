@@ -80,19 +80,30 @@ export default function ProfileSection() {
 
                 <div className="flex flex-col sm:flex-row items-center text-gray-600 text-sm sm:text-base">
                   <span>평판 점수</span>
-                  <div className="flex items-center sm:ml-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`h-3 w-3 sm:h-4 sm:w-4 ${
-                          star <= 3
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                    <span className="ml-1 text-xs sm:text-sm">(3.0)</span>
-                  </div>
+                  {sellerProfile?.reviewCount && sellerProfile.reviewCount > 0 ? (
+                    <div className="flex items-center sm:ml-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-3 w-3 sm:h-4 sm:w-4 ${
+                            star <= (sellerProfile?.rating || 0)
+                              ? 'text-yellow-400 fill-yellow-400'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-1 text-xs sm:text-sm">
+                        ({sellerProfile?.rating?.toFixed(1) || '0.0'})
+                      </span>
+                      <span className="ml-1 text-xs text-gray-500">
+                        ({sellerProfile.reviewCount}개 리뷰)
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="sm:ml-2 text-xs sm:text-sm text-gray-500">
+                      후기 이력이 없습니다
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap justify-center sm:justify-start mt-2 text-xs sm:text-sm gap-2">

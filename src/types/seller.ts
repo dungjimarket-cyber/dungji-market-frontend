@@ -6,6 +6,7 @@ export interface SellerProfile {
   profileImage: string;
   isVip: boolean;
   rating: number;
+  reviewCount?: number;  // 받은 리뷰 개수
   activeBids: number;
   pendingSelection: number;
   pendingSales: number;

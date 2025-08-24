@@ -30,6 +30,42 @@ const getAxiosAuthHeaders = async () => {
 };
 
 /**
+ * 판매자의 평균 별점을 계산합니다.
+ * @param sellerId 판매자 ID
+ * @returns 평균 별점과 리뷰 개수
+ */
+export const getSellerAverageRating = async (sellerId?: number): Promise<{ averageRating: number; reviewCount: number }> => {
+  try {
+    const headers = await getAxiosAuthHeaders();
+    
+    // 판매자가 낙찰받은 모든 공구의 리뷰를 조회
+    const response = await axios.get(`${API_URL}/reviews/seller_reviews/`, { 
+      headers,
+      params: { seller_id: sellerId }
+    });
+    
+    const reviews = response.data;
+    
+    if (!reviews || reviews.length === 0) {
+      return { averageRating: 0, reviewCount: 0 };
+    }
+    
+    // 평균 별점 계산
+    const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
+    const averageRating = totalRating / reviews.length;
+    
+    return { 
+      averageRating: Math.round(averageRating * 10) / 10, // 소수점 1자리까지
+      reviewCount: reviews.length 
+    };
+  } catch (error: any) {
+    console.error('판매자 평균 별점 조회 오류:', error);
+    // 에러 발생시 기본값 반환
+    return { averageRating: 0, reviewCount: 0 };
+  }
+};
+
+/**
  * 판매자 프로필 정보를 조회합니다.
  * @returns 판매자 프로필 정보
  * @example
@@ -44,7 +80,15 @@ export const getSellerProfile = async (): Promise<SellerProfile> => {
     
     // API 응답 데이터를 그대로 반환 (백엔드에서 이미 올바른 필드명 사용)
     const data = response.data;
-    return data;
+    
+    // 평균 별점 계산 추가
+    const { averageRating, reviewCount } = await getSellerAverageRating(data.id || data.user_id);
+    
+    return {
+      ...data,
+      rating: averageRating,
+      reviewCount: reviewCount
+    };
   } catch (error: any) {
     console.error('판매자 프로필 조회 오류:', error.response?.data);
     console.error('오류 상태 코드:', error.response?.status);
