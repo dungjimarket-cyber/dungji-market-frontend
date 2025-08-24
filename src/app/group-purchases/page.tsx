@@ -166,15 +166,7 @@ function GroupPurchasesPageContent() {
             // 통합 검색 필터 (제목, 상품명, 지역 등)
             else if (key === 'search') {
               console.log('검색 필터 처리 - value:', value);
-              // 쉼표로 구분된 검색어들을 각각 처리
-              if (value.includes(',')) {
-                const searchTerms = value.split(',').filter(term => term.trim());
-                console.log('확장된 검색어들:', searchTerms);
-                // 백엔드가 OR 검색을 지원하는 경우
-                params.append('search', value);
-              } else {
-                params.append('search', value);
-              }
+              params.append('search', value);
             }
             // 제조사 필터 (합집합 처리)
             else if (key === 'manufacturer') {

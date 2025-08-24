@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, MapPin, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { expandSearchQuery, normalizeRegion, expandRegionSearch } from '@/lib/utils/keywordMapping';
+import { normalizeRegion, expandRegionSearch } from '@/lib/utils/keywordMapping';
 import { regions } from '@/lib/regions';
 
 interface UnifiedSearchBarProps {
@@ -61,9 +61,8 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
 
   // 검색 실행
   const handleSearch = () => {
-    // 검색어 확장 (영어/한글 변형 포함)
-    const expandedQueries = searchQuery ? expandSearchQuery(searchQuery) : [];
-    const searchTerms = expandedQueries.length > 0 ? expandedQueries.join(',') : searchQuery;
+    // 검색어는 그대로 사용 (영어/한글 변환 제거)
+    const searchTerms = searchQuery;
     
     // 지역 조합
     let regionStr = '';
@@ -86,7 +85,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     
     onSearchChange?.(searchTerms, regionSearchTerms);
     
-    // URL 업데이트 (원본 검색어는 URL에 표시)
+    // URL 업데이트
     const params = new URLSearchParams(searchParams.toString());
     
     if (searchQuery) {
@@ -119,8 +118,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     
     // 지역 변경 시 즉시 검색 실행
     if (province) {
-      const expandedQueries = searchQuery ? expandSearchQuery(searchQuery) : [];
-      const searchTerms = expandedQueries.length > 0 ? expandedQueries.join(',') : searchQuery;
+      const searchTerms = searchQuery; // 검색어 그대로 사용
       
       const expandedRegions = expandRegionSearch(province);
       console.log(`시/도 선택: ${province}, 확장된 지역: ${expandedRegions.length}개`, expandedRegions.slice(0, 5));
@@ -142,8 +140,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     
     // 지역 변경 시 즉시 검색 실행
     if (selectedProvince && city) {
-      const expandedQueries = searchQuery ? expandSearchQuery(searchQuery) : [];
-      const searchTerms = expandedQueries.length > 0 ? expandedQueries.join(',') : searchQuery;
+      const searchTerms = searchQuery; // 검색어 그대로 사용
       
       const regionStr = `${selectedProvince} ${city}`;
       const expandedRegions = expandRegionSearch(regionStr);
@@ -166,7 +163,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             type="text"
-            placeholder="상품명, 브랜드, 키워드 검색 (한글/영어 모두 가능)"
+            placeholder="상품명, 브랜드, 키워드로 검색하세요..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
