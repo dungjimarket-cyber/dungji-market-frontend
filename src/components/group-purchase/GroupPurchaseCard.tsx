@@ -541,20 +541,21 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </div>
         
         {/* 카테고리별 정보 표시 - 하단에 고정 */}
-        <div className="flex items-center gap-1.5 w-full mt-auto flex-wrap">
+        <div className="flex flex-col gap-1 w-full mt-auto">
           {/* 휴대폰 상품 정보 */}
           {((groupBuy.product_info?.category_detail_type === 'telecom' ||
              groupBuy.product_details?.category_detail_type === 'telecom') && 
             groupBuy.telecom_detail) && (
             <>
-              {/* 통신사 표시 */}
-              <div className="flex items-center justify-center px-2.5 md:px-2 py-2 md:py-1.5 bg-white border border-gray-300 rounded-md h-12 md:h-9">
-                {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
-              </div>
-              {/* "로" 텍스트 */}
-              <span className="text-base md:text-xs font-black text-black -ml-0.5">로</span>
-              {/* 가입유형과 요금제 */}
-              <div className="flex items-center gap-1">
+              {/* 첫 줄: 통신사 로 가입유형 */}
+              <div className="flex items-center gap-1.5">
+                {/* 통신사 표시 */}
+                <div className="flex items-center justify-center px-2.5 md:px-2 py-2 md:py-1.5 bg-white border border-gray-300 rounded-md h-12 md:h-9">
+                  {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
+                </div>
+                {/* "로" 텍스트 */}
+                <span className="text-base md:text-xs font-black text-black -ml-0.5">로</span>
+                {/* 가입유형 */}
                 <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
                   <span className="text-base md:text-xs font-bold text-purple-800">
                     {groupBuy.telecom_detail.subscription_type_display || 
@@ -562,17 +563,18 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                      getRegistrationTypeText(groupBuy.telecom_detail.subscription_type)}
                   </span>
                 </div>
-                {groupBuy.telecom_detail.plan_info && (
-                  <>
-                    <span className="text-base md:text-xs font-semibold text-gray-700">요금제</span>
-                    <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
-                      <span className="text-base md:text-xs font-bold text-green-800">
-                        {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-                      </span>
-                    </div>
-                  </>
-                )}
               </div>
+              {/* 둘째 줄: 요금제 */}
+              {groupBuy.telecom_detail.plan_info && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base md:text-xs font-semibold text-gray-700">요금제</span>
+                  <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
+                    <span className="text-base md:text-xs font-bold text-green-800">
+                      {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </>
           )}
           
@@ -583,71 +585,75 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
              groupBuy.product_details?.category_detail_type === 'internet_tv') && 
             groupBuy.internet_detail) && (
             <>
-              {/* 통신사 표시 */}
-              <div className="flex items-center justify-center px-2.5 md:px-2 py-2 md:py-1.5 bg-white border border-gray-300 rounded-md h-12 md:h-9">
-                {(() => {
-                  const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
-                  switch(carrier) {
-                    case 'SK':
-                    case 'SKB':
-                    case 'SK브로드밴드':
-                    case 'SKT':
-                      return (
-                        <Image
-                          src="/logos/sk-broadband.png"
-                          alt="SK브로드밴드"
-                          width={48}
-                          height={32}
-                          className="object-contain w-[60px] h-[40px] md:w-[40px] md:h-[26px]"
-                        />
-                      );
-                    case 'KT':
-                      return (
-                        <Image
-                          src="/logos/kt.png"
-                          alt="KT"
-                          width={44}
-                          height={24}
-                          className="object-contain w-[54px] h-[30px] md:w-[36px] md:h-[20px]"
-                        />
-                      );
-                    case 'LG U+':
-                    case 'LGU':
-                    case 'LGU+':
-                      return (
-                        <Image
-                          src="/logos/lgu.png"
-                          alt="LG U+"
-                          width={60}
-                          height={24}
-                          className="object-contain w-[78px] h-[30px] md:w-[52px] md:h-[20px]"
-                        />
-                      );
-                    default:
-                      return (
-                        <span className="text-xs font-bold text-gray-600">{carrier}</span>
-                      );
-                  }
-                })()}
-              </div>
-              {/* "로" 텍스트 */}
-              <span className="text-base md:text-xs font-black text-black -ml-0.5">로</span>
-              {/* 가입유형과 속도 */}
-              <div className="flex items-center gap-1">
+              {/* 첫 줄: 통신사 로 가입유형 */}
+              <div className="flex items-center gap-1.5">
+                {/* 통신사 표시 */}
+                <div className="flex items-center justify-center px-2.5 md:px-2 py-2 md:py-1.5 bg-white border border-gray-300 rounded-md h-12 md:h-9">
+                  {(() => {
+                    const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
+                    switch(carrier) {
+                      case 'SK':
+                      case 'SKB':
+                      case 'SK브로드밴드':
+                      case 'SKT':
+                        return (
+                          <Image
+                            src="/logos/sk-broadband.png"
+                            alt="SK브로드밴드"
+                            width={48}
+                            height={32}
+                            className="object-contain w-[60px] h-[40px] md:w-[40px] md:h-[26px]"
+                          />
+                        );
+                      case 'KT':
+                        return (
+                          <Image
+                            src="/logos/kt.png"
+                            alt="KT"
+                            width={44}
+                            height={24}
+                            className="object-contain w-[54px] h-[30px] md:w-[36px] md:h-[20px]"
+                          />
+                        );
+                      case 'LG U+':
+                      case 'LGU':
+                      case 'LGU+':
+                        return (
+                          <Image
+                            src="/logos/lgu.png"
+                            alt="LG U+"
+                            width={60}
+                            height={24}
+                            className="object-contain w-[78px] h-[30px] md:w-[52px] md:h-[20px]"
+                          />
+                        );
+                      default:
+                        return (
+                          <span className="text-xs font-bold text-gray-600">{carrier}</span>
+                        );
+                    }
+                  })()}
+                </div>
+                {/* "로" 텍스트 */}
+                <span className="text-base md:text-xs font-black text-black -ml-0.5">로</span>
+                {/* 가입유형 */}
                 <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
                   <span className="text-base md:text-xs font-bold text-purple-800">
                     {groupBuy.internet_detail.subscription_type_display}
                   </span>
                 </div>
-                {groupBuy.internet_detail.speed && (
-                  <div className="inline-flex items-center gap-1 px-3.5 md:px-2 py-2 md:py-1 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-md whitespace-nowrap w-fit">
-                    <span className="text-base md:text-xs font-medium text-blue-600">속도</span>
+              </div>
+              {/* 둘째 줄: 속도 */}
+              {groupBuy.internet_detail.speed && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base md:text-xs font-semibold text-gray-700">속도</span>
+                  <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-1 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-md whitespace-nowrap w-fit">
                     <span className="text-base md:text-xs font-bold text-blue-800">
                       {groupBuy.internet_detail.speed}
                     </span>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </>
           )}
           
