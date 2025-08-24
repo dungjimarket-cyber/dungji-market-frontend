@@ -182,23 +182,26 @@ function GroupPurchasesPageContent() {
               // 콤마로 구분된 문자열로 전송 (백엔드에서 OR 처리 기대)
               params.append('manufacturer', manufacturers.join(','));
             }
-            // 요금제 필터 (합집합 처리)
-            else if (key === 'plan' || key === 'planRange') {
-              console.log('요금제 필터 처리 - key:', key, 'value:', value);
-              // 콤마로 구분된 여러 값 처리
-              const plans = value.split(',').map(p => {
-                if (p === '50000') return '5만원대';
-                else if (p === '60000') return '6만원대';
-                else if (p === '70000') return '7만원대';
-                else if (p === '80000') return '8만원대';
-                else if (p === '90000') return '9만원대';
-                else if (p === '100000') return '10만원이상';
-                return p;
-              });
+            // 요금제 필터 (휴대폰 전용)
+            else if (key === 'planRange') {
+              const category = filters.category || selectedCategory;
+              console.log('요금제 필터 처리 - key:', key, 'value:', value, 'category:', category);
               
-              console.log('변환된 요금제들:', plans.join(','));
-              // 콤마로 구분된 문자열로 전송 (백엔드에서 OR 처리 기대)
-              params.append('plan_info', plans.join(','));
+              if (category === 'phone') {
+                // 콤마로 구분된 여러 값 처리
+                const plans = value.split(',').map(p => {
+                  if (p === '50000') return '5만원대';
+                  else if (p === '60000') return '6만원대';
+                  else if (p === '70000') return '7만원대';
+                  else if (p === '80000') return '8만원대';
+                  else if (p === '90000') return '9만원대';
+                  else if (p === '100000') return '10만원이상';
+                  return p;
+                });
+                
+                console.log('변환된 요금제들:', plans.join(','));
+                params.append('plan_info', plans.join(','));
+              }
             }
             // 브랜드 필터 (호환성)
             else if (key === 'brand') {
@@ -262,11 +265,15 @@ function GroupPurchasesPageContent() {
                 }
               }
             }
-            // 인터넷 속도 필터 (합집합 처리)
-            else if (key === 'speed' || key === 'internet_speed' || key === 'internet_tv_speed') {
-              console.log('속도 필터 처리 - key:', key, 'value:', value);
-              // 콤마로 구분된 값들을 그대로 전송
-              params.append('internet_speed', value);
+            // 인터넷 속도 필터 (인터넷/인터넷+TV 전용)
+            else if (key === 'speed' || key === 'internet_tv_speed') {
+              const category = filters.category || selectedCategory;
+              console.log('속도 필터 처리 - key:', key, 'value:', value, 'category:', category);
+              
+              if (category === 'internet' || category === 'internet_tv') {
+                // 콤마로 구분된 값들을 그대로 전송
+                params.append('internet_speed', value);
+              }
             }
             // 지역 필터
             else if (key === 'region') {
@@ -308,7 +315,12 @@ function GroupPurchasesPageContent() {
         });
       }
       
-      console.log('공구 목록 요청 파라미터:', params.toString());
+      console.log('========== API 요청 정보 ==========');
+      console.log('카테고리:', selectedCategory);
+      console.log('활성 탭:', currentTab);
+      console.log('필터:', filters);
+      console.log('최종 파라미터:', params.toString());
+      console.log('====================================');
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
       
@@ -631,7 +643,7 @@ function GroupPurchasesPageContent() {
                   filterMapping['manufacturer'] = 'manufacturer';
                   filterMapping['carrier'] = 'carrier';
                   filterMapping['subscriptionType'] = 'subscriptionType';
-                  filterMapping['planRange'] = 'plan';
+                  filterMapping['planRange'] = 'planRange';  // plan → planRange로 변경
                 } else if (selectedCategory === 'internet') {
                   filterMapping['internet_carrier'] = 'internet_carrier';
                   filterMapping['internet_subscriptionType'] = 'internet_subscriptionType';
