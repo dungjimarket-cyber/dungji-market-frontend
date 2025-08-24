@@ -20,8 +20,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/sk-broadband.png"
           alt="SK"
-          width={36}
-          height={24}
+          width={40}
+          height={26}
           className="object-contain"
         />
       );
@@ -31,8 +31,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/skt.png"
           alt="SKT"
-          width={32}
-          height={24}
+          width={36}
+          height={26}
           className="object-contain"
         />
       );
@@ -41,8 +41,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/kt.png"
           alt="KT"
-          width={32}
-          height={18}
+          width={36}
+          height={20}
           className="object-contain"
         />
       );
@@ -53,8 +53,8 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
         <Image
           src="/logos/lgu.png"
           alt="LG U+"
-          width={48}
-          height={18}
+          width={52}
+          height={20}
           className="object-contain"
         />
       );
@@ -374,7 +374,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       }`}
       onClick={handleViewDetail}>
       {/* 메인 이미지 - 단독 표시 */}
-      <div className="relative h-64 w-full bg-gray-50">
+      <div className="relative h-52 w-full bg-gray-50">
         <Image
           src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
           alt={groupBuy.product_details?.name || '상품 이미지'}
@@ -498,24 +498,24 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       </div>
 
       {/* 상품 정보 영역 - 고정 높이로 버튼 정렬 유지 */}
-      <div className="p-4 border-b h-[180px] flex flex-col">
+      <div className="p-4 border-b h-[200px] flex flex-col">
         {/* 상품명 - 2줄로 제한 */}
-        <h3 className="text-gray-900 text-lg font-bold mb-3 line-clamp-2 min-h-[56px]">
+        <h3 className="text-gray-900 text-base font-bold mb-2 line-clamp-2 min-h-[48px]">
           {groupBuy.product_details?.name || '상품명 없음'}
         </h3>
         
         {/* 지역 정보 */}
-        <div className="mb-3 flex-shrink-0">
+        <div className="mb-2 flex-shrink-0">
           <div className="flex items-start gap-2">
-            <span className="text-xs font-semibold text-gray-500 whitespace-nowrap mt-1">공구지역</span>
+            <span className="text-[11px] font-semibold text-gray-600 whitespace-nowrap mt-0.5">공구지역</span>
             {groupBuy.region_type === 'nationwide' ? (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                 전국 비대면
               </span>
             ) : (
               groupBuy.regions && groupBuy.regions.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {groupBuy.regions.map((region, index) => {
+                <div className="flex flex-wrap gap-1">
+                  {groupBuy.regions.slice(0, 3).map((region, index) => {
                     let displayName = region.name || region.full_name || '';
                     displayName = displayName
                       .replace('특별시', '')
@@ -524,11 +524,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                       .replace('특별자치도', '');
                     
                     return (
-                      <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                      <span key={index} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                         {displayName}
                       </span>
                     );
                   })}
+                  {groupBuy.regions.length > 3 && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200">
+                      +{groupBuy.regions.length - 3}
+                    </span>
+                  )}
                 </div>
               )
             )}
@@ -536,7 +541,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         </div>
         
         {/* 카테고리별 정보 표시 - 하단에 고정 */}
-        <div className="flex items-center gap-1.5 w-full mt-auto">
+        <div className="flex items-center gap-1.5 w-full mt-auto flex-wrap">
           {/* 휴대폰 상품 정보 */}
           {((groupBuy.product_info?.category_detail_type === 'telecom' ||
              groupBuy.product_details?.category_detail_type === 'telecom') && 
@@ -547,7 +552,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
               </div>
               {/* "로" 텍스트 */}
-              <span className="text-xs font-black text-black -ml-1">로</span>
+              <span className="text-xs font-black text-black -ml-0.5">로</span>
               {/* 가입유형과 요금제 */}
               <div className="flex items-center gap-1">
                 <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
@@ -559,7 +564,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 </div>
                 {groupBuy.telecom_detail.plan_info && (
                   <>
-                    <span className="text-[10px] font-semibold text-gray-600">요금제</span>
+                    <span className="text-[11px] font-semibold text-gray-700">요금제</span>
                     <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
                       <span className="text-xs font-bold text-green-800">
                         {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
@@ -591,8 +596,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                         <Image
                           src="/logos/sk-broadband.png"
                           alt="SK브로드밴드"
-                          width={36}
-                          height={24}
+                          width={40}
+                          height={26}
                           className="object-contain"
                         />
                       );
@@ -601,8 +606,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                         <Image
                           src="/logos/kt.png"
                           alt="KT"
-                          width={32}
-                          height={18}
+                          width={36}
+                          height={20}
                           className="object-contain"
                         />
                       );
@@ -613,8 +618,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                         <Image
                           src="/logos/lgu.png"
                           alt="LG U+"
-                          width={48}
-                          height={18}
+                          width={52}
+                          height={20}
                           className="object-contain"
                         />
                       );
@@ -626,7 +631,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 })()}
               </div>
               {/* "로" 텍스트 */}
-              <span className="text-xs font-black text-black -ml-1">로</span>
+              <span className="text-xs font-black text-black -ml-0.5">로</span>
               {/* 가입유형과 속도 */}
               <div className="flex items-center gap-1">
                 <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
@@ -636,7 +641,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 </div>
                 {groupBuy.internet_detail.speed && (
                   <div className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-300 rounded-md whitespace-nowrap w-fit">
-                    <span className="text-[10px] font-medium text-blue-600">속도</span>
+                    <span className="text-[11px] font-medium text-blue-600">속도</span>
                     <span className="text-xs font-bold text-blue-800">
                       {groupBuy.internet_detail.speed}
                     </span>
@@ -655,7 +660,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                 {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
               </div>
               {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
-                <span className="text-xs font-black text-black -ml-1">로</span>
+                <span className="text-xs font-black text-black -ml-0.5">로</span>
               )}
               <div className="flex items-center gap-1">
                 {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
@@ -671,7 +676,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                  groupBuy.product_details?.category_name !== '인터넷' &&
                  groupBuy.product_details?.category_name !== '인터넷+TV' && (
                   <>
-                    <span className="text-[10px] font-semibold text-gray-600">요금제</span>
+                    <span className="text-[11px] font-semibold text-gray-700">요금제</span>
                     <div className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-green-50 to-green-100 border border-green-300 rounded-md whitespace-nowrap w-fit">
                       <span className="text-xs font-bold text-green-800">
                         {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
