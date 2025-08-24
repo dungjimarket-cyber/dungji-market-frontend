@@ -1973,15 +1973,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="text-sm">
               <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
             </div>
+            {/* 선정된 경우 메시지 숨김, 미선정은 표시 */}
             {myBidInfo.status === 'won' ? (
-              <div className="mt-3 p-3 bg-green-100 rounded-md">
-                <p className="text-green-800 font-medium">🎉 {myBidInfo.message}</p>
-              </div>
+              null  // 선정된 경우 백엔드 메시지 숨김
             ) : (
               <div className="mt-3 p-3 bg-yellow-100 rounded-md">
                 <p className="text-yellow-800">{myBidInfo.message}</p>
                 <p className="text-sm text-yellow-700 mt-2">
-                  다음 공구에서 더 좋은 조건으로 입찰해보세요! 💪
+                  기회는 항상 열려있습니다! 💪
                 </p>
               </div>
             )}
