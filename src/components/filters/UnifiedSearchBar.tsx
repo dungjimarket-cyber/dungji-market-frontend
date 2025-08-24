@@ -123,6 +123,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       const searchTerms = expandedQueries.length > 0 ? expandedQueries.join(',') : searchQuery;
       
       const expandedRegions = expandRegionSearch(province);
+      console.log(`시/도 선택: ${province}, 확장된 지역: ${expandedRegions.length}개`, expandedRegions.slice(0, 5));
       const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : province;
       
       onSearchChange?.(searchTerms, regionSearchTerms);
