@@ -14,16 +14,18 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Save, Phone, Upload, FileText, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Phone, Upload, FileText, Trash2, LogOut } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SellerSettings() {
   const router = useRouter();
   const { toast } = useToast();
+  const { logout } = useAuth();
   const [profile, setProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -285,6 +287,11 @@ export default function SellerSettings() {
   };
 
   // 사업자등록번호 유효성 검증 함수
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
   const verifyBusinessNumber = async () => {
     const businessNumber = `${formData.businessNumber1}${formData.businessNumber2}${formData.businessNumber3}`;
     
@@ -893,6 +900,19 @@ export default function SellerSettings() {
               </CardFooter>
             </form>
           </Card>
+
+          {/* 로그아웃 버튼 - 왼쪽 하단 */}
+          <div className="mt-8 pb-8">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="flex items-center text-red-600 hover:text-red-800 border-red-200 hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              로그아웃
+            </Button>
+          </div>
     </div>
   );
 }

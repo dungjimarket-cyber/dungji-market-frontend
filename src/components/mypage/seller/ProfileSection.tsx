@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Settings, LogOut, User, Star, Ticket, CheckCircle2, Trophy } from 'lucide-react';
+import { Settings, User, Star, Ticket, CheckCircle2, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import bidTokenService, { BidTokenResponse } from '@/lib/bid-token-service';
 import { getSellerProfile } from '@/lib/api/sellerService';
@@ -16,8 +15,7 @@ import { SellerProfile } from '@/types/seller';
  * 판매자 프로필 섹션
  */
 export default function ProfileSection() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,11 +39,6 @@ export default function ProfileSection() {
 
     fetchData();
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
 
   if (!user) return null;
 
@@ -128,18 +121,10 @@ export default function ProfileSection() {
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-                className="flex items-center text-red-600 hover:text-red-800 border-red-200 hover:bg-red-50"
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">로그아웃</span>
-              </Button>
               <Link href="/mypage/seller/settings">
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <Settings className="h-4 w-4 mr-1" />
+                  정보수정
                 </Button>
               </Link>
             </div>
