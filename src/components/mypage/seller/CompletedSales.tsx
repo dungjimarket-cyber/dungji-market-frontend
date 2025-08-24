@@ -86,17 +86,17 @@ export default function CompletedSales() {
                   {groupBuy.product_details?.name}
                 </h3>
                 
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
+                <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2 flex-wrap">
+                  <span className="flex items-center gap-1 whitespace-nowrap">
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                     {new Date(groupBuy.completed_at || groupBuy.end_time).toLocaleDateString()}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    판매 {groupBuy.confirmed_buyers || 0}건
+                  <span className="flex items-center gap-1 whitespace-nowrap">
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                    참여자 {groupBuy.confirmed_buyers || 0}명
                   </span>
-                  <span className="flex items-center gap-1 text-purple-600">
-                    <CheckCircle2 className="h-4 w-4" />
+                  <span className="flex items-center gap-1 text-purple-600 whitespace-nowrap">
+                    <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     판매완료
                   </span>
                 </div>
