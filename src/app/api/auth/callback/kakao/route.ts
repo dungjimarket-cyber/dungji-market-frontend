@@ -72,17 +72,23 @@ export async function GET(request: Request) {
     let callbackUrl = '/'; // 기본값
     let referralCode = ''; // 추천인 코드
     
+    console.log('🔍 [카카오 콜백] 받은 state 원본:', state);
+    
     if (state) {
       try {
         // state가 JSON 문자열인지 확인
         if (state.startsWith('{')) {
           // JSON 형식인 경우
           const stateData = JSON.parse(decodeURIComponent(state));
+          console.log('📦 [카카오 콜백] 파싱된 state 데이터:', stateData);
+          
           if (stateData.role) {
             userRole = stateData.role;
+            console.log('👤 [카카오 콜백] 사용자 역할:', userRole);
           }
           if (stateData.referral_code) {
             referralCode = stateData.referral_code;
+            console.log('🎟️ [카카오 콜백] 추천인 코드:', referralCode);
           }
           if (stateData.redirectUrl) {
             callbackUrl = stateData.redirectUrl;
@@ -91,13 +97,16 @@ export async function GET(request: Request) {
           }
         } else {
           // 이전 버전 호환성 - state가 단순 URL인 경우
+          console.log('⚠️ [카카오 콜백] state가 JSON이 아님, URL로 처리');
           callbackUrl = decodeURIComponent(state);
         }
       } catch (e) {
-        console.error('state 파싱 오류:', e, 'state:', state);
+        console.error('❌ [카카오 콜백] state 파싱 오류:', e, 'state:', state);
         // 파싱 실패 시 state를 그대로 callbackUrl로 사용
         callbackUrl = decodeURIComponent(state);
       }
+    } else {
+      console.log('⚠️ [카카오 콜백] state가 없음');
     }
     
     console.log('카카오 정보 처리:', {
@@ -112,20 +121,28 @@ export async function GET(request: Request) {
     });
     
     // 백엔드에 필요한 형식으로 데이터 전송 (role과 referral_code 포함)
+    const requestBody = {
+      sns_id: String(kakaoId),
+      sns_type: 'kakao',
+      email: email,
+      name: name,
+      profile_image: profileImage,
+      role: userRole, // role 정보 추가
+      referral_code: referralCode, // 추천인 코드 추가
+    };
+    
+    console.log('📤 [카카오 콜백] 백엔드로 전송할 데이터:', {
+      ...requestBody,
+      referral_code_exists: !!referralCode,
+      referral_code_length: referralCode?.length || 0
+    });
+    
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sns-login/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        sns_id: String(kakaoId),
-        sns_type: 'kakao',
-        email: email,
-        name: name,
-        profile_image: profileImage,
-        role: userRole, // role 정보 추가
-        referral_code: referralCode, // 추천인 코드 추가
-      }),
+      body: JSON.stringify(requestBody),
     });
     
     if (!response.ok) {
