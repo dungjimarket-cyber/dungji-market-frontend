@@ -998,6 +998,7 @@ function RegisterPageContent() {
                 termsAgreed={formData.terms_agreed}
                 privacyAgreed={formData.privacy_agreed}
                 memberType={memberType || undefined}
+                isSignup={true}
               />
             </div>
           )}
