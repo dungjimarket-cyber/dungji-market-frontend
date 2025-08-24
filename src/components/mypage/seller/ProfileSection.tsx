@@ -73,9 +73,10 @@ export default function ProfileSection() {
 
 
                 <div className="flex flex-wrap justify-center sm:justify-start mt-2 text-xs sm:text-sm gap-2">
-                  <Badge variant="outline">
+                  {/* 본인인증 - 아직 미구현 */}
+                  {/* <Badge variant="outline">
                     본인인증 완료
-                  </Badge>
+                  </Badge> */}
                   <Badge 
                     variant="outline" 
                     className={sellerProfile?.businessVerified ? 'bg-green-50 text-green-700 border-green-300' : 'text-gray-500 border-gray-300'}
