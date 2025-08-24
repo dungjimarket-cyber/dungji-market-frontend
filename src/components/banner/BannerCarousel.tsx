@@ -97,73 +97,75 @@ export default function BannerCarousel() {
   });
 
   return (
-    <div className="relative w-full overflow-hidden md:rounded-lg">
-      {/* 배너 컨테이너 - aspect ratio로 이미지 비율 유지 */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[21/5] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-        {/* 배너 이미지 */}
-        {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
-          <Link 
-            href={
-              currentBanner.target_url.startsWith('http') 
-                ? currentBanner.target_url 
-                : currentBanner.target_url.startsWith('/') 
+    <div className="w-full">
+      <div className="relative w-full overflow-hidden md:rounded-lg">
+        {/* 배너 컨테이너 - aspect ratio로 이미지 비율 유지 */}
+        <div className="relative w-full aspect-[16/9] md:aspect-[21/5] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+          {/* 배너 이미지 */}
+          {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
+            <Link 
+              href={
+                currentBanner.target_url.startsWith('http') 
                   ? currentBanner.target_url 
-                  : `/${currentBanner.target_url}`
-            }
-            className="block absolute inset-0"
-            target={currentBanner.target_url.startsWith('http') ? '_blank' : '_self'}
-            rel={currentBanner.target_url.startsWith('http') ? 'noopener noreferrer' : undefined}
-          >
+                  : currentBanner.target_url.startsWith('/') 
+                    ? currentBanner.target_url 
+                    : `/${currentBanner.target_url}`
+              }
+              className="block absolute inset-0"
+              target={currentBanner.target_url.startsWith('http') ? '_blank' : '_self'}
+              rel={currentBanner.target_url.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
+              <BannerImage currentBanner={currentBanner} currentIndex={currentIndex} />
+            </Link>
+          ) : (
             <BannerImage currentBanner={currentBanner} currentIndex={currentIndex} />
-          </Link>
-        ) : (
-          <BannerImage currentBanner={currentBanner} currentIndex={currentIndex} />
-        )}
+          )}
 
-        {/* 이전/다음 버튼 - 배너가 2개 이상일 때만 표시 */}
-        {banners.length > 1 && (
-          <>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                goToPrevious();
-              }}
-              className="absolute left-0 md:left-4 top-0 md:top-1/2 h-full md:h-auto w-16 md:w-auto md:-translate-y-1/2 bg-gradient-to-r from-black/20 to-transparent md:bg-white/80 hover:from-black/30 md:hover:bg-white text-white md:text-gray-800 md:p-2 md:rounded-full md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
-              aria-label="이전 배너"
-            >
-              <ChevronLeft className="w-6 h-6 md:w-5 md:h-5" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                goToNext();
-              }}
-              className="absolute right-0 md:right-4 top-0 md:top-1/2 h-full md:h-auto w-16 md:w-auto md:-translate-y-1/2 bg-gradient-to-l from-black/20 to-transparent md:bg-white/80 hover:from-black/30 md:hover:bg-white text-white md:text-gray-800 md:p-2 md:rounded-full md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
-              aria-label="다음 배너"
-            >
-              <ChevronRight className="w-6 h-6 md:w-5 md:h-5" />
-            </button>
-          </>
-        )}
-
-        {/* 인디케이터 - 배너가 2개 이상일 때만 표시 */}
-        {banners.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-            {banners.map((_, index) => (
+          {/* 이전/다음 버튼 - 배너가 2개 이상일 때만 표시 */}
+          {banners.length > 1 && (
+            <>
               <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
-                    ? 'w-8 bg-white' 
-                    : 'w-2 bg-white/50 hover:bg-white/70'
-                }`}
-                aria-label={`${index + 1}번째 배너로 이동`}
-              />
-            ))}
-          </div>
-        )}
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToPrevious();
+                }}
+                className="absolute left-0 md:left-4 top-0 md:top-1/2 h-full md:h-auto w-16 md:w-auto md:-translate-y-1/2 bg-gradient-to-r from-black/20 to-transparent md:bg-white/80 hover:from-black/30 md:hover:bg-white text-white md:text-gray-800 md:p-2 md:rounded-full md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
+                aria-label="이전 배너"
+              >
+                <ChevronLeft className="w-6 h-6 md:w-5 md:h-5" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToNext();
+                }}
+                className="absolute right-0 md:right-4 top-0 md:top-1/2 h-full md:h-auto w-16 md:w-auto md:-translate-y-1/2 bg-gradient-to-l from-black/20 to-transparent md:bg-white/80 hover:from-black/30 md:hover:bg-white text-white md:text-gray-800 md:p-2 md:rounded-full md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
+                aria-label="다음 배너"
+              >
+                <ChevronRight className="w-6 h-6 md:w-5 md:h-5" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
+      
+      {/* 인디케이터 - 배너 영역 밖 하단에 위치, 배너가 2개 이상일 때만 표시 */}
+      {banners.length > 1 && (
+        <div className="flex justify-center space-x-2 mt-3">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === currentIndex 
+                  ? 'w-8 bg-gray-600' 
+                  : 'w-2 bg-gray-300 hover:bg-gray-400'
+              }`}
+              aria-label={`${index + 1}번째 배너로 이동`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
