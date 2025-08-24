@@ -36,6 +36,13 @@ const getAxiosAuthHeaders = async () => {
  */
 export const getSellerAverageRating = async (sellerId?: number): Promise<{ averageRating: number; reviewCount: number }> => {
   try {
+    // 임시로 별점 계산 비활성화 - 백엔드에서 직접 제공할 때까지
+    // TODO: 백엔드에서 판매자 프로필 API에 평균 별점과 리뷰 수를 포함하도록 요청
+    console.log('별점 계산 임시 비활성화 - 성능 최적화 필요');
+    return { averageRating: 0, reviewCount: 0 };
+    
+    // 아래는 원래 로직 (주석 처리)
+    /*
     console.log('판매자 별점 조회 시작 - sellerId:', sellerId);
     
     if (!sellerId) {
@@ -45,78 +52,26 @@ export const getSellerAverageRating = async (sellerId?: number): Promise<{ avera
     
     const headers = await getAxiosAuthHeaders();
     
-    // 먼저 판매자가 낙찰받은 공구 목록을 조회
+    // 백엔드에서 직접 평균 별점을 제공하는 경우를 위한 대체 로직
     try {
-      // 판매 완료된 공구들의 리뷰를 조회하는 방식으로 시도
-      const groupbuysResponse = await axios.get(`${API_URL}/groupbuys/seller_completed/`, { 
-        headers 
+      const profileResponse = await axios.get(`${API_URL}/users/${sellerId}/public_profile/`, {
+        headers
       });
       
-      console.log('판매 완료 공구 응답:', groupbuysResponse.data);
-      
-      if (!groupbuysResponse.data || groupbuysResponse.data.length === 0) {
-        console.log('판매 완료된 공구가 없습니다');
-        return { averageRating: 0, reviewCount: 0 };
+      if (profileResponse.data?.average_rating !== undefined) {
+        return {
+          averageRating: profileResponse.data.average_rating,
+          reviewCount: profileResponse.data.review_count || 0
+        };
       }
-      
-      // 각 공구의 리뷰를 수집
-      let allReviews: any[] = [];
-      
-      for (const groupbuy of groupbuysResponse.data) {
-        try {
-          const reviewResponse = await axios.get(`${API_URL}/reviews/groupbuy_reviews/`, {
-            params: { groupbuy_id: groupbuy.id }
-          });
-          
-          if (reviewResponse.data && reviewResponse.data.reviews) {
-            allReviews = [...allReviews, ...reviewResponse.data.reviews];
-          }
-        } catch (err) {
-          console.log(`공구 ${groupbuy.id}의 리뷰 조회 실패:`, err);
-        }
-      }
-      
-      console.log('수집된 전체 리뷰:', allReviews.length, '개');
-      
-      if (allReviews.length === 0) {
-        return { averageRating: 0, reviewCount: 0 };
-      }
-      
-      // 평균 별점 계산
-      const totalRating = allReviews.reduce((sum: number, review: any) => sum + (review.rating || 0), 0);
-      const averageRating = totalRating / allReviews.length;
-      
-      console.log('평균 별점 계산 결과:', averageRating);
-      
-      return { 
-        averageRating: Math.round(averageRating * 10) / 10,
-        reviewCount: allReviews.length 
-      };
-      
-    } catch (apiError: any) {
-      console.error('API 호출 오류:', apiError.response?.data || apiError.message);
-      
-      // 백엔드에서 직접 평균 별점을 제공하는 경우를 위한 대체 로직
-      try {
-        const profileResponse = await axios.get(`${API_URL}/users/${sellerId}/public_profile/`, {
-          headers
-        });
-        
-        if (profileResponse.data?.average_rating !== undefined) {
-          return {
-            averageRating: profileResponse.data.average_rating,
-            reviewCount: profileResponse.data.review_count || 0
-          };
-        }
-      } catch (err) {
-        console.log('대체 API도 실패:', err);
-      }
-      
-      return { averageRating: 0, reviewCount: 0 };
+    } catch (err) {
+      console.log('프로필 API 호출 실패:', err);
     }
     
+    return { averageRating: 0, reviewCount: 0 };
+    */
   } catch (error: any) {
-    console.error('판매자 평균 별점 조회 전체 오류:', error);
+    console.error('판매자 평균 별점 조회 오류:', error);
     return { averageRating: 0, reviewCount: 0 };
   }
 };
@@ -138,17 +93,12 @@ export const getSellerProfile = async (): Promise<SellerProfile> => {
     const data = response.data;
     console.log('판매자 프로필 데이터:', data);
     
-    // 다양한 필드에서 sellerId 찾기
-    const sellerId = data.id || data.user_id || data.user?.id || data.seller_id;
-    console.log('추출된 sellerId:', sellerId);
-    
-    // 평균 별점 계산 추가
-    const { averageRating, reviewCount } = await getSellerAverageRating(sellerId);
-    
+    // 백엔드에서 직접 제공하는 별점 정보가 있으면 사용
+    // 없으면 임시로 0으로 설정 (성능 문제로 별점 계산 비활성화)
     return {
       ...data,
-      rating: averageRating,
-      reviewCount: reviewCount
+      rating: data.average_rating || data.rating || 0,
+      reviewCount: data.review_count || data.reviewCount || 0
     };
   } catch (error: any) {
     console.error('판매자 프로필 조회 오류:', error.response?.data);
