@@ -1589,27 +1589,21 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
-              {/* 낙찰자에게 축하 메시지 먼저 표시 */}
-              {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress') && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-lg border-2 border-orange-300 shadow-sm">
-                  <p className="text-xl font-bold text-orange-700">
-                    🎉 축하합니다! 최종 선정되셨습니다 🎉
-                  </p>
-                </div>
-              )}
               
               {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 */}
               {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (
                 <div className="mb-4">
                   <p className="text-2xl font-bold text-center text-green-700 mb-2">
-                    ✅ 견적이 최종 선정되었습니다
+                    🎉 견적이 최종 선정되었습니다! 🎉
                   </p>
                 </div>
               )}
               
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Crown className="h-6 w-6 text-orange-500" />
-                <p className="text-xl font-bold text-gray-800">선정된 최종 지원금</p>
+                <p className="text-xl font-bold text-gray-800">
+                  {isSeller && hasWinningBid ? '내 견적 금액' : '선정된 최종 지원금'}
+                </p>
               </div>
               <p className="text-5xl font-bold text-orange-600 mb-1">
                 {/* 최종선택 단계 이후부터는 참여자와 판매회원에게 정상 금액 표시, 미참여자는 마스킹 */}
@@ -1969,7 +1963,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
             }`}>
               <Gavel className="w-5 h-5 mr-2" />
-              내 입찰 결과
+              견적제안 내역
             </h3>
           </div>
           <div className="space-y-2">
@@ -2701,7 +2695,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {finalSelectionType === 'confirm' ? (
                 isSeller ? (
                   <>
-                    낙찰받은 견적 그대로 책임 하에 판매하시겠습니까?<br />
+                    제안하신 견적 그대로 책임 하에 판매하시겠습니까?<br />
                     <span className="text-sm text-gray-600 mt-2 block">
                       (판매를 확정하시면 구매자 리스트를 제공해 드립니다)
                     </span>
