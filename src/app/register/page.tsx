@@ -581,10 +581,7 @@ function RegisterPageContent() {
       submitData.append('role', formData.role);
       submitData.append('marketing_agreed', formData.marketing_agreed.toString());
       
-      // 추천인 코드 (일반회원만, 판매자는 마이페이지에서 입력)
-      if (formData.referral_code && formData.role === 'buyer') {
-        submitData.append('referral_code', formData.referral_code);
-      }
+      // 추천인 코드는 회원가입 후 마이페이지에서 입력
       
       // 이메일 로그인인 경우
       if (signupType === 'email') {
@@ -1439,27 +1436,6 @@ function RegisterPageContent() {
                   </div>
                 )}
 
-                {/* 추천인 코드 (판매자만) */}
-                {formData.role === 'seller' && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-lg font-medium text-gray-900">둥지파트너스 추천인 코드</h3>
-                    
-                    <div>
-                      <label htmlFor="referral_code" className="block text-sm font-medium text-gray-700 mb-1">
-                        추천인 코드 <span className="text-gray-500">(선택)</span>
-                      </label>
-                      <input
-                        id="referral_code"
-                        name="referral_code"
-                        type="text"
-                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="추천인 코드를 입력하세요"
-                        value={formData.referral_code}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-                )}
 
                 {/* 약관 동의 */}
                 <div id="terms-section" className="space-y-3 pt-4 border-t">
