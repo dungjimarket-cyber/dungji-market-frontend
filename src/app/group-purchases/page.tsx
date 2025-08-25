@@ -564,7 +564,7 @@ function GroupPurchasesPageContent() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadingMore, loading, searchParams, activeTab, fetchGroupBuys]);
+  }, [hasMore, loadingMore, loading, searchParams.toString(), activeTab]);
 
   /**
    * 페이지가 다시 포커스될 때 데이터 새로고침
