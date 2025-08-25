@@ -95,6 +95,9 @@ export default function Footer() {
               <p className="text-xs text-gray-500">
                 © {new Date().getFullYear()} 둥지마켓. All rights reserved.
               </p>
+              <p className="text-[10px] text-gray-400 mt-1">
+                둥지마켓은 통신판매중개자로서, 통신판매의 당사자가 아니며 상품의 주문, 배송 및 환불 등과 관련한 의무와 책임은 각 판매자에게 있습니다.
+              </p>
             </div>
           </div>
         </div>
