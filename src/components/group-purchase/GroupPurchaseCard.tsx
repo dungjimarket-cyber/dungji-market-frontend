@@ -505,6 +505,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           {groupBuy.product_details?.name || '상품명 없음'}
         </h3>
         
+        {/* 상품명 하단 구분선 */}
+        <div className="border-b border-gray-100 mb-2"></div>
+        
         {/* 지역 정보 */}
         <div className="mb-1.5 md:mb-1 flex-shrink-0">
           <div className="flex items-center gap-2">

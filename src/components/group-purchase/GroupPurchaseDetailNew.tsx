@@ -1306,6 +1306,30 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           {groupBuy.product_details?.name || '상품명 없음'}
         </h2>
         
+        {/* 상품명 하단 구분선 */}
+        <div className="border-b border-gray-100 mb-4"></div>
+        
+        {/* 공구 지역 - 최상단 이동 */}
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-sm text-gray-500">공구 지역</span>
+          <div className="flex flex-wrap gap-1">
+            {groupBuy.region_type === 'nationwide' ? (
+              <span className="font-medium text-sm text-blue-600">전국</span>
+            ) : groupBuy.regions && groupBuy.regions.length > 0 ? (
+              groupBuy.regions.map(region => (
+                <span key={region.id} className="font-medium text-sm">
+                  {region.name}
+                </span>
+              ))
+            ) : (
+              <span className="font-medium text-sm">지역 정보 없음</span>
+            )}
+          </div>
+        </div>
+        
+        {/* 지역 하단 약한 구분선 */}
+        <div className="border-b border-gray-100 mb-4"></div>
+        
         {/* 가격 - 인터넷/인터넷+TV 카테고리가 아닌 경우에만 표시 */}
         {groupBuy.product_details?.category_name !== '인터넷' &&
          groupBuy.product_details?.category_name !== '인터넷+TV' ? (
@@ -1723,23 +1747,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <ChevronRight className="w-5 h-5 text-gray-400" />
         </div>
 
-        {/* 공구 지역 */}
-        <div className="px-4 py-4 flex items-center gap-3 border-t">
-          <span className="text-gray-500">공구 지역</span>
-          <div className="flex flex-wrap gap-1">
-            {groupBuy.region_type === 'nationwide' ? (
-              <span className="font-medium text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded">전국</span>
-            ) : groupBuy.regions && groupBuy.regions.length > 0 ? (
-              groupBuy.regions.map((region, index) => (
-                <span key={index} className="font-medium text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  {region.name || ''}
-                </span>
-              ))
-            ) : (
-              <span className="font-medium text-sm">지역 정보 없음</span>
-            )}
-          </div>
-        </div>
 
       </div>
 
