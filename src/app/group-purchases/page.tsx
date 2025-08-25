@@ -366,16 +366,27 @@ function GroupPurchasesPageContent() {
       if (data.results && Array.isArray(data.results)) {
         // Django REST Framework 페이징 응답 형식
         newItems = data.results;
-        setHasMore(data.next !== null);
+        // 데이터가 없거나 itemsPerPage보다 적으면 더 이상 없음
+        const hasMoreData = data.next !== null && newItems.length > 0;
+        setHasMore(hasMoreData);
+        console.log('HasMore 설정:', hasMoreData, 'next:', data.next, 'items:', newItems.length);
       } else if (Array.isArray(data)) {
         // 페이징 없는 배열 응답
         newItems = data;
-        setHasMore(newItems.length === itemsPerPage);
+        // itemsPerPage보다 적으면 더 이상 없음
+        const hasMoreData = newItems.length >= itemsPerPage;
+        setHasMore(hasMoreData);
+        console.log('HasMore 설정 (배열):', hasMoreData, 'items:', newItems.length);
       }
       
       if (isLoadMore) {
         // 더 불러오기: 기존 데이터에 추가
-        setGroupBuys(prev => [...prev, ...newItems]);
+        setGroupBuys(prev => {
+          // 중복 제거
+          const existingIds = new Set(prev.map(item => item.id));
+          const uniqueNewItems = newItems.filter(item => !existingIds.has(item.id));
+          return [...prev, ...uniqueNewItems];
+        });
         setOffset(prev => prev + newItems.length);
       } else {
         // 새로운 검색: 데이터 교체
@@ -544,7 +555,12 @@ function GroupPurchasesPageContent() {
     observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
-          console.log('Loading more items...');
+          console.log('IntersectionObserver triggered - hasMore:', hasMore, 'loadingMore:', loadingMore, 'loading:', loading);
+          // 이미 로딩 중이면 무시
+          if (loadingMore || loading) {
+            console.log('Already loading, skipping...');
+            return;
+          }
           const filters: Record<string, string> = {};
           searchParams.forEach((value, key) => {
             filters[key] = value;
@@ -552,7 +568,7 @@ function GroupPurchasesPageContent() {
           fetchGroupBuys(filters, activeTab, true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '100px' }
     );
     
     if (loadMoreRef.current) {
