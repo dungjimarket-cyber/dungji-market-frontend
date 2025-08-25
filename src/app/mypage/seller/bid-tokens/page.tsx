@@ -189,12 +189,12 @@ export default function BidTokensPage() {
                   
                   {/* 이용권 만료 예정 (7일 이내) */}
                   <div className="space-y-0.5">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs text-gray-500">
                       이용권 만료 예정 (남은 사용기한 7일 이내)
                     </div>
                     
                     {/* TODO: 실제 만료 예정 이용권 데이터 연동 필요 */}
-                    <div className="text-xs text-gray-400">
+                    <div className="text-[10px] text-gray-400">
                       만료 예정인 이용권이 없습니다.
                     </div>
                   </div>
