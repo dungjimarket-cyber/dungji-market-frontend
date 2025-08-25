@@ -193,15 +193,23 @@ export default function BidTokensPage() {
                       이용권 만료 예정 (남은 사용기한 7일 이내)
                     </div>
                     
-                    {/* 하드코딩 예시 데이터 */}
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>2025. 12. 10. 사용 기한 만료 예정</span>
-                      <span>3개</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>2026. 1. 9. 사용 기한 만료 예정</span>
-                      <span>5개</span>
-                    </div>
+                    {/* 하드코딩 예시 데이터 - 실제로는 조건부 렌더링 필요 */}
+                    {true ? (
+                      <>
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>2025. 12. 10. 사용 기한 만료 예정</span>
+                          <span>3개</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>2026. 1. 9. 사용 기한 만료 예정</span>
+                          <span>5개</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xs text-gray-400">
+                        만료 예정인 이용권이 없습니다.
+                      </div>
+                    )}
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="flex items-center">
