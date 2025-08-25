@@ -89,6 +89,7 @@ function GroupPurchasesPageContent() {
   const itemsPerPage = 12; // 한 번에 로드할 아이템 수
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadingMoreRef = useRef(false); // loadingMore 상태를 ref로도 관리
   // URL에서 카테고리 가져오기, 없으면 'all' 기본값
   const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
@@ -98,9 +99,9 @@ function GroupPurchasesPageContent() {
    * 공구 목록 가져오기 (필터 포함 및 무한 스크롤)
    */
   const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string, isLoadMore: boolean = false) => {
-    // 이미 로딩 중이면 중복 호출 방지
-    if (isLoadMore && loadingMore) {
-      console.log('Already loading more, skipping duplicate call');
+    // 이미 로딩 중이면 중복 호출 방지 (ref 사용)
+    if (isLoadMore && loadingMoreRef.current) {
+      console.log('Already loading more (ref check), skipping duplicate call');
       return;
     }
     
@@ -111,9 +112,12 @@ function GroupPurchasesPageContent() {
       setOffset(0);
       setHasMore(true);
     } else {
+      // ref와 state 모두 업데이트
+      loadingMoreRef.current = true;
       setLoadingMore(true);
       // 10초 후에도 loadingMore가 true면 강제로 false로 설정 (fallback)
       timeoutId = setTimeout(() => {
+        loadingMoreRef.current = false;
         setLoadingMore(false);
         setHasMore(false);
         console.log('LoadingMore timeout - forced reset');
@@ -122,7 +126,7 @@ function GroupPurchasesPageContent() {
     setError('');
     const currentTab = tabValue || activeTab;
     const currentOffset = isLoadMore ? groupBuys.length : 0;
-    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'offset:', currentOffset);
+    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'offset:', currentOffset, 'isLoadMore:', isLoadMore);
     
     try {
       const params = new URLSearchParams();
@@ -419,9 +423,12 @@ function GroupPurchasesPageContent() {
         clearTimeout(timeoutId);
       }
       setLoading(false);
+      // ref와 state 모두 리셋
+      loadingMoreRef.current = false;
       setLoadingMore(false);
+      console.log('Finally block - loadingMore reset complete');
     }
-  }, [activeTab, accessToken, itemsPerPage, groupBuys.length, loadingMore]);
+  }, [activeTab, accessToken, itemsPerPage, groupBuys.length]);
 
   /**
    * 필터 변경 처리
@@ -572,38 +579,15 @@ function GroupPurchasesPageContent() {
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
     
-    const loadMoreCallback = () => {
-      // 현재 상태를 직접 참조하여 로딩 중복 방지
-      setLoadingMore((currentLoadingMore) => {
-        if (currentLoadingMore) {
-          console.log('Already loading more, skipping...');
-          return currentLoadingMore;
-        }
-        
-        setHasMore((currentHasMore) => {
-          if (!currentHasMore) {
-            console.log('No more items to load');
-            return currentHasMore;
-          }
-          
-          // 로딩 시작
-          console.log('Starting to load more items...');
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMoreRef.current && !loading) {
+          console.log('IntersectionObserver triggered - hasMore:', hasMore, 'loadingMoreRef:', loadingMoreRef.current, 'loading:', loading);
           const filters: Record<string, string> = {};
           searchParams.forEach((value, key) => {
             filters[key] = value;
           });
           fetchGroupBuys(filters, activeTab, true);
-          return currentHasMore;
-        });
-        
-        return true; // loadingMore를 true로 설정
-      });
-    };
-    
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreCallback();
         }
       },
       { threshold: 0.1, rootMargin: '100px' }
