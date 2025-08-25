@@ -47,7 +47,7 @@ const bidTokenService = {
    * @example
    * // 입찰권 정보 조회
    * const bidTokens = await bidTokenService.getBidTokens();
-   * console.log(`단품 입찰권: ${bidTokens.single_tokens}개`);
+   * console.log(`단품 견적 이용권: ${bidTokens.single_tokens}개`);
    * console.log(`무제한 구독: ${bidTokens.unlimited_subscription ? '활성화' : '비활성화'}`);
    * if (bidTokens.unlimited_subscription) {
    *   console.log(`만료일: ${bidTokens.unlimited_expires_at}`);

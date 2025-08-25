@@ -203,9 +203,8 @@ export default function TossPaymentWidget({
       </Button>
 
       {/* 안내 문구 */}
-      <div className="text-xs text-gray-500 text-center">
+      <div className="text-[11px] text-gray-500 text-center whitespace-nowrap">
         <p>결제 진행 시 이용약관 및 개인정보 처리방침에 동의한 것으로 간주됩니다.</p>
-        <p className="mt-1">결제 완료 후 견적이용권이 자동으로 발급됩니다.</p>
       </div>
     </div>
   );

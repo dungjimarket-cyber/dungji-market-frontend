@@ -332,7 +332,7 @@ export default function BidTokensPage() {
                     {tokenType === 'single' && (
                       <div className="flex items-start mt-2">
                         <span className="mr-1">⚠️</span>
-                        <span>견적 이용권 사용기한은 90일입니다.</span>
+                        <span>견적 이용권 사용기한은 90일 입니다.</span>
                       </div>
                     )}
                   </div>

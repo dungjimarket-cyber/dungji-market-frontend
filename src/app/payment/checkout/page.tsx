@@ -89,7 +89,7 @@ function PaymentCheckoutContent() {
               className="w-full mt-4"
               onClick={() => router.push('/mypage/seller/bid-tokens')}
             >
-              입찰권 구매 페이지로 돌아가기
+              이용권 구매 페이지로 돌아가기
             </Button>
           </CardContent>
         </Card>
@@ -117,7 +117,7 @@ function PaymentCheckoutContent() {
         {/* 결제 위젯 카드 */}
         <Card>
           <CardHeader>
-            <CardTitle>입찰권 구매</CardTitle>
+            <CardTitle>이용권 구매</CardTitle>
           </CardHeader>
           <CardContent>
             <TossPaymentWidget
@@ -136,8 +136,8 @@ function PaymentCheckoutContent() {
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2">결제 안내</h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• 결제 완료 후 입찰권이 자동으로 발급됩니다.</li>
-            <li>• 입찰권은 마이페이지에서 확인하실 수 있습니다.</li>
+            <li>• 이용권 현황은 마이페이지에서 확인하실 수 있습니다.</li>
+            <li>• 견적 이용권 사용기한은 90일 입니다.</li>
             <li>• 무제한 구독권은 구매일로부터 30일간 유효합니다.</li>
             <li>• 결제 관련 문의는 고객센터로 연락해주세요.</li>
           </ul>
