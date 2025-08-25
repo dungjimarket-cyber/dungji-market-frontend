@@ -193,11 +193,11 @@ export default function BidTokensPage() {
                   </div>
                   
                   {/* 하드코딩 예시 데이터 */}
-                  <div className="flex justify-between items-center text-sm text-gray-500">
+                  <div className="flex justify-between items-center text-sm text-gray-500 -mt-1">
                     <span>2025. 12. 10. 사용 기한 만료 예정</span>
                     <span>3개</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
+                  <div className="flex justify-between items-center text-sm text-gray-500">
                     <span>2026. 1. 9. 사용 기한 만료 예정</span>
                     <span>5개</span>
                   </div>
@@ -333,9 +333,9 @@ export default function BidTokensPage() {
                       <div>{getTokenTypeInfo(tokenType)}</div>
                     </div>
                     {tokenType === 'single' && (
-                      <div className="flex items-center mt-1 ml-4">
+                      <div className="flex items-start mt-2">
                         <span className="mr-1">⚠️</span>
-                        견적 이용권 사용기한은 90일입니다.
+                        <span>견적 이용권 사용기한은 90일입니다.</span>
                       </div>
                     )}
                   </div>
