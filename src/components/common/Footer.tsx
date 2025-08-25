@@ -19,6 +19,7 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-gray-700 mb-3">둥지마켓</h3>
             <p className="text-sm text-gray-600 mb-1">상호: 둥지마켓</p>
+            <p className="text-sm text-gray-600 mb-1">대표자명: 김성민</p>
             <p className="text-sm text-gray-600 mb-1">사업자등록번호: 275-23-02159</p>
             <p className="text-sm text-gray-600 mb-1">통신판매업신고: (준비중)</p>
             <p className="text-sm text-gray-600 mb-1">주소: 경기도 하남시 검단산로 239, B1층 26호</p>
