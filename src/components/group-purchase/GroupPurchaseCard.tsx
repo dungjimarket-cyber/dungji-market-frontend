@@ -549,8 +549,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <>
               {/* 첫 줄: 통신사 로 가입유형 */}
               <div className="flex items-center gap-1.5">
-                {/* 통신사 표시 */}
-                <div className="flex items-center justify-center px-2.5 md:px-2 py-2 md:py-0.5 bg-white border border-gray-300 rounded-md h-12 md:h-7">
+                {/* 통신사 표시 - 패딩 최소화, 이미지 크기에 맞춤 */}
+                <div className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-gray-300 rounded-md">
                   {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
                 </div>
                 {/* "로" 텍스트 */}
@@ -587,8 +587,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <>
               {/* 첫 줄: 통신사 로 가입유형 */}
               <div className="flex items-center gap-1.5">
-                {/* 통신사 표시 */}
-                <div className="flex items-center justify-center px-2.5 md:px-2 py-2 md:py-0.5 bg-white border border-gray-300 rounded-md h-12 md:h-7">
+                {/* 통신사 표시 - 패딩 최소화, 이미지 크기에 맞춤 */}
+                <div className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-gray-300 rounded-md">
                   {(() => {
                     const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
                     switch(carrier) {
