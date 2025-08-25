@@ -700,8 +700,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             const canCancel = groupBuyData.status === 'recruiting' && now < endTime;
             setCanCancelBid(canCancel);
             
-            // 내 견적 순위 계산
-            const sortedForRank = [...bids].sort((a: any, b: any) => b.amount - a.amount);
+            // 내 견적 순위 계산 (bidType에 따라 정렬)
+            const sortedForRank = [...bids].sort((a: any, b: any) => {
+              if (bidType === 'price') {
+                return a.amount - b.amount; // 가격: 낮은 것이 1위
+              } else {
+                return b.amount - a.amount; // 지원금: 높은 것이 1위
+              }
+            });
             const myRank = sortedForRank.findIndex((bid: any) => bid.id === myBid.id) + 1;
             setMyBidRank({
               rank: myRank,
