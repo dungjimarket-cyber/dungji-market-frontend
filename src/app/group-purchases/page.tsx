@@ -360,7 +360,21 @@ function GroupPurchasesPageContent() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
       
       if (!response.ok) {
-        throw new Error('공구 목록을 불러오는데 실패했습니다.');
+        console.error('API 에러 응답:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url
+        });
+        
+        // 에러 응답 본문 읽기 시도
+        try {
+          const errorData = await response.json();
+          console.error('API 에러 상세:', errorData);
+        } catch (e) {
+          console.error('에러 응답 파싱 실패');
+        }
+        
+        throw new Error(`공구 목록을 불러오는데 실패했습니다. (${response.status})`);
       }
       
       let data = await response.json();
