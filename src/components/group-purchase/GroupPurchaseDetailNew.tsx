@@ -716,8 +716,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           } else {
             return b.amount - a.amount;
           }
-        }).slice(0, 5);
-        setTopBids(sortedBids);
+        });
+        
+        // 전체 순위를 먼저 매긴 후 상위 5개만 추출
+        const bidsWithRank = sortedBids.map((bid: any, index: number) => ({
+          ...bid,
+          actualRank: index + 1
+        }));
+        setTopBids(bidsWithRank.slice(0, 5));
         
         // 최고 입찰금액과 총 입찰 수 업데이트
         setTotalBids(bids.length);
@@ -2356,7 +2362,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                         return (
                           <div key={bid.id} className={`flex text-sm ${isMyBid ? 'font-bold' : ''}`}>
                             <span className={`${isMyBid ? 'text-blue-600' : ''} flex items-center gap-2`}>
-                              <span>{index + 1}위</span>
+                              <span>{bid.actualRank || (index + 1)}위</span>
                               <span className={`ml-2 ${isMyBid ? 'text-blue-600' : ''}`}>
                                 {isMyBid
                                   ? `${bid.amount.toLocaleString()}원`

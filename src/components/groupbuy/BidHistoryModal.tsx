@@ -113,8 +113,8 @@ export default function BidHistoryModal({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">공구 견적 내역</DialogTitle>
           <DialogDescription>
-            이 공구에 등록된 견적 내역 상위 10개를 확인할 수 있습니다.
-            {bids.length > 0 && bids[0] && (
+            이 공구에 등록된 견적 내역 상위 5개를 확인할 수 있습니다.
+            {bids.length > 0 && bids[0] && groupBuyStatus && !['recruiting', 'bidding'].includes(groupBuyStatus) && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-blue-900">최종 선정 지원금</span>
@@ -150,7 +150,7 @@ export default function BidHistoryModal({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bids.slice(0, 10).map((bid, index) => {
+                {bids.slice(0, 5).map((bid, index) => {
                   const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
                   // 공구가 종료되고 1위인 경우에만 최종선정 표시
                   const isGroupEnded = groupBuyStatus && !['recruiting', 'bidding'].includes(groupBuyStatus);
@@ -194,7 +194,10 @@ export default function BidHistoryModal({
                         {typeof bid.amount === 'string' 
                           ? bid.amount 
                           : shouldMask
-                            ? '***,***원'  // 마스킹
+                            ? (() => {
+                                const amountStr = bid.amount.toString();
+                                return amountStr[0] + '*'.repeat(amountStr.length - 1) + '원';
+                              })()  // 첫 자리만 공개 마스킹
                             : `${bid.amount.toLocaleString()}원`  // 정상 표기
                         }
                       </TableCell>
