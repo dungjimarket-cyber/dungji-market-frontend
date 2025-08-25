@@ -184,6 +184,47 @@ export default function BidTokensPage() {
                     </span>
                     <span className="font-semibold">{bidTokens.single_tokens}개</span>
                   </div>
+                  
+                  {/* 이용권 만료 예정 (7일 이내) */}
+                  {bidTokens.recent_purchases && (() => {
+                    const expiringTokens = bidTokens.recent_purchases
+                      .filter(p => p.token_type === 'single' && p.quantity > 0)
+                      .map(p => {
+                        const purchaseDate = new Date(p.purchase_date);
+                        const expiryDate = new Date(purchaseDate);
+                        expiryDate.setDate(expiryDate.getDate() + 90);
+                        const daysUntilExpiry = Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                        return { ...p, expiryDate, daysUntilExpiry };
+                      })
+                      .filter(p => p.daysUntilExpiry <= 7 && p.daysUntilExpiry > 0)
+                      .reduce((acc, p) => {
+                        const dateKey = p.expiryDate.toLocaleDateString('ko-KR');
+                        if (!acc[dateKey]) {
+                          acc[dateKey] = { date: p.expiryDate, count: 0 };
+                        }
+                        acc[dateKey].count += p.quantity;
+                        return acc;
+                      }, {} as Record<string, { date: Date; count: number }>);
+                    
+                    const expiringList = Object.values(expiringTokens);
+                    
+                    if (expiringList.length > 0) {
+                      return (
+                        <>
+                          <div className="text-sm font-medium text-gray-700 mb-2">
+                            이용권 만료 예정 (남은 사용기한 7일 이내)
+                          </div>
+                          {expiringList.map((item, index) => (
+                            <div key={index} className="flex justify-between items-center text-sm text-gray-500">
+                              <span>{item.date.toLocaleDateString('ko-KR')} 사용 기한 만료 예정</span>
+                              <span>{item.count}개</span>
+                            </div>
+                          ))}
+                        </>
+                      );
+                    }
+                    return null;
+                  })()}
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
@@ -285,7 +326,15 @@ export default function BidTokensPage() {
 
                   <div className="text-sm text-gray-500 mt-2 flex items-start">
                     <Info className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
-                    <div>{getTokenTypeInfo(tokenType)}</div>
+                    <div>
+                      {getTokenTypeInfo(tokenType)}
+                      {tokenType === 'single' && (
+                        <>
+                          <br/>
+                          견적이용권 사용기한은 90일입니다.
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
