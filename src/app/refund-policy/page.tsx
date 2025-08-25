@@ -75,7 +75,7 @@ export default function RefundPolicyPage() {
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>공구 견적에 1회라도 참여한 경우 "사용"으로 간주</li>
                 <li>견적 후 취소하더라도 이미 사용한 것으로 처리</li>
-                <li>견적 실패로 반환된 견적이용권은 미사용으로 처리</li>
+                <li>견적이용권 사용기한은 90일입니다</li>
               </ul>
             </div>
 
