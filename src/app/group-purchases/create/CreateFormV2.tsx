@@ -805,9 +805,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                             <SelectValue placeholder="가입 유형 선택" />
                           </SelectTrigger>
                           <SelectContent className="max-h-[200px] overflow-y-auto">
-                            <SelectItem value="new">신규가입</SelectItem>
-                            <SelectItem value="transfer">번호이동</SelectItem>
                             <SelectItem value="change">기기변경</SelectItem>
+                            <SelectItem value="transfer">번호이동</SelectItem>
+                            <SelectItem value="new">신규가입</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
