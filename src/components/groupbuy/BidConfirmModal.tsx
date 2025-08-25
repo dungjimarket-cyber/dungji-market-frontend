@@ -70,9 +70,9 @@ export default function BidConfirmModal({
                 ) : (
                   <>
                     <p className="font-medium text-blue-900 mb-1">
-                      견적티켓 1개가 소모됩니다. {isRebid ? '다시 견적을 제안하시겠습니까?' : '견적을 제안하시겠습니까?'}
+                      견적이용권 1개가 소모됩니다. {isRebid ? '다시 견적을 제안하시겠습니까?' : '견적을 제안하시겠습니까?'}
                     </p>
-                    <p className="text-blue-700">남은 견적티켓 갯수 <span className="font-bold text-orange-600">{remainingTokens}개</span></p>
+                    <p className="text-blue-700">남은 견적이용권 갯수 <span className="font-bold text-orange-600">{remainingTokens}개</span></p>
                   </>
                 )}
               </div>

@@ -286,8 +286,8 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
       {/* Header with search */}
       <Card>
         <CardHeader>
-          <CardTitle>견적티켓 관리 시스템</CardTitle>
-          <CardDescription>판매회원의 견적티켓과 구독권을 관리합니다.</CardDescription>
+          <CardTitle>견적이용권 관리 시스템</CardTitle>
+          <CardDescription>판매회원의 견적이용권과 구독권을 관리합니다.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
@@ -317,7 +317,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
                 <TableHead>회원ID</TableHead>
                 <TableHead>닉네임</TableHead>
                 <TableHead>이메일</TableHead>
-                <TableHead>견적티켓 보유</TableHead>
+                <TableHead>견적이용권 보유</TableHead>
                 <TableHead>구독권 상태</TableHead>
                 <TableHead>관리</TableHead>
               </TableRow>
@@ -364,7 +364,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {selectedSeller?.nickname || selectedSeller?.username} 견적티켓 관리
+              {selectedSeller?.nickname || selectedSeller?.username} 견적이용권 관리
             </DialogTitle>
             <DialogDescription>
               회원 ID: {selectedSeller?.id} | 이메일: {selectedSeller?.email}
@@ -373,7 +373,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
 
           <Tabs defaultValue="adjust" className="mt-4">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="adjust">견적티켓 조정</TabsTrigger>
+              <TabsTrigger value="adjust">견적이용권 조정</TabsTrigger>
               <TabsTrigger value="subscription">구독권 부여</TabsTrigger>
               <TabsTrigger value="history">이용 내역</TabsTrigger>
             </TabsList>
@@ -429,7 +429,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
                   disabled={loading || !adjustmentReason.trim()}
                   className="w-full"
                 >
-                  {loading ? '처리중...' : '견적티켓 조정'}
+                  {loading ? '처리중...' : '견적이용권 조정'}
                 </Button>
               </div>
             </TabsContent>

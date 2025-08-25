@@ -321,23 +321,23 @@ export default function SellerDetailPage() {
         </CardContent>
       </Card>
 
-      {/* 견적티켓 관리 카드 */}
+      {/* 견적이용권 관리 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
-            <CardTitle>견적티켓 현황</CardTitle>
-            <CardDescription>현재 보유중인 견적티켓 및 구독권 상태</CardDescription>
+            <CardTitle>견적이용권 현황</CardTitle>
+            <CardDescription>현재 보유중인 견적이용권 및 구독권 상태</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">견적티켓 보유수</p>
+                  <p className="text-sm text-muted-foreground">견적이용권 보유수</p>
                   <p className="text-2xl font-bold">{sellerDetail.tokens?.single_tokens_count || 0}개</p>
                 </div>
                 <Button onClick={() => setShowAdjustDialog(true)}>
                   <CreditCard className="mr-2 h-4 w-4" />
-                  견적티켓 조정
+                  견적이용권 조정
                 </Button>
               </div>
               <div className="flex items-center justify-between">
@@ -379,7 +379,7 @@ export default function SellerDetailPage() {
                 }}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                견적티켓 5개 추가
+                견적이용권 5개 추가
               </Button>
               <Button
                 variant="outline"
@@ -390,7 +390,7 @@ export default function SellerDetailPage() {
                 }}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                견적티켓 10개 추가
+                견적이용권 10개 추가
               </Button>
               <Button
                 variant="outline"
@@ -426,7 +426,7 @@ export default function SellerDetailPage() {
         <TabsContent value="usage">
           <Card>
             <CardHeader>
-              <CardTitle>견적티켓 사용 이력</CardTitle>
+              <CardTitle>견적이용권 사용 이력</CardTitle>
               <CardDescription>최근 20건의 사용 내역</CardDescription>
             </CardHeader>
             <CardContent>
@@ -465,7 +465,7 @@ export default function SellerDetailPage() {
         <TabsContent value="purchase">
           <Card>
             <CardHeader>
-              <CardTitle>견적티켓 구매 내역</CardTitle>
+              <CardTitle>견적이용권 구매 내역</CardTitle>
               <CardDescription>최근 20건의 구매 내역</CardDescription>
             </CardHeader>
             <CardContent>
@@ -486,7 +486,7 @@ export default function SellerDetailPage() {
                         <tr key={purchase.id} className="border-b">
                           <td className="py-2">{purchase.id}</td>
                           <td className="py-2">
-                            {purchase.token_type === 'single' ? '견적티켓' : '구독권'}
+                            {purchase.token_type === 'single' ? '견적이용권' : '구독권'}
                           </td>
                           <td className="py-2">{purchase.quantity}</td>
                           <td className="py-2">{purchase.total_price.toLocaleString()}원</td>
@@ -510,7 +510,7 @@ export default function SellerDetailPage() {
         <TabsContent value="adjustment">
           <Card>
             <CardHeader>
-              <CardTitle>견적티켓 조정 이력</CardTitle>
+              <CardTitle>견적이용권 조정 이력</CardTitle>
               <CardDescription>관리자에 의한 조정 내역</CardDescription>
             </CardHeader>
             <CardContent>
@@ -563,9 +563,9 @@ export default function SellerDetailPage() {
       <AlertDialog open={showAdjustDialog} onOpenChange={setShowAdjustDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>견적티켓 조정</AlertDialogTitle>
+            <AlertDialogTitle>견적이용권 조정</AlertDialogTitle>
             <AlertDialogDescription>
-              {sellerDetail.nickname || sellerDetail.username}님의 견적티켓을
+              {sellerDetail.nickname || sellerDetail.username}님의 견적이용권을
               조정합니다.
             </AlertDialogDescription>
           </AlertDialogHeader>

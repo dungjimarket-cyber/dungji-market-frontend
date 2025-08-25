@@ -32,9 +32,9 @@ function getSellerCategoryLabel(category: string) {
   }
 }
 
-// 견적티켓 유형 정의
+// 견적이용권 유형 정의
 const TOKEN_TYPES = [
-  { value: 'single', label: '견적티켓 단품 (1,990원)' },
+  { value: 'single', label: '견적이용권 단품 (1,990원)' },
   { value: 'unlimited', label: '무제한 구독권 (30일, 29,900원)' },
 ];
 
@@ -342,12 +342,12 @@ export default function AdminPage() {
     }
   };
 
-  // 견적티켓 부여 함수
+  // 견적이용권 부여 함수
   const handleAddBidPermission = async () => {
     if (!selectedSellerId) {
       toast({
         title: '셀러 선택 필요',
-        description: '견적티켓을 부여할 셀러를 선택해주세요.',
+        description: '견적이용권을 부여할 셀러를 선택해주세요.',
         variant: 'destructive',
       });
       return;
@@ -355,8 +355,8 @@ export default function AdminPage() {
     
     if (bidCount <= 0) {
       toast({
-        title: '유효하지 않은 견적티켓 수',
-        description: '견적티켓 수는 1 이상이어야 합니다.',
+        title: '유효하지 않은 견적이용권 수',
+        description: '견적이용권 수는 1 이상이어야 합니다.',
         variant: 'destructive',
       });
       return;
@@ -370,14 +370,14 @@ export default function AdminPage() {
           seller_id: selectedSellerId,
           action: 'add',
           amount: bidCount,
-          reason: `관리자 부여 (${TOKEN_TYPES.find(type => type.value === selectedTokenType)?.label || '견적티켓'})`
+          reason: `관리자 부여 (${TOKEN_TYPES.find(type => type.value === selectedTokenType)?.label || '견적이용권'})`
         }),
       });
       
-      const tokenTypeLabel = TOKEN_TYPES.find(type => type.value === selectedTokenType)?.label || '견적티켓';
+      const tokenTypeLabel = TOKEN_TYPES.find(type => type.value === selectedTokenType)?.label || '견적이용권';
       
       toast({
-        title: '견적티켓 부여 완료',
+        title: '견적이용권 부여 완료',
         description: `${response.username} 사용자에게 ${bidCount}개의 ${tokenTypeLabel}이(가) 부여되었습니다.`,
       });
       
@@ -395,8 +395,8 @@ export default function AdminPage() {
       setSelectedTokenType('single');
     } catch (error: any) {
       toast({
-        title: '견적티켓 부여 실패',
-        description: error.message || '견적티켓 부여 중 오류가 발생했습니다.',
+        title: '견적이용권 부여 실패',
+        description: error.message || '견적이용권 부여 중 오류가 발생했습니다.',
         variant: 'destructive',
       });
     } finally {
@@ -981,7 +981,7 @@ export default function AdminPage() {
                       <th className="text-left py-2">아이디</th>
                       <th className="text-left py-2">이메일 주소</th>
                       <th className="text-left py-2">판매회원 구분</th>
-                      <th className="text-left py-2">보유 견적티켓</th>
+                      <th className="text-left py-2">보유 견적이용권</th>
                       <th className="text-left py-2">구독권 상태</th>
                       <th className="text-left py-2">사업자 인증 상태</th>
                       <th className="text-left py-2">상세 관리</th>
@@ -1039,14 +1039,14 @@ export default function AdminPage() {
             </CardContent>
           </Card>
           
-          {/* 빠른 견적티켓 부여 카드 */}
+          {/* 빠른 견적이용권 부여 카드 */}
           <div className="grid gap-6 md:grid-cols-1">
-            {/* 견적티켓 부여 카드 */}
+            {/* 견적이용권 부여 카드 */}
             <Card>
               <CardHeader>
-                <CardTitle>견적티켓 부여</CardTitle>
+                <CardTitle>견적이용권 부여</CardTitle>
                 <CardDescription>
-                  셀러 사용자에게 견적티켓을 부여합니다.
+                  셀러 사용자에게 견적이용권을 부여합니다.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1068,7 +1068,7 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="token-type">견적티켓 유형</Label>
+                    <Label htmlFor="token-type">견적이용권 유형</Label>
                     <select
                       id="token-type"
                       className="w-full p-2 border rounded-md"
@@ -1083,7 +1083,7 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="bid-count">견적티켓 수</Label>
+                    <Label htmlFor="bid-count">견적이용권 수</Label>
                     <Input
                       id="bid-count"
                       type="number"
@@ -1104,7 +1104,7 @@ export default function AdminPage() {
                       <Loader2 className="h-4 w-4 animate-spin mr-1" />
                       처리 중...
                     </>
-                  ) : '견적티켓 부여'}
+                  ) : '견적이용권 부여'}
                 </Button>
               </CardFooter>
             </Card>

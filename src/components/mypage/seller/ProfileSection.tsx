@@ -23,7 +23,7 @@ export default function ProfileSection() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 견적티켓 정보와 판매자 프로필 정보를 동시에 가져오기
+        // 견적이용권 정보와 판매자 프로필 정보를 동시에 가져오기
         const [tokenData, profileData] = await Promise.all([
           bidTokenService.getBidTokens(),
           getSellerProfile()
@@ -106,12 +106,12 @@ export default function ProfileSection() {
         </CardContent>
       </Card>
 
-      {/* 견적티켓 정보 카드 */}
+      {/* 견적이용권 정보 카드 */}
       <Card className="mb-6">
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="w-full sm:w-auto">
-              <h3 className="text-base sm:text-lg font-semibold mb-1">남은 견적티켓</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-1">남은 견적이용권</h3>
               <div className="flex items-center gap-2 mb-1">
                 <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
                 <p className="text-xl sm:text-2xl font-bold">
@@ -132,19 +132,19 @@ export default function ProfileSection() {
                     )}
                   </p>
                   <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
-                    *무제한 구독권 이용시 보유한 견적티켓은 소진되지 않습니다
+                    *무제한 구독권 이용시 보유한 견적이용권은 소진되지 않습니다
                   </p>
                 </>
               ) : bidTokens && bidTokens.single_tokens > 0 && (
                 <p className="text-xs sm:text-sm text-green-600">
-                  단품 견적티켓 {bidTokens.single_tokens}개 (유효기간: 무기한)
+                  단품 견적이용권 {bidTokens.single_tokens}개 (유효기간: 무기한)
                 </p>
               )}
             </div>
 
             <Link href="/mypage/seller/bid-tokens" className="w-full sm:w-auto">
               <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
-                견적티켓 관리
+                견적이용권 관리
               </Button>
             </Link>
           </div>

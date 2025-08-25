@@ -103,7 +103,7 @@ export default function BidModal({
     }
   });
   
-  // 현재 공구에 대한 판매자의 기존 입찰 확인 및 견적티켓 정보 가져오기
+  // 현재 공구에 대한 판매자의 기존 입찰 확인 및 견적이용권 정보 가져오기
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -142,7 +142,7 @@ export default function BidModal({
           setBidType(existing.bid_type);
         }
         
-        // 견적티켓 정보 가져오기
+        // 견적이용권 정보 가져오기
         const tokenInfo = await bidTokenService.getBidTokens();
         setBidTokenInfo(tokenInfo);
       } catch (error) {
@@ -209,13 +209,13 @@ export default function BidModal({
       }
     }
     
-    // 견적 수정/제안 시 항상 견적티켓 확인 (기획 요구사항에 따라 변경)
+    // 견적 수정/제안 시 항상 견적이용권 확인 (기획 요구사항에 따라 변경)
     if (!bidTokenInfo || (!bidTokenInfo.unlimited_subscription && bidTokenInfo.single_tokens === 0)) {
       toast({
-        title: '견적티켓이 필요합니다',
+        title: '견적이용권이 필요합니다',
         description: existingBid 
-          ? '견적을 수정하시려면 견적티켓을 구매해주세요.' 
-          : '견적을 제안하시려면 견적티켓을 구매해주세요.',
+          ? '견적을 수정하시려면 견적이용권을 구매해주세요.' 
+          : '견적을 제안하시려면 견적이용권을 구매해주세요.',
         variant: 'default'
       });
       router.push('/mypage/seller/bid-tokens');
@@ -246,12 +246,12 @@ export default function BidModal({
       
       const result = await createBid(bidData);
 
-      // 견적티켓 정보 실시간 업데이트
+      // 견적이용권 정보 실시간 업데이트
       try {
         const updatedTokenInfo = await bidTokenService.getBidTokens();
         setBidTokenInfo(updatedTokenInfo);
       } catch (error) {
-        console.error('견적티켓 정보 업데이트 오류:', error);
+        console.error('견적이용권 정보 업데이트 오류:', error);
       }
 
       toast({
@@ -284,12 +284,12 @@ export default function BidModal({
         if (errorData.detail) {
           errorMessage = errorData.detail;
           
-          // 견적티켓 관련 오류인지 확인
-          if (errorMessage.includes('입찰권') || errorMessage.includes('견적티켓') || 
-              errorMessage.includes('사용 가능한 입찰권이 없습니다') || errorMessage.includes('사용 가능한 견적티켓이 없습니다') ||
+          // 견적이용권 관련 오류인지 확인
+          if (errorMessage.includes('입찰권') || errorMessage.includes('견적이용권') || 
+              errorMessage.includes('사용 가능한 입찰권이 없습니다') || errorMessage.includes('사용 가능한 견적이용권이 없습니다') ||
               errorMessage.includes('구매') ||
               errorMessage.includes('다시 시도해주세요')) {
-            errorTitle = '견적티켓 부족';
+            errorTitle = '견적이용권 부족';
           }
           
           // 공구 상태 관련 오류인지 확인
@@ -298,7 +298,7 @@ export default function BidModal({
             errorTitle = '유효하지 않은 공구 상태';
           }
         }
-        // 견적티켓 관련 오류
+        // 견적이용권 관련 오류
         else if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
           errorMessage = errorData.non_field_errors.join(', ');
         }
@@ -330,22 +330,22 @@ export default function BidModal({
         variant: 'destructive'
       });
       
-      // 견적티켓 부족인 경우 구매 안내
-      if (errorMessage.includes('입찰권') || errorMessage.includes('견적티켓') || 
-          errorMessage.includes('사용 가능한 입찰권이 없습니다') || errorMessage.includes('사용 가능한 견적티켓이 없습니다') ||
+      // 견적이용권 부족인 경우 구매 안내
+      if (errorMessage.includes('입찰권') || errorMessage.includes('견적이용권') || 
+          errorMessage.includes('사용 가능한 입찰권이 없습니다') || errorMessage.includes('사용 가능한 견적이용권이 없습니다') ||
           errorMessage.includes('구매') ||
           errorMessage.includes('다시 시도해주세요')) {
         setTimeout(() => {
           toast({
-            title: '견적티켓 구매하기',
+            title: '견적이용권 구매하기',
             description: (
               <div className="flex flex-col">
-                <p>견적티켓을 구매하시면 더 많은 공구에 견적을 제안할 수 있습니다.</p>
+                <p>견적이용권을 구매하시면 더 많은 공구에 견적을 제안할 수 있습니다.</p>
                 <Button
                   className="mt-2"
                   onClick={() => router.push('/mypage/seller/bid-tokens')}
                 >
-                  견적티켓 구매 페이지로 이동
+                  견적이용권 구매 페이지로 이동
                 </Button>
               </div>
             ),
@@ -376,7 +376,7 @@ export default function BidModal({
               <p className="text-amber-800 text-sm font-medium">
                 ✅ 이미 이 공구에 견적을 제안하셨습니다. 
                 <br />
-                📝 견적 수정 시에도 견적티켓 1개가 소모됩니다.
+                📝 견적 수정 시에도 견적이용권 1개가 소모됩니다.
                 <br />
                 새로운 금액으로 수정하시거나 견적을 철회하실 수 있습니다.
               </p>
@@ -393,12 +393,12 @@ export default function BidModal({
                     setCancelLoading(true);
                     await cancelBid(existingBid.id);
                     
-                    // 견적티켓 정보 실시간 업데이트 (철회 시)
+                    // 견적이용권 정보 실시간 업데이트 (철회 시)
                     try {
                       const updatedTokenInfo = await bidTokenService.getBidTokens();
                       setBidTokenInfo(updatedTokenInfo);
                     } catch (error) {
-                      console.error('견적티켓 정보 업데이트 오류:', error);
+                      console.error('견적이용권 정보 업데이트 오류:', error);
                     }
                     
                     toast({
@@ -577,10 +577,10 @@ export default function BidModal({
             {existingBid
               ? bidTokenInfo?.unlimited_subscription
                 ? '"견적을 수정하시겠습니까?"'
-                : '"견적티켓 1개가 소모됩니다. 견적을 수정하시겠습니까?"'
+                : '"견적이용권 1개가 소모됩니다. 견적을 수정하시겠습니까?"'
               : bidTokenInfo?.unlimited_subscription
                 ? '"견적을 제안하시겠습니까?"'
-                : '"견적티켓 1개가 소모됩니다. 견적을 제안하시겠습니까?"'
+                : '"견적이용권 1개가 소모됩니다. 견적을 제안하시겠습니까?"'
             }
           </div>
           
@@ -611,13 +611,13 @@ export default function BidModal({
             </Button>
           </div>
           
-          {/* 견적티켓 정보 */}
+          {/* 견적이용권 정보 */}
           <div className="text-sm text-gray-600">
             {bidTokenInfo?.unlimited_subscription ? (
               <span>무제한 구독권 이용중</span>
             ) : (
               <span>
-                남은 견적티켓 갯수 {bidTokenInfo?.single_tokens || 0}개
+                남은 견적이용권 갯수 {bidTokenInfo?.single_tokens || 0}개
                 {existingBid && (
                   <span className="text-orange-600 block">
                     (수정 후 {Math.max(0, (bidTokenInfo?.single_tokens || 0) - 1)}개)

@@ -1,6 +1,6 @@
 /**
- * 견적티켓 구매 모달 컴포넌트
- * 사용자가 견적티켓을 구매할 때 사용하는 모달 컴포넌트입니다.
+ * 견적이용권 구매 모달 컴포넌트
+ * 사용자가 견적이용권을 구매할 때 사용하는 모달 컴포넌트입니다.
  */
 'use client';
 
@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 // 결제 방법 타입
 type PaymentMethod = 'card' | 'bank' | 'phone';
 
-// 견적티켓 타입
+// 견적이용권 타입
 interface TicketProps {
   id: number;
   name: string;
@@ -34,10 +34,10 @@ interface BidTicketPurchaseModalProps {
 }
 
 /**
- * 견적티켓 구매 모달 컴포넌트
+ * 견적이용권 구매 모달 컴포넌트
  * 
  * @param {BidTicketPurchaseModalProps} props - 컴포넌트 props
- * @returns {JSX.Element} 견적티켓 구매 모달 컴포넌트
+ * @returns {JSX.Element} 견적이용권 구매 모달 컴포넌트
  */
 export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidTicketPurchaseModalProps) {
   const { toast } = useToast();
@@ -85,15 +85,15 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
       // 성공 처리
       setStep('success');
       toast({
-        title: '견적티켓 구매 성공',
-        description: `${ticket.name} ${ticket.count}회 견적티켓을 성공적으로 구매했습니다.`,
+        title: '견적이용권 구매 성공',
+        description: `${ticket.name} ${ticket.count}회 견적이용권을 성공적으로 구매했습니다.`,
         variant: 'default'
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : '결제 처리 중 오류가 발생했습니다.');
       setStep('payment');
       toast({
-        title: '견적티켓 구매 실패',
+        title: '견적이용권 구매 실패',
         description: err instanceof Error ? err.message : '결제 처리 중 오류가 발생했습니다.',
         variant: 'destructive'
       });
@@ -126,9 +126,9 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
         {step === 'payment' && (
           <>
             <DialogHeader>
-              <DialogTitle>견적티켓 구매</DialogTitle>
+              <DialogTitle>견적이용권 구매</DialogTitle>
               <DialogDescription>
-                구매할 견적티켓 정보와 결제 방법을 확인해주세요.
+                구매할 견적이용권 정보와 결제 방법을 확인해주세요.
               </DialogDescription>
             </DialogHeader>
             
@@ -200,10 +200,10 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
               <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
               <h3 className="text-lg font-bold mb-2">{ticket.name}</h3>
               <p className="text-center text-gray-600 mb-4">
-                {ticket.count}회 견적 가능한 견적티켓을 구매했습니다.
+                {ticket.count}회 견적 가능한 견적이용권을 구매했습니다.
               </p>
               <p className="text-center text-gray-600 mb-4">
-                마이페이지에서 보유 중인 견적티켓을 확인할 수 있습니다.
+                마이페이지에서 보유 중인 견적이용권을 확인할 수 있습니다.
               </p>
             </div>
             

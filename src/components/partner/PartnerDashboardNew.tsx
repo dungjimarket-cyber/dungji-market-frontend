@@ -310,7 +310,7 @@ function MembersTab({ recentMembers }: any) {
                   구독권
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  견적티켓
+                  견적이용권
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   총 결제
@@ -565,7 +565,7 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-900">수수료 받기</p>
               <p className="mt-1 text-sm text-gray-500">
-                추천 링크로 가입한 회원이 구독권이나 견적티켓을 구매하면 수수료가 지급됩니다.
+                추천 링크로 가입한 회원이 구독권이나 견적이용권을 구매하면 수수료가 지급됩니다.
               </p>
             </div>
           </div>

@@ -2,13 +2,13 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '환불정책 | 둥지마켓',
-  description: '둥지마켓 견적티켓 및 구독권 환불정책'
+  description: '둥지마켓 견적이용권 및 구독권 환불정책'
 };
 
 export default function RefundPolicyPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">둥지마켓 견적티켓/구독권 환불 정책</h1>
+      <h1 className="text-3xl font-bold mb-8">둥지마켓 견적이용권/구독권 환불 정책</h1>
       
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">
         <p className="text-sm font-medium">📅 시행일: 2025년 9월 1일</p>
@@ -19,7 +19,7 @@ export default function RefundPolicyPage() {
         <section>
           <h2 className="text-2xl font-semibold mb-4">제1조 (목적)</h2>
           <p className="text-gray-700">
-            본 환불 정책은 둥지마켓(이하 "회사")이 제공하는 견적티켓 및 구독권 서비스의 청약철회, 
+            본 환불 정책은 둥지마켓(이하 "회사")이 제공하는 견적이용권 및 구독권 서비스의 청약철회, 
             환불 기준과 절차를 명확히 하여 회원의 권익을 보호하고 분쟁을 예방하는 것을 목적으로 합니다.
           </p>
         </section>
@@ -33,13 +33,13 @@ export default function RefundPolicyPage() {
           </p>
         </section>
 
-        {/* 제3조 견적티켓 환불 정책 */}
+        {/* 제3조 견적이용권 환불 정책 */}
         <section>
-          <h2 className="text-2xl font-semibold mb-4">제3조 (견적티켓 환불 정책)</h2>
+          <h2 className="text-2xl font-semibold mb-4">제3조 (견적이용권 환불 정책)</h2>
           
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-medium mb-3">3.1 일반 견적티켓 (단건 구매)</h3>
+              <h3 className="text-xl font-medium mb-3">3.1 일반 견적이용권 (단건 구매)</h3>
               
               <h4 className="font-medium mb-2">환불 가능 조건</h4>
               <div className="overflow-x-auto">
@@ -71,11 +71,11 @@ export default function RefundPolicyPage() {
                 </table>
               </div>
 
-              <h4 className="font-medium mt-4 mb-2">견적티켓 사용 기준</h4>
+              <h4 className="font-medium mt-4 mb-2">견적이용권 사용 기준</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>공구 견적에 1회라도 참여한 경우 "사용"으로 간주</li>
                 <li>견적 후 취소하더라도 이미 사용한 것으로 처리</li>
-                <li>견적 실패로 반환된 견적티켓은 미사용으로 처리</li>
+                <li>견적 실패로 반환된 견적이용권은 미사용으로 처리</li>
               </ul>
             </div>
 
@@ -165,11 +165,11 @@ export default function RefundPolicyPage() {
           
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">1. 견적티켓</h4>
+              <h4 className="font-medium mb-2">1. 견적이용권</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>견적에 1회 이상 참여한 경우</li>
                 <li>구매 후 7일 경과</li>
-                <li>이벤트/프로모션으로 무료 지급된 견적티켓</li>
+                <li>이벤트/프로모션으로 무료 지급된 견적이용권</li>
               </ul>
             </div>
 
@@ -288,7 +288,7 @@ export default function RefundPolicyPage() {
                 <li>서비스 전면 장애로 3일 이상 이용 불가 시</li>
               </ul>
 
-              <h4 className="font-medium mt-4 mb-2">쿨링오프 제도 (견적티켓만 해당)</h4>
+              <h4 className="font-medium mt-4 mb-2">쿨링오프 제도 (견적이용권만 해당)</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
                 <li>충동구매 방지를 위한 24시간 쿨링오프 적용</li>
                 <li>최초 구매 회원에 한해 1회 적용</li>

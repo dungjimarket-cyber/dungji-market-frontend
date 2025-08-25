@@ -73,7 +73,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                         <span className="text-2xl">🎟️</span>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">견적티켓 10매 증정 완료!</p>
+                        <p className="font-bold text-gray-800">견적이용권 10매 증정 완료!</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-green-600">
