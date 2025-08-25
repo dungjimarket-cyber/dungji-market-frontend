@@ -107,7 +107,7 @@ function GroupPurchasesPageContent() {
     }
     setError('');
     const currentTab = tabValue || activeTab;
-    const currentOffset = isLoadMore ? offset : 0;
+    const currentOffset = isLoadMore ? groupBuys.length : 0;
     console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'offset:', currentOffset);
     
     try {
@@ -390,7 +390,7 @@ function GroupPurchasesPageContent() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [activeTab, accessToken, itemsPerPage, offset]);
+  }, [activeTab, accessToken, itemsPerPage, groupBuys.length]);
 
   /**
    * 필터 변경 처리
