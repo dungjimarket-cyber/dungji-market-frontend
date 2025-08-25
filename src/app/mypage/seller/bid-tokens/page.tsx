@@ -162,7 +162,7 @@ export default function BidTokensPage() {
   return (
     <div className="container py-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">이용권 현황</h1>
+        <h1 className="text-2xl font-bold">견적 이용권 현황</h1>
         <Button variant="outline" onClick={() => router.back()}>
           돌아가기
         </Button>
@@ -172,7 +172,7 @@ export default function BidTokensPage() {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">이용권 현황</CardTitle>
+              <CardTitle className="text-lg">내 이용권</CardTitle>
             </CardHeader>
             <CardContent>
               {bidTokens && (
