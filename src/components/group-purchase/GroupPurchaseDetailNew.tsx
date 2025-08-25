@@ -2319,8 +2319,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             {groupBuyData.status === 'recruiting' && !hasBid ? (
               // v3.0: 모집과 입찰 동시 진행
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                <h3 className="font-medium text-yellow-800 mb-1">🎯 판매회원 견적 제안 기회</h3>
-                <p className="text-sm text-yellow-700">참여자 모집과 견적 제안이 동시에 진행됩니다. 경쟁력 있는 견적으로 우수 판매회원이 되어보세요!</p>
+                <h3 className="font-medium text-yellow-800 mb-1">🎯 경쟁력 있는 견적을 제안해 보세요.</h3>
+                <p className="text-sm text-yellow-700">참여자 모집과 견적 제안이 동시에 진행됩니다.</p>
                 <div className="mt-2 text-sm text-gray-600">
                   <div>• 현재 참여자: {currentParticipants}/{groupBuy.max_participants}명</div>
                   <div>• 공구 종료까지 견적 제안 가능합니다</div>
@@ -2462,7 +2462,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div>• 최소 견적 단위는 1,000원이며, 신중하게 제안해주세요</div>
                 <div>• 견적 철회 및 수정은 공구 마감 이전에만 가능합니다</div>
                 <div>• 경쟁력 있는 견적일수록 선택될 확률이 높아집니다</div>
-                <div>• 선정 시 우수 판매회원으로 평가받을 수 있습니다</div>
               </div>
             </div>
             )}
