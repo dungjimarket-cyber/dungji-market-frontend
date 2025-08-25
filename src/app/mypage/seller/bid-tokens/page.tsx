@@ -199,48 +199,6 @@ export default function BidTokensPage() {
                     <span>2026. 1. 9. 사용 기한 만료 예정</span>
                     <span>5개</span>
                   </div>
-                  
-                  {/* 실제 데이터 처리 (주석 처리) */}
-                  {/* {bidTokens.recent_purchases && (() => {
-                    const expiringTokens = bidTokens.recent_purchases
-                      .filter(p => p.token_type === 'single' && p.quantity > 0)
-                      .map(p => {
-                        const purchaseDate = new Date(p.purchase_date);
-                        const expiryDate = new Date(purchaseDate);
-                        expiryDate.setDate(expiryDate.getDate() + 90);
-                        const daysUntilExpiry = Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                        return { ...p, expiryDate, daysUntilExpiry };
-                      })
-                      .filter(p => p.daysUntilExpiry <= 7 && p.daysUntilExpiry > 0)
-                      .reduce((acc, p) => {
-                        const dateKey = p.expiryDate.toLocaleDateString('ko-KR');
-                        if (!acc[dateKey]) {
-                          acc[dateKey] = { date: p.expiryDate, count: 0 };
-                        }
-                        acc[dateKey].count += p.quantity;
-                        return acc;
-                      }, {} as Record<string, { date: Date; count: number }>);
-                    
-                    const expiringList = Object.values(expiringTokens);
-                    
-                    if (expiringList.length > 0) {
-                      return (
-                        <>
-                          {expiringList.map((item, index) => (
-                            <div key={index} className="flex justify-between items-center text-sm text-gray-500">
-                              <span>{item.date.toLocaleDateString('ko-KR')} 사용 기한 만료 예정</span>
-                              <span>{item.count}개</span>
-                            </div>
-                          ))}
-                        </>
-                      );
-                    }
-                    return (
-                      <div className="text-xs text-gray-400">
-                        만료 예정인 이용권이 없습니다
-                      </div>
-                    );
-                  })()} */
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
