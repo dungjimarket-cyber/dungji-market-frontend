@@ -1625,8 +1625,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     <span>{
                       groupBuyData.winning_bid_amount?.toLocaleString() || 
                       (groupBuyData.bid_ranking && groupBuyData.bid_ranking[0]?.amount ? groupBuyData.bid_ranking[0].amount.toLocaleString() : '0')
-                    }</span>
-                    <span className="text-2xl">원</span>
+                    }원</span>
                   </>
                 ) : (
                   <span>{groupBuyData.winning_bid_amount_masked || '***,***원'}</span>
@@ -1688,10 +1687,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
               <p className="text-3xl font-bold text-orange-500">
                 {highestBidAmount && highestBidAmount > 0 ? (
-                  <>
-                    <span>{maskAmount(highestBidAmount)}</span>
-                    <span className="text-lg">원</span>
-                  </>
+                  <span>{maskAmount(highestBidAmount)}원</span>
                 ) : (
                   <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
                 )}
