@@ -1068,7 +1068,6 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="token-type">견적이용권 유형</Label>
                     <select
                       id="token-type"
                       className="w-full p-2 border rounded-md"

@@ -1,5 +1,5 @@
 /**
- * 견적이용권 구매 페이지 - /mypage/seller/bid-tokens로 리다이렉트
+ * 이용권 구매 페이지 - /mypage/seller/bid-tokens로 리다이렉트
  * 이 페이지는 더 이상 사용되지 않으며, 새로운 통합 이용권 현황 페이지로 리다이렉트됩니다.
  */
 'use client';
@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 /**
- * 견적이용권 구매 페이지 리다이렉트 컴포넌트
+ * 이용권 구매 페이지 리다이렉트 컴포넌트
  * /mypage/seller/bid-tokens로 자동 리다이렉트합니다.
  * 
  * @returns {JSX.Element} 로딩 표시 후 리다이렉트

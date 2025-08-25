@@ -1,5 +1,5 @@
 /**
- * 견적이용권 구매 모달 컴포넌트
+ * 이용권 구매 모달 컴포넌트
  * 사용자가 견적이용권을 구매할 때 사용하는 모달 컴포넌트입니다.
  */
 'use client';
@@ -34,7 +34,7 @@ interface BidTicketPurchaseModalProps {
 }
 
 /**
- * 견적이용권 구매 모달 컴포넌트
+ * 이용권 구매 모달 컴포넌트
  * 
  * @param {BidTicketPurchaseModalProps} props - 컴포넌트 props
  * @returns {JSX.Element} 견적이용권 구매 모달 컴포넌트
@@ -85,7 +85,7 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
       // 성공 처리
       setStep('success');
       toast({
-        title: '견적이용권 구매 성공',
+        title: '이용권 구매 성공',
         description: `${ticket.name} ${ticket.count}회 견적이용권을 성공적으로 구매했습니다.`,
         variant: 'default'
       });
@@ -93,7 +93,7 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
       setError(err instanceof Error ? err.message : '결제 처리 중 오류가 발생했습니다.');
       setStep('payment');
       toast({
-        title: '견적이용권 구매 실패',
+        title: '이용권 구매 실패',
         description: err instanceof Error ? err.message : '결제 처리 중 오류가 발생했습니다.',
         variant: 'destructive'
       });
@@ -126,7 +126,7 @@ export default function BidTicketPurchaseModal({ isOpen, onClose, ticket }: BidT
         {step === 'payment' && (
           <>
             <DialogHeader>
-              <DialogTitle>견적이용권 구매</DialogTitle>
+              <DialogTitle>이용권 구매</DialogTitle>
               <DialogDescription>
                 구매할 견적이용권 정보와 결제 방법을 확인해주세요.
               </DialogDescription>

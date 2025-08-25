@@ -465,7 +465,7 @@ export default function SellerDetailPage() {
         <TabsContent value="purchase">
           <Card>
             <CardHeader>
-              <CardTitle>견적이용권 구매 내역</CardTitle>
+              <CardTitle>이용권 구매 내역</CardTitle>
               <CardDescription>최근 20건의 구매 내역</CardDescription>
             </CardHeader>
             <CardContent>

@@ -337,7 +337,7 @@ export default function BidModal({
           errorMessage.includes('다시 시도해주세요')) {
         setTimeout(() => {
           toast({
-            title: '견적이용권 구매하기',
+            title: '이용권 구매하기',
             description: (
               <div className="flex flex-col">
                 <p>견적이용권을 구매하시면 더 많은 공구에 견적을 제안할 수 있습니다.</p>
@@ -345,7 +345,7 @@ export default function BidModal({
                   className="mt-2"
                   onClick={() => router.push('/mypage/seller/bid-tokens')}
                 >
-                  견적이용권 구매 페이지로 이동
+                  이용권 구매 페이지로 이동
                 </Button>
               </div>
             ),

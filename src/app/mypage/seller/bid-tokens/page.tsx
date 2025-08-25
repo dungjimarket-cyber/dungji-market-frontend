@@ -256,12 +256,11 @@ export default function BidTokensPage() {
         <div className="md:col-span-3">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">견적이용권 구매</CardTitle>
+              <CardTitle className="text-lg">이용권 구매</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div>
-                  <Label className="text-base">견적이용권 유형</Label>
                   <RadioGroup
                     value={tokenType}
                     onValueChange={(value) => 
