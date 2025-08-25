@@ -2619,6 +2619,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         hasBid={hasBid}
         groupBuyStatus={groupBuyData.status}
         isAuthenticated={isAuthenticated}
+        categoryName={groupBuyData.product_details?.category_name}
+        categoryDetailType={groupBuyData.product_details?.category_detail_type}
       />
 
       {/* 최종선택 모달 */}

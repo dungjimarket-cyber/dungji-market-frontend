@@ -39,6 +39,8 @@ interface BidHistoryModalProps {
   hasBid?: boolean;          // 견적 여부 추가
   groupBuyStatus?: string;   // 공구 상태 추가
   isAuthenticated?: boolean; // 로그인 여부 추가
+  categoryName?: string;     // 카테고리명 추가
+  categoryDetailType?: string; // 카테고리 상세 타입 추가
 }
 
 /**
@@ -53,7 +55,9 @@ export default function BidHistoryModal({
   isParticipant = false,
   hasBid = false,
   groupBuyStatus,
-  isAuthenticated = false
+  isAuthenticated = false,
+  categoryName,
+  categoryDetailType
 }: BidHistoryModalProps) {
   const [bids, setBids] = useState<BidData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,21 +71,24 @@ export default function BidHistoryModal({
       
       try {
         const data = await getGroupBuyBids(groupBuyId);
-        // 금액 순으로 정렬 (겹치는 경우 날짜 순)
+        // 카테고리에 따라 지원금/가격 견적 판단
+        const isSupport = categoryName === '휴대폰' || 
+                         categoryName === '인터넷' ||
+                         categoryName === '인터넷+TV' ||
+                         categoryDetailType === 'telecom' ||
+                         categoryDetailType === 'internet';
+        
+        // 금액 순으로 정렬
         const sortedData = [...data].sort((a, b) => {
-          if (a.bid_type === b.bid_type) {
-            // 같은 견적 유형인 경우 금액 비교 (가격 견적은 낮은 순, 지원금 견적은 높은 순)
-            const aAmount = typeof a.amount === 'string' ? 0 : a.amount;
-            const bAmount = typeof b.amount === 'string' ? 0 : b.amount;
-            
-            if (a.bid_type === 'price') {
-              return aAmount - bAmount; // 가격 견적은 낮은 순으로
-            } else {
-              return bAmount - aAmount; // 지원금 견적은 높은 순으로
-            }
+          const aAmount = typeof a.amount === 'string' ? 0 : a.amount;
+          const bAmount = typeof b.amount === 'string' ? 0 : b.amount;
+          
+          // 지원금 견적(휴대폰/인터넷/인터넷+TV)은 높은 순으로, 가격 견적은 낮은 순으로
+          if (isSupport) {
+            return bAmount - aAmount; // 지원금: 높은 금액이 1위
+          } else {
+            return aAmount - bAmount; // 가격: 낮은 금액이 1위
           }
-          // 견적 유형이 다르면 가격 견적을 우선
-          return a.bid_type === 'price' ? -1 : 1;
         });
         
         setBids(sortedData);
