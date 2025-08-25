@@ -2320,7 +2320,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               // v3.0: 모집과 입찰 동시 진행
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <h3 className="font-medium text-yellow-800 mb-1">🎯 경쟁력 있는 견적을 제안해 보세요.</h3>
-                <p className="text-sm text-yellow-700">참여자 모집과 견적 제안이 동시에 진행됩니다.</p>
                 <div className="mt-2 text-sm text-gray-600">
                   <div>• 현재 참여자: {currentParticipants}/{groupBuy.max_participants}명</div>
                   <div>• 공구 종료까지 견적 제안 가능합니다</div>
@@ -2458,10 +2457,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
               <h4 className="text-sm font-semibold text-gray-800 mb-2">💡 견적 제안 가이드</h4>
               <div className="text-sm text-gray-700 space-y-1">
-                <div>• 견적 제안 시 견적이용권 1개가 소모됩니다</div>
+                <div>• 견적 제안 시 견적 이용권 1개가 소모됩니다</div>
                 <div>• 최소 견적 단위는 1,000원이며, 신중하게 제안해주세요</div>
                 <div>• 견적 철회 및 수정은 공구 마감 이전에만 가능합니다</div>
                 <div>• 경쟁력 있는 견적일수록 선택될 확률이 높아집니다</div>
+                <div>• 공구 기간 동안 참여 인원은 변동될 수 있습니다</div>
               </div>
             </div>
             )}
