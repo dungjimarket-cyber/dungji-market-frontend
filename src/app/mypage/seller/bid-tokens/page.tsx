@@ -226,7 +226,12 @@ export default function BidTokensPage() {
                       <div className="flex justify-between">
                         <div>
                           <p className="font-medium">
-                            {purchase.token_type_display} {purchase.quantity}개
+                            {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
+                              ? `견적티켓 ${purchase.quantity}개`
+                              : purchase.token_type === 'unlimited' || purchase.token_type_display?.includes('무제한')
+                              ? '무제한 구독권'
+                              : `${purchase.token_type_display} ${purchase.quantity}개`
+                            }
                           </p>
                           <p className="text-sm text-gray-500">
                             {new Date(purchase.purchase_date).toLocaleDateString()}
