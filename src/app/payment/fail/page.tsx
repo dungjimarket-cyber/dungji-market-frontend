@@ -58,7 +58,7 @@ function PaymentFailContent() {
   const handleRetry = () => {
     // 세션 스토리지 정리
     sessionStorage.removeItem('payment_error');
-    // 입찰권 구매 페이지로 이동
+    // 견적 이용권 구매 페이지로 이동
     router.push('/mypage/seller/bid-tokens');
   };
 

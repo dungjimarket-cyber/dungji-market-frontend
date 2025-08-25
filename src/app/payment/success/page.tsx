@@ -58,7 +58,7 @@ function PaymentSuccessContent() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-gray-600">
-            입찰권이 성공적으로 구매되었습니다.
+            견적 이용권이 성공적으로 구매되었습니다.
           </p>
           {orderId && (
             <div className="p-3 bg-gray-50 rounded-lg">
@@ -71,7 +71,7 @@ function PaymentSuccessContent() {
               className="w-full"
               onClick={() => router.push('/mypage/seller/bid-tokens')}
             >
-              입찰권 확인하기
+              견적 이용권 확인하기
             </Button>
             <Button
               variant="outline"
