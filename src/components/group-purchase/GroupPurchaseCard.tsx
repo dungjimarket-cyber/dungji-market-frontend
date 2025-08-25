@@ -22,7 +22,7 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
           alt="SK"
           width={48}
           height={32}
-          className="object-contain w-[60px] h-[40px] md:w-[40px] md:h-[26px]"
+          className="object-contain w-[60px] h-[40px] md:w-[40px] md:h-[26px] border border-gray-300 rounded-md"
         />
       );
     case 'SKT':
@@ -33,7 +33,7 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
           alt="SKT"
           width={44}
           height={32}
-          className="object-contain w-[54px] h-[40px] md:w-[36px] md:h-[26px]"
+          className="object-contain w-[54px] h-[40px] md:w-[36px] md:h-[26px] border border-gray-300 rounded-md"
         />
       );
     case 'KT':
@@ -43,7 +43,7 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
           alt="KT"
           width={44}
           height={24}
-          className="object-contain w-[54px] h-[30px] md:w-[36px] md:h-[20px]"
+          className="object-contain w-[54px] h-[30px] md:w-[36px] md:h-[20px] border border-gray-300 rounded-md"
         />
       );
     case 'LGU':
@@ -55,7 +55,7 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
           alt="LG U+"
           width={60}
           height={24}
-          className="object-contain w-[78px] h-[30px] md:w-[52px] md:h-[20px]"
+          className="object-contain w-[78px] h-[30px] md:w-[52px] md:h-[20px] border border-gray-300 rounded-md"
         />
       );
     default:
@@ -549,12 +549,10 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <>
               {/* 첫 줄: 통신사 로 가입유형 */}
               <div className="flex items-center gap-1.5">
-                {/* 통신사 표시 - 패딩 최소화, 이미지 크기에 맞춤 */}
-                <div className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-gray-300 rounded-md">
-                  {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
-                </div>
+                {/* 통신사 표시 - 이미지에 직접 테두리 적용 */}
+                {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
                 {/* "로" 텍스트 */}
-                <span className="text-base md:text-xs font-black text-black -ml-0.5">로</span>
+                <span className="text-base md:text-xs font-black text-black">로</span>
                 {/* 가입유형 */}
                 <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-0.5 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
                   <span className="text-base md:text-xs font-bold text-purple-800">
@@ -587,55 +585,53 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <>
               {/* 첫 줄: 통신사 로 가입유형 */}
               <div className="flex items-center gap-1.5">
-                {/* 통신사 표시 - 패딩 최소화, 이미지 크기에 맞춤 */}
-                <div className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-gray-300 rounded-md">
-                  {(() => {
-                    const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
-                    switch(carrier) {
-                      case 'SK':
-                      case 'SKB':
-                      case 'SK브로드밴드':
-                      case 'SKT':
-                        return (
-                          <Image
-                            src="/logos/sk-broadband.png"
-                            alt="SK브로드밴드"
-                            width={48}
-                            height={32}
-                            className="object-contain w-[60px] h-[40px] md:w-[40px] md:h-[26px]"
-                          />
-                        );
-                      case 'KT':
-                        return (
-                          <Image
-                            src="/logos/kt.png"
-                            alt="KT"
-                            width={44}
-                            height={24}
-                            className="object-contain w-[54px] h-[30px] md:w-[36px] md:h-[20px]"
-                          />
-                        );
-                      case 'LG U+':
-                      case 'LGU':
-                      case 'LGU+':
-                        return (
-                          <Image
-                            src="/logos/lgu.png"
-                            alt="LG U+"
-                            width={60}
-                            height={24}
-                            className="object-contain w-[78px] h-[30px] md:w-[52px] md:h-[20px]"
-                          />
-                        );
-                      default:
-                        return (
-                          <span className="text-xs font-bold text-gray-600">{carrier}</span>
-                        );
-                    }
-                  })()}
-                </div>
+                {/* 통신사 표시 - 이미지에 직접 테두리 적용 */}
+                {(() => {
+                  const carrier = groupBuy.internet_detail.carrier_display || groupBuy.internet_detail.carrier;
+                  switch(carrier) {
+                    case 'SK':
+                    case 'SKB':
+                    case 'SK브로드밴드':
+                    case 'SKT':
+                      return (
+                        <Image
+                          src="/logos/sk-broadband.png"
+                          alt="SK브로드밴드"
+                          width={48}
+                          height={32}
+                          className="object-contain w-[60px] h-[40px] md:w-[40px] md:h-[26px] border border-gray-300 rounded-md"
+                        />
+                      );
+                    case 'KT':
+                      return (
+                        <Image
+                          src="/logos/kt.png"
+                          alt="KT"
+                          width={44}
+                          height={24}
+                          className="object-contain w-[54px] h-[30px] md:w-[36px] md:h-[20px] border border-gray-300 rounded-md"
+                        />
+                      );
+                    case 'LG U+':
+                    case 'LGU':
+                    case 'LGU+':
+                      return (
+                        <Image
+                          src="/logos/lgu.png"
+                          alt="LG U+"
+                          width={60}
+                          height={24}
+                          className="object-contain w-[78px] h-[30px] md:w-[52px] md:h-[20px] border border-gray-300 rounded-md"
+                        />
+                      );
+                    default:
+                      return (
+                        <span className="text-xs font-bold text-gray-600">{carrier}</span>
+                      );
+                  }
+                })()}
                 {/* "로" 텍스트 */}
-                <span className="text-base md:text-xs font-black text-black -ml-0.5">로</span>
+                <span className="text-base md:text-xs font-black text-black">로</span>
                 {/* 가입유형 */}
                 <div className="inline-flex items-center px-3.5 md:px-2 py-2 md:py-0.5 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-md whitespace-nowrap w-fit">
                   <span className="text-base md:text-xs font-bold text-purple-800">
@@ -662,9 +658,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
            !groupBuy.product_details?.category_detail_type && 
            groupBuy.telecom_detail?.telecom_carrier && (
             <>
-              <div className="flex items-center justify-center px-1.5 py-1 bg-white border border-gray-300 rounded-md h-9">
-                {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
-              </div>
+              {/* 기존 telecom_detail 기반 표시 - 이미지에 직접 테두리 적용 */}
+              {getCarrierDisplay(groupBuy.telecom_detail.telecom_carrier, groupBuy.product_details?.category_name)}
               {(groupBuy.product_details?.registration_type || groupBuy.telecom_detail?.subscription_type) && (
                 <span className="text-xs font-black text-black -ml-0.5">로</span>
               )}
