@@ -186,10 +186,22 @@ export default function BidTokensPage() {
                   </div>
                   
                   {/* 이용권 만료 예정 (7일 이내) */}
-                  <div className="text-sm font-medium text-gray-700 mb-2">
+                  <div className="text-sm text-gray-500 mb-2">
                     이용권 만료 예정 (남은 사용기한 7일 이내)
                   </div>
-                  {bidTokens.recent_purchases && (() => {
+                  
+                  {/* 하드코딩 예시 데이터 */}
+                  <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
+                    <span>2025. 12. 10. 사용 기한 만료 예정</span>
+                    <span>3개</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-gray-500">
+                    <span>2026. 1. 9. 사용 기한 만료 예정</span>
+                    <span>5개</span>
+                  </div>
+                  
+                  {/* 실제 데이터 처리 (주석 처리) */}
+                  {/* {bidTokens.recent_purchases && (() => {
                     const expiringTokens = bidTokens.recent_purchases
                       .filter(p => p.token_type === 'single' && p.quantity > 0)
                       .map(p => {
@@ -224,11 +236,11 @@ export default function BidTokensPage() {
                       );
                     }
                     return (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs text-gray-400">
                         만료 예정인 이용권이 없습니다
                       </div>
                     );
-                  })()}
+                  })()} */
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
@@ -328,20 +340,17 @@ export default function BidTokensPage() {
                     </div>
                   </RadioGroup>
 
-                  <div className="text-xs text-gray-500 mt-2 flex items-start">
-                    <Info className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
-                    <div>
-                      {getTokenTypeInfo(tokenType)}
-                      {tokenType === 'single' && (
-                        <>
-                          <br/>
-                          <span className="flex items-center">
-                            <span className="mr-1">⚠️</span>
-                            견적 이용권 사용기한은 90일입니다.
-                          </span>
-                        </>
-                      )}
+                  <div className="text-xs text-gray-500 mt-2">
+                    <div className="flex items-start">
+                      <Info className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                      <div>{getTokenTypeInfo(tokenType)}</div>
                     </div>
+                    {tokenType === 'single' && (
+                      <div className="flex items-center mt-1 ml-4">
+                        <span className="mr-1">⚠️</span>
+                        견적 이용권 사용기한은 90일입니다.
+                      </div>
+                    )}
                   </div>
                 </div>
 
