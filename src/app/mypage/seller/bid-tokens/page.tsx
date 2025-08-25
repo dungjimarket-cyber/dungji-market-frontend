@@ -347,7 +347,7 @@ export default function BidTokensPage() {
             </CardContent>
             <CardFooter>
               <Button
-                className="w-full"
+                className="w-full bg-gradient-to-r from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white"
                 onClick={handlePurchase}
                 disabled={purchasing}
               >
