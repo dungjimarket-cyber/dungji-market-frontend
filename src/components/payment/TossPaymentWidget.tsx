@@ -203,8 +203,11 @@ export default function TossPaymentWidget({
       </Button>
 
       {/* 안내 문구 */}
-      <div className="text-[11px] text-gray-500 text-center whitespace-nowrap">
-        <p>결제 진행 시 이용약관 및 개인정보 처리방침에 동의한 것으로 간주됩니다.</p>
+      <div className="text-[11px] text-gray-500 text-center">
+        <p className="whitespace-nowrap">결제 진행 시 이용약관 및 개인정보 처리방침에 동의한 것으로 간주됩니다.</p>
+        <p className="mt-1">
+          결제 전 <a href="/refund-policy" target="_blank" className="text-blue-600 hover:underline font-medium">[환불정책]</a>을 반드시 확인해주세요.
+        </p>
       </div>
     </div>
   );
