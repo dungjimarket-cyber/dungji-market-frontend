@@ -25,6 +25,8 @@ export default function BidTokensPage() {
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
   const [tokenType, setTokenType] = useState<'single' | 'unlimited'>('single');
   const [quantity, setQuantity] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
 
@@ -186,20 +188,20 @@ export default function BidTokensPage() {
                   </div>
                   
                   {/* 이용권 만료 예정 (7일 이내) */}
-                  <div className="text-sm text-gray-500 mb-2">
+                  <div className="text-sm text-gray-500">
                     이용권 만료 예정 (남은 사용기한 7일 이내)
                   </div>
                   
                   {/* 하드코딩 예시 데이터 */}
-                  <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
+                  <div className="flex justify-between items-center text-sm text-gray-500">
                     <span>2025. 12. 10. 사용 기한 만료 예정</span>
                     <span>3개</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm text-gray-500">
+                  <div className="flex justify-between items-center text-sm text-gray-500 mb-1">
                     <span>2026. 1. 9. 사용 기한 만료 예정</span>
                     <span>5개</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mt-2">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
                       무제한 이용권 구독(30일)
@@ -232,36 +234,63 @@ export default function BidTokensPage() {
           </Card>
 
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-3">최근 구매 내역</h3>
+            <h3 className="text-base font-semibold mb-3">최근 구매 내역</h3>
             {bidTokens && bidTokens.recent_purchases.length > 0 ? (
-              <div className="space-y-3">
-                {bidTokens.recent_purchases.map((purchase) => (
-                  <Card key={purchase.id} className="bg-slate-50">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="font-medium">
-                            {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
-                              ? `견적이용권 ${purchase.quantity}개`
-                              : purchase.token_type === 'unlimited' || purchase.token_type_display?.includes('무제한')
-                              ? '무제한 구독권'
-                              : `${purchase.token_type_display} ${purchase.quantity}개`
-                            }
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(purchase.purchase_date).toLocaleDateString()}
+              <>
+                <div className="space-y-2">
+                  {bidTokens.recent_purchases
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((purchase) => (
+                    <Card key={purchase.id} className="bg-slate-50">
+                      <CardContent className="p-3">
+                        <div className="flex justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
+                                ? `견적이용권 ${purchase.quantity}개`
+                                : purchase.token_type === 'unlimited' || purchase.token_type_display?.includes('무제한')
+                                ? '무제한 구독권'
+                                : `${purchase.token_type_display} ${purchase.quantity}개`
+                              }
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(purchase.purchase_date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <p className="text-sm font-semibold">
+                            {purchase.total_price.toLocaleString()}원
                           </p>
                         </div>
-                        <p className="font-semibold">
-                          {purchase.total_price.toLocaleString()}원
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                {bidTokens.recent_purchases.length > itemsPerPage && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      이전
+                    </Button>
+                    <span className="text-sm flex items-center px-3">
+                      {currentPage} / {Math.ceil(bidTokens.recent_purchases.length / itemsPerPage)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(Math.ceil(bidTokens.recent_purchases.length / itemsPerPage), prev + 1))}
+                      disabled={currentPage === Math.ceil(bidTokens.recent_purchases.length / itemsPerPage)}
+                    >
+                      다음
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
-              <p className="text-gray-500 text-center py-4">
+              <p className="text-sm text-gray-500 text-center py-4">
                 최근 구매 내역이 없습니다.
               </p>
             )}
