@@ -700,12 +700,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             const canCancel = groupBuyData.status === 'recruiting' && now < endTime;
             setCanCancelBid(canCancel);
             
-            // 내 견적 순위 계산 (bidType에 따라 정렬)
+            // 내 견적 순위 계산 (카테고리에 따라 정렬)
             const sortedForRank = [...bids].sort((a: any, b: any) => {
-              if (bidType === 'price') {
-                return a.amount - b.amount; // 가격: 낮은 것이 1위
+              // 휴대폰/통신 카테고리는 항상 지원금(높은 순)으로 정렬
+              const isTelecom = groupBuyData.product_details?.category_name === '휴대폰' || 
+                               groupBuyData.product_details?.category_detail_type === 'telecom';
+              
+              if (isTelecom || bidType === 'support') {
+                return b.amount - a.amount; // 지원금: 높은 금액이 1위
               } else {
-                return b.amount - a.amount; // 지원금: 높은 것이 1위
+                return a.amount - b.amount; // 가격: 낮은 금액이 1위
               }
             });
             const myRank = sortedForRank.findIndex((bid: any) => bid.id === myBid.id) + 1;
@@ -716,11 +720,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           }
         }
         
+        // 정렬: 지원금은 높은 순, 가격은 낮은 순
         const sortedBids = bids.sort((a: any, b: any) => {
-          if (bidType === 'price') {
-            return a.amount - b.amount;
+          // 휴대폰/통신 카테고리는 항상 지원금(높은 순)으로 정렬
+          const isTelecom = groupBuyData.product_details?.category_name === '휴대폰' || 
+                           groupBuyData.product_details?.category_detail_type === 'telecom';
+          
+          if (isTelecom || bidType === 'support') {
+            return b.amount - a.amount; // 지원금: 높은 금액이 1위
           } else {
-            return b.amount - a.amount;
+            return a.amount - b.amount; // 가격: 낮은 금액이 1위
           }
         });
         
