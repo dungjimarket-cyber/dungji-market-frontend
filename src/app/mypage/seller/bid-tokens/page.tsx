@@ -138,15 +138,15 @@ export default function BidTokensPage() {
       case 'single':
         return (
           <>
-            견적제안시 티켓 1매가 사용됩니다.<br/>
-            구독권 이용시 견적이용권은 사용되지 않습니다.
+            견적 제안시 이용권 1매가 사용됩니다.<br/>
+            구독권 이용시 견적이용권은 차감되지 않습니다.
           </>
         );
       case 'unlimited':
         return (
           <>
             30일간 모든 공구에 무제한 견적 제안이 가능합니다.<br/>
-            구독권 이용시 견적이용권은 사용되지 않습니다.
+            구독권 이용시 견적이용권은 차감되지 않습니다.
           </>
         );
       default:
@@ -162,7 +162,7 @@ export default function BidTokensPage() {
   return (
     <div className="container py-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">견적이용권 관리</h1>
+        <h1 className="text-2xl font-bold">이용권 현황</h1>
         <Button variant="outline" onClick={() => router.back()}>
           돌아가기
         </Button>
@@ -172,7 +172,7 @@ export default function BidTokensPage() {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">나의 견적이용권 현황</CardTitle>
+              <CardTitle className="text-lg">이용권 현황</CardTitle>
             </CardHeader>
             <CardContent>
               {bidTokens && (
@@ -187,7 +187,7 @@ export default function BidTokensPage() {
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                      무제한 티켓 구독(30일)
+                      무제한 이용권 구독(30일)
                     </span>
                     <span className="font-semibold">{bidTokens.unlimited_subscription ? '활성화' : '비활성화'}</span>
                   </div>

@@ -321,7 +321,7 @@ export default function SellerDetailPage() {
         </CardContent>
       </Card>
 
-      {/* 견적이용권 관리 카드 */}
+      {/* 이용권 현황 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>

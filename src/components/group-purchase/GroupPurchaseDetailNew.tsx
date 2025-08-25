@@ -2631,7 +2631,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <AlertDialogAction
               onClick={() => router.push('/mypage/seller/bid-tokens')}
             >
-              견적이용권 관리 페이지로 이동
+              이용권 현황 페이지로 이동
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

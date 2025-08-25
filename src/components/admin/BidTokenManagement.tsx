@@ -286,7 +286,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
       {/* Header with search */}
       <Card>
         <CardHeader>
-          <CardTitle>견적이용권 관리 시스템</CardTitle>
+          <CardTitle>이용권 현황 시스템</CardTitle>
           <CardDescription>판매회원의 견적이용권과 구독권을 관리합니다.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -364,7 +364,7 @@ export default function BidTokenManagement({ accessToken }: BidTokenManagementPr
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {selectedSeller?.nickname || selectedSeller?.username} 견적이용권 관리
+              {selectedSeller?.nickname || selectedSeller?.username} 이용권 현황
             </DialogTitle>
             <DialogDescription>
               회원 ID: {selectedSeller?.id} | 이메일: {selectedSeller?.email}

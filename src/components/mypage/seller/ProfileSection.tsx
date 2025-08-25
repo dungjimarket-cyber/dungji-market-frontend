@@ -144,7 +144,7 @@ export default function ProfileSection() {
 
             <Link href="/mypage/seller/bid-tokens" className="w-full sm:w-auto">
               <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
-                견적이용권 관리
+                이용권 현황
               </Button>
             </Link>
           </div>
