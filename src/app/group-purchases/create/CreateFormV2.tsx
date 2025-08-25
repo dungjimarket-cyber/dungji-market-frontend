@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
 import { toKSTString } from '@/lib/utils';
-import { SmartphoneIcon, WifiIcon, MonitorIcon, AlertCircleIcon, CheckCircle2, Info } from "lucide-react";
+import { SmartphoneIcon, WifiIcon, MonitorIcon, AlertCircleIcon, CheckCircle2, Info, PhoneCall, RefreshCw, UserPlus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -811,6 +811,32 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                           </SelectContent>
                         </Select>
                         <FormMessage />
+                        {/* 가입유형 안내 */}
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="space-y-2 text-xs">
+                            <div className="flex items-start gap-2">
+                              <RefreshCw className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-semibold text-blue-900">기기변경:</span>
+                                <span className="text-blue-700 ml-1">휴대폰만 교체, 통신사·번호 그대로</span>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <PhoneCall className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-semibold text-blue-900">번호이동:</span>
+                                <span className="text-blue-700 ml-1">통신사·휴대폰 교체, 번호는 그대로</span>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <UserPlus className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-semibold text-blue-900">신규가입:</span>
+                                <span className="text-blue-700 ml-1">통신사·번호·휴대폰 모두 신규 개통</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </FormItem>
                     )}
                   />
