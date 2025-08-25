@@ -113,7 +113,7 @@ export default function BidHistoryModal({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">공구 견적 내역</DialogTitle>
           <DialogDescription>
-            이 공구에 등록된 견적 내역 상위 5개를 확인할 수 있습니다.
+            공구 기간 종료 후 최종 견적 금액이 공개됩니다.
             {bids.length > 0 && bids[0] && groupBuyStatus && !['recruiting', 'bidding'].includes(groupBuyStatus) && (
               <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center justify-between">
