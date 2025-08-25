@@ -397,12 +397,11 @@ export default function RefundPolicyPage() {
               <ul className="text-gray-700 space-y-1">
                 <li>• 전화: <a href="tel:070-4507-4492" className="text-blue-600 hover:underline">070-4507-4492</a> (평일 09:00~18:00)</li>
                 <li>• 이메일: <a href="mailto:dungjimarket@gmail.com" className="text-blue-600 hover:underline">dungjimarket@gmail.com</a></li>
-                <li>• 카카오톡: @둥지마켓</li>
               </ul>
             </div>
             
             {/* 카카오톡 문의 버튼 */}
-            <div className="pt-4">
+            <div className="pt-2">
               <a 
                 href="http://pf.kakao.com/_Jyavn/chat" 
                 target="_blank" 
