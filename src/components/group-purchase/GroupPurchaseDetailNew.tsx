@@ -254,8 +254,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
   // 카테고리에 따라 입찰 타입 설정
   useEffect(() => {
-    const telecom = groupBuyData.product_details?.category_name === '휴대폰' || groupBuyData.product_details?.category_detail_type === 'telecom';
-    setBidType(telecom ? 'support' : 'price');
+    const categoryName = groupBuyData.product_details?.category_name;
+    const detailType = groupBuyData.product_details?.category_detail_type;
+    
+    // 휴대폰, 인터넷, 통신 카테고리는 모두 지원금 견적
+    const isSupport = categoryName === '휴대폰' || 
+                     categoryName === '인터넷' ||
+                     detailType === 'telecom' ||
+                     detailType === 'internet';
+    
+    setBidType(isSupport ? 'support' : 'price');
   }, [groupBuyData.product_details]);
 
   // 실제 상태 계산
@@ -702,11 +710,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             
             // 내 견적 순위 계산 (카테고리에 따라 정렬)
             const sortedForRank = [...bids].sort((a: any, b: any) => {
-              // 휴대폰/통신 카테고리는 항상 지원금(높은 순)으로 정렬
-              const isTelecom = groupBuyData.product_details?.category_name === '휴대폰' || 
-                               groupBuyData.product_details?.category_detail_type === 'telecom';
+              // 휴대폰/인터넷/통신 카테고리는 항상 지원금(높은 순)으로 정렬
+              const categoryName = groupBuyData.product_details?.category_name;
+              const detailType = groupBuyData.product_details?.category_detail_type;
+              const isSupport = categoryName === '휴대폰' || 
+                               categoryName === '인터넷' ||
+                               detailType === 'telecom' ||
+                               detailType === 'internet';
               
-              if (isTelecom || bidType === 'support') {
+              if (isSupport || bidType === 'support') {
                 return b.amount - a.amount; // 지원금: 높은 금액이 1위
               } else {
                 return a.amount - b.amount; // 가격: 낮은 금액이 1위
@@ -722,11 +734,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         // 정렬: 지원금은 높은 순, 가격은 낮은 순
         const sortedBids = bids.sort((a: any, b: any) => {
-          // 휴대폰/통신 카테고리는 항상 지원금(높은 순)으로 정렬
-          const isTelecom = groupBuyData.product_details?.category_name === '휴대폰' || 
-                           groupBuyData.product_details?.category_detail_type === 'telecom';
+          // 휴대폰/인터넷/통신 카테고리는 항상 지원금(높은 순)으로 정렬
+          const categoryName = groupBuyData.product_details?.category_name;
+          const detailType = groupBuyData.product_details?.category_detail_type;
+          const isSupport = categoryName === '휴대폰' || 
+                           categoryName === '인터넷' ||
+                           detailType === 'telecom' ||
+                           detailType === 'internet';
           
-          if (isTelecom || bidType === 'support') {
+          if (isSupport || bidType === 'support') {
             return b.amount - a.amount; // 지원금: 높은 금액이 1위
           } else {
             return a.amount - b.amount; // 가격: 낮은 금액이 1위
