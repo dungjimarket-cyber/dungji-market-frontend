@@ -152,12 +152,14 @@ export default function BidHistoryModal({
               <TableBody>
                 {bids.slice(0, 10).map((bid, index) => {
                   const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
-                  const isWinner = index === 0;
+                  // 공구가 종료되고 1위인 경우에만 최종선정 표시
+                  const isGroupEnded = groupBuyStatus && !['recruiting', 'bidding'].includes(groupBuyStatus);
+                  const isWinner = index === 0 && isGroupEnded;
                   
-                  // 금액 표시 로직 - 상위 10개는 모두 정상 표기
-                  // 참여자/낙찰자는 1위부터 10위까지 정상 금액 표기
-                  const shouldShowAmount = isParticipant || hasBid || isMyBid;
-                  const shouldMask = false;  // 상위 10개는 마스킹 하지 않음
+                  // 금액 표시 로직 - 공구 기간 중에는 마스킹, 종료 후 공개
+                  // 본인 견적은 항상 표시
+                  const shouldShowAmount = isMyBid || isGroupEnded;
+                  const shouldMask = !isMyBid && !isGroupEnded;  // 공구 기간 중에는 타인 견적 마스킹
                   
                   return (
                     <TableRow 
@@ -192,7 +194,7 @@ export default function BidHistoryModal({
                         {typeof bid.amount === 'string' 
                           ? bid.amount 
                           : shouldMask
-                            ? `${formatBidAmount(bid.amount, false, 999)}원`  // 마스킹
+                            ? '***,***원'  // 마스킹
                             : `${bid.amount.toLocaleString()}원`  // 정상 표기
                         }
                       </TableCell>

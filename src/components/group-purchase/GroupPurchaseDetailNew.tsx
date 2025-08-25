@@ -1633,9 +1633,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 )}
               </p>
               <div className="mt-4 space-y-3">
-                <p className="text-base text-gray-700 font-medium">
-                  총 {groupBuyData.total_bids_count || 0}개 입찰
-                </p>
                 {/* 견적 내역 보기 버튼과 구매자 확정률 버튼을 나란히 배치 */}
                 {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
                   <div className="flex justify-center items-center gap-3 mt-4">
@@ -1701,7 +1698,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </p>
               {totalBids > 0 && (
                 <>
-                  <p className="text-xs text-gray-500 mt-1">총 {totalBids}개 입찰</p>
                   <div className="flex items-center justify-center gap-3 mt-2">
                     {!isSeller && (
                       <button
