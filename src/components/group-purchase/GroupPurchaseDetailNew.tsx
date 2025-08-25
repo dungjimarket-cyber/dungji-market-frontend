@@ -257,9 +257,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     const categoryName = groupBuyData.product_details?.category_name;
     const detailType = groupBuyData.product_details?.category_detail_type;
     
-    // 휴대폰, 인터넷, 통신 카테고리는 모두 지원금 견적
+    // 휴대폰, 인터넷, 인터넷+TV, 통신 카테고리는 모두 지원금 견적
     const isSupport = categoryName === '휴대폰' || 
                      categoryName === '인터넷' ||
+                     categoryName === '인터넷+TV' ||
                      detailType === 'telecom' ||
                      detailType === 'internet';
     
@@ -710,11 +711,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             
             // 내 견적 순위 계산 (카테고리에 따라 정렬)
             const sortedForRank = [...bids].sort((a: any, b: any) => {
-              // 휴대폰/인터넷/통신 카테고리는 항상 지원금(높은 순)으로 정렬
+              // 휴대폰/인터넷/인터넷+TV/통신 카테고리는 항상 지원금(높은 순)으로 정렬
               const categoryName = groupBuyData.product_details?.category_name;
               const detailType = groupBuyData.product_details?.category_detail_type;
               const isSupport = categoryName === '휴대폰' || 
                                categoryName === '인터넷' ||
+                               categoryName === '인터넷+TV' ||
                                detailType === 'telecom' ||
                                detailType === 'internet';
               
@@ -734,11 +736,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         // 정렬: 지원금은 높은 순, 가격은 낮은 순
         const sortedBids = bids.sort((a: any, b: any) => {
-          // 휴대폰/인터넷/통신 카테고리는 항상 지원금(높은 순)으로 정렬
+          // 휴대폰/인터넷/인터넷+TV/통신 카테고리는 항상 지원금(높은 순)으로 정렬
           const categoryName = groupBuyData.product_details?.category_name;
           const detailType = groupBuyData.product_details?.category_detail_type;
           const isSupport = categoryName === '휴대폰' || 
                            categoryName === '인터넷' ||
+                           categoryName === '인터넷+TV' ||
                            detailType === 'telecom' ||
                            detailType === 'internet';
           
