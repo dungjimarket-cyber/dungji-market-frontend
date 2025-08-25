@@ -581,8 +581,8 @@ function RegisterPageContent() {
       submitData.append('role', formData.role);
       submitData.append('marketing_agreed', formData.marketing_agreed.toString());
       
-      // 추천인 코드 (있는 경우만)
-      if (formData.referral_code) {
+      // 추천인 코드 (일반회원만, 판매자는 마이페이지에서 입력)
+      if (formData.referral_code && formData.role === 'buyer') {
         submitData.append('referral_code', formData.referral_code);
       }
       
@@ -969,26 +969,6 @@ function RegisterPageContent() {
                       </ul>
                     </div>
                     
-                    {/* 추천인 코드 (판매회원 소셜 가입 시) */}
-                    <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <label htmlFor="referral_code_social" className="block text-sm font-medium text-gray-700 mb-2">
-                        추천인 코드 <span className="text-gray-500">(선택)</span>
-                      </label>
-                      <input
-                        id="referral_code_social"
-                        name="referral_code"
-                        type="text"
-                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="추천인 코드를 입력하세요"
-                        value={formData.referral_code}
-                        onChange={handleChange}
-                      />
-                      {formData.referral_code && (
-                        <p className="mt-2 text-xs text-green-600">
-                          ✅ 추천인 코드가 입력되었습니다: {formData.referral_code}
-                        </p>
-                      )}
-                    </div>
                   </>
                 )}
               </div>
