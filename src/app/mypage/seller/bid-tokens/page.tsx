@@ -32,7 +32,7 @@ export default function BidTokensPage() {
 
   // 상품 가격 정보
   const priceInfo = {
-    'single': 1990, // 견적이용권 단품 가격 (원)
+    'single': 1990, // 견적 이용권 단품 가격 (원)
     'unlimited': 29900 // 무제한 구독제(30일) 가격 (원)
   };
 
@@ -41,7 +41,7 @@ export default function BidTokensPage() {
     return tokenType === 'unlimited' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
   };
 
-  // 견적이용권 정보 로드
+  // 견적 이용권 정보 로드
   useEffect(() => {
     async function loadBidTokens() {
       // 인증 상태가 확정되지 않았으면 대기
@@ -62,15 +62,15 @@ export default function BidTokensPage() {
         const data = await bidTokenService.getBidTokens();
         setBidTokens(data);
       } catch (error) {
-        console.error('견적이용권 정보 로드 오류:', error);
+        console.error('견적 이용권 정보 로드 오류:', error);
         
         // 401 에러인 경우에만 로그인 페이지로 리다이렉트
         if (error instanceof Error && error.message.includes('401')) {
           router.push('/login');
         } else {
           toast({
-            title: '견적이용권 정보 로드 실패',
-            description: '견적이용권 정보를 불러오는데 문제가 발생했습니다. 다시 시도해주세요.',
+            title: '견적 이용권 정보 로드 실패',
+            description: '견적 이용권 정보를 불러오는데 문제가 발생했습니다. 다시 시도해주세요.',
             variant: 'destructive',
           });
         }
@@ -87,7 +87,7 @@ export default function BidTokensPage() {
     if (tokenType === 'single' && quantity <= 0) {
       toast({
         title: '유효하지 않은 수량',
-        description: '1개 이상의 견적이용권을 선택해주세요.',
+        description: '1개 이상의 견적 이용권을 선택해주세요.',
         variant: 'destructive',
       });
       return;
@@ -134,21 +134,21 @@ export default function BidTokensPage() {
     }
   };
 
-  // 견적이용권 유형에 따른 정보 텍스트
+  // 견적 이용권 유형에 따른 정보 텍스트
   const getTokenTypeInfo = (type: string) => {
     switch(type) {
       case 'single':
         return (
           <>
             견적 제안시 이용권 1매가 사용됩니다.<br/>
-            구독권 이용시 견적이용권은 차감되지 않습니다.
+            구독권 이용시 견적 이용권은 차감되지 않습니다.
           </>
         );
       case 'unlimited':
         return (
           <>
             30일간 모든 공구에 무제한 견적 제안이 가능합니다.<br/>
-            구독권 이용시 견적이용권은 차감되지 않습니다.
+            구독권 이용시 견적 이용권은 차감되지 않습니다.
           </>
         );
       default:
@@ -182,24 +182,26 @@ export default function BidTokensPage() {
                   <div className="flex justify-between items-center">
                     <span className="flex items-center">
                       <Star className="h-4 w-4 mr-2 text-yellow-400" />
-                      견적이용권
+                      견적 이용권
                     </span>
                     <span className="font-semibold">{bidTokens.single_tokens}개</span>
                   </div>
                   
                   {/* 이용권 만료 예정 (7일 이내) */}
-                  <div className="text-sm text-gray-500">
-                    이용권 만료 예정 (남은 사용기한 7일 이내)
-                  </div>
-                  
-                  {/* 하드코딩 예시 데이터 */}
-                  <div className="flex justify-between items-center text-sm text-gray-500 -mt-1">
-                    <span>2025. 12. 10. 사용 기한 만료 예정</span>
-                    <span>3개</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-gray-500">
-                    <span>2026. 1. 9. 사용 기한 만료 예정</span>
-                    <span>5개</span>
+                  <div className="space-y-0.5">
+                    <div className="text-sm text-gray-500">
+                      이용권 만료 예정 (남은 사용기한 7일 이내)
+                    </div>
+                    
+                    {/* 하드코딩 예시 데이터 */}
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>2025. 12. 10. 사용 기한 만료 예정</span>
+                      <span>3개</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>2026. 1. 9. 사용 기한 만료 예정</span>
+                      <span>5개</span>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="flex items-center">
@@ -216,7 +218,7 @@ export default function BidTokensPage() {
                   )}
                   <Separator />
                   <div className="flex justify-between items-center font-bold">
-                    <span>총 보유 견적이용권</span>
+                    <span>총 보유 견적 이용권</span>
                     <span>
                       {bidTokens.unlimited_subscription ? (
                         <span className="flex items-center">
@@ -247,7 +249,7 @@ export default function BidTokensPage() {
                           <div>
                             <p className="text-sm font-medium">
                               {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
-                                ? `견적이용권 ${purchase.quantity}개`
+                                ? `견적 이용권 ${purchase.quantity}개`
                                 : purchase.token_type === 'unlimited' || purchase.token_type_display?.includes('무제한')
                                 ? '무제한 구독권'
                                 : `${purchase.token_type_display} ${purchase.quantity}개`
@@ -316,7 +318,7 @@ export default function BidTokensPage() {
                         value="single"
                         id="single"
                       />
-                      <Label htmlFor="single">견적이용권</Label>
+                      <Label htmlFor="single">견적 이용권</Label>
                     </div>
                     <div>
                       <RadioGroupItem
