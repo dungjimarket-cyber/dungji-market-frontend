@@ -98,12 +98,26 @@ function GroupPurchasesPageContent() {
    * 공구 목록 가져오기 (필터 포함 및 무한 스크롤)
    */
   const fetchGroupBuys = useCallback(async (filters?: Record<string, string>, tabValue?: string, isLoadMore: boolean = false) => {
+    // 이미 로딩 중이면 중복 호출 방지
+    if (isLoadMore && loadingMore) {
+      console.log('Already loading more, skipping duplicate call');
+      return;
+    }
+    
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     if (!isLoadMore) {
       setLoading(true);
       setOffset(0);
       setHasMore(true);
     } else {
       setLoadingMore(true);
+      // 10초 후에도 loadingMore가 true면 강제로 false로 설정 (fallback)
+      timeoutId = setTimeout(() => {
+        setLoadingMore(false);
+        setHasMore(false);
+        console.log('LoadingMore timeout - forced reset');
+      }, 10000);
     }
     setError('');
     const currentTab = tabValue || activeTab;
@@ -397,11 +411,17 @@ function GroupPurchasesPageContent() {
       console.error('공구 목록 로딩 실패:', err);
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       toast.error('공구 목록을 불러오는데 실패했습니다.');
+      // 에러 발생 시 hasMore를 false로 설정하여 추가 로드 방지
+      setHasMore(false);
     } finally {
+      // 타임아웃 정리
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [activeTab, accessToken, itemsPerPage, groupBuys.length]);
+  }, [activeTab, accessToken, itemsPerPage, groupBuys.length, loadingMore]);
 
   /**
    * 필터 변경 처리
@@ -552,26 +572,44 @@ function GroupPurchasesPageContent() {
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
     
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
-          console.log('IntersectionObserver triggered - hasMore:', hasMore, 'loadingMore:', loadingMore, 'loading:', loading);
-          // 이미 로딩 중이면 무시
-          if (loadingMore || loading) {
-            console.log('Already loading, skipping...');
-            return;
+    const loadMoreCallback = () => {
+      // 현재 상태를 직접 참조하여 로딩 중복 방지
+      setLoadingMore((currentLoadingMore) => {
+        if (currentLoadingMore) {
+          console.log('Already loading more, skipping...');
+          return currentLoadingMore;
+        }
+        
+        setHasMore((currentHasMore) => {
+          if (!currentHasMore) {
+            console.log('No more items to load');
+            return currentHasMore;
           }
+          
+          // 로딩 시작
+          console.log('Starting to load more items...');
           const filters: Record<string, string> = {};
           searchParams.forEach((value, key) => {
             filters[key] = value;
           });
           fetchGroupBuys(filters, activeTab, true);
+          return currentHasMore;
+        });
+        
+        return true; // loadingMore를 true로 설정
+      });
+    };
+    
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMoreCallback();
         }
       },
       { threshold: 0.1, rootMargin: '100px' }
     );
     
-    if (loadMoreRef.current) {
+    if (loadMoreRef.current && hasMore && !loading) {
       observerRef.current.observe(loadMoreRef.current);
     }
     
@@ -580,7 +618,7 @@ function GroupPurchasesPageContent() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadingMore, loading, searchParams.toString(), activeTab]);
+  }, [searchParams.toString(), activeTab, fetchGroupBuys, hasMore, loading]);
 
   /**
    * 페이지가 다시 포커스될 때 데이터 새로고침
