@@ -2359,9 +2359,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     <div className="space-y-1">
                       {topBids.map((bid: any, index: number) => {
                         const isMyBid = (() => {
-                          const sellerId = typeof bid.seller === 'object' && bid.seller?.id 
-                            ? bid.seller.id 
-                            : (typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller);
+                          // API에서 seller_id로 오는 경우와 seller 객체로 오는 경우 모두 처리
+                          const sellerId = bid.seller_id 
+                            ? (typeof bid.seller_id === 'string' ? parseInt(bid.seller_id) : bid.seller_id)
+                            : (typeof bid.seller === 'object' && bid.seller?.id 
+                              ? bid.seller.id 
+                              : (typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller));
                           const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id;
                           return sellerId === userId;
                         })();
