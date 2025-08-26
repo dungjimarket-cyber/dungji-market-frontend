@@ -67,44 +67,65 @@ class InicisService {
    * 폼 전송 방식 결제 (SDK 사용 불가시 폴백)
    */
   private submitPaymentForm(orderId: string, params: InicisPaymentParams, prepareData: any) {
-    // 테스트 페이지 생성 (Mixed Content 문제 우회)
+    // 이니시스 공식 샘플 기반 HTML 생성
     const testHtml = `
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>이니시스 결제</title>
-  <script src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js" charset="UTF-8"></script>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KG이니시스 결제</title>
+  <!-- 테스트 JS -->
+  <script language="javascript" type="text/javascript" src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js" charset="UTF-8"></script>
+  <script type="text/javascript">
+    function startPayment() {
+      INIStdPay.pay('SendPayForm_id');
+    }
+  </script>
 </head>
 <body>
-  <form id="inicisForm" method="POST" acceptCharset="UTF-8">
-    <!-- 필수 필드 -->
+  <form name="" id="SendPayForm_id" method="post">
+    <!-- 버전 -->
     <input type="hidden" name="version" value="1.0">
+    
+    <!-- 결제 수단 -->
+    <input type="hidden" name="gopaymethod" value="Card:DirectBank:VBank:HPP">
+    
+    <!-- 상점 정보 -->
     <input type="hidden" name="mid" value="${this.MID}">
     <input type="hidden" name="oid" value="${orderId}">
     <input type="hidden" name="price" value="${params.amount}">
+    <input type="hidden" name="timestamp" value="${prepareData.timestamp}">
+    
+    <!-- 인증 정보 -->
+    <input type="hidden" name="use_chkfake" value="Y">
+    <input type="hidden" name="signature" value="${prepareData.signature}">
+    <input type="hidden" name="verification" value="${prepareData.verification}">
+    <input type="hidden" name="mKey" value="${prepareData.mkey}">
+    <input type="hidden" name="currency" value="WON">
+    
+    <!-- 상품 정보 -->
     <input type="hidden" name="goodname" value="${params.productName}">
+    
+    <!-- 구매자 정보 -->
     <input type="hidden" name="buyername" value="${params.buyerName}">
     <input type="hidden" name="buyertel" value="${params.buyerTel}">
     <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
-    <input type="hidden" name="timestamp" value="${prepareData.timestamp}">
-    <input type="hidden" name="signature" value="${prepareData.signature}">
-    <input type="hidden" name="mkey" value="${prepareData.mkey}">
     
-    <!-- 옵션 필드 -->
-    <input type="hidden" name="currency" value="WON">
-    <input type="hidden" name="gopaymethod" value="Card">
-    <input type="hidden" name="acceptmethod" value="HPP(1):below1000">
-    <input type="hidden" name="charset" value="UTF-8">
-    <input type="hidden" name="payViewType" value="overlay">
+    <!-- 리턴 URL -->
     <input type="hidden" name="returnUrl" value="${window.location.origin}/payment/inicis/complete">
     <input type="hidden" name="closeUrl" value="${window.location.origin}/payment/inicis/close">
-    <input type="hidden" name="quotabase" value="00:02:03:04:05:06">
+    
+    <!-- 추가 옵션 -->
+    <input type="hidden" name="acceptmethod" value="HPP(1):va_receipt:below1000:centerCd(Y)">
+    <input type="hidden" name="charset" value="UTF-8">
+    <input type="hidden" name="payViewType" value="overlay">
   </form>
   
-  <div style="padding: 50px; text-align: center;">
+  <div style="padding: 50px; text-align: center; font-family: sans-serif;">
     <h2>결제 준비 중...</h2>
-    <p>잠시만 기다려주세요.</p>
+    <p style="color: #666;">잠시만 기다려주세요.</p>
   </div>
   
   <script>
@@ -113,7 +134,7 @@ class InicisService {
       setTimeout(function() {
         if (typeof INIStdPay !== 'undefined') {
           console.log('이니시스 결제 시작');
-          INIStdPay.pay('inicisForm');
+          INIStdPay.pay('SendPayForm_id');
         } else {
           console.error('이니시스 스크립트 로드 실패');
           alert('결제 모듈 로드에 실패했습니다. 다시 시도해주세요.');
