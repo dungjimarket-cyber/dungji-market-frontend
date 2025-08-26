@@ -1495,11 +1495,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
               
-              {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 */}
-              {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (
+              {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 - 판매자와 참여자만 표시 */}
+              {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller) && (
                 <div className="mb-4">
-                  <p className="text-2xl font-bold text-center text-green-700 mb-2">
-                    🎉 견적이 최종 선정되었습니다! 🎉
+                  <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
+                    <span className="inline-block">🎉</span>
+                    <span className="inline-block mx-1">견적이 최종 선정되었습니다!</span>
+                    <span className="inline-block">🎉</span>
                   </p>
                 </div>
               )}
@@ -1510,7 +1512,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   {isSeller && hasWinningBid ? '내 견적 금액' : '선정된 최종 지원금'}
                 </p>
               </div>
-              <p className="text-5xl font-bold text-orange-600 mb-1">
+              <p className="text-3xl sm:text-4xl font-bold text-orange-600 mb-1">
                 {/* 최종선택 단계 이후부터는 참여자와 판매회원에게 정상 금액 표시, 미참여자는 마스킹 */}
                 {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
                   <>
@@ -2049,9 +2051,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <>
                 <div className="p-4 bg-yellow-50 rounded-lg text-center mb-3">
                   <p className="font-semibold text-yellow-800">구매자 최종선택 대기중</p>
-                </div>
-                <div className="p-3 bg-orange-100 rounded-lg text-center mb-3">
-                  <p className="text-2xl font-bold text-orange-600">🎉 견적이 최종 선정되었습니다!</p>
                 </div>
                 <Button
                   onClick={async () => {
