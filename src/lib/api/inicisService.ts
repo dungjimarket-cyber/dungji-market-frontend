@@ -84,7 +84,7 @@ class InicisService {
         form.name = 'inicis_form';
         form.method = 'POST';
         form.acceptCharset = 'UTF-8';
-        form.action = 'https://stgstdpay.inicis.com/stdpay/INIStdPayRequest.jsp';
+        form.action = 'https://stgstdpay.inicis.com/INIStdPayRequest.jsp';
         form.target = '_blank';
 
         // 파라미터 설정
@@ -147,7 +147,7 @@ class InicisService {
 
       const script = document.createElement('script');
       script.id = 'inicis-script';
-      script.src = 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js';
+      script.src = 'https://stgstdpay.inicis.com/js/INIStdPay.js';
       script.charset = 'UTF-8';
       script.onload = () => resolve();
       script.onerror = () => {
