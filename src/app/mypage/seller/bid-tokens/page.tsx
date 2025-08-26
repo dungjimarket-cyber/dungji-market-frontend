@@ -18,6 +18,7 @@ import bidTokenService, {
   BidTokenPurchase, 
   PurchaseBidTokenRequest 
 } from '@/lib/bid-token-service';
+import { inicisService } from '@/lib/api/inicisService';
 
 export default function BidTokensPage() {
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,55 @@ export default function BidTokensPage() {
   // 총 가격 계산
   const calculateTotalPrice = () => {
     return tokenType === 'unlimited' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
+  };
+
+  // 결제 검증 함수
+  const verifyPayment = async (orderId: string) => {
+    try {
+      // URL 파라미터에서 추가 정보 가져오기
+      const params = new URLSearchParams(window.location.search);
+      const authToken = params.get('authToken');
+      const authResultCode = params.get('authResultCode');
+      const tid = params.get('tid');
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+        },
+        body: JSON.stringify({
+          orderId,
+          authToken,
+          authResultCode,
+          tid
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: '결제 성공',
+          description: `결제가 완료되었습니다. 입찰권 ${result.token_count}개가 지급되었습니다.`,
+        });
+        
+        // 입찰권 정보 새로고침
+        const data = await bidTokenService.getBidTokens();
+        setBidTokens(data);
+        
+        // URL 파라미터 제거
+        window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
+      } else {
+        throw new Error('결제 검증 실패');
+      }
+    } catch (error) {
+      console.error('결제 검증 실패:', error);
+      toast({
+        title: '결제 검증 실패',
+        description: '결제 검증 중 문제가 발생했습니다.',
+        variant: 'destructive',
+      });
+    }
   };
 
   // 견적 이용권 정보 로드
@@ -80,9 +130,36 @@ export default function BidTokensPage() {
     }
     
     loadBidTokens();
+    
+    // 결제 완료 후 리디렉션 처리
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const orderId = params.get('orderId');
+    const message = params.get('msg');
+    
+    if (paymentStatus === 'success' && orderId) {
+      // 결제 검증 API 호출
+      verifyPayment(orderId);
+    } else if (paymentStatus === 'failed') {
+      toast({
+        title: '결제 실패',
+        description: message || '결제가 실패했습니다.',
+        variant: 'destructive',
+      });
+      // URL 파라미터 제거
+      window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
+    } else if (paymentStatus === 'cancelled') {
+      toast({
+        title: '결제 취소',
+        description: '결제가 취소되었습니다.',
+        variant: 'destructive',
+      });
+      // URL 파라미터 제거
+      window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
+    }
   }, [isAuthenticated, router]);
 
-  // 토스페이먼츠 결제 요청
+  // 이니시스 결제 요청
   const handlePurchase = async () => {
     if (tokenType === 'single' && quantity <= 0) {
       toast({
@@ -96,43 +173,35 @@ export default function BidTokensPage() {
     try {
       setPurchasing(true);
       
-      // 결제 요청 생성
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
-        },
-        body: JSON.stringify({
-          token_type: tokenType,
-          quantity: tokenType === 'unlimited' ? 1 : quantity
-        }),
+      const totalPrice = calculateTotalPrice();
+      const productName = tokenType === 'unlimited' 
+        ? '견적이용권 무제한 (30일)' 
+        : `견적이용권 ${quantity}개`;
+      
+      // 이니시스 결제 요청
+      await inicisService.requestPayment({
+        orderId: `${user?.id || 'guest'}_${Date.now()}`,
+        productName,
+        amount: totalPrice,
+        buyerName: user?.nickname || user?.username || '구매자',
+        buyerTel: user?.phone_number || '010-0000-0000',
+        buyerEmail: user?.email || 'buyer@example.com',
+        returnUrl: `${window.location.origin}/payment/inicis/return`,
+        closeUrl: `${window.location.origin}/payment/inicis/close`,
       });
-
-      if (!response.ok) {
-        throw new Error('결제 요청 생성 실패');
-      }
-
-      const paymentData = await response.json();
-      
-      // 토스페이먼츠 결제창으로 이동
-      // 결제 정보를 세션 스토리지에 저장
-      sessionStorage.setItem('payment_order', JSON.stringify(paymentData));
-      
-      // 결제 페이지로 이동
-      router.push(`/payment/checkout?orderId=${paymentData.orderId}`);
       
     } catch (error) {
-      console.error('결제 요청 오류:', error);
+      console.error('결제 요청 실패:', error);
       toast({
-        title: '결제 요청 실패',
-        description: '결제 요청 생성 중 오류가 발생했습니다. 다시 시도해주세요.',
+        title: '결제 실패',
+        description: '결제 처리 중 문제가 발생했습니다. 다시 시도해주세요.',
         variant: 'destructive',
       });
     } finally {
       setPurchasing(false);
     }
   };
+  
 
   // 견적 이용권 유형에 따른 정보 텍스트
   const getTokenTypeInfo = (type: string) => {

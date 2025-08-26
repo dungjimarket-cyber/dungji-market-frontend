@@ -39,6 +39,11 @@ const authOptions: NextAuthOptions = {
     KakaoProvider({
       clientId: process.env.KAKAO_CLIENT_ID as string,
       clientSecret: process.env.KAKAO_CLIENT_SECRET as string,
+      authorization: {
+        params: {
+          scope: 'profile_nickname profile_image account_email phone_number'
+        }
+      }
     }),
   ],
   session: {

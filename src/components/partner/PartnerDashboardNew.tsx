@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
 import { partnerService } from '@/lib/api/partnerService';
-import { ReferralRecord, PartnerStats, ReferralLink } from '@/types/partner';
+import { ReferralRecord, PartnerStats, ReferralLink, PartnerSettlement, PartnerAccount } from '@/types/partner';
 import { formatCurrency } from '@/lib/utils';
 import { 
   Users, 
@@ -18,7 +18,10 @@ import {
   Check,
   ExternalLink,
   CalendarDays,
-  CreditCard
+  CreditCard,
+  Plus,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function PartnerDashboardNew() {
@@ -28,6 +31,7 @@ export default function PartnerDashboardNew() {
   const [referralLink, setReferralLink] = useState<ReferralLink | null>(null);
   const [stats, setStats] = useState<PartnerStats[]>([]);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
+  const [partnerInfo, setPartnerInfo] = useState<any>(null);
   
   // URL 쿼리 파라미터에서 탭 상태 가져오기
   const activeTab = (searchParams.get('tab') || 'dashboard') as 'dashboard' | 'members' | 'link' | 'settlements';
@@ -132,7 +136,7 @@ export default function PartnerDashboardNew() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'dashboard' && (
-          <DashboardTab summary={summary} stats={stats} recentMembers={recentMembers} />
+          <DashboardTab summary={summary} stats={stats} recentMembers={recentMembers} partner={partner} />
         )}
         {activeTab === 'members' && (
           <MembersTab recentMembers={recentMembers} />
@@ -154,8 +158,9 @@ export default function PartnerDashboardNew() {
 }
 
 // Dashboard Tab Component
-function DashboardTab({ summary, stats, recentMembers }: any) {
+function DashboardTab({ summary, stats, recentMembers, partner }: any) {
   const currentMonth = new Date().toLocaleString('ko-KR', { year: 'numeric', month: 'long' });
+  const commissionRate = partner?.commission_rate || 30; // 기본값 30%
 
   return (
     <div className="space-y-8">
@@ -216,112 +221,49 @@ function DashboardTab({ summary, stats, recentMembers }: any) {
           <div>
             <h3 className="text-lg font-medium text-blue-900">수수료 정보</h3>
             <p className="text-sm text-blue-700 mt-1">
-              구독권 판매 시 <span className="font-bold">50%</span>의 수수료를 받으실 수 있습니다.
+              구독권 판매 시 <span className="font-bold">{commissionRate}%</span>의 수수료를 받으실 수 있습니다.
             </p>
             <p className="text-xs text-blue-600 mt-2">
-              * 수수료는 구독 시작일로부터 3개월간 지급됩니다.
+              * 수수료는 결제 완료 시점부터 정산 가능합니다.
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              * 견적이용권 판매 시에도 동일한 수수료율이 적용됩니다.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-blue-600">50%</div>
-            <div className="text-sm text-blue-500">3개월간</div>
+            <div className="text-3xl font-bold text-blue-600">{commissionRate}%</div>
+            <div className="text-sm text-blue-500">수수료율</div>
           </div>
         </div>
       </div>
 
       {/* Recent Members */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">최근 가입 회원</h3>
+          <span className="text-sm text-gray-500">최근 5명</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  회원정보
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  가입일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  구독상태
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  수수료
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {recentMembers?.slice(0, 5).map((member: ReferralRecord) => (
-                <tr key={member.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {member.member_name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {member.member_phone}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(member.joined_date).toLocaleDateString('ko-KR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      member.subscription_status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {member.subscription_status === 'active' ? '활성' : '비활성'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(member.commission_amount)}
-                  </td>
+        {recentMembers && recentMembers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    회원정보
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    가입일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    구독상태
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    수수료
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Members Tab Component
-function MembersTab({ recentMembers }: any) {
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">추천 회원 목록</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  회원정보
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  가입일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  구독권
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  견적이용권
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  총 결제
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  수수료
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {recentMembers?.map((member: ReferralRecord) => (
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {recentMembers.slice(0, 5).map((member: ReferralRecord) => (
                 <tr key={member.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -338,22 +280,13 @@ function MembersTab({ recentMembers }: any) {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       member.subscription_status === 'active' 
                         ? 'bg-green-100 text-green-800' 
+                        : member.subscription_status === 'cancelled'
+                        ? 'bg-red-100 text-red-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {member.subscription_status === 'active' ? '✓' : '✗'}
+                      {member.subscription_status === 'active' ? '활성' : 
+                       member.subscription_status === 'cancelled' ? '해지' : '휴면'}
                     </span>
-                    <span className="ml-2 text-sm text-gray-600">
-                      {formatCurrency(member.subscription_amount)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {member.ticket_count}개
-                    <div className="text-xs text-gray-500">
-                      {formatCurrency(member.ticket_amount)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatCurrency(member.total_amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                     {formatCurrency(member.commission_amount)}
@@ -363,6 +296,253 @@ function MembersTab({ recentMembers }: any) {
             </tbody>
           </table>
         </div>
+        ) : (
+          <div className="p-8 text-center">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-500">아직 추천 회원이 없습니다.</p>
+            <p className="text-sm text-gray-400 mt-2">추천 링크를 공유하여 회원을 초대해보세요.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Members Tab Component
+function MembersTab({ recentMembers: initialMembers }: any) {
+  const [members, setMembers] = useState<ReferralRecord[]>(initialMembers || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [filters, setFilters] = useState({
+    status: 'all',
+    search: '',
+    date_range: 'all'
+  });
+  
+  useEffect(() => {
+    fetchMembers();
+  }, [page, filters]);
+
+  const fetchMembers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await partnerService.getReferralMembers({
+        page,
+        limit: 20,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        search: filters.search || undefined,
+        date_range: filters.date_range !== 'all' ? filters.date_range : undefined
+      });
+      
+      setMembers(response.results || []);
+      setTotalCount(response.count || 0);
+    } catch (error) {
+      console.error('Failed to fetch members:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPage(1); // Reset to first page when filters change
+  };
+
+  const totalPages = Math.ceil(totalCount / 20);
+
+  return (
+    <div className="space-y-6">
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">상태</label>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+            >
+              <option value="all">전체</option>
+              <option value="active">활성</option>
+              <option value="cancelled">해지</option>
+              <option value="paused">휴면</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
+            <select
+              value={filters.date_range}
+              onChange={(e) => handleFilterChange('date_range', e.target.value)}
+              className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+            >
+              <option value="all">전체</option>
+              <option value="today">오늘</option>
+              <option value="week">최근 7일</option>
+              <option value="month">최근 30일</option>
+            </select>
+          </div>
+          
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">검색</label>
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              placeholder="이름, 전화번호 검색"
+              className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Members Table */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-lg font-medium text-gray-900">추천 회원 목록</h3>
+          <span className="text-sm text-gray-500">총 {totalCount}명</span>
+        </div>
+        
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-gray-500">로딩 중...</p>
+          </div>
+        ) : members.length > 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      회원정보
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      가입일
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      구독권
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      견적이용권
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      총 결제
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      수수료
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {members.map((member: ReferralRecord) => (
+                    <tr key={member.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {member.member_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {member.member_phone}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(member.joined_date).toLocaleDateString('ko-KR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          member.subscription_status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {member.subscription_status === 'active' ? '활성' : member.subscription_status === 'cancelled' ? '해지' : '휴면'}
+                        </span>
+                        {member.subscription_amount > 0 && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {formatCurrency(member.subscription_amount)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.ticket_count > 0 ? (
+                          <>
+                            {member.ticket_count}개
+                            <div className="text-xs text-gray-500">
+                              {formatCurrency(member.ticket_amount)}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {formatCurrency(member.total_amount)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        {formatCurrency(member.commission_amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      전체 <span className="font-medium">{totalCount}</span>명 중{' '}
+                      <span className="font-medium">{(page - 1) * 20 + 1}</span> -{' '}
+                      <span className="font-medium">{Math.min(page * 20, totalCount)}</span>
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="px-3 py-1 text-sm text-gray-700">
+                      {page} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage(Math.min(totalPages, page + 1))}
+                      disabled={page === totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="p-8 text-center">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-500">추천 회원이 없습니다.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -577,15 +757,543 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
 
 // Settlements Tab Component  
 function SettlementsTab() {
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">정산 관리</h3>
-        <div className="text-center py-8 text-gray-500">
-          <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          <p>정산 관리 기능이 곧 제공될 예정입니다.</p>
+  const [settlements, setSettlements] = useState<PartnerSettlement[]>([]);
+  const [accountInfo, setAccountInfo] = useState<PartnerAccount | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [requestForm, setRequestForm] = useState({
+    amount: '',
+    tax_invoice: false,
+    memo: ''
+  });
+
+  useEffect(() => {
+    fetchSettlementData();
+  }, []);
+
+  const fetchSettlementData = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch settlements
+      const settlementsRes = await partnerService.getSettlements();
+      setSettlements(settlementsRes.results || []);
+
+      // Fetch account info
+      const accountRes = await partnerService.getAccountInfo();
+      setAccountInfo(accountRes);
+    } catch (error) {
+      console.error('Failed to fetch settlement data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSettlementRequest = async () => {
+    if (!requestForm.amount || parseFloat(requestForm.amount) <= 0) {
+      alert('정산 금액을 입력해주세요.');
+      return;
+    }
+
+    try {
+      await partnerService.requestSettlement({
+        amount: parseFloat(requestForm.amount),
+        tax_invoice: requestForm.tax_invoice,
+        memo: requestForm.memo
+      });
+      
+      alert('정산 요청이 성공적으로 제출되었습니다.');
+      setShowRequestModal(false);
+      setRequestForm({ amount: '', tax_invoice: false, memo: '' });
+      fetchSettlementData();
+    } catch (error) {
+      alert('정산 요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
+  };
+
+  const handleAccountUpdate = async (accountData: any) => {
+    try {
+      await partnerService.updateAccount(accountData);
+      alert('계좌 정보가 업데이트되었습니다.');
+      setShowAccountModal(false);
+      fetchSettlementData();
+    } catch (error) {
+      alert('계좌 정보 업데이트에 실패했습니다.');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { text: string; className: string }> = {
+      pending: { text: '대기중', className: 'bg-yellow-100 text-yellow-800' },
+      processing: { text: '처리중', className: 'bg-blue-100 text-blue-800' },
+      completed: { text: '완료', className: 'bg-green-100 text-green-800' },
+      rejected: { text: '거절', className: 'bg-red-100 text-red-800' }
+    };
+    
+    const config = statusConfig[status] || { text: status, className: 'bg-gray-100 text-gray-800' };
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
+        {config.text}
+      </span>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* 계좌 정보 */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">정산 계좌 정보</h3>
+          <button
+            onClick={() => setShowAccountModal(true)}
+            className="text-sm text-blue-600 hover:text-blue-500"
+          >
+            수정
+          </button>
+        </div>
+        
+        {accountInfo ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">은행명</p>
+              <p className="font-medium">{accountInfo.bank_name || '-'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">계좌번호</p>
+              <p className="font-medium">{accountInfo.account_number || accountInfo.masked_account_number || '-'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">예금주</p>
+              <p className="font-medium">{accountInfo.account_holder || '-'}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-gray-500">계좌 정보를 등록해주세요.</p>
+            <button
+              onClick={() => setShowAccountModal(true)}
+              className="mt-2 text-blue-600 hover:text-blue-500"
+            >
+              계좌 등록하기
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 정산 요청 버튼 */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowRequestModal(true)}
+          disabled={!accountInfo?.bank_name}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          정산 요청
+        </button>
+      </div>
+
+      {/* 정산 내역 */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">정산 내역</h3>
+        </div>
+        
+        {settlements.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    요청일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    정산금액
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    세금계산서
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    상태
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    처리일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    메모
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {settlements.map((settlement) => (
+                  <tr key={settlement.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {new Date(settlement.requested_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {settlement.settlement_amount.toLocaleString()}원
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {settlement.tax_invoice_requested ? '발행' : '미발행'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(settlement.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {settlement.processed_at 
+                        ? new Date(settlement.processed_at).toLocaleDateString()
+                        : '-'
+                      }
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                      {settlement.memo || '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-500">아직 정산 내역이 없습니다.</p>
+          </div>
+        )}
+      </div>
+
+      {/* 정산 요청 모달 */}
+      {showRequestModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">정산 요청</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  정산 금액
+                </label>
+                <input
+                  type="number"
+                  value={requestForm.amount}
+                  onChange={(e) => setRequestForm({ ...requestForm, amount: e.target.value })}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                  placeholder="0"
+                />
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="tax_invoice"
+                  checked={requestForm.tax_invoice}
+                  onChange={(e) => setRequestForm({ ...requestForm, tax_invoice: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                />
+                <label htmlFor="tax_invoice" className="ml-2 block text-sm text-gray-900">
+                  세금계산서 발행 요청
+                </label>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  메모 (선택)
+                </label>
+                <textarea
+                  value={requestForm.memo}
+                  onChange={(e) => setRequestForm({ ...requestForm, memo: e.target.value })}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowRequestModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSettlementRequest}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                요청하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 계좌 정보 수정 모달 */}
+      {showAccountModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">계좌 정보 수정</h3>
+            
+            <AccountForm
+              initialData={accountInfo}
+              onSubmit={handleAccountUpdate}
+              onCancel={() => setShowAccountModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+// AccountForm Component
+function AccountForm({ 
+  initialData, 
+  onSubmit, 
+  onCancel 
+}: { 
+  initialData: PartnerAccount | null;
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    bank_name: initialData?.bank_name || '',
+    account_number: initialData?.account_number || '',
+    account_holder: initialData?.account_holder || ''
+  });
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+  const [verifiedAccountHolder, setVerifiedAccountHolder] = useState(''); // 조회된 예금주명
+  const [verificationStep, setVerificationStep] = useState<1 | 2>(1); // 인증 단계
+
+  const handleVerifyAccount = async () => {
+    if (!formData.bank_name || !formData.account_number || !formData.account_holder) {
+      alert('모든 정보를 입력해주세요.');
+      return;
+    }
+    
+    const accountNumber = formData.account_number.replace(/-/g, '');
+    if (!/^\d+$/.test(accountNumber)) {
+      alert('계좌번호는 숫자만 입력 가능합니다.');
+      return;
+    }
+    
+    setIsVerifying(true);
+    setVerificationError('');
+    
+    try {
+      // 계좌 실명 인증 API 호출
+      // API URL 구성 - 이미 /api가 포함되어 있는지 확인
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const apiUrl = baseUrl.endsWith('/api') 
+        ? baseUrl + '/partners/bank-account/verify/'
+        : baseUrl + '/api/partners/bank-account/verify/';
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('partner_token')}`
+        },
+        body: JSON.stringify({
+          bank_code: getBankCode(formData.bank_name),
+          account_num: accountNumber,
+          account_holder_info: formData.account_holder
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.verified) {
+        setIsVerified(true);
+        alert('계좌 인증이 완료되었습니다.');
+      } else {
+        setVerificationError(data.error || '계좌 인증에 실패했습니다. 입력 정보를 확인해주세요.');
+        setIsVerified(false);
+      }
+    } catch (error) {
+      setVerificationError('계좌 인증 중 오류가 발생했습니다.');
+      setIsVerified(false);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+  
+  const getBankCode = (bankName: string): string => {
+    const bankCodes: Record<string, string> = {
+      'KB국민은행': '004',
+      '신한은행': '088',
+      '우리은행': '020',
+      '하나은행': '081',
+      'IBK기업은행': '003',
+      'NH농협은행': '011',
+      '카카오뱅크': '090',
+      '케이뱅크': '089',
+      '토스뱅크': '092'
+    };
+    return bankCodes[bankName] || '';
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isVerified) {
+      alert('계좌 인증을 먼저 완료해주세요.');
+      return;
+    }
+    
+    onSubmit({
+      ...formData,
+      bank_code: getBankCode(formData.bank_name),
+      verified: true
+    });
+  };
+  
+  const handleAccountNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const filtered = value.replace(/[^0-9-]/g, '');
+    setFormData({ ...formData, account_number: filtered });
+    setIsVerified(false); // 계좌번호 변경시 인증 초기화
+  };
+  
+  const handleFieldChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    setIsVerified(false); // 필드 변경시 인증 초기화
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          은행명
+        </label>
+        <select
+          value={formData.bank_name}
+          onChange={(e) => handleFieldChange('bank_name', e.target.value)}
+          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          disabled={isVerified}
+          required
+        >
+          <option value="">선택하세요</option>
+          <option value="KB국민은행">KB국민은행</option>
+          <option value="신한은행">신한은행</option>
+          <option value="우리은행">우리은행</option>
+          <option value="하나은행">하나은행</option>
+          <option value="IBK기업은행">IBK기업은행</option>
+          <option value="NH농협은행">NH농협은행</option>
+          <option value="카카오뱅크">카카오뱅크</option>
+          <option value="케이뱅크">케이뱅크</option>
+          <option value="토스뱅크">토스뱅크</option>
+        </select>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          계좌번호
+        </label>
+        <input
+          type="text"
+          value={formData.account_number}
+          onChange={handleAccountNumberChange}
+          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          placeholder="숫자만 입력 (하이픈 제외)"
+          maxLength={20}
+          disabled={isVerified}
+          required
+        />
+        <p className="mt-1 text-xs text-gray-500">하이픈(-) 없이 숫자만 입력해주세요</p>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          예금주
+        </label>
+        
+        {/* 안내 메시지 */}
+        <div className="mt-1 mb-2 bg-blue-50 border border-blue-200 rounded-md p-2">
+          <p className="text-xs text-blue-700">
+            💡 <strong>중요:</strong> 은행 앱에서 계좌정보를 확인하여 표시되는 <strong>정확한 예금주명</strong>을 입력해주세요.
+          </p>
+        </div>
+        
+        <input
+          type="text"
+          value={formData.account_holder}
+          onChange={(e) => handleFieldChange('account_holder', e.target.value)}
+          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          placeholder="은행 앱의 계좌정보에 표시된 예금주명"
+          minLength={2}
+          maxLength={30}
+          disabled={isVerified}
+          required
+        />
+        <p className="mt-1 text-xs text-gray-500">⚠️ 띄어쓰기, 한자 등을 포함하여 정확히 입력하세요</p>
+      </div>
+
+      {/* 인증 상태 표시 */}
+      {isVerified && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-3">
+          <div className="flex items-center">
+            <Check className="h-5 w-5 text-green-600 mr-2" />
+            <span className="text-sm text-green-800">계좌 인증이 완료되었습니다.</span>
+          </div>
+        </div>
+      )}
+      
+      {verificationError && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3">
+          <p className="text-sm text-red-800">{verificationError}</p>
+        </div>
+      )}
+
+      {/* 인증 버튼 */}
+      {!isVerified && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleVerifyAccount}
+            disabled={isVerifying || !formData.bank_name || !formData.account_number || !formData.account_holder}
+            className={`px-6 py-2 rounded-md font-medium ${
+              isVerifying 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-green-600 text-white hover:bg-green-700'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isVerifying ? '인증 중...' : '계좌 인증하기'}
+          </button>
+        </div>
+      )}
+      
+      <div className="mt-6 flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+        >
+          취소
+        </button>
+        <button
+          type="submit"
+          disabled={!isVerified}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          저장
+        </button>
+      </div>
+    </form>
   );
 }
