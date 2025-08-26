@@ -71,23 +71,35 @@ export default function WaitingBuyerSelection() {
         <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <div className="flex gap-4">
-              {/* 상품 이미지 */}
-              <div className="relative w-24 h-24 flex-shrink-0">
-                <Image
-                  src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
-                  alt={groupBuy.product_details?.name || '상품'}
-                  fill
-                  className="object-cover rounded-md"
-                />
+              {/* 상품 이미지와 버튼 영역 */}
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                {/* 상품 이미지 */}
+                <div className="relative w-24 h-24">
+                  <Image
+                    src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
+                    alt={groupBuy.product_details?.name || '상품'}
+                    fill
+                    className="object-cover rounded-md"
+                  />
+                </div>
+                {/* 모바일에서 상세보기 버튼을 이미지 아래에 표시 */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
+                  className="sm:hidden w-24"
+                >
+                  상세보기
+                </Button>
               </div>
 
               {/* 공구 정보 */}
               <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-1">
+                <h3 className="font-semibold text-base sm:text-lg mb-1">
                   {groupBuy.product_details?.name}
                 </h3>
                 
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-gray-600 mb-2">
                   <span className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
                     참여자 {groupBuy.current_participants}명
@@ -100,27 +112,29 @@ export default function WaitingBuyerSelection() {
                 {/* 남은 시간 표시 */}
                 {groupBuy.final_selection_end && (
                   <div className="mb-2">
-                    <span className="text-sm text-gray-600">구매자 선택 마감: </span>
+                    <span className="text-xs sm:text-sm text-gray-600">구매자 선택 마감: </span>
                     <CountdownTimer
                       endTime={groupBuy.final_selection_end}
                       format="compact"
-                      className="inline-block text-yellow-600 font-medium"
+                      className="inline-block text-yellow-600 font-medium text-xs sm:text-sm"
                     />
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm text-gray-600">최종 선정 지원금: </span>
-                    <span className="font-semibold text-green-600">
+                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">최종 선정 지원금: </span>
+                    <span className="font-semibold text-green-600 text-sm sm:text-base">
                       {(groupBuy.winning_bid_amount || 0).toLocaleString()}원
                     </span>
                   </div>
                   
+                  {/* PC에서만 여기에 버튼 표시 */}
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
+                    className="hidden sm:block"
                   >
                     상세보기
                   </Button>
