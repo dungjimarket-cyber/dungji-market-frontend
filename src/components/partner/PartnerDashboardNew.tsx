@@ -292,80 +292,240 @@ function DashboardTab({ summary, stats, recentMembers }: any) {
 }
 
 // Members Tab Component
-function MembersTab({ recentMembers }: any) {
+function MembersTab({ recentMembers: initialMembers }: any) {
+  const [members, setMembers] = useState<ReferralRecord[]>(initialMembers || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [filters, setFilters] = useState({
+    status: 'all',
+    search: '',
+    date_range: 'all'
+  });
+  
+  useEffect(() => {
+    fetchMembers();
+  }, [page, filters]);
+
+  const fetchMembers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await partnerService.getReferralMembers({
+        page,
+        limit: 20,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        search: filters.search || undefined,
+        date_range: filters.date_range !== 'all' ? filters.date_range : undefined
+      });
+      
+      setMembers(response.results || []);
+      setTotalCount(response.count || 0);
+    } catch (error) {
+      console.error('Failed to fetch members:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPage(1); // Reset to first page when filters change
+  };
+
+  const totalPages = Math.ceil(totalCount / 20);
+
   return (
     <div className="space-y-6">
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">상태</label>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+            >
+              <option value="all">전체</option>
+              <option value="active">활성</option>
+              <option value="cancelled">해지</option>
+              <option value="paused">휴면</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
+            <select
+              value={filters.date_range}
+              onChange={(e) => handleFilterChange('date_range', e.target.value)}
+              className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+            >
+              <option value="all">전체</option>
+              <option value="today">오늘</option>
+              <option value="week">최근 7일</option>
+              <option value="month">최근 30일</option>
+            </select>
+          </div>
+          
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">검색</label>
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              placeholder="이름, 전화번호 검색"
+              className="block w-full border-gray-300 rounded-md shadow-sm text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Members Table */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">추천 회원 목록</h3>
+          <span className="text-sm text-gray-500">총 {totalCount}명</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  회원정보
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  가입일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  구독권
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  견적이용권
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  총 결제
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  수수료
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {recentMembers?.map((member: ReferralRecord) => (
-                <tr key={member.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {member.member_name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {member.member_phone}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(member.joined_date).toLocaleDateString('ko-KR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      member.subscription_status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {member.subscription_status === 'active' ? '✓' : '✗'}
+        
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-gray-500">로딩 중...</p>
+          </div>
+        ) : members.length > 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      회원정보
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      가입일
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      구독권
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      견적이용권
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      총 결제
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      수수료
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {members.map((member: ReferralRecord) => (
+                    <tr key={member.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {member.member_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {member.member_phone}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(member.joined_date).toLocaleDateString('ko-KR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          member.subscription_status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {member.subscription_status === 'active' ? '활성' : member.subscription_status === 'cancelled' ? '해지' : '휴면'}
+                        </span>
+                        {member.subscription_amount > 0 && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {formatCurrency(member.subscription_amount)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.ticket_count > 0 ? (
+                          <>
+                            {member.ticket_count}개
+                            <div className="text-xs text-gray-500">
+                              {formatCurrency(member.ticket_amount)}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {formatCurrency(member.total_amount)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        {formatCurrency(member.commission_amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      전체 <span className="font-medium">{totalCount}</span>명 중{' '}
+                      <span className="font-medium">{(page - 1) * 20 + 1}</span> -{' '}
+                      <span className="font-medium">{Math.min(page * 20, totalCount)}</span>
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="px-3 py-1 text-sm text-gray-700">
+                      {page} / {totalPages}
                     </span>
-                    <span className="ml-2 text-sm text-gray-600">
-                      {formatCurrency(member.subscription_amount)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {member.ticket_count}개
-                    <div className="text-xs text-gray-500">
-                      {formatCurrency(member.ticket_amount)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatCurrency(member.total_amount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                    {formatCurrency(member.commission_amount)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <button
+                      onClick={() => setPage(Math.min(totalPages, page + 1))}
+                      disabled={page === totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="p-8 text-center">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-500">추천 회원이 없습니다.</p>
+          </div>
+        )}
       </div>
     </div>
   );
