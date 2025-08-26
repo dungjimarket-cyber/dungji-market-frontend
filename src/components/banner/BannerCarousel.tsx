@@ -18,11 +18,8 @@ export default function BannerCarousel() {
 
   const fetchBanners = async () => {
     try {
-      console.log('[BannerCarousel] 배너 데이터 요청 시작');
       const response = await getMainBanners();
-      console.log('[BannerCarousel] 배너 응답:', response);
       setBanners(response || []);
-      console.log('[BannerCarousel] 설정된 배너 개수:', (response || []).length);
     } catch (err) {
       setError('배너를 불러오는데 실패했습니다.');
       console.error('[BannerCarousel] Failed to fetch banners:', err);
@@ -65,7 +62,6 @@ export default function BannerCarousel() {
   }
 
   if (error) {
-    console.log('[BannerCarousel] 오류 발생:', error);
     return (
       <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-red-100 md:rounded-lg flex items-center justify-center">
         <p className="text-red-600">{error}</p>
@@ -74,7 +70,6 @@ export default function BannerCarousel() {
   }
 
   if (banners.length === 0) {
-    console.log('[BannerCarousel] 배너가 없음');
     return (
       <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-gray-100 md:rounded-lg flex items-center justify-center">
         <p className="text-gray-600">표시할 배너가 없습니다.</p>
@@ -89,12 +84,6 @@ export default function BannerCarousel() {
     return null;
   }
   
-  // 디버깅: 배너 링크 확인
-  console.log('[BannerCarousel] 현재 배너:', {
-    title: currentBanner.title,
-    target_url: currentBanner.target_url,
-    image_url: currentBanner.image_url
-  });
 
   return (
     <div className="w-full">
