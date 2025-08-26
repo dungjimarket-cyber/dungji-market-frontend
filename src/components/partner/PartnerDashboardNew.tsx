@@ -1254,6 +1254,29 @@ function AccountForm({
         />
         <p className="mt-1 text-xs text-gray-500">⚠️ 띄어쓰기, 한자 등을 포함하여 정확히 입력하세요</p>
       </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          생년월일 (인증용)
+        </label>
+        <input
+          type="text"
+          value={formData.birth_date}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 6) {
+              handleFieldChange('birth_date', value);
+            }
+          }}
+          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          placeholder="YYMMDD (예: 901225)"
+          maxLength={6}
+          pattern="\d{6}"
+          disabled={isVerified}
+          required
+        />
+        <p className="mt-1 text-xs text-gray-500">생년월일 6자리를 입력하세요 (예: 1990년 12월 25일 → 901225)</p>
+      </div>
 
       {/* 인증 상태 표시 */}
       {isVerified && (
@@ -1277,7 +1300,7 @@ function AccountForm({
           <button
             type="button"
             onClick={handleVerifyAccount}
-            disabled={isVerifying || !formData.bank_name || !formData.account_number || !formData.account_holder}
+            disabled={isVerifying || !formData.bank_name || !formData.account_number || !formData.account_holder || !formData.birth_date}
             className={`px-6 py-2 rounded-md font-medium ${
               isVerifying 
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
