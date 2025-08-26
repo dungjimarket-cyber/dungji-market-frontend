@@ -15,8 +15,8 @@ interface InicisPaymentParams {
 }
 
 class InicisService {
-  private readonly MID = 'dungjima14'; // 상점 아이디
-  private readonly isProduction = process.env.NODE_ENV === 'production';
+  private readonly MID = 'INIpayTest'; // 테스트 상점 아이디 (계약 전)
+  private readonly isProduction = false; // 테스트 환경 강제 설정
   
   /**
    * 이니시스 결제창 호출
