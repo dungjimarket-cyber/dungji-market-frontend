@@ -70,7 +70,8 @@ export interface ReferralLink {
 
 export interface PartnerAccount {
   bank_name: string;
-  masked_account_number: string;
+  account_number?: string; // For update operations
+  masked_account_number?: string; // For display operations
   account_holder: string;
 }
 
