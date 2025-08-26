@@ -67,64 +67,73 @@ class InicisService {
    * 폼 전송 방식 결제 (SDK 사용 불가시 폴백)
    */
   private submitPaymentForm(orderId: string, params: InicisPaymentParams, prepareData: any) {
-    // 폼 생성
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.acceptCharset = 'UTF-8';
+    // 테스트 페이지 생성 (Mixed Content 문제 우회)
+    const testHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>이니시스 결제</title>
+  <script src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js" charset="UTF-8"></script>
+</head>
+<body>
+  <form id="inicisForm" method="POST" acceptCharset="UTF-8">
+    <!-- 필수 필드 -->
+    <input type="hidden" name="version" value="1.0">
+    <input type="hidden" name="mid" value="${this.MID}">
+    <input type="hidden" name="oid" value="${orderId}">
+    <input type="hidden" name="price" value="${params.amount}">
+    <input type="hidden" name="goodname" value="${params.productName}">
+    <input type="hidden" name="buyername" value="${params.buyerName}">
+    <input type="hidden" name="buyertel" value="${params.buyerTel}">
+    <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
+    <input type="hidden" name="timestamp" value="${prepareData.timestamp}">
+    <input type="hidden" name="signature" value="${prepareData.signature}">
+    <input type="hidden" name="mkey" value="${prepareData.mkey}">
     
-    // 테스트/운영 환경에 따른 URL 설정
-    if (this.isProduction) {
-      form.action = 'https://stdpay.inicis.com/INIStdPayRequest.jsp';
-    } else {
-      form.action = 'https://stgstdpay.inicis.com/INIStdPayRequest.jsp';
-    }
-    
-    form.target = '_blank';  // 새 창에서 열기
-
-    // 필수 파라미터
-    const formParams = {
-      // 기본 정보
-      version: '1.0',
-      mid: this.MID,
-      oid: orderId,
-      price: params.amount,
-      goodname: params.productName,
-      buyername: params.buyerName,
-      buyertel: params.buyerTel,
-      buyeremail: params.buyerEmail,
-      
-      // 인증 정보  
-      timestamp: prepareData.timestamp,
-      signature: prepareData.signature,
-      mkey: prepareData.mkey,
-      
-      // 결제 설정
-      currency: 'WON',
-      gopaymethod: 'Card:VBank:DirectBank',  // 카드, 가상계좌, 계좌이체
-      acceptmethod: 'HPP(1):below1000:no_receipt',  // 휴대폰결제, 1000원 이하, 현금영수증 미발행
-      
-      // URL 설정
-      returnUrl: `${window.location.origin}/payment/inicis/complete`,
-      closeUrl: `${window.location.origin}/payment/inicis/close`
+    <!-- 옵션 필드 -->
+    <input type="hidden" name="currency" value="WON">
+    <input type="hidden" name="gopaymethod" value="Card">
+    <input type="hidden" name="acceptmethod" value="HPP(1):below1000">
+    <input type="hidden" name="charset" value="UTF-8">
+    <input type="hidden" name="payViewType" value="overlay">
+    <input type="hidden" name="returnUrl" value="${window.location.origin}/payment/inicis/complete">
+    <input type="hidden" name="closeUrl" value="${window.location.origin}/payment/inicis/close">
+    <input type="hidden" name="quotabase" value="00:02:03:04:05:06">
+  </form>
+  
+  <div style="padding: 50px; text-align: center;">
+    <h2>결제 준비 중...</h2>
+    <p>잠시만 기다려주세요.</p>
+  </div>
+  
+  <script>
+    // 페이지 로드 후 자동 결제 시작
+    window.onload = function() {
+      setTimeout(function() {
+        if (typeof INIStdPay !== 'undefined') {
+          console.log('이니시스 결제 시작');
+          INIStdPay.pay('inicisForm');
+        } else {
+          console.error('이니시스 스크립트 로드 실패');
+          alert('결제 모듈 로드에 실패했습니다. 다시 시도해주세요.');
+        }
+      }, 1000);
     };
-
-    // 폼 필드 추가
-    Object.entries(formParams).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = String(value);
-      form.appendChild(input);
-    });
-
-    // 폼 추가 및 전송
-    document.body.appendChild(form);
-    form.submit();
+  </script>
+</body>
+</html>
+    `;
     
-    // 폼 제거
-    setTimeout(() => {
-      if (form.parentNode) document.body.removeChild(form);
-    }, 1000);
+    // 새 창 열기
+    const payWindow = window.open('', 'inicis_payment', 'width=720,height=630,scrollbars=yes,resizable=yes');
+    
+    if (payWindow) {
+      payWindow.document.write(testHtml);
+      payWindow.document.close();
+    } else {
+      alert('팝업 차단을 해제해주세요. 결제창을 열 수 없습니다.');
+    }
   }
 
   /**
