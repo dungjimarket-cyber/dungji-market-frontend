@@ -1236,8 +1236,11 @@ function AccountForm({
           <p className="text-xs text-blue-700">
             💡 <strong>중요:</strong> 은행 앱에서 계좌정보를 확인하여 표시되는 <strong>정확한 예금주명</strong>을 입력해주세요.
           </p>
-          <p className="text-xs text-blue-600">
-            📌 실명인증 시 예금주명은 공백 포함하여 정확히 일치해야 합니다.
+          <p className="text-xs text-amber-600">
+            ⚠️ <strong>테스트 모드:</strong> 금융결제원 테스트 계좌만 인증 가능합니다.
+          </p>
+          <p className="text-xs text-gray-600">
+            테스트 계좌 예시: 국민은행(004) 9876543210, 홍길동, 901225
           </p>
         </div>
         
