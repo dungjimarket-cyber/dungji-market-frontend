@@ -1074,41 +1074,97 @@ function AccountForm({
     account_number: initialData?.account_number || '',
     account_holder: initialData?.account_holder || ''
   });
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleVerifyAccount = async () => {
     if (!formData.bank_name || !formData.account_number || !formData.account_holder) {
       alert('모든 정보를 입력해주세요.');
       return;
     }
     
-    // 계좌번호 유효성 검사
-    const accountNumber = formData.account_number.replace(/-/g, ''); // 하이픈 제거
+    const accountNumber = formData.account_number.replace(/-/g, '');
     if (!/^\d+$/.test(accountNumber)) {
       alert('계좌번호는 숫자만 입력 가능합니다.');
       return;
     }
     
-    if (accountNumber.length < 10 || accountNumber.length > 20) {
-      alert('올바른 계좌번호 형식이 아닙니다. (10-20자리)');
+    setIsVerifying(true);
+    setVerificationError('');
+    
+    try {
+      // 계좌 실명 인증 API 호출
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/bank-account/verify/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('partner_token')}`
+        },
+        body: JSON.stringify({
+          bank_code: getBankCode(formData.bank_name),
+          account_num: accountNumber,
+          account_holder_info: formData.account_holder
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.verified) {
+        setIsVerified(true);
+        alert('계좌 인증이 완료되었습니다.');
+      } else {
+        setVerificationError(data.error || '계좌 인증에 실패했습니다. 입력 정보를 확인해주세요.');
+        setIsVerified(false);
+      }
+    } catch (error) {
+      setVerificationError('계좌 인증 중 오류가 발생했습니다.');
+      setIsVerified(false);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+  
+  const getBankCode = (bankName: string): string => {
+    const bankCodes: Record<string, string> = {
+      'KB국민은행': '004',
+      '신한은행': '088',
+      '우리은행': '020',
+      '하나은행': '081',
+      'IBK기업은행': '003',
+      'NH농협은행': '011',
+      '카카오뱅크': '090',
+      '케이뱅크': '089',
+      '토스뱅크': '092'
+    };
+    return bankCodes[bankName] || '';
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isVerified) {
+      alert('계좌 인증을 먼저 완료해주세요.');
       return;
     }
     
-    // 예금주명 유효성 검사
-    if (formData.account_holder.length < 2) {
-      alert('예금주명을 정확히 입력해주세요.');
-      return;
-    }
-    
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      bank_code: getBankCode(formData.bank_name),
+      verified: true
+    });
   };
   
   const handleAccountNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // 숫자와 하이픈만 허용
     const filtered = value.replace(/[^0-9-]/g, '');
     setFormData({ ...formData, account_number: filtered });
+    setIsVerified(false); // 계좌번호 변경시 인증 초기화
+  };
+  
+  const handleFieldChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    setIsVerified(false); // 필드 변경시 인증 초기화
   };
 
   return (
@@ -1119,8 +1175,9 @@ function AccountForm({
         </label>
         <select
           value={formData.bank_name}
-          onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+          onChange={(e) => handleFieldChange('bank_name', e.target.value)}
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          disabled={isVerified}
           required
         >
           <option value="">선택하세요</option>
@@ -1145,11 +1202,12 @@ function AccountForm({
           value={formData.account_number}
           onChange={handleAccountNumberChange}
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          placeholder="숫자만 입력 (하이픈 가능)"
-          maxLength={25}
+          placeholder="숫자만 입력 (하이픈 제외)"
+          maxLength={20}
+          disabled={isVerified}
           required
         />
-        <p className="mt-1 text-xs text-gray-500">10-20자리 숫자를 입력해주세요</p>
+        <p className="mt-1 text-xs text-gray-500">하이픈(-) 없이 숫자만 입력해주세요</p>
       </div>
       
       <div>
@@ -1159,15 +1217,50 @@ function AccountForm({
         <input
           type="text"
           value={formData.account_holder}
-          onChange={(e) => setFormData({ ...formData, account_holder: e.target.value.trim() })}
+          onChange={(e) => handleFieldChange('account_holder', e.target.value)}
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           placeholder="실명 입력"
           minLength={2}
           maxLength={30}
+          disabled={isVerified}
           required
         />
         <p className="mt-1 text-xs text-gray-500">통장에 표시된 예금주명과 동일하게 입력해주세요</p>
       </div>
+
+      {/* 인증 상태 표시 */}
+      {isVerified && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-3">
+          <div className="flex items-center">
+            <Check className="h-5 w-5 text-green-600 mr-2" />
+            <span className="text-sm text-green-800">계좌 인증이 완료되었습니다.</span>
+          </div>
+        </div>
+      )}
+      
+      {verificationError && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3">
+          <p className="text-sm text-red-800">{verificationError}</p>
+        </div>
+      )}
+
+      {/* 인증 버튼 */}
+      {!isVerified && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleVerifyAccount}
+            disabled={isVerifying || !formData.bank_name || !formData.account_number || !formData.account_holder}
+            className={`px-6 py-2 rounded-md font-medium ${
+              isVerifying 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-green-600 text-white hover:bg-green-700'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isVerifying ? '인증 중...' : '계좌 인증하기'}
+          </button>
+        </div>
+      )}
       
       <div className="mt-6 flex justify-end space-x-3">
         <button
@@ -1179,7 +1272,8 @@ function AccountForm({
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          disabled={!isVerified}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           저장
         </button>
