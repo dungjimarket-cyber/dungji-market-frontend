@@ -21,12 +21,20 @@ import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Gift, AlertCircle } from 'lucide-react';
+import { Gift, AlertCircle, CheckCircle2 } from 'lucide-react';
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 export default function SellerSettings() {
   const router = useRouter();
@@ -61,6 +69,7 @@ export default function SellerSettings() {
   const [referrerName, setReferrerName] = useState('');
   const [checkingReferral, setCheckingReferral] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
+  const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -337,12 +346,9 @@ export default function SellerSettings() {
       const data = await response.json();
       
       if (response.ok) {
-        toast({
-          title: '추천인 등록 완료',
-          description: '추천인이 성공적으로 등록되었습니다.'
-        });
         setHasReferral(true);
         setReferrerName(data.referrer_name || '');
+        setShowReferralSuccessModal(true);
       } else {
         toast({
           variant: 'destructive',
@@ -1035,6 +1041,30 @@ export default function SellerSettings() {
               로그아웃
             </Button>
           </div>
+
+          {/* 추천인 등록 성공 모달 */}
+          <Dialog open={showReferralSuccessModal} onOpenChange={setShowReferralSuccessModal}>
+            <DialogContent className="sm:max-w-[400px]">
+              <DialogHeader className="text-center">
+                <div className="flex justify-center mb-3">
+                  <CheckCircle2 className="h-12 w-12 text-green-500" />
+                </div>
+                <DialogTitle className="text-center text-lg">추천인 등록 완료!</DialogTitle>
+                <DialogDescription className="text-center text-sm">
+                  견적 이용권 10매가 지급되었습니다!
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-center mt-4">
+                <Button
+                  onClick={() => setShowReferralSuccessModal(false)}
+                  size="sm"
+                  className="px-6"
+                >
+                  확인
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
     </div>
   );
 }
