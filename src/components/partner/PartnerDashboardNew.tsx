@@ -1237,7 +1237,7 @@ function AccountForm({
             💡 <strong>중요:</strong> 은행 앱에서 계좌정보를 확인하여 표시되는 <strong>정확한 예금주명</strong>을 입력해주세요.
           </p>
           <p className="text-xs text-blue-600">
-            📌 테스트 모드에서는 제한된 계좌만 인증 가능합니다.
+            📌 실명인증 시 예금주명은 공백 포함하여 정확히 일치해야 합니다.
           </p>
         </div>
         
