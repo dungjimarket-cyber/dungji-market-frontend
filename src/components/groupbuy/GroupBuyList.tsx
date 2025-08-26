@@ -256,8 +256,9 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                     
                     {/* 방장 이름 표시 */}
                     <div className="flex justify-between items-center pt-2">
-                      <div className="flex items-center">
-                        <p className="text-xs text-gray-500 mr-1">방장:</p>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs">👑</span>
+                        <p className="text-xs text-gray-500">방장</p>
                         <p className="text-xs font-medium truncate max-w-[100px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
                       </div>
                     </div>

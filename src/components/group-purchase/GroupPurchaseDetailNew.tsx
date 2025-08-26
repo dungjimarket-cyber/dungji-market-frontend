@@ -1707,8 +1707,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       <div className="border-t border-gray-200">
         {/* 공구 주최자 */}
         <div className="px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-gray-500">방장</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">👑</span>
+            <span className="text-gray-500 text-sm">방장</span>
             <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
           </div>
           <ChevronRight className="w-5 h-5 text-gray-400" />

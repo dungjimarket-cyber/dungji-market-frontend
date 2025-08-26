@@ -606,11 +606,10 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               </CardTitle>
               
               {/* 방장(생성자) 정보 표시 */}
-              <div className="flex items-center mt-1 mb-1">
-                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
-                  방장
-                </span>
-                <span className="ml-2 text-sm">
+              <div className="flex items-center mt-1 mb-1 gap-2">
+                <span className="text-sm">👑</span>
+                <span className="text-gray-500 text-sm">방장</span>
+                <span className="text-sm font-medium">
                   {groupBuyState?.creator_name || '익명'}
                 </span>
                 
