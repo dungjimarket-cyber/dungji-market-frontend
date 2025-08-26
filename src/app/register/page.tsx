@@ -382,7 +382,8 @@ function RegisterPageContent() {
     setError('');
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/validate-referral-code/`, {
+      // 추천인 코드 유효성 검증 API 호출
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-referral-code/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
