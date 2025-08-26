@@ -55,12 +55,9 @@ class InicisService {
       form.method = 'POST';
       form.acceptCharset = 'UTF-8';
       
-      // 결제 환경에 따른 URL 설정
-      if (this.isProduction) {
-        form.action = 'https://stdpay.inicis.com/stdpay/INIStdPayRequest.jsp';
-      } else {
-        form.action = 'https://stgstdpay.inicis.com/stdpay/INIStdPayRequest.jsp';
-      }
+      // 결제 환경에 따른 URL 설정 (테스트 환경 강제)
+      // 아직 계약 전이므로 항상 테스트 환경 사용
+      form.action = 'https://stgstdpay.inicis.com/stdpay/INIStdPayRequest.jsp';
 
       // 필수 파라미터 설정
       const payParams = {
@@ -77,9 +74,9 @@ class InicisService {
         currency: 'WON',
         gopaymethod: 'Card:Directbank:VBank', // 신용카드, 계좌이체, 가상계좌
         acceptmethod: 'SKIN(YELLOW):HPP(1):below1000', // 노란색 스킨, 휴대폰결제, 1000원 이하 결제 허용
-        returnUrl: params.returnUrl || `${window.location.origin}/api/payments/inicis/return`,
-        closeUrl: params.closeUrl || `${window.location.origin}/api/payments/inicis/close`,
-        popupUrl: `${window.location.origin}/api/payments/inicis/popup`,
+        returnUrl: params.returnUrl || `${window.location.origin}/payment/inicis/return`,
+        closeUrl: params.closeUrl || `${window.location.origin}/payment/inicis/close`,
+        popupUrl: `${window.location.origin}/payment/inicis/popup`,
       };
 
       // 폼에 파라미터 추가
