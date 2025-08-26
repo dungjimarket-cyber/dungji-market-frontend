@@ -31,6 +31,7 @@ export default function PartnerDashboardNew() {
   const [referralLink, setReferralLink] = useState<ReferralLink | null>(null);
   const [stats, setStats] = useState<PartnerStats[]>([]);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
+  const [partnerInfo, setPartnerInfo] = useState<any>(null);
   
   // URL 쿼리 파라미터에서 탭 상태 가져오기
   const activeTab = (searchParams.get('tab') || 'dashboard') as 'dashboard' | 'members' | 'link' | 'settlements';
@@ -135,7 +136,7 @@ export default function PartnerDashboardNew() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'dashboard' && (
-          <DashboardTab summary={summary} stats={stats} recentMembers={recentMembers} />
+          <DashboardTab summary={summary} stats={stats} recentMembers={recentMembers} partner={partner} />
         )}
         {activeTab === 'members' && (
           <MembersTab recentMembers={recentMembers} />
@@ -157,8 +158,9 @@ export default function PartnerDashboardNew() {
 }
 
 // Dashboard Tab Component
-function DashboardTab({ summary, stats, recentMembers }: any) {
+function DashboardTab({ summary, stats, recentMembers, partner }: any) {
   const currentMonth = new Date().toLocaleString('ko-KR', { year: 'numeric', month: 'long' });
+  const commissionRate = partner?.commission_rate || 30; // 기본값 30%
 
   return (
     <div className="space-y-8">
@@ -219,44 +221,49 @@ function DashboardTab({ summary, stats, recentMembers }: any) {
           <div>
             <h3 className="text-lg font-medium text-blue-900">수수료 정보</h3>
             <p className="text-sm text-blue-700 mt-1">
-              구독권 판매 시 <span className="font-bold">50%</span>의 수수료를 받으실 수 있습니다.
+              구독권 판매 시 <span className="font-bold">{commissionRate}%</span>의 수수료를 받으실 수 있습니다.
             </p>
             <p className="text-xs text-blue-600 mt-2">
-              * 수수료는 구독 시작일로부터 3개월간 지급됩니다.
+              * 수수료는 결제 완료 시점부터 정산 가능합니다.
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              * 견적이용권 판매 시에도 동일한 수수료율이 적용됩니다.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-blue-600">50%</div>
-            <div className="text-sm text-blue-500">3개월간</div>
+            <div className="text-3xl font-bold text-blue-600">{commissionRate}%</div>
+            <div className="text-sm text-blue-500">수수료율</div>
           </div>
         </div>
       </div>
 
       {/* Recent Members */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">최근 가입 회원</h3>
+          <span className="text-sm text-gray-500">최근 5명</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  회원정보
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  가입일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  구독상태
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  수수료
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {recentMembers?.slice(0, 5).map((member: ReferralRecord) => (
+        {recentMembers && recentMembers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    회원정보
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    가입일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    구독상태
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    수수료
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {recentMembers.slice(0, 5).map((member: ReferralRecord) => (
                 <tr key={member.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -273,12 +280,15 @@ function DashboardTab({ summary, stats, recentMembers }: any) {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       member.subscription_status === 'active' 
                         ? 'bg-green-100 text-green-800' 
+                        : member.subscription_status === 'cancelled'
+                        ? 'bg-red-100 text-red-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {member.subscription_status === 'active' ? '활성' : '비활성'}
+                      {member.subscription_status === 'active' ? '활성' : 
+                       member.subscription_status === 'cancelled' ? '해지' : '휴면'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                     {formatCurrency(member.commission_amount)}
                   </td>
                 </tr>
@@ -286,6 +296,13 @@ function DashboardTab({ summary, stats, recentMembers }: any) {
             </tbody>
           </table>
         </div>
+        ) : (
+          <div className="p-8 text-center">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-500">아직 추천 회원이 없습니다.</p>
+            <p className="text-sm text-gray-400 mt-2">추천 링크를 공유하여 회원을 초대해보세요.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1066,7 +1083,32 @@ function AccountForm({
       return;
     }
     
+    // 계좌번호 유효성 검사
+    const accountNumber = formData.account_number.replace(/-/g, ''); // 하이픈 제거
+    if (!/^\d+$/.test(accountNumber)) {
+      alert('계좌번호는 숫자만 입력 가능합니다.');
+      return;
+    }
+    
+    if (accountNumber.length < 10 || accountNumber.length > 20) {
+      alert('올바른 계좌번호 형식이 아닙니다. (10-20자리)');
+      return;
+    }
+    
+    // 예금주명 유효성 검사
+    if (formData.account_holder.length < 2) {
+      alert('예금주명을 정확히 입력해주세요.');
+      return;
+    }
+    
     onSubmit(formData);
+  };
+  
+  const handleAccountNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // 숫자와 하이픈만 허용
+    const filtered = value.replace(/[^0-9-]/g, '');
+    setFormData({ ...formData, account_number: filtered });
   };
 
   return (
@@ -1101,11 +1143,13 @@ function AccountForm({
         <input
           type="text"
           value={formData.account_number}
-          onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+          onChange={handleAccountNumberChange}
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          placeholder="숫자만 입력"
+          placeholder="숫자만 입력 (하이픈 가능)"
+          maxLength={25}
           required
         />
+        <p className="mt-1 text-xs text-gray-500">10-20자리 숫자를 입력해주세요</p>
       </div>
       
       <div>
@@ -1115,11 +1159,14 @@ function AccountForm({
         <input
           type="text"
           value={formData.account_holder}
-          onChange={(e) => setFormData({ ...formData, account_holder: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, account_holder: e.target.value.trim() })}
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          placeholder="예금주명"
+          placeholder="실명 입력"
+          minLength={2}
+          maxLength={30}
           required
         />
+        <p className="mt-1 text-xs text-gray-500">통장에 표시된 예금주명과 동일하게 입력해주세요</p>
       </div>
       
       <div className="mt-6 flex justify-end space-x-3">
