@@ -50,37 +50,12 @@ class InicisService {
 
       const prepareData = await prepareResponse.json();
       
-      // 이니시스 SDK 스크립트 로드 시도
-      const sdkLoaded = await this.loadInicisScript();
+      // 이니시스 SDK는 jQuery 의존성 문제로 폼 전송 방식 사용
+      // const sdkLoaded = await this.loadInicisScript();
       
-      // SDK가 로드되고 사용 가능한 경우
-      if (sdkLoaded && typeof (window as any).INIStdPay !== 'undefined') {
-        console.log('이니시스 SDK를 사용합니다.');
-        const INIStdPay = (window as any).INIStdPay;
-        
-        // SDK 방식 - window.INIStdPay.pay() 사용
-        INIStdPay.pay({
-          PayMethod: 'Card',               // 결제 수단 (Card, DirectBank, VBank 등)
-          MID: this.MID,                  // 상점 아이디
-          Moid: orderId,                   // 주문번호
-          GoodName: params.productName,    // 상품명
-          Amt: params.amount,              // 금액
-          BuyerName: params.buyerName,     // 구매자명
-          BuyerTel: params.buyerTel,       // 구매자 전화번호
-          BuyerEmail: params.buyerEmail,   // 구매자 이메일
-          timestamp: prepareData.timestamp,
-          signature: prepareData.signature,
-          verification: prepareData.signature,  // 검증용 서명
-          returnUrl: `${window.location.origin}/payment/inicis/complete`,
-          closeUrl: `${window.location.origin}/payment/inicis/close`,
-          acceptmethod: 'below1000',       // 1000원 이하 결제 허용
-          version: '1.0'
-        });
-      } else {
-        // 폼 전송 방식으로 직접 처리 (폴백)
-        console.log('폼 전송 방식을 사용합니다.');
-        this.submitPaymentForm(orderId, params, prepareData);
-      }
+      // 폼 전송 방식으로 직접 처리
+      console.log('이니시스 결제 - 폼 전송 방식을 사용합니다.');
+      this.submitPaymentForm(orderId, params, prepareData);
 
     } catch (error) {
       console.error('이니시스 결제 요청 실패:', error);
