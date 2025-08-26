@@ -12,27 +12,23 @@ export async function POST(request: NextRequest) {
     });
     console.log('이니시스 결제 완료 - 전체 파라미터:', allParams);
     
-    // 필요한 파라미터 추출
+    // 필요한 파라미터 추출 (Inicis 실제 파라미터명 기준)
     const params = {
       resultCode: formData.get('resultCode'),
       resultMsg: formData.get('resultMsg'),
       mid: formData.get('mid'),
-      oid: formData.get('MOID') || formData.get('moid') || formData.get('oid') || formData.get('OID') || formData.get('merchantData'),
-      tid: formData.get('tid') || formData.get('TID'),
-      authToken: formData.get('authToken') || formData.get('authtoken'),
-      authUrl: formData.get('authUrl') || formData.get('authurl'),
-      netCancelUrl: formData.get('netCancelUrl') || formData.get('netcancelurl'),
-      amt: formData.get('TotPrice') || formData.get('totprice') || formData.get('amt') || formData.get('price'),
+      oid: formData.get('orderNumber'), // Inicis는 orderNumber로 전송
+      authToken: formData.get('authToken'),
+      authUrl: formData.get('authUrl'),
+      netCancelUrl: formData.get('netCancelUrl'),
       merchantData: formData.get('merchantData'),
-      buyerName: formData.get('buyerName') || formData.get('buyername'),
-      buyerTel: formData.get('buyerTel') || formData.get('buyertel'),
-      buyerEmail: formData.get('buyerEmail') || formData.get('buyeremail'),
-      goodName: formData.get('goodName') || formData.get('goodname'),
-      payMethod: formData.get('payMethod') || formData.get('paymethod'),
-      applDate: formData.get('applDate'),
-      applTime: formData.get('applTime'),
-      timestamp: formData.get('timestamp'),
-      signature: formData.get('signature'),
+      checkAckUrl: formData.get('checkAckUrl'),
+      idc_name: formData.get('idc_name'),
+      charset: formData.get('charset'),
+      returnUrl: formData.get('returnUrl'),
+      cp_yn: formData.get('cp_yn'),
+      cardnum: formData.get('cardnum'),
+      cardUsePoint: formData.get('cardUsePoint'),
     };
 
     console.log('이니시스 결제 완료 콜백 - 추출된 파라미터:', params);
@@ -46,15 +42,14 @@ export async function POST(request: NextRequest) {
       const queryParams = new URLSearchParams({
         resultCode: params.resultCode as string,
         resultMsg: params.resultMsg as string || '',
-        oid: params.oid as string || '',
-        tid: params.tid as string || '',
+        oid: params.oid as string || '', // orderNumber
         authToken: params.authToken as string || '',
         authUrl: params.authUrl as string || '',
         netCancelUrl: params.netCancelUrl as string || '',
-        amt: params.amt as string || '',
         mid: params.mid as string || '',
-        timestamp: params.timestamp as string || '',
-        signature: params.signature as string || '',
+        merchantData: params.merchantData as string || '',
+        checkAckUrl: params.checkAckUrl as string || '',
+        idc_name: params.idc_name as string || '',
       });
       
       const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.dungjimarket.com'}/payment/inicis/process?${queryParams.toString()}`;
@@ -149,19 +144,18 @@ export async function GET(request: NextRequest) {
   });
   console.log('이니시스 GET 요청 - 전체 파라미터:', allParams);
   
-  // GET 파라미터로 온 경우도 처리
+  // GET 파라미터로 온 경우도 처리 (Inicis 실제 파라미터명 기준)
   const params = {
     resultCode: searchParams.get('resultCode'),
     resultMsg: searchParams.get('resultMsg'),
-    oid: searchParams.get('MOID') || searchParams.get('moid') || searchParams.get('oid') || searchParams.get('OID') || searchParams.get('merchantData'),
-    tid: searchParams.get('tid') || searchParams.get('TID'),
-    authToken: searchParams.get('authToken') || searchParams.get('authtoken'),
-    authUrl: searchParams.get('authUrl') || searchParams.get('authurl'),
-    netCancelUrl: searchParams.get('netCancelUrl') || searchParams.get('netcancelurl'),
-    amt: searchParams.get('TotPrice') || searchParams.get('totprice') || searchParams.get('amt') || searchParams.get('price'),
+    oid: searchParams.get('orderNumber'),
+    authToken: searchParams.get('authToken'),
+    authUrl: searchParams.get('authUrl'),
+    netCancelUrl: searchParams.get('netCancelUrl'),
     mid: searchParams.get('mid'),
-    timestamp: searchParams.get('timestamp'),
-    signature: searchParams.get('signature'),
+    merchantData: searchParams.get('merchantData'),
+    checkAckUrl: searchParams.get('checkAckUrl'),
+    idc_name: searchParams.get('idc_name'),
   };
   
   const queryParams = new URLSearchParams();

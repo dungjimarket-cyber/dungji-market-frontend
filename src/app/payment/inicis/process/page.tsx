@@ -17,18 +17,23 @@ function InicisProcessContent() {
         // 이니시스에서 전달받은 파라미터
         const resultCode = searchParams.get('resultCode');
         const resultMsg = searchParams.get('resultMsg');
-        const oid = searchParams.get('oid');
-        const tid = searchParams.get('tid');
+        const oid = searchParams.get('oid'); // orderNumber from Inicis
         const authToken = searchParams.get('authToken');
-        const amt = searchParams.get('amt');
+        const authUrl = searchParams.get('authUrl');
+        const netCancelUrl = searchParams.get('netCancelUrl');
+        const mid = searchParams.get('mid');
+        const merchantData = searchParams.get('merchantData');
+        const checkAckUrl = searchParams.get('checkAckUrl');
+        const idc_name = searchParams.get('idc_name');
         
         console.log('결제 처리 파라미터:', {
           resultCode,
           resultMsg,
           oid,
-          tid,
           authToken,
-          amt
+          authUrl,
+          mid,
+          idc_name
         });
         
         // 결제 성공 여부 확인
@@ -43,12 +48,12 @@ function InicisProcessContent() {
             body: JSON.stringify({
               orderId: oid,
               authResultCode: resultCode,
-              authToken: authToken || tid,
-              tid: tid,
-              mid: searchParams.get('mid'),
-              amt: amt,
-              timestamp: searchParams.get('timestamp'),
-              signature: searchParams.get('signature')
+              authToken: authToken,
+              tid: authToken, // authToken 사용 (tid는 없음)
+              mid: mid,
+              authUrl: authUrl,
+              netCancelUrl: netCancelUrl,
+              idc_name: idc_name,
             }),
           });
 

@@ -114,7 +114,7 @@ class InicisService {
     <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
     
     <!-- 리턴 URL -->
-    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payment/inicis/debug">
+    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payment/inicis/complete">
     <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payment/inicis/close">
     
     <!-- 추가 옵션 -->
