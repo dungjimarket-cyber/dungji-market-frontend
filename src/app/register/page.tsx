@@ -96,6 +96,10 @@ function RegisterPageContent() {
   const [businessVerificationResult, setBusinessVerificationResult] = useState<BusinessVerificationRegistrationResult | null>(null);
   const [businessVerificationLoading, setBusinessVerificationLoading] = useState(false);
   const [kakaoInfo, setKakaoInfo] = useState<any>(null);
+  const [referralCodeChecked, setReferralCodeChecked] = useState(false);
+  const [referralCodeValid, setReferralCodeValid] = useState(false);
+  const [referralCodeChecking, setReferralCodeChecking] = useState(false);
+  const [referrerName, setReferrerName] = useState('');
 
   // 카카오 정보 읽기
   useEffect(() => {
@@ -174,6 +178,13 @@ function RegisterPageContent() {
       if (name === 'business_reg_number') {
         setBusinessVerified(false);
         setBusinessVerificationResult(null);
+      }
+      
+      // 추천인 코드가 변경되면 검증 상태 리셋
+      if (name === 'referral_code') {
+        setReferralCodeChecked(false);
+        setReferralCodeValid(false);
+        setReferrerName('');
       }
     }
   };
@@ -357,6 +368,48 @@ function RegisterPageContent() {
       setError('사업자등록번호 검증 중 오류가 발생했습니다.');
     } finally {
       setBusinessVerificationLoading(false);
+    }
+  };
+
+  // 추천인 코드 검증
+  const checkReferralCode = async () => {
+    if (!formData.referral_code) {
+      setError('추천인 코드를 입력해주세요.');
+      return;
+    }
+
+    setReferralCodeChecking(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/validate-referral-code/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ referral_code: formData.referral_code }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.valid) {
+        setReferralCodeChecked(true);
+        setReferralCodeValid(true);
+        setReferrerName(data.referrer_name || '');
+        setError('');
+      } else {
+        setReferralCodeChecked(true);
+        setReferralCodeValid(false);
+        setReferrerName('');
+        setError(data.error || '유효하지 않은 추천인 코드입니다.');
+      }
+    } catch (err) {
+      console.error('추천인 코드 검증 오류:', err);
+      setReferralCodeChecked(true);
+      setReferralCodeValid(false);
+      setError('추천인 코드 확인 중 오류가 발생했습니다.');
+    } finally {
+      setReferralCodeChecking(false);
     }
   };
 
@@ -583,6 +636,22 @@ function RegisterPageContent() {
       
       // 추천인 코드 (판매자만, 아이디 가입시에만)
       if (formData.referral_code && formData.role === 'seller' && signupType === 'email') {
+        // 추천인 코드가 입력되었지만 검증되지 않은 경우
+        if (!referralCodeChecked) {
+          setError('추천인 코드 확인을 해주세요.');
+          setIsLoading(false);
+          const referralSection = document.getElementById('referral_code');
+          scrollToInputField(referralSection);
+          return;
+        }
+        // 추천인 코드가 유효하지 않은 경우
+        if (!referralCodeValid) {
+          setError('유효한 추천인 코드를 입력해주세요.');
+          setIsLoading(false);
+          const referralSection = document.getElementById('referral_code');
+          scrollToInputField(referralSection);
+          return;
+        }
         submitData.append('referral_code', formData.referral_code);
       }
       
@@ -1448,15 +1517,46 @@ function RegisterPageContent() {
                       <label htmlFor="referral_code" className="block text-sm font-medium text-gray-700 mb-1">
                         추천인 코드 <span className="text-gray-500">(선택)</span>
                       </label>
-                      <input
-                        id="referral_code"
-                        name="referral_code"
-                        type="text"
-                        className="appearance-none rounded-md w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="추천인 코드를 입력하세요"
-                        value={formData.referral_code}
-                        onChange={handleChange}
-                      />
+                      <div className="flex gap-2">
+                        <input
+                          id="referral_code"
+                          name="referral_code"
+                          type="text"
+                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="추천인 코드를 입력하세요"
+                          value={formData.referral_code}
+                          onChange={handleChange}
+                        />
+                        <button
+                          type="button"
+                          onClick={checkReferralCode}
+                          disabled={referralCodeChecking || !formData.referral_code}
+                          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {referralCodeChecking ? '확인중...' : '확인'}
+                        </button>
+                      </div>
+                      {referralCodeChecked && (
+                        <div className={`mt-2 p-2 rounded-md ${referralCodeValid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                          <p className={`text-sm flex items-center gap-2 ${referralCodeValid ? 'text-green-700' : 'text-red-700'}`}>
+                            {referralCodeValid ? (
+                              <>
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span>유효한 추천인 코드입니다{referrerName && ` (추천인: ${referrerName})`}</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                                <span>유효하지 않은 추천인 코드입니다. 다시 확인해주세요.</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      )}
                       <p className="text-xs text-gray-500 mt-1">
                         추천인 코드가 없으시면 가입 후 마이페이지에서도 입력 가능합니다.
                       </p>
