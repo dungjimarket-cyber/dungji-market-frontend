@@ -179,7 +179,7 @@ export default function WaitingSellerDecisionGroupBuys() {
                 urgent={60} // 1시간 미만일 때 urgent
               />
               <p className="text-xs text-purple-600 mt-2">
-                낙찰자가 판매 확정 여부를 결정중입니다.
+                판매자 선택 진행중
               </p>
             </div>
           </CardContent>
