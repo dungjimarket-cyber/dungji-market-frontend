@@ -50,57 +50,112 @@ class InicisService {
 
       const prepareData = await prepareResponse.json();
       
-      // 이니시스 결제 폼 생성
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.acceptCharset = 'UTF-8';
+      // 이니시스 스크립트 동적 로드
+      await this.loadInicisScript();
       
-      // 결제 환경에 따른 URL 설정 (테스트 환경 강제)
-      // 아직 계약 전이므로 항상 테스트 환경 사용
-      form.action = 'https://stgstdpay.inicis.com/stdpay/INIStdPayRequest.jsp';
+      // window에 INIStdPay가 있는지 확인
+      if (typeof (window as any).INIStdPay !== 'undefined') {
+        // JavaScript SDK 방식
+        const iniStdPay = (window as any).INIStdPay;
+        
+        iniStdPay.pay({
+          mid: this.MID,
+          oid: orderId,
+          price: params.amount,
+          goodname: params.productName,
+          buyername: params.buyerName,
+          buyertel: params.buyerTel,
+          buyeremail: params.buyerEmail,
+          timestamp: prepareData.timestamp,
+          signature: prepareData.signature,
+          mkey: prepareData.mkey,
+          currency: 'WON',
+          returnUrl: `${window.location.origin}/payment/inicis/return`,
+          closeUrl: `${window.location.origin}/payment/inicis/close`,
+          acceptmethod: 'HPP(1):below1000',
+          version: '1.0'
+        });
+      } else {
+        // 폼 전송 방식 (폴백)
+        console.warn('INIStdPay SDK를 사용할 수 없습니다. 폼 전송 방식으로 시도합니다.');
+        
+        const form = document.createElement('form');
+        form.id = 'inicis_form';
+        form.name = 'inicis_form';
+        form.method = 'POST';
+        form.acceptCharset = 'UTF-8';
+        form.action = 'https://stgstdpay.inicis.com/stdpay/INIStdPayRequest.jsp';
+        form.target = '_blank';
 
-      // 필수 파라미터 설정
-      const payParams = {
-        mid: this.MID,
-        oid: orderId,
-        price: params.amount,
-        goodname: params.productName,
-        buyername: params.buyerName,
-        buyertel: params.buyerTel,
-        buyeremail: params.buyerEmail,
-        timestamp: prepareData.timestamp,
-        signature: prepareData.signature,
-        mkey: prepareData.mkey,
-        currency: 'WON',
-        gopaymethod: 'Card:Directbank:VBank', // 신용카드, 계좌이체, 가상계좌
-        acceptmethod: 'SKIN(YELLOW):HPP(1):below1000', // 노란색 스킨, 휴대폰결제, 1000원 이하 결제 허용
-        returnUrl: params.returnUrl || `${window.location.origin}/payment/inicis/return`,
-        closeUrl: params.closeUrl || `${window.location.origin}/payment/inicis/close`,
-        popupUrl: `${window.location.origin}/payment/inicis/popup`,
-      };
+        // 파라미터 설정
+        const formParams = {
+          version: '1.0',
+          mid: this.MID,
+          oid: orderId,
+          price: params.amount,
+          goodname: params.productName,
+          buyername: params.buyerName,
+          buyertel: params.buyerTel,
+          buyeremail: params.buyerEmail,
+          timestamp: prepareData.timestamp,
+          signature: prepareData.signature,
+          mkey: prepareData.mkey,
+          currency: 'WON',
+          gopaymethod: 'Card:VBank',
+          acceptmethod: 'HPP(1):below1000:no_receipt',
+          returnUrl: `${window.location.origin}/payment/inicis/return`,
+          closeUrl: `${window.location.origin}/payment/inicis/close`
+        };
 
-      // 폼에 파라미터 추가
-      Object.entries(payParams).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = String(value);
-        form.appendChild(input);
-      });
+        // 폼 필드 생성
+        Object.entries(formParams).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        });
 
-      // 폼을 body에 추가하고 제출
-      document.body.appendChild(form);
-      form.submit();
-      
-      // 폼 제거
-      setTimeout(() => {
-        document.body.removeChild(form);
-      }, 1000);
+        // 폼 추가 및 전송
+        document.body.appendChild(form);
+        form.submit();
+        
+        // 폼 제거
+        setTimeout(() => {
+          if (form.parentNode) {
+            document.body.removeChild(form);
+          }
+        }, 1000);
+      }
 
     } catch (error) {
       console.error('이니시스 결제 요청 실패:', error);
       throw error;
     }
+  }
+
+  /**
+   * 이니시스 스크립트 로드
+   */
+  private async loadInicisScript(): Promise<void> {
+    return new Promise((resolve) => {
+      // 이미 로드되어 있으면 바로 리턴
+      if (document.getElementById('inicis-script')) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = 'inicis-script';
+      script.src = 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js';
+      script.charset = 'UTF-8';
+      script.onload = () => resolve();
+      script.onerror = () => {
+        console.warn('이니시스 스크립트 로드 실패, 폼 전송 방식을 사용합니다.');
+        resolve();
+      };
+      document.head.appendChild(script);
+    });
   }
 
   /**
