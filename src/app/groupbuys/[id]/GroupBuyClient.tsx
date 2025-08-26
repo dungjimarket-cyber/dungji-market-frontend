@@ -607,8 +607,10 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               
               {/* 방장(생성자) 정보 표시 */}
               <div className="flex items-center mt-1 mb-1 gap-2">
-                <span className="text-sm">👑</span>
-                <span className="text-gray-500 text-sm">방장</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">👑</span>
+                  <span className="text-gray-500 text-xs">방장</span>
+                </div>
                 <span className="text-sm font-medium">
                   {groupBuyState?.creator_name || '익명'}
                 </span>
