@@ -635,24 +635,29 @@ function RegisterPageContent() {
       submitData.append('role', formData.role);
       submitData.append('marketing_agreed', formData.marketing_agreed.toString());
       
-      // 추천인 코드 (판매자만, 아이디 가입시에만)
+      // 추천인 코드 (판매자만, 아이디 가입시에만) - 유효성 검증 API 완료 후 활성화 예정
+      // if (formData.referral_code && formData.role === 'seller' && signupType === 'email') {
+      //   // 추천인 코드가 입력되었지만 검증되지 않은 경우
+      //   if (!referralCodeChecked) {
+      //     setError('추천인 코드 확인을 해주세요.');
+      //     setIsLoading(false);
+      //     const referralSection = document.getElementById('referral_code');
+      //     scrollToInputField(referralSection);
+      //     return;
+      //   }
+      //   // 추천인 코드가 유효하지 않은 경우
+      //   if (!referralCodeValid) {
+      //     setError('유효한 추천인 코드를 입력해주세요.');
+      //     setIsLoading(false);
+      //     const referralSection = document.getElementById('referral_code');
+      //     scrollToInputField(referralSection);
+      //     return;
+      //   }
+      //   submitData.append('referral_code', formData.referral_code);
+      // }
+      
+      // 임시로 추천인 코드를 검증 없이 전달 (선택사항이므로)
       if (formData.referral_code && formData.role === 'seller' && signupType === 'email') {
-        // 추천인 코드가 입력되었지만 검증되지 않은 경우
-        if (!referralCodeChecked) {
-          setError('추천인 코드 확인을 해주세요.');
-          setIsLoading(false);
-          const referralSection = document.getElementById('referral_code');
-          scrollToInputField(referralSection);
-          return;
-        }
-        // 추천인 코드가 유효하지 않은 경우
-        if (!referralCodeValid) {
-          setError('유효한 추천인 코드를 입력해주세요.');
-          setIsLoading(false);
-          const referralSection = document.getElementById('referral_code');
-          scrollToInputField(referralSection);
-          return;
-        }
         submitData.append('referral_code', formData.referral_code);
       }
       
@@ -1509,8 +1514,8 @@ function RegisterPageContent() {
                   </div>
                 )}
 
-                {/* 추천인 코드 (판매자 아이디 가입만) */}
-                {formData.role === 'seller' && signupType === 'email' && (
+                {/* 추천인 코드 (판매자 아이디 가입만) - 유효성 검증 API 완료 후 활성화 예정 */}
+                {/* {formData.role === 'seller' && signupType === 'email' && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium text-gray-900">둥지파트너스 추천인 코드</h3>
                     
@@ -1563,7 +1568,7 @@ function RegisterPageContent() {
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* 약관 동의 */}
                 <div id="terms-section" className="space-y-3 pt-4 border-t">
