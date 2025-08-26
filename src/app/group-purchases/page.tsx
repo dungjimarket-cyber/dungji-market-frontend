@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { getSellerBids } from '@/lib/api/bidService';
+import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 
 interface GroupBuy {
   id: number;
@@ -667,6 +668,11 @@ function GroupPurchasesPageContent() {
           {/* 통합 검색바 */}
           <div className="px-4 pt-2 md:pt-3">
             <UnifiedSearchBar onSearchChange={handleSearchChange} />
+          </div>
+
+          {/* Google AdSense Banner */}
+          <div className="px-4 py-3">
+            <ResponsiveAdSense />
           </div>
 
           {/* 카테고리 탭 */}

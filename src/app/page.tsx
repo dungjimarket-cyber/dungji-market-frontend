@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { getSellerBids } from '@/lib/api/bidService';
 import dynamic from 'next/dynamic';
 import { SearchBar } from '@/components/search/SearchBar';
+import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 
 const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
@@ -222,6 +223,11 @@ function HomeContent() {
             <span className="text-xs sm:text-base">이용가이드</span>
           </a>
         </div>
+      </section>
+
+      {/* Google AdSense Banner */}
+      <section className="mb-8">
+        <ResponsiveAdSense className="my-6" />
       </section>
 
       {/* <section className="mb-12">

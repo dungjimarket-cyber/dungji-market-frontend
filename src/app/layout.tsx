@@ -9,6 +9,7 @@ import Footer from '@/components/common/Footer';
 import { Analytics } from "@vercel/analytics/next"
 import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
 import KakaoInAppBrowserHandler from '@/components/common/KakaoInAppBrowserHandler';
+import Script from 'next/script';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -59,6 +60,13 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.className} min-h-screen relative`}>
+        {/* Google AdSense Script */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6300478122055996"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <Providers>
           <KakaoInAppBrowserHandler />
           <Toaster />
