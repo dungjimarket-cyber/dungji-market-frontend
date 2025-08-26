@@ -1314,13 +1314,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <span className="text-sm text-gray-500">공구 지역</span>
           <div className="flex flex-wrap gap-1">
             {groupBuy.region_type === 'nationwide' ? (
-              <span className="font-medium text-sm text-blue-600">전국</span>
+              <span className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                전국
+              </span>
             ) : groupBuy.regions && groupBuy.regions.length > 0 ? (
-              groupBuy.regions.map(region => (
-                <span key={region.id} className="font-medium text-sm">
-                  {region.name}
-                </span>
-              ))
+              groupBuy.regions.map(region => {
+                let displayName = region.name || '';
+                displayName = displayName
+                  .replace('특별시', '')
+                  .replace('광역시', '')
+                  .replace('특별자치시', '')
+                  .replace('특별자치도', '');
+                
+                return (
+                  <span key={region.id} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    {displayName}
+                  </span>
+                );
+              })
             ) : (
               <span className="font-medium text-sm">지역 정보 없음</span>
             )}
@@ -1851,14 +1862,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             }`}>
               <Gavel className="w-5 h-5 mr-2" />
               견적제안 내역
-              {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
-                <span className="ml-2 text-green-600 font-bold">축하합니다!</span>
-              )}
             </h3>
           </div>
           <div className="space-y-2">
-            <div className="text-sm">
-              <span className="font-medium">내 순위:</span> {myBidInfo.rank}위 / 전체 {myBidInfo.total_bidders}명
+            <div className="text-sm flex items-center justify-between">
+              <span>
+                <span className="font-medium">내 순위:</span> {myBidInfo.rank}위 / 전체 {myBidInfo.total_bidders}명
+              </span>
+              {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
+                <span className="text-yellow-600 font-bold">축하합니다!</span>
+              )}
             </div>
             <div className="text-sm">
               <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
