@@ -1501,7 +1501,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
                     <span className="inline-block">🎉</span>
                     <span className="inline-block mx-1">
-                      {isSeller && hasWinningBid ? '견적이 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
+                      {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '견적이 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
                     </span>
                     <span className="inline-block">🎉</span>
                   </p>
@@ -1851,7 +1851,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             }`}>
               <Gavel className="w-5 h-5 mr-2" />
               견적제안 내역
-              {isSeller && hasWinningBid && (
+              {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
                 <span className="ml-2 text-green-600 font-bold">축하합니다!</span>
               )}
             </h3>
