@@ -21,15 +21,7 @@ import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Gift, AlertCircle, UserMinus } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Gift, AlertCircle } from 'lucide-react';
 import {
   Alert,
   AlertDescription,
@@ -69,9 +61,6 @@ export default function SellerSettings() {
   const [referrerName, setReferrerName] = useState('');
   const [checkingReferral, setCheckingReferral] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
-  const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
-  const [withdrawReason, setWithdrawReason] = useState('');
-  const [withdrawing, setWithdrawing] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -373,56 +362,6 @@ export default function SellerSettings() {
     }
   };
   
-  const handleWithdraw = async () => {
-    if (!withdrawReason.trim()) {
-      toast({
-        variant: 'destructive',
-        title: '입력 필요',
-        description: '탈퇴 사유를 입력해주세요.'
-      });
-      return;
-    }
-    
-    setWithdrawing(true);
-    try {
-      const token = await tokenUtils.getAccessToken();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/withdraw/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ reason: withdrawReason })
-      });
-      
-      if (response.ok) {
-        toast({
-          title: '회원탈퇴 완료',
-          description: '그동안 이용해주셔서 감사합니다.'
-        });
-        logout();
-        router.push('/');
-      } else {
-        const data = await response.json();
-        toast({
-          variant: 'destructive',
-          title: '탈퇴 실패',
-          description: data.error || '회원탈퇴 처리 중 오류가 발생했습니다.'
-        });
-      }
-    } catch (error) {
-      console.error('회원탈퇴 오류:', error);
-      toast({
-        variant: 'destructive',
-        title: '오류',
-        description: '회원탈퇴 처리 중 오류가 발생했습니다.'
-      });
-    } finally {
-      setWithdrawing(false);
-      setShowWithdrawDialog(false);
-    }
-  };
-
   const verifyBusinessNumber = async () => {
     const businessNumber = `${formData.businessNumber1}${formData.businessNumber2}${formData.businessNumber3}`;
     
@@ -1034,41 +973,41 @@ export default function SellerSettings() {
 
           {/* 추천인 코드 입력 카드 */}
           <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gift className="h-5 w-5" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Gift className="h-4 w-4" />
                 추천인 코드
               </CardTitle>
-              <CardDescription>
-                추천인 코드를 입력하면 특별 혜택을 받을 수 있습니다.
-              </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               {hasReferral ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>추천인 등록 완료</AlertTitle>
-                  <AlertDescription>
+                <Alert className="py-2">
+                  <AlertCircle className="h-3 w-3" />
+                  <AlertTitle className="text-xs">추천인 등록 완료</AlertTitle>
+                  <AlertDescription className="text-xs">
                     추천인: {referrerName}
-                    <p className="text-xs text-gray-500 mt-1">추천인 코드는 한 번만 등록 가능합니다.</p>
+                    <p className="text-xs text-gray-500 mt-0.5">추천인 코드는 한 번만 등록 가능합니다.</p>
                   </AlertDescription>
                 </Alert>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <div className="flex gap-2">
                     <Input
                       placeholder="추천인 코드를 입력하세요"
                       value={referralCode}
                       onChange={(e) => setReferralCode(e.target.value)}
                       disabled={hasReferral || savingReferral}
+                      className="h-8 text-xs"
                     />
                     <Button
                       onClick={handleReferralSubmit}
                       disabled={!referralCode || hasReferral || savingReferral}
+                      size="sm"
+                      className="h-8 text-xs"
                     >
                       {savingReferral ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                           등록 중...
                         </>
                       ) : (
@@ -1085,75 +1024,17 @@ export default function SellerSettings() {
           </Card>
 
           {/* 계정 관리 섹션 */}
-          <div className="mt-8 pb-8 flex justify-between items-center">
-            <div className="flex gap-2">
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-                className="flex items-center text-gray-600 hover:text-gray-800 border-gray-200"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                로그아웃
-              </Button>
-              <Button
-                onClick={() => setShowWithdrawDialog(true)}
-                variant="ghost"
-                size="sm"
-                className="flex items-center text-red-600 hover:text-red-800 hover:bg-red-50"
-              >
-                <UserMinus className="h-4 w-4 mr-2" />
-                회원탈퇴
-              </Button>
-            </div>
+          <div className="mt-8 pb-8">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="flex items-center text-gray-600 hover:text-gray-800 border-gray-200"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              로그아웃
+            </Button>
           </div>
-          
-          {/* 회원탈퇴 다이얼로그 */}
-          <Dialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>회원탈퇴</DialogTitle>
-                <DialogDescription>
-                  정말로 탈퇴하시겠습니까? 탈퇴 후에는 모든 데이터가 삭제되며 복구할 수 없습니다.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="reason">탈퇴 사유</Label>
-                  <textarea
-                    id="reason"
-                    className="w-full min-h-[100px] p-3 border rounded-md"
-                    placeholder="탈퇴 사유를 입력해주세요"
-                    value={withdrawReason}
-                    onChange={(e) => setWithdrawReason(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowWithdrawDialog(false)}
-                  disabled={withdrawing}
-                >
-                  취소
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleWithdraw}
-                  disabled={withdrawing || !withdrawReason.trim()}
-                >
-                  {withdrawing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      처리 중...
-                    </>
-                  ) : (
-                    '탈퇴하기'
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
     </div>
   );
 }
