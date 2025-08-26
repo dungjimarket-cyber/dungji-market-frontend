@@ -57,11 +57,12 @@ export function ResponsiveAdSense({ className }: { className?: string }) {
           display: 'block',
           width: '100%',
           maxWidth: '728px',
-          height: '90px'
+          minHeight: '0px',
+          height: 'auto'
         }}
         data-ad-client="ca-pub-6300478122055996"
         data-ad-slot="2577430328"
-        data-ad-format="horizontal"
+        data-ad-format="auto"
         data-full-width-responsive="true"
       />
     </div>

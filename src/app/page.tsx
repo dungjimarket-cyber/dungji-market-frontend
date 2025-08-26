@@ -225,10 +225,10 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* Google AdSense Banner */}
-      <section className="mb-8">
+      {/* Google AdSense Banner - 광고 승인 후 활성화 */}
+      {/* <section className="mb-8">
         <ResponsiveAdSense className="my-6" />
-      </section>
+      </section> */}
 
       {/* <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-6">카테고리</h2>

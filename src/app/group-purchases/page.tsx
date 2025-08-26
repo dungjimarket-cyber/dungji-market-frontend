@@ -670,10 +670,10 @@ function GroupPurchasesPageContent() {
             <UnifiedSearchBar onSearchChange={handleSearchChange} />
           </div>
 
-          {/* Google AdSense Banner */}
-          <div className="px-4 py-3">
+          {/* Google AdSense Banner - 광고 승인 후 활성화 */}
+          {/* <div className="px-4 py-3">
             <ResponsiveAdSense />
-          </div>
+          </div> */}
 
           {/* 카테고리 탭 */}
           <div className="px-4 py-1.5 md:py-3">
