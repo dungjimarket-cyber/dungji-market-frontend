@@ -5,30 +5,37 @@ export async function POST(request: NextRequest) {
     // POST 데이터 파싱
     const formData = await request.formData();
     
+    // 모든 폼 데이터 로깅 (디버깅용)
+    const allParams: Record<string, any> = {};
+    formData.forEach((value, key) => {
+      allParams[key] = value;
+    });
+    console.log('이니시스 결제 완료 - 전체 파라미터:', allParams);
+    
     // 필요한 파라미터 추출
     const params = {
       resultCode: formData.get('resultCode'),
       resultMsg: formData.get('resultMsg'),
       mid: formData.get('mid'),
-      oid: formData.get('MOID') || formData.get('oid'),
-      tid: formData.get('tid'),
-      authToken: formData.get('authToken'),
-      authUrl: formData.get('authUrl'),
-      netCancelUrl: formData.get('netCancelUrl'),
-      amt: formData.get('TotPrice') || formData.get('amt'),
+      oid: formData.get('MOID') || formData.get('moid') || formData.get('oid') || formData.get('OID') || formData.get('merchantData'),
+      tid: formData.get('tid') || formData.get('TID'),
+      authToken: formData.get('authToken') || formData.get('authtoken'),
+      authUrl: formData.get('authUrl') || formData.get('authurl'),
+      netCancelUrl: formData.get('netCancelUrl') || formData.get('netcancelurl'),
+      amt: formData.get('TotPrice') || formData.get('totprice') || formData.get('amt') || formData.get('price'),
       merchantData: formData.get('merchantData'),
-      buyerName: formData.get('buyerName'),
-      buyerTel: formData.get('buyerTel'),
-      buyerEmail: formData.get('buyerEmail'),
-      goodName: formData.get('goodName'),
-      payMethod: formData.get('payMethod'),
+      buyerName: formData.get('buyerName') || formData.get('buyername'),
+      buyerTel: formData.get('buyerTel') || formData.get('buyertel'),
+      buyerEmail: formData.get('buyerEmail') || formData.get('buyeremail'),
+      goodName: formData.get('goodName') || formData.get('goodname'),
+      payMethod: formData.get('payMethod') || formData.get('paymethod'),
       applDate: formData.get('applDate'),
       applTime: formData.get('applTime'),
       timestamp: formData.get('timestamp'),
       signature: formData.get('signature'),
     };
 
-    console.log('이니시스 결제 완료 콜백:', params);
+    console.log('이니시스 결제 완료 콜백 - 추출된 파라미터:', params);
 
     // 결제 성공 여부 확인
     if (params.resultCode === '0000') {
@@ -135,16 +142,23 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   
+  // 모든 GET 파라미터 로깅 (디버깅용)
+  const allParams: Record<string, any> = {};
+  searchParams.forEach((value, key) => {
+    allParams[key] = value;
+  });
+  console.log('이니시스 GET 요청 - 전체 파라미터:', allParams);
+  
   // GET 파라미터로 온 경우도 처리
   const params = {
     resultCode: searchParams.get('resultCode'),
     resultMsg: searchParams.get('resultMsg'),
-    oid: searchParams.get('MOID') || searchParams.get('oid'),
-    tid: searchParams.get('tid'),
-    authToken: searchParams.get('authToken'),
-    authUrl: searchParams.get('authUrl'),
-    netCancelUrl: searchParams.get('netCancelUrl'),
-    amt: searchParams.get('TotPrice') || searchParams.get('amt'),
+    oid: searchParams.get('MOID') || searchParams.get('moid') || searchParams.get('oid') || searchParams.get('OID') || searchParams.get('merchantData'),
+    tid: searchParams.get('tid') || searchParams.get('TID'),
+    authToken: searchParams.get('authToken') || searchParams.get('authtoken'),
+    authUrl: searchParams.get('authUrl') || searchParams.get('authurl'),
+    netCancelUrl: searchParams.get('netCancelUrl') || searchParams.get('netcancelurl'),
+    amt: searchParams.get('TotPrice') || searchParams.get('totprice') || searchParams.get('amt') || searchParams.get('price'),
     mid: searchParams.get('mid'),
     timestamp: searchParams.get('timestamp'),
     signature: searchParams.get('signature'),
