@@ -1072,7 +1072,8 @@ function AccountForm({
   const [formData, setFormData] = useState({
     bank_name: initialData?.bank_name || '',
     account_number: initialData?.account_number || '',
-    account_holder: initialData?.account_holder || ''
+    account_holder: initialData?.account_holder || '',
+    birth_date: ''
   });
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -1081,7 +1082,7 @@ function AccountForm({
   const [verificationStep, setVerificationStep] = useState<1 | 2>(1); // 인증 단계
 
   const handleVerifyAccount = async () => {
-    if (!formData.bank_name || !formData.account_number || !formData.account_holder) {
+    if (!formData.bank_name || !formData.account_number || !formData.account_holder || !formData.birth_date) {
       alert('모든 정보를 입력해주세요.');
       return;
     }
@@ -1089,6 +1090,12 @@ function AccountForm({
     const accountNumber = formData.account_number.replace(/-/g, '');
     if (!/^\d+$/.test(accountNumber)) {
       alert('계좌번호는 숫자만 입력 가능합니다.');
+      return;
+    }
+    
+    // 생년월일 형식 검증 (YYMMDD)
+    if (!/^\d{6}$/.test(formData.birth_date)) {
+      alert('생년월일은 YYMMDD 형식으로 입력해주세요. (예: 901225)');
       return;
     }
     
@@ -1112,7 +1119,8 @@ function AccountForm({
         body: JSON.stringify({
           bank_code: getBankCode(formData.bank_name),
           account_num: accountNumber,
-          account_holder_info: formData.account_holder
+          account_holder_name: formData.account_holder,
+          account_holder_info: formData.birth_date  // 생년월일 (YYMMDD)
         })
       });
       
@@ -1224,9 +1232,12 @@ function AccountForm({
         </label>
         
         {/* 안내 메시지 */}
-        <div className="mt-1 mb-2 bg-blue-50 border border-blue-200 rounded-md p-2">
+        <div className="mt-1 mb-2 bg-blue-50 border border-blue-200 rounded-md p-2 space-y-1">
           <p className="text-xs text-blue-700">
             💡 <strong>중요:</strong> 은행 앱에서 계좌정보를 확인하여 표시되는 <strong>정확한 예금주명</strong>을 입력해주세요.
+          </p>
+          <p className="text-xs text-blue-600">
+            📌 테스트 모드에서는 제한된 계좌만 인증 가능합니다.
           </p>
         </div>
         
