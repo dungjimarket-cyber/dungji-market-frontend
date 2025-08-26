@@ -605,25 +605,11 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         {/* 작성자 정보 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
-              {groupBuy.creator?.profile_image ? (
-                <Image
-                  src={groupBuy.creator.profile_image}
-                  alt={groupBuy.creator?.username || '사용자'}
-                  width={32}
-                  height={32}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs">
-                  {/* {(groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username)?.charAt(0)?.toUpperCase() || '?'} */}
-                  방장
-                </div>
-              )}
+            <div className="w-8 h-8 flex items-center justify-center">
+              <span className="text-lg">👑</span>
             </div>
             <div>
               <div className="flex items-center gap-1">
-                <span className="text-xs">👑</span>
                 <span className="text-gray-500 text-xs">방장</span>
                 <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
                   {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
