@@ -1077,6 +1077,8 @@ function AccountForm({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [verificationError, setVerificationError] = useState('');
+  const [verifiedAccountHolder, setVerifiedAccountHolder] = useState(''); // 조회된 예금주명
+  const [verificationStep, setVerificationStep] = useState<1 | 2>(1); // 인증 단계
 
   const handleVerifyAccount = async () => {
     if (!formData.bank_name || !formData.account_number || !formData.account_holder) {
@@ -1220,18 +1222,26 @@ function AccountForm({
         <label className="block text-sm font-medium text-gray-700">
           예금주
         </label>
+        
+        {/* 안내 메시지 */}
+        <div className="mt-1 mb-2 bg-blue-50 border border-blue-200 rounded-md p-2">
+          <p className="text-xs text-blue-700">
+            💡 <strong>중요:</strong> 은행 앱에서 계좌정보를 확인하여 표시되는 <strong>정확한 예금주명</strong>을 입력해주세요.
+          </p>
+        </div>
+        
         <input
           type="text"
           value={formData.account_holder}
           onChange={(e) => handleFieldChange('account_holder', e.target.value)}
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          placeholder="실명 입력"
+          placeholder="은행 앱의 계좌정보에 표시된 예금주명"
           minLength={2}
           maxLength={30}
           disabled={isVerified}
           required
         />
-        <p className="mt-1 text-xs text-gray-500">통장에 표시된 예금주명과 동일하게 입력해주세요</p>
+        <p className="mt-1 text-xs text-gray-500">⚠️ 띄어쓰기, 한자 등을 포함하여 정확히 입력하세요</p>
       </div>
 
       {/* 인증 상태 표시 */}
