@@ -28,7 +28,7 @@ class InicisService {
       const orderId = `BT_${timestamp}_${params.orderId}`;
       
       // 백엔드에서 서명 생성 및 결제 준비
-      const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/inicis/prepare/`, {
+      const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ class InicisService {
    */
   async verifyPayment(orderId: string, authUrl: string, authToken: string, authResultCode: string) {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/inicis/verify/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ class InicisService {
    */
   async cancelPayment(tid: string, reason: string = '구매자 요청') {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/inicis/cancel/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/cancel/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ class InicisService {
    */
   async confirmVBankDeposit(data: any) {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/inicis/vbank-confirm/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/vbank-confirm/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

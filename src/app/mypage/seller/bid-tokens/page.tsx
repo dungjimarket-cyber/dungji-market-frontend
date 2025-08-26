@@ -51,7 +51,7 @@ export default function BidTokensPage() {
       const authResultCode = params.get('authResultCode');
       const tid = params.get('tid');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/inicis/verify/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
