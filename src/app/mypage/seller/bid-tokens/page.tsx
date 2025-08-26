@@ -202,47 +202,6 @@ export default function BidTokensPage() {
     }
   };
   
-  // 기존 토스페이먼츠 결제 코드는 주석 처리
-  const handlePurchase_old = async () => {
-    try {
-      setPurchasing(true);
-      // 결제 요청 생성
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
-        },
-        body: JSON.stringify({
-          token_type: tokenType,
-          quantity: tokenType === 'unlimited' ? 1 : quantity
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('결제 요청 생성 실패');
-      }
-
-      const paymentData = await response.json();
-      
-      // 토스페이먼츠 결제창으로 이동
-      // 결제 정보를 세션 스토리지에 저장
-      sessionStorage.setItem('payment_order', JSON.stringify(paymentData));
-      
-      // 결제 페이지로 이동
-      router.push(`/payment/checkout?orderId=${paymentData.orderId}`);
-      
-    } catch (error) {
-      console.error('결제 요청 오류:', error);
-      toast({
-        title: '결제 요청 실패',
-        description: '결제 요청 생성 중 오류가 발생했습니다. 다시 시도해주세요.',
-        variant: 'destructive',
-      });
-    } finally {
-      setPurchasing(false);
-    }
-  };
 
   // 견적 이용권 유형에 따른 정보 텍스트
   const getTokenTypeInfo = (type: string) => {
