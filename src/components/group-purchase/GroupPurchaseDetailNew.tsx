@@ -1866,7 +1866,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
           <div className="space-y-2">
             <div className="text-sm">
-              <span className="font-medium">내 순위:</span> {myBidInfo.rank}위 / 전체 {myBidInfo.total_bidders}명
+              <span className="font-medium">내 순위:</span> 
+              <span className={myBidInfo.rank === 1 ? "text-lg font-bold text-green-600 mx-1" : ""}>{myBidInfo.rank}위</span>
+              {myBidInfo.rank !== 1 && " "}/ 전체 {myBidInfo.total_bidders}명
               {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
                 <span className="text-yellow-600 font-bold ml-2">축하합니다!</span>
               )}
