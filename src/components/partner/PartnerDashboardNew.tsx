@@ -1095,7 +1095,13 @@ function AccountForm({
     
     try {
       // 계좌 실명 인증 API 호출
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/bank-account/verify/`, {
+      // API URL 구성 - 이미 /api가 포함되어 있는지 확인
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const apiUrl = baseUrl.includes('/api') 
+        ? baseUrl.replace(/\/api$/, '') + '/api/partners/bank-account/verify/'
+        : baseUrl + '/api/partners/bank-account/verify/';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
