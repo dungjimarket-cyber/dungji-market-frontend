@@ -1,6 +1,8 @@
 import React, { useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
+import { emailAuthService } from '@/lib/api/emailAuthService';
 
 /**
  * 아이디/비밀번호 찾기 모달 통합 컴포넌트
@@ -161,6 +163,7 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
  * 비밀번호 찾기 폼
  */
 function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
+  const router = useRouter();
   const [method, setMethod] = useState<'email' | 'phone'>('email');
   const [step, setStep] = useState<'input' | 'verify' | 'reset' | 'complete'>('input');
   const [phone, setPhone] = useState('');
@@ -210,20 +213,20 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
       
       if (method === 'email') {
-        const res = await fetch(`${apiUrl}/auth/password-reset/send-email/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email }),
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setStep('verify');
-          setTimer(300); // 5 minutes
-          toast({ title: '인증번호가 이메일로 발송되었습니다.' });
-        } else {
-          const err = await res.json();
-          setErrorMessage(err.error || '인증번호 발송에 실패했습니다.');
+        // Use the new email authentication service
+        try {
+          await emailAuthService.requestPasswordReset(email);
+          toast({ 
+            title: '비밀번호 재설정 링크가 이메일로 발송되었습니다.',
+            description: '이메일을 확인하여 비밀번호를 재설정해주세요.'
+          });
+          // Close modal and optionally redirect to login
+          onClose();
+          router.push('/login');
+          return;
+        } catch (err: any) {
+          setErrorMessage(err.message || '인증 이메일 발송에 실패했습니다.');
+          return;
         }
       } else {
         // Phone method (existing logic)
@@ -366,17 +369,19 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">아이디</label>
-            <input 
-              type="text" 
-              required 
-              className="w-full px-3 py-2 border rounded" 
-              value={username} 
-              onChange={e => setUsername(e.target.value)} 
-              placeholder="아이디를 입력하세요" 
-            />
-          </div>
+          {method === 'phone' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">아이디</label>
+              <input 
+                type="text" 
+                required 
+                className="w-full px-3 py-2 border rounded" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                placeholder="아이디를 입력하세요" 
+              />
+            </div>
+          )}
 
           {method === 'email' ? (
             <div>
@@ -389,6 +394,9 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
                 onChange={e => setEmail(e.target.value)} 
                 placeholder="example@email.com" 
               />
+              <p className="mt-1 text-xs text-gray-500">
+                가입하신 이메일 주소로 비밀번호 재설정 링크가 발송됩니다.
+              </p>
             </div>
           ) : (
             <div>
@@ -410,7 +418,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
             disabled={loading} 
             className="w-full py-2 rounded bg-blue-600 text-white font-semibold disabled:bg-gray-400"
           >
-            {loading ? '발송 중...' : (method === 'email' ? '인증번호 발송' : '임시 비밀번호 발송')}
+            {loading ? '발송 중...' : (method === 'email' ? '재설정 링크 발송' : '임시 비밀번호 발송')}
           </button>
         </form>
       </div>
