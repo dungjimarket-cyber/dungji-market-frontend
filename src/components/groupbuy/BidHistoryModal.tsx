@@ -1,0 +1,226 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { getGroupBuyBids, BidData } from '@/lib/api/bidService';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
+import { formatNumberWithCommas } from '@/lib/utils';
+import { formatBidAmount } from '@/lib/utils/maskAmount';
+
+// 구성표에 따른 견적 금액 표시 규칙 적용
+// 1위부터 10위까지 정상 금액 표기, 본인 견적은 항상 정상 표기
+
+// 여기서는 BidData 인터페이스를 API 서비스에서 가져와 사용합니다
+
+interface BidHistoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  groupBuyId: number;
+  currentUserId?: number;
+  isSeller?: boolean;
+  isParticipant?: boolean;  // 공구 참여 여부 추가
+  hasBid?: boolean;          // 견적 여부 추가
+  groupBuyStatus?: string;   // 공구 상태 추가
+  isAuthenticated?: boolean; // 로그인 여부 추가
+  categoryName?: string;     // 카테고리명 추가
+  categoryDetailType?: string; // 카테고리 상세 타입 추가
+}
+
+/**
+ * 공구 견적 내역 확인 모달 컴포넌트
+ */
+export default function BidHistoryModal({
+  isOpen,
+  onClose,
+  groupBuyId,
+  currentUserId,
+  isSeller = false,
+  isParticipant = false,
+  hasBid = false,
+  groupBuyStatus,
+  isAuthenticated = false,
+  categoryName,
+  categoryDetailType
+}: BidHistoryModalProps) {
+  const [bids, setBids] = useState<BidData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // 견적 기록 조회
+    const fetchBidHistory = async () => {
+      if (!groupBuyId || !isOpen) return;
+      
+      setIsLoading(true);
+      
+      try {
+        const data = await getGroupBuyBids(groupBuyId);
+        // 카테고리에 따라 지원금/가격 견적 판단
+        const isSupport = categoryName === '휴대폰' || 
+                         categoryName === '인터넷' ||
+                         categoryName === '인터넷+TV' ||
+                         categoryDetailType === 'telecom' ||
+                         categoryDetailType === 'internet';
+        
+        // 금액 순으로 정렬
+        const sortedData = [...data].sort((a, b) => {
+          const aAmount = typeof a.amount === 'string' ? 0 : a.amount;
+          const bAmount = typeof b.amount === 'string' ? 0 : b.amount;
+          
+          // 지원금 견적(휴대폰/인터넷/인터넷+TV)은 높은 순으로, 가격 견적은 낮은 순으로
+          if (isSupport) {
+            return bAmount - aAmount; // 지원금: 높은 금액이 1위
+          } else {
+            return aAmount - bAmount; // 가격: 낮은 금액이 1위
+          }
+        });
+        
+        setBids(sortedData);
+      } catch (error) {
+        console.error('견적 기록 조회 중 오류 발생:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBidHistory();
+  }, [groupBuyId, isOpen]);
+
+
+  // 견적 유형에 따른 표시 문구
+  const getBidTypeText = (bidType: string) => {
+    return bidType === 'support' ? '지원금 견적' : '가격 견적';
+  };
+
+  // 날짜 형식 변환
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[700px]">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">공구 견적 내역</DialogTitle>
+          <DialogDescription>
+            공구 기간 종료 후 최종 견적 금액이 공개됩니다.
+            {bids.length > 0 && bids[0] && groupBuyStatus && !['recruiting', 'bidding'].includes(groupBuyStatus) && (
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-900">최종 선정 지원금</span>
+                  <span className="text-lg font-bold text-blue-700">
+                    {typeof bids[0].amount === 'string' 
+                      ? bids[0].amount 
+                      : `${bids[0].amount.toLocaleString()}원`
+                    }
+                  </span>
+                </div>
+              </div>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <span className="ml-2">견적 기록을 불러오는 중...</span>
+          </div>
+        ) : bids.length === 0 ? (
+          <div className="bg-gray-50 p-6 rounded-lg text-center">
+            <p className="text-gray-500">등록된 견적 내역이 없습니다.</p>
+          </div>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-20 text-center">순위</TableHead>
+                  <TableHead className="text-right">금액</TableHead>
+                  <TableHead className="text-center">등록일</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bids.slice(0, 5).map((bid, index) => {
+                  const isMyBid = isSeller && currentUserId && bid.seller_id === currentUserId;
+                  // 공구가 종료되고 1위인 경우에만 최종선정 표시
+                  const isGroupEnded = groupBuyStatus && !['recruiting', 'bidding'].includes(groupBuyStatus);
+                  const isWinner = index === 0 && isGroupEnded;
+                  
+                  // 금액 표시 로직 - 공구 기간 중에는 마스킹, 종료 후 공개
+                  // 본인 견적은 항상 표시
+                  const shouldShowAmount = isMyBid || isGroupEnded;
+                  const shouldMask = !isMyBid && !isGroupEnded;  // 공구 기간 중에는 타인 견적 마스킹
+                  
+                  return (
+                    <TableRow 
+                      key={bid.id} 
+                      className={isMyBid ? "bg-blue-50" : isWinner ? "bg-yellow-50" : ""}
+                    >
+                      <TableCell className="text-center font-medium">
+                        <div className="flex items-center justify-center gap-2">
+                          <Badge 
+                            variant={index < 3 ? "default" : "outline"} 
+                            className={`whitespace-nowrap ${
+                              index === 0 ? "bg-yellow-500" : 
+                              index === 1 ? "bg-gray-400" : 
+                              index === 2 ? "bg-amber-600" : ""
+                            }`}
+                          >
+                            {index + 1}위
+                          </Badge>
+                          {isMyBid && (
+                            <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                              내 견적
+                            </Badge>
+                          )}
+                          {isWinner && (
+                            <Badge className="bg-green-500 text-xs whitespace-nowrap">
+                              최종선정
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {typeof bid.amount === 'string' 
+                          ? bid.amount 
+                          : shouldMask
+                            ? (() => {
+                                const amountStr = bid.amount.toString();
+                                return amountStr[0] + '*'.repeat(amountStr.length - 1) + '원';
+                              })()  // 첫 자리만 공개 마스킹
+                            : `${bid.amount.toLocaleString()}원`  // 정상 표기
+                        }
+                      </TableCell>
+                      <TableCell className="text-center">{formatDate(bid.created_at)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+        
+        <DialogFooter>
+          <Button onClick={onClose}>닫기</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
