@@ -71,10 +71,10 @@ export default function BidTokensPage() {
           title: '결제 성공',
           description: result.is_subscription 
             ? '결제가 완료되었습니다. 구독권이 지급되었습니다.'
-            : `결제가 완료되었습니다. 견적이용권 ${result.token_count}개가 지급되었습니다.`,
+            : `결제가 완료되었습니다. 입찰권 ${result.token_count}개가 지급되었습니다.`,
         });
         
-        // 견적이용권 정보 새로고침
+        // 입찰권 정보 새로고침
         const data = await bidTokenService.getBidTokens();
         setBidTokens(data);
         
