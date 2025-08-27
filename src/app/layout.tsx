@@ -20,6 +20,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
   description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
+  manifest: "/manifest.json",
   openGraph: {
     title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
     description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
@@ -43,8 +44,31 @@ export const metadata: Metadata = {
     images: ['/logo.png'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
+  icons: {
+    icon: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "둥지마켓",
+  },
   other: {
     'X-DNS-Prefetch-Control': 'on',
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': '둥지마켓',
+    'theme-color': '#3b82f6',
+    'msapplication-navbutton-color': '#3b82f6',
+    'msapplication-TileColor': '#3b82f6',
+    'msapplication-TileImage': '/icons/icon-144x144.png',
   }
 };
 
@@ -59,6 +83,17 @@ export default function RootLayout({
    */
   return (
     <html lang="ko">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#3b82f6" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="둥지마켓" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+      </head>
       <body className={`${inter.className} min-h-screen relative`}>
         {/* Google AdSense Script */}
         <Script
