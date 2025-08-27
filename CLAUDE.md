@@ -18,10 +18,13 @@ npm run test:watch    # Run tests in watch mode
 npm run test:coverage # Run tests with coverage report
 ```
 
-### Testing Specific Files
+### Testing Commands
 ```bash
 npm test -- src/__tests__/issue-verification.test.tsx  # Run specific test file
 npm test -- --updateSnapshot                           # Update test snapshots
+npm test -- --watchAll                                 # Run all tests in watch mode
+npm test -- --coverage                                 # Generate coverage report
+npm test -- src/components/                            # Test all files in directory
 ```
 
 ## Architecture Overview
@@ -37,11 +40,19 @@ npm test -- --updateSnapshot                           # Update test snapshots
 
 ### Key Directories
 - `src/app/` - Next.js App Router pages and API routes
+  - `src/app/api/` - Backend API routes (auth, groupbuys, payment, etc.)
+  - `src/app/(partner)/` - Partner-specific routes with shared layout
 - `src/components/` - Reusable React components organized by feature
+  - `src/components/ui/` - Base UI components (shadcn/ui components)
+  - `src/components/auth/` - Authentication-related components
+  - `src/components/groupbuy/` - Group buying functionality components
 - `src/contexts/` - React Context providers (AuthContext, PartnerContext)
 - `src/lib/` - Utility functions and service layers
+  - `src/lib/api/` - API service functions organized by feature
 - `src/stores/` - Zustand stores for state management
 - `src/types/` - TypeScript type definitions
+- `src/hooks/` - Custom React hooks
+- `src/middleware/` - Next.js middleware for authentication
 
 ### Authentication Flow
 The app uses a dual authentication system:
@@ -158,13 +169,24 @@ GOOGLE_CLIENT_SECRET
 - Vercel automatically deploys on push to main
 
 ## Testing Approach
+- **Test Framework**: Jest with React Testing Library
+- **Test Location**: Test files in `src/__tests__/` or alongside components
+- **Path Aliases**: `@/` maps to `src/` directory
+- **Coverage**: Excludes `*.d.ts`, `layout.tsx`, and `globals.css`
+- **Transforms**: Configured to handle `lucide-react` imports
 - Unit tests for utilities and hooks
 - Integration tests for critical user flows
-- Test files located alongside components or in `__tests__` directories
 - Mock API responses for testing
 
 ## Deployment Notes
-- Deployed on Vercel
+- Deployed on Vercel with automatic deployments on push to main branch
 - Serverless functions for API routes with 60s timeout
-- Cron jobs configured for status updates
+- Cron jobs configured for status updates (`/api/cron/`)
 - Image optimization disabled due to Vercel free tier limits
+- Node.js version: >=18.0.0 (check `.nvmrc` for specific version)
+
+## Linting and Code Quality
+- **ESLint**: Uses flat config format with TypeScript parser
+- **Unused Imports**: Plugin configured but disabled for flexibility
+- **Next.js Rules**: Enforced for proper HTML link usage
+- Lint command: `npm run lint`

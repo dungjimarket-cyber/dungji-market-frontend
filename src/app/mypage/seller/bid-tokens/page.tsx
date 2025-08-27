@@ -69,12 +69,19 @@ export default function BidTokensPage() {
         const result = await response.json();
         toast({
           title: '결제 성공',
+<<<<<<< HEAD
           description: result.is_subscription 
             ? '결제가 완료되었습니다. 구독권이 지급되었습니다.'
             : `결제가 완료되었습니다. 견적이용권 ${result.token_count}개가 지급되었습니다.`,
         });
         
         // 견적이용권 정보 새로고침
+=======
+          description: `결제가 완료되었습니다. 입찰권 ${result.token_count}개가 지급되었습니다.`,
+        });
+        
+        // 입찰권 정보 새로고침
+>>>>>>> master
         const data = await bidTokenService.getBidTokens();
         setBidTokens(data);
         
