@@ -28,7 +28,7 @@ function InicisCompleteContent() {
             setStatus('success');
             setMessage(`결제가 완료되었습니다. (주문번호: ${orderId})`);
             
-            // 3초 후 입찰권 페이지로 리다이렉트
+            // 3초 후 견적이용권 페이지로 리다이렉트
             setTimeout(() => {
               router.push('/mypage/seller/bid-tokens?payment=success');
             }, 3000);
@@ -84,9 +84,18 @@ function InicisCompleteContent() {
           if (verifyResponse.ok) {
             const result = await verifyResponse.json();
             setStatus('success');
-            setMessage(`결제가 완료되었습니다. (${result.token_count || 0}개 입찰권 구매)`);
             
-            // 3초 후 입찰권 페이지로 리다이렉트
+            // 구독권과 견적이용권 구분하여 메시지 표시
+            let purchaseMessage = '결제가 완료되었습니다.';
+            if (result.is_subscription) {
+              purchaseMessage = result.message || '구독권이 구매 완료되었습니다.';
+            } else if (result.token_count) {
+              purchaseMessage = result.message || `견적이용권 ${result.token_count}개가 구매 완료되었습니다.`;
+            }
+            
+            setMessage(purchaseMessage);
+            
+            // 3초 후 견적이용권 페이지로 리다이렉트
             setTimeout(() => {
               router.push('/mypage/seller/bid-tokens?payment=success');
             }, 3000);
