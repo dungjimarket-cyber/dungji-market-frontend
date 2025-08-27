@@ -262,10 +262,19 @@ export default function BidTokensPage() {
                       이용권 만료 예정 (남은 사용기한 7일 이내)
                     </div>
                     
-                    {/* TODO: 실제 만료 예정 이용권 데이터 연동 필요 */}
-                    <div className="text-[10px] text-gray-400">
-                      만료 예정인 이용권이 없습니다.
-                    </div>
+                    {bidTokens.expiring_tokens && bidTokens.expiring_tokens.length > 0 ? (
+                      <div className="space-y-1">
+                        {bidTokens.expiring_tokens.map((token, index) => (
+                          <div key={index} className="text-[10px] text-orange-600">
+                            • {new Date(token.expires_at).toLocaleDateString()} 만료 ({token.days_remaining}일 남음): {token.quantity}개
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-gray-400">
+                        만료 예정인 이용권이 없습니다.
+                      </div>
+                    )}
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="flex items-center">

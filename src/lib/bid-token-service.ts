@@ -11,12 +11,22 @@ export interface BidTokenPurchase {
   purchase_date: string;
 }
 
+export interface ExpiringToken {
+  id?: number;
+  type: string;
+  type_display: string;
+  expires_at: string;
+  days_remaining: number;
+  quantity: number;
+}
+
 export interface BidTokenResponse {
   single_tokens: number;
   unlimited_subscription: boolean;
   unlimited_expires_at: string | null;
   total_tokens: number;
   recent_purchases: BidTokenPurchase[];
+  expiring_tokens: ExpiringToken[];
 }
 
 export interface PurchaseBidTokenRequest {
