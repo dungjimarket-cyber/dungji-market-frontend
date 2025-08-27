@@ -664,7 +664,10 @@ function RegisterPageContent() {
       // 이메일 로그인인 경우
       if (signupType === 'email') {
         submitData.append('username', formData.username); // 아이디
-        submitData.append('email', formData.email);
+        // 이메일이 완전한 형태로 입력된 경우에만 전송 (@를 포함하는 경우)
+        if (formData.email && formData.email.includes('@')) {
+          submitData.append('email', formData.email);
+        }
         submitData.append('password', formData.password);
       } else {
         // 소셜 로그인인 경우
