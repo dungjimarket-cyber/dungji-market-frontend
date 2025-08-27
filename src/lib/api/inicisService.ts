@@ -19,6 +19,19 @@ class InicisService {
   private readonly isProduction = false; // 테스트 환경 강제 설정
   
   /**
+   * 모바일 디바이스 여부 확인
+   */
+  private isMobileDevice(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    // 모바일 디바이스 체크
+    const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+    // 화면 크기로 추가 체크
+    const isMobileScreen = window.innerWidth <= 768;
+    
+    return mobileRegex.test(userAgent.toLowerCase()) || isMobileScreen;
+  }
+  
+  /**
    * 이니시스 결제창 호출
    */
   async requestPayment(params: InicisPaymentParams) {
@@ -27,35 +40,42 @@ class InicisService {
       const timestamp = Date.now();
       const orderId = `BT_${timestamp}_${params.orderId}`;
       
-      // 백엔드에서 서명 생성 및 결제 준비
-      const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
-        },
-        body: JSON.stringify({
-          orderId,
-          amount: params.amount,
-          productName: params.productName,
-          buyerName: params.buyerName,
-          buyerTel: params.buyerTel,
-          buyerEmail: params.buyerEmail,
-        }),
-      });
+      // 모바일/PC 구분
+      const isMobile = this.isMobileDevice();
+      console.log('결제 환경:', isMobile ? '모바일' : 'PC');
+      
+      if (isMobile) {
+        // 모바일 결제 처리
+        this.submitMobilePaymentForm(orderId, params);
+      } else {
+        // PC 결제 처리 - 기존 로직
+        // 백엔드에서 서명 생성 및 결제 준비
+        const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+          },
+          body: JSON.stringify({
+            orderId,
+            amount: params.amount,
+            productName: params.productName,
+            buyerName: params.buyerName,
+            buyerTel: params.buyerTel,
+            buyerEmail: params.buyerEmail,
+          }),
+        });
 
-      if (!prepareResponse.ok) {
-        throw new Error('결제 준비에 실패했습니다.');
+        if (!prepareResponse.ok) {
+          throw new Error('결제 준비에 실패했습니다.');
+        }
+
+        const prepareData = await prepareResponse.json();
+        
+        // 폼 전송 방식으로 직접 처리
+        console.log('이니시스 PC 결제 - 폼 전송 방식을 사용합니다.');
+        this.submitPaymentForm(orderId, params, prepareData);
       }
-
-      const prepareData = await prepareResponse.json();
-      
-      // 이니시스 SDK는 jQuery 의존성 문제로 폼 전송 방식 사용
-      // const sdkLoaded = await this.loadInicisScript();
-      
-      // 폼 전송 방식으로 직접 처리
-      console.log('이니시스 결제 - 폼 전송 방식을 사용합니다.');
-      this.submitPaymentForm(orderId, params, prepareData);
 
     } catch (error) {
       console.error('이니시스 결제 요청 실패:', error);
@@ -64,7 +84,74 @@ class InicisService {
   }
   
   /**
-   * 폼 전송 방식 결제 (SDK 사용 불가시 폴백)
+   * 모바일 결제 폼 전송
+   */
+  private submitMobilePaymentForm(orderId: string, params: InicisPaymentParams) {
+    // DOM에 직접 폼을 생성하고 제출
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = 'https://mobile.inicis.com/smart/payment/';
+    form.acceptCharset = 'euc-kr';
+    form.style.display = 'none';
+    
+    // 폼 필드 추가 함수
+    const addField = (name: string, value: string) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+    
+    // 모바일 결제 파라미터 설정
+    addField('P_INI_PAYMENT', 'CARD'); // 결제수단 (CARD, VBANK, MOBILE 등)
+    addField('P_MID', this.MID); // 상점 ID
+    addField('P_OID', orderId); // 주문번호
+    addField('P_AMT', String(params.amount)); // 금액
+    addField('P_GOODS', params.productName); // 상품명
+    addField('P_UNAME', params.buyerName); // 구매자명
+    addField('P_MOBILE', params.buyerTel); // 구매자 전화번호
+    addField('P_EMAIL', params.buyerEmail); // 구매자 이메일
+    addField('P_NEXT_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 결과 리턴 URL
+    addField('P_CHARSET', 'utf8'); // 인코딩
+    addField('P_RESERVED', 'below1000=Y&vbank_receipt=Y&centerCd=Y'); // 추가 옵션
+    addField('P_NOTI', orderId); // 가맹점 임의 데이터
+    
+    // 폼을 body에 추가하고 제출
+    document.body.appendChild(form);
+    
+    // 로딩 화면 표시
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: sans-serif;
+    `;
+    loadingDiv.innerHTML = `
+      <h2 style="margin-bottom: 10px;">결제 준비 중...</h2>
+      <p style="color: #666;">잠시만 기다려주세요.</p>
+      <p style="color: #999; font-size: 12px;">모바일 결제 페이지로 이동합니다.</p>
+    `;
+    document.body.appendChild(loadingDiv);
+    
+    // 약간의 딜레이 후 폼 제출
+    setTimeout(() => {
+      console.log('이니시스 모바일 결제 시작');
+      form.submit();
+    }, 100);
+  }
+  
+  /**
+   * 폼 전송 방식 결제 (PC용)
    */
   private submitPaymentForm(orderId: string, params: InicisPaymentParams, prepareData: any) {
     // 이니시스 공식 샘플 기반 HTML 생성

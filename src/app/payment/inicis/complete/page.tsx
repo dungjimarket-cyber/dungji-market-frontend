@@ -14,7 +14,43 @@ function InicisCompleteContent() {
   useEffect(() => {
     const processPaymentResult = async () => {
       try {
-        // 이니시스에서 전달받은 파라미터
+        // URL 파라미터에서 결제 상태 확인 (모바일 결제 응답)
+        const paymentStatus = searchParams.get('status');
+        const paymentMessage = searchParams.get('message');
+        
+        // 모바일 결제 응답 처리
+        if (paymentStatus) {
+          if (paymentStatus === 'success') {
+            const tid = searchParams.get('tid');
+            const amount = searchParams.get('amount');
+            const orderId = searchParams.get('orderId');
+            
+            setStatus('success');
+            setMessage(`결제가 완료되었습니다. (주문번호: ${orderId})`);
+            
+            // 3초 후 입찰권 페이지로 리다이렉트
+            setTimeout(() => {
+              router.push('/mypage/seller/bid-tokens?payment=success');
+            }, 3000);
+          } else if (paymentStatus === 'cancel' || paymentStatus === 'fail') {
+            setStatus('failed');
+            setMessage(paymentMessage ? decodeURIComponent(paymentMessage) : '결제가 취소되었습니다.');
+            
+            setTimeout(() => {
+              router.push('/mypage/seller/bid-tokens?payment=failed');
+            }, 3000);
+          } else if (paymentStatus === 'error') {
+            setStatus('failed');
+            setMessage(paymentMessage ? decodeURIComponent(paymentMessage) : '결제 처리 중 오류가 발생했습니다.');
+            
+            setTimeout(() => {
+              router.push('/mypage/seller/bid-tokens?payment=error');
+            }, 3000);
+          }
+          return;
+        }
+        
+        // PC 결제 응답 처리 (기존 로직)
         const mid = searchParams.get('mid');
         const oid = searchParams.get('oid');
         const amt = searchParams.get('amt');
