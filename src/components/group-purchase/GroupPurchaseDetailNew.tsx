@@ -661,11 +661,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
   const fetchTopBids = async () => {
     try {
+      // 인증 헤더를 조건부로 추가
+      const headers: any = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/bids/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
       
       if (response.ok) {
@@ -773,9 +779,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   useEffect(() => {
-    if (accessToken) {
-      fetchTopBids();
-    }
+    // 인증 여부와 관계없이 입찰 정보를 가져옴
+    fetchTopBids();
   }, [accessToken, groupBuy.id]);
 
   const handleBidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1426,7 +1431,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
               <div className="flex flex-col gap-1">
                 <a
-                  href="https://www.tworld.co.kr/normal.do?serviceId=S_PROD2001&viewId=V_PROD0001"
+                  href="https://www.tworld.co.kr/web/product/plan/list"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
@@ -1435,7 +1440,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <span className="ml-2">→</span>
                 </a>
                 <a
-                  href="https://product.kt.com/wDic/productList.do?cateCode=4001"
+                  href="https://product.kt.com/wDic/index.do?CateCode=6002"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
@@ -1444,7 +1449,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <span className="ml-2">→</span>
                 </a>
                 <a
-                  href="https://www.lguplus.com/plan/5g"
+                  href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
