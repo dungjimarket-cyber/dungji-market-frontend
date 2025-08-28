@@ -602,26 +602,29 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
       {/* 하단 정보 */}
       <div className="p-4 space-y-3 bg-gray-50">
-        {/* 작성자 정보 */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span className="text-sm">👑</span>
-              <span className="text-gray-500 text-xs">방장</span>
-            </div>
-            <div>
+        {/* 작성자 정보 및 참여 현황 */}
+        <div className="space-y-2">
+          {/* 첫번째 줄: 방장 및 참여 인원 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <span className="text-sm">👑</span>
+                <span className="text-gray-500 text-xs">방장</span>
+              </div>
               <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
                 {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
               </p>
-              <p className="text-gray-500 text-xs">
-                {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
-              </p>
             </div>
-          </div>
-          
-          <div className="text-right">
+            
             <p className="text-lg font-bold text-gray-900">
               {groupBuy.current_participants}/{groupBuy.max_participants}명
+            </p>
+          </div>
+          
+          {/* 두번째 줄: 등록일 및 남은 자리 */}
+          <div className="flex items-center justify-between">
+            <p className="text-gray-500 text-xs">
+              등록일: {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
             </p>
             {!isCompleted && (
               <p className="text-gray-500 text-xs">
