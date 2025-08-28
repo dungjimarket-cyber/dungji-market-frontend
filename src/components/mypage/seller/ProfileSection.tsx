@@ -58,23 +58,31 @@ export default function ProfileSection() {
       
       {/* 프로필 카드 */}
       <Card className="mb-6">
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-4 sm:p-6 relative">
+          {/* 모바일: 정보수정 버튼을 오른쪽 상단에 배치 */}
+          <div className="absolute top-4 right-4 sm:hidden">
+            <Link href="/mypage/seller/settings">
+              <Button variant="outline" size="sm" className="flex items-center">
+                <Settings className="h-4 w-4 mr-1" />
+                정보수정
+              </Button>
+            </Link>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col gap-2 w-full sm:w-auto">
-              {/* 첫 번째 줄: 아이디 */}
+            <div className="flex flex-col gap-3 w-full sm:w-auto pr-16 sm:pr-0">
+              {/* 첫 번째 줄: 닉네임 */}
               <div className="text-left">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800">{user.username}</h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 font-medium">닉네임</span>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+                    {user.nickname || user.username}
+                  </h2>
+                </div>
               </div>
               
-              {/* 두 번째 줄: 닉네임 */}
-              <div className="text-left">
-                <p className="text-base sm:text-lg text-gray-600">
-                  {user.nickname || user.username}
-                </p>
-              </div>
-              
-              {/* 세 번째 줄: 판매회원 뱃지 및 사업자인증 마크 */}
-              <div className="flex flex-wrap gap-2 mt-1">
+              {/* 두 번째 줄: 판매회원 뱃지 및 사업자인증 마크 */}
+              <div className="flex flex-wrap gap-2">
                 <Badge className="bg-blue-500 text-white">판매회원</Badge>
                 <Badge 
                   variant="outline" 
@@ -92,7 +100,8 @@ export default function ProfileSection() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
+            {/* PC: 정보수정 버튼을 오른쪽에 배치 */}
+            <div className="hidden sm:flex items-center gap-2">
               <Link href="/mypage/seller/settings">
                 <Button variant="outline" size="sm" className="flex items-center">
                   <Settings className="h-4 w-4 mr-1" />
