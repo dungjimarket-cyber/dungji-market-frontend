@@ -38,11 +38,11 @@ export function PhoneVerification({
         setTimer(prev => prev - 1);
       }, 1000);
       return () => clearInterval(interval);
-    } else if (timer === 0 && codeSent) {
+    } else if (timer === 0 && codeSent && !isVerified) {
       setError('인증번호가 만료되었습니다. 다시 요청해주세요.');
       setCodeSent(false);
     }
-  }, [timer, codeSent]);
+  }, [timer, codeSent, isVerified]);
 
   // 전화번호 입력 핸들러
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,8 +111,10 @@ export function PhoneVerification({
 
       if (result.success) {
         setIsVerified(true);
+        setCodeSent(false); // 인증 완료 시 코드 전송 상태 false로 변경
         setSuccess('휴대폰 인증이 완료되었습니다.');
         setTimer(0);
+        setError(''); // 에러 메시지 초기화
         
         // 인증 완료 콜백 호출
         if (onVerified) {
