@@ -112,8 +112,8 @@ export default function ProfileSection() {
       
       // 프로필 정보 상태 업데이트
       setEmail(user.email || '');
-      // nickname 필드가 있으면 사용, 없으면 username 사용, 둘 다 없으면 이메일 앞부분 사용
-      const displayNickname = user.nickname || user.username || (user.email ? user.email.split('@')[0] : '');
+      // nickname 필드 사용, 없으면 이메일 앞부분 사용 (username은 아이디이므로 닉네임으로 사용하지 않음)
+      const displayNickname = user.nickname || (user.email ? user.email.split('@')[0] : '');
       setNickname(displayNickname);
       setPhoneNumber(user.phone_number || '');
       setAddressRegion(user.address_region || null);
@@ -315,7 +315,7 @@ export default function ProfileSection() {
         
         // 프로필 정보 상태 업데이트
         setEmail(profileData.email);
-        setNickname(profileData.nickname || profileData.username);  // nickname 우선, 없으면 username
+        setNickname(profileData.nickname || '');  // nickname만 사용
         setPhoneNumber(profileData.phone_number || '');
         setAddressRegion(profileData.address_region || null);
         
@@ -455,8 +455,8 @@ export default function ProfileSection() {
                     onClick={() => {
                       setIsEditing(false);
                       setEditField(null);
-                      // 원래 닉네임으로 되돌리기 - nickname 우선, 없으면 username
-                      setNickname(user?.nickname || user?.username || '');
+                      // 원래 닉네임으로 되돌리기
+                      setNickname(user?.nickname || '');
                       setNicknameError('');
                     }}
                     className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
