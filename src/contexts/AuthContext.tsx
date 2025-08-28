@@ -303,6 +303,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   userData = {
                     ...userData,
                     username: profileData.username,
+                    nickname: profileData.nickname, // nickname 필드 추가
                     sns_type: profileData.sns_type,
                     provider: profileData.sns_type, // 호환성을 위해 provider 필드도 설정
                     phone_number: profileData.phone_number,
@@ -318,6 +319,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: profileData.id || decoded?.user_id || '',
                     email: profileData.email || '',
                     username: profileData.username || '',
+                    nickname: profileData.nickname || '', // nickname 필드 추가
                     role: decoded?.role || 'buyer',
                     token: storedToken,
                     sns_type: profileData.sns_type,
@@ -641,6 +643,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: userEmail,
                 role: userRole,
                 username: profileData.username,
+                nickname: profileData.nickname, // nickname 필드 추가
                 phone_number: profileData.phone_number,
                 region: profileData.region,
                 address_region: profileData.address_region,
