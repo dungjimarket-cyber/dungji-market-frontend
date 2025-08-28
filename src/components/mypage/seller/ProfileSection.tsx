@@ -60,37 +60,35 @@ export default function ProfileSection() {
       <Card className="mb-6">
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full sm:w-auto">
-              <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-full overflow-hidden bg-gray-100">
-                <User className="h-full w-full p-3 sm:p-4 text-gray-400" />
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              {/* 첫 번째 줄: 아이디 */}
+              <div className="text-left">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">{user.username}</h2>
               </div>
-
-              <div className="text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row items-center gap-2 mb-1">
-                  <h2 className="text-lg sm:text-xl font-bold">{user.username}</h2>
-                  <Badge className="bg-blue-500">판매회원</Badge>
-                </div>
-
-
-                <div className="flex flex-wrap justify-center sm:justify-start mt-2 text-xs sm:text-sm gap-2">
-                  {/* 본인인증 - 아직 미구현 */}
-                  {/* <Badge variant="outline">
-                    본인인증 완료
-                  </Badge> */}
-                  <Badge 
-                    variant="outline" 
-                    className={sellerProfile?.businessVerified ? 'bg-green-50 text-green-700 border-green-300' : 'text-gray-500 border-gray-300'}
-                  >
-                    {sellerProfile?.businessVerified ? '✓ 사업자인증' : '사업자 미인증'}
+              
+              {/* 두 번째 줄: 닉네임 */}
+              <div className="text-left">
+                <p className="text-base sm:text-lg text-gray-600">
+                  {user.nickname || user.username}
+                </p>
+              </div>
+              
+              {/* 세 번째 줄: 판매회원 뱃지 및 사업자인증 마크 */}
+              <div className="flex flex-wrap gap-2 mt-1">
+                <Badge className="bg-blue-500 text-white">판매회원</Badge>
+                <Badge 
+                  variant="outline" 
+                  className={sellerProfile?.businessVerified ? 'bg-green-50 text-green-700 border-green-300' : 'text-gray-500 border-gray-300'}
+                >
+                  {sellerProfile?.businessVerified ? '✓ 사업자인증' : '사업자 미인증'}
+                </Badge>
+                {/* 비대면 판매 인증 뱃지 */}
+                {(sellerProfile?.remoteSalesVerified || sellerProfile?.remoteSalesStatus === 'approved') && (
+                  <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                    <Trophy className="h-3 w-3 mr-1" />
+                    비대면 판매 인증
                   </Badge>
-                  {/* 비대면 판매 인증 뱃지 */}
-                  {(sellerProfile?.remoteSalesVerified || sellerProfile?.remoteSalesStatus === 'approved') && (
-                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                      <Trophy className="h-3 w-3 mr-1" />
-                      비대면 판매 인증
-                    </Badge>
-                  )}
-                </div>
+                )}
               </div>
             </div>
 
