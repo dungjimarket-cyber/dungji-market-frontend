@@ -35,6 +35,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { PhoneVerification } from '@/components/auth/PhoneVerification';
 
 export default function SellerSettings() {
   const router = useRouter();
@@ -675,21 +676,17 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">
-                    휴대폰번호 <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="휴대폰 번호를 입력하세요 (예: 010-1234-5678)"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">하이픈(-)을 포함하여 입력해주세요</p>
+                  <PhoneVerification
+                    purpose="profile"
+                    defaultValue={formData.phone}
+                    onVerified={(phoneNumber) => {
+                      setFormData(prev => ({ ...prev, phone: phoneNumber }));
+                      toast({
+                        title: '휴대폰 번호 인증 완료',
+                        description: '휴대폰 번호가 인증되었습니다.',
+                      });
+                    }}
+                  />
                 </div>
 
                 <div className="space-y-2">

@@ -1,0 +1,237 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Phone, Shield, CheckCircle } from 'lucide-react';
+import { phoneVerificationService } from '@/lib/api/phoneVerification';
+
+interface PhoneVerificationProps {
+  purpose?: 'signup' | 'profile' | 'password_reset';
+  onVerified?: (phoneNumber: string) => void;
+  className?: string;
+  defaultValue?: string;
+}
+
+export function PhoneVerification({
+  purpose = 'signup',
+  onVerified,
+  className = '',
+  defaultValue = ''
+}: PhoneVerificationProps) {
+  const [phoneNumber, setPhoneNumber] = useState(defaultValue);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // 타이머 효과
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else if (timer === 0 && codeSent) {
+      setError('인증번호가 만료되었습니다. 다시 요청해주세요.');
+      setCodeSent(false);
+    }
+  }, [timer, codeSent]);
+
+  // 전화번호 입력 핸들러
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9-]/g, '');
+    setPhoneNumber(value);
+    setError('');
+  };
+
+  // 인증번호 전송
+  const handleSendCode = async () => {
+    if (!phoneNumber) {
+      setError('휴대폰 번호를 입력해주세요.');
+      return;
+    }
+
+    if (!phoneVerificationService.validatePhoneNumber(phoneNumber)) {
+      setError('올바른 휴대폰 번호 형식이 아닙니다.');
+      return;
+    }
+
+    setIsSending(true);
+    setError('');
+
+    try {
+      const result = await phoneVerificationService.sendVerification({
+        phone_number: phoneNumber,
+        purpose
+      });
+
+      if (result.success) {
+        setSuccess('인증번호가 발송되었습니다.');
+        setCodeSent(true);
+        setTimer(180); // 3분 타이머
+        setVerificationCode('');
+      } else {
+        setError(result.message);
+      }
+    } catch (err: any) {
+      setError(err.message || '인증번호 발송에 실패했습니다.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // 인증번호 확인
+  const handleVerifyCode = async () => {
+    if (!verificationCode) {
+      setError('인증번호를 입력해주세요.');
+      return;
+    }
+
+    if (verificationCode.length !== 6) {
+      setError('인증번호는 6자리입니다.');
+      return;
+    }
+
+    setIsVerifying(true);
+    setError('');
+
+    try {
+      const result = await phoneVerificationService.verifyPhone({
+        phone_number: phoneNumber,
+        verification_code: verificationCode,
+        purpose
+      });
+
+      if (result.success) {
+        setIsVerified(true);
+        setSuccess('휴대폰 인증이 완료되었습니다.');
+        setTimer(0);
+        
+        // 인증 완료 콜백 호출
+        if (onVerified) {
+          onVerified(phoneNumber);
+        }
+      } else {
+        setError(result.message);
+      }
+    } catch (err: any) {
+      setError(err.message || '인증에 실패했습니다.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // 타이머 포맷팅
+  const formatTimer = () => {
+    const minutes = Math.floor(timer / 60);
+    const seconds = timer % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className={`space-y-4 ${className}`}>
+      <div className="space-y-2">
+        <Label htmlFor="phone">
+          휴대폰 번호
+          {isVerified && (
+            <span className="ml-2 text-green-600 text-sm">
+              <CheckCircle className="inline w-4 h-4 mr-1" />
+              인증완료
+            </span>
+          )}
+        </Label>
+        
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="010-1234-5678"
+              value={phoneNumber}
+              onChange={handlePhoneChange}
+              disabled={isVerified}
+              className={isVerified ? 'bg-gray-50' : ''}
+            />
+          </div>
+          
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSendCode}
+            disabled={isSending || isVerified || (codeSent && timer > 0)}
+            className="min-w-[100px]"
+          >
+            {isSending ? (
+              '발송 중...'
+            ) : codeSent && timer > 0 ? (
+              `재발송 ${formatTimer()}`
+            ) : (
+              '인증번호 발송'
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {codeSent && !isVerified && (
+        <div className="space-y-2">
+          <Label htmlFor="code">인증번호</Label>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                id="code"
+                type="text"
+                placeholder="6자리 숫자 입력"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                maxLength={6}
+              />
+            </div>
+            
+            <Button
+              type="button"
+              onClick={handleVerifyCode}
+              disabled={isVerifying || timer === 0}
+              className="min-w-[100px]"
+            >
+              {isVerifying ? '확인 중...' : '인증 확인'}
+            </Button>
+          </div>
+          
+          {timer > 0 && (
+            <p className="text-sm text-gray-600">
+              남은 시간: {formatTimer()}
+            </p>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">{success}</AlertDescription>
+        </Alert>
+      )}
+
+      {purpose === 'signup' && (
+        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+          <Shield className="inline w-4 h-4 mr-1" />
+          휴대폰 인증은 안전한 거래를 위해 필요합니다.
+          인증된 번호는 거래 알림 등에 사용됩니다.
+        </div>
+      )}
+    </div>
+  );
+}

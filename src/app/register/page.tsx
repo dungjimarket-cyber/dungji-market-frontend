@@ -9,8 +9,8 @@ import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
-// import { sendVerificationCode, verifyCode } from '@/lib/api/phoneVerification';
-// import { useToast } from '@/components/ui/use-toast'; // 휴대폰 인증 기능 임시 비활성화
+import { PhoneVerification } from '@/components/auth/PhoneVerification';
+import { useToast } from '@/components/ui/use-toast';
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
 import { verifyBusinessNumberForRegistration, type BusinessVerificationRegistrationResult } from '@/lib/api/businessVerification';
 
@@ -53,6 +53,7 @@ function RegisterPageContent() {
     customEmailDomain: isCommonDomain ? '' : initialEmailDomain, // 직접 입력 도메인
     nickname: '',
     phone: '',
+    phoneVerified: false,
     password: '',
     confirmPassword: '',
     role: memberTypeParam || 'buyer', // 'buyer' or 'seller'
@@ -308,11 +309,11 @@ function RegisterPageContent() {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setFormData(prev => ({ ...prev, phone: formatted }));
-    // 휴대폰 인증 기능 임시 비활성화
-  };
+  // PhoneVerification 컴포넌트 사용으로 불필요
+  // const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const formatted = formatPhoneNumber(e.target.value);
+  //   setFormData(prev => ({ ...prev, phone: formatted }));
+  // };
   
   // 사업자등록번호 포맷팅
   const formatBusinessRegNumber = (value: string) => {
@@ -444,8 +445,16 @@ function RegisterPageContent() {
     if (!formData.phone) {
       setError('휴대폰 번호를 입력해주세요.');
       setIsLoading(false);
-      const phoneInput = document.getElementById('phone');
-      scrollToInputField(phoneInput);
+      const phoneSection = document.querySelector('[data-phone-verification]') as HTMLElement;
+      scrollToInputField(phoneSection);
+      return;
+    }
+
+    if (!formData.phoneVerified) {
+      setError('휴대폰 인증을 완료해주세요.');
+      setIsLoading(false);
+      const phoneSection = document.querySelector('[data-phone-verification]') as HTMLElement;
+      scrollToInputField(phoneSection);
       return;
     }
 
@@ -1341,23 +1350,15 @@ function RegisterPageContent() {
                     )}
                   </div>
 
-                  {/* 휴대폰 번호 - 인증 기능 임시 제거 */}
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                      휴대폰 번호 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      required
-                      className="w-full appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="010-0000-0000"
-                      value={formData.phone}
-                      onChange={handlePhoneChange}
-                      maxLength={13}
+                  {/* 휴대폰 번호 인증 */}
+                  <div data-phone-verification>
+                    <PhoneVerification
+                      purpose="signup"
+                      onVerified={(phoneNumber) => {
+                        setFormData(prev => ({ ...prev, phone: phoneNumber, phoneVerified: true }));
+                      }}
+                      defaultValue={formData.phone}
                     />
-                    <p className="text-xs text-gray-500 mt-1">본인 인증 및 낙찰 알림 수신용</p>
                   </div>
 
                   {/* 주요 활동지역 */}
