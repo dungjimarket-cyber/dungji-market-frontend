@@ -163,10 +163,7 @@ export default function PurchaseConfirmedGroupBuys() {
         <CardContent className="p-8">
           <div className="text-center">
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">구매 확정된 공구가 없습니다.</p>
-            <p className="text-sm text-gray-400 mt-2">
-              판매자가 확정하고 배송 준비 중인 공구가 있으면 여기에 표시됩니다.
-            </p>
+            <p className="text-gray-500">거래중인 공구가 없습니다.</p>
           </div>
         </CardContent>
       </Card>
