@@ -179,22 +179,30 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
 
   return (
     <div className="bg-white rounded-lg border shadow-sm p-4 mb-6">
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* 통합 검색창 */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="상품명, 브랜드, 키워드로 검색하세요..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="pl-10 pr-4 py-2 w-full"
-          />
+      <div className="flex flex-col gap-4">
+        {/* 검색창 + 검색 버튼 */}
+        <div className="flex gap-2">
+          {/* 통합 검색창 - 모바일: 75%, PC: 자동 확장 */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="상품명, 브랜드, 키워드로 검색하세요..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="pl-10 pr-4 py-2 w-full"
+            />
+          </div>
+          
+          {/* 검색 버튼 - 모바일: 25%, PC: 자동 너비 */}
+          <Button onClick={handleSearch} className="px-4 sm:px-6 w-[25%] sm:w-auto sm:min-w-[80px]">
+            검색
+          </Button>
         </div>
 
         {/* 내지역 필터 - 시/도 + 시/군/구 */}
-        <div className="flex items-center gap-2 min-w-[320px]">
+        <div className="flex items-center gap-2">
           <MapPin className="text-gray-400 w-4 h-4 flex-shrink-0" />
           
           {/* 시/도 선택 */}
@@ -232,11 +240,6 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
           </div>
         </div>
-
-        {/* 검색 버튼 */}
-        <Button onClick={handleSearch} className="px-6 min-w-[80px]">
-          검색
-        </Button>
       </div>
     </div>
   );
