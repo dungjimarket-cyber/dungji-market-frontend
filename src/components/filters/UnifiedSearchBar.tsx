@@ -117,9 +117,9 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     setSelectedCity(''); // 시/도 변경 시 시/군/구 초기화
     
     // 지역 변경 시 즉시 검색 실행
+    const searchTerms = searchQuery; // 검색어 그대로 사용
+    
     if (province) {
-      const searchTerms = searchQuery; // 검색어 그대로 사용
-      
       const expandedRegions = expandRegionSearch(province);
       console.log(`시/도 선택: ${province}, 확장된 지역: ${expandedRegions.length}개`, expandedRegions.slice(0, 5));
       const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : province;
@@ -130,6 +130,14 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       if (searchQuery) params.set('search', searchQuery);
       params.set('region', province);
       router.push(`?${params.toString()}`);
+    } else {
+      // 시/도 선택 해제 시 전체 검색
+      onSearchChange?.(searchTerms, '');
+      
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) params.set('search', searchQuery);
+      params.delete('region');
+      router.push(`?${params.toString()}`);
     }
   };
 
@@ -139,19 +147,33 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     setSelectedCity(city);
     
     // 지역 변경 시 즉시 검색 실행
-    if (selectedProvince && city) {
-      const searchTerms = searchQuery; // 검색어 그대로 사용
-      
-      const regionStr = `${selectedProvince} ${city}`;
-      const expandedRegions = expandRegionSearch(regionStr);
-      const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
-      
-      onSearchChange?.(searchTerms, regionSearchTerms);
-      
-      const params = new URLSearchParams(searchParams.toString());
-      if (searchQuery) params.set('search', searchQuery);
-      params.set('region', regionStr);
-      router.push(`?${params.toString()}`);
+    const searchTerms = searchQuery; // 검색어 그대로 사용
+    
+    if (selectedProvince) {
+      if (city) {
+        // 시/군/구가 선택된 경우
+        const regionStr = `${selectedProvince} ${city}`;
+        const expandedRegions = expandRegionSearch(regionStr);
+        const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
+        
+        onSearchChange?.(searchTerms, regionSearchTerms);
+        
+        const params = new URLSearchParams(searchParams.toString());
+        if (searchQuery) params.set('search', searchQuery);
+        params.set('region', regionStr);
+        router.push(`?${params.toString()}`);
+      } else {
+        // 시/군/구 선택 해제 시 시/도만으로 검색
+        const expandedRegions = expandRegionSearch(selectedProvince);
+        const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
+        
+        onSearchChange?.(searchTerms, regionSearchTerms);
+        
+        const params = new URLSearchParams(searchParams.toString());
+        if (searchQuery) params.set('search', searchQuery);
+        params.set('region', selectedProvince);
+        router.push(`?${params.toString()}`);
+      }
     }
   };
 
