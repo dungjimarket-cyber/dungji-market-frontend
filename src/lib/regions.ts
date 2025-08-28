@@ -38,7 +38,7 @@ export const regions: Region[] = [
   },
   {
     name: '광주광역시',
-    cities: ['광산구', '동구', '북구', '서구']
+    cities: ['광산구', '남구', '동구', '북구', '서구']
   },
   {
     name: '대전광역시',
