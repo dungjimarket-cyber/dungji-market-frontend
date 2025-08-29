@@ -175,7 +175,7 @@ export function PhoneVerification({
             <Input
               id="phone"
               type="tel"
-              placeholder="010-1234-5678"
+              placeholder="휴대폰 번호를 입력하세요"
               value={phoneNumber}
               onChange={handlePhoneChange}
               disabled={isVerified}
