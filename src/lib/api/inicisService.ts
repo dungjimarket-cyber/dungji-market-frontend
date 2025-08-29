@@ -15,8 +15,8 @@ interface InicisPaymentParams {
 }
 
 class InicisService {
-  private readonly MID = 'INIpayTest'; // 테스트 상점 아이디 (계약 전)
-  private readonly isProduction = false; // 테스트 환경 강제 설정
+  private readonly MID = 'dungjima14'; // 실제 상점 아이디
+  private readonly MOBILE_HASHKEY = 'D1EEF4CE7B4D9B1795BBFD255D35FE24'; // 모바일 hashkey
   
   /**
    * 모바일 디바이스 여부 확인
@@ -45,11 +45,10 @@ class InicisService {
       console.log('결제 환경:', isMobile ? '모바일' : 'PC');
       
       if (isMobile) {
-        // 모바일 결제 처리
-        this.submitMobilePaymentForm(orderId, params);
+        // 모바일 전용 결제 방식
+        await this.submitMobilePaymentForm(orderId, params);
       } else {
-        // PC 결제 처리 - 기존 로직
-        // 백엔드에서 서명 생성 및 결제 준비
+        // PC 전용 결제 방식
         const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
           method: 'POST',
           headers: {
@@ -71,10 +70,7 @@ class InicisService {
         }
 
         const prepareData = await prepareResponse.json();
-        
-        // 폼 전송 방식으로 직접 처리
-        console.log('이니시스 PC 결제 - 폼 전송 방식을 사용합니다.');
-        this.submitPaymentForm(orderId, params, prepareData);
+        this.submitPCPaymentForm(orderId, params, prepareData);
       }
 
     } catch (error) {
@@ -84,9 +80,12 @@ class InicisService {
   }
   
   /**
-   * 모바일 결제 폼 전송
+   * 모바일 전용 결제 폼 전송
    */
-  private submitMobilePaymentForm(orderId: string, params: InicisPaymentParams) {
+  private async submitMobilePaymentForm(orderId: string, params: InicisPaymentParams) {
+    // 모바일 결제는 해시키 생성이 필요
+    const mobileHash = await this.generateMobileHash(orderId, params.amount);
+    
     // DOM에 직접 폼을 생성하고 제출
     const form = document.createElement('form');
     form.method = 'post';
@@ -116,6 +115,11 @@ class InicisService {
     addField('P_CHARSET', 'utf8'); // 인코딩
     addField('P_RESERVED', 'below1000=Y&vbank_receipt=Y&centerCd=Y'); // 추가 옵션
     addField('P_NOTI', orderId); // 가맹점 임의 데이터
+    addField('P_HPP_METHOD', '1'); // 휴대폰 결제 허용
+    addField('P_VBANK_DT', '7'); // 가상계좌 입금기한 (7일)
+    if (mobileHash) {
+      addField('P_HASH', mobileHash); // 모바일 해시키
+    }
     
     // 폼을 body에 추가하고 제출
     document.body.appendChild(form);
@@ -149,22 +153,22 @@ class InicisService {
       form.submit();
     }, 100);
   }
-  
+
   /**
-   * 폼 전송 방식 결제 (PC용)
+   * PC 전용 결제 폼 (팝업)
    */
-  private submitPaymentForm(orderId: string, params: InicisPaymentParams, prepareData: any) {
+  private submitPCPaymentForm(orderId: string, params: InicisPaymentParams, prepareData: any) {
     // 이니시스 공식 샘플 기반 HTML 생성
-    const testHtml = `
+    const paymentHtml = `
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KG이니시스 결제</title>
-  <!-- 테스트 JS -->
-  <script language="javascript" type="text/javascript" src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js" charset="UTF-8"></script>
+  <!-- 운영 JS -->
+  <script language="javascript" type="text/javascript" src="https://stdpay.inicis.com/stdjs/INIStdPay.js" charset="UTF-8"></script>
   <script type="text/javascript">
     function startPayment() {
       INIStdPay.pay('SendPayForm_id');
@@ -213,6 +217,7 @@ class InicisService {
   <div style="padding: 50px; text-align: center; font-family: sans-serif;">
     <h2>결제 준비 중...</h2>
     <p style="color: #666;">잠시만 기다려주세요.</p>
+    <p style="color: #999; font-size: 12px;">PC 결제창을 준비하고 있습니다.</p>
   </div>
   
   <script>
@@ -220,7 +225,7 @@ class InicisService {
     window.onload = function() {
       setTimeout(function() {
         if (typeof INIStdPay !== 'undefined') {
-          console.log('이니시스 결제 시작');
+          console.log('이니시스 PC 결제 시작');
           INIStdPay.pay('SendPayForm_id');
         } else {
           console.error('이니시스 스크립트 로드 실패');
@@ -233,11 +238,12 @@ class InicisService {
 </html>
     `;
     
-    // 새 창 열기
+    // PC용 팝업 창 열기
     const payWindow = window.open('', 'inicis_payment', 'width=720,height=630,scrollbars=yes,resizable=yes');
     
     if (payWindow) {
-      payWindow.document.write(testHtml);
+      payWindow.document.open();
+      payWindow.document.write(paymentHtml);
       payWindow.document.close();
     } else {
       alert('팝업 차단을 해제해주세요. 결제창을 열 수 없습니다.');
@@ -245,52 +251,31 @@ class InicisService {
   }
 
   /**
-   * 이니시스 스크립트 로드
+   * 모바일 해시키 생성 (백엔드에서 처리)
    */
-  private async loadInicisScript(): Promise<boolean> {
-    return new Promise((resolve) => {
-      // 이미 로드되어 있으면 확인
-      if (typeof (window as any).INIStdPay !== 'undefined') {
-        console.log('이니시스 SDK가 이미 로드되어 있습니다.');
-        resolve(true);
-        return;
-      }
+  private async generateMobileHash(orderId: string, amount: number): Promise<string | null> {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/mobile-hash/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+        },
+        body: JSON.stringify({
+          orderId,
+          amount,
+        }),
+      });
 
-      // 스크립트가 이미 추가되었는지 확인
-      if (document.getElementById('inicis-script')) {
-        // 스크립트는 있지만 아직 로드 중일 수 있음
-        setTimeout(() => {
-          resolve(typeof (window as any).INIStdPay !== 'undefined');
-        }, 500);
-        return;
+      if (response.ok) {
+        const data = await response.json();
+        return data.hash;
       }
-
-      const script = document.createElement('script');
-      script.id = 'inicis-script';
-      script.async = true;
-      
-      // 환경에 따른 SDK URL 설정
-      if (this.isProduction) {
-        script.src = 'https://stdpay.inicis.com/stdjs/INIStdPay.js';
-      } else {
-        script.src = 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js';
-      }
-      
-      script.onload = () => {
-        console.log('이니시스 SDK 로드 성공');
-        // SDK 로드 후 잠시 대기 (초기화 시간)
-        setTimeout(() => {
-          resolve(typeof (window as any).INIStdPay !== 'undefined');
-        }, 100);
-      };
-      
-      script.onerror = () => {
-        console.warn('이니시스 SDK 로드 실패 - 폼 전송 방식을 사용합니다.');
-        resolve(false);
-      };
-      
-      document.head.appendChild(script);
-    });
+      return null;
+    } catch (error) {
+      console.warn('모바일 해시키 생성 실패:', error);
+      return null;
+    }
   }
 
   /**
