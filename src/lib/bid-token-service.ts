@@ -43,6 +43,18 @@ export interface PurchaseBidTokenResponse {
   expires_at: string | null;
 }
 
+export interface PendingPayment {
+  id: number;
+  order_id: string;
+  amount: number;
+  product_name: string;
+  vbank_name: string;
+  vbank_num: string;
+  vbank_holder: string;
+  vbank_date: string;
+  created_at: string;
+}
+
 /**
  * 입찰권 관련 서비스 함수들을 제공하는 객체
  * 
@@ -133,6 +145,28 @@ const bidTokenService = {
     } catch (error) {
       console.error('입찰권 확인 중 오류 발생:', error);
       return false; // 오류 발생 시 기본적으로 입찰 불가능으로 처리
+    }
+  },
+
+  /**
+   * 입금 대기 중인 결제 내역을 조회합니다.
+   * @returns 입금 대기 중인 결제 목록
+   * @example
+   * // 입금 대기 내역 조회
+   * const pendingPayments = await bidTokenService.getPendingPayments();
+   * console.log(`대기 중인 결제: ${pendingPayments.length}건`);
+   */
+  async getPendingPayments(): Promise<PendingPayment[]> {
+    try {
+      const data = await tokenUtils.fetchWithAuth<PendingPayment[]>(
+        `${API_URL}/payments/pending/`,
+        { method: 'GET' }
+      );
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching pending payments:', error);
+      throw error;
     }
   },
 };

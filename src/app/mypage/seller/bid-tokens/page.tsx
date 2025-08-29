@@ -16,7 +16,8 @@ import { Star, Clock, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import bidTokenService, { 
   BidTokenResponse, 
   BidTokenPurchase, 
-  PurchaseBidTokenRequest 
+  PurchaseBidTokenRequest,
+  PendingPayment
 } from '@/lib/bid-token-service';
 import { inicisService } from '@/lib/api/inicisService';
 
@@ -30,6 +31,19 @@ export default function BidTokensPage() {
   const itemsPerPage = 10;
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+
+  // 입금 대기 중인 결제 내역을 위한 state
+  const [pendingPayments, setPendingPayments] = useState<PendingPayment[]>([]);
+
+  // 입금 대기 중인 결제 내역 로드
+  const loadPendingPayments = async () => {
+    try {
+      const payments = await bidTokenService.getPendingPayments();
+      setPendingPayments(payments);
+    } catch (error) {
+      console.error('입금 대기 내역 로드 실패:', error);
+    }
+  };
 
   // 상품 가격 정보
   const priceInfo = {
@@ -113,6 +127,9 @@ export default function BidTokensPage() {
         setLoading(true);
         const data = await bidTokenService.getBidTokens();
         setBidTokens(data);
+        
+        // 입금 대기 내역도 함께 로드
+        await loadPendingPayments();
       } catch (error) {
         console.error('견적 이용권 정보 로드 오류:', error);
         
@@ -311,66 +328,157 @@ export default function BidTokensPage() {
           </Card>
 
           <div className="mt-6">
-            <h3 className="text-base font-semibold mb-3">최근 구매 내역</h3>
-            {bidTokens && bidTokens.recent_purchases.length > 0 ? (
-              <>
-                <div className="space-y-2">
-                  {bidTokens.recent_purchases
-                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                    .map((purchase) => (
-                    <Card key={purchase.id} className="bg-slate-50">
-                      <CardContent className="p-3">
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="text-sm font-medium">
-                              {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
-                                ? `견적 이용권 ${purchase.quantity}개`
-                                : purchase.token_type === 'unlimited' || purchase.token_type_display?.includes('무제한')
-                                ? '무제한 구독권'
-                                : `${purchase.token_type_display} ${purchase.quantity}개`
-                              }
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(purchase.purchase_date).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <p className="text-sm font-semibold">
-                            {purchase.total_price.toLocaleString()}원
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                {bidTokens.recent_purchases.length > itemsPerPage && (
-                  <div className="flex justify-center gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      이전
-                    </Button>
-                    <span className="text-sm flex items-center px-3">
-                      {currentPage} / {Math.ceil(bidTokens.recent_purchases.length / itemsPerPage)}
+            <Tabs defaultValue="history" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="history">구매 내역</TabsTrigger>
+                <TabsTrigger value="pending">
+                  입금 대기
+                  {pendingPayments.length > 0 && (
+                    <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                      {pendingPayments.length}
                     </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(Math.ceil(bidTokens.recent_purchases.length / itemsPerPage), prev + 1))}
-                      disabled={currentPage === Math.ceil(bidTokens.recent_purchases.length / itemsPerPage)}
-                    >
-                      다음
-                    </Button>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="history" className="mt-4">
+                {bidTokens && bidTokens.recent_purchases.length > 0 ? (
+                  <>
+                    <div className="space-y-2">
+                      {bidTokens.recent_purchases
+                        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                        .map((purchase) => (
+                        <Card key={purchase.id} className="bg-slate-50">
+                          <CardContent className="p-3">
+                            <div className="flex justify-between">
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
+                                    ? `견적 이용권 ${purchase.quantity}개`
+                                    : purchase.token_type === 'unlimited' || purchase.token_type_display?.includes('무제한')
+                                    ? '무제한 구독권'
+                                    : `${purchase.token_type_display} ${purchase.quantity}개`
+                                  }
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(purchase.purchase_date).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <p className="text-sm font-semibold">
+                                {purchase.total_price.toLocaleString()}원
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    {bidTokens.recent_purchases.length > itemsPerPage && (
+                      <div className="flex justify-center gap-2 mt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                        >
+                          이전
+                        </Button>
+                        <span className="text-sm flex items-center px-3">
+                          {currentPage} / {Math.ceil(bidTokens.recent_purchases.length / itemsPerPage)}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.min(Math.ceil(bidTokens.recent_purchases.length / itemsPerPage), prev + 1))}
+                          disabled={currentPage === Math.ceil(bidTokens.recent_purchases.length / itemsPerPage)}
+                        >
+                          다음
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    최근 구매 내역이 없습니다.
+                  </p>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="pending" className="mt-4">
+                {pendingPayments.length > 0 ? (
+                  <div className="space-y-3">
+                    {pendingPayments.map((payment) => (
+                      <Card key={payment.id} className="bg-yellow-50 border-yellow-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className="text-sm font-semibold text-yellow-800">
+                                {payment.product_name}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                주문번호: {payment.order_id}
+                              </p>
+                            </div>
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 text-yellow-600 mr-1" />
+                              <span className="text-sm text-yellow-700">입금 대기</span>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded-md border">
+                            <h4 className="text-sm font-semibold mb-2 text-gray-800">무통장 입금 정보</h4>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">은행</span>
+                                <span className="font-medium">{payment.vbank_name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">계좌번호</span>
+                                <span className="font-medium font-mono">{payment.vbank_num}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">예금주</span>
+                                <span className="font-medium">{payment.vbank_holder}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">입금금액</span>
+                                <span className="font-bold text-red-600">{payment.amount.toLocaleString()}원</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">입금기한</span>
+                                <span className="font-medium text-red-600">
+                                  {new Date(payment.vbank_date).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center justify-between">
+                            <p className="text-xs text-gray-500">
+                              결제 요청: {new Date(payment.created_at).toLocaleString()}
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadPendingPayments()}
+                              className="text-xs"
+                            >
+                              상태 새로고침
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">
+                      입금 대기 중인 결제가 없습니다.
+                    </p>
                   </div>
                 )}
-              </>
-            ) : (
-              <p className="text-sm text-gray-500 text-center py-4">
-                최근 구매 내역이 없습니다.
-              </p>
-            )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 

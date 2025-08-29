@@ -24,6 +24,10 @@ export async function POST(req: NextRequest) {
       P_TID,
       P_OID,
       P_AMT,
+      P_NOTI,
+      P_AUTH_DT,
+      P_TYPE,
+      P_REQ_URL
     });
     
     // 인증 결과 성공 (00 = 성공)
@@ -50,7 +54,10 @@ export async function POST(req: NextRequest) {
       
       if (finalStatus === '00') {
         // 결제 성공 - 성공 페이지로 리다이렉트
-        const successUrl = `/payment/inicis/complete?status=success&tid=${P_TID}&amount=${P_AMT}&orderId=${P_OID}`;
+        const orderId = P_OID || P_NOTI || 'unknown'; // P_OID가 없으면 P_NOTI 사용, 둘 다 없으면 'unknown'
+        const successUrl = `/payment/inicis/complete?status=success&tid=${P_TID}&amount=${P_AMT}&orderId=${orderId}`;
+        
+        console.log('모바일 결제 성공 - 리다이렉트 URL:', successUrl);
         return NextResponse.redirect(new URL(successUrl, req.url));
       } else {
         // 결제 실패
