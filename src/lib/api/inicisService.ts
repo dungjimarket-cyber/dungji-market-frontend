@@ -85,6 +85,7 @@ class InicisService {
         console.log('prepare 응답 데이터:', prepareResponseData);
         
         console.log('PC 팝업 열기 시작');
+        console.log('PC 팝업용 데이터:', prepareResponseData);
         this.submitPCPaymentForm(orderId, params, prepareResponseData);
       }
 
@@ -173,6 +174,10 @@ class InicisService {
    * PC 전용 결제 폼 (팝업)
    */
   private submitPCPaymentForm(orderId: string, params: InicisPaymentParams, prepareData: any) {
+    console.log('submitPCPaymentForm 호출됨');
+    console.log('orderId:', orderId);
+    console.log('params:', params);
+    console.log('prepareData:', prepareData);
     // 이니시스 공식 샘플 기반 HTML 생성
     const paymentHtml = `
 <!DOCTYPE html>
@@ -295,13 +300,18 @@ class InicisService {
     `;
     
     // PC용 팝업 창 열기
+    console.log('팝업 창 열기 시도...');
     const payWindow = window.open('', 'inicis_payment', 'width=720,height=630,scrollbars=yes,resizable=yes');
+    console.log('팝업 창 객체:', payWindow);
     
     if (payWindow) {
+      console.log('팝업 창 열기 성공, HTML 작성 중...');
       payWindow.document.open();
       payWindow.document.write(paymentHtml);
       payWindow.document.close();
+      console.log('팝업 창 HTML 작성 완료');
     } else {
+      console.error('팝업 창 열기 실패 - 팝업 차단 또는 브라우저 제한');
       alert('팝업 차단을 해제해주세요. 결제창을 열 수 없습니다.');
     }
   }
