@@ -271,6 +271,8 @@ function RegisterPageContent() {
 
   // 닉네임 중복 체크
   const checkNickname = async () => {
+    setError(''); // 이전 에러 메시지 초기화
+    
     if (!formData.nickname) {
       setError('닉네임을 입력해주세요.');
       return;
@@ -278,7 +280,6 @@ function RegisterPageContent() {
 
     // 닉네임 길이 체크 (2-10자)
     if (formData.nickname.length < 2 || formData.nickname.length > 10) {
-      setError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
       setNicknameChecked(true);
       setNicknameAvailable(false);
       return;
@@ -286,7 +287,6 @@ function RegisterPageContent() {
 
     // 공백 체크
     if (formData.nickname.includes(' ')) {
-      setError('닉네임에 공백을 포함할 수 없습니다.');
       setNicknameChecked(true);
       setNicknameAvailable(false);
       return;
@@ -306,11 +306,8 @@ function RegisterPageContent() {
       setNicknameAvailable(data.available);
       
       if (!data.available) {
-        setError('이미 사용 중인 닉네임입니다.');
         // 모바일 친화적인 스크롤 및 포커스
         scrollToInputField(nicknameRef.current);
-      } else {
-        setError('');
       }
     } catch (err) {
       setError('닉네임 중복 확인 중 오류가 발생했습니다.');
@@ -1358,7 +1355,13 @@ function RegisterPageContent() {
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                               </svg>
-                              <span className="font-medium">이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.</span>
+                              <span className="font-medium">
+                                {formData.nickname.length < 2 || formData.nickname.length > 10 
+                                  ? '닉네임은 2자 이상 10자 이하로 입력해주세요.'
+                                  : formData.nickname.includes(' ')
+                                  ? '닉네임에 공백을 포함할 수 없습니다.'
+                                  : '이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.'}
+                              </span>
                             </>
                           )}
                         </p>
