@@ -192,12 +192,15 @@ class InicisService {
   <script type="text/javascript">
     // 이니시스 스크립트 동적 로드 (document.write 대신 사용)
     function loadInicisScript() {
+      console.log('loadInicisScript 호출됨');
       return new Promise((resolve, reject) => {
         if (typeof INIStdPay !== 'undefined') {
+          console.log('INIStdPay 이미 로드되어 있음');
           resolve(true);
           return;
         }
         
+        console.log('INIStdPay 스크립트 로딩 시작');
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.charset = 'UTF-8';
@@ -206,6 +209,7 @@ class InicisService {
         
         script.onload = function() {
           console.log('이니시스 스크립트 로드 성공');
+          console.log('INIStdPay 객체:', typeof INIStdPay);
           resolve(true);
         };
         
@@ -214,15 +218,21 @@ class InicisService {
           reject(new Error('이니시스 스크립트 로드 실패'));
         };
         
+        console.log('스크립트 태그 추가');
         document.head.appendChild(script);
       });
     }
     
     function startPayment() {
+      console.log('startPayment 호출됨');
       loadInicisScript().then(() => {
+        console.log('스크립트 로드 완료, 결제 시작');
         if (typeof INIStdPay !== 'undefined') {
+          console.log('INIStdPay.pay 호출 시작');
           INIStdPay.pay('SendPayForm_id');
+          console.log('INIStdPay.pay 호출 완료');
         } else {
+          console.error('INIStdPay가 정의되지 않음');
           throw new Error('INIStdPay not loaded');
         }
       }).catch((error) => {
@@ -281,16 +291,21 @@ class InicisService {
     // 페이지 로드 후 자동 결제 시작 (개선된 방식)
     document.addEventListener('DOMContentLoaded', function() {
       console.log('결제 페이지 로드 완료, 이니시스 스크립트 로딩 시작');
+      console.log('document.readyState:', document.readyState);
       
       // 약간의 딜레이 후 결제 시작
       setTimeout(function() {
+        console.log('500ms 딜레이 후 결제 시작');
         startPayment();
       }, 500);
     });
     
     // fallback for older browsers
     window.onload = function() {
+      console.log('window.onload 이벤트 발생');
+      console.log('document.readyState:', document.readyState);
       if (document.readyState === 'complete') {
+        console.log('fallback으로 결제 시작');
         setTimeout(startPayment, 500);
       }
     };
