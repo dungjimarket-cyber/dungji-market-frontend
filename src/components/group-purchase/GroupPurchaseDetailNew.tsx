@@ -187,6 +187,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     total_participants: number;
     confirmed_count: number;
     confirmation_rate: number;
+    pending_count?: number;
+    declined_count?: number;
   } | null>(null);
 
   useEffect(() => {
@@ -2673,6 +2675,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           totalParticipants={buyerConfirmationData.total_participants}
           confirmedCount={buyerConfirmationData.confirmed_count}
           confirmationRate={buyerConfirmationData.confirmation_rate}
+          pendingCount={buyerConfirmationData.pending_count}
+          declinedCount={buyerConfirmationData.declined_count}
         />
       )}
       </div>
