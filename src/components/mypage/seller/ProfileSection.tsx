@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, User, Ticket, CheckCircle2, Trophy } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import bidTokenService, { BidTokenResponse } from '@/lib/bid-token-service';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
@@ -74,6 +75,13 @@ export default function ProfileSection() {
               {/* 첫 번째 줄: 닉네임 */}
               <div className="text-left">
                 <div className="flex items-center gap-2">
+                  <Image
+                    src="/logos/seller_img.png"
+                    alt="판매회원"
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                  />
                   <span className="text-sm text-gray-500 font-medium">닉네임</span>
                   <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                     {user.nickname || user.username}
