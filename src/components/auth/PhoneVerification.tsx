@@ -21,7 +21,27 @@ export function PhoneVerification({
   className = '',
   defaultValue = ''
 }: PhoneVerificationProps) {
-  const [phoneNumber, setPhoneNumber] = useState(defaultValue);
+  // 전화번호 포맷팅 함수 (컴포넌트 외부로 이동하여 초기값에도 사용)
+  const formatPhoneNumber = (value: string): string => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^0-9]/g, '');
+    
+    // 11자리 초과 방지
+    const limitedNumbers = numbers.slice(0, 11);
+    
+    // 포맷팅 적용
+    if (limitedNumbers.length <= 3) {
+      return limitedNumbers;
+    } else if (limitedNumbers.length <= 7) {
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
+    } else if (limitedNumbers.length <= 11) {
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3, 7)}-${limitedNumbers.slice(7)}`;
+    }
+    
+    return value;
+  };
+
+  const [phoneNumber, setPhoneNumber] = useState(defaultValue ? formatPhoneNumber(defaultValue) : '');
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -46,8 +66,8 @@ export function PhoneVerification({
 
   // 전화번호 입력 핸들러
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9-]/g, '');
-    setPhoneNumber(value);
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
     setError('');
   };
 
@@ -116,7 +136,7 @@ export function PhoneVerification({
         setTimer(0);
         setError(''); // 에러 메시지 초기화
         
-        // 인증 완료 콜백 호출
+        // 인증 완료 콜백 호출 (포맷된 번호 전달)
         if (onVerified) {
           onVerified(phoneNumber);
         }
