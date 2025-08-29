@@ -43,34 +43,49 @@ class InicisService {
       // 모바일/PC 구분
       const isMobile = this.isMobileDevice();
       console.log('결제 환경:', isMobile ? '모바일' : 'PC');
+      console.log('결제 파라미터:', { orderId, amount: params.amount, productName: params.productName });
       
       if (isMobile) {
         // 모바일 전용 결제 방식
+        console.log('모바일 결제 진행');
         await this.submitMobilePaymentForm(orderId, params);
       } else {
         // PC 전용 결제 방식
+        console.log('PC 결제 준비 요청 시작');
+        
+        const prepareData = {
+          orderId,
+          amount: params.amount,
+          productName: params.productName,
+          buyerName: params.buyerName,
+          buyerTel: params.buyerTel,
+          buyerEmail: params.buyerEmail,
+        };
+        
+        console.log('백엔드 prepare 요청:', prepareData);
+        
         const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
           },
-          body: JSON.stringify({
-            orderId,
-            amount: params.amount,
-            productName: params.productName,
-            buyerName: params.buyerName,
-            buyerTel: params.buyerTel,
-            buyerEmail: params.buyerEmail,
-          }),
+          body: JSON.stringify(prepareData),
         });
 
+        console.log('prepare 응답 상태:', prepareResponse.status);
+
         if (!prepareResponse.ok) {
-          throw new Error('결제 준비에 실패했습니다.');
+          const errorText = await prepareResponse.text();
+          console.error('prepare 실패:', errorText);
+          throw new Error(`결제 준비에 실패했습니다: ${prepareResponse.status}`);
         }
 
-        const prepareData = await prepareResponse.json();
-        this.submitPCPaymentForm(orderId, params, prepareData);
+        const prepareResponseData = await prepareResponse.json();
+        console.log('prepare 응답 데이터:', prepareResponseData);
+        
+        console.log('PC 팝업 열기 시작');
+        this.submitPCPaymentForm(orderId, params, prepareResponseData);
       }
 
     } catch (error) {
@@ -111,7 +126,7 @@ class InicisService {
     addField('P_UNAME', params.buyerName); // 구매자명
     addField('P_MOBILE', params.buyerTel); // 구매자 전화번호
     addField('P_EMAIL', params.buyerEmail); // 구매자 이메일
-    addField('P_NEXT_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 결과 리턴 URL
+    addField('P_NEXT_URL', `${window.location.origin}/api/payments/inicis/return/`); // 결과 리턴 URL
     addField('P_CHARSET', 'utf8'); // 인코딩
     addField('P_RESERVED', 'below1000=Y&vbank_receipt=Y&centerCd=Y'); // 추가 옵션
     addField('P_NOTI', orderId); // 가맹점 임의 데이터
@@ -166,12 +181,49 @@ class InicisService {
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="browsing-topics=()">
   <title>KG이니시스 결제</title>
-  <!-- 운영 JS -->
-  <script language="javascript" type="text/javascript" src="https://stdpay.inicis.com/stdjs/INIStdPay.js" charset="UTF-8"></script>
+  <!-- 운영 JS - 개선된 로딩 방식 -->
   <script type="text/javascript">
+    // 이니시스 스크립트 동적 로드 (document.write 대신 사용)
+    function loadInicisScript() {
+      return new Promise((resolve, reject) => {
+        if (typeof INIStdPay !== 'undefined') {
+          resolve(true);
+          return;
+        }
+        
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.charset = 'UTF-8';
+        script.src = 'https://stdpay.inicis.com/stdjs/INIStdPay.js';
+        script.async = false; // 순서 보장
+        
+        script.onload = function() {
+          console.log('이니시스 스크립트 로드 성공');
+          resolve(true);
+        };
+        
+        script.onerror = function() {
+          console.error('이니시스 스크립트 로드 실패');
+          reject(new Error('이니시스 스크립트 로드 실패'));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+    
     function startPayment() {
-      INIStdPay.pay('SendPayForm_id');
+      loadInicisScript().then(() => {
+        if (typeof INIStdPay !== 'undefined') {
+          INIStdPay.pay('SendPayForm_id');
+        } else {
+          throw new Error('INIStdPay not loaded');
+        }
+      }).catch((error) => {
+        console.error('결제 시작 실패:', error);
+        alert('결제 모듈 로드에 실패했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+      });
     }
   </script>
 </head>
@@ -205,8 +257,8 @@ class InicisService {
     <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
     
     <!-- 리턴 URL -->
-    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payment/inicis/complete">
-    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payment/inicis/close">
+    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payments/inicis/return/">
+    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payments/inicis/close/">
     
     <!-- 추가 옵션 -->
     <input type="hidden" name="acceptmethod" value="HPP(1):va_receipt:below1000:centerCd(Y)">
@@ -221,17 +273,21 @@ class InicisService {
   </div>
   
   <script>
-    // 페이지 로드 후 자동 결제 시작
-    window.onload = function() {
+    // 페이지 로드 후 자동 결제 시작 (개선된 방식)
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('결제 페이지 로드 완료, 이니시스 스크립트 로딩 시작');
+      
+      // 약간의 딜레이 후 결제 시작
       setTimeout(function() {
-        if (typeof INIStdPay !== 'undefined') {
-          console.log('이니시스 PC 결제 시작');
-          INIStdPay.pay('SendPayForm_id');
-        } else {
-          console.error('이니시스 스크립트 로드 실패');
-          alert('결제 모듈 로드에 실패했습니다. 다시 시도해주세요.');
-        }
-      }, 1000);
+        startPayment();
+      }, 500);
+    });
+    
+    // fallback for older browsers
+    window.onload = function() {
+      if (document.readyState === 'complete') {
+        setTimeout(startPayment, 500);
+      }
     };
   </script>
 </body>

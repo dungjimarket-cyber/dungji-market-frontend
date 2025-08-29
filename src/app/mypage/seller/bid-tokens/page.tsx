@@ -197,8 +197,7 @@ export default function BidTokensPage() {
         ? '견적이용권 무제한 (30일)' 
         : `견적이용권 ${quantity}개`;
       
-      // 이니시스 결제 요청
-      await inicisService.requestPayment({
+      const paymentParams = {
         orderId: `${user?.id || 'guest'}_${Date.now()}`,
         productName,
         amount: totalPrice,
@@ -207,7 +206,14 @@ export default function BidTokensPage() {
         buyerEmail: user?.email || 'buyer@example.com',
         returnUrl: `${window.location.origin}/payment/inicis/return`,
         closeUrl: `${window.location.origin}/payment/inicis/close`,
-      });
+      };
+      
+      console.log('PC 결제 시작:', paymentParams);
+      
+      // 이니시스 결제 요청
+      await inicisService.requestPayment(paymentParams);
+      
+      console.log('PC 결제 요청 완료');
       
     } catch (error) {
       console.error('결제 요청 실패:', error);
