@@ -256,6 +256,20 @@ export default function SellerSettings() {
       setNicknameAvailable(false);
       return;
     }
+
+    // 닉네임 길이 체크 (2-10자)
+    if (nickname.length < 2 || nickname.length > 10) {
+      setNicknameError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
+      setNicknameAvailable(false);
+      return;
+    }
+
+    // 공백 체크
+    if (nickname.includes(' ')) {
+      setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+      setNicknameAvailable(false);
+      return;
+    }
     
     if (nickname === profile?.nickname) {
       setNicknameError('');
@@ -583,6 +597,11 @@ export default function SellerSettings() {
           title: '저장 완료',
           description: '판매자 정보가 성공적으로 저장되었습니다.'
         });
+        
+        // 페이지를 새로고침하여 변경사항 반영
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
         
         // 프로필 정보 새로고침
         const updatedData = await getSellerProfile();

@@ -276,6 +276,22 @@ function RegisterPageContent() {
       return;
     }
 
+    // 닉네임 길이 체크 (2-10자)
+    if (formData.nickname.length < 2 || formData.nickname.length > 10) {
+      setError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
+      setNicknameChecked(true);
+      setNicknameAvailable(false);
+      return;
+    }
+
+    // 공백 체크
+    if (formData.nickname.includes(' ')) {
+      setError('닉네임에 공백을 포함할 수 없습니다.');
+      setNicknameChecked(true);
+      setNicknameAvailable(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
         method: 'POST',

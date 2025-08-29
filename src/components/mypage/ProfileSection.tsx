@@ -227,6 +227,18 @@ export default function ProfileSection() {
         setNicknameError('닉네임을 입력해주세요.');
         return;
       }
+
+      // 닉네임 길이 체크 (2-10자)
+      if (nickname.length < 2 || nickname.length > 10) {
+        setNicknameError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
+        return;
+      }
+
+      // 공백 체크
+      if (nickname.includes(' ')) {
+        setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+        return;
+      }
       
       // nickname 필드를 업데이트 (username은 아이디이므로 변경하지 않음)
       updateData.nickname = nickname;
