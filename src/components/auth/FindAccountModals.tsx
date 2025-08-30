@@ -574,9 +574,9 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     if (step === 'complete') {
       // 바로 로그인 페이지로 이동
       onClose();
-      router.push('/login');
+      window.location.href = 'https://www.dungjimarket.com/login/signin';
     }
-  }, [step, onClose, router]);
+  }, [step, onClose]);
 
   // Step 1: Input username and email/phone
   if (step === 'input') {

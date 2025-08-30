@@ -153,10 +153,8 @@ export default function PasswordResetPhonePage() {
       }
 
       setSuccess('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
-      // 2초 후 로그인 페이지로 이동
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      // 로그인 페이지로 즉시 이동
+      router.push('https://www.dungjimarket.com/login/signin');
     } catch (err: any) {
       setError(err.message || '비밀번호 재설정에 실패했습니다.');
     } finally {
