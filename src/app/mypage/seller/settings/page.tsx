@@ -697,18 +697,54 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <PhoneVerification
-                    purpose="profile"
-                    defaultValue={formData.phone}
-                    currentUserToken={accessToken || undefined}
-                    onVerified={(phoneNumber) => {
-                      setFormData(prev => ({ ...prev, phone: phoneNumber }));
-                      toast({
-                        title: '휴대폰 번호 인증 완료',
-                        description: '휴대폰 번호가 인증되었습니다.',
-                      });
-                    }}
-                  />
+                  <Label>휴대폰 번호</Label>
+                  {/* 휴대폰 번호가 있으면 읽기 전용으로 표시 */}
+                  {formData.phone ? (
+                    <>
+                      <Input
+                        value={formData.phone}
+                        disabled
+                        className="bg-gray-50"
+                      />
+                      <p className="text-xs text-gray-500">휴대폰번호 수정을 원하시면 고객센터로 문의 부탁드립니다</p>
+                    </>
+                  ) : (
+                    /* 휴대폰 번호가 없으면 등록 가능 */
+                    <PhoneVerification
+                      purpose="profile"
+                      defaultValue={formData.phone}
+                      currentUserToken={accessToken || undefined}
+                      onVerified={async (phoneNumber) => {
+                        setFormData(prev => ({ ...prev, phone: phoneNumber }));
+                        // 프로필 저장을 위해 handleSubmit 호출
+                        const cleanPhone = phoneNumber.replace(/-/g, '');
+                        try {
+                          const updateData = {
+                            phone: cleanPhone,
+                            nickname: formData.nickname || profile?.nickname,
+                            business_number: `${formData.businessNumber1}-${formData.businessNumber2}-${formData.businessNumber3}`,
+                            is_remote_sales: formData.isRemoteSales
+                          };
+                          await updateSellerProfile(updateData);
+                          toast({
+                            title: '휴대폰 번호 등록 완료',
+                            description: '휴대폰 번호가 등록되었습니다.',
+                          });
+                          // 페이지 새로고침
+                          setTimeout(() => {
+                            window.location.reload();
+                          }, 500);
+                        } catch (error) {
+                          console.error('휴대폰 번호 저장 오류:', error);
+                          toast({
+                            variant: 'destructive',
+                            title: '오류',
+                            description: '휴대폰 번호 저장에 실패했습니다.',
+                          });
+                        }
+                      }}
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">
