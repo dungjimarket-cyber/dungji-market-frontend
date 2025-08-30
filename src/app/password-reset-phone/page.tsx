@@ -171,10 +171,11 @@ export default function PasswordResetPhonePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Authorization 헤더 명시적으로 제거 (axios interceptor 우회)
         },
         body: JSON.stringify(requestBody),
-        redirect: 'manual', // 리다이렉트 수동 처리
-        credentials: 'include', // 쿠키 포함
+        redirect: 'manual', // 리다이렉트 수동 처리  
+        // credentials 제거: 인증 불필요한 API이므로 쿠키도 불필요
       });
 
       console.log('=== API 응답 상세 정보 ===');
