@@ -69,6 +69,16 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
       });
       const data = await res.json();
       
+      // 디버깅용 로그
+      console.log('=== 아이디 찾기 API 응답 ===');
+      console.log('URL:', `${apiUrl}/auth/find-id-by-phone/`);
+      console.log('Phone:', phone.replace(/-/g, ''));
+      console.log('Response:', data);
+      console.log('Success:', data.success);
+      console.log('Is Social:', data.is_social);
+      console.log('Provider:', data.provider);
+      console.log('========================');
+      
       if (data.success) {
         // 일반 계정 - 아이디 표시
         setResult(data.username);
