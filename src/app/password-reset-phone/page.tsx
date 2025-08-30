@@ -119,9 +119,9 @@ export default function PasswordResetPhonePage() {
     setLoading(true);
 
     try {
-      // 백엔드 요구사항에 맞게 수정: user_id, phone_number, verification_code, new_password
+      // 백엔드 요구사항에 맞게 수정: user_id는 숫자 타입이어야 함
       const requestBody = {
-        user_id: userId || username,  // user_id가 없으면 username 사용
+        user_id: userId ? Number(userId) : null,  // 숫자로 변환, 없으면 null
         phone_number: userPhoneNumber,  // 백엔드에서 하이픈 자동 처리
         verification_code: verificationCode || '000000',  // 인증코드가 없으면 임시값
         new_password: password,
