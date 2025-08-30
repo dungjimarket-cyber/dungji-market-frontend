@@ -578,15 +578,18 @@ export default function ProfileSection() {
                   </>
                 )}
               </label>
-              <button
-                onClick={() => {
-                  setIsEditing(true);
-                  setEditField('phone_number');
-                }}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                {role === 'seller' ? '재인증' : '수정'}
-              </button>
+              {/* 휴대폰 번호가 없을 때만 수정 버튼 표시 */}
+              {!phoneNumber && (
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditField('phone_number');
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  {role === 'seller' ? '재인증' : '인증'}
+                </button>
+              )}
             </div>
             
             {isEditing && editField === 'phone_number' ? (
@@ -613,14 +616,22 @@ export default function ProfileSection() {
                 </button>
               </div>
             ) : (
-              <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium">
-                  {phoneNumber ? 
-                    phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
-                    '휴대폰 번호 정보 없음'
-                  }
-                </span>
-              </div>
+              <>
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">
+                    {phoneNumber ? 
+                      phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
+                      '휴대폰 번호 정보 없음'
+                    }
+                  </span>
+                </div>
+                {/* 인증된 휴대폰 번호가 있을 때 안내 문구 표시 */}
+                {phoneNumber && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    휴대폰번호 수정을 원하시면 고객센터로 문의 부탁드립니다
+                  </p>
+                )}
+              </>
             )}
           </div>
           
