@@ -271,13 +271,13 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                 height={120} 
                 className="rounded-md mb-2"
               />
-              <h3 className="text-base font-bold text-center">
+              <h3 className="text-base font-bold text-center break-words max-w-full px-2">
                 {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${getSubscriptionTypeText(groupBuy)}`}
               </h3>
-              <p className="text-sm text-gray-600 mb-1">
+              <p className="text-sm text-gray-600 mb-1 text-center">
                 통신사: {groupBuy.product_details.telecom_carrier || groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details.carrier || 'SK텔래콤'}
               </p>
-              <p className="text-sm text-gray-600 mb-1">
+              <p className="text-sm text-gray-600 mb-1 text-center">
                 유형: {
                   groupBuy.product_details.subscription_type_korean || 
                   groupBuy.telecom_detail?.subscription_type_korean ||
@@ -288,7 +288,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
               {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 가격 표시 */}
               {groupBuy.product_details.category_name !== '인터넷' && 
                groupBuy.product_details.category_name !== '인터넷+TV' && (
-                <p className="text-lg font-bold mt-1">
+                <p className="text-lg font-bold mt-1 text-center">
                   {groupBuy.product_details.base_price.toLocaleString()}원
                 </p>
               )}
