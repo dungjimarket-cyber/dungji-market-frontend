@@ -150,12 +150,14 @@ export default function PasswordResetPhonePage() {
       console.log('비밀번호 재설정 요청:', requestBody);
       
       // API 호출 - 휴대폰 번호로 비밀번호 재설정
+      // redirect: 'manual'을 추가하여 자동 리다이렉트 방지
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password-phone/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        redirect: 'manual', // 자동 리다이렉트 방지
       });
 
       // 응답 데이터를 한 번만 읽기
@@ -183,9 +185,18 @@ export default function PasswordResetPhonePage() {
       
       console.log('=== 비밀번호 재설정 응답 ===');
       console.log('Response status:', response.status);
+      console.log('Response type:', response.type);
+      console.log('Response redirected:', response.redirected);
       console.log('Response ok:', response.ok);
       console.log('Response data:', responseData);
       console.log('Response success field:', responseData?.success);
+      
+      // 리다이렉트 응답 체크
+      if (response.type === 'opaqueredirect' || [301, 302, 303, 307, 308].includes(response.status)) {
+        console.log('🚨 백엔드가 리다이렉트 응답을 보냈습니다!');
+        console.log('Location header:', response.headers.get('location'));
+      }
+      
       console.log('===========================');
       
       // 성공 여부 판단
