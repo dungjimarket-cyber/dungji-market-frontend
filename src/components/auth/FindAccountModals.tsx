@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import { emailAuthService } from '@/lib/api/emailAuthService';
+import { phoneVerificationService } from '@/lib/api/phoneVerification';
 
 /**
  * 아이디/비밀번호 찾기 모달 통합 컴포넌트
@@ -165,16 +166,18 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
 function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   const router = useRouter();
   const [method, setMethod] = useState<'email' | 'phone'>('email');
-  const [step, setStep] = useState<'input' | 'verify' | 'reset' | 'complete'>('input');
+  const [step, setStep] = useState<'input' | 'verify' | 'verify-phone' | 'reset' | 'complete'>('input');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
+  const [phoneVerificationCode, setPhoneVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [timer, setTimer] = useState(0);
+  const [phoneVerified, setPhoneVerified] = useState(false);
   
   const formatPhoneNumber = (value: string) => {
     const numbers = value.replace(/[^\d]/g, '');
@@ -229,19 +232,37 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           return;
         }
       } else {
-        // Phone method (existing logic)
-        const res = await fetch(`${apiUrl}/auth/reset-password-by-phone/`, {
+        // Phone method - 먼저 아이디와 휴대폰 번호 일치 확인
+        const res = await fetch(`${apiUrl}/auth/verify-user-phone/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone_number: phone.replace(/-/g, ''), username }),
+          body: JSON.stringify({ 
+            username: username,
+            phone_number: phone.replace(/-/g, '') 
+          }),
         });
         
         if (res.ok) {
-          setStep('complete');
-          toast({ title: '임시 비밀번호가 SMS로 전송되었습니다.' });
+          // 일치하면 휴대폰 인증 단계로
+          setStep('verify-phone');
+          // 인증번호 발송
+          try {
+            const result = await phoneVerificationService.sendVerification({
+              phone_number: phone,
+              purpose: 'password_reset'
+            });
+            if (result.success) {
+              setTimer(180); // 3분 타이머
+              toast({ title: '인증번호가 발송되었습니다.' });
+            } else {
+              setErrorMessage(result.message || '인증번호 발송에 실패했습니다.');
+            }
+          } catch (err: any) {
+            setErrorMessage('인증번호 발송에 실패했습니다.');
+          }
         } else {
           const err = await res.json();
-          setErrorMessage(err.error || '비밀번호 재설정에 실패했습니다.');
+          setErrorMessage(err.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
         }
       }
     } catch (e) {
@@ -277,6 +298,31 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     }
   };
 
+  // Verify phone code
+  const verifyPhoneCode = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const result = await phoneVerificationService.verifyPhone({
+        phone_number: phone,
+        verification_code: phoneVerificationCode,
+        purpose: 'password_reset'
+      });
+      
+      if (result.success) {
+        setPhoneVerified(true);
+        setStep('reset');
+        toast({ title: '휴대폰 인증이 완료되었습니다.' });
+      } else {
+        setErrorMessage(result.message || '인증에 실패했습니다.');
+      }
+    } catch (e: any) {
+      setErrorMessage(e.message || '인증에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Reset password
   const resetPassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -293,19 +339,42 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     setErrorMessage('');
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-      const res = await fetch(`${apiUrl}/auth/password-reset/reset/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_password: newPassword }),
-        credentials: 'include', // Include session cookies
-      });
       
-      if (res.ok) {
-        setStep('complete');
-        toast({ title: '비밀번호가 성공적으로 변경되었습니다.' });
+      if (method === 'phone' && phoneVerified) {
+        // 휴대폰 인증 후 비밀번호 재설정
+        const res = await fetch(`${apiUrl}/auth/reset-password-phone/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            username: username,
+            phone_number: phone.replace(/-/g, ''),
+            new_password: newPassword 
+          }),
+        });
+        
+        if (res.ok) {
+          setStep('complete');
+          toast({ title: '비밀번호가 성공적으로 변경되었습니다.' });
+        } else {
+          const err = await res.json();
+          setErrorMessage(err.message || '비밀번호 변경에 실패했습니다.');
+        }
       } else {
-        const err = await res.json();
-        setErrorMessage(err.error || '비밀번호 변경에 실패했습니다.');
+        // 이메일 인증 후 비밀번호 재설정
+        const res = await fetch(`${apiUrl}/auth/password-reset/reset/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_password: newPassword }),
+          credentials: 'include', // Include session cookies
+        });
+        
+        if (res.ok) {
+          setStep('complete');
+          toast({ title: '비밀번호가 성공적으로 변경되었습니다.' });
+        } else {
+          const err = await res.json();
+          setErrorMessage(err.error || '비밀번호 변경에 실패했습니다.');
+        }
       }
     } catch (e) {
       setErrorMessage('서버와 연결할 수 없습니다.');
@@ -321,6 +390,8 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
       await sendVerificationCode();
     } else if (step === 'verify') {
       await verifyEmailCode();
+    } else if (step === 'verify-phone') {
+      await verifyPhoneCode();
     } else if (step === 'reset') {
       await resetPassword();
     }
@@ -418,14 +489,86 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
             disabled={loading} 
             className="w-full py-2 rounded bg-blue-600 text-white font-semibold disabled:bg-gray-400"
           >
-            {loading ? '발송 중...' : (method === 'email' ? '재설정 링크 발송' : '임시 비밀번호 발송')}
+            {loading ? '확인 중...' : (method === 'email' ? '재설정 링크 발송' : '다음 단계')}
           </button>
         </form>
       </div>
     );
   }
 
-  // Step 2: Verify email code (only for email method)
+  // Step 2-A: Verify phone code (for phone method)
+  if (step === 'verify-phone') {
+    return (
+      <div className="space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">휴대폰 인증</h3>
+          <p className="text-sm text-gray-600">
+            {phone}로 발송된 인증번호를 입력해주세요.
+          </p>
+        </div>
+
+        {errorMessage && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm font-medium">{errorMessage}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">인증번호</label>
+            <div className="relative">
+              <input 
+                type="text" 
+                required 
+                maxLength={6}
+                className="w-full px-3 py-2 border rounded" 
+                value={phoneVerificationCode} 
+                onChange={e => setPhoneVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))} 
+                placeholder="인증번호 6자리" 
+              />
+              {timer > 0 && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 text-sm">
+                  {formatTimer(timer)}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            disabled={loading || timer > 60}
+            onClick={async () => {
+              try {
+                const result = await phoneVerificationService.sendVerification({
+                  phone_number: phone,
+                  purpose: 'password_reset'
+                });
+                if (result.success) {
+                  setTimer(180);
+                  toast({ title: '인증번호가 재발송되었습니다.' });
+                }
+              } catch (err) {
+                setErrorMessage('인증번호 재발송에 실패했습니다.');
+              }
+            }}
+            className="text-sm text-blue-600 hover:underline disabled:text-gray-400"
+          >
+            인증번호 재발송
+          </button>
+
+          <button 
+            type="submit" 
+            disabled={loading || phoneVerificationCode.length !== 6} 
+            className="w-full py-2 rounded bg-blue-600 text-white font-semibold disabled:bg-gray-400"
+          >
+            {loading ? '인증 중...' : '인증하기'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // Step 2-B: Verify email code (only for email method)
   if (step === 'verify') {
     return (
       <div className="space-y-4">
@@ -574,11 +717,9 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     return (
       <div className="text-center space-y-4">
         <div className="text-6xl">✅</div>
-        <h3 className="text-lg font-semibold">
-          {method === 'email' ? '비밀번호 변경 완료' : '임시 비밀번호 발송 완료'}
-        </h3>
+        <h3 className="text-lg font-semibold">비밀번호 변경 완료</h3>
         <p className="text-sm text-gray-600">
-          {method === 'email' ? '새로운 비밀번호로 로그인해주세요.' : '임시 비밀번호가 SMS로 전송되었습니다.'}
+          새로운 비밀번호로 로그인해주세요.
         </p>
         <button 
           className="w-full py-2 rounded bg-blue-600 text-white font-semibold" 
