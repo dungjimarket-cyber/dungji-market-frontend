@@ -25,11 +25,33 @@ export default function PasswordResetPhonePage() {
   const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id
   const [verificationCode, setVerificationCode] = useState(''); // 인증코드 저장
 
-  // step 변경 감지
+  // step 변경 감지 및 unmount 감지
   useEffect(() => {
     console.log('📍 Step 변경됨:', step);
     console.log('현재 상태:', { loading, error, success });
+    
+    if (step === 'success') {
+      console.log('🚨🚨🚨 SUCCESS STEP 도달! 시간:', new Date().toISOString());
+      console.log('window.location.href:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+      
+      // 컴포넌트가 리렌더링되는지 확인
+      const interval = setInterval(() => {
+        console.log('⏰ SUCCESS 화면 유지 중...', new Date().toISOString());
+      }, 1000);
+      
+      return () => {
+        console.log('🔴🔴🔴 SUCCESS 화면 cleanup 실행됨!');
+        clearInterval(interval);
+      };
+    }
   }, [step, loading, error, success]);
+  
+  // 전체 컴포넌트 unmount 감지
+  useEffect(() => {
+    return () => {
+      console.log('💥💥💥 전체 컴포넌트가 unmount됩니다!');
+    };
+  }, []);
 
   // Step 1: 아이디와 휴대폰 번호 확인
   const handleIdentifyUser = async (e: React.FormEvent) => {
@@ -184,15 +206,19 @@ export default function PasswordResetPhonePage() {
         
         // 성공 처리
         console.log('✅ 비밀번호 재설정 성공');
-        setStep('success');
-        setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
-        setError('');
-        setLoading(false);
+        console.log('🔒 리다이렉트 방지 - SUCCESS 스텝 설정');
         
-        // 성공 메시지 표시
-        setTimeout(() => {
-          alert(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
-        }, 100);
+        // 상태 업데이트를 동기적으로 처리
+        setLoading(false);
+        setError('');
+        setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+        
+        // step을 마지막에 설정
+        setStep('success');
+        console.log('✅ SUCCESS 스텝 설정 완료');
+        
+        // 성공 메시지 표시 (alert 제거하고 상태만 유지)
+        console.log('📌 성공 화면에 머물러 있습니다. 리다이렉트 없음.');
         
         return;
       }
@@ -234,6 +260,14 @@ export default function PasswordResetPhonePage() {
     console.log('현재 step:', step);
     console.log('현재 URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
     
+    // 혹시 모를 리다이렉트 방지
+    if (typeof window !== 'undefined') {
+      window.onbeforeunload = () => {
+        console.log('⚠️ 페이지 이동 감지됨!');
+        return '정말로 이동하시겠습니까?';
+      };
+    }
+    
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
@@ -257,10 +291,24 @@ export default function PasswordResetPhonePage() {
           <CardFooter>
             <Button 
               className="w-full"
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('✅ 사용자가 확인 버튼을 클릭했습니다');
+                console.log('이벤트 타입:', e.type);
+                console.log('이벤트 대상:', e.currentTarget);
+                
+                // onbeforeunload 제거
+                if (typeof window !== 'undefined') {
+                  window.onbeforeunload = null;
+                }
+                
                 // 사용자가 직접 버튼을 클릭한 경우에만 이동
-                router.push('/login/signin');
+                setTimeout(() => {
+                  console.log('🔄 로그인 페이지로 이동 시작');
+                  router.push('/login/signin');
+                }, 100);
               }}
             >
               로그인 페이지로 이동
