@@ -152,11 +152,29 @@ export default function PasswordResetPhonePage() {
         throw new Error(data.message || '비밀번호 재설정에 실패했습니다.');
       }
 
-      setSuccess('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      const responseData = await response.json();
+      
+      // 백엔드에서 제공하는 redirect_to 사용 (없으면 기본값)
+      const redirectPath = responseData.redirect_to || '/login';
+      
+      setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      
       // 로그인 페이지로 즉시 이동
-      router.push('https://www.dungjimarket.com/login/signin');
+      if (redirectPath.startsWith('http')) {
+        window.location.href = redirectPath;
+      } else {
+        // 상대 경로인 경우
+        window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
+      }
     } catch (err: any) {
-      setError(err.message || '비밀번호 재설정에 실패했습니다.');
+      console.error('비밀번호 재설정 오류:', err);
+      
+      // 카카오 계정으로 인한 차단인 경우
+      if (err.message && err.message.includes('카카오')) {
+        setError('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
+      } else {
+        setError(err.message || '비밀번호 재설정에 실패했습니다.');
+      }
     } finally {
       setLoading(false);
     }

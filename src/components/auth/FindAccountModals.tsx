@@ -505,8 +505,14 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         // 200 OK이거나, success: true인 경우 성공 처리
         if (res.ok || (responseData && responseData.success === true)) {
           console.log('비밀번호 변경 성공!');
+          
+          // 백엔드에서 제공하는 redirect_to 사용
+          if (responseData && responseData.redirect_to) {
+            localStorage.setItem('password_reset_redirect', responseData.redirect_to);
+          }
+          
           setStep('complete');
-          toast({ title: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' });
+          toast({ title: responseData?.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.' });
         } else if (responseData && responseData.success === false && responseData.message === "비밀번호 변경 중 오류가 발생했습니다.") {
           // 백엔드에서 실제로는 성공했지만 success: false로 응답하는 경우
           console.log('비밀번호 변경 완료 (success: false이지만 실제 성공)');
@@ -518,7 +524,13 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           setErrorMessage(`서버 오류: ${errorDetail}\n\n가능한 원인:\n1. 인증번호가 일치하지 않음\n2. 인증이 만료됨 (30분 초과)\n3. 이미 사용된 인증번호`);
         } else {
           console.error('비밀번호 변경 실패:', responseData);
-          setErrorMessage(responseData.message || responseData.error || '비밀번호 변경에 실패했습니다.');
+          
+          // 카카오 계정 차단 메시지 확인
+          if (responseData.message && responseData.message.includes('카카오')) {
+            setErrorMessage('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
+          } else {
+            setErrorMessage(responseData.message || responseData.error || '비밀번호 변경에 실패했습니다.');
+          }
         }
       } else {
         // 이메일 인증 후 비밀번호 재설정
@@ -572,9 +584,18 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   // 완료 단계에서 자동 리다이렉트를 위한 Effect (조건문 밖에 위치)
   React.useEffect(() => {
     if (step === 'complete') {
+      // 백엔드에서 제공한 redirect_to 확인
+      const redirectPath = localStorage.getItem('password_reset_redirect') || '/login';
+      localStorage.removeItem('password_reset_redirect');
+      
       // 바로 로그인 페이지로 이동
       onClose();
-      window.location.href = 'https://www.dungjimarket.com/login/signin';
+      
+      if (redirectPath.startsWith('http')) {
+        window.location.href = redirectPath;
+      } else {
+        window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
+      }
     }
   }, [step, onClose]);
 
