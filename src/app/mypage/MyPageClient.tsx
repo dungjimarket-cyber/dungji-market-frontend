@@ -275,7 +275,7 @@ export default function MyPageClient() {
                 {/* 둥지마켓 메인 이미지 */}
                 <div className="flex-shrink-0">
                   <Image
-                    src="/logos/main_logo.png"
+                    src="/logos/dunji_logo.jpg"
                     alt="둥지마켓"
                     width={80}
                     height={80}

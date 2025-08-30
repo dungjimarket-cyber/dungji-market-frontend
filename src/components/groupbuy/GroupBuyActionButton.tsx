@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import JoinGroupBuyModal from './JoinGroupBuyModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface GroupBuyActionButtonProps {
   isRecruiting: boolean;
@@ -37,6 +39,8 @@ export default function GroupBuyActionButton({
 }: GroupBuyActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   // 디버깅 로그 추가
   console.log('그룹구매 버튼 상태:', {
@@ -60,8 +64,26 @@ export default function GroupBuyActionButton({
       return;
     }
     
-    // 일반 구매회원은 참여 모달 표시
+    // 일반 구매회원은 프로필 체크 후 참여 모달 표시
     if (isRecruiting && !isFull && !isCreator) {
+      // 로그인 체크
+      if (!isAuthenticated) {
+        if (confirm('공구에 참여하려면 로그인이 필요합니다.\n\n로그인 페이지로 이동하시겠습니까?')) {
+          const currentPath = window.location.pathname;
+          router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
+        }
+        return;
+      }
+      
+      // 프로필 완성도 체크 (모든 사용자)
+      if (user && (!user.phone_number || !user.address_region)) {
+        if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+          router.push('/mypage/settings');
+        }
+        return;
+      }
+      
+      // 프로필 체크 통과 시 모달 오픈
       setIsModalOpen(true);
     }
   };
