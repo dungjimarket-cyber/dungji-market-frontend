@@ -160,9 +160,10 @@ export function ContactInfoModal({
               ? '판매자와 연락하여 거래를 진행하세요.'
               : (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-                  <span className="text-blue-700 font-medium">
-                    구매를 확정한 회원 목록입니다. 제안하신 견적으로 친절한 거래 부탁드립니다.
-                  </span>
+                  <div className="text-blue-700 font-medium">
+                    <div>구매를 확정한 회원 목록입니다.</div>
+                    <div className="mt-1">제안하신 견적으로 친절한 거래 부탁드립니다.</div>
+                  </div>
                 </div>
               )}
           </DialogDescription>
