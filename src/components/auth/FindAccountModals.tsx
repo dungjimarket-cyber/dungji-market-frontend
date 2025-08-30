@@ -394,6 +394,13 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
       return;
     }
     
+    // 인증코드 확인
+    if (method === 'phone' && !phoneVerificationCode) {
+      console.error('인증코드가 없음');
+      setErrorMessage('인증번호를 입력해주세요.');
+      return;
+    }
+    
     if (newPassword !== confirmPassword) {
       setErrorMessage('비밀번호가 일치하지 않습니다.');
       return;
@@ -426,6 +433,19 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           new_password: newPassword,
           purpose: 'reset'  // 백엔드 권장사항 추가
         };
+        
+        // 필수 필드 검증
+        if (!requestBody.user_id) {
+          console.error('user_id가 없습니다. username 사용:', username);
+          // username을 user_id로 사용 시도
+          requestBody.user_id = username as any;
+        }
+        
+        if (!requestBody.verification_code) {
+          console.error('인증코드가 비어있습니다!');
+          setErrorMessage('인증번호를 입력해주세요.');
+          return;
+        }
         
         console.log('========== 비밀번호 재설정 API 호출 ==========');
         console.log('API URL:', `${apiUrl}/auth/reset-password-phone/`);
