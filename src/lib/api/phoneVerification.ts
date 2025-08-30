@@ -153,4 +153,36 @@ export const phoneVerificationService = {
     
     return phone;
   },
+
+  /**
+   * 휴대폰 번호 중복 확인
+   */
+  async checkPhoneDuplicate(phone_number: string): Promise<{ available: boolean; message: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/check-phone/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone_number }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok && response.status !== 400) {
+        throw new Error('중복 확인에 실패했습니다.');
+      }
+      
+      return {
+        available: result.available || false,
+        message: result.message || (result.available ? '사용 가능한 번호입니다.' : '이미 등록된 번호입니다.')
+      };
+    } catch (error) {
+      console.error('휴대폰 중복 확인 오류:', error);
+      return {
+        available: true, // 오류 시 일단 진행 가능하도록
+        message: ''
+      };
+    }
+  },
 };

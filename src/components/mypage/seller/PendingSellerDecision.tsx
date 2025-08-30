@@ -128,31 +128,35 @@ export default function PendingSellerDecision() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between mt-3">
-                  <div>
+                {/* 모바일과 데스크탑 레이아웃 분리 */}
+                <div className="mt-3 space-y-2">
+                  {/* 첫 번째 줄: 최종 선정 지원금 */}
+                  <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">최종 선정 지원금: </span>
                     <span className="font-semibold text-green-600">
                       {(groupBuy.winning_bid_amount || 0).toLocaleString()}원
                     </span>
                   </div>
                   
-                  <div className="flex gap-2">
+                  {/* 두 번째 줄: 버튼들 */}
+                  <div className="flex gap-2 justify-between sm:justify-end">
                     <Button
                       size="sm"
                       variant="outline"
+                      className="flex-1 sm:flex-initial"
                       onClick={() => {
                         setSelectedGroupBuy(groupBuy);
                         setShowConfirmationModal(true);
                       }}
                     >
-                      구매확정률 확인하기
+                      구매확정률 확인
                     </Button>
                     <Button
                       size="sm"
-                      className="bg-orange-500 hover:bg-orange-600"
+                      className="bg-orange-500 hover:bg-orange-600 flex-1 sm:flex-initial"
                       onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
                     >
-                      판매확정/포기 선택하러가기
+                      판매확정/포기 선택
                     </Button>
                   </div>
                 </div>

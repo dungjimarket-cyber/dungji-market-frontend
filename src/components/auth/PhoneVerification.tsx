@@ -50,6 +50,7 @@ export function PhoneVerification({
   const [timer, setTimer] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isDuplicate, setIsDuplicate] = useState(false);
 
   // 타이머 효과
   useEffect(() => {
@@ -69,6 +70,7 @@ export function PhoneVerification({
     const formatted = formatPhoneNumber(e.target.value);
     setPhoneNumber(formatted);
     setError('');
+    setIsDuplicate(false); // 번호 변경 시 중복 상태 초기화
   };
 
   // 인증번호 전송
@@ -85,6 +87,23 @@ export function PhoneVerification({
 
     setIsSending(true);
     setError('');
+    setSuccess('');
+
+    // 마이페이지에서 번호 변경 시 중복 체크
+    if (purpose === 'profile') {
+      try {
+        const duplicateCheck = await phoneVerificationService.checkPhoneDuplicate(phoneNumber);
+        if (!duplicateCheck.available) {
+          setError('이미 등록된 번호입니다.');
+          setIsDuplicate(true);
+          setIsSending(false);
+          return;
+        }
+      } catch (err) {
+        console.error('중복 확인 오류:', err);
+        // 중복 확인 실패해도 계속 진행
+      }
+    }
 
     try {
       const result = await phoneVerificationService.sendVerification({
@@ -181,6 +200,9 @@ export function PhoneVerification({
               disabled={isVerified}
               className={isVerified ? 'bg-gray-50' : ''}
             />
+            {isDuplicate && (
+              <p className="text-sm text-red-500 mt-1">이미 등록된 번호입니다.</p>
+            )}
           </div>
           
           <Button
