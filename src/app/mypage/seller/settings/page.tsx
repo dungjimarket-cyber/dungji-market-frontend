@@ -71,6 +71,7 @@ export default function SellerSettings() {
   const [checkingReferral, setCheckingReferral] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -104,6 +105,7 @@ export default function SellerSettings() {
           router.push('/login?callbackUrl=/mypage/seller/settings');
           return;
         }
+        setAccessToken(token); // 토큰 저장
 
         // 판매자 프로필 정보 가져오기
         const data = await getSellerProfile();
@@ -698,6 +700,7 @@ export default function SellerSettings() {
                   <PhoneVerification
                     purpose="profile"
                     defaultValue={formData.phone}
+                    currentUserToken={accessToken || undefined}
                     onVerified={(phoneNumber) => {
                       setFormData(prev => ({ ...prev, phone: phoneNumber }));
                       toast({

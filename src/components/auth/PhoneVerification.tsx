@@ -13,13 +13,15 @@ interface PhoneVerificationProps {
   onVerified?: (phoneNumber: string) => void;
   className?: string;
   defaultValue?: string;
+  currentUserToken?: string; // 현재 사용자 토큰 (프로필 수정 시)
 }
 
 export function PhoneVerification({
   purpose = 'signup',
   onVerified,
   className = '',
-  defaultValue = ''
+  defaultValue = '',
+  currentUserToken
 }: PhoneVerificationProps) {
   // 전화번호 포맷팅 함수 (컴포넌트 외부로 이동하여 초기값에도 사용)
   const formatPhoneNumber = (value: string): string => {
@@ -90,8 +92,12 @@ export function PhoneVerification({
     setSuccess('');
 
     // 모든 경우에 중복 체크 수행
+    // 프로필 수정 시에는 자신의 번호는 제외하기 위해 토큰 전달
     try {
-      const duplicateCheck = await phoneVerificationService.checkPhoneDuplicate(phoneNumber);
+      const duplicateCheck = await phoneVerificationService.checkPhoneDuplicate(
+        phoneNumber,
+        purpose === 'profile' ? currentUserToken : undefined
+      );
       if (!duplicateCheck.available) {
         setError('이미 등록된 번호입니다.');
         setIsDuplicate(true);

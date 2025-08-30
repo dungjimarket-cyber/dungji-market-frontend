@@ -594,6 +594,7 @@ export default function ProfileSection() {
                 <PhoneVerification
                   purpose="profile"
                   defaultValue={phoneNumber}
+                  currentUserToken={accessToken || undefined}
                   onVerified={(verifiedPhoneNumber) => {
                     setPhoneNumber(verifiedPhoneNumber);
                     // 프로필 업데이트

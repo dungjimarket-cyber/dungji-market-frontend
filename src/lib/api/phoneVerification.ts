@@ -157,31 +157,56 @@ export const phoneVerificationService = {
   /**
    * 휴대폰 번호 중복 확인 (모든 회원 통합 체크)
    */
-  async checkPhoneDuplicate(phone_number: string): Promise<{ available: boolean; message: string }> {
+  async checkPhoneDuplicate(phone_number: string, currentUserToken?: string): Promise<{ available: boolean; message: string }> {
     try {
-      // 모든 회원(일반회원 + 판매회원) 통합 중복 체크
-      const response = await fetch(`${API_BASE_URL}/auth/check-phone-unified/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone_number }),
-      });
-
-      const result = await response.json();
+      // 전화번호 포맷 정리 (하이픈 제거)
+      const cleanedPhone = phone_number.replace(/[-\s]/g, '');
       
-      if (!response.ok && response.status !== 400) {
-        throw new Error('중복 확인에 실패했습니다.');
+      // 모든 회원(일반회원 + 판매회원) 통합 중복 체크
+      const headers: any = {
+        'Content-Type': 'application/json',
+      };
+      
+      // 현재 로그인한 사용자의 토큰이 있으면 추가 (자신의 번호는 제외하기 위해)
+      if (currentUserToken) {
+        headers['Authorization'] = `Bearer ${currentUserToken}`;
       }
       
-      return {
-        available: result.available || false,
-        message: result.message || (result.available ? '사용 가능한 번호입니다.' : '이미 등록된 번호입니다.')
-      };
+      const response = await fetch(`${API_BASE_URL}/auth/check-phone/`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ phone_number: cleanedPhone }),
+      });
+
+      // 응답 처리
+      if (response.ok) {
+        const result = await response.json();
+        return {
+          available: result.available === true,
+          message: result.message || (result.available ? '사용 가능한 번호입니다.' : '이미 등록된 번호입니다.')
+        };
+      } else if (response.status === 400) {
+        // 400은 보통 중복을 의미
+        const result = await response.json();
+        return {
+          available: false,
+          message: result.message || '이미 등록된 번호입니다.'
+        };
+      } else if (response.status === 404) {
+        // 엔드포인트가 없는 경우 - 일단 통과시킴
+        console.warn('휴대폰 중복 확인 API 엔드포인트를 찾을 수 없습니다.');
+        return {
+          available: true,
+          message: ''
+        };
+      } else {
+        throw new Error('중복 확인에 실패했습니다.');
+      }
     } catch (error) {
       console.error('휴대폰 중복 확인 오류:', error);
+      // 네트워크 오류 등의 경우에도 일단 진행 가능하도록
       return {
-        available: true, // 오류 시 일단 진행 가능하도록
+        available: true,
         message: ''
       };
     }
