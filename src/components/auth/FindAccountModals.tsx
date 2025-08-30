@@ -560,6 +560,17 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   };
 
   const passwordChecks = validatePassword(newPassword);
+  
+  // 완료 단계에서 자동 리다이렉트를 위한 Effect (조건문 밖에 위치)
+  React.useEffect(() => {
+    if (step === 'complete') {
+      const timer = setTimeout(() => {
+        onClose();
+        router.push('/login');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, onClose, router]);
 
   // Step 1: Input username and email/phone
   if (step === 'input') {
@@ -857,15 +868,6 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
 
   // Step 4: Completion
   if (step === 'complete') {
-    // 3초 후 자동으로 로그인 페이지로 이동
-    React.useEffect(() => {
-      const timer = setTimeout(() => {
-        onClose();
-        router.push('/login');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }, []);
-    
     return (
       <div className="text-center space-y-4">
         <div className="text-6xl">✅</div>
