@@ -196,7 +196,7 @@ export default function ProfileSection() {
   /**
    * 프로필 정보 업데이트 함수 (이메일 또는 닉네임)
    */
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = async (overridePhoneNumber?: string) => {
     if (!accessToken) {
       setError('로그인이 필요합니다.');
       return;
@@ -244,7 +244,10 @@ export default function ProfileSection() {
       // nickname 필드를 업데이트 (username은 아이디이므로 변경하지 않음)
       updateData.nickname = nickname;
     } else if (editField === 'phone_number') {
-      updateData.phone_number = phoneNumber;
+      // overridePhoneNumber가 있으면 우선 사용, 없으면 state 사용
+      const phoneToUpdate = overridePhoneNumber || phoneNumber;
+      updateData.phone_number = phoneToUpdate;
+      console.log('휴대폰번호 업데이트 준비:', phoneToUpdate);
     } else if (editField === 'address') {
       // 주소 업데이트 시 지역 코드를 찾아서 전송
       if (addressProvince && addressCity) {
@@ -294,6 +297,9 @@ export default function ProfileSection() {
       updateData.is_remote_sales = isRemoteSales;
     }
 
+    console.log('프로필 업데이트 데이터:', updateData);
+    console.log('editField:', editField);
+    
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
         method: 'PATCH',
@@ -313,6 +319,7 @@ export default function ProfileSection() {
         return;
       }
 
+      console.log('프로필 업데이트 성공');
       setSuccessMessage('프로필이 성공적으로 업데이트되었습니다.');
 
       // 최신 프로필 정보 GET
@@ -599,9 +606,10 @@ export default function ProfileSection() {
                   defaultValue={phoneNumber}
                   currentUserToken={accessToken || undefined}
                   onVerified={async (verifiedPhoneNumber) => {
+                    console.log('휴대폰 인증 완료:', verifiedPhoneNumber);
                     setPhoneNumber(verifiedPhoneNumber);
-                    // editField가 null이 되기 전에 프로필 업데이트 실행
-                    await handleProfileUpdate();
+                    // 인증된 번호를 직접 전달하여 state 업데이트 지연 문제 해결
+                    await handleProfileUpdate(verifiedPhoneNumber);
                   }}
                 />
                 <button
