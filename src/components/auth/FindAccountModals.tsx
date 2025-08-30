@@ -564,11 +564,9 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   // 완료 단계에서 자동 리다이렉트를 위한 Effect (조건문 밖에 위치)
   React.useEffect(() => {
     if (step === 'complete') {
-      const timer = setTimeout(() => {
-        onClose();
-        router.push('/login');
-      }, 3000);
-      return () => clearTimeout(timer);
+      // 바로 로그인 페이지로 이동
+      onClose();
+      router.push('/login');
     }
   }, [step, onClose, router]);
 
@@ -875,18 +873,6 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         <p className="text-sm text-gray-600">
           새로운 비밀번호로 로그인해주세요.
         </p>
-        <p className="text-xs text-gray-500">
-          3초 후 로그인 페이지로 이동합니다...
-        </p>
-        <button 
-          className="w-full py-2 rounded bg-blue-600 text-white font-semibold" 
-          onClick={() => {
-            onClose();
-            router.push('/login');
-          }}
-        >
-          지금 로그인하기
-        </button>
       </div>
     );
   }
