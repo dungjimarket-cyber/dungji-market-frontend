@@ -21,6 +21,8 @@ export default function PasswordResetPhonePage() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id
+  const [verificationCode, setVerificationCode] = useState(''); // 인증코드 저장
 
   // Step 1: 아이디와 휴대폰 번호 확인
   const handleIdentifyUser = async (e: React.FormEvent) => {
@@ -63,6 +65,12 @@ export default function PasswordResetPhonePage() {
       }
 
       console.log('사용자 확인 성공:', data);
+      
+      // user_id가 있으면 저장
+      if (data.user_id) {
+        setUserId(data.user_id);
+        console.log('User ID 저장:', data.user_id);
+      }
       
       // 사용자 정보가 일치하면 인증 단계로
       setUserPhoneNumber(phoneNumber);
@@ -111,17 +119,23 @@ export default function PasswordResetPhonePage() {
     setLoading(true);
 
     try {
+      // 백엔드 요구사항에 맞게 수정: user_id, phone_number, verification_code, new_password
+      const requestBody = {
+        user_id: userId || username,  // user_id가 없으면 username 사용
+        phone_number: userPhoneNumber.replace(/-/g, ''),
+        verification_code: verificationCode || '000000',  // 인증코드가 없으면 임시값
+        new_password: password,
+      };
+      
+      console.log('비밀번호 재설정 요청:', requestBody);
+      
       // API 호출 - 휴대폰 번호로 비밀번호 재설정
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password-phone/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          username: username,
-          phone_number: userPhoneNumber.replace(/-/g, ''),
-          new_password: password,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {

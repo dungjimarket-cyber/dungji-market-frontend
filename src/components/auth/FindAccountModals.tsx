@@ -178,6 +178,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [timer, setTimer] = useState(0);
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id 저장
   
   const formatPhoneNumber = (value: string) => {
     const numbers = value.replace(/[^\d]/g, '');
@@ -288,6 +289,12 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           // 일치하면 휴대폰 인증 단계로
           console.log('사용자 확인 성공:', data);
           
+          // user_id가 있으면 저장
+          if (data.user_id) {
+            setUserId(data.user_id);
+            console.log('User ID 저장:', data.user_id);
+          }
+          
           setStep('verify-phone');
           // 인증번호 발송
           try {
@@ -377,7 +384,9 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     console.log('Method:', method);
     console.log('Phone Verified:', phoneVerified);
     console.log('Username:', username);
+    console.log('User ID:', userId);
     console.log('Phone:', phone);
+    console.log('Verification Code:', phoneVerificationCode);
     console.log('New Password Length:', newPassword.length);
     console.log('=========================================');
     
@@ -405,10 +414,11 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
       
       if (method === 'phone') {
-        // 휴대폰 인증 후 비밀번호 재설정
+        // 백엔드 요구사항에 맞게 수정: user_id, phone_number, verification_code, new_password
         const requestBody = { 
-          username: username,
+          user_id: userId || username,  // user_id가 없으면 username 사용
           phone_number: phone.replace(/-/g, ''),
+          verification_code: phoneVerificationCode,  // 인증코드 추가
           new_password: newPassword 
         };
         
