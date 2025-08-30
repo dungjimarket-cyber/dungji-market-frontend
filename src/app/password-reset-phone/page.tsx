@@ -24,6 +24,24 @@ export default function PasswordResetPhonePage() {
   const [success, setSuccess] = useState(''); // 성공 메시지
   const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id
   const [verificationCode, setVerificationCode] = useState(''); // 인증코드 저장
+  
+  // 페이지 로드 시 성공 상태 복원
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedSuccess = sessionStorage.getItem('password_reset_success');
+      const savedMessage = sessionStorage.getItem('password_reset_message');
+      
+      if (savedSuccess === 'true' && savedMessage) {
+        console.log('📌 저장된 성공 상태 복원');
+        setStep('success');
+        setSuccess(savedMessage);
+        
+        // 복원 후 삭제 (한 번만 사용)
+        sessionStorage.removeItem('password_reset_success');
+        sessionStorage.removeItem('password_reset_message');
+      }
+    }
+  }, []);
 
   // step 변경 감지 및 unmount 감지
   useEffect(() => {
@@ -282,18 +300,29 @@ export default function PasswordResetPhonePage() {
     }
   };
 
-  // 성공 화면
+  // 성공 화면 - 완전히 독립적으로 렌더링
   if (step === 'success') {
     console.log('🎉 성공 화면 렌더링 중...');
     console.log('Success message:', success);
     console.log('현재 step:', step);
     console.log('현재 URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
     
-    // 혹시 모를 리다이렉트 방지
+    // 성공 상태를 sessionStorage에 저장 (페이지 새로고침 대비)
     if (typeof window !== 'undefined') {
+      sessionStorage.setItem('password_reset_success', 'true');
+      sessionStorage.setItem('password_reset_message', success || '비밀번호가 변경되었습니다.');
+      
+      // 혹시 모를 리다이렉트 방지
       window.onbeforeunload = () => {
         console.log('⚠️ 페이지 이동 감지됨!');
         return '정말로 이동하시겠습니까?';
+      };
+      
+      // history API로 뒤로가기 방지
+      window.history.pushState(null, '', window.location.href);
+      window.onpopstate = () => {
+        window.history.pushState(null, '', window.location.href);
+        console.log('⚠️ 뒤로가기 차단됨');
       };
     }
     
@@ -328,9 +357,12 @@ export default function PasswordResetPhonePage() {
                 console.log('이벤트 타입:', e.type);
                 console.log('이벤트 대상:', e.currentTarget);
                 
-                // onbeforeunload 제거
+                // cleanup
                 if (typeof window !== 'undefined') {
                   window.onbeforeunload = null;
+                  window.onpopstate = null;
+                  sessionStorage.removeItem('password_reset_success');
+                  sessionStorage.removeItem('password_reset_message');
                 }
                 
                 // 사용자가 직접 버튼을 클릭한 경우에만 이동
