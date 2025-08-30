@@ -598,12 +598,10 @@ export default function ProfileSection() {
                   purpose="profile"
                   defaultValue={phoneNumber}
                   currentUserToken={accessToken || undefined}
-                  onVerified={(verifiedPhoneNumber) => {
+                  onVerified={async (verifiedPhoneNumber) => {
                     setPhoneNumber(verifiedPhoneNumber);
-                    // 프로필 업데이트 후 편집 모드 종료
-                    handleProfileUpdate();
-                    setIsEditing(false);
-                    setEditField(null);
+                    // editField가 null이 되기 전에 프로필 업데이트 실행
+                    await handleProfileUpdate();
                   }}
                 />
                 <button
