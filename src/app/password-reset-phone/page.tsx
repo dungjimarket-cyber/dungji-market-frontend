@@ -21,6 +21,7 @@ export default function PasswordResetPhonePage() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(''); // 성공 메시지
   const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id
   const [verificationCode, setVerificationCode] = useState(''); // 인증코드 저장
 
@@ -65,6 +66,13 @@ export default function PasswordResetPhonePage() {
       }
 
       console.log('사용자 확인 성공:', data);
+      
+      // 카카오 계정 체크 (provider 또는 is_social 필드 확인)
+      if (data.provider === 'kakao' || data.is_social === true || data.is_kakao === true) {
+        console.log('카카오 계정 감지:', data);
+        setError('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
+        return;
+      }
       
       // user_id가 있으면 저장
       if (data.user_id) {
@@ -144,7 +152,11 @@ export default function PasswordResetPhonePage() {
         throw new Error(data.message || '비밀번호 재설정에 실패했습니다.');
       }
 
-      setStep('success');
+      setSuccess('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      // 2초 후 로그인 페이지로 이동
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     } catch (err: any) {
       setError(err.message || '비밀번호 재설정에 실패했습니다.');
     } finally {
@@ -234,6 +246,13 @@ export default function PasswordResetPhonePage() {
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {success && (
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">{success}</AlertDescription>
                 </Alert>
               )}
             </CardContent>

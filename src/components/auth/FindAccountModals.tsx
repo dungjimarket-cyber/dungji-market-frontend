@@ -288,6 +288,14 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           // 일치하면 휴대폰 인증 단계로
           console.log('사용자 확인 성공:', data);
           
+          // 카카오 계정 체크 (provider 또는 is_social 필드 확인)
+          if (data.provider === 'kakao' || data.is_social === true || data.is_kakao === true) {
+            console.log('카카오 계정 감지:', data);
+            setErrorMessage('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
+            setLoading(false);
+            return;
+          }
+          
           // user_id가 있으면 저장
           if (data.user_id) {
             setUserId(data.user_id);
@@ -498,12 +506,12 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         if (res.ok || (responseData && responseData.success === true)) {
           console.log('비밀번호 변경 성공!');
           setStep('complete');
-          toast({ title: '비밀번호가 성공적으로 변경되었습니다.' });
+          toast({ title: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' });
         } else if (responseData && responseData.success === false && responseData.message === "비밀번호 변경 중 오류가 발생했습니다.") {
           // 백엔드에서 실제로는 성공했지만 success: false로 응답하는 경우
           console.log('비밀번호 변경 완료 (success: false이지만 실제 성공)');
           setStep('complete');
-          toast({ title: '비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.' });
+          toast({ title: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' });
         } else if (res.status === 500) {
           console.error('서버 내부 오류 (500):', responseData);
           const errorDetail = responseData.message || responseData.error || '서버 내부 오류가 발생했습니다.';
@@ -523,7 +531,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         
         if (res.ok) {
           setStep('complete');
-          toast({ title: '비밀번호가 성공적으로 변경되었습니다.' });
+          toast({ title: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' });
         } else {
           const err = await res.json();
           setErrorMessage(err.error || '비밀번호 변경에 실패했습니다.');
