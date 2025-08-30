@@ -584,20 +584,16 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   // 완료 단계에서 자동 리다이렉트를 위한 Effect (조건문 밖에 위치)
   React.useEffect(() => {
     if (step === 'complete') {
-      // 백엔드에서 제공한 redirect_to 확인
-      const redirectPath = localStorage.getItem('password_reset_redirect') || '/login';
-      localStorage.removeItem('password_reset_redirect');
+      // 3초 후에 모달을 닫고 로그인 페이지로 이동
+      const timer = setTimeout(() => {
+        onClose();
+        // router.push 사용하여 SPA 내에서 이동
+        router.push('/login/signin');
+      }, 3000);
       
-      // 바로 로그인 페이지로 이동
-      onClose();
-      
-      if (redirectPath.startsWith('http')) {
-        window.location.href = redirectPath;
-      } else {
-        window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
-      }
+      return () => clearTimeout(timer);
     }
-  }, [step, onClose]);
+  }, [step, onClose, router]);
 
   // Step 1: Input username and email/phone
   if (step === 'input') {
@@ -902,6 +898,18 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         <p className="text-sm text-gray-600">
           새로운 비밀번호로 로그인해주세요.
         </p>
+        <p className="text-xs text-gray-500 mt-2">
+          3초 후 로그인 페이지로 이동합니다...
+        </p>
+        <button 
+          onClick={() => {
+            onClose();
+            router.push('/login/signin');
+          }}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          지금 로그인하기
+        </button>
       </div>
     );
   }
