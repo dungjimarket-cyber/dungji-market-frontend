@@ -258,9 +258,7 @@ export default function MyPageClient() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <div>
-                  사용자 정보
-                </div>
+                <div className="flex-1"></div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -273,31 +271,22 @@ export default function MyPageClient() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-6">
-                {/* 고객 이미지 */}
+              <div className="flex gap-6 items-center">
+                {/* 둥지마켓 메인 이미지 */}
                 <div className="flex-shrink-0">
                   <Image
-                    src="/logos/customer_img.png"
-                    alt="고객 이미지"
+                    src="/logos/main_logo.png"
+                    alt="둥지마켓"
                     width={80}
                     height={80}
-                    className="rounded-lg"
+                    className="rounded-lg object-contain"
                   />
                 </div>
                 {/* 사용자 정보 */}
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex-1 flex flex-col justify-center space-y-3">
                   <div>
                     <p className="text-sm text-gray-500">닉네임</p>
                     <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">휴대폰 번호</p>
-                    <p className="font-medium">
-                      {user.phone_number ? 
-                        user.phone_number.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
-                        '설정 필요'
-                      }
-                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">주요활동지역</p>
