@@ -300,6 +300,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const router = useRouter();
   
   // 사용자 정보 로딩 완료 상태
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -429,7 +430,21 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 사용자 데이터가 있으면 바로 체크 진행
+    // 사용자 정보가 완전히 로드되었는지 확인하고 상태 업데이트
+    if (isAuthenticated && user && user.id && !userDataLoaded) {
+      // 사용자 정보가 완전히 로드되었을 때 추가 지연을 통해 확실하게 처리
+      const delayTimer = setTimeout(() => {
+        setUserDataLoaded(true);
+      }, 100); // 100ms 지연으로 확실한 로딩 완료 대기
+      
+      return () => clearTimeout(delayTimer);
+    }
+    
+    // userDataLoaded가 false이면 아직 검증하지 않음
+    if (isAuthenticated && !userDataLoaded) {
+      console.log('[CreateForm] 사용자 데이터 로딩 완료 대기 중...');
+      return;
+    }
     
     // 판매자(seller) 계정은 공구 등록 불가
     if (user?.role === 'seller' || (user?.roles && user.roles.includes('seller'))) {
@@ -442,7 +457,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 모든 사용자의 프로필 완성도 체크 (계정 유형 무관)
+    // 일반회원: 활동지역과 휴대폰 번호 체크 (실시간 사용자 정보 확인)
     console.log('[CreateForm] 사용자 정보 확인:', {
       role: user?.role,
       address_region: user?.address_region,
@@ -450,29 +465,73 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       user_full: user
     });
     
-    // 프로필 완성도 검증 - 모든 사용자 대상
-    if (user && user.id) {  // user.id가 있는지 확인하여 완전히 로드되었는지 체크
-      console.log('[CreateForm] 프로필 체크 실행:', {
-        phone_number: user.phone_number,
-        address_region: user.address_region,
-        sns_type: user.sns_type
-      });
-      
-      // 필수 정보 체크
-      if (!user.phone_number || !user.address_region) {
-        console.log('[CreateForm] 프로필 미완성 - 리다이렉트 예정');
-        // setTimeout을 사용하여 다음 틱에서 실행
-        setTimeout(() => {
-          if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
-            router.push('/mypage/settings');
+    // 활동지역 검증 - 실시간으로 최신 정보 확인
+    if (user?.role === 'buyer') {
+      // 실시간 사용자 정보 확인을 위한 비동기 함수
+      const checkUserLocationAsync = async () => {
+        try {
+          // 실시간으로 최신 사용자 정보 가져오기
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            },
+          });
+          
+          if (response.ok) {
+            const currentUserData = await response.json();
+            console.log('[CreateForm] 실시간 사용자 정보:', currentUserData);
+            
+            // 최신 정보로 지역 체크
+            if (!currentUserData.address_region) {
+              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+                router.push('/mypage/settings');
+                return;
+              }
+              // 취소를 누른 경우 이전 페이지로
+              router.back();
+              return;
+            }
           } else {
-            router.back();
+            // API 호출 실패 시 캐시된 데이터로 폴백
+            if (!user.address_region) {
+              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+                router.push('/mypage/settings');
+                return;
+              }
+              router.back();
+              return;
+            }
           }
-        }, 500);
+        } catch (error) {
+          console.error('[CreateForm] 사용자 정보 확인 중 오류:', error);
+          // 오류 발생 시 캐시된 데이터로 폴백
+          if (!user.address_region) {
+            if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
+              router.push('/mypage');
+              return;
+            }
+            router.back();
+            return;
+          }
+        }
+      };
+
+      // 비동기 함수 실행
+      checkUserLocationAsync();
+    }
+    
+    // 휴대폰 번호 검증 (필요한 경우만)
+    if (user?.role === 'buyer' && !user.phone_number) {
+      if (confirm('공구를 등록하기 위해서는 휴대폰 번호 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+        router.push('/mypage/settings');
         return;
       }
+      // 취소를 누른 경우 이전 페이지로
+      router.back();
+      return;
     }
-  }, [router, isLoading, isAuthenticated, user]);
+  }, [router, isLoading, isAuthenticated, user, userDataLoaded]);
 
   useEffect(() => {
     console.log('현재 인증 상태:', isAuthenticated ? '인증됨' : '비인증');
@@ -916,16 +975,12 @@ const continueSubmitWithUserId = async (
 const onSubmit = async (values: FormData) => {
   console.log('폼 제출 시작 - 값:', values);
   
-  // 모든 사용자의 프로필 완성도 체크 (계정 유형 무관)
-  if (user) {
-    // 필수 정보 체크
-    if (!user.phone_number || !user.address_region) {
-      if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
-        router.push('/mypage/settings');
-        return;
-      }
-      return;
+  // 일반회원의 경우 주소 체크 (휴대폰번호는 선택사항)
+  if (user?.role === 'buyer' && !user.address_region) {
+    if (confirm('공구를 등록하기 위해서는 활동지역 입력이 필요합니다.\n\n내 정보 설정 페이지로 이동하시겠습니까?')) {
+      router.push('/mypage/settings');
     }
+    return;
   }
   
   setIsSubmitting(true);

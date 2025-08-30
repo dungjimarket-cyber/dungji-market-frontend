@@ -65,7 +65,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
    * 로그인 상태와 JWT 토큰을 확인하고 API 호출
    */
   const handleJoin = async () => {
-    // 로그인 상태 확인 (이미 버튼 클릭 시 체크했지만 안전성을 위해 유지)
+    // 로그인 상태 확인
     if (!isAuthenticated || !accessToken) {
       toast({
         title: '로그인 필요',
