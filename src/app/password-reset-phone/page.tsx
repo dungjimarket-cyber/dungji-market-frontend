@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
@@ -24,6 +24,12 @@ export default function PasswordResetPhonePage() {
   const [success, setSuccess] = useState(''); // 성공 메시지
   const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id
   const [verificationCode, setVerificationCode] = useState(''); // 인증코드 저장
+
+  // step 변경 감지
+  useEffect(() => {
+    console.log('📍 Step 변경됨:', step);
+    console.log('현재 상태:', { loading, error, success });
+  }, [step, loading, error, success]);
 
   // Step 1: 아이디와 휴대폰 번호 확인
   const handleIdentifyUser = async (e: React.FormEvent) => {
@@ -158,10 +164,8 @@ export default function PasswordResetPhonePage() {
         responseData = await response.json();
       } catch (jsonError) {
         console.error('JSON 파싱 에러:', jsonError);
-        // JSON 파싱 실패 시 텍스트로 읽기
-        const textResponse = await response.text();
-        console.log('텍스트 응답:', textResponse);
-        responseData = { message: '비밀번호가 변경되었습니다' };
+        // JSON 파싱 실패 시 기본값 사용 (response body는 이미 읽었으므로 다시 읽을 수 없음)
+        responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
       }
       
       console.log('=== 비밀번호 재설정 응답 ===');
@@ -221,6 +225,8 @@ export default function PasswordResetPhonePage() {
 
   // 성공 화면
   if (step === 'success') {
+    console.log('🎉 성공 화면 렌더링 중...');
+    console.log('Success message:', success);
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
