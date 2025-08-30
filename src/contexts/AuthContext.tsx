@@ -296,6 +296,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (response.ok) {
                 const profileData = await response.json();
+                console.log('프로필 API 응답 데이터:', profileData);
+                console.log('sns_type 값:', profileData.sns_type);
                 logDebug('백엔드에서 프로필 정보 가져오기 성공', profileData);
                 
                 // 기존 로컬 데이터와 병합
@@ -311,6 +313,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     address_region: profileData.address_region,
                     business_address: profileData.business_address,
                   };
+                  console.log('병합된 사용자 데이터:', userData);
                   logDebug('사용자 정보 업데이트 완료', userData);
                 } else {
                   // 로컬 스토리지에 사용자 정보가 없는 경우
@@ -342,9 +345,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(userData);
               } else {
                 console.warn('프로필 정보 가져오기 실패:', response.status);
+                console.error('프로필 API 응답 상태:', response.status, response.statusText);
                 
                 // 백엔드 요청 실패시 로컬 데이터만 사용
                 if (userData) {
+                  console.log('프로필 API 실패, 로컬 데이터 사용:', userData);
                   setUser(userData);
                   console.log('로컬 스토리지에서 사용자 정보 복원 성공', userData.role || 'role 없음');
                 } else {

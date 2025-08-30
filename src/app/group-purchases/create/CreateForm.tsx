@@ -482,9 +482,13 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
             const currentUserData = await response.json();
             console.log('[CreateForm] 실시간 사용자 정보:', currentUserData);
             
-            // 최신 정보로 지역 체크
-            if (!currentUserData.address_region) {
-              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+            // 최신 정보로 프로필 체크 (활동지역과 휴대폰번호)
+            if (!currentUserData.address_region || !currentUserData.phone_number) {
+              const missingInfo = [];
+              if (!currentUserData.address_region) missingInfo.push('활동지역');
+              if (!currentUserData.phone_number) missingInfo.push('연락처');
+              
+              if (confirm(`공구를 등록하기 위해서는 ${missingInfo.join(', ')} 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.`)) {
                 router.push('/mypage/settings');
                 return;
               }
@@ -494,8 +498,12 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
             }
           } else {
             // API 호출 실패 시 캐시된 데이터로 폴백
-            if (!user.address_region) {
-              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+            if (!user.address_region || !user.phone_number) {
+              const missingInfo = [];
+              if (!user.address_region) missingInfo.push('활동지역');
+              if (!user.phone_number) missingInfo.push('연락처');
+              
+              if (confirm(`공구를 등록하기 위해서는 ${missingInfo.join(', ')} 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.`)) {
                 router.push('/mypage/settings');
                 return;
               }
@@ -506,9 +514,13 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
         } catch (error) {
           console.error('[CreateForm] 사용자 정보 확인 중 오류:', error);
           // 오류 발생 시 캐시된 데이터로 폴백
-          if (!user.address_region) {
-            if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
-              router.push('/mypage');
+          if (!user.address_region || !user.phone_number) {
+            const missingInfo = [];
+            if (!user.address_region) missingInfo.push('활동지역');
+            if (!user.phone_number) missingInfo.push('연락처');
+            
+            if (confirm(`공구를 등록하기 위해서는 ${missingInfo.join(', ')} 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.`)) {
+              router.push('/mypage/settings');
               return;
             }
             router.back();
