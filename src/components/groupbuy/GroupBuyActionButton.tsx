@@ -60,7 +60,8 @@ export default function GroupBuyActionButton({
       isCreator,
       isSeller,
       isParticipating,
-      user
+      user,
+      buttonText: getButtonText()
     });
     
     // 판매회원은 상세 페이지에서 입찰 처리하도록 이벤트 발생
@@ -73,30 +74,27 @@ export default function GroupBuyActionButton({
       return;
     }
     
-    // 일반 구매회원은 프로필 체크 후 참여 모달 표시
-    if (isRecruiting && !isFull && !isCreator && !isParticipating) {
-      // 프로필 체크 디버깅
-      console.log('프로필 체크 시작:', {
-        user,
-        sns_type: user?.sns_type,
-        role: user?.role,
-        phone_number: user?.phone_number,
-        address_region: user?.address_region
+    // 프로필 체크를 먼저 수행 (일반회원이고 참여 가능한 경우)
+    if (user && user.role === 'buyer' && isRecruiting && !isFull && !isCreator) {
+      console.log('프로필 체크 진행:', {
+        phone_number: user.phone_number,
+        address_region: user.address_region,
+        isParticipating
       });
       
-      // 모든 일반회원 프로필 체크 (sns_type 관계없이)
-      if (user && user.role === 'buyer') {
-        if (!user.phone_number || !user.address_region) {
-          console.log('프로필 정보 누락 감지');
-          if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
-            router.push('/mypage/settings');
-            return;
-          }
-          return;
+      // 프로필 정보 누락 체크
+      if (!user.phone_number || !user.address_region) {
+        console.log('프로필 정보 누락 감지 - 리다이렉트 필요');
+        if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+          router.push('/mypage/settings');
         }
+        return;
       }
-      
-      // 프로필 체크 통과 시 모달 오픈
+    }
+    
+    // 참여 가능한 경우 모달 오픈
+    if (isRecruiting && !isFull && !isCreator && !isParticipating) {
+      console.log('모달 오픈');
       setIsModalOpen(true);
     }
   };
