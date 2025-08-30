@@ -155,10 +155,23 @@ export default function PasswordResetPhonePage() {
       // 응답 데이터를 한 번만 읽기
       const responseData = await response.json();
       console.log('비밀번호 재설정 응답:', responseData);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
       
-      if (!response.ok) {
+      // 성공 여부 판단
+      // 1. response.ok가 false이고 success도 false이면 실패
+      // 2. response.ok가 true이거나 success가 false가 아니면 성공
+      if (!response.ok && responseData.success === false) {
+        // 카카오 계정 차단 메시지 확인
+        if (responseData.message && responseData.message.includes('카카오')) {
+          throw new Error('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
+        }
         throw new Error(responseData.message || '비밀번호 재설정에 실패했습니다.');
       }
+      
+      // 백엔드가 success: false로 응답하더라도 200 OK면 성공으로 처리
+      // (일부 백엔드는 성공 시에도 success: false로 응답할 수 있음)
+      console.log('비밀번호 변경 성공 처리');
       
       // 백엔드에서 제공하는 redirect_to 사용 (없으면 기본값)
       const redirectPath = responseData.redirect_to || '/login';
@@ -166,20 +179,26 @@ export default function PasswordResetPhonePage() {
       // 성공 메시지 표시
       const successMessage = responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.';
       console.log('성공 메시지:', successMessage);
+      console.log('Setting step to success');
       
+      // 로딩 상태를 먼저 해제
+      setLoading(false);
       setSuccess(successMessage);
       setError(''); // 에러 메시지 초기화
       setStep('success'); // 성공 화면으로 전환
       
-      // 3초 후 로그인 페이지로 이동 (알림을 충분히 볼 수 있도록)
-      setTimeout(() => {
-        if (redirectPath.startsWith('http')) {
-          window.location.href = redirectPath;
-        } else {
-          // 상대 경로인 경우
-          window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
-        }
-      }, 3000);
+      // 성공 알림
+      alert(successMessage);
+      
+      // 자동 리다이렉트 비활성화 - 사용자가 직접 "바로 로그인하기" 버튼 클릭
+      // setTimeout(() => {
+      //   console.log('Redirecting to login page...');
+      //   if (redirectPath.startsWith('http')) {
+      //     window.location.href = redirectPath;
+      //   } else {
+      //     window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
+      //   }
+      // }, 5000);
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
       
@@ -212,7 +231,7 @@ export default function PasswordResetPhonePage() {
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                잠시 후 로그인 페이지로 자동 이동합니다...
+                새로운 비밀번호로 로그인해주세요.
               </AlertDescription>
             </Alert>
           </CardContent>
