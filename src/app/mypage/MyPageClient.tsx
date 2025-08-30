@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import ProfileSection from '@/components/mypage/ProfileSection';
+// ProfileSection을 별도 페이지로 분리
 import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
 import PurchaseConfirmedGroupBuys from '@/components/mypage/PurchaseConfirmedGroupBuys';
 import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
@@ -17,7 +17,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -251,7 +253,53 @@ export default function MyPageClient() {
       
             {user ? (
         <div className="space-y-6">
-          <ProfileSection />
+          {/* 사용자 정보 카드 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <User className="w-5 h-5 mr-2" />
+                  사용자 정보
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/mypage/settings')}
+                  className="flex items-center"
+                >
+                  <Settings className="w-4 h-4 mr-1" />
+                  내 정보 설정
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">닉네임</p>
+                  <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">휴대폰 번호</p>
+                  <p className="font-medium">
+                    {user.phone_number ? 
+                      user.phone_number.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
+                      '설정 필요'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">주요활동지역</p>
+                  <p className="font-medium">
+                    {user.address_region?.full_name || '설정 필요'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">회원 구분</p>
+                  <p className="font-medium">일반회원</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
           {/* 동의 알림 표시 */}
           <ConsentNotification />

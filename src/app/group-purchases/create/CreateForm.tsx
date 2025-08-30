@@ -484,8 +484,8 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
             
             // 최신 정보로 지역 체크
             if (!currentUserData.address_region) {
-              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
-                router.push('/mypage');
+              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+                router.push('/mypage/settings');
                 return;
               }
               // 취소를 누른 경우 이전 페이지로
@@ -495,8 +495,8 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
           } else {
             // API 호출 실패 시 캐시된 데이터로 폴백
             if (!user.address_region) {
-              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
-                router.push('/mypage');
+              if (confirm('공구를 등록하기 위해서는 활동지역 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+                router.push('/mypage/settings');
                 return;
               }
               router.back();
@@ -523,8 +523,8 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // 휴대폰 번호 검증 (필요한 경우만)
     if (user?.role === 'buyer' && !user.phone_number) {
-      if (confirm('공구를 등록하기 위해서는 휴대폰 번호 정보를 업데이트 해주세요.\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
-        router.push('/mypage');
+      if (confirm('공구를 등록하기 위해서는 휴대폰 번호 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+        router.push('/mypage/settings');
         return;
       }
       // 취소를 누른 경우 이전 페이지로
@@ -977,8 +977,8 @@ const onSubmit = async (values: FormData) => {
   
   // 일반회원의 경우 주소 체크 (휴대폰번호는 선택사항)
   if (user?.role === 'buyer' && !user.address_region) {
-    if (confirm('공구를 등록하기 위해서는 활동지역 입력이 필요합니다.\n\n마이페이지로 이동하시겠습니까?')) {
-      router.push('/mypage');
+    if (confirm('공구를 등록하기 위해서는 활동지역 입력이 필요합니다.\n\n내 정보 설정 페이지로 이동하시겠습니까?')) {
+      router.push('/mypage/settings');
     }
     return;
   }

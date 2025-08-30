@@ -44,8 +44,8 @@ export function SearchBar({
       const regionName = user.address_region.name || user.address_region.full_name;
       router.push(`/group-purchases?region=${encodeURIComponent(regionName)}`);
     } else {
-      alert('내 지역 정보가 설정되지 않았습니다. 마이페이지에서 지역을 설정해주세요.');
-      router.push('/mypage');
+      alert('내 지역 정보가 설정되지 않았습니다. 내 정보 설정에서 지역을 설정해주세요.');
+      router.push('/mypage/settings');
     }
   };
 
