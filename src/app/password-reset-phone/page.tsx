@@ -202,12 +202,22 @@ export default function PasswordResetPhonePage() {
       setLoading(false);
       setSuccess(successMessage);
       setError(''); // 에러 메시지 초기화
-      setStep('success'); // 성공 화면으로 전환
       
-      // 성공 알림
+      // alert 팝업 표시 후 확인 누르면 리다이렉트
       alert(successMessage);
       
-      // return을 넣어서 여기서 함수 종료
+      // confirm으로 한번 더 확인
+      const shouldRedirect = confirm('로그인 페이지로 이동하시겠습니까?');
+      
+      if (shouldRedirect) {
+        console.log('사용자가 확인함, 로그인 페이지로 이동...');
+        window.location.href = 'https://www.dungjimarket.com/login/signin';
+      } else {
+        console.log('사용자가 취소함, 현재 페이지에 머무름');
+        setStep('success'); // 성공 화면 표시
+      }
+      
+      // 여기 도달하지 않음 (리다이렉트 때문에)
       return;
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
@@ -226,12 +236,11 @@ export default function PasswordResetPhonePage() {
   // 성공 화면
   if (step === 'success') {
     console.log('🎉 성공 화면 렌더링 중...');
-    console.log('Success message:', success);
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
             <CardTitle className="text-2xl">비밀번호 변경 완료</CardTitle>
@@ -249,8 +258,8 @@ export default function PasswordResetPhonePage() {
           </CardContent>
           <CardFooter>
             <Link href="https://www.dungjimarket.com/login/signin" className="w-full">
-              <Button className="w-full" variant="outline">
-                바로 로그인하기
+              <Button className="w-full">
+                로그인 페이지로 이동
               </Button>
             </Link>
           </CardFooter>
