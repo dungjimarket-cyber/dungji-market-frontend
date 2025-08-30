@@ -69,7 +69,14 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
       });
       if (res.ok) {
         const data = await res.json();
-        setResult(data.username);
+        
+        // 카카오 계정 체크
+        if (data.is_social && data.provider === 'kakao') {
+          setErrorMessage('카카오톡 계정으로 가입하신 회원입니다.\n카카오톡 로그인을 이용해주세요.\n\n일반 로그인이 필요하신 경우 고객센터로 문의해주세요.');
+          setResult(null);
+        } else {
+          setResult(data.username);
+        }
       } else {
         try {
           const errText = await res.text();
@@ -150,7 +157,7 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
         className="w-full px-3 py-2 border rounded" 
         value={phone} 
         onChange={handlePhoneChange}
-        placeholder="010-0000-0000"
+        placeholder="번호를 입력해주세요"
         maxLength={13}
       />
       <button type="submit" disabled={loading} className="w-full py-2 rounded bg-blue-600 text-white font-semibold">
@@ -663,7 +670,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
                 className="w-full px-3 py-2 border rounded" 
                 value={phone} 
                 onChange={handlePhoneChange}
-                placeholder="010-0000-0000"
+                placeholder="번호를 입력해주세요"
                 maxLength={13}
               />
             </div>
