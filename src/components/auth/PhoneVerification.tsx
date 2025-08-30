@@ -101,7 +101,7 @@ export function PhoneVerification({
         purpose === 'profile' ? currentUserToken : undefined
       );
       if (!duplicateCheck.available) {
-        setError('이미 등록된 번호입니다.');
+        // setError 제거 - isDuplicate만 설정하여 휴대폰번호 입력칸 아래에만 표시
         setIsDuplicate(true);
         setIsSending(false);
         return;
