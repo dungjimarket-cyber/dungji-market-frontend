@@ -300,7 +300,6 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const router = useRouter();
   
   // 사용자 정보 로딩 완료 상태
-  const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -430,21 +429,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 사용자 정보가 완전히 로드되었는지 확인하고 상태 업데이트
-    if (isAuthenticated && user && user.id && !userDataLoaded) {
-      // 사용자 정보가 완전히 로드되었을 때 추가 지연을 통해 확실하게 처리
-      const delayTimer = setTimeout(() => {
-        setUserDataLoaded(true);
-      }, 100); // 100ms 지연으로 확실한 로딩 완료 대기
-      
-      return () => clearTimeout(delayTimer);
-    }
-    
-    // userDataLoaded가 false이면 아직 검증하지 않음
-    if (isAuthenticated && !userDataLoaded) {
-      console.log('[CreateForm] 사용자 데이터 로딩 완료 대기 중...');
-      return;
-    }
+    // 사용자 데이터가 있으면 바로 체크 진행
     
     // 판매자(seller) 계정은 공구 등록 불가
     if (user?.role === 'seller' || (user?.roles && user.roles.includes('seller'))) {
@@ -469,15 +454,18 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     if (user) {
       // 필수 정보 체크
       if (!user.phone_number || !user.address_region) {
-        if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
-          router.push('/mypage/settings');
-        } else {
-          router.back();
-        }
+        // setTimeout을 사용하여 다음 틱에서 실행
+        setTimeout(() => {
+          if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+            router.push('/mypage/settings');
+          } else {
+            router.back();
+          }
+        }, 300);
         return;
       }
     }
-  }, [router, isLoading, isAuthenticated, user, userDataLoaded]);
+  }, [router, isLoading, isAuthenticated, user]);
 
   useEffect(() => {
     console.log('현재 인증 상태:', isAuthenticated ? '인증됨' : '비인증');

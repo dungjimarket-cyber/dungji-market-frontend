@@ -250,15 +250,28 @@ export default function MyPageClient() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
+      {/* 헤더 영역 - 모바일에서 버튼 위치 조정 */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">마이페이지</h1>
+        {/* 모바일에서만 보이는 내 정보 설정 버튼 */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/mypage/settings')}
+          className="flex items-center md:hidden"
+        >
+          <Settings className="w-4 h-4 mr-1" />
+          내 정보 설정
+        </Button>
+      </div>
       
             {user ? (
         <div className="space-y-6">
           {/* 사용자 정보 카드 */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex-1"></div>
+            {/* 데스크톱에서만 헤더에 버튼 표시 */}
+            <CardHeader className="hidden md:block">
+              <div className="flex justify-end">
                 <Button
                   variant="outline"
                   size="sm"
@@ -268,10 +281,10 @@ export default function MyPageClient() {
                   <Settings className="w-4 h-4 mr-1" />
                   내 정보 설정
                 </Button>
-              </CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex gap-6 items-center">
+            <CardContent className="pt-6 md:pt-0">
+              <div className="flex gap-6 items-start">
                 {/* 둥지마켓 메인 이미지 */}
                 <div className="flex-shrink-0">
                   <Image
@@ -282,8 +295,8 @@ export default function MyPageClient() {
                     className="rounded-lg object-contain"
                   />
                 </div>
-                {/* 사용자 정보 */}
-                <div className="flex-1 flex flex-col justify-center space-y-3">
+                {/* 사용자 정보 - 상단 정렬로 변경 */}
+                <div className="flex-1 flex flex-col space-y-3">
                   <div>
                     <p className="text-sm text-gray-500">닉네임</p>
                     <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>

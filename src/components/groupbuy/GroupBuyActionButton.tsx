@@ -76,7 +76,15 @@ export default function GroupBuyActionButton({
       }
       
       // 프로필 완성도 체크 (모든 사용자)
+      console.log('[GroupBuyActionButton] 프로필 체크:', {
+        user: user,
+        phone_number: user?.phone_number,
+        address_region: user?.address_region,
+        sns_type: user?.sns_type
+      });
+      
       if (user && (!user.phone_number || !user.address_region)) {
+        console.log('[GroupBuyActionButton] 프로필 미완성 감지');
         if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
           router.push('/mypage/settings');
         }
