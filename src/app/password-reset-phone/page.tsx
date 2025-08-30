@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Phone, CheckCircle, User } from 'lucide-react';
+import { Loader2, Phone, CheckCircle, User, AlertCircle } from 'lucide-react';
 
 export default function PasswordResetPhonePage() {
   const router = useRouter();
@@ -157,15 +157,20 @@ export default function PasswordResetPhonePage() {
       // 백엔드에서 제공하는 redirect_to 사용 (없으면 기본값)
       const redirectPath = responseData.redirect_to || '/login';
       
+      // 성공 메시지 표시
       setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      setError(''); // 에러 메시지 초기화
+      setStep('success'); // 성공 화면으로 전환
       
-      // 로그인 페이지로 즉시 이동
-      if (redirectPath.startsWith('http')) {
-        window.location.href = redirectPath;
-      } else {
-        // 상대 경로인 경우
-        window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
-      }
+      // 2초 후 로그인 페이지로 이동 (알림을 충분히 볼 수 있도록)
+      setTimeout(() => {
+        if (redirectPath.startsWith('http')) {
+          window.location.href = redirectPath;
+        } else {
+          // 상대 경로인 경우
+          window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
+        }
+      }, 2000);
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
       
@@ -186,18 +191,26 @@ export default function PasswordResetPhonePage() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+              <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
-            <CardTitle>비밀번호가 재설정되었습니다</CardTitle>
-            <CardDescription className="mt-2">
-              새로운 비밀번호로 로그인할 수 있습니다.
+            <CardTitle className="text-2xl">비밀번호 변경 완료</CardTitle>
+            <CardDescription className="mt-3 text-base">
+              {success || '비밀번호가 변경되었습니다. 다시 로그인해주세요.'}
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                잠시 후 로그인 페이지로 자동 이동합니다...
+              </AlertDescription>
+            </Alert>
+          </CardContent>
           <CardFooter>
-            <Link href="/login" className="w-full">
-              <Button className="w-full">
-                로그인하기
+            <Link href="https://www.dungjimarket.com/login/signin" className="w-full">
+              <Button className="w-full" variant="outline">
+                바로 로그인하기
               </Button>
             </Link>
           </CardFooter>
