@@ -32,11 +32,12 @@
 ### 2. `/auth/reset-password-phone/` (POST)
 **목적**: 휴대폰 인증 완료 후 비밀번호 변경
 
-**요청 형식**:
+**요청 형식 (백엔드 실제 요구사항)**:
 ```json
 {
-  "username": "사용자아이디",
+  "user_id": "사용자ID또는username",
   "phone_number": "01012345678",  // 하이픈 없이
+  "verification_code": "123456",  // 휴대폰 인증코드
   "new_password": "새비밀번호"
 }
 ```

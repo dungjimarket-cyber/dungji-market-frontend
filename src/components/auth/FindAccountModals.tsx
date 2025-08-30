@@ -236,15 +236,14 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         // Phone method - 먼저 아이디와 휴대폰 번호 일치 확인
         const requestBody = { 
           username: username,
-          phone_number: phone.replace(/-/g, '') 
+          phone_number: phone  // 백엔드에서 하이픈 자동 처리
         };
         
         console.log('========== 사용자 확인 요청 디버깅 ==========');
         console.log('API URL:', `${apiUrl}/auth/verify-user-phone/`);
         console.log('Request Body:', JSON.stringify(requestBody, null, 2));
         console.log('Username:', username);
-        console.log('Phone (원본):', phone);
-        console.log('Phone (처리후):', phone.replace(/-/g, ''));
+        console.log('Phone (하이픈 포함):', phone);
         console.log('=============================================');
         
         const res = await fetch(`${apiUrl}/auth/verify-user-phone/`, {
@@ -300,7 +299,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           try {
             const result = await phoneVerificationService.sendVerification({
               phone_number: phone,
-              purpose: 'password_reset'
+              purpose: 'password_reset'  // 백엔드에서 'reset' 권장하지만 기존 코드 유지
             });
             if (result.success) {
               setTimer(180); // 3분 타이머
@@ -361,7 +360,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
       const result = await phoneVerificationService.verifyPhone({
         phone_number: phone,
         verification_code: phoneVerificationCode,
-        purpose: 'password_reset'
+        purpose: 'password_reset'  // 백엔드와 호환성 유지
       });
       
       if (result.success) {
@@ -417,9 +416,10 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         // 백엔드 요구사항에 맞게 수정: user_id, phone_number, verification_code, new_password
         const requestBody = { 
           user_id: userId || username,  // user_id가 없으면 username 사용
-          phone_number: phone.replace(/-/g, ''),
+          phone_number: phone,  // 백엔드에서 하이픈 자동 처리
           verification_code: phoneVerificationCode,  // 인증코드 추가
-          new_password: newPassword 
+          new_password: newPassword,
+          purpose: 'reset'  // 백엔드 권장사항 추가
         };
         
         console.log('비밀번호 재설정 요청:', requestBody);
@@ -621,7 +621,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
               try {
                 const result = await phoneVerificationService.sendVerification({
                   phone_number: phone,
-                  purpose: 'password_reset'
+                  purpose: 'password_reset'  // 백엔드와 호환성 유지
                 });
                 if (result.success) {
                   setTimer(180);

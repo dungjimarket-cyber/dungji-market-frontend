@@ -32,7 +32,7 @@ export default function PasswordResetPhonePage() {
 
     try {
       // 아이디와 휴대폰 번호로 사용자 확인
-      console.log('사용자 확인 요청:', { username, phone_number: phoneNumber.replace(/-/g, '') });
+      console.log('사용자 확인 요청:', { username, phone_number: phoneNumber });
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-user-phone/`, {
         method: 'POST',
@@ -41,7 +41,7 @@ export default function PasswordResetPhonePage() {
         },
         body: JSON.stringify({
           username: username,
-          phone_number: phoneNumber.replace(/-/g, ''), // 하이픈 제거
+          phone_number: phoneNumber, // 백엔드에서 하이픈 자동 처리
         }),
       });
 
@@ -122,9 +122,10 @@ export default function PasswordResetPhonePage() {
       // 백엔드 요구사항에 맞게 수정: user_id, phone_number, verification_code, new_password
       const requestBody = {
         user_id: userId || username,  // user_id가 없으면 username 사용
-        phone_number: userPhoneNumber.replace(/-/g, ''),
+        phone_number: userPhoneNumber,  // 백엔드에서 하이픈 자동 처리
         verification_code: verificationCode || '000000',  // 인증코드가 없으면 임시값
         new_password: password,
+        purpose: 'reset'  // 백엔드 권장사항 추가
       };
       
       console.log('비밀번호 재설정 요청:', requestBody);
