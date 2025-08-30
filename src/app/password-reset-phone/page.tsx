@@ -152,15 +152,63 @@ export default function PasswordResetPhonePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        redirect: 'manual', // 리다이렉트 수동 처리
+        credentials: 'include', // 쿠키 포함
       });
 
+      console.log('=== API 응답 상세 정보 ===');
       console.log('Response status:', response.status);
+      console.log('Response type:', response.type);
+      console.log('Response redirected:', response.redirected);
+      console.log('Response URL:', response.url);
+      console.log('Response headers:', {
+        contentType: response.headers.get('content-type'),
+        location: response.headers.get('location'),
+        setCookie: response.headers.get('set-cookie'),
+      });
+      
+      // 리다이렉트 응답 체크
+      if (response.type === 'opaqueredirect' || response.status === 0) {
+        console.error('🚨 백엔드가 리다이렉트를 시도했습니다!');
+        console.log('리다이렉트 차단됨. 모달 표시합니다.');
+        
+        // 리다이렉트를 무시하고 성공 처리
+        setSuccessMessage('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+        setShowSuccessModal(true);
+        setLoading(false);
+        return;
+      }
       
       if (response.status === 200) {
         let responseData: any = {};
+        let responseText = '';
+        
         try {
-          responseData = await response.json();
-        } catch {
+          // 먼저 텍스트로 읽기
+          responseText = await response.text();
+          console.log('Response body (raw):', responseText.substring(0, 500)); // 처음 500자만
+          
+          // JSON 파싱 시도
+          try {
+            responseData = JSON.parse(responseText);
+            console.log('Parsed JSON:', responseData);
+          } catch {
+            // JSON이 아니면 HTML일 가능성
+            if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+              console.error('🚨 백엔드가 HTML을 반환했습니다 (리다이렉트 페이지일 가능성)');
+              responseData = { 
+                success: true,
+                message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' 
+              };
+            } else {
+              responseData = { 
+                success: true,
+                message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' 
+              };
+            }
+          }
+        } catch (error) {
+          console.error('Response 읽기 실패:', error);
           responseData = { 
             success: true,
             message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' 
