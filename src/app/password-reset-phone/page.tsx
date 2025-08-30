@@ -153,15 +153,30 @@ export default function PasswordResetPhonePage() {
       });
 
       // 응답 데이터를 한 번만 읽기
-      const responseData = await response.json();
-      console.log('비밀번호 재설정 응답:', responseData);
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (jsonError) {
+        console.error('JSON 파싱 에러:', jsonError);
+        // JSON 파싱 실패 시 텍스트로 읽기
+        const textResponse = await response.text();
+        console.log('텍스트 응답:', textResponse);
+        responseData = { message: '비밀번호가 변경되었습니다' };
+      }
+      
+      console.log('=== 비밀번호 재설정 응답 ===');
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
+      console.log('Response data:', responseData);
+      console.log('Response success field:', responseData.success);
+      console.log('===========================');
       
       // 성공 여부 판단
-      // 1. response.ok가 false이고 success도 false이면 실패
-      // 2. response.ok가 true이거나 success가 false가 아니면 성공
-      if (!response.ok && responseData.success === false) {
+      // 백엔드가 200 OK를 반환하면 성공으로 처리
+      if (response.ok) {
+        console.log('✅ 200 OK - 성공으로 처리');
+      } else if (responseData.success === false) {
+        console.log('❌ 실패 응답');
         // 카카오 계정 차단 메시지 확인
         if (responseData.message && responseData.message.includes('카카오')) {
           throw new Error('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
@@ -169,9 +184,7 @@ export default function PasswordResetPhonePage() {
         throw new Error(responseData.message || '비밀번호 재설정에 실패했습니다.');
       }
       
-      // 백엔드가 success: false로 응답하더라도 200 OK면 성공으로 처리
-      // (일부 백엔드는 성공 시에도 success: false로 응답할 수 있음)
-      console.log('비밀번호 변경 성공 처리');
+      console.log('비밀번호 변경 성공 처리 시작');
       
       // 백엔드에서 제공하는 redirect_to 사용 (없으면 기본값)
       const redirectPath = responseData.redirect_to || '/login';
@@ -190,15 +203,8 @@ export default function PasswordResetPhonePage() {
       // 성공 알림
       alert(successMessage);
       
-      // 자동 리다이렉트 비활성화 - 사용자가 직접 "바로 로그인하기" 버튼 클릭
-      // setTimeout(() => {
-      //   console.log('Redirecting to login page...');
-      //   if (redirectPath.startsWith('http')) {
-      //     window.location.href = redirectPath;
-      //   } else {
-      //     window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
-      //   }
-      // }, 5000);
+      // return을 넣어서 여기서 함수 종료
+      return;
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
       
