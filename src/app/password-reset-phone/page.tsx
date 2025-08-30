@@ -30,6 +30,8 @@ export default function PasswordResetPhonePage() {
 
     try {
       // 아이디와 휴대폰 번호로 사용자 확인
+      console.log('사용자 확인 요청:', { username, phone_number: phoneNumber.replace(/-/g, '') });
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-user-phone/`, {
         method: 'POST',
         headers: {
@@ -41,17 +43,28 @@ export default function PasswordResetPhonePage() {
         }),
       });
 
+      console.log('사용자 확인 응답 상태:', response.status);
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
+        let errorMessage = '일치하는 사용자 정보를 찾을 수 없습니다.';
+        try {
+          const data = await response.json();
+          console.error('사용자 확인 실패:', data);
+          errorMessage = data.message || data.detail || data.error || errorMessage;
+        } catch (parseError) {
+          console.error('에러 응답 파싱 실패:', parseError);
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      console.log('사용자 확인 성공:', data);
       
       // 사용자 정보가 일치하면 인증 단계로
       setUserPhoneNumber(phoneNumber);
       setStep('verify');
     } catch (err: any) {
+      console.error('사용자 정보 확인 오류:', err);
       setError(err.message || '사용자 정보 확인에 실패했습니다.');
     } finally {
       setLoading(false);

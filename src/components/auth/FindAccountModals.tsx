@@ -233,6 +233,8 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         }
       } else {
         // Phone method - 먼저 아이디와 휴대폰 번호 일치 확인
+        console.log('사용자 확인 요청:', { username, phone: phone.replace(/-/g, '') });
+        
         const res = await fetch(`${apiUrl}/auth/verify-user-phone/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -242,8 +244,13 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           }),
         });
         
+        console.log('사용자 확인 응답 상태:', res.status);
+        
         if (res.ok) {
           // 일치하면 휴대폰 인증 단계로
+          const data = await res.json();
+          console.log('사용자 확인 성공:', data);
+          
           setStep('verify-phone');
           // 인증번호 발송
           try {
@@ -258,15 +265,24 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
               setErrorMessage(result.message || '인증번호 발송에 실패했습니다.');
             }
           } catch (err: any) {
+            console.error('인증번호 발송 오류:', err);
             setErrorMessage('인증번호 발송에 실패했습니다.');
           }
         } else {
-          const err = await res.json();
-          setErrorMessage(err.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
+          let errorMessage = '일치하는 사용자 정보를 찾을 수 없습니다.';
+          try {
+            const err = await res.json();
+            console.error('사용자 확인 실패:', err);
+            errorMessage = err.message || err.detail || err.error || errorMessage;
+          } catch (parseError) {
+            console.error('에러 응답 파싱 실패:', parseError);
+          }
+          setErrorMessage(errorMessage);
         }
       }
-    } catch (e) {
-      setErrorMessage('서버와 연결할 수 없습니다.');
+    } catch (e: any) {
+      console.error('사용자 확인 중 오류:', e);
+      setErrorMessage(`사용자 확인 중 오류가 발생했습니다: ${e.message || '서버와 연결할 수 없습니다.'}`)
     } finally {
       setLoading(false);
     }
