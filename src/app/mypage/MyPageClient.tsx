@@ -18,6 +18,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -273,29 +274,38 @@ export default function MyPageClient() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">닉네임</p>
-                  <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
+              <div className="flex gap-6">
+                {/* 고객 이미지 */}
+                <div className="flex-shrink-0">
+                  <Image
+                    src="/logos/customer_img.png"
+                    alt="고객 이미지"
+                    width={80}
+                    height={80}
+                    className="rounded-lg"
+                  />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">휴대폰 번호</p>
-                  <p className="font-medium">
-                    {user.phone_number ? 
-                      user.phone_number.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
-                      '설정 필요'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">주요활동지역</p>
-                  <p className="font-medium">
-                    {user.address_region?.full_name || '설정 필요'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">회원 구분</p>
-                  <p className="font-medium">일반회원</p>
+                {/* 사용자 정보 */}
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">닉네임</p>
+                    <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">휴대폰 번호</p>
+                    <p className="font-medium">
+                      {user.phone_number ? 
+                        user.phone_number.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
+                        '설정 필요'
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">주요활동지역</p>
+                    <p className="font-medium">
+                      {user.address_region?.full_name || '설정 필요'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>

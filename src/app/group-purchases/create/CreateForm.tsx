@@ -975,12 +975,18 @@ const continueSubmitWithUserId = async (
 const onSubmit = async (values: FormData) => {
   console.log('폼 제출 시작 - 값:', values);
   
-  // 일반회원의 경우 주소 체크 (휴대폰번호는 선택사항)
-  if (user?.role === 'buyer' && !user.address_region) {
-    if (confirm('공구를 등록하기 위해서는 활동지역 입력이 필요합니다.\n\n내 정보 설정 페이지로 이동하시겠습니까?')) {
-      router.push('/mypage/settings');
+  // 카카오톡 간편가입 사용자 프로필 체크
+  if (user && user.sns_type === 'kakao') {
+    // 일반회원: 활동지역, 연락처 체크
+    if (user.role === 'buyer') {
+      if (!user.phone_number || !user.address_region) {
+        if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
+          router.push('/mypage/settings');
+          return;
+        }
+        return;
+      }
     }
-    return;
   }
   
   setIsSubmitting(true);

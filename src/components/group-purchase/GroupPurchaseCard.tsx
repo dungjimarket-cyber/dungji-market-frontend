@@ -326,40 +326,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       return; // 클릭 무시
     }
     
-    // 로그인하지 않은 경우 바로 상세 페이지로 이동
-    if (!isAuthenticated || !user) {
-      router.push(`/groupbuys/${groupBuy.id}`);
-      return;
-    }
-
-    // 카카오톡 간편가입 사용자 체크
-    if (user.sns_type === 'kakao') {
-      // 일반회원: 활동지역, 연락처 체크
-      if (user.role === 'buyer') {
-        if (!user.phone_number || !user.address_region) {
-          if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
-            router.push('/mypage/settings');
-            return;
-          }
-          return;
-        }
-      }
-      
-      // 판매회원: 사업자등록번호, 주소지, 연락처 체크
-      if (user.role === 'seller') {
-        // business_number 또는 businessNumber 필드 모두 체크 (API 응답 호환성)
-        const hasBusinessNumber = user.business_number || (user as any).businessNumber;
-        if (!user.phone_number || !user.address_region || !hasBusinessNumber) {
-          if (confirm('공구에 입찰하기 위한 사업자등록번호, 주소지, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 마이페이지로 이동합니다.')) {
-            router.push('/mypage/seller/settings');
-            return;
-          }
-          return;
-        }
-      }
-    }
-
-    // 모든 조건 통과시 상세 페이지로 이동
+    // 프로필 체크 없이 바로 상세 페이지로 이동
     router.push(`/groupbuys/${groupBuy.id}`);
   };
 
