@@ -203,9 +203,9 @@ function BidsListClient() {
     // 순위 기반 상태 표시
     if (bid?.my_bid_rank) {
       if (bid.my_bid_rank === 1) {
-        return '낙찰';
+        return '최종선정';
       } else {
-        return '낙찰실패';
+        return '미선정';
       }
     }
     
@@ -221,7 +221,7 @@ function BidsListClient() {
         } else if (bid?.final_decision === 'cancelled') {
           return '판매 포기';
         }
-        return '낙찰됨';
+        return '최종선정';
       case 'confirmed': return '판매 확정';
       case 'rejected': return '판매 포기';
       default: return '알 수 없음';
@@ -237,8 +237,10 @@ function BidsListClient() {
     // display_status가 있으면 우선 사용
     if (bid?.display_status) {
       switch (bid.display_status) {
+        case '최종선정': return 'bg-green-100 text-green-800';
         case '낙찰': return 'bg-green-100 text-green-800';
-        case '낙찰실패': return 'bg-gray-100 text-gray-800';
+        case '미선정': return 'bg-gray-100 text-gray-800';
+        case '선정실패': return 'bg-gray-100 text-gray-800';
         case '견적중': return 'bg-blue-100 text-blue-800';
         default: return 'bg-gray-100 text-gray-800';
       }
@@ -313,7 +315,7 @@ function BidsListClient() {
             <SelectItem value="all">모든 상태</SelectItem>
             <SelectItem value="pending">견적 진행중</SelectItem>
             <SelectItem value="final_selection">최종선택 대기중</SelectItem>
-            <SelectItem value="selected">낙찰됨</SelectItem>
+            <SelectItem value="selected">최종선정</SelectItem>
             <SelectItem value="confirmed">판매 확정</SelectItem>
             <SelectItem value="rejected">판매 포기</SelectItem>
           </SelectContent>
@@ -365,8 +367,8 @@ function BidsListClient() {
               </div>
               
               
-              {/* 낙찰 축하 메시지 */}
-              {bid.my_bid_rank === 1 && bid.display_status === '낙찰' && (
+              {/* 최종선정 축하 메시지 */}
+              {bid.my_bid_rank === 1 && (bid.display_status === '최종선정' || bid.display_status === '낙찰') && (
                 <div className="bg-green-50 p-3 rounded-md mb-3 border border-green-200">
                   <p className="text-sm text-green-700 font-medium">
                     🎉 축하합니다! 최종 선정되셨습니다!
