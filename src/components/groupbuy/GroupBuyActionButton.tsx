@@ -54,6 +54,15 @@ export default function GroupBuyActionButton({
   });
 
   const handleClick = () => {
+    console.log('버튼 클릭 - 초기 상태:', {
+      isRecruiting,
+      isFull,
+      isCreator,
+      isSeller,
+      isParticipating,
+      user
+    });
+    
     // 판매회원은 상세 페이지에서 입찰 처리하도록 이벤트 발생
     if (isSeller) {
       // 부모 컴포넌트에 입찰 이벤트 전달
@@ -65,7 +74,7 @@ export default function GroupBuyActionButton({
     }
     
     // 일반 구매회원은 프로필 체크 후 참여 모달 표시
-    if (isRecruiting && !isFull && !isCreator) {
+    if (isRecruiting && !isFull && !isCreator && !isParticipating) {
       // 프로필 체크 디버깅
       console.log('프로필 체크 시작:', {
         user,
