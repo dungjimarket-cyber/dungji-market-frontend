@@ -160,6 +160,34 @@ export default function PasswordResetPhonePage() {
         redirect: 'manual', // 자동 리다이렉트 방지
       });
 
+      // 리다이렉트 응답 체크 (302, 301 등)
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        console.log('🚨 백엔드가 리다이렉트 응답을 보냈습니다!');
+        console.log('리다이렉트 상태 코드:', response.status);
+        console.log('Location header:', response.headers.get('location'));
+        
+        // 리다이렉트는 성공을 의미함
+        const responseData = { 
+          message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.',
+          success: true 
+        };
+        
+        // 성공 처리
+        console.log('🔴 리다이렉트 응답을 성공으로 처리');
+        setLoading(false);
+        setSuccess(responseData.message);
+        setError('');
+        setStep('success');
+        
+        // alert 표시
+        setTimeout(() => {
+          alert(responseData.message);
+          console.log('🔴 성공 화면에 머무름');
+        }, 500);
+        
+        return;
+      }
+      
       // 응답 데이터를 한 번만 읽기
       let responseData: any = {};
       const contentType = response.headers.get('content-type');
@@ -171,11 +199,18 @@ export default function PasswordResetPhonePage() {
           console.error('JSON 파싱 에러:', jsonError);
           responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
         }
+      } else if (contentType && contentType.includes('text/html')) {
+        // HTML 응답인 경우 - 백엔드가 리다이렉트한 것
+        console.log('🚨 HTML 응답 받음 - 백엔드가 리다이렉트했을 가능성');
+        responseData = { 
+          message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.',
+          success: true 
+        };
       } else {
-        // JSON이 아닌 경우
+        // 기타 응답
         try {
           const text = await response.text();
-          console.log('텍스트 응답:', text);
+          console.log('텍스트 응답 (처음 100자):', text.substring(0, 100));
           responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
         } catch (e) {
           console.error('응답 읽기 실패:', e);
@@ -191,10 +226,29 @@ export default function PasswordResetPhonePage() {
       console.log('Response data:', responseData);
       console.log('Response success field:', responseData?.success);
       
-      // 리다이렉트 응답 체크
-      if (response.type === 'opaqueredirect' || [301, 302, 303, 307, 308].includes(response.status)) {
+      // 리다이렉트 응답 체크 (302, 301 등)
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
         console.log('🚨 백엔드가 리다이렉트 응답을 보냈습니다!');
+        console.log('Response status:', response.status);
         console.log('Location header:', response.headers.get('location'));
+        
+        // 리다이렉트는 성공을 의미함
+        const responseData = { 
+          message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.',
+          success: true 
+        };
+        
+        // 성공 처리
+        setStep('success');
+        setSuccess(responseData.message);
+        setLoading(false);
+        
+        // alert는 setTimeout으로 약간 지연시켜 렌더링 후 표시
+        setTimeout(() => {
+          alert(responseData.message);
+        }, 500);
+        
+        return;
       }
       
       console.log('===========================');
@@ -293,11 +347,16 @@ export default function PasswordResetPhonePage() {
             </Alert>
           </CardContent>
           <CardFooter>
-            <Link href="https://www.dungjimarket.com/login/signin" className="w-full">
-              <Button className="w-full">
-                로그인 페이지로 이동
-              </Button>
-            </Link>
+            <Button 
+              className="w-full"
+              onClick={() => {
+                console.log('✅ 사용자가 확인 버튼을 클릭했습니다');
+                // 사용자가 직접 버튼을 클릭한 경우에만 이동
+                router.push('/login/signin');
+              }}
+            >
+              로그인 페이지로 이동
+            </Button>
           </CardFooter>
         </Card>
       </div>
