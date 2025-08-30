@@ -312,6 +312,22 @@ export default function PasswordResetPhonePage() {
       sessionStorage.setItem('password_reset_success', 'true');
       sessionStorage.setItem('password_reset_message', success || '비밀번호가 변경되었습니다.');
       
+      // Next.js prefetch 차단
+      const preventPrefetch = (e: Event) => {
+        const target = e.target as HTMLElement;
+        if (target?.tagName === 'A' || target?.closest('a')) {
+          console.log('🛑 Link prefetch 차단됨');
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      
+      // 모든 네비게이션 이벤트 차단
+      document.addEventListener('click', preventPrefetch, true);
+      document.addEventListener('mouseenter', preventPrefetch, true);
+      document.addEventListener('touchstart', preventPrefetch, true);
+      document.addEventListener('focus', preventPrefetch, true);
+      
       // 혹시 모를 리다이렉트 방지
       window.onbeforeunload = () => {
         console.log('⚠️ 페이지 이동 감지됨!');
@@ -324,6 +340,9 @@ export default function PasswordResetPhonePage() {
         window.history.pushState(null, '', window.location.href);
         console.log('⚠️ 뒤로가기 차단됨');
       };
+      
+      // Router prefetch 비활성화
+      router.prefetch = () => Promise.resolve();
     }
     
     return (
@@ -359,6 +378,20 @@ export default function PasswordResetPhonePage() {
                 
                 // cleanup
                 if (typeof window !== 'undefined') {
+                  // 모든 이벤트 리스너 제거
+                  const preventPrefetch = (e: Event) => {
+                    const target = e.target as HTMLElement;
+                    if (target?.tagName === 'A' || target?.closest('a')) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  };
+                  
+                  document.removeEventListener('click', preventPrefetch, true);
+                  document.removeEventListener('mouseenter', preventPrefetch, true);
+                  document.removeEventListener('touchstart', preventPrefetch, true);
+                  document.removeEventListener('focus', preventPrefetch, true);
+                  
                   window.onbeforeunload = null;
                   window.onpopstate = null;
                   sessionStorage.removeItem('password_reset_success');
@@ -615,11 +648,13 @@ export default function PasswordResetPhonePage() {
                 이메일로 재설정하기
               </Button>
             </Link>
-            <Link href="/login" className="w-full">
-              <Button variant="ghost" className="w-full">
-                로그인 페이지로 돌아가기
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              className="w-full"
+              onClick={() => router.push('/login')}
+            >
+              로그인 페이지로 돌아가기
+            </Button>
           </CardFooter>
         </form>
       </Card>
