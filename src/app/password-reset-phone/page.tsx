@@ -52,6 +52,35 @@ export default function PasswordResetPhonePage() {
       console.log('💥💥💥 전체 컴포넌트가 unmount됩니다!');
     };
   }, []);
+  
+  // storage 이벤트 차단 (성공 화면에서만)
+  useEffect(() => {
+    if (step !== 'success') return;
+    
+    const preventStorageEvent = (e: StorageEvent) => {
+      console.log('🛑 Storage 이벤트 감지됨:', e.key);
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    };
+    
+    const preventAuthEvent = (e: Event) => {
+      console.log('🛑 Auth 이벤트 감지됨');
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    };
+    
+    // 이벤트 리스너를 캡처 단계에서 먼저 실행
+    window.addEventListener('storage', preventStorageEvent, true);
+    window.addEventListener('auth-changed', preventAuthEvent, true);
+    
+    console.log('✅ Storage/Auth 이벤트 차단 활성화');
+    
+    return () => {
+      window.removeEventListener('storage', preventStorageEvent, true);
+      window.removeEventListener('auth-changed', preventAuthEvent, true);
+      console.log('✅ Storage/Auth 이벤트 차단 해제');
+    };
+  }, [step]);
 
   // Step 1: 아이디와 휴대폰 번호 확인
   const handleIdentifyUser = async (e: React.FormEvent) => {
