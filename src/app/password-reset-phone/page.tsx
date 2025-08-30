@@ -159,13 +159,26 @@ export default function PasswordResetPhonePage() {
       });
 
       // 응답 데이터를 한 번만 읽기
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (jsonError) {
-        console.error('JSON 파싱 에러:', jsonError);
-        // JSON 파싱 실패 시 기본값 사용 (response body는 이미 읽었으므로 다시 읽을 수 없음)
-        responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
+      let responseData = {};
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          responseData = await response.json();
+        } catch (jsonError) {
+          console.error('JSON 파싱 에러:', jsonError);
+          responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
+        }
+      } else {
+        // JSON이 아닌 경우
+        try {
+          const text = await response.text();
+          console.log('텍스트 응답:', text);
+          responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
+        } catch (e) {
+          console.error('응답 읽기 실패:', e);
+          responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
+        }
       }
       
       console.log('=== 비밀번호 재설정 응답 ===');
@@ -198,26 +211,31 @@ export default function PasswordResetPhonePage() {
       console.log('성공 메시지:', successMessage);
       console.log('Setting step to success');
       
-      // 로딩 상태를 먼저 해제
+      // 상태 설정
       setLoading(false);
       setSuccess(successMessage);
       setError(''); // 에러 메시지 초기화
+      setStep('success'); // 먼저 성공 화면으로 전환
       
-      // alert 팝업 표시 후 확인 누르면 리다이렉트
-      alert(successMessage);
+      // setTimeout을 사용하여 다음 프레임에서 alert 실행
+      setTimeout(() => {
+        // alert 팝업 표시
+        alert(successMessage);
+        
+        // confirm으로 로그인 페이지 이동 여부 확인
+        setTimeout(() => {
+          const shouldRedirect = confirm('로그인 페이지로 이동하시겠습니까?');
+          
+          if (shouldRedirect) {
+            console.log('사용자가 확인함, 로그인 페이지로 이동...');
+            window.location.href = 'https://www.dungjimarket.com/login/signin';
+          } else {
+            console.log('사용자가 취소함, 현재 페이지에 머무름');
+            // 이미 success 화면에 있음
+          }
+        }, 100);
+      }, 100);
       
-      // confirm으로 한번 더 확인
-      const shouldRedirect = confirm('로그인 페이지로 이동하시겠습니까?');
-      
-      if (shouldRedirect) {
-        console.log('사용자가 확인함, 로그인 페이지로 이동...');
-        window.location.href = 'https://www.dungjimarket.com/login/signin';
-      } else {
-        console.log('사용자가 취소함, 현재 페이지에 머무름');
-        setStep('success'); // 성공 화면 표시
-      }
-      
-      // 여기 도달하지 않음 (리다이렉트 때문에)
       return;
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
