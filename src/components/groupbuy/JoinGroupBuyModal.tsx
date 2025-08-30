@@ -240,7 +240,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
   if (loading) return null;
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         {step === 'confirm' && (
           <>
             <DialogHeader>
@@ -249,13 +249,13 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                 공구에 참여하시겠습니까?
               </DialogDescription>
             </DialogHeader>
-            <div className="bg-orange-50 border border-orange-200 rounded-md p-3 mb-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-md p-2 mb-3">
               <div className="text-orange-800">
-                <p className="text-sm font-semibold mb-2 text-orange-900">❗ 중요 안내</p>
+                <p className="text-sm font-semibold mb-1 text-orange-900">❗ 중요 안내</p>
                 <p className="text-xs leading-relaxed mb-1">
                   • 견적 제안이 시작되면 공구를 나갈 수 없습니다.
                 </p>
-                <p className="text-xs leading-relaxed mb-2">
+                <p className="text-xs leading-relaxed mb-1">
                   • 동일한 상품에는 중복 참여가 불가합니다.
                 </p>
                 <p className="text-sm font-medium text-orange-900">
@@ -263,21 +263,21 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-center p-4">
+            <div className="flex flex-col items-center py-2 px-4">
               <Image 
                 src={groupBuy.product_details.image_url || '/placeholder.png'} 
                 alt={groupBuy.product_details.name} 
-                width={200} 
-                height={200} 
-                className="rounded-md mb-4"
+                width={120} 
+                height={120} 
+                className="rounded-md mb-2"
               />
-              <h3 className="text-lg font-bold">
+              <h3 className="text-base font-bold text-center">
                 {`${groupBuy.product_details?.name || '상품명 없음'} ${groupBuy.product_details?.carrier || ''} ${getSubscriptionTypeText(groupBuy)}`}
               </h3>
-              <p className="text-gray-600 mb-2">
+              <p className="text-sm text-gray-600 mb-1">
                 통신사: {groupBuy.product_details.telecom_carrier || groupBuy.telecom_detail?.telecom_carrier || groupBuy.product_details.carrier || 'SK텔래콤'}
               </p>
-              <p className="text-gray-600 mb-2">
+              <p className="text-sm text-gray-600 mb-1">
                 유형: {
                   groupBuy.product_details.subscription_type_korean || 
                   groupBuy.telecom_detail?.subscription_type_korean ||
@@ -288,7 +288,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
               {/* 인터넷/인터넷+TV 카테고리가 아닌 경우에만 가격 표시 */}
               {groupBuy.product_details.category_name !== '인터넷' && 
                groupBuy.product_details.category_name !== '인터넷+TV' && (
-                <p className="text-xl font-bold mt-2">
+                <p className="text-lg font-bold mt-1">
                   {groupBuy.product_details.base_price.toLocaleString()}원
                 </p>
               )}
