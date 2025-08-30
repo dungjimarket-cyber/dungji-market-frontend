@@ -352,31 +352,27 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
     }
   };
 
-  // Verify phone code
+  // Verify phone code - 백엔드 수정: verify API 호출하지 않고 인증코드만 저장
   const verifyPhoneCode = async () => {
     setLoading(true);
     setErrorMessage('');
-    try {
-      const result = await phoneVerificationService.verifyPhone({
-        phone_number: phone,
-        verification_code: phoneVerificationCode,
-        purpose: 'password_reset'  // 백엔드와 호환성 유지
-      });
-      
-      if (result.success) {
-        setPhoneVerified(true);
-        setStep('reset');
-        toast({ title: '휴대폰 인증이 완료되었습니다.' });
-        console.log('휴대폰 인증 성공 - is_verified: true');
-      } else {
-        setErrorMessage(result.message || '인증에 실패했습니다.');
-        console.error('휴대폰 인증 실패:', result);
-      }
-    } catch (e: any) {
-      setErrorMessage(e.message || '인증에 실패했습니다.');
-    } finally {
+    
+    // 인증코드 6자리 확인
+    if (phoneVerificationCode.length !== 6) {
+      setErrorMessage('인증번호는 6자리여야 합니다.');
       setLoading(false);
+      return;
     }
+    
+    // /api/phone/verify/ 호출하지 않고 바로 비밀번호 재설정 단계로
+    // (백엔드에서 reset-password-phone API에서 직접 검증)
+    console.log('인증코드 입력 완료:', phoneVerificationCode);
+    console.log('verify API 호출하지 않음 (status=pending 유지)');
+    
+    setPhoneVerified(true);  // 클라이언트에서만 인증 완료 표시
+    setStep('reset');
+    toast({ title: '인증번호가 확인되었습니다. 새 비밀번호를 입력해주세요.' });
+    setLoading(false);
   };
 
   // Reset password
@@ -437,10 +433,13 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         console.log('각 필드 상태:');
         console.log('  - user_id:', requestBody.user_id, '타입:', typeof requestBody.user_id);
         console.log('  - phone_number:', phone);
-        console.log('  - verification_code:', phoneVerificationCode || '인증코드 없음');
+        console.log('  - phone_number (하이픈 제거):', phone.replace(/-/g, ''));
+        console.log('  - verification_code:', phoneVerificationCode);
+        console.log('  - verification_code 길이:', phoneVerificationCode.length);
         console.log('  - new_password 길이:', newPassword.length);
         console.log('  - purpose:', 'reset');
-        console.log('  - is_verified (phoneVerified):', phoneVerified);
+        console.log('  - phoneVerified (클라이언트):', phoneVerified);
+        console.log('  - 백엔드 status는 pending 상태여야 함');
         console.log('=============================================');
         
         const res = await fetch(`${apiUrl}/auth/reset-password-phone/`, {
@@ -474,7 +473,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
             console.error('에러 응답 읽기 실패:', e);
           }
           
-          setErrorMessage(`서버 오류: ${errorDetail}\n백엔드 로그를 확인해주세요.`);
+          setErrorMessage(`서버 오류: ${errorDetail}\n\n가능한 원인:\n1. 인증번호가 일치하지 않음\n2. 인증이 만료됨 (30분 초과)\n3. 이미 사용된 인증번호`);
           return;
         }
         
