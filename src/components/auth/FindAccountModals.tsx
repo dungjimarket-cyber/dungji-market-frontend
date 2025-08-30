@@ -233,27 +233,53 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         }
       } else {
         // Phone method - 먼저 아이디와 휴대폰 번호 일치 확인
-        console.log('사용자 확인 요청:', { username, phone: phone.replace(/-/g, '') });
+        const requestBody = { 
+          username: username,
+          phone_number: phone.replace(/-/g, '') 
+        };
+        
+        console.log('========== 사용자 확인 요청 디버깅 ==========');
+        console.log('API URL:', `${apiUrl}/auth/verify-user-phone/`);
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+        console.log('Username:', username);
+        console.log('Phone (원본):', phone);
+        console.log('Phone (처리후):', phone.replace(/-/g, ''));
+        console.log('=============================================');
         
         const res = await fetch(`${apiUrl}/auth/verify-user-phone/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            username: username,
-            phone_number: phone.replace(/-/g, '') 
-          }),
+          body: JSON.stringify(requestBody),
         });
         
         console.log('사용자 확인 응답 상태:', res.status);
         
         // 응답 본문 읽기
-        const data = await res.json();
-        console.log('사용자 확인 응답 데이터:', data);
+        let data;
+        try {
+          data = await res.json();
+          console.log('사용자 확인 응답 데이터:', data);
+        } catch (jsonError) {
+          console.error('응답 JSON 파싱 실패:', jsonError);
+          const textResponse = await res.text();
+          console.error('응답 원본 텍스트:', textResponse);
+          setErrorMessage('서버 응답을 처리할 수 없습니다.');
+          return;
+        }
         
         // success 필드가 false인 경우 에러 처리
         if (data.success === false) {
-          console.error('사용자 확인 실패 (success: false):', data);
-          setErrorMessage(data.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
+          console.error('========== 사용자 확인 실패 ==========');
+          console.error('에러 메시지:', data.message);
+          console.error('전체 응답:', data);
+          console.error('=====================================');
+          
+          // 백엔드 에러 메시지가 일반적인 경우 더 구체적인 안내 제공
+          if (data.message === '사용자 확인 중 오류가 발생했습니다.') {
+            setErrorMessage('입력하신 아이디와 휴대폰 번호가 일치하지 않거나, 등록되지 않은 정보입니다.');
+          } else {
+            setErrorMessage(data.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
+          }
           return;
         }
         
