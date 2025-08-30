@@ -45,19 +45,23 @@ export default function PasswordResetPhonePage() {
 
       console.log('사용자 확인 응답 상태:', response.status);
 
+      // 응답 본문 읽기
+      const data = await response.json();
+      console.log('사용자 확인 응답 데이터:', data);
+      
+      // success 필드가 false인 경우 에러 처리
+      if (data.success === false) {
+        console.error('사용자 확인 실패 (success: false):', data);
+        throw new Error(data.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
+      }
+      
+      // HTTP 상태가 OK가 아닌 경우
       if (!response.ok) {
-        let errorMessage = '일치하는 사용자 정보를 찾을 수 없습니다.';
-        try {
-          const data = await response.json();
-          console.error('사용자 확인 실패:', data);
-          errorMessage = data.message || data.detail || data.error || errorMessage;
-        } catch (parseError) {
-          console.error('에러 응답 파싱 실패:', parseError);
-        }
+        console.error('사용자 확인 실패 (HTTP 오류):', data);
+        const errorMessage = data.message || data.detail || data.error || '일치하는 사용자 정보를 찾을 수 없습니다.';
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
       console.log('사용자 확인 성공:', data);
       
       // 사용자 정보가 일치하면 인증 단계로

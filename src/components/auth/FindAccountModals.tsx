@@ -246,9 +246,20 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         
         console.log('사용자 확인 응답 상태:', res.status);
         
-        if (res.ok) {
+        // 응답 본문 읽기
+        const data = await res.json();
+        console.log('사용자 확인 응답 데이터:', data);
+        
+        // success 필드가 false인 경우 에러 처리
+        if (data.success === false) {
+          console.error('사용자 확인 실패 (success: false):', data);
+          setErrorMessage(data.message || '일치하는 사용자 정보를 찾을 수 없습니다.');
+          return;
+        }
+        
+        // HTTP 상태가 OK이고 success가 true이거나 없는 경우
+        if (res.ok && data.success !== false) {
           // 일치하면 휴대폰 인증 단계로
-          const data = await res.json();
           console.log('사용자 확인 성공:', data);
           
           setStep('verify-phone');
@@ -269,14 +280,9 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
             setErrorMessage('인증번호 발송에 실패했습니다.');
           }
         } else {
-          let errorMessage = '일치하는 사용자 정보를 찾을 수 없습니다.';
-          try {
-            const err = await res.json();
-            console.error('사용자 확인 실패:', err);
-            errorMessage = err.message || err.detail || err.error || errorMessage;
-          } catch (parseError) {
-            console.error('에러 응답 파싱 실패:', parseError);
-          }
+          // HTTP 상태가 OK가 아닌 경우
+          console.error('사용자 확인 실패 (HTTP 오류):', data);
+          const errorMessage = data.message || data.detail || data.error || '일치하는 사용자 정보를 찾을 수 없습니다.';
           setErrorMessage(errorMessage);
         }
       }
