@@ -466,7 +466,7 @@ export default function ProfileSection() {
                     placeholder="닉네임을 입력하세요"
                   />
                   <button
-                    onClick={handleProfileUpdate}
+                    onClick={() => handleProfileUpdate()}
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                   >
                     저장
@@ -535,7 +535,7 @@ export default function ProfileSection() {
                   placeholder="이메일을 입력하세요"
                 />
                 <button
-                  onClick={handleProfileUpdate}
+                  onClick={() => handleProfileUpdate()}
                   className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                 >
                   저장
@@ -679,7 +679,7 @@ export default function ProfileSection() {
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={handleProfileUpdate}
+                      onClick={() => handleProfileUpdate()}
                       className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
                       저장
@@ -745,7 +745,7 @@ export default function ProfileSection() {
                       placeholder="사업자등록번호를 입력하세요 (예: 123-45-67890)"
                     />
                     <button
-                      onClick={handleProfileUpdate}
+                      onClick={() => handleProfileUpdate()}
                       className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
                       저장
@@ -816,7 +816,7 @@ export default function ProfileSection() {
                     
                     <div className="flex gap-2">
                       <button
-                        onClick={handleProfileUpdate}
+                        onClick={() => handleProfileUpdate()}
                         className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                       >
                         저장
