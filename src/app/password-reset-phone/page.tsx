@@ -134,6 +134,27 @@ export default function PasswordResetPhonePage() {
 
     setError('');
     setLoading(true);
+    
+    // AuthContext 이벤트 리스너 차단 (쿠키 변화 감지 방지)
+    const blockAuthEvents = () => {
+      const originalAddEventListener = window.addEventListener;
+      const originalRemoveEventListener = window.removeEventListener;
+      
+      window.addEventListener = function(type: string, listener: any, options?: any) {
+        if (type === 'storage' || type === 'auth-changed' || type === 'beforeunload') {
+          console.log('🛑 AuthContext 이벤트 차단됨:', type);
+          return;
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+      };
+      
+      return () => {
+        window.addEventListener = originalAddEventListener;
+        window.removeEventListener = originalRemoveEventListener;
+      };
+    };
+    
+    const restoreAuthEvents = blockAuthEvents();
 
     try {
       const requestBody = {
@@ -241,6 +262,13 @@ export default function PasswordResetPhonePage() {
       setError(err.message || '비밀번호 재설정에 실패했습니다.');
     } finally {
       setLoading(false);
+      // AuthContext 이벤트 리스너 복원
+      if (restoreAuthEvents) {
+        setTimeout(() => {
+          restoreAuthEvents();
+          console.log('✅ AuthContext 이벤트 리스너 복원됨');
+        }, 1000); // 1초 후 복원 (모달 표시 후)
+      }
     }
   };
 
