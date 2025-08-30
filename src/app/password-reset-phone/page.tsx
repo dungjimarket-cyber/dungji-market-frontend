@@ -135,6 +135,28 @@ export default function PasswordResetPhonePage() {
     setError('');
     setLoading(true);
     
+    // 모든 리다이렉트 차단 (window.location 덮어쓰기)
+    const originalLocation = window.location;
+    const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href');
+    
+    // window.location.href 덮어쓰기
+    Object.defineProperty(window.location, 'href', {
+      set: function(value) {
+        console.log('🚫 리다이렉트 시도 차단됨:', value);
+        if (value.includes('/login')) {
+          console.log('❌ 로그인 페이지로의 리다이렉트가 차단되었습니다');
+          return;
+        }
+        // 다른 리다이렉트는 허용
+        if (originalHref && originalHref.set) {
+          originalHref.set.call(this, value);
+        }
+      },
+      get: function() {
+        return originalHref && originalHref.get ? originalHref.get.call(this) : '';
+      }
+    });
+    
     // AuthContext 이벤트 리스너 차단 (쿠키 변화 감지 방지)
     const blockAuthEvents = () => {
       const originalAddEventListener = window.addEventListener;
@@ -263,13 +285,19 @@ export default function PasswordResetPhonePage() {
       setError(err.message || '비밀번호 재설정에 실패했습니다.');
     } finally {
       setLoading(false);
-      // AuthContext 이벤트 리스너 복원
-      if (restoreAuthEvents) {
-        setTimeout(() => {
+      // 리다이렉트 차단 및 이벤트 리스너 복원
+      setTimeout(() => {
+        // window.location.href 복원
+        if (originalHref) {
+          Object.defineProperty(window.location, 'href', originalHref);
+          console.log('✅ window.location.href 복원됨');
+        }
+        // AuthContext 이벤트 리스너 복원
+        if (restoreAuthEvents) {
           restoreAuthEvents();
           console.log('✅ AuthContext 이벤트 리스너 복원됨');
-        }, 1000); // 1초 후 복원 (모달 표시 후)
-      }
+        }
+      }, 2000); // 2초 후 복원 (모달 표시 충분한 시간 후)
     }
   };
 
