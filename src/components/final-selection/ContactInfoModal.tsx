@@ -239,17 +239,18 @@ export function ContactInfoModal({
                   <Card className="p-4 bg-gray-50 mb-4">
                     <div className="space-y-2">
                       <h3 className="font-semibold text-lg">{contactInfo.groupbuy.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600">
                         {contactInfo.groupbuy.product_name && (
                           <span className="flex items-center gap-1">
-                            <Package className="w-4 h-4" />
-                            {contactInfo.groupbuy.product_name}
+                            <Package className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{contactInfo.groupbuy.product_name}</span>
                           </span>
                         )}
-                        <span className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          구매확정: {contactInfo.groupbuy.confirmed_buyers_count || 0}명 / 
-                          전체: {contactInfo.groupbuy.total_participants || 0}명
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <User className="w-4 h-4 flex-shrink-0" />
+                          <span className="inline-flex">
+                            구매확정: {contactInfo.groupbuy.confirmed_buyers_count || 0}명 / 전체: {contactInfo.groupbuy.total_participants || 0}명
+                          </span>
                         </span>
                       </div>
                     </div>
