@@ -578,7 +578,7 @@ export default function ProfileSection() {
                   </>
                 )}
               </label>
-              {/* 휴대폰 번호가 없을 때만 수정 버튼 표시 */}
+              {/* 휴대폰 번호가 없을 때만 등록 버튼 표시 */}
               {!phoneNumber && (
                 <button
                   onClick={() => {
@@ -587,7 +587,7 @@ export default function ProfileSection() {
                   }}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
-                  {role === 'seller' ? '재인증' : '인증'}
+                  등록
                 </button>
               )}
             </div>
@@ -600,8 +600,10 @@ export default function ProfileSection() {
                   currentUserToken={accessToken || undefined}
                   onVerified={(verifiedPhoneNumber) => {
                     setPhoneNumber(verifiedPhoneNumber);
-                    // 프로필 업데이트
+                    // 프로필 업데이트 후 편집 모드 종료
                     handleProfileUpdate();
+                    setIsEditing(false);
+                    setEditField(null);
                   }}
                 />
                 <button
