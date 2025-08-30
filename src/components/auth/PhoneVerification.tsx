@@ -10,10 +10,11 @@ import { phoneVerificationService } from '@/lib/api/phoneVerification';
 
 interface PhoneVerificationProps {
   purpose?: 'signup' | 'profile' | 'password_reset';
-  onVerified?: (phoneNumber: string) => void;
+  onVerified?: (phoneNumber: string, verificationCode?: string) => void;
   className?: string;
   defaultValue?: string;
   currentUserToken?: string; // 현재 사용자 토큰 (프로필 수정 시)
+  skipVerifyApi?: boolean; // verify API 호출 건너뛰기 (password_reset에서 status='pending' 유지)
 }
 
 export function PhoneVerification({
@@ -21,7 +22,8 @@ export function PhoneVerification({
   onVerified,
   className = '',
   defaultValue = '',
-  currentUserToken
+  currentUserToken,
+  skipVerifyApi = false
 }: PhoneVerificationProps) {
   // 전화번호 포맷팅 함수 (컴포넌트 외부로 이동하여 초기값에도 사용)
   const formatPhoneNumber = (value: string): string => {
@@ -145,6 +147,24 @@ export function PhoneVerification({
     setIsVerifying(true);
     setError('');
 
+    // skipVerifyApi가 true인 경우 verify API 호출하지 않고 바로 성공 처리
+    if (skipVerifyApi) {
+      console.log('인증코드 입력 완료 (verify API 호출 안함):', verificationCode);
+      setIsVerified(true);
+      setCodeSent(false);
+      setSuccess('인증번호가 확인되었습니다.');
+      setTimer(0);
+      setError('');
+      
+      // 인증 완료 콜백 호출 (포맷된 번호와 인증코드 전달)
+      if (onVerified) {
+        onVerified(phoneNumber, verificationCode);
+      }
+      setIsVerifying(false);
+      return;
+    }
+
+    // 기존 verify API 호출 로직
     try {
       const result = await phoneVerificationService.verifyPhone({
         phone_number: phoneNumber,
@@ -161,7 +181,7 @@ export function PhoneVerification({
         
         // 인증 완료 콜백 호출 (포맷된 번호 전달)
         if (onVerified) {
-          onVerified(phoneNumber);
+          onVerified(phoneNumber, verificationCode);
         }
       } else {
         setError(result.message);

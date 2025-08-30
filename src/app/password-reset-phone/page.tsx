@@ -92,9 +92,14 @@ export default function PasswordResetPhonePage() {
   };
 
   // Step 2: 휴대폰 인증 완료
-  const handlePhoneVerified = (verifiedPhone: string) => {
+  const handlePhoneVerified = (verifiedPhone: string, code?: string) => {
     // 인증된 번호가 입력한 번호와 일치하는지 확인
     if (verifiedPhone.replace(/-/g, '') === userPhoneNumber.replace(/-/g, '')) {
+      // 인증 코드 저장 (백엔드에서 status='pending' 상태 유지를 위해 verify API 호출하지 않음)
+      if (code) {
+        setVerificationCode(code);
+        console.log('인증코드 저장:', code);
+      }
       setStep('password');
     } else {
       setError('인증된 번호가 일치하지 않습니다.');
@@ -147,22 +152,26 @@ export default function PasswordResetPhonePage() {
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || '비밀번호 재설정에 실패했습니다.');
-      }
-
+      // 응답 데이터를 한 번만 읽기
       const responseData = await response.json();
+      console.log('비밀번호 재설정 응답:', responseData);
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || '비밀번호 재설정에 실패했습니다.');
+      }
       
       // 백엔드에서 제공하는 redirect_to 사용 (없으면 기본값)
       const redirectPath = responseData.redirect_to || '/login';
       
       // 성공 메시지 표시
-      setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      const successMessage = responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.';
+      console.log('성공 메시지:', successMessage);
+      
+      setSuccess(successMessage);
       setError(''); // 에러 메시지 초기화
       setStep('success'); // 성공 화면으로 전환
       
-      // 2초 후 로그인 페이지로 이동 (알림을 충분히 볼 수 있도록)
+      // 3초 후 로그인 페이지로 이동 (알림을 충분히 볼 수 있도록)
       setTimeout(() => {
         if (redirectPath.startsWith('http')) {
           window.location.href = redirectPath;
@@ -170,7 +179,7 @@ export default function PasswordResetPhonePage() {
           // 상대 경로인 경우
           window.location.href = `https://www.dungjimarket.com${redirectPath}/signin`;
         }
-      }, 2000);
+      }, 3000);
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
       
@@ -347,6 +356,7 @@ export default function PasswordResetPhonePage() {
               purpose="password_reset"
               defaultValue={userPhoneNumber}
               onVerified={handlePhoneVerified}
+              skipVerifyApi={true}  // verify API 호출 건너뛰기 (status='pending' 유지)
             />
             
             {error && (
