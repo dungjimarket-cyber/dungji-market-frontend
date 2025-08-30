@@ -268,23 +268,22 @@ export default function MyPageClient() {
             {user ? (
         <div className="space-y-6">
           {/* 사용자 정보 카드 */}
-          <Card>
-            {/* 데스크톱에서만 헤더에 버튼 표시 */}
-            <CardHeader className="hidden md:block">
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push('/mypage/settings')}
-                  className="flex items-center"
-                >
-                  <Settings className="w-4 h-4 mr-1" />
-                  내 정보 설정
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6 md:pt-0">
-              <div className="flex gap-6 items-start">
+          <Card className="relative">
+            {/* 데스크톱에서만 우측 상단에 버튼 표시 */}
+            <div className="absolute top-4 right-4 hidden md:block">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/mypage/settings')}
+                className="flex items-center"
+              >
+                <Settings className="w-4 h-4 mr-1" />
+                내 정보 설정
+              </Button>
+            </div>
+            
+            <CardContent className="py-8 md:py-6">
+              <div className="flex gap-6 items-center">
                 {/* 둥지마켓 메인 이미지 */}
                 <div className="flex-shrink-0">
                   <Image
@@ -295,8 +294,8 @@ export default function MyPageClient() {
                     className="rounded-lg object-contain"
                   />
                 </div>
-                {/* 사용자 정보 - 상단 정렬로 변경 */}
-                <div className="flex-1 flex flex-col space-y-3">
+                {/* 사용자 정보 - 수직 중앙 정렬 */}
+                <div className="flex-1 flex flex-col justify-center space-y-3">
                   <div>
                     <p className="text-sm text-gray-500">닉네임</p>
                     <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
