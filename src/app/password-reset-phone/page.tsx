@@ -159,7 +159,7 @@ export default function PasswordResetPhonePage() {
       });
 
       // 응답 데이터를 한 번만 읽기
-      let responseData = {};
+      let responseData: any = {};
       const contentType = response.headers.get('content-type');
       
       if (contentType && contentType.includes('application/json')) {
@@ -185,7 +185,7 @@ export default function PasswordResetPhonePage() {
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
       console.log('Response data:', responseData);
-      console.log('Response success field:', responseData.success);
+      console.log('Response success field:', responseData?.success);
       console.log('===========================');
       
       // 성공 여부 판단
