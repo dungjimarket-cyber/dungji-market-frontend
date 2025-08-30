@@ -212,29 +212,32 @@ export default function PasswordResetPhonePage() {
       console.log('Setting step to success');
       
       // 상태 설정
+      console.log('🔴 비밀번호 변경 성공 - 상태 업데이트 시작');
       setLoading(false);
       setSuccess(successMessage);
       setError(''); // 에러 메시지 초기화
       setStep('success'); // 먼저 성공 화면으로 전환
       
-      // setTimeout을 사용하여 다음 프레임에서 alert 실행
+      console.log('🔴 성공 화면으로 전환 완료, alert 준비');
+      
+      // 디버깅: 현재 URL 확인
+      console.log('현재 URL:', window.location.href);
+      
+      // 리다이렉트 없이 alert만 표시
       setTimeout(() => {
-        // alert 팝업 표시
+        console.log('🔴 Alert 표시 직전');
         alert(successMessage);
+        console.log('🔴 Alert 확인됨');
         
-        // confirm으로 로그인 페이지 이동 여부 확인
-        setTimeout(() => {
-          const shouldRedirect = confirm('로그인 페이지로 이동하시겠습니까?');
-          
-          if (shouldRedirect) {
-            console.log('사용자가 확인함, 로그인 페이지로 이동...');
-            window.location.href = 'https://www.dungjimarket.com/login/signin';
-          } else {
-            console.log('사용자가 취소함, 현재 페이지에 머무름');
-            // 이미 success 화면에 있음
-          }
-        }, 100);
-      }, 100);
+        // 리다이렉트 완전히 비활성화 (디버깅용)
+        console.log('🔴 리다이렉트 하지 않음 - 성공 화면에 머무름');
+        
+        // confirm 대화상자도 제거 (일단 테스트)
+        // const shouldRedirect = confirm('로그인 페이지로 이동하시겠습니까?');
+        // if (shouldRedirect) {
+        //   window.location.href = 'https://www.dungjimarket.com/login/signin';
+        // }
+      }, 500); // 시간을 늘려서 테스트
       
       return;
     } catch (err: any) {
@@ -254,6 +257,10 @@ export default function PasswordResetPhonePage() {
   // 성공 화면
   if (step === 'success') {
     console.log('🎉 성공 화면 렌더링 중...');
+    console.log('Success message:', success);
+    console.log('현재 step:', step);
+    console.log('현재 URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+    
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
