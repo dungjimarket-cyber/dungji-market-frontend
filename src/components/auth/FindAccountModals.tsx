@@ -62,71 +62,25 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
     try {
       // API 호출 경로 - 환경변수가 이미 /api로 끝나는지 확인
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-      const res = await fetch(`${apiUrl}/auth/find-username-by-phone/`, {
+      const res = await fetch(`${apiUrl}/auth/find-id-by-phone/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone_number: phone.replace(/-/g, '') }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        
-        // 카카오 계정 체크
-        if (data.is_social && data.provider === 'kakao') {
-          setErrorMessage('카카오톡 계정으로 가입하신 회원입니다.\n카카오톡 로그인을 이용해주세요.\n\n일반 로그인이 필요하신 경우 고객센터로 문의해주세요.');
-          setResult(null);
-        } else {
-          setResult(data.username);
-        }
+      const data = await res.json();
+      
+      if (data.success) {
+        // 일반 계정 - 아이디 표시
+        setResult(data.username);
+        setErrorMessage('');
+      } else if (data.is_social) {
+        // SNS 계정 - 안내 메시지 표시
+        setErrorMessage(data.message);
+        setResult(null);
       } else {
-        try {
-          const errText = await res.text();
-          console.log('서버 오류 응답 원본:', errText);
-          
-          // JSON 형식인지 확인
-          let err;
-          try {
-            err = JSON.parse(errText);
-          } catch {
-            // JSON이 아니면 원본 텍스트 표시
-            setErrorMessage(errText || '아이디 찾기에 실패했습니다.');
-            return;
-          }
-          
-          console.log('바뀐 오류 응답:', err);
-          
-          // 오류 메시지 추출
-          let errorMessage = '';
-          
-          // 검증 오류 가장 먼저 처리
-          if (err.phone_number) {
-            errorMessage = Array.isArray(err.phone_number) ? err.phone_number[0] : err.phone_number;
-            console.log('휴대폰 번호 오류 추출:', errorMessage);
-          } else if (err.detail) {
-            errorMessage = err.detail;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          } else {
-            // 오류 객체에서 처리할 수 있는 모든 값 처리
-            const allErrors: string[] = [];
-            Object.keys(err).forEach(key => {
-              const value = err[key];
-              if (Array.isArray(value) && value.length > 0) {
-                allErrors.push(value[0]);
-              } else if (typeof value === 'string') {
-                allErrors.push(value);
-              }
-            });
-            
-            errorMessage = allErrors.length > 0 ? allErrors[0] : '아이디 찾기에 실패했습니다.';
-          }
-          
-          // 오류 메시지 직접 표시
-          setErrorMessage(errorMessage);
-          console.warn('아이디 찾기 오류:', errorMessage);
-        } catch (parseError) {
-          console.error('오류 응답 파싱 중 문제 발생:', parseError);
-          setErrorMessage('서버 응답을 처리하는 중 문제가 발생했습니다.');
-        }
+        // 계정을 찾을 수 없는 경우
+        setErrorMessage(data.error || '해당 휴대폰 번호로 등록된 계정을 찾을 수 없습니다.');
+        setResult(null);
       }
     } catch (e) {
       setErrorMessage('서버와 연결할 수 없습니다.');
