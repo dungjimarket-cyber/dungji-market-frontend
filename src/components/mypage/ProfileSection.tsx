@@ -568,7 +568,7 @@ export default function ProfileSection() {
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">
-                휴대폰 번호 {role === 'seller' && '(재인증)'}
+                휴대폰 번호
                 {authUser?.sns_type === 'kakao' && !phoneNumber && (
                   <>
                     <span className="text-red-500 ml-1">⚠️</span>
@@ -619,19 +619,17 @@ export default function ProfileSection() {
               </div>
             ) : (
               <>
-                <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium">
-                    {phoneNumber ? 
-                      phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : 
-                      '휴대폰 번호 정보 없음'
-                    }
-                  </span>
-                </div>
-                {/* 인증된 휴대폰 번호가 있을 때 안내 문구 표시 */}
-                {phoneNumber && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    휴대폰번호 수정을 원하시면 고객센터로 문의 부탁드립니다
-                  </p>
+                {phoneNumber ? (
+                  <>
+                    <span className="font-medium text-lg">
+                      {phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
+                    </span>
+                    <p className="text-xs text-gray-500 mt-1">
+                      휴대폰번호 수정을 원하시면 고객센터로 문의 부탁드립니다
+                    </p>
+                  </>
+                ) : (
+                  <span className="text-gray-500">휴대폰 번호 정보 없음</span>
                 )}
               </>
             )}
