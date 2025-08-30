@@ -373,6 +373,14 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
 
   // Reset password
   const resetPassword = async () => {
+    console.log('========== 비밀번호 재설정 시작 ==========');
+    console.log('Method:', method);
+    console.log('Phone Verified:', phoneVerified);
+    console.log('Username:', username);
+    console.log('Phone:', phone);
+    console.log('New Password Length:', newPassword.length);
+    console.log('=========================================');
+    
     if (newPassword !== confirmPassword) {
       setErrorMessage('비밀번호가 일치하지 않습니다.');
       return;
@@ -382,30 +390,46 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
       setErrorMessage('비밀번호는 8자 이상이어야 합니다.');
       return;
     }
+    
+    // 영문과 숫자 포함 체크
+    const hasLetter = /[a-zA-Z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+    if (!hasLetter || !hasNumber) {
+      setErrorMessage('비밀번호는 영문과 숫자를 포함해야 합니다.');
+      return;
+    }
 
     setLoading(true);
     setErrorMessage('');
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
       
-      if (method === 'phone' && phoneVerified) {
+      if (method === 'phone') {
         // 휴대폰 인증 후 비밀번호 재설정
+        const requestBody = { 
+          username: username,
+          phone_number: phone.replace(/-/g, ''),
+          new_password: newPassword 
+        };
+        
+        console.log('비밀번호 재설정 요청:', requestBody);
+        
         const res = await fetch(`${apiUrl}/auth/reset-password-phone/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            username: username,
-            phone_number: phone.replace(/-/g, ''),
-            new_password: newPassword 
-          }),
+          body: JSON.stringify(requestBody),
         });
         
-        if (res.ok) {
+        console.log('비밀번호 재설정 응답 상태:', res.status);
+        
+        const data = await res.json();
+        console.log('비밀번호 재설정 응답:', data);
+        
+        if (res.ok && data.success !== false) {
           setStep('complete');
           toast({ title: '비밀번호가 성공적으로 변경되었습니다.' });
         } else {
-          const err = await res.json();
-          setErrorMessage(err.message || '비밀번호 변경에 실패했습니다.');
+          setErrorMessage(data.message || data.error || '비밀번호 변경에 실패했습니다.');
         }
       } else {
         // 이메일 인증 후 비밀번호 재설정
@@ -448,10 +472,8 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   const validatePassword = (password: string) => {
     const checks = {
       length: password.length >= 8,
-      upper: /[A-Z]/.test(password),
-      lower: /[a-z]/.test(password),
-      number: /[0-9]/.test(password),
-      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      hasLetter: /[a-zA-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password)
     };
     return checks;
   };
@@ -709,21 +731,13 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
                   <span>{passwordChecks.length ? '✓' : '○'}</span>
                   <span>8자 이상</span>
                 </div>
-                <div className={`flex items-center gap-2 ${passwordChecks.upper ? 'text-green-600' : 'text-gray-400'}`}>
-                  <span>{passwordChecks.upper ? '✓' : '○'}</span>
-                  <span>영문 대문자 포함</span>
+                <div className={`flex items-center gap-2 ${passwordChecks.hasLetter ? 'text-green-600' : 'text-gray-400'}`}>
+                  <span>{passwordChecks.hasLetter ? '✓' : '○'}</span>
+                  <span>영문 포함</span>
                 </div>
-                <div className={`flex items-center gap-2 ${passwordChecks.lower ? 'text-green-600' : 'text-gray-400'}`}>
-                  <span>{passwordChecks.lower ? '✓' : '○'}</span>
-                  <span>영문 소문자 포함</span>
-                </div>
-                <div className={`flex items-center gap-2 ${passwordChecks.number ? 'text-green-600' : 'text-gray-400'}`}>
-                  <span>{passwordChecks.number ? '✓' : '○'}</span>
+                <div className={`flex items-center gap-2 ${passwordChecks.hasNumber ? 'text-green-600' : 'text-gray-400'}`}>
+                  <span>{passwordChecks.hasNumber ? '✓' : '○'}</span>
                   <span>숫자 포함</span>
-                </div>
-                <div className={`flex items-center gap-2 ${passwordChecks.special ? 'text-green-600' : 'text-gray-400'}`}>
-                  <span>{passwordChecks.special ? '✓' : '○'}</span>
-                  <span>특수문자 포함</span>
                 </div>
               </div>
             )}
@@ -762,6 +776,15 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
 
   // Step 4: Completion
   if (step === 'complete') {
+    // 3초 후 자동으로 로그인 페이지로 이동
+    React.useEffect(() => {
+      const timer = setTimeout(() => {
+        onClose();
+        router.push('/login');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }, []);
+    
     return (
       <div className="text-center space-y-4">
         <div className="text-6xl">✅</div>
@@ -769,11 +792,17 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         <p className="text-sm text-gray-600">
           새로운 비밀번호로 로그인해주세요.
         </p>
+        <p className="text-xs text-gray-500">
+          3초 후 로그인 페이지로 이동합니다...
+        </p>
         <button 
           className="w-full py-2 rounded bg-blue-600 text-white font-semibold" 
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            router.push('/login');
+          }}
         >
-          확인
+          지금 로그인하기
         </button>
       </div>
     );
