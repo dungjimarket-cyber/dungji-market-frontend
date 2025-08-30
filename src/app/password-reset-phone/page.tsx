@@ -150,161 +150,69 @@ export default function PasswordResetPhonePage() {
       console.log('비밀번호 재설정 요청:', requestBody);
       
       // API 호출 - 휴대폰 번호로 비밀번호 재설정
-      // redirect: 'manual'을 추가하여 자동 리다이렉트 방지
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password-phone/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
-        redirect: 'manual', // 자동 리다이렉트 방지
       });
 
-      // 리다이렉트 응답 체크 (302, 301 등)
-      if ([301, 302, 303, 307, 308].includes(response.status)) {
-        console.log('🚨 백엔드가 리다이렉트 응답을 보냈습니다!');
-        console.log('리다이렉트 상태 코드:', response.status);
-        console.log('Location header:', response.headers.get('location'));
-        
-        // 리다이렉트는 성공을 의미함
-        const responseData = { 
-          message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.',
-          success: true 
-        };
-        
-        // 성공 처리
-        console.log('🔴 리다이렉트 응답을 성공으로 처리');
-        setLoading(false);
-        setSuccess(responseData.message);
-        setError('');
-        setStep('success');
-        
-        // alert 표시
-        setTimeout(() => {
-          alert(responseData.message);
-          console.log('🔴 성공 화면에 머무름');
-        }, 500);
-        
-        return;
-      }
-      
-      // 응답 데이터를 한 번만 읽기
-      let responseData: any = {};
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          responseData = await response.json();
-        } catch (jsonError) {
-          console.error('JSON 파싱 에러:', jsonError);
-          responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
-        }
-      } else if (contentType && contentType.includes('text/html')) {
-        // HTML 응답인 경우 - 백엔드가 리다이렉트한 것
-        console.log('🚨 HTML 응답 받음 - 백엔드가 리다이렉트했을 가능성');
-        responseData = { 
-          message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.',
-          success: true 
-        };
-      } else {
-        // 기타 응답
-        try {
-          const text = await response.text();
-          console.log('텍스트 응답 (처음 100자):', text.substring(0, 100));
-          responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
-        } catch (e) {
-          console.error('응답 읽기 실패:', e);
-          responseData = { message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' };
-        }
-      }
-      
       console.log('=== 비밀번호 재설정 응답 ===');
       console.log('Response status:', response.status);
-      console.log('Response type:', response.type);
-      console.log('Response redirected:', response.redirected);
-      console.log('Response ok:', response.ok);
-      console.log('Response data:', responseData);
-      console.log('Response success field:', responseData?.success);
+      console.log('Response headers:', {
+        contentType: response.headers.get('content-type'),
+        xNoRedirect: response.headers.get('x-no-redirect')
+      });
       
-      // 리다이렉트 응답 체크 (302, 301 등)
-      if ([301, 302, 303, 307, 308].includes(response.status)) {
-        console.log('🚨 백엔드가 리다이렉트 응답을 보냈습니다!');
-        console.log('Response status:', response.status);
-        console.log('Location header:', response.headers.get('location'));
+      // HTTP 200 응답 확인 - 백엔드가 명시적으로 200을 보냄
+      if (response.status === 200) {
+        console.log('✅ HTTP 200 응답 받음');
         
-        // 리다이렉트는 성공을 의미함
-        const responseData = { 
-          message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.',
-          success: true 
-        };
+        // JSON 응답 파싱
+        let responseData: any = {};
+        try {
+          responseData = await response.json();
+          console.log('응답 데이터:', responseData);
+        } catch (error) {
+          console.error('JSON 파싱 실패:', error);
+          responseData = { 
+            success: true,
+            message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' 
+          };
+        }
         
         // 성공 처리
+        console.log('✅ 비밀번호 재설정 성공');
         setStep('success');
-        setSuccess(responseData.message);
+        setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+        setError('');
         setLoading(false);
         
-        // alert는 setTimeout으로 약간 지연시켜 렌더링 후 표시
+        // 성공 메시지 표시
         setTimeout(() => {
-          alert(responseData.message);
-        }, 500);
+          alert(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+        }, 100);
         
         return;
       }
       
-      console.log('===========================');
-      
-      // 성공 여부 판단
-      // 백엔드가 200 OK를 반환하면 성공으로 처리
-      if (response.ok) {
-        console.log('✅ 200 OK - 성공으로 처리');
-      } else if (responseData.success === false) {
-        console.log('❌ 실패 응답');
-        // 카카오 계정 차단 메시지 확인
-        if (responseData.message && responseData.message.includes('카카오')) {
-          throw new Error('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
-        }
-        throw new Error(responseData.message || '비밀번호 재설정에 실패했습니다.');
+      // HTTP 200이 아닌 경우 에러 처리
+      let errorData: any = {};
+      try {
+        errorData = await response.json();
+      } catch (error) {
+        errorData = { message: '비밀번호 재설정에 실패했습니다.' };
       }
       
-      console.log('비밀번호 변경 성공 처리 시작');
+      console.log('❌ 에러 응답:', errorData);
       
-      // 백엔드에서 제공하는 redirect_to 사용 (없으면 기본값)
-      const redirectPath = responseData.redirect_to || '/login';
+      // 카카오 계정 차단 메시지 확인
+      if (errorData.message && errorData.message.includes('카카오')) {
+        throw new Error('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
+      }
       
-      // 성공 메시지 표시
-      const successMessage = responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.';
-      console.log('성공 메시지:', successMessage);
-      console.log('Setting step to success');
-      
-      // 상태 설정
-      console.log('🔴 비밀번호 변경 성공 - 상태 업데이트 시작');
-      setLoading(false);
-      setSuccess(successMessage);
-      setError(''); // 에러 메시지 초기화
-      setStep('success'); // 먼저 성공 화면으로 전환
-      
-      console.log('🔴 성공 화면으로 전환 완료, alert 준비');
-      
-      // 디버깅: 현재 URL 확인
-      console.log('현재 URL:', window.location.href);
-      
-      // 리다이렉트 없이 alert만 표시
-      setTimeout(() => {
-        console.log('🔴 Alert 표시 직전');
-        alert(successMessage);
-        console.log('🔴 Alert 확인됨');
-        
-        // 리다이렉트 완전히 비활성화 (디버깅용)
-        console.log('🔴 리다이렉트 하지 않음 - 성공 화면에 머무름');
-        
-        // confirm 대화상자도 제거 (일단 테스트)
-        // const shouldRedirect = confirm('로그인 페이지로 이동하시겠습니까?');
-        // if (shouldRedirect) {
-        //   window.location.href = 'https://www.dungjimarket.com/login/signin';
-        // }
-      }, 500); // 시간을 늘려서 테스트
-      
-      return;
+      throw new Error(errorData.message || '비밀번호 재설정에 실패했습니다.');
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
       
