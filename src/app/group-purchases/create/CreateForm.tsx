@@ -451,9 +451,16 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     });
     
     // 프로필 완성도 검증 - 모든 사용자 대상
-    if (user) {
+    if (user && user.id) {  // user.id가 있는지 확인하여 완전히 로드되었는지 체크
+      console.log('[CreateForm] 프로필 체크 실행:', {
+        phone_number: user.phone_number,
+        address_region: user.address_region,
+        sns_type: user.sns_type
+      });
+      
       // 필수 정보 체크
       if (!user.phone_number || !user.address_region) {
+        console.log('[CreateForm] 프로필 미완성 - 리다이렉트 예정');
         // setTimeout을 사용하여 다음 틱에서 실행
         setTimeout(() => {
           if (confirm('공구를 등록하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
@@ -461,7 +468,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
           } else {
             router.back();
           }
-        }, 300);
+        }, 500);
         return;
       }
     }
