@@ -422,7 +422,16 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           purpose: 'reset'  // 백엔드 권장사항 추가
         };
         
-        console.log('비밀번호 재설정 요청:', requestBody);
+        console.log('========== 비밀번호 재설정 API 호출 ==========');
+        console.log('API URL:', `${apiUrl}/auth/reset-password-phone/`);
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+        console.log('각 필드 상태:');
+        console.log('  - user_id:', userId ? `있음 (${userId})` : `없음 (username 사용: ${username})`);
+        console.log('  - phone_number:', phone);
+        console.log('  - verification_code:', phoneVerificationCode || '인증코드 없음 (000000 사용)');
+        console.log('  - new_password 길이:', newPassword.length);
+        console.log('  - purpose:', 'reset');
+        console.log('=============================================');
         
         const res = await fetch(`${apiUrl}/auth/reset-password-phone/`, {
           method: 'POST',
@@ -431,6 +440,33 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
         });
         
         console.log('비밀번호 재설정 응답 상태:', res.status);
+        
+        // 500 에러 특별 처리
+        if (res.status === 500) {
+          console.error('서버 내부 오류 (500)');
+          let errorDetail = '서버 내부 오류가 발생했습니다.';
+          try {
+            const errorText = await res.text();
+            console.error('에러 응답 원본:', errorText);
+            
+            // JSON 파싱 시도
+            try {
+              const errorData = JSON.parse(errorText);
+              console.error('에러 상세:', errorData);
+              errorDetail = errorData.message || errorData.error || errorDetail;
+            } catch (e) {
+              // JSON이 아니면 텍스트 그대로 사용
+              if (errorText) {
+                errorDetail = errorText;
+              }
+            }
+          } catch (e) {
+            console.error('에러 응답 읽기 실패:', e);
+          }
+          
+          setErrorMessage(`서버 오류: ${errorDetail}\n백엔드 로그를 확인해주세요.`);
+          return;
+        }
         
         const data = await res.json();
         console.log('비밀번호 재설정 응답:', data);
