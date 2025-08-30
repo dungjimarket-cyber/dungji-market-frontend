@@ -89,20 +89,18 @@ export function PhoneVerification({
     setError('');
     setSuccess('');
 
-    // 마이페이지에서 번호 변경 시 중복 체크
-    if (purpose === 'profile') {
-      try {
-        const duplicateCheck = await phoneVerificationService.checkPhoneDuplicate(phoneNumber);
-        if (!duplicateCheck.available) {
-          setError('이미 등록된 번호입니다.');
-          setIsDuplicate(true);
-          setIsSending(false);
-          return;
-        }
-      } catch (err) {
-        console.error('중복 확인 오류:', err);
-        // 중복 확인 실패해도 계속 진행
+    // 모든 경우에 중복 체크 수행
+    try {
+      const duplicateCheck = await phoneVerificationService.checkPhoneDuplicate(phoneNumber);
+      if (!duplicateCheck.available) {
+        setError('이미 등록된 번호입니다.');
+        setIsDuplicate(true);
+        setIsSending(false);
+        return;
       }
+    } catch (err) {
+      console.error('중복 확인 오류:', err);
+      // 중복 확인 실패해도 계속 진행
     }
 
     try {

@@ -155,11 +155,12 @@ export const phoneVerificationService = {
   },
 
   /**
-   * 휴대폰 번호 중복 확인
+   * 휴대폰 번호 중복 확인 (모든 회원 통합 체크)
    */
   async checkPhoneDuplicate(phone_number: string): Promise<{ available: boolean; message: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/check-phone/`, {
+      // 모든 회원(일반회원 + 판매회원) 통합 중복 체크
+      const response = await fetch(`${API_BASE_URL}/auth/check-phone-unified/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

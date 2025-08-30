@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
+import { PhoneVerification } from '@/components/auth/PhoneVerification';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -589,34 +590,23 @@ export default function ProfileSection() {
             </div>
             
             {isEditing && editField === 'phone_number' ? (
-              <div className="flex items-center">
-                <input
-                  type="tel"
-                  value={phoneNumber ? phoneNumber.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3') : ''}
-                  onChange={(e) => {
-                    // 숫자만 추출
-                    const numbers = e.target.value.replace(/[^\d]/g, '');
-                    if (numbers.length <= 11) {
-                      setPhoneNumber(numbers);
-                    }
+              <div className="space-y-2">
+                <PhoneVerification
+                  purpose="profile"
+                  defaultValue={phoneNumber}
+                  onVerified={(verifiedPhoneNumber) => {
+                    setPhoneNumber(verifiedPhoneNumber);
+                    // 프로필 업데이트
+                    handleProfileUpdate();
                   }}
-                  className="flex-1 p-2 border rounded-md mr-2"
-                  placeholder="010-0000-0000"
-                  maxLength={13}
                 />
-                <button
-                  onClick={handleProfileUpdate}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                >
-                  저장
-                </button>
                 <button
                   onClick={() => {
                     setIsEditing(false);
                     setEditField(null);
                     setPhoneNumber(phoneNumber || '');
                   }}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
                 >
                   취소
                 </button>
