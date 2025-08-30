@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Phone, CheckCircle, User, AlertCircle } from 'lucide-react';
 
 export default function PasswordResetPhonePage() {
   const router = useRouter();
-  const [step, setStep] = useState<'identify' | 'verify' | 'password' | 'success'>('identify');
+  const [step, setStep] = useState<'identify' | 'verify' | 'password'>('identify');
   const [username, setUsername] = useState(''); // 아이디
   const [phoneNumber, setPhoneNumber] = useState('');
   const [userPhoneNumber, setUserPhoneNumber] = useState(''); // 서버에서 받은 실제 번호
@@ -21,84 +22,12 @@ export default function PasswordResetPhonePage() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(''); // 성공 메시지
   const [userId, setUserId] = useState<string | null>(null); // 백엔드에서 받은 user_id
   const [verificationCode, setVerificationCode] = useState(''); // 인증코드 저장
   
-  // 페이지 로드 시 성공 상태 복원
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedSuccess = sessionStorage.getItem('password_reset_success');
-      const savedMessage = sessionStorage.getItem('password_reset_message');
-      
-      if (savedSuccess === 'true' && savedMessage) {
-        console.log('📌 저장된 성공 상태 복원');
-        setStep('success');
-        setSuccess(savedMessage);
-        
-        // 복원 후 삭제 (한 번만 사용)
-        sessionStorage.removeItem('password_reset_success');
-        sessionStorage.removeItem('password_reset_message');
-      }
-    }
-  }, []);
-
-  // step 변경 감지 및 unmount 감지
-  useEffect(() => {
-    console.log('📍 Step 변경됨:', step);
-    console.log('현재 상태:', { loading, error, success });
-    
-    if (step === 'success') {
-      console.log('🚨🚨🚨 SUCCESS STEP 도달! 시간:', new Date().toISOString());
-      console.log('window.location.href:', typeof window !== 'undefined' ? window.location.href : 'SSR');
-      
-      // 컴포넌트가 리렌더링되는지 확인
-      const interval = setInterval(() => {
-        console.log('⏰ SUCCESS 화면 유지 중...', new Date().toISOString());
-      }, 1000);
-      
-      return () => {
-        console.log('🔴🔴🔴 SUCCESS 화면 cleanup 실행됨!');
-        clearInterval(interval);
-      };
-    }
-  }, [step, loading, error, success]);
-  
-  // 전체 컴포넌트 unmount 감지
-  useEffect(() => {
-    return () => {
-      console.log('💥💥💥 전체 컴포넌트가 unmount됩니다!');
-    };
-  }, []);
-  
-  // storage 이벤트 차단 (성공 화면에서만)
-  useEffect(() => {
-    if (step !== 'success') return;
-    
-    const preventStorageEvent = (e: StorageEvent) => {
-      console.log('🛑 Storage 이벤트 감지됨:', e.key);
-      e.stopImmediatePropagation();
-      e.preventDefault();
-    };
-    
-    const preventAuthEvent = (e: Event) => {
-      console.log('🛑 Auth 이벤트 감지됨');
-      e.stopImmediatePropagation();
-      e.preventDefault();
-    };
-    
-    // 이벤트 리스너를 캡처 단계에서 먼저 실행
-    window.addEventListener('storage', preventStorageEvent, true);
-    window.addEventListener('auth-changed', preventAuthEvent, true);
-    
-    console.log('✅ Storage/Auth 이벤트 차단 활성화');
-    
-    return () => {
-      window.removeEventListener('storage', preventStorageEvent, true);
-      window.removeEventListener('auth-changed', preventAuthEvent, true);
-      console.log('✅ Storage/Auth 이벤트 차단 해제');
-    };
-  }, [step]);
+  // 새로운 모달 상태
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Step 1: 아이디와 휴대폰 번호 확인
   const handleIdentifyUser = async (e: React.FormEvent) => {
@@ -181,10 +110,11 @@ export default function PasswordResetPhonePage() {
     }
   };
 
-  // Step 3: 비밀번호 재설정
+  // Step 3: 비밀번호 재설정 - 완전히 새로운 로직
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // 유효성 검사
     if (password !== passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
@@ -195,7 +125,6 @@ export default function PasswordResetPhonePage() {
       return;
     }
 
-    // 비밀번호 복잡도 체크
     const hasNumber = /\d/.test(password);
     const hasLetter = /[a-zA-Z]/.test(password);
     if (!hasNumber || !hasLetter) {
@@ -207,18 +136,16 @@ export default function PasswordResetPhonePage() {
     setLoading(true);
 
     try {
-      // 백엔드 요구사항에 맞게 수정: user_id는 숫자 타입이어야 함
       const requestBody = {
-        user_id: userId ? Number(userId) : null,  // 숫자로 변환, 없으면 null
-        phone_number: userPhoneNumber,  // 백엔드에서 하이픈 자동 처리
-        verification_code: verificationCode || '000000',  // 인증코드가 없으면 임시값
+        user_id: userId ? Number(userId) : null,
+        phone_number: userPhoneNumber,
+        verification_code: verificationCode || '000000',
         new_password: password,
-        purpose: 'reset'  // 백엔드 권장사항 추가
+        purpose: 'reset'
       };
       
       console.log('비밀번호 재설정 요청:', requestBody);
       
-      // API 호출 - 휴대폰 번호로 비밀번호 재설정
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password-phone/`, {
         method: 'POST',
         headers: {
@@ -227,60 +154,35 @@ export default function PasswordResetPhonePage() {
         body: JSON.stringify(requestBody),
       });
 
-      console.log('=== 비밀번호 재설정 응답 ===');
       console.log('Response status:', response.status);
-      console.log('Response headers:', {
-        contentType: response.headers.get('content-type'),
-        xNoRedirect: response.headers.get('x-no-redirect')
-      });
       
-      // HTTP 200 응답 확인 - 백엔드가 명시적으로 200을 보냄
       if (response.status === 200) {
-        console.log('✅ HTTP 200 응답 받음');
-        
-        // JSON 응답 파싱
         let responseData: any = {};
         try {
           responseData = await response.json();
-          console.log('응답 데이터:', responseData);
-        } catch (error) {
-          console.error('JSON 파싱 실패:', error);
+        } catch {
           responseData = { 
             success: true,
             message: '비밀번호가 변경되었습니다. 다시 로그인해주세요.' 
           };
         }
         
-        // 성공 처리
-        console.log('✅ 비밀번호 재설정 성공');
-        console.log('🔒 리다이렉트 방지 - SUCCESS 스텝 설정');
-        
-        // 상태 업데이트를 동기적으로 처리
+        // 성공 모달 표시
+        setSuccessMessage(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+        setShowSuccessModal(true);
         setLoading(false);
-        setError('');
-        setSuccess(responseData.message || '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
-        
-        // step을 마지막에 설정
-        setStep('success');
-        console.log('✅ SUCCESS 스텝 설정 완료');
-        
-        // 성공 메시지 표시 (alert 제거하고 상태만 유지)
-        console.log('📌 성공 화면에 머물러 있습니다. 리다이렉트 없음.');
         
         return;
       }
       
-      // HTTP 200이 아닌 경우 에러 처리
+      // 에러 처리
       let errorData: any = {};
       try {
         errorData = await response.json();
-      } catch (error) {
+      } catch {
         errorData = { message: '비밀번호 재설정에 실패했습니다.' };
       }
       
-      console.log('❌ 에러 응답:', errorData);
-      
-      // 카카오 계정 차단 메시지 확인
       if (errorData.message && errorData.message.includes('카카오')) {
         throw new Error('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
       }
@@ -288,130 +190,18 @@ export default function PasswordResetPhonePage() {
       throw new Error(errorData.message || '비밀번호 재설정에 실패했습니다.');
     } catch (err: any) {
       console.error('비밀번호 재설정 오류:', err);
-      
-      // 카카오 계정으로 인한 차단인 경우
-      if (err.message && err.message.includes('카카오')) {
-        setError('카카오 계정의 경우 카카오 계정 찾기를 이용해주세요.');
-      } else {
-        setError(err.message || '비밀번호 재설정에 실패했습니다.');
-      }
+      setError(err.message || '비밀번호 재설정에 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 성공 화면 - 완전히 독립적으로 렌더링
-  if (step === 'success') {
-    console.log('🎉 성공 화면 렌더링 중...');
-    console.log('Success message:', success);
-    console.log('현재 step:', step);
-    console.log('현재 URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
-    
-    // 성공 상태를 sessionStorage에 저장 (페이지 새로고침 대비)
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('password_reset_success', 'true');
-      sessionStorage.setItem('password_reset_message', success || '비밀번호가 변경되었습니다.');
-      
-      // Next.js prefetch 차단
-      const preventPrefetch = (e: Event) => {
-        const target = e.target as HTMLElement;
-        if (target?.tagName === 'A' || target?.closest('a')) {
-          console.log('🛑 Link prefetch 차단됨');
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-      
-      // 모든 네비게이션 이벤트 차단
-      document.addEventListener('click', preventPrefetch, true);
-      document.addEventListener('mouseenter', preventPrefetch, true);
-      document.addEventListener('touchstart', preventPrefetch, true);
-      document.addEventListener('focus', preventPrefetch, true);
-      
-      // 혹시 모를 리다이렉트 방지
-      window.onbeforeunload = () => {
-        console.log('⚠️ 페이지 이동 감지됨!');
-        return '정말로 이동하시겠습니까?';
-      };
-      
-      // history API로 뒤로가기 방지
-      window.history.pushState(null, '', window.location.href);
-      window.onpopstate = () => {
-        window.history.pushState(null, '', window.location.href);
-        console.log('⚠️ 뒤로가기 차단됨');
-      };
-      
-      // Router prefetch 비활성화
-      router.prefetch = () => Promise.resolve();
-    }
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="h-10 w-10 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl">비밀번호 변경 완료</CardTitle>
-            <CardDescription className="mt-3 text-base">
-              {success || '비밀번호가 변경되었습니다. 다시 로그인해주세요.'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                새로운 비밀번호로 로그인해주세요.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              className="w-full"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('✅ 사용자가 확인 버튼을 클릭했습니다');
-                console.log('이벤트 타입:', e.type);
-                console.log('이벤트 대상:', e.currentTarget);
-                
-                // cleanup
-                if (typeof window !== 'undefined') {
-                  // 모든 이벤트 리스너 제거
-                  const preventPrefetch = (e: Event) => {
-                    const target = e.target as HTMLElement;
-                    if (target?.tagName === 'A' || target?.closest('a')) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }
-                  };
-                  
-                  document.removeEventListener('click', preventPrefetch, true);
-                  document.removeEventListener('mouseenter', preventPrefetch, true);
-                  document.removeEventListener('touchstart', preventPrefetch, true);
-                  document.removeEventListener('focus', preventPrefetch, true);
-                  
-                  window.onbeforeunload = null;
-                  window.onpopstate = null;
-                  sessionStorage.removeItem('password_reset_success');
-                  sessionStorage.removeItem('password_reset_message');
-                }
-                
-                // 사용자가 직접 버튼을 클릭한 경우에만 이동
-                setTimeout(() => {
-                  console.log('🔄 로그인 페이지로 이동 시작');
-                  router.push('/login/signin');
-                }, 100);
-              }}
-            >
-              로그인 페이지로 이동
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+  // 성공 모달에서 확인 버튼 클릭 시
+  const handleSuccessConfirm = () => {
+    setShowSuccessModal(false);
+    router.push('/login/signin');
+  };
+
 
   // Step 3: 비밀번호 설정 화면
   if (step === 'password') {
@@ -469,13 +259,6 @@ export default function PasswordResetPhonePage() {
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              {success && (
-                <Alert className="border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">{success}</AlertDescription>
                 </Alert>
               )}
             </CardContent>
@@ -569,8 +352,40 @@ export default function PasswordResetPhonePage() {
 
   // Step 1: 아이디와 휴대폰 번호 입력 화면
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <Card className="w-full max-w-md">
+    <>
+      {/* 성공 모달 */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+            <DialogTitle className="text-center text-2xl">비밀번호 변경 완료</DialogTitle>
+            <DialogDescription className="text-center mt-3">
+              {successMessage || '비밀번호가 성공적으로 변경되었습니다.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                새로운 비밀번호로 로그인해주세요.
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button 
+              className="w-full"
+              onClick={handleSuccessConfirm}
+            >
+              로그인 페이지로 이동
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center justify-center mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -659,5 +474,6 @@ export default function PasswordResetPhonePage() {
         </form>
       </Card>
     </div>
+    </>
   );
 }
