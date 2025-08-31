@@ -468,9 +468,21 @@ function GroupPurchasesPageContent() {
     console.log('카테고리 변경:', category);
     setSelectedCategory(category as 'all' | 'phone' | 'internet' | 'internet_tv');
     
-    // 카테고리 변경 시 즉시 필터 적용
-    const categoryFilter = { category };
-    fetchGroupBuys(categoryFilter, activeTab);
+    // 현재 URL에서 모든 필터 가져오기 (지역 포함)
+    const currentFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (key !== 'tab' && key !== 'refresh') {
+        currentFilters[key] = value;
+      }
+    });
+    
+    // 카테고리 업데이트
+    currentFilters.category = category;
+    
+    console.log('카테고리 변경 시 전체 필터:', currentFilters);
+    
+    // 카테고리 변경 시 지역 필터 유지하면서 필터 적용
+    fetchGroupBuys(currentFilters, activeTab);
   };
 
   /**

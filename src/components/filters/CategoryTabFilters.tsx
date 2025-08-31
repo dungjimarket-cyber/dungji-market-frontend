@@ -137,7 +137,13 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
     console.log('URL 업데이트 (검색어 초기화, 지역 유지):', newUrl);
     router.push(newUrl);
     
-    onFiltersChange?.({ category });
+    // 현재 URL의 모든 필터를 포함하여 전달 (지역 포함)
+    const allFilters: Record<string, string> = {};
+    params.forEach((value, key) => {
+      allFilters[key] = value;
+    });
+    
+    onFiltersChange?.(allFilters);
     onCategoryChange?.(category);
     
     // 변경 완료 후 플래그 해제 (더 짧은 시간으로 조정)
