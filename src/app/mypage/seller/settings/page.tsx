@@ -697,10 +697,10 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>휴대폰 번호</Label>
                   {/* 휴대폰 번호가 있으면 읽기 전용으로 표시 */}
                   {formData.phone ? (
                     <>
+                      <Label>휴대폰 번호</Label>
                       <Input
                         value={formData.phone}
                         disabled
@@ -709,7 +709,7 @@ export default function SellerSettings() {
                       <p className="text-xs text-gray-500">휴대폰번호 수정을 원하시면 고객센터로 문의 부탁드립니다</p>
                     </>
                   ) : (
-                    /* 휴대폰 번호가 없으면 등록 가능 */
+                    /* 휴대폰 번호가 없으면 PhoneVerification 컴포넌트가 자체 Label 표시 */
                     <PhoneVerification
                       purpose="profile"
                       defaultValue={formData.phone}
