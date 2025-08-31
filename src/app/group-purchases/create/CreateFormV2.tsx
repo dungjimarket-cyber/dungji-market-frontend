@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { toast } from '@/components/ui/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import {
@@ -121,6 +123,15 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   const router = useRouter();
   
+  // 프로필 체크 Hook 사용
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields,
+    clearCache 
+  } = useProfileCheck();
+  
   // 상태 관리
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -166,6 +177,23 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       region_type: 'local',
     },
   });
+
+  // 페이지 진입 시 프로필 체크
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      console.log('[CreateFormV2] 페이지 진입, 프로필 체크 시작');
+      if (user && !isLoading) {
+        const isProfileComplete = await checkProfile();
+        console.log('[CreateFormV2] 프로필 체크 결과:', isProfileComplete);
+        if (!isProfileComplete) {
+          console.log('[CreateFormV2] 프로필 미완성, 모달 표시');
+          setShowProfileModal(true);
+        }
+      }
+    };
+    
+    checkUserProfile();
+  }, [user, isLoading, checkProfile, setShowProfileModal]);
 
   // 상품 목록 로드
   useEffect(() => {
@@ -1253,6 +1281,14 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+        onUpdateProfile={clearCache}
+      />
     </div>
   );
 }
