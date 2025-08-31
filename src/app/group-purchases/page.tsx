@@ -96,6 +96,12 @@ function GroupPurchasesPageContent() {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
   const [showFilters, setShowFilters] = useState(false);
   const [currentRegion, setCurrentRegion] = useState<string>(''); // 현재 선택된 지역
+  
+  // URL 변경 시 selectedCategory 동기화
+  useEffect(() => {
+    const newCategory = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
+    setSelectedCategory(newCategory || 'all');
+  }, [searchParams]);
 
   /**
    * 공구 목록 가져오기 (필터 포함 및 무한 스크롤)
@@ -468,16 +474,31 @@ function GroupPurchasesPageContent() {
     console.log('카테고리 변경:', category);
     setSelectedCategory(category as 'all' | 'phone' | 'internet' | 'internet_tv');
     
-    // 현재 URL에서 모든 필터 가져오기 (지역 포함)
+    // 현재 URL에서 지역 필터만 가져오기 (카테고리 관련 필터는 제외)
     const currentFilters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (key !== 'tab' && key !== 'refresh') {
+      // tab, refresh, category 관련 필터들은 제외
+      if (key !== 'tab' && 
+          key !== 'refresh' && 
+          key !== 'category' &&
+          key !== 'manufacturer' &&
+          key !== 'carrier' &&
+          key !== 'subscriptionType' &&
+          key !== 'planRange' &&
+          key !== 'internet_carrier' &&
+          key !== 'internet_subscriptionType' &&
+          key !== 'speed' &&
+          key !== 'internet_tv_carrier' &&
+          key !== 'internet_tv_subscriptionType' &&
+          key !== 'internet_tv_speed') {
         currentFilters[key] = value;
       }
     });
     
-    // 카테고리 업데이트
-    currentFilters.category = category;
+    // 새 카테고리 설정
+    if (category !== 'all') {
+      currentFilters.category = category;
+    }
     
     console.log('카테고리 변경 시 전체 필터:', currentFilters);
     
