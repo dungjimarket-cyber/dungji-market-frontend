@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import BidConfirmModal from '@/components/groupbuy/BidConfirmModal';
@@ -121,6 +123,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
   const { toast } = useToast();
+  
+  // 프로필 체크 Hook 사용
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields,
+    clearCache 
+  } = useProfileCheck();
   
   // 디버깅을 위한 로그 제거
   
@@ -814,6 +825,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   const handleBidClick = async () => {
+    // 프로필 체크 먼저 수행
+    console.log('[GroupPurchaseDetailNew] 견적 제안하기 버튼 클릭, 프로필 체크 시작');
+    const isProfileComplete = await checkProfile();
+    console.log('[GroupPurchaseDetailNew] 프로필 체크 결과:', isProfileComplete);
+    
+    if (!isProfileComplete) {
+      console.log('[GroupPurchaseDetailNew] 프로필 미완성, 모달 표시');
+      setShowProfileModal(true);
+      return;
+    }
+
     if (!bidAmount || bidAmount === '' || (typeof bidAmount === 'number' && bidAmount < 1000)) {
       toast({
         title: '견적 금액 오류',
@@ -985,6 +1007,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const handleJoinClick = async () => {
     if (!isAuthenticated) {
       router.push(`/login?callbackUrl=/groupbuys/${groupBuy.id}`);
+      return;
+    }
+
+    // 프로필 체크 수행
+    console.log('[GroupPurchaseDetailNew] 공구 참여하기 버튼 클릭, 프로필 체크 시작');
+    const isProfileComplete = await checkProfile();
+    console.log('[GroupPurchaseDetailNew] 프로필 체크 결과:', isProfileComplete);
+    
+    if (!isProfileComplete) {
+      console.log('[GroupPurchaseDetailNew] 프로필 미완성, 모달 표시');
+      setShowProfileModal(true);
       return;
     }
 
@@ -2679,6 +2712,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           declinedCount={buyerConfirmationData.declined_count}
         />
       )}
+      
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+        onUpdateProfile={clearCache}
+      />
       </div>
     </EndedGroupBuyAccessControl>
   );
