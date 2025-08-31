@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
@@ -122,6 +122,8 @@ type FormData = z.infer<ReturnType<typeof getFormSchema>>;
 export default function CreateFormV2({ mode = 'create', initialData, groupBuyId }: CreateFormProps = {}) {
   const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const previousPageRef = useRef<string>('/'); // 이전 페이지 저장
   
   // 프로필 체크 Hook 사용
   const { 
@@ -179,10 +181,28 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     },
   });
 
-  // 페이지 진입 시 프로필 체크
+  // 페이지 진입 시 이전 페이지 정보 저장 및 프로필 체크
   useEffect(() => {
+    // 이전 페이지 정보 저장 (referrer 또는 from 파라미터)
+    const fromParam = searchParams.get('from');
+    if (fromParam) {
+      previousPageRef.current = fromParam;
+    } else if (typeof document !== 'undefined' && document.referrer) {
+      // 같은 도메인에서 온 경우만 저장
+      try {
+        const referrerUrl = new URL(document.referrer);
+        const currentUrl = new URL(window.location.href);
+        if (referrerUrl.origin === currentUrl.origin) {
+          previousPageRef.current = referrerUrl.pathname + referrerUrl.search;
+        }
+      } catch (e) {
+        // URL 파싱 실패 시 기본값 유지
+      }
+    }
+    
     const checkUserProfile = async () => {
       console.log('[CreateFormV2] 페이지 진입, 프로필 체크 시작');
+      console.log('[CreateFormV2] 이전 페이지:', previousPageRef.current);
       
       // 로그인 상태가 확인되지 않았으면 대기
       if (isLoading) {
@@ -212,7 +232,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     };
     
     checkUserProfile();
-  }, [user, isLoading, checkProfile, setShowProfileModal, router]);
+  }, [user, isLoading, checkProfile, setShowProfileModal, router, searchParams]);
 
   // 상품 목록 로드
   useEffect(() => {
@@ -735,10 +755,11 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         <ProfileCheckModal
           isOpen={showProfileModal}
           onClose={() => {
-            // 모달을 닫으면 프로필 체크 상태는 유지
+            // 모달을 닫으면 이전 페이지로 돌아가기
             setShowProfileModal(false);
-            // 홈으로 리다이렉트 (replace로 히스토리 대체)
-            router.replace('/');
+            console.log('[CreateFormV2] 모달 취소, 이전 페이지로 이동:', previousPageRef.current);
+            // 이전 페이지로 리다이렉트 (replace로 히스토리 대체)
+            router.replace(previousPageRef.current);
           }}
           missingFields={missingFields}
           onUpdateProfile={() => {
