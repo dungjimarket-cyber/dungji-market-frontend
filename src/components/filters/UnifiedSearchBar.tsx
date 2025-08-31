@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, MapPin, ChevronDown, Clock, Home } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Clock, Home, X, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { normalizeRegion, expandRegionSearch } from '@/lib/utils/keywordMapping';
@@ -12,6 +12,11 @@ import { useAuth } from '@/contexts/AuthContext';
 interface RecentRegion {
   province: string;
   city: string;
+  timestamp: number;
+}
+
+interface RecentSearch {
+  keyword: string;
   timestamp: number;
 }
 
@@ -33,7 +38,11 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
   const [cities, setCities] = useState<string[]>([]);
   const [showRecentRegions, setShowRecentRegions] = useState(false);
   const [recentRegions, setRecentRegions] = useState<RecentRegion[]>([]);
+  const [showRecentSearches, setShowRecentSearches] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchDropdownRef = useRef<HTMLDivElement>(null);
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 선택된 시/도에 따른 시/군/구 목록 업데이트
   useEffect(() => {
@@ -83,11 +92,27 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     }
   }, []);
 
+  // 최근 검색어 로드
+  useEffect(() => {
+    const stored = localStorage.getItem('recentSearches');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setRecentSearches(parsed);
+      } catch (error) {
+        console.error('최근 검색어 로드 실패:', error);
+      }
+    }
+  }, []);
+
   // 드롭다운 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowRecentRegions(false);
+      }
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target as Node)) {
+        setShowRecentSearches(false);
       }
     };
 
@@ -117,17 +142,46 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     // 맨 앞에 추가
     recent.unshift(newRegion);
     
-    // 3개만 유지
-    recent = recent.slice(0, 3);
+    // 5개만 유지
+    recent = recent.slice(0, 5);
     
     setRecentRegions(recent);
     localStorage.setItem('recentRegions', JSON.stringify(recent));
+  };
+
+  // 최근 검색어 저장
+  const saveRecentSearch = (keyword: string) => {
+    if (!keyword || !keyword.trim()) return;
+
+    const newSearch: RecentSearch = {
+      keyword: keyword.trim(),
+      timestamp: Date.now()
+    };
+
+    let recent = [...recentSearches];
+    
+    // 중복 제거
+    recent = recent.filter(s => s.keyword !== keyword.trim());
+    
+    // 맨 앞에 추가
+    recent.unshift(newSearch);
+    
+    // 5개만 유지
+    recent = recent.slice(0, 5);
+    
+    setRecentSearches(recent);
+    localStorage.setItem('recentSearches', JSON.stringify(recent));
   };
 
   // 검색 실행
   const handleSearch = () => {
     // 검색어는 그대로 사용 (영어/한글 변환 제거)
     const searchTerms = searchQuery;
+    
+    // 검색어 저장
+    if (searchTerms) {
+      saveRecentSearch(searchTerms);
+    }
     
     // 지역 조합
     let regionStr = '';
@@ -147,11 +201,6 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       saveRecentRegion(selectedProvince, '');
     }
     
-    const filters = {
-      search: searchTerms,
-      region: regionSearchTerms
-    };
-    
     onSearchChange?.(searchTerms, regionSearchTerms);
     
     // URL 업데이트
@@ -170,13 +219,56 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     }
     
     router.push(`?${params.toString()}`);
+    setShowRecentSearches(false);
   };
 
-  // 엔터 키 처리
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
+  // 검색어 입력 처리 (디바운스 적용)
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    
+    // 이전 타이머 취소
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
     }
+    
+    // 500ms 후 자동 검색
+    searchTimerRef.current = setTimeout(() => {
+      if (value.trim()) {
+        handleSearch();
+      } else {
+        // 검색어가 비어있으면 검색어 필터만 제거
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('search');
+        router.push(`?${params.toString()}`);
+        
+        // 지역 필터는 유지하면서 검색 실행
+        let regionSearchTerms = '';
+        if (selectedProvince && selectedCity) {
+          const regionStr = `${selectedProvince} ${selectedCity}`;
+          const expandedRegions = expandRegionSearch(regionStr);
+          regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
+        } else if (selectedProvince) {
+          const expandedRegions = expandRegionSearch(selectedProvince);
+          regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
+        }
+        
+        onSearchChange?.('', regionSearchTerms);
+      }
+    }, 500);
+  };
+
+  // 초기화
+  const handleReset = () => {
+    setSearchQuery('');
+    setSelectedProvince('');
+    setSelectedCity('');
+    
+    // 모든 필터 제거
+    const params = new URLSearchParams();
+    router.push(`/group-purchases`);
+    
+    // 전체 공구 표시
+    onSearchChange?.('', '');
   };
 
   // 시/도 변경 처리
@@ -199,6 +291,9 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       if (searchQuery) params.set('search', searchQuery);
       params.set('region', province);
       router.push(`?${params.toString()}`);
+      
+      // 시/도만 선택해도 최근 지역 저장
+      saveRecentRegion(province, '');
     } else {
       // 시/도 선택 해제 시 전체 검색
       onSearchChange?.(searchTerms, '');
@@ -363,30 +458,68 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
   return (
     <div className="bg-white rounded-lg border shadow-sm p-4 mb-6">
       <div className="flex flex-col gap-4">
-        {/* 검색창 + 검색 버튼 */}
+        {/* 검색창 + 초기화 버튼 */}
         <div className="flex gap-2">
           {/* 통합 검색창 - 모바일: 75%, PC: 자동 확장 */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative" ref={searchDropdownRef}>
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
               placeholder="상품명, 브랜드, 키워드로 검색하세요..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
+              onFocus={() => setShowRecentSearches(true)}
               className="pl-10 pr-4 py-2 w-full"
             />
+            
+            {/* 최근 검색어 드롭다운 */}
+            {showRecentSearches && recentSearches.length > 0 && (
+              <div className="absolute top-full mt-1 left-0 right-0 bg-white border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                <div className="px-3 py-2 text-xs text-gray-500 font-medium border-b">최근 검색어</div>
+                {recentSearches.map((search, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSearchQuery(search.keyword);
+                      handleSearchInputChange(search.keyword);
+                      setShowRecentSearches(false);
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center justify-between text-sm"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-3 h-3 text-gray-400" />
+                      {search.keyword}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const filtered = recentSearches.filter(s => s.keyword !== search.keyword);
+                        setRecentSearches(filtered);
+                        localStorage.setItem('recentSearches', JSON.stringify(filtered));
+                      }}
+                      className="p-1 hover:bg-gray-200 rounded"
+                    >
+                      <X className="w-3 h-3 text-gray-400" />
+                    </button>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           
-          {/* 검색 버튼 - 모바일: 25%, PC: 자동 너비 */}
-          <Button onClick={handleSearch} className="px-4 sm:px-6 w-[25%] sm:w-auto sm:min-w-[80px]">
-            검색
+          {/* 초기화 버튼 */}
+          <Button 
+            onClick={handleReset} 
+            variant="outline"
+            className="px-4 sm:px-6 w-[25%] sm:w-auto sm:min-w-[80px] border-gray-300"
+          >
+            <RotateCcw className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">초기화</span>
           </Button>
         </div>
 
-        {/* 내지역 필터 - 시/도 + 시/군/구 + 내지역 버튼 */}
+        {/* 지역 필터 - 시/도 + 시/군/구 + 내지역 버튼 (지도 아이콘 제거) */}
         <div className="flex items-center gap-2">
-          <MapPin className="text-gray-400 w-4 h-4 flex-shrink-0" />
           
           {/* 시/도 선택 */}
           <div className="relative flex-1">

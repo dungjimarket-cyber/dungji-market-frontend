@@ -19,8 +19,8 @@ export function MobileHeader() {
           </div>
         </Link>
         
-        {/* 검색창 & 내지역 버튼 */}
-        <SearchBar className="flex-1 min-w-0" placeholder="통합검색" showMyRegionButton={true} />
+        {/* 검색창 */}
+        <SearchBar className="flex-1 min-w-0" placeholder="통합검색" showMyRegionButton={false} />
       </div>
     </header>
   );
