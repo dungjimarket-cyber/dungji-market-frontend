@@ -60,7 +60,7 @@ export default function NoticesPage() {
       event: { label: '이벤트', className: 'bg-purple-100 text-purple-700' },
       update: { label: '업데이트', className: 'bg-blue-100 text-blue-700' },
       maintenance: { label: '점검안내', className: 'bg-yellow-100 text-yellow-700' },
-      important: { label: '중요공지', className: 'bg-red-100 text-red-700' }
+      important: { label: '중요공지', className: 'bg-orange-100 text-orange-700' }
     };
     
     const config = categoryMap[category] || categoryMap.general;
@@ -108,7 +108,7 @@ export default function NoticesPage() {
             return (
               <Card 
                 key={notice.id}
-                className={notice.is_pinned ? 'border-red-300 bg-red-50' : ''}
+                className={notice.is_pinned ? 'border-blue-200 bg-blue-50/30' : ''}
               >
                 <CardHeader 
                   className="cursor-pointer"
@@ -118,7 +118,7 @@ export default function NoticesPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {notice.is_pinned && (
-                          <Badge className="bg-red-500 text-white">상단고정</Badge>
+                          <Badge className="bg-blue-500 text-white">상단고정</Badge>
                         )}
                         {notice.is_new && (
                           <Badge className="bg-green-500 text-white">NEW</Badge>
@@ -159,11 +159,6 @@ export default function NoticesPage() {
                         </p>
                       )}
                     </div>
-                    {notice.updated_at && notice.updated_at !== notice.created_at && (
-                      <p className="text-xs text-gray-500 mt-4">
-                        수정일: {new Date(notice.updated_at).toLocaleDateString('ko-KR')}
-                      </p>
-                    )}
                   </CardContent>
                 )}
               </Card>
