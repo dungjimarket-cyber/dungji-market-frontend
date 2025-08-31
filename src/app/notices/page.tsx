@@ -9,10 +9,13 @@ interface Notice {
   id: number;
   title: string;
   content: string;
-  category: 'general' | 'event' | 'update' | 'maintenance';
-  is_important: boolean;
+  category: 'general' | 'event' | 'update' | 'maintenance' | 'important';
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
+  published_at: string;
+  view_count: number;
+  is_new: boolean;
 }
 
 export default function NoticesPage() {
@@ -53,10 +56,11 @@ export default function NoticesPage() {
 
   const getCategoryBadge = (category: string) => {
     const categoryMap: Record<string, { label: string; className: string }> = {
-      general: { label: '일반', className: 'bg-gray-100 text-gray-700' },
+      general: { label: '일반공지', className: 'bg-gray-100 text-gray-700' },
       event: { label: '이벤트', className: 'bg-purple-100 text-purple-700' },
       update: { label: '업데이트', className: 'bg-blue-100 text-blue-700' },
-      maintenance: { label: '점검', className: 'bg-yellow-100 text-yellow-700' }
+      maintenance: { label: '점검안내', className: 'bg-yellow-100 text-yellow-700' },
+      important: { label: '중요공지', className: 'bg-red-100 text-red-700' }
     };
     
     const config = categoryMap[category] || categoryMap.general;
@@ -104,7 +108,7 @@ export default function NoticesPage() {
             return (
               <Card 
                 key={notice.id}
-                className={notice.is_important ? 'border-red-300 bg-red-50' : ''}
+                className={notice.is_pinned ? 'border-red-300 bg-red-50' : ''}
               >
                 <CardHeader 
                   className="cursor-pointer"
@@ -113,8 +117,11 @@ export default function NoticesPage() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        {notice.is_important && (
-                          <Badge className="bg-red-500 text-white">중요</Badge>
+                        {notice.is_pinned && (
+                          <Badge className="bg-red-500 text-white">상단고정</Badge>
+                        )}
+                        {notice.is_new && (
+                          <Badge className="bg-green-500 text-white">NEW</Badge>
                         )}
                         {getCategoryBadge(notice.category)}
                       </div>
@@ -123,7 +130,10 @@ export default function NoticesPage() {
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(notice.created_at).toLocaleDateString()}</span>
+                        <span>{notice.published_at ? new Date(notice.published_at).toLocaleDateString('ko-KR') : new Date(notice.created_at).toLocaleDateString('ko-KR')}</span>
+                        {notice.view_count > 0 && (
+                          <span className="ml-2">조회 {notice.view_count}</span>
+                        )}
                       </div>
                     </div>
                     <div className="ml-4">
@@ -135,16 +145,23 @@ export default function NoticesPage() {
                     </div>
                   </div>
                 </CardHeader>
-                {isExpanded && (
+                {isExpanded && notice.content && (
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
-                      <p className="whitespace-pre-wrap text-gray-700">
-                        {notice.content}
-                      </p>
+                      {notice.content.includes('<') ? (
+                        <div 
+                          className="text-gray-700"
+                          dangerouslySetInnerHTML={{ __html: notice.content }}
+                        />
+                      ) : (
+                        <p className="whitespace-pre-wrap text-gray-700">
+                          {notice.content}
+                        </p>
+                      )}
                     </div>
-                    {notice.updated_at !== notice.created_at && (
+                    {notice.updated_at && notice.updated_at !== notice.created_at && (
                       <p className="text-xs text-gray-500 mt-4">
-                        수정됨: {new Date(notice.updated_at).toLocaleDateString()}
+                        수정일: {new Date(notice.updated_at).toLocaleDateString('ko-KR')}
                       </p>
                     )}
                   </CardContent>
