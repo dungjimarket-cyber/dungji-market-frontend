@@ -54,8 +54,8 @@ export default function ProfileCheckModal({
   };
 
   const handleCancel = () => {
-    // 취소 시 이전 페이지로 돌아가기
-    router.back();
+    // 취소 시 onClose 콜백만 호출
+    // 실제 페이지 이동은 부모 컴포넌트에서 처리
     onClose();
   };
 

@@ -735,10 +735,10 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         <ProfileCheckModal
           isOpen={showProfileModal}
           onClose={() => {
+            // 모달을 닫으면 프로필 체크 상태는 유지
             setShowProfileModal(false);
-            setIsProfileChecking(false);
-            // 모달을 닫으면 이전 페이지로 돌아감
-            router.back();
+            // 홈으로 리다이렉트 (replace로 히스토리 대체)
+            router.replace('/');
           }}
           missingFields={missingFields}
           onUpdateProfile={() => {
