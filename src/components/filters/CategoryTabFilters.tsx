@@ -177,8 +177,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
               variant={isSelected ? "default" : "outline"}
               className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 transition-all duration-200 whitespace-nowrap text-xs sm:text-sm flex-shrink-0 ${
                 isSelected 
-                  ? `${category.color} bg-white border-2 font-semibold` 
-                  : `hover:${category.bgColor} hover:border-current`
+                  ? 'bg-purple-600 text-white border-purple-600 hover:bg-purple-700 font-semibold shadow-md' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
               }`}
               onClick={() => handleCategoryChange(category.id)}
               disabled={false} // 버튼은 항상 활성화 상태로 유지
