@@ -49,7 +49,8 @@ export default function GroupBuyActionButton({
     checkProfile, 
     showProfileModal, 
     setShowProfileModal, 
-    missingFields 
+    missingFields,
+    clearCache 
   } = useProfileCheck();
 
   // 디버깅 로그 추가
@@ -141,6 +142,7 @@ export default function GroupBuyActionButton({
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         missingFields={missingFields}
+        onUpdateProfile={clearCache}
       />
 
       {/* 공구 참여 모달 */}

@@ -302,7 +302,8 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     checkProfile, 
     showProfileModal, 
     setShowProfileModal, 
-    missingFields 
+    missingFields,
+    clearCache 
   } = useProfileCheck();
   // 인증 상태를 NextAuth와 호환되는 status 변수로 변환
   const status = isLoading ? 'loading' : isAuthenticated ? 'authenticated' : 'unauthenticated';
@@ -1255,6 +1256,7 @@ const onSubmit = async (values: FormData) => {
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         missingFields={missingFields}
+        onUpdateProfile={clearCache}
       />
       
       <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">

@@ -18,6 +18,7 @@ interface ProfileCheckModalProps {
   onClose: () => void;
   missingFields: string[];
   onComplete?: () => void;
+  onUpdateProfile?: () => void;
 }
 
 export default function ProfileCheckModal({
@@ -25,6 +26,7 @@ export default function ProfileCheckModal({
   onClose,
   missingFields,
   onComplete,
+  onUpdateProfile,
 }: ProfileCheckModalProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -34,6 +36,11 @@ export default function ProfileCheckModal({
     const redirectPath = user?.role === 'seller' 
       ? '/mypage/seller/settings' 
       : '/mypage/settings';
+    
+    // 프로필 업데이트 콜백 호출 (캐시 초기화 등)
+    if (onUpdateProfile) {
+      onUpdateProfile();
+    }
     
     router.push(redirectPath);
     onClose();
