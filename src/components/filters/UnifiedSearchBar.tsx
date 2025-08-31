@@ -40,6 +40,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
   const [recentRegions, setRecentRegions] = useState<RecentRegion[]>([]);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
+  const [isComposing, setIsComposing] = useState(false); // 한글 조합 중 상태
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -231,30 +232,51 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       clearTimeout(searchTimerRef.current);
     }
     
-    // 500ms 후 자동 검색
-    searchTimerRef.current = setTimeout(() => {
-      if (value.trim()) {
-        handleSearch();
-      } else {
-        // 검색어가 비어있으면 검색어 필터만 제거
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('search');
-        router.push(`?${params.toString()}`);
-        
-        // 지역 필터는 유지하면서 검색 실행
-        let regionSearchTerms = '';
-        if (selectedProvince && selectedCity) {
-          const regionStr = `${selectedProvince} ${selectedCity}`;
-          const expandedRegions = expandRegionSearch(regionStr);
-          regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
-        } else if (selectedProvince) {
-          const expandedRegions = expandRegionSearch(selectedProvince);
-          regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
+    // 한글 조합 중이 아닐 때만 타이머 설정
+    if (!isComposing) {
+      // 1200ms(1.2초) 후 자동 검색 - 한글 입력 완성을 위해 시간 증가
+      searchTimerRef.current = setTimeout(() => {
+        if (value.trim()) {
+          handleSearch();
+        } else {
+          // 검색어가 비어있으면 검색어 필터만 제거
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete('search');
+          router.push(`?${params.toString()}`);
+          
+          // 지역 필터는 유지하면서 검색 실행
+          let regionSearchTerms = '';
+          if (selectedProvince && selectedCity) {
+            const regionStr = `${selectedProvince} ${selectedCity}`;
+            const expandedRegions = expandRegionSearch(regionStr);
+            regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
+          } else if (selectedProvince) {
+            const expandedRegions = expandRegionSearch(selectedProvince);
+            regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
+          }
+          
+          onSearchChange?.('', regionSearchTerms);
         }
-        
-        onSearchChange?.('', regionSearchTerms);
+      }, 1200);
+    }
+  };
+
+  // 한글 조합 완료 시 검색 시작
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+    
+    // 조합 완료 후 검색 실행
+    if (searchQuery.trim()) {
+      // 이전 타이머 취소
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
       }
-    }, 500);
+      
+      // 1200ms 후 검색 실행
+      searchTimerRef.current = setTimeout(() => {
+        handleSearch();
+      }, 1200);
+    }
   };
 
   // 초기화
@@ -468,6 +490,8 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
               placeholder="상품명, 브랜드, 키워드로 검색하세요..."
               value={searchQuery}
               onChange={(e) => handleSearchInputChange(e.target.value)}
+              onCompositionStart={() => setIsComposing(true)}
+              onCompositionEnd={handleCompositionEnd}
               onFocus={() => setShowRecentSearches(true)}
               className="pl-10 pr-4 py-2 w-full"
             />
