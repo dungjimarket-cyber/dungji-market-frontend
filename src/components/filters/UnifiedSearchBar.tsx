@@ -234,9 +234,8 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     setSelectedProvince('');
     setSelectedCity('');
     
-    // 모든 필터 제거
-    const params = new URLSearchParams();
-    router.push(`/group-purchases`);
+    // 모든 필터 제거 - 완전히 초기 상태로
+    router.push('/group-purchases');
     
     // 전체 공구 표시
     onSearchChange?.('', '');

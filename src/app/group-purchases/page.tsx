@@ -95,6 +95,7 @@ function GroupPurchasesPageContent() {
   const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentRegion, setCurrentRegion] = useState<string>(''); // 현재 선택된 지역
 
   /**
    * 공구 목록 가져오기 (필터 포함 및 무한 스크롤)
@@ -470,6 +471,9 @@ function GroupPurchasesPageContent() {
   const handleSearchChange = (search: string, region: string) => {
     console.log('검색어 변경 - search:', search, 'region:', region);
     
+    // 지역 정보 업데이트
+    setCurrentRegion(region || '');
+    
     // 기존 URL 파라미터를 가져와서 유지
     const currentFilters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
@@ -575,6 +579,10 @@ function GroupPurchasesPageContent() {
         filters[key] = value;
         if (key === 'category') {
           hasCategoryParam = true;
+        }
+        // 지역 정보 설정
+        if (key === 'region') {
+          setCurrentRegion(value);
         }
       }
       if (key === 'refresh') {
@@ -741,6 +749,7 @@ function GroupPurchasesPageContent() {
             <div className="px-4 pb-4">
               <GroupBuyFilters 
               category={selectedCategory as 'phone' | 'internet' | 'internet_tv'}
+              currentRegion={currentRegion}
               onFiltersChange={(filters) => {
                 // 필터 변경 처리 - 합집합을 위해 콤마로 구분한 값을 전달
                 const flatFilters: Record<string, string> = {};

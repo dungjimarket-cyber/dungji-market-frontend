@@ -18,13 +18,14 @@ interface FilterGroup {
 interface GroupBuyFiltersProps {
   onFiltersChange?: (filters: Record<string, string[]>) => void;
   category?: 'phone' | 'internet' | 'internet_tv';
+  currentRegion?: string;
 }
 
 /**
  * 공구 둘러보기 필터 컴포넌트
  * 버튼 토글 형태의 필터를 제공
  */
-export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBuyFiltersProps) {
+export function GroupBuyFilters({ onFiltersChange, category = 'phone', currentRegion }: GroupBuyFiltersProps) {
   // 필터 그룹 정의
   const filterGroups: Record<string, FilterGroup[]> = {
     phone: [
@@ -144,6 +145,15 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
 
   // 현재 카테고리의 필터 그룹
   const currentFilterGroups = filterGroups[category] || filterGroups.phone;
+
+  // 지역이 변경될 때 필터 초기화
+  useEffect(() => {
+    if (currentRegion !== undefined) {
+      console.log('지역 변경 감지, 필터 초기화:', currentRegion);
+      setSelectedFilters({});
+      onFiltersChange?.({});
+    }
+  }, [currentRegion]);
 
   /**
    * 필터 옵션 토글
