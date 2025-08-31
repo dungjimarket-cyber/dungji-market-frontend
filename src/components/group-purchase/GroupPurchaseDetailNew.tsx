@@ -2716,9 +2716,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       {/* 프로필 체크 모달 */}
       <ProfileCheckModal
         isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
+        onClose={() => {
+          setShowProfileModal(false);
+          router.back();
+        }}
         missingFields={missingFields}
-        onUpdateProfile={clearCache}
+        onUpdateProfile={() => {
+          clearCache();
+          router.push('/mypage?tab=settings');
+        }}
       />
       </div>
     </EndedGroupBuyAccessControl>
