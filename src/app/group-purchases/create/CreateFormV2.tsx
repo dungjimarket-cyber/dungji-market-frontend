@@ -124,10 +124,20 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  // 프로필 체크 Hook 사용 (URL 직접 접근 방어용)
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields,
+    clearCache 
+  } = useProfileCheck();
+  
   // 상태 관리
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isProfileChecking, setIsProfileChecking] = useState<boolean>(true);
   
   // 탭 관련 상태
   const [mainTab, setMainTab] = useState<'phone' | 'internet' | 'internet_tv'>('phone');
@@ -170,19 +180,36 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     },
   });
 
-  // 로그인 상태 확인
+  // URL 직접 접근 시 프로필 체크
   useEffect(() => {
-    // 로그인 상태가 확인되지 않았으면 대기
-    if (isLoading) {
-      return;
-    }
+    const checkUserProfile = async () => {
+      // 로그인 상태가 확인되지 않았으면 대기
+      if (isLoading) {
+        return;
+      }
+      
+      // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+      if (!user) {
+        router.push('/login?callbackUrl=/group-purchases/create');
+        return;
+      }
+      
+      // URL 직접 접근 시 프로필 체크
+      console.log('[CreateFormV2] URL 직접 접근 감지, 프로필 체크 시작');
+      const isProfileComplete = await checkProfile();
+      
+      if (!isProfileComplete) {
+        console.log('[CreateFormV2] 프로필 미완성, 모달 표시');
+        setShowProfileModal(true);
+        // 프로필이 미완성이면 로딩 상태 유지
+      } else {
+        // 프로필이 완성되었으면 체크 완료
+        setIsProfileChecking(false);
+      }
+    };
     
-    // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
-    if (!user) {
-      router.push('/login?callbackUrl=/group-purchases/create');
-      return;
-    }
-  }, [user, isLoading, router]);
+    checkUserProfile();
+  }, [user, isLoading, router, checkProfile, setShowProfileModal]);
 
   // 상품 목록 로드
   useEffect(() => {
@@ -693,12 +720,35 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     }
   };
 
-  // 로딩 중일 때 로딩 화면 표시
-  if (loading || isLoading) {
+  // 프로필 체크 중이거나 로딩 중일 때 처리
+  if (loading || isLoading || isProfileChecking) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+        
+        {/* URL 직접 접근 시 프로필 체크 모달 */}
+        <ProfileCheckModal
+          isOpen={showProfileModal}
+          onClose={() => {
+            // 모달 취소 시 홈으로 리다이렉트
+            setShowProfileModal(false);
+            console.log('[CreateFormV2] URL 직접 접근 후 모달 취소, 홈으로 이동');
+            router.push('/');
+          }}
+          missingFields={missingFields}
+          onUpdateProfile={() => {
+            // 프로필 업데이트 페이지로 이동
+            clearCache();
+            setIsProfileChecking(false);
+            const redirectPath = user?.role === 'seller' 
+              ? '/mypage/seller/settings' 
+              : '/mypage/settings';
+            router.push(redirectPath);
+          }}
+        />
+      </>
     );
   }
 
