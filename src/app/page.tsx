@@ -185,7 +185,7 @@ function HomeContent() {
         <SearchBar 
           className="max-w-2xl mx-auto"
           placeholder="통합검색 (상품명, 지역, 통신사 등)"
-          showMyRegionButton={true}
+          showMyRegionButton={false}
         />
       </section>
       

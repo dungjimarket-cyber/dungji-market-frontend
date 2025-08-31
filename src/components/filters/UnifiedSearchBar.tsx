@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, MapPin, ChevronDown } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Clock, Home } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { normalizeRegion, expandRegionSearch } from '@/lib/utils/keywordMapping';
 import { regions } from '@/lib/regions';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface RecentRegion {
+  province: string;
+  city: string;
+  timestamp: number;
+}
 
 interface UnifiedSearchBarProps {
   onSearchChange?: (search: string, region: string) => void;
@@ -18,11 +25,15 @@ interface UnifiedSearchBarProps {
 export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [cities, setCities] = useState<string[]>([]);
+  const [showRecentRegions, setShowRecentRegions] = useState(false);
+  const [recentRegions, setRecentRegions] = useState<RecentRegion[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 선택된 시/도에 따른 시/군/구 목록 업데이트
   useEffect(() => {
@@ -59,6 +70,60 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     }
   }, [searchParams]);
 
+  // 최근 본 지역 로드
+  useEffect(() => {
+    const stored = localStorage.getItem('recentRegions');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setRecentRegions(parsed);
+      } catch (error) {
+        console.error('최근 지역 로드 실패:', error);
+      }
+    }
+  }, []);
+
+  // 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowRecentRegions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // 최근 본 지역 저장
+  const saveRecentRegion = (province: string, city: string) => {
+    if (!province) return;
+
+    const newRegion: RecentRegion = {
+      province,
+      city: city || '',
+      timestamp: Date.now()
+    };
+
+    let recent = [...recentRegions];
+    
+    // 중복 제거
+    recent = recent.filter(r => 
+      !(r.province === province && r.city === city)
+    );
+    
+    // 맨 앞에 추가
+    recent.unshift(newRegion);
+    
+    // 3개만 유지
+    recent = recent.slice(0, 3);
+    
+    setRecentRegions(recent);
+    localStorage.setItem('recentRegions', JSON.stringify(recent));
+  };
+
   // 검색 실행
   const handleSearch = () => {
     // 검색어는 그대로 사용 (영어/한글 변환 제거)
@@ -72,10 +137,14 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       // 지역명 확장 검색
       const expandedRegions = expandRegionSearch(regionStr);
       regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
+      // 최근 지역 저장
+      saveRecentRegion(selectedProvince, selectedCity);
     } else if (selectedProvince) {
       regionStr = selectedProvince;
       const expandedRegions = expandRegionSearch(selectedProvince);
       regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
+      // 최근 지역 저장
+      saveRecentRegion(selectedProvince, '');
     }
     
     const filters = {
@@ -162,6 +231,9 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
         if (searchQuery) params.set('search', searchQuery);
         params.set('region', regionStr);
         router.push(`?${params.toString()}`);
+        
+        // 최근 지역 저장
+        saveRecentRegion(selectedProvince, city);
       } else {
         // 시/군/구 선택 해제 시 시/도만으로 검색
         const expandedRegions = expandRegionSearch(selectedProvince);
@@ -173,8 +245,119 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
         if (searchQuery) params.set('search', searchQuery);
         params.set('region', selectedProvince);
         router.push(`?${params.toString()}`);
+        
+        // 최근 지역 저장
+        saveRecentRegion(selectedProvince, '');
       }
     }
+  };
+
+  // 내지역 버튼 클릭 (사용자 지역으로 설정 및 즉시 검색)
+  const handleMyRegionClick = () => {
+    if (!user || !user.address_region) {
+      alert('로그인 후 지역 설정이 필요합니다. 마이페이지에서 지역을 설정해주세요.');
+      return;
+    }
+
+    const region = user.address_region;
+    console.log('내지역 설정:', region);
+
+    // 지역 정보 파싱
+    let province = '';
+    let city = '';
+
+    if (region.parent && region.name) {
+      province = region.parent;
+      city = region.name;
+    } else if (region.full_name) {
+      const parts = region.full_name.split(' ');
+      if (parts.length >= 2) {
+        province = parts[0];
+        city = parts[1] || '';
+      } else if (parts.length === 1) {
+        province = parts[0];
+      }
+    } else if (region.name) {
+      // name만 있는 경우 처리
+      province = region.name;
+    }
+
+    if (!province) {
+      alert('지역 정보를 확인할 수 없습니다. 마이페이지에서 지역을 다시 설정해주세요.');
+      return;
+    }
+
+    // 드롭다운 설정
+    setSelectedProvince(province);
+    
+    // 시/도가 변경되면 cities가 업데이트되므로 약간의 딜레이 후 city 설정
+    setTimeout(() => {
+      setSelectedCity(city);
+      
+      // 즉시 검색 실행
+      const searchTerms = searchQuery;
+      let regionStr = '';
+      let regionSearchTerms = '';
+      
+      if (city) {
+        regionStr = `${province} ${city}`;
+        const expandedRegions = expandRegionSearch(regionStr);
+        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
+      } else {
+        regionStr = province;
+        const expandedRegions = expandRegionSearch(province);
+        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : province;
+      }
+      
+      // 최근 지역 저장
+      saveRecentRegion(province, city);
+      
+      // 검색 실행
+      onSearchChange?.(searchTerms, regionSearchTerms);
+      
+      // URL 업데이트
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) params.set('search', searchQuery);
+      params.set('region', regionStr);
+      router.push(`?${params.toString()}`);
+    }, 100);
+  };
+
+  // 최근 지역 선택
+  const handleRecentRegionSelect = (region: RecentRegion) => {
+    setSelectedProvince(region.province);
+    
+    // 시/도가 변경되면 cities가 업데이트되므로 약간의 딜레이 후 city 설정
+    setTimeout(() => {
+      setSelectedCity(region.city);
+      
+      // 즉시 검색 실행
+      const searchTerms = searchQuery;
+      let regionStr = '';
+      let regionSearchTerms = '';
+      
+      if (region.city) {
+        regionStr = `${region.province} ${region.city}`;
+        const expandedRegions = expandRegionSearch(regionStr);
+        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
+      } else {
+        regionStr = region.province;
+        const expandedRegions = expandRegionSearch(region.province);
+        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : region.province;
+      }
+      
+      // 검색 실행
+      onSearchChange?.(searchTerms, regionSearchTerms);
+      
+      // URL 업데이트
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) params.set('search', searchQuery);
+      params.set('region', regionStr);
+      router.push(`?${params.toString()}`);
+      
+      // 드롭다운 닫기
+      setShowRecentRegions(false);
+    }, 100);
   };
 
   return (
@@ -201,7 +384,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
           </Button>
         </div>
 
-        {/* 내지역 필터 - 시/도 + 시/군/구 */}
+        {/* 내지역 필터 - 시/도 + 시/군/구 + 내지역 버튼 */}
         <div className="flex items-center gap-2">
           <MapPin className="text-gray-400 w-4 h-4 flex-shrink-0" />
           
@@ -238,6 +421,70 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
               ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+          </div>
+          
+          {/* 내지역 버튼 */}
+          <div className="relative" ref={dropdownRef}>
+            <Button
+              type="button"
+              onClick={() => {
+                if (recentRegions.length > 0) {
+                  setShowRecentRegions(!showRecentRegions);
+                } else {
+                  handleMyRegionClick();
+                }
+              }}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 whitespace-nowrap px-3 py-2"
+              title={user?.address_region?.full_name || user?.address_region?.name || '지역 미설정'}
+            >
+              <MapPin className="w-3 h-3" />
+              <span className="hidden sm:inline">내지역</span>
+              {recentRegions.length > 0 && (
+                <ChevronDown className="w-3 h-3 ml-1" />
+              )}
+            </Button>
+            
+            {/* 최근 본 지역 드롭다운 */}
+            {showRecentRegions && recentRegions.length > 0 && (
+              <div className="absolute top-full mt-1 right-0 bg-white border rounded-lg shadow-lg z-50 min-w-[160px]">
+                {/* 내 지역 */}
+                {user?.address_region && (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleMyRegionClick();
+                        setShowRecentRegions(false);
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                    >
+                      <Home className="w-3 h-3 text-blue-500" />
+                      <span>내 지역</span>
+                      <span className="text-xs text-gray-500">
+                        ({user.address_region.name || user.address_region.full_name})
+                      </span>
+                    </button>
+                    <div className="border-t" />
+                  </>
+                )}
+                
+                {/* 최근 본 지역 */}
+                <div className="px-3 py-1.5 text-xs text-gray-500 font-medium">최근 본 지역</div>
+                {recentRegions.map((region, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleRecentRegionSelect(region)}
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                  >
+                    <Clock className="w-3 h-3 text-gray-400" />
+                    <span>
+                      {region.city ? `${region.province} ${region.city}` : region.province}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
