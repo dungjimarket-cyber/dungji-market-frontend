@@ -464,7 +464,22 @@ function GroupPurchasesPageContent() {
    * 필터 변경 처리
    */
   const handleFiltersChange = (filters: Record<string, string>) => {
-    fetchGroupBuys(filters, activeTab, false);
+    // 현재 URL의 모든 필터 가져오기 (지역 포함)
+    const currentFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (key !== 'tab' && key !== 'refresh') {
+        currentFilters[key] = value;
+      }
+    });
+    
+    // 새 필터로 업데이트 (기존 필터 유지)
+    const mergedFilters = { ...currentFilters, ...filters };
+    
+    console.log('필터 변경 - 기존 필터:', currentFilters);
+    console.log('필터 변경 - 새 필터:', filters);
+    console.log('필터 변경 - 병합된 필터:', mergedFilters);
+    
+    fetchGroupBuys(mergedFilters, activeTab, false);
   };
 
   /**
