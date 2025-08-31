@@ -1,18 +1,62 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
 import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 
 /**
  * 모바일용 하단 네비게이션 바 컴포넌트
  */
 export default function MobileNavbar() {
   const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
+  
+  // 프로필 체크 Hook 사용
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields,
+    clearCache 
+  } = useProfileCheck();
+  
+  // 공구 등록 버튼 클릭 핸들러
+  const handleCreateClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault(); // 기본 링크 동작 방지
+    
+    // 로그인 확인
+    if (!isAuthenticated) {
+      router.push('/login?callbackUrl=/group-purchases/create');
+      return;
+    }
+    
+    // 판매자인 경우 견적 내역 페이지로 이동
+    if (isSeller) {
+      router.push('/mypage/seller/bids');
+      return;
+    }
+    
+    // 프로필 완성도 체크
+    console.log('[MobileNavbar] 공구 등록 클릭, 프로필 체크 시작');
+    const isProfileComplete = await checkProfile();
+    
+    if (!isProfileComplete) {
+      console.log('[MobileNavbar] 프로필 미완성, 모달 표시');
+      setShowProfileModal(true);
+      return;
+    }
+    
+    // 프로필이 완성된 경우에만 페이지 이동
+    console.log('[MobileNavbar] 프로필 완성, 공구 등록 페이지로 이동');
+    router.push('/group-purchases/create');
+  };
   
   // 사용자 역할 확인
   useEffect(() => {
@@ -44,6 +88,7 @@ export default function MobileNavbar() {
             (isSeller ? "/mypage/seller/bids" : "/group-purchases/create") 
             : "/login"} 
           className="flex flex-col items-center justify-center w-1/5 py-2"
+          onClick={handleCreateClick}
         >
           {isSeller ? (
             <>
@@ -92,6 +137,25 @@ export default function MobileNavbar() {
           </Link>
         )}
       </div>
+      
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => {
+          // 모달을 닫으면 현재 페이지에 머물기
+          setShowProfileModal(false);
+          console.log('[MobileNavbar] 프로필 모달 취소, 현재 페이지 유지');
+        }}
+        missingFields={missingFields}
+        onUpdateProfile={() => {
+          // 프로필 업데이트 페이지로 이동
+          clearCache();
+          const redirectPath = user?.role === 'seller' 
+            ? '/mypage/seller/settings' 
+            : '/mypage/settings';
+          router.push(redirectPath);
+        }}
+      />
     </nav>
   );
 }

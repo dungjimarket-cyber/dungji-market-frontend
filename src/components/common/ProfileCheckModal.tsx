@@ -39,17 +39,11 @@ export default function ProfileCheckModal({
   });
 
   const handleUpdateProfile = () => {
-    // 일반회원과 판매회원 구분하여 리다이렉트
-    const redirectPath = user?.role === 'seller' 
-      ? '/mypage/seller/settings' 
-      : '/mypage/settings';
-    
-    // 프로필 업데이트 콜백 호출 (캐시 초기화 등)
+    // 프로필 업데이트 콜백 호출
+    // 실제 페이지 이동은 부모 컴포넌트에서 처리
     if (onUpdateProfile) {
       onUpdateProfile();
     }
-    
-    router.push(redirectPath);
     onClose();
   };
 
