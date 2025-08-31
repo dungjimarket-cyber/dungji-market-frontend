@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -146,14 +146,18 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone', currentRe
   // 현재 카테고리의 필터 그룹
   const currentFilterGroups = filterGroups[category] || filterGroups.phone;
 
-  // 지역이 변경될 때 필터 초기화
+  // 카테고리를 추적하기 위한 ref
+  const prevCategoryRef = useRef<string>(category);
+  
+  // 카테고리가 변경될 때만 필터 초기화 (지역 변경은 필터 유지)
   useEffect(() => {
-    if (currentRegion !== undefined) {
-      console.log('지역 변경 감지, 필터 초기화:', currentRegion);
+    if (category !== prevCategoryRef.current) {
+      console.log('카테고리 변경 감지, 필터 초기화:', prevCategoryRef.current, '->', category);
       setSelectedFilters({});
       onFiltersChange?.({});
+      prevCategoryRef.current = category;
     }
-  }, [currentRegion]);
+  }, [category]);
 
   /**
    * 필터 옵션 토글
