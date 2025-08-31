@@ -17,6 +17,8 @@ import { FinalDecisionModal } from '@/components/groupbuy/FinalDecisionModal';
 import { WishButton } from '@/components/ui/WishButton';
 import { calculateGroupBuyStatus, getStatusText, getStatusClass, getRemainingTime, formatGroupBuyTitle, getRegistrationTypeText } from '@/lib/groupbuy-utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useState, useEffect, useCallback } from 'react';
 import { GroupBuy, ParticipationStatus } from '@/types/groupbuy';
@@ -49,6 +51,16 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
   const { user, isAuthenticated, accessToken } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  
+  // 프로필 체크 Hook 사용
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields,
+    clearCache 
+  } = useProfileCheck();
+  
   const [participationStatus, setParticipationStatus] = useState<any>(propParticipationStatus || null);
   const [groupBuyState, setGroupBuyState] = useState<GroupBuy>(groupBuy);
   const [loading, setLoading] = useState(true);
@@ -926,7 +938,18 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 <Button 
                   variant="default" 
                   className="bg-green-600 hover:bg-green-700 w-full mb-2"
-                  onClick={() => {
+                  onClick={async () => {
+                    // 프로필 체크 먼저 수행
+                    console.log('[GroupBuyClient] 견적 제안하기 버튼 클릭, 프로필 체크 시작');
+                    const isProfileComplete = await checkProfile();
+                    console.log('[GroupBuyClient] 프로필 체크 결과:', isProfileComplete);
+                    
+                    if (!isProfileComplete) {
+                      console.log('[GroupBuyClient] 프로필 미완성, 모달 표시');
+                      setShowProfileModal(true);
+                      return;
+                    }
+                    
                     // 마감된 공구인 경우 입찰 불가 토스트 메시지 표시
                     if (isClosed) {
                       toast({
@@ -1118,6 +1141,14 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           }}
         />
       )}
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+        onUpdateProfile={clearCache}
+      />
     </div>
   );
 }
