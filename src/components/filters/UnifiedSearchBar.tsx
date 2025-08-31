@@ -40,10 +40,8 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
   const [recentRegions, setRecentRegions] = useState<RecentRegion[]>([]);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
-  const [isComposing, setIsComposing] = useState(false); // 한글 조합 중 상태
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
-  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 선택된 시/도에 따른 시/군/구 목록 업데이트
   useEffect(() => {
@@ -223,40 +221,15 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     setShowRecentSearches(false);
   };
 
-  // 검색어 입력 처리 (디바운스 적용)
+  // 검색어 입력 처리 (실시간 검색 제거, 값만 업데이트)
   const handleSearchInputChange = (value: string) => {
     setSearchQuery(value);
-    
-    // 이전 타이머 취소
-    if (searchTimerRef.current) {
-      clearTimeout(searchTimerRef.current);
-    }
-    
-    // 한글 조합 중이 아닐 때만 타이머 설정
-    if (!isComposing) {
-      // 1200ms(1.2초) 후 자동 검색 - 한글 입력 완성을 위해 시간 증가
-      searchTimerRef.current = setTimeout(() => {
-        // 검색어가 있든 없든 handleSearch 호출
-        handleSearch();
-      }, 1200);
-    }
   };
-
-  // 한글 조합 완료 시 검색 시작
-  const handleCompositionEnd = () => {
-    setIsComposing(false);
-    
-    // 조합 완료 후 검색 실행
-    if (searchQuery.trim()) {
-      // 이전 타이머 취소
-      if (searchTimerRef.current) {
-        clearTimeout(searchTimerRef.current);
-      }
-      
-      // 1200ms 후 검색 실행
-      searchTimerRef.current = setTimeout(() => {
-        handleSearch();
-      }, 1200);
+  
+  // 엔터키 처리
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
@@ -471,8 +444,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
               placeholder="상품명, 브랜드, 키워드로 검색하세요..."
               value={searchQuery}
               onChange={(e) => handleSearchInputChange(e.target.value)}
-              onCompositionStart={() => setIsComposing(true)}
-              onCompositionEnd={handleCompositionEnd}
+              onKeyPress={handleKeyPress}
               onFocus={() => setShowRecentSearches(true)}
               className="pl-10 pr-4 py-2 w-full"
             />
@@ -512,14 +484,24 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
             )}
           </div>
           
+          {/* 검색 버튼 */}
+          <Button 
+            onClick={handleSearch} 
+            variant="default"
+            className="px-4 sm:px-6 bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            <Search className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">검색</span>
+          </Button>
+          
           {/* 초기화 버튼 */}
           <Button 
             onClick={handleReset} 
-            variant="outline"
-            className="px-4 sm:px-6 w-[25%] sm:w-auto sm:min-w-[80px] border-gray-300"
+            variant="ghost"
+            className="px-3 sm:px-4 text-gray-600 hover:text-gray-800"
+            title="검색 초기화"
           >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">초기화</span>
+            <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
 
