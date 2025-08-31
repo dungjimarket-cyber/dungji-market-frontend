@@ -236,27 +236,8 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     if (!isComposing) {
       // 1200ms(1.2초) 후 자동 검색 - 한글 입력 완성을 위해 시간 증가
       searchTimerRef.current = setTimeout(() => {
-        if (value.trim()) {
-          handleSearch();
-        } else {
-          // 검색어가 비어있으면 검색어 필터만 제거
-          const params = new URLSearchParams(searchParams.toString());
-          params.delete('search');
-          router.push(`?${params.toString()}`);
-          
-          // 지역 필터는 유지하면서 검색 실행
-          let regionSearchTerms = '';
-          if (selectedProvince && selectedCity) {
-            const regionStr = `${selectedProvince} ${selectedCity}`;
-            const expandedRegions = expandRegionSearch(regionStr);
-            regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
-          } else if (selectedProvince) {
-            const expandedRegions = expandRegionSearch(selectedProvince);
-            regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
-          }
-          
-          onSearchChange?.('', regionSearchTerms);
-        }
+        // 검색어가 있든 없든 handleSearch 호출
+        handleSearch();
       }, 1200);
     }
   };

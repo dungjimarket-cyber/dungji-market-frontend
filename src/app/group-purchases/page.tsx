@@ -469,17 +469,33 @@ function GroupPurchasesPageContent() {
    */
   const handleSearchChange = (search: string, region: string) => {
     console.log('검색어 변경 - search:', search, 'region:', region);
-    const searchFilters: Record<string, string> = {};
     
-    if (search) {
-      searchFilters.search = search;
+    // 기존 URL 파라미터를 가져와서 유지
+    const currentFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'plan'].includes(key)) {
+        currentFilters[key] = value;
+      }
+    });
+    
+    // 검색어와 지역 업데이트 (빈 값이어도 설정)
+    if (search !== undefined) {
+      if (search) {
+        currentFilters.search = search;
+      } else {
+        delete currentFilters.search;
+      }
     }
     
-    if (region) {
-      searchFilters.region = region;
+    if (region !== undefined) {
+      if (region) {
+        currentFilters.region = region;
+      } else {
+        delete currentFilters.region;
+      }
     }
     
-    fetchGroupBuys(searchFilters, activeTab);
+    fetchGroupBuys(currentFilters, activeTab);
   };
 
   /**
