@@ -396,6 +396,9 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
 
   // 최근 지역 선택
   const handleRecentRegionSelect = (region: RecentRegion) => {
+    // 현재 선택된 지역과 같은지 확인
+    const isSameRegion = selectedProvince === region.province && selectedCity === region.city;
+    
     setSelectedProvince(region.province);
     
     // 시/도가 변경되면 cities가 업데이트되므로 약간의 딜레이 후 city 설정
@@ -417,14 +420,30 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
         regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : region.province;
       }
       
-      // 검색 실행
-      onSearchChange?.(searchTerms, regionSearchTerms);
+      // 같은 지역이어도 강제로 검색 실행 (타임스탬프 추가로 강제 갱신)
+      if (isSameRegion) {
+        // URL에 임시 파라미터를 추가했다가 제거하여 강제 갱신
+        const params = new URLSearchParams(searchParams.toString());
+        if (searchQuery) params.set('search', searchQuery);
+        params.set('region', regionStr);
+        params.set('_t', Date.now().toString()); // 타임스탬프 추가
+        router.push(`?${params.toString()}`);
+        
+        // 타임스탬프 제거하고 다시 설정
+        setTimeout(() => {
+          params.delete('_t');
+          router.push(`?${params.toString()}`);
+        }, 10);
+      } else {
+        // 다른 지역이면 일반적인 처리
+        const params = new URLSearchParams(searchParams.toString());
+        if (searchQuery) params.set('search', searchQuery);
+        params.set('region', regionStr);
+        router.push(`?${params.toString()}`);
+      }
       
-      // URL 업데이트
-      const params = new URLSearchParams(searchParams.toString());
-      if (searchQuery) params.set('search', searchQuery);
-      params.set('region', regionStr);
-      router.push(`?${params.toString()}`);
+      // 검색 실행 (항상 실행)
+      onSearchChange?.(searchTerms, regionSearchTerms);
       
       // 드롭다운 닫기
       setShowRecentRegions(false);

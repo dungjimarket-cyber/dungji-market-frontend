@@ -567,6 +567,10 @@ function GroupPurchasesPageContent() {
     let hasCategoryParam = false;
     
     searchParams.forEach((value, key) => {
+      // _t 파라미터는 무시 (타임스탬프 파라미터)
+      if (key === '_t') {
+        return;
+      }
       if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'plan'].includes(key)) {
         filters[key] = value;
         if (key === 'category') {
