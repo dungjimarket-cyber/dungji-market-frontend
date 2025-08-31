@@ -128,7 +128,10 @@ function GroupPurchasesPageContent() {
     setError('');
     const currentTab = tabValue || activeTab;
     const currentOffset = isLoadMore ? groupBuys.length : 0;
-    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'offset:', currentOffset, 'isLoadMore:', isLoadMore);
+    console.log('🔍 fetchGroupBuys 호출 - currentTab:', currentTab, 'offset:', currentOffset, 'isLoadMore:', isLoadMore);
+    console.log('🔍 전달받은 filters:', filters);
+    console.log('🔍 region 필터 값:', filters?.region);
+    console.log('🔍 category 필터 값:', filters?.category);
     
     try {
       const params = new URLSearchParams();
@@ -314,15 +317,17 @@ function GroupPurchasesPageContent() {
             }
             // 지역 필터
             else if (key === 'region') {
-              console.log('지역 필터 처리 - value:', value);
+              console.log('🔍 지역 필터 처리 - key:', key, 'value:', value);
               // 쉼표로 구분된 지역들을 처리
               if (value.includes(',')) {
                 const regions = value.split(',').filter(region => region.trim());
-                console.log('확장된 지역들:', regions);
+                console.log('🔍 확장된 지역들:', regions);
                 // 백엔드가 OR 검색을 지원하는 경우
                 params.append('region', value);
+                console.log('🔍 API params에 region 추가 (확장):', value);
               } else {
                 params.append('region', value);
+                console.log('🔍 API params에 region 추가 (단일):', value);
               }
             }
             // 제품 분류 필터
@@ -356,7 +361,10 @@ function GroupPurchasesPageContent() {
       console.log('카테고리:', selectedCategory);
       console.log('활성 탭:', currentTab);
       console.log('필터:', filters);
-      console.log('최종 파라미터:', params.toString());
+      console.log('🔍 최종 파라미터:', params.toString());
+      console.log('🔍 파라미터 목록:', Array.from(params.entries()));
+      console.log('🔍 region 파라미터 포함 여부:', params.has('region'));
+      console.log('🔍 region 파라미터 값:', params.get('region'));
       console.log('====================================');
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
