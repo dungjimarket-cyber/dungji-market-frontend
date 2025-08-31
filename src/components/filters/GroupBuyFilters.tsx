@@ -214,9 +214,9 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone', currentRe
   return (
     <div className="space-y-3">
       {currentFilterGroups.map((group) => (
-        <div key={group.id} className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-          <h3 className="text-sm font-medium text-gray-700 mb-2 sm:mb-0 sm:min-w-[80px]">{group.label}</h3>
-          <div className="flex flex-wrap gap-2">
+        <div key={group.id} className="flex items-start gap-2 sm:gap-3">
+          <h3 className="text-sm font-medium text-gray-700 min-w-[60px] sm:min-w-[80px] pt-1">{group.label}</h3>
+          <div className="flex flex-wrap gap-2 flex-1">
             {group.options.map((option) => {
               const isSelected = isFilterSelected(group.id, option.value);
               
