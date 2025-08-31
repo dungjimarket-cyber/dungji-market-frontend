@@ -30,6 +30,7 @@ type User = {
   business_number?: string; // 사업자등록번호
   business_address?: string; // 사업장 주소
   is_business_verified?: boolean; // 사업자 인증 완료 여부
+  representative_name?: string; // 사업자등록증상 대표자명
 };
 
 /**
@@ -312,6 +313,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     region: profileData.region,
                     address_region: profileData.address_region,
                     business_address: profileData.business_address,
+                    representative_name: profileData.representative_name, // 대표자명 추가
                   };
                   console.log('병합된 사용자 데이터:', userData);
                   logDebug('사용자 정보 업데이트 완료', userData);
@@ -331,6 +333,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     region: profileData.region,
                     address_region: profileData.address_region,
                     business_address: profileData.business_address,
+                    representative_name: profileData.representative_name, // 대표자명 추가
                   };
                   logDebug('새 사용자 정보 생성', userData);
                 }
@@ -653,6 +656,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 region: profileData.region,
                 address_region: profileData.address_region,
                 business_address: profileData.business_address,
+                representative_name: profileData.representative_name, // 대표자명 추가
                 sns_type: profileData.sns_type,
                 provider: profileData.sns_type,
                 token: access

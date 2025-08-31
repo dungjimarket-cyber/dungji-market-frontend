@@ -23,7 +23,8 @@ function checkMissingFields(profileData: any): string[] {
     user_type: profileData.user_type,
     phone_number: profileData.phone_number,
     address_region: profileData.address_region,
-    business_number: profileData.business_number
+    business_number: profileData.business_number,
+    representative_name: profileData.representative_name
   });
   
   // 모든 사용자 공통 필수 필드
@@ -44,6 +45,11 @@ function checkMissingFields(profileData: any): string[] {
     if (!profileData.business_number) {
       console.log('[checkMissingFields] business_number 누락');
       missing.push('사업자등록번호');
+    }
+    
+    if (!profileData.representative_name) {
+      console.log('[checkMissingFields] representative_name 누락');
+      missing.push('대표자명');
     }
   }
   // 일반 회원은 공통 필드만 체크하므로 추가 로직 불필요
@@ -81,7 +87,8 @@ export function useProfileCheck(): ProfileCheckResult {
             address_region: user.address_region,
             role: user.role || user.user_type,
             business_number: user.business_number,
-            business_address: user.business_address
+            business_address: user.business_address,
+            representative_name: user.representative_name
           });
           
           // 누락된 필드 체크
