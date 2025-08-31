@@ -37,7 +37,7 @@ function checkMissingFields(profileData: any): string[] {
     missing.push('활동지역');
   }
   
-  // 판매자만 필수 필드 체크
+  // 판매자만 추가 필수 필드 체크
   if (profileData.role === 'seller' || profileData.user_type === '판매') {
     console.log('[checkMissingFields] 판매자 역할 감지, 추가 필드 체크');
     
@@ -45,15 +45,8 @@ function checkMissingFields(profileData: any): string[] {
       console.log('[checkMissingFields] business_number 누락');
       missing.push('사업자등록번호');
     }
-  } else {
-    // 일반 회원인 경우 - 별도 추가 필드 없음
-    if (!profileData.phone_number) {
-      missing.push('연락처');
-    }
-    if (!profileData.address_region) {
-      missing.push('활동지역');
-    }
   }
+  // 일반 회원은 공통 필드만 체크하므로 추가 로직 불필요
   
   console.log('[checkMissingFields] 최종 누락 필드:', missing);
   return missing;
