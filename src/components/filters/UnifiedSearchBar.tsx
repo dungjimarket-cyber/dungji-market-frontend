@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, MapPin, ChevronDown, Clock, Home, X, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { normalizeRegion, expandRegionSearch } from '@/lib/utils/keywordMapping';
+import { normalizeRegion } from '@/lib/utils/keywordMapping';
 import { regions } from '@/lib/regions';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -184,23 +184,18 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     
     // 지역 조합
     let regionStr = '';
-    let regionSearchTerms = '';
     if (selectedProvince && selectedCity) {
       regionStr = `${selectedProvince} ${selectedCity}`;
-      // 지역명 확장 검색
-      const expandedRegions = expandRegionSearch(regionStr);
-      regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
       // 최근 지역 저장
       saveRecentRegion(selectedProvince, selectedCity);
     } else if (selectedProvince) {
       regionStr = selectedProvince;
-      const expandedRegions = expandRegionSearch(selectedProvince);
-      regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
       // 최근 지역 저장
       saveRecentRegion(selectedProvince, '');
     }
     
-    onSearchChange?.(searchTerms, regionSearchTerms);
+    // 원본 지역명 그대로 전달 (확장 없이)
+    onSearchChange?.(searchTerms, regionStr);
     
     // URL 업데이트
     const params = new URLSearchParams(searchParams.toString());
@@ -257,11 +252,10 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
     const searchTerms = searchQuery; // 검색어 그대로 사용
     
     if (province) {
-      const expandedRegions = expandRegionSearch(province);
-      console.log(`시/도 선택: ${province}, 확장된 지역: ${expandedRegions.length}개`, expandedRegions.slice(0, 5));
-      const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : province;
+      console.log(`시/도 선택: ${province}`);
       
-      onSearchChange?.(searchTerms, regionSearchTerms);
+      // 원본 지역명 그대로 전달 (확장 없이)
+      onSearchChange?.(searchTerms, province);
       
       const params = new URLSearchParams(searchParams.toString());
       if (searchQuery) params.set('search', searchQuery);
@@ -293,10 +287,9 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       if (city) {
         // 시/군/구가 선택된 경우
         const regionStr = `${selectedProvince} ${city}`;
-        const expandedRegions = expandRegionSearch(regionStr);
-        const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
         
-        onSearchChange?.(searchTerms, regionSearchTerms);
+        // 원본 지역명 그대로 전달 (확장 없이)
+        onSearchChange?.(searchTerms, regionStr);
         
         const params = new URLSearchParams(searchParams.toString());
         if (searchQuery) params.set('search', searchQuery);
@@ -307,10 +300,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
         saveRecentRegion(selectedProvince, city);
       } else {
         // 시/군/구 선택 해제 시 시/도만으로 검색
-        const expandedRegions = expandRegionSearch(selectedProvince);
-        const regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : selectedProvince;
-        
-        onSearchChange?.(searchTerms, regionSearchTerms);
+        onSearchChange?.(searchTerms, selectedProvince);
         
         const params = new URLSearchParams(searchParams.toString());
         if (searchQuery) params.set('search', searchQuery);
@@ -368,23 +358,18 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       // 즉시 검색 실행
       const searchTerms = searchQuery;
       let regionStr = '';
-      let regionSearchTerms = '';
       
       if (city) {
         regionStr = `${province} ${city}`;
-        const expandedRegions = expandRegionSearch(regionStr);
-        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
       } else {
         regionStr = province;
-        const expandedRegions = expandRegionSearch(province);
-        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : province;
       }
       
       // 최근 지역 저장
       saveRecentRegion(province, city);
       
-      // 검색 실행
-      onSearchChange?.(searchTerms, regionSearchTerms);
+      // 원본 지역명 그대로 전달 (확장 없이)
+      onSearchChange?.(searchTerms, regionStr);
       
       // URL 업데이트
       const params = new URLSearchParams(searchParams.toString());
@@ -408,16 +393,11 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
       // 즉시 검색 실행
       const searchTerms = searchQuery;
       let regionStr = '';
-      let regionSearchTerms = '';
       
       if (region.city) {
         regionStr = `${region.province} ${region.city}`;
-        const expandedRegions = expandRegionSearch(regionStr);
-        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : regionStr;
       } else {
         regionStr = region.province;
-        const expandedRegions = expandRegionSearch(region.province);
-        regionSearchTerms = expandedRegions.length > 0 ? expandedRegions.join(',') : region.province;
       }
       
       // 같은 지역이어도 강제로 검색 실행 (타임스탬프 추가로 강제 갱신)
@@ -442,8 +422,8 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
         router.push(`?${params.toString()}`);
       }
       
-      // 검색 실행 (항상 실행)
-      onSearchChange?.(searchTerms, regionSearchTerms);
+      // 원본 지역명 그대로 전달 (확장 없이)
+      onSearchChange?.(searchTerms, regionStr);
       
       // 드롭다운 닫기
       setShowRecentRegions(false);
