@@ -13,6 +13,7 @@ import { getSellerBids } from '@/lib/api/bidService';
 import dynamic from 'next/dynamic';
 import { SearchBar } from '@/components/search/SearchBar';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
+import NoticeSection from '@/components/home/NoticeSection';
 
 const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
@@ -169,6 +170,9 @@ function HomeContent() {
 
   return (
     <>
+      {/* 공지사항 섹션 - 최상단 */}
+      <NoticeSection />
+      
       {/* 모바일 환경에서만 표시되는 헤더 */}
       <div className="md:hidden">
         <MobileHeader />
