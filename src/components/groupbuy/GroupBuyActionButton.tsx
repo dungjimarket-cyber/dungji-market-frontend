@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import JoinGroupBuyModal from './JoinGroupBuyModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { useRouter } from 'next/navigation';
 
 interface GroupBuyActionButtonProps {
@@ -41,6 +43,14 @@ export default function GroupBuyActionButton({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
+  
+  // 프로필 체크 Hook 사용
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields 
+  } = useProfileCheck();
 
   // 디버깅 로그 추가
   console.log('그룹구매 버튼 상태:', {
@@ -53,7 +63,16 @@ export default function GroupBuyActionButton({
     groupBuyId: groupBuy.id
   });
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    // 먼저 프로필 체크 수행 (모든 회원 대상)
+    if (user) {
+      const isProfileComplete = await checkProfile();
+      if (!isProfileComplete) {
+        setShowProfileModal(true);
+        return;
+      }
+    }
+    
     // 판매회원은 상세 페이지에서 입찰 처리하도록 이벤트 발생
     if (isSeller) {
       // 부모 컴포넌트에 입찰 이벤트 전달
@@ -64,20 +83,8 @@ export default function GroupBuyActionButton({
       return;
     }
     
-    // 일반 구매회원은 프로필 체크 후 참여 모달 표시
+    // 일반 구매회원은 참여 모달 표시
     if (isRecruiting && !isFull && !isCreator) {
-      // 모든 일반회원 프로필 체크 (sns_type 관계없이)
-      if (user && user.role === 'buyer') {
-        if (!user.phone_number || !user.address_region) {
-          if (confirm('공구에 참여하기 위한 활동지역, 연락처 정보를 업데이트 해주세요~\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.')) {
-            router.push('/mypage/settings');
-            return;
-          }
-          return;
-        }
-      }
-      
-      // 프로필 체크 통과 시 모달 오픈
       setIsModalOpen(true);
     }
   };
@@ -128,6 +135,13 @@ export default function GroupBuyActionButton({
       >
         {getButtonText()}
       </Button>
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+      />
 
       {/* 공구 참여 모달 */}
       <JoinGroupBuyModal 

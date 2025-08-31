@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { toast } from '@/components/ui/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import {
@@ -295,6 +297,13 @@ const getCategoryIcon = (categoryType?: string) => {
 export default function CreateForm({ mode = 'create', initialData, groupBuyId }: CreateFormProps = {}) {
   // JWT 기반 인증 컨텍스트 사용
   const { user, isAuthenticated, isLoading, accessToken } = useAuth();
+  // 프로필 체크 Hook 사용
+  const { 
+    checkProfile, 
+    showProfileModal, 
+    setShowProfileModal, 
+    missingFields 
+  } = useProfileCheck();
   // 인증 상태를 NextAuth와 호환되는 status 변수로 변환
   const status = isLoading ? 'loading' : isAuthenticated ? 'authenticated' : 'unauthenticated';
   const router = useRouter();
@@ -457,80 +466,13 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
       return;
     }
     
-    // 일반회원: 활동지역과 휴대폰 번호 체크 (실시간 사용자 정보 확인)
-    console.log('[CreateForm] 사용자 정보 확인:', {
-      role: user?.role,
-      address_region: user?.address_region,
-      phone_number: user?.phone_number,
-      user_full: user
-    });
-    
-    // 활동지역 검증 - 실시간으로 최신 정보 확인
-    if (user?.role === 'buyer') {
-      // 실시간 사용자 정보 확인을 위한 비동기 함수
-      const checkUserLocationAsync = async () => {
-        try {
-          // 실시간으로 최신 사용자 정보 가져오기
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-            },
-          });
-          
-          if (response.ok) {
-            const currentUserData = await response.json();
-            console.log('[CreateForm] 실시간 사용자 정보:', currentUserData);
-            
-            // 최신 정보로 프로필 체크 (활동지역과 휴대폰번호)
-            if (!currentUserData.address_region || !currentUserData.phone_number) {
-              const missingInfo = [];
-              if (!currentUserData.address_region) missingInfo.push('활동지역');
-              if (!currentUserData.phone_number) missingInfo.push('연락처');
-              
-              if (confirm(`공구를 등록하기 위해서는 ${missingInfo.join(', ')} 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.`)) {
-                router.push('/mypage/settings');
-                return;
-              }
-              // 취소를 누른 경우 이전 페이지로
-              router.back();
-              return;
-            }
-          } else {
-            // API 호출 실패 시 캐시된 데이터로 폴백
-            if (!user.address_region || !user.phone_number) {
-              const missingInfo = [];
-              if (!user.address_region) missingInfo.push('활동지역');
-              if (!user.phone_number) missingInfo.push('연락처');
-              
-              if (confirm(`공구를 등록하기 위해서는 ${missingInfo.join(', ')} 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.`)) {
-                router.push('/mypage/settings');
-                return;
-              }
-              router.back();
-              return;
-            }
-          }
-        } catch (error) {
-          console.error('[CreateForm] 사용자 정보 확인 중 오류:', error);
-          // 오류 발생 시 캐시된 데이터로 폴백
-          if (!user.address_region || !user.phone_number) {
-            const missingInfo = [];
-            if (!user.address_region) missingInfo.push('활동지역');
-            if (!user.phone_number) missingInfo.push('연락처');
-            
-            if (confirm(`공구를 등록하기 위해서는 ${missingInfo.join(', ')} 정보를 업데이트 해주세요.\n\n확인을 누르시면 내 정보 설정 페이지로 이동합니다.`)) {
-              router.push('/mypage/settings');
-              return;
-            }
-            router.back();
-            return;
-          }
+    // 프로필 체크 실행
+    if (user) {
+      checkProfile().then((isComplete) => {
+        if (!isComplete) {
+          setShowProfileModal(true);
         }
-      };
-
-      // 비동기 함수 실행
-      checkUserLocationAsync();
+      });
     }
     
     // 휴대폰 번호 검증 (필요한 경우만)
@@ -1307,6 +1249,13 @@ const onSubmit = async (values: FormData) => {
   return (
     <div className="container">
       {duplicateGroupBuyDialog}
+      
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+      />
       
       <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">
         {loadingOverlay}
