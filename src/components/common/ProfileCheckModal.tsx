@@ -54,6 +54,8 @@ export default function ProfileCheckModal({
   };
 
   const handleCancel = () => {
+    // 취소 시 이전 페이지로 돌아가기
+    router.back();
     onClose();
   };
 
@@ -72,8 +74,27 @@ export default function ProfileCheckModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        // 배경 클릭으로 모달이 닫히는 것을 방지
+        // 오직 버튼 클릭으로만 닫을 수 있음
+        if (!open && isOpen) {
+          // 모달이 닫히려고 할 때 아무것도 하지 않음
+          return;
+        }
+        onClose();
+      }}
+    >
+      <DialogContent 
+        className="sm:max-w-md"
+        onPointerDownOutside={(e) => {
+          e.preventDefault(); // 배경 클릭 방지
+        }}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault(); // ESC 키로 닫기 방지
+        }}
+      >
         <DialogHeader>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-orange-500" />

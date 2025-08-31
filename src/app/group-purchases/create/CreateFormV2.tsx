@@ -136,6 +136,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isProfileChecking, setIsProfileChecking] = useState<boolean>(true); // 프로필 체크 중 상태 추가
   
   // 탭 관련 상태
   const [mainTab, setMainTab] = useState<'phone' | 'internet' | 'internet_tv'>('phone');
@@ -182,18 +183,36 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   useEffect(() => {
     const checkUserProfile = async () => {
       console.log('[CreateFormV2] 페이지 진입, 프로필 체크 시작');
-      if (user && !isLoading) {
-        const isProfileComplete = await checkProfile();
-        console.log('[CreateFormV2] 프로필 체크 결과:', isProfileComplete);
-        if (!isProfileComplete) {
-          console.log('[CreateFormV2] 프로필 미완성, 모달 표시');
-          setShowProfileModal(true);
-        }
+      
+      // 로그인 상태가 확인되지 않았으면 대기
+      if (isLoading) {
+        return;
+      }
+      
+      // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+      if (!user) {
+        router.push('/login?callbackUrl=/group-purchases/create');
+        return;
+      }
+      
+      // 프로필 체크 시작
+      setIsProfileChecking(true);
+      const isProfileComplete = await checkProfile();
+      console.log('[CreateFormV2] 프로필 체크 결과:', isProfileComplete);
+      
+      if (!isProfileComplete) {
+        console.log('[CreateFormV2] 프로필 미완성, 모달 표시');
+        setShowProfileModal(true);
+        // 프로필이 미완성이면 계속 체크 중 상태 유지
+        // 모달에서 처리 후에만 false로 변경
+      } else {
+        // 프로필이 완성되었으면 체크 완료
+        setIsProfileChecking(false);
       }
     };
     
     checkUserProfile();
-  }, [user, isLoading, checkProfile, setShowProfileModal]);
+  }, [user, isLoading, checkProfile, setShowProfileModal, router]);
 
   // 상품 목록 로드
   useEffect(() => {
@@ -704,11 +723,30 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     }
   };
 
-  if (loading) {
+  // 프로필 체크 중이거나 로딩 중일 때 로딩 화면 표시
+  if (loading || isProfileChecking || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+        
+        {/* 프로필 체크 모달 - 로딩 중에도 표시 */}
+        <ProfileCheckModal
+          isOpen={showProfileModal}
+          onClose={() => {
+            setShowProfileModal(false);
+            setIsProfileChecking(false);
+            // 모달을 닫으면 이전 페이지로 돌아감
+            router.back();
+          }}
+          missingFields={missingFields}
+          onUpdateProfile={() => {
+            clearCache();
+            setIsProfileChecking(false);
+          }}
+        />
+      </>
     );
   }
 
