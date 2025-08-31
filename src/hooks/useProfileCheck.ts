@@ -26,12 +26,21 @@ interface CachedProfile {
 function checkMissingFields(profileData: any): string[] {
   const missing: string[] = [];
   
+  console.log('[checkMissingFields] 입력 데이터:', {
+    role: profileData.role,
+    phone_number: profileData.phone_number,
+    address_region: profileData.address_region,
+    business_number: profileData.business_number
+  });
+  
   // 일반회원(buyer) 필수 정보 체크
   if (profileData.role === 'buyer') {
     if (!profileData.phone_number) {
+      console.log('[checkMissingFields] buyer - phone_number 누락');
       missing.push('연락처');
     }
     if (!profileData.address_region) {
+      console.log('[checkMissingFields] buyer - address_region 누락');
       missing.push('활동지역');
     }
   }
@@ -39,16 +48,20 @@ function checkMissingFields(profileData: any): string[] {
   // 판매회원(seller) 필수 정보 체크
   if (profileData.role === 'seller') {
     if (!profileData.phone_number) {
+      console.log('[checkMissingFields] seller - phone_number 누락');
       missing.push('연락처');
     }
     if (!profileData.business_number) {
+      console.log('[checkMissingFields] seller - business_number 누락');
       missing.push('사업자등록번호');
     }
     if (!profileData.address_region) {
+      console.log('[checkMissingFields] seller - address_region 누락');
       missing.push('활동지역');
     }
   }
   
+  console.log('[checkMissingFields] 최종 누락 필드:', missing);
   return missing;
 }
 
@@ -65,8 +78,10 @@ export function useProfileCheck(): ProfileCheckResult {
 
   // 프로필 완성도 체크 함수
   const checkProfile = useCallback(async (): Promise<boolean> => {
+    console.log('[ProfileCheck] 체크 시작:', { user, accessToken: !!accessToken });
+    
     if (!user || !accessToken) {
-      console.log('[ProfileCheck] 사용자 정보 없음');
+      console.log('[ProfileCheck] 사용자 정보 또는 토큰 없음');
       return false;
     }
 
@@ -94,7 +109,10 @@ export function useProfileCheck(): ProfileCheckResult {
     
     try {
       // 백엔드에서 최신 사용자 정보 가져오기
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api'}/auth/profile/`;
+      console.log('[ProfileCheck] API 호출:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -109,6 +127,9 @@ export function useProfileCheck(): ProfileCheckResult {
 
       const profileData = await response.json();
       console.log('[ProfileCheck] 프로필 데이터 (새로 가져옴):', profileData);
+      console.log('[ProfileCheck] phone_number:', profileData.phone_number);
+      console.log('[ProfileCheck] address_region:', profileData.address_region);
+      console.log('[ProfileCheck] role:', profileData.role);
       
       // 캐시 업데이트
       profileCache.current = {
@@ -118,12 +139,16 @@ export function useProfileCheck(): ProfileCheckResult {
 
       // 누락된 필드 체크
       const missing = checkMissingFields(profileData);
+      console.log('[ProfileCheck] checkMissingFields 결과:', missing);
       setMissingFields(missing);
       const isComplete = missing.length === 0;
       setIsProfileComplete(isComplete);
       
       if (!isComplete) {
-        console.log('[ProfileCheck] 누락된 필수 정보:', missing);
+        console.log('[ProfileCheck] 프로필 미완성! 누락된 필수 정보:', missing);
+        console.log('[ProfileCheck] 모달이 표시되어야 함');
+      } else {
+        console.log('[ProfileCheck] 프로필 완성 상태');
       }
 
       setIsCheckingProfile(false);

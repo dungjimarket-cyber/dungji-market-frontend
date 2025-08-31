@@ -30,6 +30,13 @@ export default function ProfileCheckModal({
 }: ProfileCheckModalProps) {
   const router = useRouter();
   const { user } = useAuth();
+  
+  // 디버깅 로그 추가
+  console.log('[ProfileCheckModal] 렌더링됨:', {
+    isOpen,
+    missingFields,
+    missingFieldsLength: missingFields?.length || 0
+  });
 
   const handleUpdateProfile = () => {
     // 일반회원과 판매회원 구분하여 리다이렉트

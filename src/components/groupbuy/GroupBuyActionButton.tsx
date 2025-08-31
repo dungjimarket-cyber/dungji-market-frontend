@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import JoinGroupBuyModal from './JoinGroupBuyModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,13 +63,31 @@ export default function GroupBuyActionButton({
     hasSellerMembers,
     groupBuyId: groupBuy.id
   });
+  
+  // showProfileModal 상태 변경 감지
+  useEffect(() => {
+    console.log('[GroupBuyActionButton] showProfileModal 상태 변경됨:', showProfileModal);
+    if (showProfileModal) {
+      console.log('[GroupBuyActionButton] 모달이 열려야 함!');
+      console.log('[GroupBuyActionButton] missingFields:', missingFields);
+    }
+  }, [showProfileModal, missingFields]);
 
   const handleClick = async () => {
+    console.log('[GroupBuyActionButton] 버튼 클릭, user:', user);
+    
     // 먼저 프로필 체크 수행 (모든 회원 대상)
     if (user) {
+      console.log('[GroupBuyActionButton] 프로필 체크 시작');
       const isProfileComplete = await checkProfile();
+      console.log('[GroupBuyActionButton] 프로필 체크 결과:', isProfileComplete);
+      console.log('[GroupBuyActionButton] missingFields:', missingFields);
+      
       if (!isProfileComplete) {
+        console.log('[GroupBuyActionButton] 프로필 미완성, 모달 표시 시도');
+        console.log('[GroupBuyActionButton] showProfileModal 이전 값:', showProfileModal);
         setShowProfileModal(true);
+        console.log('[GroupBuyActionButton] setShowProfileModal(true) 호출됨');
         return;
       }
     }
