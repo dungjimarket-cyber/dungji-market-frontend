@@ -44,7 +44,7 @@ export default function ProfileCheckModal({
     if (onUpdateProfile) {
       onUpdateProfile();
     }
-    onClose();
+    // onClose를 호출하지 않음 - 페이지 이동은 onUpdateProfile에서 처리
   };
 
   const handleCancel = () => {

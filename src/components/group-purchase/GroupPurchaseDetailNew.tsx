@@ -2718,10 +2718,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         isOpen={showProfileModal}
         onClose={() => {
           setShowProfileModal(false);
-          router.back();
+          // 나중에 할게요 클릭 시에만 뒤로가기
         }}
         missingFields={missingFields}
         onUpdateProfile={() => {
+          setShowProfileModal(false);
           clearCache();
           router.push('/mypage?tab=settings');
         }}
