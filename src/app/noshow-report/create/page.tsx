@@ -22,8 +22,8 @@ function NoShowReportContent() {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [groupbuyInfo, setGroupbuyInfo] = useState<any>(null);
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
-  const [filePreview, setFilePreview] = useState<string>('');
+  const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
   const [selectedBuyerIds, setSelectedBuyerIds] = useState<string[]>([]);
@@ -138,14 +138,14 @@ function NoShowReportContent() {
   const fetchParticipants = async () => {
     console.log('fetchParticipants called with groupbuyId:', groupbuyId);
     try {
-      // 먼저 일반 participants 엔드포인트 시도
-      console.log('Trying participants endpoint...');
-      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
+      // 먼저 participants_detail 엔드포인트 시도 (판매자용)
+      console.log('Trying participants_detail endpoint...');
+      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants_detail/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-      console.log('Participants endpoint response status:', response.status);
+      console.log('Participants detail endpoint response status:', response.status);
       
       // If that fails, try the participations endpoint
       if (!response.ok) {
@@ -172,8 +172,9 @@ function NoShowReportContent() {
       if (response.ok) {
         const data = await response.json();
         console.log('Raw participants data:', data);
-        // Handle both response formats
-        const participantsData = Array.isArray(data) ? data : (data.results || data);
+        // Handle both response formats - participants_detail returns {participants: [...]}
+        const participantsData = Array.isArray(data) ? data : 
+                                (data.participants || data.results || data);
         setParticipants(participantsData);
         console.log('Participants set successfully:', participantsData);
         console.log('Number of participants:', participantsData.length);
@@ -189,39 +190,53 @@ function NoShowReportContent() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // 파일 크기 체크 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('파일 크기는 5MB 이하여야 합니다.');
+    // 최대 3개 파일 제한
+    if (evidenceFiles.length + files.length > 3) {
+      toast.error('증빙 파일은 최대 3개까지 업로드 가능합니다.');
       return;
     }
 
-    // 파일 타입 체크
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('JPG, PNG, PDF 파일만 업로드 가능합니다.');
-      return;
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (const file of files) {
+      // 파일 크기 체크 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name}: 파일 크기는 5MB 이하여야 합니다.`);
+        continue;
+      }
+
+      // 파일 타입 체크
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`${file.name}: JPG, PNG, PDF 파일만 업로드 가능합니다.`);
+        continue;
+      }
+
+      newFiles.push(file);
+
+      // 이미지 파일인 경우 미리보기 생성
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
-    setEvidenceFile(file);
-
-    // 이미지 파일인 경우 미리보기
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFilePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setFilePreview('');
-    }
+    setEvidenceFiles(prev => [...prev, ...newFiles]);
+    
+    // 입력 필드 초기화
+    e.target.value = '';
   };
 
-  const removeFile = () => {
-    setEvidenceFile(null);
-    setFilePreview('');
+  const removeFile = (index: number) => {
+    setEvidenceFiles(prev => prev.filter((_, i) => i !== index));
+    setFilePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleDelete = async () => {
@@ -336,9 +351,10 @@ function NoShowReportContent() {
           formData.append('report_type', reportType);
           formData.append('content', content.trim());
           
-          if (evidenceFile) {
-            formData.append('evidence_image', evidenceFile);
-          }
+          // 여러 증빙 파일 추가
+          evidenceFiles.forEach((file, index) => {
+            formData.append(`evidence_image_${index + 1}`, file);
+          });
           
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
             method: 'POST',
@@ -385,9 +401,10 @@ function NoShowReportContent() {
       formData.append('report_type', reportType);
       formData.append('content', content.trim());
       
-      if (evidenceFile) {
-        formData.append('evidence_image', evidenceFile);
-      }
+      // 여러 증빙 파일 추가
+      evidenceFiles.forEach((file, index) => {
+        formData.append(`evidence_image_${index + 1}`, file);
+      });
       
       // 디버깅을 위한 로그
       console.log('노쇼 신고 제출 데이터:', {
@@ -395,7 +412,7 @@ function NoShowReportContent() {
         groupbuy: groupbuyId,
         report_type: reportType,
         content_length: content.trim().length,
-        has_file: !!evidenceFile
+        files_count: evidenceFiles.length
       });
 
       // 노쇼 신고 제출 또는 수정
@@ -646,45 +663,71 @@ function NoShowReportContent() {
 
             {/* 파일 업로드 */}
             <div className="space-y-2">
-              <Label>증빙자료 첨부 (선택)</Label>
-              <div className="flex items-center gap-4">
-                <label htmlFor="evidence-file" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm">파일 선택</span>
-                  </div>
-                  <input
-                    id="evidence-file"
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,application/pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-                {evidenceFile && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">{evidenceFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={removeFile}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              {filePreview && (
-                <div className="mt-2">
-                  <img 
-                    src={filePreview} 
-                    alt="증빙자료 미리보기" 
-                    className="max-w-xs rounded-lg border"
-                  />
+              <Label>증빙자료 첨부 (선택, 최대 3개)</Label>
+              {evidenceFiles.length < 3 && (
+                <div className="flex items-center gap-4">
+                  <label htmlFor="evidence-file" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                      <Upload className="w-4 h-4" />
+                      <span className="text-sm">파일 추가 ({evidenceFiles.length}/3)</span>
+                    </div>
+                    <input
+                      id="evidence-file"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={handleFileChange}
+                      multiple
+                      className="hidden"
+                    />
+                  </label>
                 </div>
               )}
+              
+              {/* 업로드된 파일 목록 */}
+              {evidenceFiles.length > 0 && (
+                <div className="space-y-2">
+                  {evidenceFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">{file.name}</span>
+                        <span className="text-xs text-gray-400">({(file.size / 1024 / 1024).toFixed(2)}MB)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 이미지 미리보기 */}
+              {filePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {filePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={preview} 
+                        alt={`증빙자료 ${index + 1}`} 
+                        className="w-full h-24 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <p className="text-xs text-gray-500">
-                JPG, PNG, PDF 파일만 업로드 가능합니다. (최대 5MB)
+                JPG, PNG, PDF 파일만 업로드 가능합니다. (파일당 최대 5MB, 총 3개까지)
               </p>
             </div>
 
