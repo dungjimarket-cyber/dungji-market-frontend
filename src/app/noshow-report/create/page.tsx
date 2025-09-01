@@ -241,8 +241,26 @@ function NoShowReportContent() {
               email: p.email || p.user?.email,
               phone: p.phone || p.user?.phone,
               phone_number: p.phone_number || p.user?.phone_number || p.phone || p.user?.phone
-            }
+            },
+            final_decision: p.final_decision
           };
+        }).filter((p: any) => {
+          // 판매자인 경우 구매확정(confirmed)된 참여자만 표시
+          const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+          if (isSeller) {
+            // final_decision이 'confirmed'인 경우만 포함
+            const isConfirmed = p.final_decision === 'confirmed';
+            if (!isConfirmed) {
+              console.log('Filtering out non-confirmed participant:', {
+                id: p.id,
+                user_id: p.user?.id,
+                final_decision: p.final_decision
+              });
+            }
+            return isConfirmed;
+          }
+          // 구매자인 경우 모든 참여자 표시
+          return true;
         });
         
         setParticipants(normalizedParticipants);
