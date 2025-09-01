@@ -9,13 +9,13 @@ import DOMPurify from 'dompurify';
 interface NoticePopup {
   id: number;
   title: string;
-  content: string;
+  content?: string;
   summary: string;
-  popup_width: number;
-  popup_height: number;
-  popup_image: string | null;
-  popup_link: string | null;
-  popup_expires_at: string | null;
+  popup_width?: number;
+  popup_height?: number;
+  popup_image?: string | null;
+  popup_link?: string | null;
+  popup_expires_at?: string | null;
 }
 
 interface NoticePopupProps {
@@ -55,8 +55,8 @@ export default function NoticePopup({ popup, onClose }: NoticePopupProps) {
       <div 
         className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999] bg-white rounded-lg shadow-2xl"
         style={{
-          width: `${Math.min(popup.popup_width, window.innerWidth - 40)}px`,
-          maxHeight: `${Math.min(popup.popup_height, window.innerHeight - 40)}px`,
+          width: `${Math.min(popup.popup_width || 500, window.innerWidth - 40)}px`,
+          maxHeight: `${Math.min(popup.popup_height || 600, window.innerHeight - 40)}px`,
         }}
       >
         {/* 헤더 */}
@@ -74,7 +74,7 @@ export default function NoticePopup({ popup, onClose }: NoticePopupProps) {
         {/* 내용 */}
         <div 
           className="overflow-y-auto"
-          style={{ maxHeight: `${popup.popup_height - 120}px` }}
+          style={{ maxHeight: `${(popup.popup_height || 600) - 120}px` }}
         >
           {popup.popup_image ? (
             <div 
@@ -84,8 +84,8 @@ export default function NoticePopup({ popup, onClose }: NoticePopupProps) {
               <Image
                 src={popup.popup_image}
                 alt={popup.title}
-                width={popup.popup_width}
-                height={popup.popup_height - 120}
+                width={popup.popup_width || 500}
+                height={(popup.popup_height || 600) - 120}
                 className="w-full h-auto"
               />
             </div>
@@ -95,10 +95,11 @@ export default function NoticePopup({ popup, onClose }: NoticePopupProps) {
                 <p className="text-gray-600 mb-4">{popup.summary}</p>
               )}
               
-              <div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(popup.content, {
+              {popup.content && (
+                <div 
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(popup.content, {
                     ALLOWED_TAGS: [
                       'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 
                       'h4', 'h5', 'h6', 'blockquote', 'ul', 'ol', 'li', 
@@ -110,7 +111,8 @@ export default function NoticePopup({ popup, onClose }: NoticePopupProps) {
                     ALLOW_DATA_ATTR: false,
                   })
                 }}
-              />
+                />
+              )}
               
               {popup.popup_link && (
                 <Link 
