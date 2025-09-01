@@ -225,6 +225,10 @@ function NoShowReportContent() {
         const normalizedParticipants = participantsData.map((p: any) => {
           // buyers 엔드포인트의 경우 이미 user 객체를 가지고 있음
           if (p.user && typeof p.user === 'object') {
+            // phone 필드를 phone_number로도 복사 (일관성을 위해)
+            if (p.user.phone && !p.user.phone_number) {
+              p.user.phone_number = p.user.phone;
+            }
             return p;
           }
           // 다른 엔드포인트의 경우 구조 변환
@@ -234,7 +238,9 @@ function NoShowReportContent() {
               id: p.user_id || p.id,
               username: p.username || p.user?.username,
               nickname: p.nickname || p.user?.nickname,
-              email: p.email || p.user?.email
+              email: p.email || p.user?.email,
+              phone: p.phone || p.user?.phone,
+              phone_number: p.phone_number || p.user?.phone_number || p.phone || p.user?.phone
             }
           };
         });
@@ -253,7 +259,9 @@ function NoShowReportContent() {
               user_id: p.user?.id,
               username: p.user?.username,
               nickname: p.user?.nickname,
-              phone: p.user?.phone_number
+              phone: p.user?.phone,
+              phone_number: p.user?.phone_number,
+              final_decision: p.final_decision
             });
           });
         }
@@ -667,7 +675,9 @@ function NoShowReportContent() {
                         const displayName = participant.user?.username || participant.user?.nickname || 
                                           participant.username || participant.nickname || 
                                           `참여자 ${userId}`;
-                        const phoneNumber = participant.user?.phone_number || participant.phone_number || '연락처 없음';
+                        // buyers 엔드포인트는 'phone', participants_detail은 'phone_number' 사용
+                        const phoneNumber = participant.user?.phone || participant.user?.phone_number || 
+                                          participant.phone || participant.phone_number || '연락처 없음';
                         
                         return (
                           <div key={userId} className="flex items-start space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
