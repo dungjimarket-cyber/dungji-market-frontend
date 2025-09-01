@@ -433,16 +433,14 @@ export default function MyPageClient() {
           </Accordion>
 
           {/* 노쇼 신고 내역 버튼 */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-6 flex justify-end">
             <button
               onClick={() => router.push('/mypage/noshow-reports')}
-              className="w-full flex items-center justify-between py-3 px-4 bg-white rounded-lg hover:bg-gray-50 transition-all group border border-gray-200"
+              className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"
             >
-              <div className="flex items-center">
-                <AlertCircle className="w-5 h-5 mr-3 text-orange-500" />
-                <span className="font-medium">노쇼 신고 내역</span>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <AlertCircle className="w-4 h-4 text-orange-500 group-hover:text-orange-600" />
+              <span>노쇼 신고 내역</span>
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
             </button>
           </div>
         </div>
