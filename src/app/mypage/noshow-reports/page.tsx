@@ -38,11 +38,10 @@ export default function NoShowReportsPage() {
   const [activeTab, setActiveTab] = useState<'made' | 'received'>('made');
 
   useEffect(() => {
-    if (!accessToken) {
-      router.push('/login');
-      return;
+    // RequireAuth에서 이미 인증을 확인했으므로 accessToken이 있으면 바로 실행
+    if (accessToken) {
+      fetchReports();
     }
-    fetchReports();
   }, [accessToken, activeTab]);
 
   const fetchReports = async () => {
