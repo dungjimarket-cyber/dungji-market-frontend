@@ -147,9 +147,18 @@ export default function DesktopNavbar() {
         onUpdateProfile={() => {
           // 프로필 업데이트 페이지로 이동
           clearCache();
-          const redirectPath = user?.role === 'seller' 
-            ? '/mypage/seller/settings' 
-            : '/mypage/settings';
+          
+          // 사용자 역할 확인
+          const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+          const redirectPath = isSeller ? '/mypage/seller/settings' : '/mypage/settings';
+          
+          console.log('[DesktopNavbar] 프로필 업데이트 이동:', {
+            user_role: user?.role,
+            user_type: user?.user_type,
+            isSeller,
+            redirectPath
+          });
+          
           setShowProfileModal(false);  // 모달 닫기
           router.push(redirectPath);
         }}
