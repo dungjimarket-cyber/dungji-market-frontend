@@ -48,10 +48,12 @@ export default function NoticeSection() {
 
   const fetchMainNotices = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notices/main/`);
+      console.log('Fetching main notices from:', `${process.env.NEXT_PUBLIC_API_URL}/api/notices/main/`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notices/main/`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Main notices response:', data);
         
         // 배너와 텍스트 공지 분류
         setBannerNotices(data.banners || []);
@@ -65,6 +67,8 @@ export default function NoticeSection() {
             setIsTopBarVisible(false);
           }
         }
+      } else {
+        console.error('Failed to fetch notices:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('공지사항 조회 실패:', error);
@@ -96,7 +100,13 @@ export default function NoticeSection() {
     return config;
   };
 
-  if (loading || (bannerNotices.length === 0 && textNotices.length === 0)) {
+  if (loading) {
+    console.log('NoticeSection: Loading...');
+    return null;
+  }
+  
+  if (bannerNotices.length === 0 && textNotices.length === 0) {
+    console.log('NoticeSection: No notices to display', { bannerNotices, textNotices });
     return null;
   }
 
