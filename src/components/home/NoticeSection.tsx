@@ -48,8 +48,8 @@ export default function NoticeSection() {
 
   const fetchMainNotices = async () => {
     try {
-      console.log('Fetching main notices from:', `${process.env.NEXT_PUBLIC_API_URL}/api/notices/main/`);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notices/main/`);
+      console.log('Fetching main notices from:', `${process.env.NEXT_PUBLIC_API_URL}/notices/main/`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notices/main/`);
       
       if (response.ok) {
         const data = await response.json();
