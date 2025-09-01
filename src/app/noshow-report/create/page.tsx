@@ -207,7 +207,7 @@ function NoShowReportContent() {
         if (participantsData.length > 0) {
           console.log('First participant structure:', participantsData[0]);
           console.log('All participants with user info:');
-          participantsData.forEach((p, index) => {
+          participantsData.forEach((p: any, index: number) => {
             console.log(`Participant ${index}:`, {
               participation_id: p.id,
               user_id: p.user?.id,
