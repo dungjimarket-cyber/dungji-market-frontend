@@ -147,17 +147,44 @@ function NoShowReportContent() {
 
   const fetchParticipants = async () => {
     console.log('fetchParticipants called with groupbuyId:', groupbuyId);
+    const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+    console.log('Is seller:', isSeller);
+    
     try {
-      // 먼저 participants_detail 엔드포인트 시도 (판매자용)
-      console.log('Trying participants_detail endpoint...');
-      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants_detail/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-      console.log('Participants detail endpoint response status:', response.status);
+      let response;
       
-      // If that fails, try the participations endpoint
+      if (isSeller) {
+        // 판매자인 경우 buyers 엔드포인트 먼저 시도 (낙찰된 판매자)
+        console.log('Seller detected, trying buyers endpoint first...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/buyers/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        console.log('Buyers endpoint response status:', response.status);
+        
+        // buyers 엔드포인트가 실패하면 participants_detail 시도
+        if (!response.ok) {
+          console.log('Trying participants_detail endpoint...');
+          response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants_detail/`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          console.log('Participants detail endpoint response status:', response.status);
+        }
+      } else {
+        // 구매자인 경우 participants_detail 엔드포인트 시도
+        console.log('Buyer detected, trying participants_detail endpoint...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants_detail/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        console.log('Participants detail endpoint response status:', response.status);
+      }
+      
+      // 그래도 실패하면 participations 엔드포인트 시도
       if (!response.ok) {
         console.log('Trying alternative participations endpoint...');
         response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/participations/?groupbuy=${groupbuyId}`, {
@@ -168,46 +195,59 @@ function NoShowReportContent() {
         console.log('Participations endpoint response status:', response.status);
       }
       
-      // 마지막으로 confirmed_buyers 엔드포인트 시도
-      if (!response.ok) {
-        console.log('Trying confirmed_buyers endpoint...');
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/confirmed_buyers/`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-        console.log('Confirmed buyers endpoint response status:', response.status);
-      }
-      
       if (response.ok) {
         const data = await response.json();
         console.log('Raw participants data:', data);
         console.log('Data structure:', {
           isArray: Array.isArray(data),
           hasParticipants: !!data.participants,
+          hasBuyers: !!data.buyers,
           hasResults: !!data.results,
           keys: Object.keys(data)
         });
         
-        // Handle both response formats - participants_detail returns {participants: [...]}
+        // Handle different response formats
         let participantsData = [];
         if (Array.isArray(data)) {
           participantsData = data;
+        } else if (data.buyers && Array.isArray(data.buyers)) {
+          // buyers endpoint returns {buyers: [...]}
+          participantsData = data.buyers;
         } else if (data.participants && Array.isArray(data.participants)) {
+          // participants_detail returns {participants: [...]}
           participantsData = data.participants;
         } else if (data.results && Array.isArray(data.results)) {
+          // participations endpoint returns {results: [...]}
           participantsData = data.results;
         }
         
-        setParticipants(participantsData);
-        console.log('Participants set successfully:', participantsData);
-        console.log('Number of participants:', participantsData.length);
+        // 데이터 구조 정규화: buyers 엔드포인트는 다른 구조를 가질 수 있음
+        const normalizedParticipants = participantsData.map((p: any) => {
+          // buyers 엔드포인트의 경우 이미 user 객체를 가지고 있음
+          if (p.user && typeof p.user === 'object') {
+            return p;
+          }
+          // 다른 엔드포인트의 경우 구조 변환
+          return {
+            id: p.id,
+            user: {
+              id: p.user_id || p.id,
+              username: p.username || p.user?.username,
+              nickname: p.nickname || p.user?.nickname,
+              email: p.email || p.user?.email
+            }
+          };
+        });
+        
+        setParticipants(normalizedParticipants);
+        console.log('Participants set successfully:', normalizedParticipants);
+        console.log('Number of participants:', normalizedParticipants.length);
         
         // 참여자 데이터 구조 확인
-        if (participantsData.length > 0) {
-          console.log('First participant structure:', participantsData[0]);
+        if (normalizedParticipants.length > 0) {
+          console.log('First participant structure:', normalizedParticipants[0]);
           console.log('All participants with user info:');
-          participantsData.forEach((p: any, index: number) => {
+          normalizedParticipants.forEach((p: any, index: number) => {
             console.log(`Participant ${index}:`, {
               participation_id: p.id,
               user_id: p.user?.id,
