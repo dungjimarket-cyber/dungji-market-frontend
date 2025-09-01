@@ -554,9 +554,19 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         }
       }
 
-      // 종료 시간 계산
+      // 종료 시간 계산 (KST 기준)
       const endTime = new Date();
       endTime.setHours(endTime.getHours() + sliderHours);
+      
+      // KST 형식으로 변환 (YYYY-MM-DDTHH:mm:ss 형식)
+      // toISOString()은 UTC로 변환하므로 사용하지 않음
+      const year = endTime.getFullYear();
+      const month = String(endTime.getMonth() + 1).padStart(2, '0');
+      const day = String(endTime.getDate()).padStart(2, '0');
+      const hours = String(endTime.getHours()).padStart(2, '0');
+      const minutes = String(endTime.getMinutes()).padStart(2, '0');
+      const seconds = String(endTime.getSeconds()).padStart(2, '0');
+      const endTimeKST = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
       // 상품 상세 정보 구성 (기존 폼과 동일한 구조)
       let productDetails = {};
@@ -621,7 +631,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         description: values.description || '',
         min_participants: 1, // 항상 1로 고정
         max_participants: parseInt(values.max_participants?.toString() || '10'),
-        end_time: endTime.toISOString(),
+        end_time: endTimeKST,
         regions: selectedRegions.map(region => ({
           province: region.province,
           city: region.city
