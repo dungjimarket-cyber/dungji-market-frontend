@@ -153,6 +153,7 @@ export default function MobileNavbar() {
           const redirectPath = user?.role === 'seller' 
             ? '/mypage/seller/settings' 
             : '/mypage/settings';
+          setShowProfileModal(false);  // 모달 닫기
           router.push(redirectPath);
         }}
       />
