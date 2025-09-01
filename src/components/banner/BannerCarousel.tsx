@@ -118,20 +118,20 @@ export default function BannerCarousel() {
                   e.preventDefault();
                   goToPrevious();
                 }}
-                className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-black/20 md:bg-white/90 backdrop-blur-sm hover:bg-black/30 md:hover:bg-white text-white md:text-gray-800 rounded-full shadow-md md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center group"
+                className="absolute left-0 md:left-1 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/10 md:bg-white/20 hover:bg-white/20 md:hover:bg-white/40 text-white/70 md:text-white rounded-r-full transition-all duration-200 z-10 flex items-center justify-center group"
                 aria-label="이전 배너"
               >
-                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform drop-shadow-md" />
               </button>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   goToNext();
                 }}
-                className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-black/20 md:bg-white/90 backdrop-blur-sm hover:bg-black/30 md:hover:bg-white text-white md:text-gray-800 rounded-full shadow-md md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center group"
+                className="absolute right-0 md:right-1 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/10 md:bg-white/20 hover:bg-white/20 md:hover:bg-white/40 text-white/70 md:text-white rounded-l-full transition-all duration-200 z-10 flex items-center justify-center group"
                 aria-label="다음 배너"
               >
-                <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform drop-shadow-md" />
               </button>
             </>
           )}
