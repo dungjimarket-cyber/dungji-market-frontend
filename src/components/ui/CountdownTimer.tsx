@@ -36,7 +36,22 @@ export function CountdownTimer({
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const target = new Date(endTime).getTime();
+      
+      // 백엔드에서 받은 시간이 KST(한국 시간)이므로 타임존 정보 추가
+      // 타임존 정보가 없는 경우 +09:00 추가
+      let targetDate: Date;
+      const endTimeStr = String(endTime);
+      
+      if (endTimeStr.includes('Z') || endTimeStr.includes('+') || endTimeStr.includes('-')) {
+        // 이미 타임존 정보가 있는 경우
+        targetDate = new Date(endTime);
+      } else {
+        // 타임존 정보가 없는 경우 KST로 처리 (+09:00)
+        // 백엔드가 Asia/Seoul 타임존을 사용하므로
+        targetDate = new Date(endTimeStr + '+09:00');
+      }
+      
+      const target = targetDate.getTime();
       const difference = target - now;
 
       if (difference <= 0) {
