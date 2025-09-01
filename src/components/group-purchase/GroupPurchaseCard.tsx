@@ -6,6 +6,7 @@ import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react'
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { getPlanDisplay } from '@/lib/telecom-utils';
 import { ServiceInfoCards } from '@/components/common/ServiceInfoCards';
+import { parseKSTDate } from '@/lib/date-utils';
 
 // 통신사 로고 이미지 컴포넌트
 const getCarrierDisplay = (carrier: string, categoryName?: string) => {
@@ -149,7 +150,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   const { isAuthenticated, user } = useAuth();
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
   // NEW 배지: created_at 기준 24시간 이내
-  const isNew = groupBuy.created_at ? new Date(groupBuy.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) : false;
+  const isNew = groupBuy.created_at ? parseKSTDate(groupBuy.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) : false;
   
   // 실제 상태를 시간 기반으로 계산
   const actualStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
@@ -163,16 +164,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   
   // 실시간 타이머 상태 추가
   const [currentTimeLeft, setCurrentTimeLeft] = useState<number>(
-    new Date(groupBuy.end_time).getTime() - Date.now()
+    parseKSTDate(groupBuy.end_time).getTime() - Date.now()
   );
   const [timeLeftText, setTimeLeftText] = useState<string>('');
   
   // 전체 시간과 남은 시간 비율 계산
-  const totalDuration = new Date(groupBuy.end_time).getTime() - new Date(groupBuy.start_time).getTime();
+  const totalDuration = parseKSTDate(groupBuy.end_time).getTime() - parseKSTDate(groupBuy.start_time).getTime();
   const [timeRemainingPercent, setTimeRemainingPercent] = useState<number>(() => {
     const now = Date.now();
-    const startTime = new Date(groupBuy.start_time).getTime();
-    const endTime = new Date(groupBuy.end_time).getTime();
+    const startTime = parseKSTDate(groupBuy.start_time).getTime();
+    const endTime = parseKSTDate(groupBuy.end_time).getTime();
     
     // 아직 시작 전인 경우 100%
     if (now < startTime) return 100;
@@ -210,14 +211,14 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     // 1초마다 타이머 갱신
     const timerInterval = setInterval(() => {
-      const newTimeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
+      const newTimeLeft = parseKSTDate(groupBuy.end_time).getTime() - Date.now();
       setCurrentTimeLeft(newTimeLeft);
       setTimeLeftText(formatTimeLeft(newTimeLeft));
       
       // 남은 시간 퍼센트 업데이트
       const now = Date.now();
-      const startTime = new Date(groupBuy.start_time).getTime();
-      const endTime = new Date(groupBuy.end_time).getTime();
+      const startTime = parseKSTDate(groupBuy.start_time).getTime();
+      const endTime = parseKSTDate(groupBuy.end_time).getTime();
       
       let percent;
       if (now < startTime) {
@@ -591,7 +592,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           {/* 두번째 줄: 등록일 및 남은 자리 */}
           <div className="flex items-center justify-between">
             <p className="text-gray-500 text-xs">
-              등록일: {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
+              등록일: {parseKSTDate(groupBuy.start_time).toLocaleDateString('ko-KR')}
             </p>
             {!isCompleted && (
               <p className="text-gray-500 text-xs">

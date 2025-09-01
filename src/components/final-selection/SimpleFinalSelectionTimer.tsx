@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
+import { parseKSTDate } from '@/lib/date-utils';
 
 interface SimpleFinalSelectionTimerProps {
   endTime?: string;
@@ -20,18 +21,7 @@ export function SimpleFinalSelectionTimer({ endTime, onTimeEnd, maxHours = 12, l
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      
-      // 백엔드에서 받은 시간이 KST이므로 타임존 정보 추가
-      const endTimeStr = String(endTime);
-      let endDate: Date;
-      
-      if (endTimeStr.includes('Z') || endTimeStr.includes('+') || endTimeStr.includes('-')) {
-        endDate = new Date(endTime);
-      } else {
-        endDate = new Date(endTimeStr + '+09:00');
-      }
-      
-      const end = endDate.getTime();
+      const end = parseKSTDate(endTime).getTime();
       const difference = end - now;
 
       if (difference <= 0) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { parseKSTDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,18 +46,7 @@ export function FinalSelectionTimer({
   useEffect(() => {
     const checkExpired = () => {
       const now = new Date().getTime();
-      
-      // 백엔드에서 받은 시간이 KST이므로 타임존 정보 추가
-      const endTimeStr = String(endTime);
-      let endDate: Date;
-      
-      if (endTimeStr.includes('Z') || endTimeStr.includes('+') || endTimeStr.includes('-')) {
-        endDate = new Date(endTime);
-      } else {
-        endDate = new Date(endTimeStr + '+09:00');
-      }
-      
-      const end = endDate.getTime();
+      const end = parseKSTDate(endTime).getTime();
       setIsExpired(now > end);
     };
     
