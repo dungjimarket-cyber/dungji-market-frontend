@@ -82,6 +82,14 @@ function NoShowReportContent() {
   useEffect(() => {
     if (user?.role === 'seller' && groupbuyId && accessToken && authChecked) {
       console.log('Seller detected, fetching participants...');
+      console.log('User info:', { 
+        id: user?.id, 
+        role: user?.role, 
+        user_type: user?.user_type,
+        is_seller: user?.role === 'seller' || user?.user_type === '판매'
+      });
+      console.log('GroupBuy ID:', groupbuyId);
+      console.log('Access Token exists:', !!accessToken);
       fetchParticipants();
     }
   }, [user, groupbuyId, accessToken, authChecked]);

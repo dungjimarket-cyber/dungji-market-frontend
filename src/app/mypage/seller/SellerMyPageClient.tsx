@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle } from 'lucide-react';
 
 /**
  * 판매자 마이페이지 클라이언트 컴포넌트
@@ -316,6 +316,18 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+
+        {/* 노쇼 신고 내역 버튼 */}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={() => router.push('/mypage/noshow-reports')}
+            className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"
+          >
+            <AlertCircle className="w-4 h-4 text-orange-500 group-hover:text-orange-600" />
+            <span>노쇼 신고 내역</span>
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
+          </button>
+        </div>
       </div>
     </div>
   );
