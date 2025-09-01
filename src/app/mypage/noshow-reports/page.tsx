@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface NoShowReport {
   id: number;
@@ -158,40 +158,47 @@ export default function NoShowReportsPage() {
                         {(report.evidence_image || report.evidence_image_2 || report.evidence_image_3) && (
                           <div>
                             <p className="text-sm font-medium text-gray-700 mb-2">증빙 자료</p>
-                            <div className="flex gap-2">
-                              {report.evidence_image && (
-                                <a 
-                                  href={report.evidence_image} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-sm flex items-center gap-1"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                  파일 1
-                                </a>
-                              )}
-                              {report.evidence_image_2 && (
-                                <a 
-                                  href={report.evidence_image_2} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-sm flex items-center gap-1"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                  파일 2
-                                </a>
-                              )}
-                              {report.evidence_image_3 && (
-                                <a 
-                                  href={report.evidence_image_3} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-sm flex items-center gap-1"
-                                >
-                                  <FileText className="w-4 h-4" />
-                                  파일 3
-                                </a>
-                              )}
+                            <div className="grid grid-cols-3 gap-2">
+                              {[report.evidence_image, report.evidence_image_2, report.evidence_image_3].map((file, index) => {
+                                if (!file) return null;
+                                
+                                // 이미지 파일인지 확인 (URL 확장자로 판단)
+                                const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
+                                
+                                return (
+                                  <div key={index} className="border rounded-lg overflow-hidden">
+                                    {isImage ? (
+                                      <a 
+                                        href={file} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="block"
+                                      >
+                                        <img 
+                                          src={file} 
+                                          alt={`증빙 자료 ${index + 1}`}
+                                          className="w-full h-24 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                                        />
+                                        <p className="text-xs text-center py-1 bg-gray-50">
+                                          클릭하여 확대
+                                        </p>
+                                      </a>
+                                    ) : (
+                                      <a 
+                                        href={file} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="flex flex-col items-center justify-center h-24 hover:bg-gray-50 transition-colors"
+                                      >
+                                        <FileText className="w-8 h-8 text-gray-400" />
+                                        <p className="text-xs text-gray-600 mt-1">
+                                          PDF 파일 {index + 1}
+                                        </p>
+                                      </a>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
