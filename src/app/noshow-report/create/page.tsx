@@ -32,10 +32,11 @@ function NoShowReportContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   
   // 버튼 비활성화 조건 디버깅
+  const isSeller = user?.role === 'seller' || user?.user_type === '판매';
   const isButtonDisabled = loading || 
                           !content.trim() || 
                           content.trim().length < 20 ||
-                          (user?.role === 'seller' && selectedBuyerIds.length === 0);
+                          (isSeller && selectedBuyerIds.length === 0);
   
   useEffect(() => {
     console.log('노쇼 신고 제출 버튼 상태:');
@@ -80,13 +81,14 @@ function NoShowReportContent() {
 
   // 판매자일 때 참여자 목록 가져오기 위한 별도 useEffect
   useEffect(() => {
-    if (user?.role === 'seller' && groupbuyId && accessToken && authChecked) {
+    const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+    if (isSeller && groupbuyId && accessToken && authChecked) {
       console.log('Seller detected, fetching participants...');
       console.log('User info:', { 
         id: user?.id, 
         role: user?.role, 
         user_type: user?.user_type,
-        is_seller: user?.role === 'seller' || user?.user_type === '판매'
+        is_seller: isSeller
       });
       console.log('GroupBuy ID:', groupbuyId);
       console.log('Access Token exists:', !!accessToken);
@@ -180,16 +182,52 @@ function NoShowReportContent() {
       if (response.ok) {
         const data = await response.json();
         console.log('Raw participants data:', data);
+        console.log('Data structure:', {
+          isArray: Array.isArray(data),
+          hasParticipants: !!data.participants,
+          hasResults: !!data.results,
+          keys: Object.keys(data)
+        });
+        
         // Handle both response formats - participants_detail returns {participants: [...]}
-        const participantsData = Array.isArray(data) ? data : 
-                                (data.participants || data.results || data);
+        let participantsData = [];
+        if (Array.isArray(data)) {
+          participantsData = data;
+        } else if (data.participants && Array.isArray(data.participants)) {
+          participantsData = data.participants;
+        } else if (data.results && Array.isArray(data.results)) {
+          participantsData = data.results;
+        }
+        
         setParticipants(participantsData);
         console.log('Participants set successfully:', participantsData);
         console.log('Number of participants:', participantsData.length);
+        
+        // 참여자 데이터 구조 확인
+        if (participantsData.length > 0) {
+          console.log('First participant structure:', participantsData[0]);
+        }
       } else {
-        console.error('Failed to fetch participants, all endpoints failed');
-        // 참여자 정보를 못 가져왔을 때 안내 메시지
-        toast.error('구매자 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+        console.error('Failed to fetch participants, status:', response.status);
+        
+        // 에러 응답 내용 확인
+        try {
+          const errorData = await response.text();
+          console.error('Error response:', errorData);
+          
+          // JSON 파싱 시도
+          try {
+            const errorJson = JSON.parse(errorData);
+            console.error('Error details:', errorJson);
+            toast.error(errorJson.error || '구매자 정보를 불러올 수 없습니다.');
+          } catch {
+            console.error('Error response is not JSON:', errorData);
+            toast.error('구매자 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+          }
+        } catch (e) {
+          console.error('Failed to read error response:', e);
+          toast.error('구매자 정보를 불러올 수 없습니다.');
+        }
       }
     } catch (error) {
       console.error('참여자 목록 조회 실패:', error);
@@ -342,7 +380,7 @@ function NoShowReportContent() {
           setLoading(false);
           return;
         }
-      } else if (user?.role === 'seller') {
+      } else if (user?.role === 'seller' || user?.user_type === '판매') {
         // 판매자가 신고 → 구매자 노쇼
         reportType = 'buyer_noshow';
         if (selectedBuyerIds.length === 0) {
@@ -561,7 +599,7 @@ function NoShowReportContent() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 구매자 선택 (판매자가 신고 시) */}
-            {user?.role === 'seller' && (
+            {(user?.role === 'seller' || user?.user_type === '판매') && (
               <div className="space-y-2">
                 <Label>노쇼한 구매자 선택 (필수)</Label>
                 {participants.length > 0 ? (
