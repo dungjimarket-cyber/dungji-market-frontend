@@ -206,6 +206,16 @@ function NoShowReportContent() {
         // 참여자 데이터 구조 확인
         if (participantsData.length > 0) {
           console.log('First participant structure:', participantsData[0]);
+          console.log('All participants with user info:');
+          participantsData.forEach((p, index) => {
+            console.log(`Participant ${index}:`, {
+              participation_id: p.id,
+              user_id: p.user?.id,
+              username: p.user?.username,
+              nickname: p.user?.nickname,
+              phone: p.user?.phone_number
+            });
+          });
         }
       } else {
         console.error('Failed to fetch participants, status:', response.status);
@@ -606,7 +616,14 @@ function NoShowReportContent() {
                   <>
                     <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
                       {participants.map((participant) => {
-                        const userId = participant.user?.id || participant.user_id || participant.id;
+                        // participant.id는 participation ID이므로 user.id를 사용해야 함
+                        const userId = participant.user?.id || participant.user_id;
+                        
+                        if (!userId) {
+                          console.warn('User ID not found for participant:', participant);
+                          return null;
+                        }
+                        
                         const displayName = participant.user?.username || participant.user?.nickname || 
                                           participant.username || participant.nickname || 
                                           `참여자 ${userId}`;
