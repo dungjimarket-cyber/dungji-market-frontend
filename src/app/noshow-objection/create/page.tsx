@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, FileText, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function CreateObjectionPage() {
+function CreateObjectionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { accessToken } = useAuth();
@@ -305,5 +305,17 @@ export default function CreateObjectionPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function CreateObjectionPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">로딩 중...</div>
+      </div>
+    }>
+      <CreateObjectionContent />
+    </Suspense>
   );
 }
