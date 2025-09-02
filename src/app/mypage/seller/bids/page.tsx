@@ -8,13 +8,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ChevronLeft, 
   ChevronRight, 
   Search, 
   TrendingUp, 
   Calendar, 
-  ArrowRight 
+  ArrowRight,
+  Filter
 } from 'lucide-react';
 import { formatNumberWithCommas, cn } from '@/lib/utils';
 import { tokenUtils } from '@/lib/tokenUtils';
@@ -89,6 +91,7 @@ function BidsListClient() {
   const [displayedBids, setDisplayedBids] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
   // 전체 견적 목록 조회
@@ -120,8 +123,29 @@ function BidsListClient() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         
-        setAllBids(formattedBids);
-        setFilteredBids(formattedBids);
+        // 각 견적에 대해 상태 정리
+        const processedBids = formattedBids.map((bid: any) => {
+          // 공구 상태 기반으로 표시 상태 결정
+          const groupbuyStatus = bid.groupbuy_status || bid.status;
+          const isSelected = bid.is_selected === true;
+          
+          let displayStatus;
+          if (groupbuyStatus === 'recruiting') {
+            displayStatus = '모집중';
+          } else if (isSelected) {
+            displayStatus = '최종선정';
+          } else {
+            displayStatus = '미선정';
+          }
+          
+          return {
+            ...bid,
+            displayStatus
+          };
+        });
+        
+        setAllBids(processedBids);
+        setFilteredBids(processedBids);
       } catch (error) {
         console.error('견적 목록 조회 오류:', error);
         toast({
@@ -137,18 +161,25 @@ function BidsListClient() {
     fetchBids();
   }, [router, toast]);
 
-  // 검색 기능
+  // 검색 및 필터링 기능
   useEffect(() => {
+    let filtered = [...allBids];
+    
+    // 상태 필터링
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(bid => bid.displayStatus === statusFilter);
+    }
+    
+    // 검색어 필터링
     if (searchTerm) {
-      const filtered = allBids.filter(bid => {
+      filtered = filtered.filter(bid => {
         const productName = bid.product_name || '';
         return productName.toLowerCase().includes(searchTerm.toLowerCase());
       });
-      setFilteredBids(filtered);
-    } else {
-      setFilteredBids(allBids);
     }
-  }, [searchTerm, allBids]);
+    
+    setFilteredBids(filtered);
+  }, [searchTerm, statusFilter, allBids]);
 
   // 페이지 변경 시 표시할 데이터 업데이트
   useEffect(() => {
@@ -167,25 +198,21 @@ function BidsListClient() {
 
   // 견적 상태에 따른 뱃지 스타일
   const getStatusBadge = (bid: any) => {
-    const status = bid.display_status || bid.status;
+    const status = bid.displayStatus;
     
     switch (status) {
       case '최종선정':
-      case '낙찰':
-      case '판매확정':
         return (
           <Badge className="bg-green-100 text-green-700 border-green-200">
-            {status}
+            최종선정
           </Badge>
         );
-      case '견적중':
-      case '진행중':
+      case '모집중':
         return (
           <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-            견적중
+            모집중
           </Badge>
         );
-      case '낙찰실패':
       case '미선정':
         return (
           <Badge className="bg-gray-100 text-gray-600 border-gray-200">
@@ -195,12 +222,6 @@ function BidsListClient() {
                 ({bid.my_bid_rank}/{bid.total_bidders})
               </span>
             )}
-          </Badge>
-        );
-      case '판매포기':
-        return (
-          <Badge className="bg-red-100 text-red-700 border-red-200">
-            판매포기
           </Badge>
         );
       default:
@@ -233,8 +254,8 @@ function BidsListClient() {
         </div>
       </div>
       
-      {/* 검색 바 */}
-      <div className="mb-6">
+      {/* 검색 바 및 필터 */}
+      <div className="mb-6 space-y-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -244,6 +265,22 @@ function BidsListClient() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
+        </div>
+        
+        {/* 상태 필터 */}
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-gray-500" />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="상태 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="모집중">모집중</SelectItem>
+              <SelectItem value="최종선정">최종선정</SelectItem>
+              <SelectItem value="미선정">미선정</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -311,7 +348,7 @@ function BidsListClient() {
                 </div>
                 
                 {/* 최종선정 메시지 */}
-                {(bid.display_status === '최종선정' || bid.display_status === '낙찰') && (
+                {bid.displayStatus === '최종선정' && (
                   <div className="mt-3 p-2 bg-green-50 rounded-md">
                     <p className="text-xs text-green-700 font-medium">
                       🎉 축하합니다! 최종 선정되셨습니다!
