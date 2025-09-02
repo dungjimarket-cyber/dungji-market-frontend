@@ -33,11 +33,13 @@ export default function SellerMyPageClient() {
   const [pageLoading, setPageLoading] = useState(true);
   
   // 각 섹션의 데이터 카운트 상태 관리
-  const [waitingBuyerCount, setWaitingBuyerCount] = useState(0);
-  const [pendingSellerCount, setPendingSellerCount] = useState(0);
-  const [tradingCount, setTradingCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [cancelledCount, setCancelledCount] = useState(0);
+  const [counts, setCounts] = useState({
+    waitingBuyer: 0,
+    pendingSeller: 0,
+    trading: 0,
+    completed: 0,
+    cancelled: 0
+  });
   
   // 아코디언 열림 상태 관리
   const [accordionValue, setAccordionValue] = useState<string | undefined>();
@@ -48,20 +50,7 @@ export default function SellerMyPageClient() {
       if (!isAuthenticated || !accessToken) return;
       
       try {
-        // 구매자 최종선택 대기중 개수
-        const fetchWaitingBuyer = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setWaitingBuyerCount(data.length);
-          }
-        };
-        
-        // 판매확정/포기 선택하기 개수
+        // 중요한 항목(판매확정/포기)만 먼저 로드
         const fetchPendingSeller = async () => {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_pending_decision/`, {
             headers: {
@@ -70,57 +59,54 @@ export default function SellerMyPageClient() {
           });
           if (response.ok) {
             const data = await response.json();
-            setPendingSellerCount(data.length);
+            setCounts(prev => ({ ...prev, pendingSeller: data.length }));
+            return data.length;
+          }
+          return 0;
+        };
+        
+        // 먼저 중요한 데이터 로드
+        const pendingCount = await fetchPendingSeller();
+        setPageLoading(false); // 중요한 데이터 로드 후 즉시 페이지 표시
+        
+        // 나머지는 비동기로 로드 (페이지 표시를 막지 않음)
+        const loadRemainingCounts = async () => {
+          const responses = await Promise.allSettled([
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_trading/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_completed/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_cancelled/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            })
+          ]);
+          
+          const [waitingBuyer, trading, completed, cancelled] = responses;
+          
+          if (waitingBuyer.status === 'fulfilled' && waitingBuyer.value.ok) {
+            const data = await waitingBuyer.value.json();
+            setCounts(prev => ({ ...prev, waitingBuyer: data.length }));
+          }
+          if (trading.status === 'fulfilled' && trading.value.ok) {
+            const data = await trading.value.json();
+            setCounts(prev => ({ ...prev, trading: data.length }));
+          }
+          if (completed.status === 'fulfilled' && completed.value.ok) {
+            const data = await completed.value.json();
+            setCounts(prev => ({ ...prev, completed: data.length }));
+          }
+          if (cancelled.status === 'fulfilled' && cancelled.value.ok) {
+            const data = await cancelled.value.json();
+            setCounts(prev => ({ ...prev, cancelled: data.length }));
           }
         };
         
-        // 거래중 개수
-        const fetchTrading = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_trading/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setTradingCount(data.length);
-          }
-        };
-        
-        // 판매완료 개수
-        const fetchCompleted = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_completed/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setCompletedCount(data.length);
-          }
-        };
-        
-        // 취소된 공구 개수
-        const fetchCancelled = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_cancelled/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setCancelledCount(data.length);
-          }
-        };
-        
-        // 모든 API 호출을 병렬로 실행
-        await Promise.all([
-          fetchWaitingBuyer(),
-          fetchPendingSeller(),
-          fetchTrading(),
-          fetchCompleted(),
-          fetchCancelled()
-        ]);
+        loadRemainingCounts();
       } catch (error) {
         console.error('판매자 마이페이지 데이터 로딩 오류:', error);
       } finally {
@@ -193,7 +179,7 @@ export default function SellerMyPageClient() {
                   <span className="font-medium text-sm sm:text-base">구매자 최종선택 대기중</span>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {waitingBuyerCount}건</span>
+                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.waitingBuyer}건</span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -213,7 +199,7 @@ export default function SellerMyPageClient() {
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
                   <span className="text-xs sm:text-sm text-orange-600 font-semibold">
-                    {pendingSellerCount}건 선택 대기중
+                    {counts.pendingSeller}건 선택 대기중
                   </span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
                 </div>
@@ -233,7 +219,7 @@ export default function SellerMyPageClient() {
                   <span className="font-medium text-sm sm:text-base">거래중</span>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {tradingCount}건</span>
+                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.trading}건</span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -252,7 +238,7 @@ export default function SellerMyPageClient() {
                   <span className="font-medium text-sm sm:text-base">판매완료</span>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {completedCount}건</span>
+                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.completed}건</span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -271,7 +257,7 @@ export default function SellerMyPageClient() {
                   <span className="font-medium text-sm sm:text-base">취소된 공구</span>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {cancelledCount}건</span>
+                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.cancelled}건</span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
