@@ -57,8 +57,11 @@ function InicisProcessContent() {
             }),
           });
 
+          console.log('결제 검증 응답 상태:', verifyResponse.status);
+          
           if (verifyResponse.ok) {
             const result = await verifyResponse.json();
+            console.log('결제 검증 성공 결과:', result);
             setStatus('success');
             
             // 구독권과 견적이용권 구분하여 메시지 표시
@@ -76,8 +79,23 @@ function InicisProcessContent() {
               router.push('/mypage/seller/bid-tokens?payment=success');
             }, 3000);
           } else {
-            const errorData = await verifyResponse.json().catch(() => ({}));
-            throw new Error(errorData.error || '결제 검증 실패');
+            console.error('결제 검증 실패:', {
+              status: verifyResponse.status,
+              statusText: verifyResponse.statusText,
+              url: verifyResponse.url
+            });
+            
+            const errorText = await verifyResponse.text();
+            console.error('에러 응답 텍스트:', errorText);
+            
+            let errorData;
+            try {
+              errorData = JSON.parse(errorText);
+            } catch {
+              errorData = { error: errorText || '결제 검증 실패' };
+            }
+            
+            throw new Error(errorData.error || `결제 검증 실패 (${verifyResponse.status})`);
           }
         } else {
           // 결제 실패
@@ -90,8 +108,18 @@ function InicisProcessContent() {
         }
       } catch (error) {
         console.error('결제 결과 처리 오류:', error);
+        console.error('오류 상세:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          resultCode,
+          oid,
+          authToken: authToken ? 'exists' : 'missing',
+          authUrl: authUrl ? 'exists' : 'missing'
+        });
+        
         setStatus('failed');
-        setMessage('결제 처리 중 오류가 발생했습니다.');
+        const errorMessage = error instanceof Error ? error.message : '결제 처리 중 오류가 발생했습니다.';
+        setMessage(errorMessage);
         
         setTimeout(() => {
           router.push('/mypage/seller/bid-tokens?payment=error');
