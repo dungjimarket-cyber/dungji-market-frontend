@@ -127,15 +127,28 @@ function BidsListClient() {
         const processedBids = formattedBids.map((bid: any) => {
           // 공구 상태 기반으로 표시 상태 결정
           const groupbuyStatus = bid.groupbuy_status || bid.status;
-          const isSelected = bid.is_selected === true;
           
           let displayStatus;
           if (groupbuyStatus === 'recruiting') {
             displayStatus = '모집중';
-          } else if (isSelected) {
-            displayStatus = '최종선정';
           } else {
-            displayStatus = '미선정';
+            // 백엔드에서 제공하는 display_status 사용 또는 my_bid_rank로 판단
+            if (bid.display_status) {
+              // 백엔드의 display_status가 있으면 그대로 사용
+              if (bid.display_status === '선정' || bid.display_status === '최종선정') {
+                displayStatus = '최종선정';
+              } else if (bid.display_status === '미선정') {
+                displayStatus = '미선정';
+              } else {
+                displayStatus = '모집중';
+              }
+            } else if (bid.my_bid_rank) {
+              // my_bid_rank가 1이면 선정, 아니면 미선정
+              displayStatus = bid.my_bid_rank === 1 ? '최종선정' : '미선정';
+            } else {
+              // is_selected로 판단 (폴백)
+              displayStatus = bid.is_selected === true ? '최종선정' : '미선정';
+            }
           }
           
           return {
