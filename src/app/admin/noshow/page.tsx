@@ -372,7 +372,7 @@ export default function AdminNoShowPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800 font-medium mb-2">처리 안내</p>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• <strong>처리완료:</strong> 노쇼가 확인된 경우</li>
+                  <li>• <strong>처리완료:</strong> 신고 검토 후 상태 관리가 필요한 경우</li>
                   <li>• <strong>보류:</strong> 추가 확인이 필요하거나 증빙이 불충분한 경우</li>
                 </ul>
               </div>
