@@ -269,8 +269,7 @@ function BidsListClient() {
           {displayedBids.map((bid) => (
             <Card 
               key={bid.id} 
-              className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => router.push(`/groupbuys/${bid.groupbuy}`)}
+              className="hover:shadow-md transition-shadow"
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -300,7 +299,15 @@ function BidsListClient() {
                     </div>
                   </div>
                   
-                  <ArrowRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-3" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/groupbuys/${bid.groupbuy}`)}
+                    className="flex items-center gap-1 ml-3"
+                  >
+                    공구보기
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
                 
                 {/* 최종선정 메시지 */}
