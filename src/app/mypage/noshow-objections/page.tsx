@@ -7,11 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   AlertCircle, Clock, CheckCircle, XCircle, MessageSquare, 
-  FileText, Calendar, ArrowLeft
+  FileText, Calendar, ArrowLeft, Edit, Ban, Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface NoShowObjection {
   id: number;
@@ -27,6 +36,10 @@ interface NoShowObjection {
   created_at: string;
   updated_at: string;
   processed_at?: string;
+  edit_count: number;
+  is_cancelled: boolean;
+  cancelled_at?: string;
+  cancellation_reason?: string;
 }
 
 export default function NoShowObjectionsPage() {
@@ -34,6 +47,14 @@ export default function NoShowObjectionsPage() {
   const router = useRouter();
   const [objections, setObjections] = useState<NoShowObjection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingObjection, setEditingObjection] = useState<NoShowObjection | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [editFiles, setEditFiles] = useState<File[]>([]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedObjection, setSelectedObjection] = useState<NoShowObjection | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     if (accessToken) {
@@ -66,7 +87,10 @@ export default function NoShowObjectionsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isCancelled: boolean = false) => {
+    if (isCancelled) {
+      return <Badge variant="outline"><Ban className="w-3 h-3 mr-1" />취소됨</Badge>;
+    }
     switch (status) {
       case 'pending':
         return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />처리중</Badge>;
@@ -78,6 +102,96 @@ export default function NoShowObjectionsPage() {
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />거부</Badge>;
       default:
         return <Badge>{status}</Badge>;
+    }
+  };
+
+  const handleEditClick = (objection: NoShowObjection) => {
+    setEditingObjection(objection);
+    setEditContent(objection.content);
+    setEditFiles([]);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingObjection || !editContent.trim()) return;
+    
+    setProcessing(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('content', editContent);
+      
+      // 파일 추가
+      editFiles.forEach((file, index) => {
+        formData.append(`evidence_image_${index + 1}`, file);
+      });
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/noshow-objections/${editingObjection.id}/`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        toast.success('이의제기가 수정되었습니다.');
+        fetchObjections();
+        setEditDialogOpen(false);
+      } else {
+        const error = await response.json();
+        toast.error(error.error || '수정에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('이의제기 수정 오류:', error);
+      toast.error('수정 중 오류가 발생했습니다.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleCancelClick = (objection: NoShowObjection) => {
+    setSelectedObjection(objection);
+    setCancellationReason('');
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelSubmit = async () => {
+    if (!selectedObjection) return;
+    
+    setProcessing(true);
+    
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/noshow-objections/${selectedObjection.id}/cancel/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cancellation_reason: cancellationReason,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast.success('이의제기가 취소되었습니다.');
+        fetchObjections();
+        setCancelDialogOpen(false);
+      } else {
+        const error = await response.json();
+        toast.error(error.error || '취소에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('이의제기 취소 오류:', error);
+      toast.error('취소 중 오류가 발생했습니다.');
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -126,7 +240,14 @@ export default function NoShowObjectionsPage() {
                         )}
                       </div>
                     </div>
-                    {getStatusBadge(objection.status)}
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(objection.status, objection.is_cancelled)}
+                      {objection.edit_count > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          수정 {objection.edit_count}회
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -185,6 +306,26 @@ export default function NoShowObjectionsPage() {
                       </div>
                     )}
 
+                    {/* 취소 사유 표시 */}
+                    {objection.is_cancelled && objection.cancellation_reason && (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <Ban className="w-4 h-4 text-gray-600 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">취소 사유</p>
+                            <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
+                              {objection.cancellation_reason}
+                            </p>
+                            {objection.cancelled_at && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                취소일: {formatDate(objection.cancelled_at)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* 관리자 답변 표시 */}
                     {objection.admin_comment && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -218,6 +359,31 @@ export default function NoShowObjectionsPage() {
                         </AlertDescription>
                       </Alert>
                     )}
+
+                    {/* 수정/취소 버튼 */}
+                    {objection.status === 'pending' && !objection.is_cancelled && (
+                      <div className="flex gap-2 pt-3 border-t">
+                        {objection.edit_count < 1 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditClick(objection)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            수정
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCancelClick(objection)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Ban className="w-4 h-4 mr-1" />
+                          취소
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -241,6 +407,114 @@ export default function NoShowObjectionsPage() {
           </Button>
         </div>
       </div>
+
+      {/* 수정 다이얼로그 */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>이의제기 수정</DialogTitle>
+            <DialogDescription>
+              이의제기는 1회만 수정 가능합니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                이의제기 내용
+              </label>
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={6}
+                placeholder="이의제기 내용을 입력하세요..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                증빙 자료 추가 (선택사항)
+              </label>
+              <input
+                type="file"
+                multiple
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length > 3) {
+                    toast.error('최대 3개의 파일만 첨부 가능합니다.');
+                    return;
+                  }
+                  setEditFiles(files);
+                }}
+                className="w-full border rounded-lg p-2"
+              />
+              {editFiles.length > 0 && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {editFiles.length}개 파일 선택됨
+                </p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              disabled={processing}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleEditSubmit}
+              disabled={processing || !editContent.trim()}
+            >
+              {processing ? '수정 중...' : '수정하기'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 취소 다이얼로그 */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>이의제기 취소</DialogTitle>
+            <DialogDescription>
+              이의제기를 취소하시겠습니까? 취소 후에는 다시 제출할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              취소 사유 (선택사항)
+            </label>
+            <Textarea
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              rows={3}
+              placeholder="취소 사유를 입력하세요..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+              disabled={processing}
+            >
+              돌아가기
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelSubmit}
+              disabled={processing}
+            >
+              {processing ? '취소 중...' : '이의제기 취소'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

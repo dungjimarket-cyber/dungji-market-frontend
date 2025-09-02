@@ -62,6 +62,10 @@ interface NoShowObjection {
   updated_at: string;
   processed_at?: string;
   processed_by?: number;
+  edit_count?: number;
+  is_cancelled?: boolean;
+  cancelled_at?: string;
+  cancellation_reason?: string;
 }
 
 export default function AdminNoShowPage() {
@@ -493,10 +497,19 @@ export default function AdminNoShowPage() {
                                   <FileText className="w-3 h-3 mr-1" />
                                   신고 #{objection.noshow_report_id}
                                 </Badge>
-                                {getStatusBadge(objection.status)}
+                                {objection.is_cancelled ? (
+                                  <Badge variant="outline"><XCircle className="w-3 h-3 mr-1" />취소됨</Badge>
+                                ) : (
+                                  getStatusBadge(objection.status)
+                                )}
+                                {objection.edit_count && objection.edit_count > 0 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    수정 {objection.edit_count}회
+                                  </Badge>
+                                )}
                               </div>
                             </div>
-                            {(objection.status === 'pending' || objection.status === 'processing') && (
+                            {(objection.status === 'pending' || objection.status === 'processing') && !objection.is_cancelled && (
                               <Button
                                 onClick={() => openObjectionDialog(objection)}
                                 size="sm"
