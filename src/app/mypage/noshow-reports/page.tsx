@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -571,6 +572,13 @@ export default function NoShowReportsPage() {
                   </p>
                 )}
               </div>
+              
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  <strong>주의:</strong> 수정은 1회만 가능합니다. 신중하게 작성해주세요.
+                </AlertDescription>
+              </Alert>
 
               {editingReport.last_edited_at && (
                 <div className="text-sm text-gray-500">
@@ -592,7 +600,11 @@ export default function NoShowReportsPage() {
               취소
             </Button>
             <Button
-              onClick={handleEditSubmit}
+              onClick={() => {
+                if (window.confirm('신고 내용을 수정하시겠습니까?\n주의: 수정은 1회만 가능합니다.')) {
+                  handleEditSubmit();
+                }
+              }}
               disabled={!editFormData.content.trim()}
             >
               수정 완료

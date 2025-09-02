@@ -466,7 +466,11 @@ export default function NoShowObjectionsPage() {
               취소
             </Button>
             <Button
-              onClick={handleEditSubmit}
+              onClick={() => {
+                if (window.confirm('이의제기 내용을 수정하시겠습니까?\n주의: 수정은 1회만 가능합니다.')) {
+                  handleEditSubmit();
+                }
+              }}
               disabled={processing || !editContent.trim()}
             >
               {processing ? '수정 중...' : '수정하기'}

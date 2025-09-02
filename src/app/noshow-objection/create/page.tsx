@@ -287,7 +287,11 @@ function CreateObjectionContent() {
                   취소
                 </Button>
                 <Button
-                  onClick={handleSubmit}
+                  onClick={() => {
+                    if (window.confirm('이의제기를 제출하시겠습니까?\n주의: 이의제기는 1회만 제출 가능합니다.')) {
+                      handleSubmit();
+                    }
+                  }}
                   disabled={loading || !content.trim()}
                 >
                   {loading ? (

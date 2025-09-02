@@ -894,9 +894,17 @@ function NoShowReportContent() {
                 </Button>
               )}
               <Button 
-                type="submit" 
+                type="button" 
                 disabled={isButtonDisabled}
                 className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (window.confirm(isEditMode ? 
+                    '신고 내용을 수정하시겠습니까?\n주의: 수정은 1회만 가능합니다.' : 
+                    '노쇼를 신고하시겠습니까?')) {
+                    handleSubmit(e as any);
+                  }
+                }}
               >
                 {loading ? (
                   isEditMode ? '수정 중...' : '신고 접수 중...'
