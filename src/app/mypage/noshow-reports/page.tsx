@@ -460,9 +460,6 @@ export default function NoShowReportsPage() {
               <p>신고를 취소하면 다음과 같이 처리됩니다:</p>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>해당 공구가 <strong className="text-red-600">판매완료</strong>로 자동 변경됩니다</li>
-                <li>구매확정된 모든 참여자가 구매완료 처리됩니다</li>
-                <li>신고 내역이 완전히 삭제됩니다</li>
-                <li className="text-red-600 font-semibold">이 작업은 되돌릴 수 없습니다</li>
               </ul>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -477,7 +474,7 @@ export default function NoShowReportsPage() {
               onClick={handleCancelReport}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              신고 취소하고 판매완료 처리
+              신고 취소 및 판매완료 처리
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { GroupBuy } from '@/types/groupbuy';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Package, Phone, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Loader2, Package, Phone, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
@@ -22,6 +22,7 @@ export default function TradingGroupBuys() {
   const [loading, setLoading] = useState(true);
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [noShowReports, setNoShowReports] = useState<{[key: number]: boolean}>({});
 
   useEffect(() => {
     const fetchTrading = async () => {
@@ -41,6 +42,28 @@ export default function TradingGroupBuys() {
         if (response.ok) {
           const data = await response.json();
           setGroupBuys(data);
+          
+          // 각 공구에 대한 노쇼 신고 여부 확인
+          const reportStatus: {[key: number]: boolean} = {};
+          for (const gb of data) {
+            try {
+              const reportResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/?groupbuy_id=${gb.id}&type=made`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                  }
+                }
+              );
+              if (reportResponse.ok) {
+                const reports = await reportResponse.json();
+                reportStatus[gb.id] = reports.length > 0;
+              }
+            } catch (error) {
+              console.error(`노쇼 신고 확인 오류 (공구 ${gb.id}):`, error);
+            }
+          }
+          setNoShowReports(reportStatus);
         }
       } catch (error) {
         console.error('거래중 공구 조회 오류:', error);
@@ -160,24 +183,36 @@ export default function TradingGroupBuys() {
                       구매자 정보보기
                     </Button>
                     
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
-                      onClick={() => {
-                        if (!groupBuy.id) {
-                          console.error('groupBuy.id is missing:', groupBuy);
-                          toast.error('공구 정보를 찾을 수 없습니다.');
-                          return;
-                        }
-                        console.log('Navigating to no-show report with groupBuy.id:', groupBuy.id);
-                        router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
-                      }}
-                      disabled={!groupBuy.id}
-                    >
-                      <AlertTriangle className="h-4 w-4 mr-1" />
-                      노쇼신고
-                    </Button>
+                    {noShowReports[groupBuy.id] ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-blue-600 border-blue-300 hover:bg-blue-50 flex-1 sm:flex-initial"
+                        onClick={() => router.push('/mypage/noshow-reports')}
+                      >
+                        <FileText className="h-4 w-4 mr-1" />
+                        신고완료
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
+                        onClick={() => {
+                          if (!groupBuy.id) {
+                            console.error('groupBuy.id is missing:', groupBuy);
+                            toast.error('공구 정보를 찾을 수 없습니다.');
+                            return;
+                          }
+                          console.log('Navigating to no-show report with groupBuy.id:', groupBuy.id);
+                          router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
+                        }}
+                        disabled={!groupBuy.id}
+                      >
+                        <AlertTriangle className="h-4 w-4 mr-1" />
+                        노쇼신고
+                      </Button>
+                    )}
                     
                     <Button
                       size="sm"
