@@ -7,8 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
+import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface NoShowReport {
   id: number;
@@ -36,6 +46,8 @@ export default function NoShowReportsPage() {
   const [reports, setReports] = useState<NoShowReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'made' | 'received'>('made');
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
 
   useEffect(() => {
     // RequireAuth에서 이미 인증을 확인했으므로 accessToken이 있으면 바로 실행
@@ -67,6 +79,48 @@ export default function NoShowReportsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancelReport = async () => {
+    if (!selectedReportId) return;
+    
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/${selectedReportId}/cancel/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || '신고 취소에 실패했습니다.');
+      }
+
+      const result = await response.json();
+      
+      // 성공 토스트 표시
+      toast.success(result.message || '노쇼 신고가 취소되었습니다. 공구가 판매완료로 처리되었습니다.');
+      
+      // 목록 새로고침
+      fetchReports();
+      
+      // 다이얼로그 닫기
+      setCancelDialogOpen(false);
+      setSelectedReportId(null);
+    } catch (error) {
+      console.error('노쇼 신고 취소 오류:', error);
+      toast.error(error instanceof Error ? error.message : '신고 취소 중 오류가 발생했습니다.');
+    }
+  };
+
+  const openCancelDialog = (reportId: number) => {
+    setSelectedReportId(reportId);
+    setCancelDialogOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -223,13 +277,25 @@ export default function NoShowReportsPage() {
                         )}
 
                         <div className="flex justify-between items-center pt-2 border-t">
-                          <p className="text-xs text-gray-500">
-                            신고일: {formatDate(report.created_at)}
-                          </p>
-                          {report.processed_at && (
+                          <div className="flex items-center gap-2">
                             <p className="text-xs text-gray-500">
-                              처리일: {formatDate(report.processed_at)}
+                              신고일: {formatDate(report.created_at)}
                             </p>
+                            {report.processed_at && (
+                              <p className="text-xs text-gray-500">
+                                처리일: {formatDate(report.processed_at)}
+                              </p>
+                            )}
+                          </div>
+                          {activeTab === 'made' && report.status === 'pending' && user?.role === 'seller' && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => openCancelDialog(report.id)}
+                            >
+                              <Trash2 className="w-3 h-3 mr-1" />
+                              신고 취소
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -250,6 +316,38 @@ export default function NoShowReportsPage() {
           </Button>
         </div>
       </div>
+
+      {/* 신고 취소 확인 다이얼로그 */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>노쇼 신고를 취소하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>신고를 취소하면 다음과 같이 처리됩니다:</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>해당 공구가 <strong className="text-red-600">판매완료</strong>로 자동 변경됩니다</li>
+                <li>구매확정된 모든 참여자가 구매완료 처리됩니다</li>
+                <li>신고 내역이 완전히 삭제됩니다</li>
+                <li className="text-red-600 font-semibold">이 작업은 되돌릴 수 없습니다</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setCancelDialogOpen(false);
+              setSelectedReportId(null);
+            }}>
+              돌아가기
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelReport}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              신고 취소하고 판매완료 처리
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
