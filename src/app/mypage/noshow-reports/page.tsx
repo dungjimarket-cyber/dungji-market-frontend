@@ -241,7 +241,14 @@ export default function NoShowReportsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isCancelled?: boolean) => {
+    // 취소된 경우 우선 표시
+    if (isCancelled) {
+      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
+        <XCircle className="w-3 h-3 mr-1" />취소됨
+      </Badge>;
+    }
+    
     switch (status) {
       case 'pending':
         return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />처리중</Badge>;
@@ -318,7 +325,7 @@ export default function NoShowReportsPage() {
                             )}
                           </div>
                         </div>
-                        {getStatusBadge(report.status)}
+                        {getStatusBadge(report.status, report.is_cancelled)}
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -387,6 +394,26 @@ export default function NoShowReportsPage() {
                               </div>
                             )}
                           </>
+                        )}
+
+                        {/* 취소 사유 표시 */}
+                        {report.is_cancelled && report.cancellation_reason && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                            <div className="flex items-start gap-2">
+                              <XCircle className="w-4 h-4 text-red-600 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium text-red-800">취소 사유</p>
+                                <p className="text-sm text-red-700 mt-1 whitespace-pre-wrap">
+                                  {report.cancellation_reason}
+                                </p>
+                                {report.cancelled_at && (
+                                  <p className="text-xs text-red-600 mt-1">
+                                    취소일: {formatDate(report.cancelled_at)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         )}
 
                         {/* 관리자 코멘트 표시 */}
