@@ -372,8 +372,16 @@ export default function AdminNoShowPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800 font-medium mb-2">처리 안내</p>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• <strong>처리완료:</strong> 노쇼가 확인된 경우. 전원 노쇼 시 공구 취소, 일부 노쇼 시 판매완료 처리</li>
+                  <li>• <strong>처리완료:</strong> 노쇼가 확인된 경우</li>
                   <li>• <strong>보류:</strong> 추가 확인이 필요하거나 증빙이 불충분한 경우</li>
+                </ul>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-sm text-amber-800 font-medium mb-2">⚠️ 처리완료 시 자동 처리 안내</p>
+                <ul className="text-sm text-amber-700 space-y-1">
+                  <li>• 노쇼 신고인원이 <strong>전원</strong>인 경우 → 공구가 <strong className="text-red-600">취소</strong>됩니다</li>
+                  <li>• 노쇼 신고인원이 <strong>일부</strong>인 경우 → 공구가 <strong className="text-green-600">판매완료</strong>로 처리됩니다</li>
                 </ul>
               </div>
             </div>
