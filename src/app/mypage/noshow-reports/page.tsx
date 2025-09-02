@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare, Trash2 } from 'lucide-react';
+import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -19,6 +19,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface NoShowReport {
   id: number;
@@ -33,11 +44,13 @@ interface NoShowReport {
   evidence_image?: string;
   evidence_image_2?: string;
   evidence_image_3?: string;
-  status: 'pending' | 'confirmed' | 'rejected';
+  status: 'pending' | 'confirmed' | 'rejected' | 'completed' | 'on_hold';
   admin_comment?: string;
   created_at: string;
   updated_at: string;
   processed_at?: string;
+  edit_count?: number;
+  last_edited_at?: string;
 }
 
 export default function NoShowReportsPage() {
@@ -48,6 +61,12 @@ export default function NoShowReportsPage() {
   const [activeTab, setActiveTab] = useState<'made' | 'received'>('made');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState<NoShowReport | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    content: '',
+    evidence_files: [] as File[],
+  });
 
   useEffect(() => {
     // RequireAuth에서 이미 인증을 확인했으므로 accessToken이 있으면 바로 실행
@@ -121,6 +140,102 @@ export default function NoShowReportsPage() {
   const openCancelDialog = (reportId: number) => {
     setSelectedReportId(reportId);
     setCancelDialogOpen(true);
+  };
+
+  const checkCanEdit = async (reportId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/${reportId}/can_edit/`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('수정 가능 여부 확인 실패');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('수정 가능 여부 확인 오류:', error);
+      return { can_edit: false, reason: '오류가 발생했습니다.' };
+    }
+  };
+
+  const openEditDialog = async (report: NoShowReport) => {
+    // 수정 가능 여부 확인
+    const canEditResult = await checkCanEdit(report.id);
+    
+    if (!canEditResult.can_edit) {
+      toast.error(canEditResult.reason || '수정할 수 없습니다.');
+      return;
+    }
+
+    setEditingReport(report);
+    setEditFormData({
+      content: report.content,
+      evidence_files: [],
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files).slice(0, 3); // 최대 3개 파일
+      setEditFormData(prev => ({
+        ...prev,
+        evidence_files: fileArray,
+      }));
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingReport) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('content', editFormData.content);
+      
+      // 파일 추가
+      editFormData.evidence_files.forEach((file, index) => {
+        if (index === 0) formData.append('evidence_image', file);
+        else if (index === 1) formData.append('evidence_image_2', file);
+        else if (index === 2) formData.append('evidence_image_3', file);
+      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/${editingReport.id}/`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || '수정에 실패했습니다.');
+      }
+
+      toast.success('노쇼 신고가 수정되었습니다. (추가 수정은 불가능합니다)');
+      
+      // 목록 새로고침
+      fetchReports();
+      
+      // 다이얼로그 닫기
+      setEditDialogOpen(false);
+      setEditingReport(null);
+      setEditFormData({ content: '', evidence_files: [] });
+    } catch (error) {
+      console.error('노쇼 신고 수정 오류:', error);
+      toast.error(error instanceof Error ? error.message : '수정 중 오류가 발생했습니다.');
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -286,16 +401,35 @@ export default function NoShowReportsPage() {
                                 처리일: {formatDate(report.processed_at)}
                               </p>
                             )}
+                            {report.edit_count && report.edit_count > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                수정 {report.edit_count}회
+                              </Badge>
+                            )}
                           </div>
-                          {activeTab === 'made' && report.status === 'pending' && user?.role === 'seller' && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => openCancelDialog(report.id)}
-                            >
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              신고 취소
-                            </Button>
+                          {activeTab === 'made' && report.status === 'pending' && (
+                            <div className="flex gap-2">
+                              {(!report.edit_count || report.edit_count < 1) && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditDialog(report)}
+                                >
+                                  <Edit className="w-3 h-3 mr-1" />
+                                  수정
+                                </Button>
+                              )}
+                              {user?.role === 'seller' && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => openCancelDialog(report.id)}
+                                >
+                                  <Trash2 className="w-3 h-3 mr-1" />
+                                  신고 취소
+                                </Button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -348,6 +482,92 @@ export default function NoShowReportsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 신고 수정 다이얼로그 */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>노쇼 신고 수정</DialogTitle>
+            <DialogDescription>
+              신고 내용을 수정할 수 있습니다. 수정은 1회만 가능합니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingReport && (
+            <div className="space-y-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>주의:</strong> 수정은 1회만 가능합니다. 신중하게 작성해주세요.
+                </p>
+                {editingReport.edit_count && editingReport.edit_count > 0 && (
+                  <p className="text-sm text-red-600 mt-1">
+                    이미 {editingReport.edit_count}회 수정하셨습니다.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="edit-content">신고 내용</Label>
+                <Textarea
+                  id="edit-content"
+                  value={editFormData.content}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="노쇼 신고 사유를 상세히 작성해주세요..."
+                  rows={8}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-files">증빙 자료 (최대 3개)</Label>
+                <Input
+                  id="edit-files"
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf"
+                  onChange={handleFileChange}
+                  className="mt-1"
+                />
+                {editFormData.evidence_files.length > 0 && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    선택된 파일: {editFormData.evidence_files.map(f => f.name).join(', ')}
+                  </div>
+                )}
+                {(editingReport.evidence_image || editingReport.evidence_image_2 || editingReport.evidence_image_3) && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    기존 파일이 있습니다. 새 파일을 업로드하면 기존 파일이 교체됩니다.
+                  </p>
+                )}
+              </div>
+
+              {editingReport.last_edited_at && (
+                <div className="text-sm text-gray-500">
+                  마지막 수정: {formatDate(editingReport.last_edited_at)}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditDialogOpen(false);
+                setEditingReport(null);
+                setEditFormData({ content: '', evidence_files: [] });
+              }}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleEditSubmit}
+              disabled={!editFormData.content.trim()}
+            >
+              수정 완료
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
