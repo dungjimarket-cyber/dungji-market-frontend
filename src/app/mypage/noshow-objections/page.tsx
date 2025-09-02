@@ -346,7 +346,7 @@ export default function NoShowObjectionsPage() {
                       <Alert className="bg-green-50 border-green-200">
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <AlertDescription className="text-green-800">
-                          이의제기가 인정되었습니다. 노쇼 신고가 보류 처리되었습니다.
+                          이의제기가 인정되었습니다. 관리자가 상황을 검토하여 적절한 조치를 취할 예정입니다.
                         </AlertDescription>
                       </Alert>
                     )}
