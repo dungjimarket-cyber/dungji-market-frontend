@@ -72,11 +72,16 @@ export default function NoShowReportsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />검토 중</Badge>;
+        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />처리중</Badge>;
+      case 'completed':
+        return <Badge variant="destructive"><CheckCircle className="w-3 h-3 mr-1" />처리완료</Badge>;
+      case 'on_hold':
+        return <Badge variant="outline"><XCircle className="w-3 h-3 mr-1" />보류중</Badge>;
+      // 기존 값 호환성
       case 'confirmed':
-        return <Badge variant="destructive"><CheckCircle className="w-3 h-3 mr-1" />확인됨</Badge>;
+        return <Badge variant="destructive"><CheckCircle className="w-3 h-3 mr-1" />처리완료</Badge>;
       case 'rejected':
-        return <Badge variant="outline"><XCircle className="w-3 h-3 mr-1" />반려됨</Badge>;
+        return <Badge variant="outline"><XCircle className="w-3 h-3 mr-1" />보류중</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
