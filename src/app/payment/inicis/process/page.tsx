@@ -13,18 +13,19 @@ function InicisProcessContent() {
 
   useEffect(() => {
     const processPaymentResult = async () => {
+      // 이니시스에서 전달받은 파라미터 (try 블록 밖에 선언)
+      const resultCode = searchParams.get('resultCode');
+      const resultMsg = searchParams.get('resultMsg');
+      const oid = searchParams.get('oid'); // orderNumber from Inicis
+      const authToken = searchParams.get('authToken');
+      const authUrl = searchParams.get('authUrl');
+      const netCancelUrl = searchParams.get('netCancelUrl');
+      const mid = searchParams.get('mid');
+      const merchantData = searchParams.get('merchantData');
+      const checkAckUrl = searchParams.get('checkAckUrl');
+      const idc_name = searchParams.get('idc_name');
+      
       try {
-        // 이니시스에서 전달받은 파라미터
-        const resultCode = searchParams.get('resultCode');
-        const resultMsg = searchParams.get('resultMsg');
-        const oid = searchParams.get('oid'); // orderNumber from Inicis
-        const authToken = searchParams.get('authToken');
-        const authUrl = searchParams.get('authUrl');
-        const netCancelUrl = searchParams.get('netCancelUrl');
-        const mid = searchParams.get('mid');
-        const merchantData = searchParams.get('merchantData');
-        const checkAckUrl = searchParams.get('checkAckUrl');
-        const idc_name = searchParams.get('idc_name');
         
         console.log('결제 처리 파라미터:', {
           resultCode,
