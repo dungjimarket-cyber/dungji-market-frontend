@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import ProfileSection from '@/components/mypage/seller/ProfileSection';
-import BidHistory from '@/components/mypage/seller/BidHistory';
+// import BidHistory from '@/components/mypage/seller/BidHistory'; // 성능 최적화를 위해 임시 비활성화
 import WaitingBuyerSelection from '@/components/mypage/seller/WaitingBuyerSelection';
 import PendingSellerDecision from '@/components/mypage/seller/PendingSellerDecision';
 import TradingGroupBuys from '@/components/mypage/seller/TradingGroupBuys';
@@ -50,17 +50,18 @@ export default function SellerMyPageClient() {
       if (!isAuthenticated || !accessToken) return;
       
       try {
-        // 견적내역 개수
+        // 견적내역 개수 - 성능 최적화를 위해 임시 비활성화
         const fetchBidHistory = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_bids/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setBidHistoryCount(data.length);
-          }
+          // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_bids/`, {
+          //   headers: {
+          //     'Authorization': `Bearer ${accessToken}`
+          //   }
+          // });
+          // if (response.ok) {
+          //   const data = await response.json();
+          //   setBidHistoryCount(data.length);
+          // }
+          setBidHistoryCount(0); // 임시로 0 설정
         };
         
         // 구매자 최종선택 대기중 개수
@@ -200,8 +201,8 @@ export default function SellerMyPageClient() {
           value={accordionValue}
           onValueChange={setAccordionValue}
         >
-          {/* 1. 견적제안 내역 */}
-          <AccordionItem value="bid-history">
+          {/* 1. 견적제안 내역 - 성능 최적화를 위해 임시 비활성화 */}
+          {/* <AccordionItem value="bid-history">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 sm:gap-3">
@@ -217,7 +218,7 @@ export default function SellerMyPageClient() {
             <AccordionContent>
               <BidHistory />
             </AccordionContent>
-          </AccordionItem>
+          </AccordionItem> */}
           
           {/* 2. 구매자 최종선택 대기중 */}
           <AccordionItem value="waiting-buyer">
