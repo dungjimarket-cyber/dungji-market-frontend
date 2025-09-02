@@ -76,7 +76,7 @@ export default function CreateObjectionPage() {
 
       if (reportResponse.ok) {
         const reports = await reportResponse.json();
-        const report = reports.find((r: any) => r.id === parseInt(reportId));
+        const report = reports.find((r: any) => r.id === parseInt(reportId!));
         if (report) {
           setReportInfo(report);
         }
