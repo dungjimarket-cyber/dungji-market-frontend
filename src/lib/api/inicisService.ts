@@ -272,8 +272,8 @@ class InicisService {
     <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
     
     <!-- 리턴 URL -->
-    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payments/inicis/return/">
-    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payments/inicis/close/">
+    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payment/inicis/complete">
+    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payment/inicis/close">
     
     <!-- 추가 옵션 -->
     <input type="hidden" name="acceptmethod" value="HPP(1):va_receipt:below1000:centerCd(Y)">
