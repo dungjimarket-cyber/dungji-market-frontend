@@ -17,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -432,8 +432,16 @@ export default function MyPageClient() {
 
           </Accordion>
 
-          {/* 노쇼 신고 내역 버튼 */}
-          <div className="mt-6 flex justify-end">
+          {/* 노쇼 관련 버튼들 */}
+          <div className="mt-6 flex justify-end gap-2">
+            <button
+              onClick={() => router.push('/mypage/noshow-objections')}
+              className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group"
+            >
+              <MessageSquare className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+              <span>이의제기 내역</span>
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+            </button>
             <button
               onClick={() => router.push('/mypage/noshow-reports')}
               className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"

@@ -61,6 +61,7 @@ export default function NoShowReportsPage() {
   const [activeTab, setActiveTab] = useState<'made' | 'received'>('made');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
+  const [selectedReport, setSelectedReport] = useState<NoShowReport | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<NoShowReport | null>(null);
   const [editFormData, setEditFormData] = useState({
@@ -137,8 +138,9 @@ export default function NoShowReportsPage() {
     }
   };
 
-  const openCancelDialog = (reportId: number) => {
-    setSelectedReportId(reportId);
+  const openCancelDialog = (report: NoShowReport) => {
+    setSelectedReportId(report.id);
+    setSelectedReport(report);
     setCancelDialogOpen(true);
   };
 
@@ -303,12 +305,11 @@ export default function NoShowReportsPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <CardTitle className="text-lg">{report.groupbuy_title}</CardTitle>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {activeTab === 'made' 
-                              ? `신고 대상: ${report.reported_user_name}`
-                              : `신고자: ${report.reporter_name}`
-                            }
-                          </p>
+                          {activeTab === 'made' && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              신고 대상: {report.reported_user_name}
+                            </p>
+                          )}
                           <div className="text-xs text-gray-500 mt-2 space-y-1">
                             <p>신고일: {formatDate(report.created_at)}</p>
                             {report.processed_at && (
@@ -328,58 +329,63 @@ export default function NoShowReportsPage() {
                           </p>
                         </div>
 
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">신고 내용</p>
-                          <p className="text-sm whitespace-pre-wrap">{report.content}</p>
-                        </div>
-
-                        {/* 증빙 파일들 표시 */}
-                        {(report.evidence_image || report.evidence_image_2 || report.evidence_image_3) && (
-                          <div>
-                            <p className="text-sm font-medium text-gray-700 mb-2">증빙 자료</p>
-                            <div className="grid grid-cols-3 gap-2">
-                              {[report.evidence_image, report.evidence_image_2, report.evidence_image_3].map((file, index) => {
-                                if (!file) return null;
-                                
-                                // 이미지 파일인지 확인 (URL 확장자로 판단)
-                                const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
-                                
-                                return (
-                                  <div key={index} className="border rounded-lg overflow-hidden">
-                                    {isImage ? (
-                                      <a 
-                                        href={file} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="block"
-                                      >
-                                        <img 
-                                          src={file} 
-                                          alt={`증빙 자료 ${index + 1}`}
-                                          className="w-full h-24 object-cover hover:opacity-90 transition-opacity cursor-pointer"
-                                        />
-                                        <p className="text-xs text-center py-1 bg-gray-50">
-                                          클릭하여 확대
-                                        </p>
-                                      </a>
-                                    ) : (
-                                      <a 
-                                        href={file} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="flex flex-col items-center justify-center h-24 hover:bg-gray-50 transition-colors"
-                                      >
-                                        <FileText className="w-8 h-8 text-gray-400" />
-                                        <p className="text-xs text-gray-600 mt-1">
-                                          PDF 파일 {index + 1}
-                                        </p>
-                                      </a>
-                                    )}
-                                  </div>
-                                );
-                              })}
+                        {/* 내가 신고한 내역만 상세 내용 표시 */}
+                        {activeTab === 'made' && (
+                          <>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">신고 내용</p>
+                              <p className="text-sm whitespace-pre-wrap">{report.content}</p>
                             </div>
-                          </div>
+
+                            {/* 증빙 파일들 표시 */}
+                            {(report.evidence_image || report.evidence_image_2 || report.evidence_image_3) && (
+                              <div>
+                                <p className="text-sm font-medium text-gray-700 mb-2">증빙 자료</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {[report.evidence_image, report.evidence_image_2, report.evidence_image_3].map((file, index) => {
+                                    if (!file) return null;
+                                    
+                                    // 이미지 파일인지 확인 (URL 확장자로 판단)
+                                    const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
+                                    
+                                    return (
+                                      <div key={index} className="border rounded-lg overflow-hidden">
+                                        {isImage ? (
+                                          <a 
+                                            href={file} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="block"
+                                          >
+                                            <img 
+                                              src={file} 
+                                              alt={`증빙 자료 ${index + 1}`}
+                                              className="w-full h-24 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                                            />
+                                            <p className="text-xs text-center py-1 bg-gray-50">
+                                              클릭하여 확대
+                                            </p>
+                                          </a>
+                                        ) : (
+                                          <a 
+                                            href={file} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="flex flex-col items-center justify-center h-24 hover:bg-gray-50 transition-colors"
+                                          >
+                                            <FileText className="w-8 h-8 text-gray-400" />
+                                            <p className="text-xs text-gray-600 mt-1">
+                                              PDF 파일 {index + 1}
+                                            </p>
+                                          </a>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
 
                         {/* 관리자 코멘트 표시 */}
@@ -405,30 +411,44 @@ export default function NoShowReportsPage() {
                               </Badge>
                             )}
                           </div>
-                          {activeTab === 'made' && report.status === 'pending' && (
-                            <div className="flex gap-2">
-                              {(!report.edit_count || report.edit_count < 1) && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => openEditDialog(report)}
-                                >
-                                  <Edit className="w-3 h-3 mr-1" />
-                                  수정
-                                </Button>
-                              )}
-                              {user?.role === 'seller' && (
+                          <div className="flex gap-2">
+                            {/* 피신고 내역에서 이의제기 버튼 */}
+                            {activeTab === 'received' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                onClick={() => router.push(`/noshow-objection/create?report_id=${report.id}`)}
+                              >
+                                <MessageSquare className="w-3 h-3 mr-1" />
+                                이의제기
+                              </Button>
+                            )}
+                            
+                            {/* 신고한 내역에서 수정/취소 버튼 */}
+                            {activeTab === 'made' && report.status === 'pending' && (
+                              <>
+                                {(!report.edit_count || report.edit_count < 1) && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openEditDialog(report)}
+                                  >
+                                    <Edit className="w-3 h-3 mr-1" />
+                                    수정
+                                  </Button>
+                                )}
                                 <Button
                                   size="sm"
                                   variant="destructive"
-                                  onClick={() => openCancelDialog(report.id)}
+                                  onClick={() => openCancelDialog(report)}
                                 >
                                   <Trash2 className="w-3 h-3 mr-1" />
                                   신고 취소
                                 </Button>
-                              )}
-                            </div>
-                          )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -457,7 +477,17 @@ export default function NoShowReportsPage() {
             <AlertDialogDescription className="space-y-2">
               <p>신고를 취소하면 다음과 같이 처리됩니다:</p>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>해당 공구가 <strong className="text-red-600">판매완료</strong>로 자동 변경됩니다</li>
+                {user?.role === 'seller' ? (
+                  <li>해당 공구가 <strong className="text-red-600">판매완료</strong>로 자동 변경됩니다</li>
+                ) : (
+                  <li>
+                    {selectedReport?.report_type === 'seller_noshow' ? (
+                      <>해당 공구에서 <strong className="text-blue-600">구매완료</strong> 처리됩니다</>
+                    ) : (
+                      <>해당 공구가 <strong className="text-red-600">판매완료</strong>로 자동 변경됩니다</>
+                    )}
+                  </li>
+                )}
               </ul>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -465,6 +495,7 @@ export default function NoShowReportsPage() {
             <AlertDialogCancel onClick={() => {
               setCancelDialogOpen(false);
               setSelectedReportId(null);
+              setSelectedReport(null);
             }}>
               돌아가기
             </AlertDialogCancel>
@@ -472,7 +503,13 @@ export default function NoShowReportsPage() {
               onClick={handleCancelReport}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              신고 취소 및 판매완료 처리
+              {user?.role === 'seller' ? (
+                '신고 취소 및 판매완료 처리'
+              ) : (
+                selectedReport?.report_type === 'seller_noshow' ? 
+                  '신고 취소 및 구매완료 처리' : 
+                  '신고 취소 및 판매완료 처리'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
