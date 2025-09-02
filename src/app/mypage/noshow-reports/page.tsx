@@ -309,6 +309,12 @@ export default function NoShowReportsPage() {
                               : `신고자: ${report.reporter_name}`
                             }
                           </p>
+                          <div className="text-xs text-gray-500 mt-2 space-y-1">
+                            <p>신고일: {formatDate(report.created_at)}</p>
+                            {report.processed_at && (
+                              <p>처리일: {formatDate(report.processed_at)}</p>
+                            )}
+                          </div>
                         </div>
                         {getStatusBadge(report.status)}
                       </div>
@@ -393,17 +399,9 @@ export default function NoShowReportsPage() {
 
                         <div className="flex justify-between items-center pt-2 border-t">
                           <div className="flex items-center gap-2">
-                            <p className="text-xs text-gray-500">
-                              신고일: {formatDate(report.created_at)}
-                            </p>
-                            {report.processed_at && (
-                              <p className="text-xs text-gray-500">
-                                처리일: {formatDate(report.processed_at)}
-                              </p>
-                            )}
                             {report.edit_count && report.edit_count > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                수정 {report.edit_count}회
+                              <Badge variant="secondary" className="text-xs">
+                                수정완료
                               </Badge>
                             )}
                           </div>
