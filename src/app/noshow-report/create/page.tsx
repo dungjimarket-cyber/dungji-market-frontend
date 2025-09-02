@@ -698,7 +698,7 @@ function NoShowReportContent() {
                                           participant.phone || participant.phone_number || '연락처 없음';
                         
                         return (
-                          <div key={userId} className="flex items-start space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
+                          <div key={userId} className="flex items-center space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
                             <Checkbox
                               id={`buyer-${userId}`}
                               checked={selectedBuyerIds.includes(userId.toString())}
@@ -709,18 +709,17 @@ function NoShowReportContent() {
                                   setSelectedBuyerIds(selectedBuyerIds.filter(id => id !== userId.toString()));
                                 }
                               }}
-                              className="mt-1"
                             />
                             <label 
                               htmlFor={`buyer-${userId}`} 
-                              className="flex-1 cursor-pointer"
+                              className="flex-1 cursor-pointer flex items-center justify-between"
                             >
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-3">
                                 <User className="w-4 h-4 text-gray-500" />
                                 <span className="font-medium text-sm">{displayName}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <Phone className="w-3 h-3" />
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Phone className="w-4 h-4" />
                                 <span>{phoneNumber}</span>
                               </div>
                             </label>
