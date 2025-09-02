@@ -314,9 +314,9 @@ class InicisService {
 </html>
     `;
     
-    // PC용 팝업 창 열기
+    // PC용 팝업 창 열기 (크기 조정: 850x700)
     console.log('팝업 창 열기 시도...');
-    const payWindow = window.open('', 'inicis_payment', 'width=720,height=630,scrollbars=yes,resizable=yes');
+    const payWindow = window.open('', 'inicis_payment', 'width=850,height=700,scrollbars=yes,resizable=yes');
     console.log('팝업 창 객체:', payWindow);
     
     if (payWindow) {
