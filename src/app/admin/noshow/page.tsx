@@ -43,6 +43,9 @@ interface NoShowReport {
   processed_by?: number;
   noshow_buyers?: number[];
   has_objection?: boolean;
+  is_cancelled?: boolean;
+  cancelled_at?: string;
+  cancellation_reason?: string;
 }
 
 interface NoShowObjection {

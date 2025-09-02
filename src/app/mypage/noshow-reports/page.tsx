@@ -52,6 +52,9 @@ interface NoShowReport {
   processed_at?: string;
   edit_count?: number;
   last_edited_at?: string;
+  is_cancelled?: boolean;
+  cancelled_at?: string;
+  cancellation_reason?: string;
 }
 
 export default function NoShowReportsPage() {
