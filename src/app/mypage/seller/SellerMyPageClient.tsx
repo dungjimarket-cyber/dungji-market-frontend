@@ -163,6 +163,16 @@ export default function SellerMyPageClient() {
       <div className="mt-8 space-y-4">
         <h2 className="text-xl font-semibold mb-4">판매 활동</h2>
         
+        {/* 견적내역보기 버튼 - 판매활동 바로 아래로 이동 */}
+        <button
+          onClick={() => router.push('/mypage/seller/bids')}
+          className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group mb-4"
+        >
+          <Gavel className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+          <span>견적내역 전체보기</span>
+          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+        </button>
+        
         <Accordion 
           type="single" 
           collapsible 
@@ -268,17 +278,8 @@ export default function SellerMyPageClient() {
           </AccordionItem>
         </Accordion>
 
-        {/* 견적내역 및 노쇼 신고 내역 버튼 */}
-        <div className="mt-6 flex justify-between">
-          <button
-            onClick={() => router.push('/mypage/seller/bids')}
-            className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group"
-          >
-            <Gavel className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
-            <span>견적내역 전체보기</span>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-          </button>
-          
+        {/* 노쇼 신고 내역 버튼 */}
+        <div className="mt-6 flex justify-end">
           <button
             onClick={() => router.push('/mypage/noshow-reports')}
             className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"
