@@ -359,15 +359,6 @@ function BidsListClient() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
-                
-                {/* 최종선정 메시지 */}
-                {bid.displayStatus === '최종선정' && (
-                  <div className="mt-3 p-2 bg-green-50 rounded-md">
-                    <p className="text-xs text-green-700 font-medium">
-                      🎉 축하합니다! 최종 선정되셨습니다!
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))}
