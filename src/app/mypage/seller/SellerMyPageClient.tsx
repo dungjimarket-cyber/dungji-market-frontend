@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import ProfileSection from '@/components/mypage/seller/ProfileSection';
-// import BidHistory from '@/components/mypage/seller/BidHistory'; // 성능 최적화를 위해 임시 비활성화
 import WaitingBuyerSelection from '@/components/mypage/seller/WaitingBuyerSelection';
 import PendingSellerDecision from '@/components/mypage/seller/PendingSellerDecision';
 import TradingGroupBuys from '@/components/mypage/seller/TradingGroupBuys';
@@ -34,7 +33,6 @@ export default function SellerMyPageClient() {
   const [pageLoading, setPageLoading] = useState(true);
   
   // 각 섹션의 데이터 카운트 상태 관리
-  const [bidHistoryCount, setBidHistoryCount] = useState(0);
   const [waitingBuyerCount, setWaitingBuyerCount] = useState(0);
   const [pendingSellerCount, setPendingSellerCount] = useState(0);
   const [tradingCount, setTradingCount] = useState(0);
@@ -50,20 +48,6 @@ export default function SellerMyPageClient() {
       if (!isAuthenticated || !accessToken) return;
       
       try {
-        // 견적내역 개수 - 성능 최적화를 위해 임시 비활성화
-        const fetchBidHistory = async () => {
-          // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_bids/`, {
-          //   headers: {
-          //     'Authorization': `Bearer ${accessToken}`
-          //   }
-          // });
-          // if (response.ok) {
-          //   const data = await response.json();
-          //   setBidHistoryCount(data.length);
-          // }
-          setBidHistoryCount(0); // 임시로 0 설정
-        };
-        
         // 구매자 최종선택 대기중 개수
         const fetchWaitingBuyer = async () => {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
@@ -131,7 +115,6 @@ export default function SellerMyPageClient() {
         
         // 모든 API 호출을 병렬로 실행
         await Promise.all([
-          fetchBidHistory(),
           fetchWaitingBuyer(),
           fetchPendingSeller(),
           fetchTrading(),
@@ -201,26 +184,7 @@ export default function SellerMyPageClient() {
           value={accordionValue}
           onValueChange={setAccordionValue}
         >
-          {/* 1. 견적제안 내역 - 성능 최적화를 위해 임시 비활성화 */}
-          {/* <AccordionItem value="bid-history">
-            <AccordionTrigger className="hover:no-underline">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Gavel className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">견적제안 내역</span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {bidHistoryCount}건</span>
-                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                </div>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent>
-              <BidHistory />
-            </AccordionContent>
-          </AccordionItem> */}
-          
-          {/* 2. 구매자 최종선택 대기중 */}
+          {/* 1. 구매자 최종선택 대기중 */}
           <AccordionItem value="waiting-buyer">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
@@ -239,7 +203,7 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 3. 판매확정/포기 선택하기 */}
+          {/* 2. 판매확정/포기 선택하기 */}
           <AccordionItem value="pending-decision" className="border-orange-200">
             <AccordionTrigger className="hover:no-underline bg-orange-50">
               <div className="flex items-center justify-between w-full">
@@ -260,7 +224,7 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 4. 거래중 */}
+          {/* 3. 거래중 */}
           <AccordionItem value="trading">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
@@ -279,7 +243,7 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 5. 판매완료 */}
+          {/* 4. 판매완료 */}
           <AccordionItem value="completed">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
@@ -298,7 +262,7 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 6. 취소된 공구 */}
+          {/* 5. 취소된 공구 */}
           <AccordionItem value="cancelled">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center justify-between w-full">
@@ -318,8 +282,17 @@ export default function SellerMyPageClient() {
           </AccordionItem>
         </Accordion>
 
-        {/* 노쇼 신고 내역 버튼 */}
-        <div className="mt-6 flex justify-end">
+        {/* 견적내역 및 노쇼 신고 내역 버튼 */}
+        <div className="mt-6 flex justify-between">
+          <button
+            onClick={() => router.push('/mypage/seller/bids')}
+            className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group"
+          >
+            <Gavel className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+            <span>견적내역 전체보기</span>
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+          </button>
+          
           <button
             onClick={() => router.push('/mypage/noshow-reports')}
             className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"

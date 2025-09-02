@@ -101,7 +101,7 @@ export default function DesktopNavbar() {
             {/* 판매회원 로그인 시 */}
             {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
               <>
-                <Link href="/mypage/seller#bid-history" className="text-gray-600 hover:text-gray-900">
+                <Link href="/mypage/seller/bids" className="text-gray-600 hover:text-gray-900">
                   견적 내역
                 </Link>
                 <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
