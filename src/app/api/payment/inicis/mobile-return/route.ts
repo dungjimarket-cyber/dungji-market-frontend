@@ -89,21 +89,21 @@ export async function POST(req: NextRequest) {
         
         const successUrl = `/mypage/seller/bid-tokens?${queryParams.toString()}`;
         console.log('모바일 결제 성공 - 리다이렉트 URL:', successUrl);
-        return NextResponse.redirect(new URL(successUrl, req.url));
+        return NextResponse.redirect(new URL(successUrl, req.url), 302);
       } else {
         // 결제 실패
         const failUrl = `/mypage/seller/bid-tokens?payment=failed&msg=${encodeURIComponent(finalMessage || '결제 승인 실패')}`;
-        return NextResponse.redirect(new URL(failUrl, req.url));
+        return NextResponse.redirect(new URL(failUrl, req.url), 302);
       }
     } else {
       // 인증 실패 또는 취소
       const cancelUrl = `/mypage/seller/bid-tokens?payment=cancelled&msg=${encodeURIComponent(P_RMESG1 || '결제가 취소되었습니다')}`;
-      return NextResponse.redirect(new URL(cancelUrl, req.url));
+      return NextResponse.redirect(new URL(cancelUrl, req.url), 302);
     }
   } catch (error) {
     console.error('모바일 결제 응답 처리 오류:', error);
     const errorUrl = `/mypage/seller/bid-tokens?payment=failed&msg=${encodeURIComponent('결제 처리 중 오류가 발생했습니다')}`;
-    return NextResponse.redirect(new URL(errorUrl, req.url));
+    return NextResponse.redirect(new URL(errorUrl, req.url), 302);
   }
 }
 
