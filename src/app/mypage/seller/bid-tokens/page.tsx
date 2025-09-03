@@ -64,6 +64,31 @@ export default function BidTokensPage() {
       const authToken = params.get('authToken');
       const authResultCode = params.get('authResultCode');
       const tid = params.get('tid');
+      const authUrl = params.get('authUrl');
+      
+      // 추가 파라미터들도 수집 (가상계좌 관련)
+      const allParams: any = {};
+      for (const [key, value] of params) {
+        allParams[key] = value;
+      }
+      
+      console.log('결제 검증 요청:', {
+        orderId,
+        authToken: authToken ? '있음' : '없음',
+        authResultCode,
+        tid,
+        authUrl,
+        allParams
+      });
+      
+      const requestData = {
+        orderId,
+        authToken,
+        authResultCode,
+        tid,
+        ...(authUrl && { authUrl }), // authUrl이 있으면 추가
+        allParams // 모든 파라미터 전달
+      };
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
         method: 'POST',
@@ -71,31 +96,42 @@ export default function BidTokensPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
         },
-        body: JSON.stringify({
-          orderId,
-          authToken,
-          authResultCode,
-          tid
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (response.ok) {
         const result = await response.json();
-        toast({
-          title: '결제 성공',
-          description: result.is_subscription 
-            ? '결제가 완료되었습니다. 구독권이 지급되었습니다.'
-            : `결제가 완료되었습니다. 견적이용권 ${result.token_count}개가 지급되었습니다.`,
-        });
+        console.log('결제 검증 성공:', result);
         
-        // 견적이용권 정보 새로고침
-        const data = await bidTokenService.getBidTokens();
-        setBidTokens(data);
+        // 가상계좌 결제인 경우 별도 처리
+        if (result.is_vbank) {
+          toast({
+            title: '무통장입금 안내',
+            description: result.message || '가상계좌가 발급되었습니다. 입금 후 이용권이 지급됩니다.',
+            duration: 8000, // 조금 더 길게 표시
+          });
+          
+          // 입금 대기 목록 새로고침
+          await loadPendingPayments();
+        } else {
+          // 일반 결제 성공
+          toast({
+            title: '결제 성공',
+            description: result.is_subscription 
+              ? '결제가 완료되었습니다. 구독권이 지급되었습니다.'
+              : `결제가 완료되었습니다. 견적이용권 ${result.token_count}개가 지급되었습니다.`,
+          });
+          
+          // 견적이용권 정보 새로고침 (즉시 지급된 경우만)
+          const data = await bidTokenService.getBidTokens();
+          setBidTokens(data);
+        }
         
         // URL 파라미터 제거
         window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
       } else {
-        throw new Error('결제 검증 실패');
+        const errorData = await response.json().catch(() => ({ error: '결제 검증 실패' }));
+        throw new Error(errorData.error || '결제 검증 실패');
       }
     } catch (error) {
       console.error('결제 검증 실패:', error);

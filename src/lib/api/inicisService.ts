@@ -362,27 +362,37 @@ class InicisService {
   /**
    * 결제 결과 확인
    */
-  async verifyPayment(orderId: string, authUrl: string, authToken: string, authResultCode: string) {
+  async verifyPayment(orderId: string, authUrl: string, authToken: string, authResultCode: string, allParams?: any) {
     try {
+      const requestData = {
+        orderId,
+        authUrl,
+        authToken,
+        authResultCode,
+        ...(allParams && { allParams }) // allParams가 있으면 포함
+      };
+
+      console.log('결제 검증 요청 데이터:', requestData);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
         },
-        body: JSON.stringify({
-          orderId,
-          authUrl,
-          authToken,
-          authResultCode,
-        }),
+        body: JSON.stringify(requestData),
       });
 
+      console.log('결제 검증 응답 상태:', response.status);
+      
       if (!response.ok) {
         throw new Error('결제 검증에 실패했습니다.');
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('결제 검증 성공 결과:', result);
+      
+      return result;
     } catch (error) {
       console.error('결제 검증 실패:', error);
       throw error;
