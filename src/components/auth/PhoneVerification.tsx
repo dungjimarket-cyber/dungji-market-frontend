@@ -331,39 +331,34 @@ export function PhoneVerification({
 
       {/* 휴대폰 번호 확인 모달 */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>휴대폰 번호 확인</DialogTitle>
-            <DialogDescription className="pt-3">
+        <DialogContent className="sm:max-w-[360px]">
+          <div className="text-center space-y-3 py-2">
+            <p className="text-sm text-gray-600">
               입력하신 번호로 인증번호를 발송합니다.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-center text-lg font-medium">
+            </p>
+            <div className="bg-gray-50 rounded-lg py-3 px-4">
+              <p className="text-base font-medium">
                 {phoneNumber}
               </p>
             </div>
-            <p className="mt-3 text-sm text-gray-600 text-center">
-              위 번호가 맞으신가요?
-            </p>
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReInput}
+                className="flex-1"
+              >
+                다시입력
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSendCode}
+                className="flex-1 bg-blue-500 hover:bg-blue-600"
+              >
+                발송
+              </Button>
+            </div>
           </div>
-          <DialogFooter className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReInput}
-            >
-              다시입력
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSendCode}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              확인
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
