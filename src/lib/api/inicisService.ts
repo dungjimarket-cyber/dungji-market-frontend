@@ -102,8 +102,8 @@ class InicisService {
     // 타임스탬프 생성 (TimeInMillis Long형)
     const timestamp = String(Date.now());
     
-    // 모바일 결제는 해시키 생성이 필요
-    const mobileHash = await this.generateMobileHash(orderId, params.amount, timestamp);
+    // 모바일 결제는 해시키 생성이 필요하지만 일단 생략 (선택사항)
+    const mobileHash = null; // await this.generateMobileHash(orderId, params.amount, timestamp);
     
     // DOM에 직접 폼을 생성하고 제출
     const form = document.createElement('form');
