@@ -270,8 +270,8 @@ export default function BidTokensPage() {
         buyerName: user?.nickname || user?.username || '구매자',
         buyerTel: user?.phone_number || '010-0000-0000',
         buyerEmail: user?.email || 'buyer@example.com',
-        returnUrl: `${window.location.origin}/payment/inicis/return`,
-        closeUrl: `${window.location.origin}/payment/inicis/close`,
+        returnUrl: `${window.location.origin}/api/payment/inicis/complete`,
+        closeUrl: `${window.location.origin}/api/payment/inicis/close`,
       };
       
       console.log('PC 결제 시작:', paymentParams);
