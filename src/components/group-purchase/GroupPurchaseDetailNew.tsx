@@ -895,8 +895,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     // 반올림된 금액이 원래 금액과 다르면 알림
     if (roundedAmount !== numAmount) {
       toast({
-        title: '견적 금액 조정',
-        description: `견적 금액이 ${roundedAmount.toLocaleString()}원으로 수정됩니다.`,
+        title: '견적 금액 자동 조정',
+        description: `견적 금액이 ${roundedAmount.toLocaleString()}원으로 조정됩니다.`,
       });
       setBidAmount(roundedAmount);
     }
