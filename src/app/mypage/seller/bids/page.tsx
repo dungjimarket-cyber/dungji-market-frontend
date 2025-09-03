@@ -324,12 +324,11 @@ function BidsListClient() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    {/* 상품명과 상태 뱃지를 한 줄에 */}
-                    <div className="flex items-center gap-3 mb-2">
+                    {/* 상품명 */}
+                    <div className="mb-2">
                       <h3 className="font-medium text-base truncate">
                         {bid.product_name || '상품명 없음'}
                       </h3>
-                      {getStatusBadge(bid)}
                     </div>
                     
                     {/* 견적 정보 */}
@@ -349,15 +348,19 @@ function BidsListClient() {
                     </div>
                   </div>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push(`/groupbuys/${bid.groupbuy}`)}
-                    className="flex items-center gap-1 ml-3"
-                  >
-                    공구보기
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  {/* 오른쪽 영역: 상태 뱃지와 공구보기 버튼 */}
+                  <div className="flex flex-col items-end gap-2 ml-3">
+                    {getStatusBadge(bid)}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/groupbuys/${bid.groupbuy}`)}
+                      className="flex items-center gap-1"
+                    >
+                      공구보기
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
