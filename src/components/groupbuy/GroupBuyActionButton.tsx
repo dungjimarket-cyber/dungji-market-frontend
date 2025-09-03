@@ -165,7 +165,7 @@ export default function GroupBuyActionButton({
           clearCache();
           // 판매회원과 일반회원 구분하여 라우팅
           const userIsSeller = user?.role === 'seller' || user?.user_type === '판매';
-          router.push(userIsSeller ? '/mypage/seller/settings' : '/mypage?tab=settings');
+          router.push(userIsSeller ? '/mypage/seller/settings' : '/mypage/settings');
         }}
       />
 

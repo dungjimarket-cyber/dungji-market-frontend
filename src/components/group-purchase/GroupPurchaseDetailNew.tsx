@@ -2726,7 +2726,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           clearCache();
           // 판매회원과 일반회원 구분하여 라우팅
           const isSeller = user?.role === 'seller' || user?.user_type === '판매';
-          router.push(isSeller ? '/mypage/seller/settings' : '/mypage?tab=settings');
+          router.push(isSeller ? '/mypage/seller/settings' : '/mypage/settings');
         }}
       />
       </div>
