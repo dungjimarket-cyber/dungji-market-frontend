@@ -122,7 +122,7 @@ class InicisService {
     };
     
     // 모바일 결제 파라미터 설정 (이니시스 공식 스펙)
-    addField('P_INI_PAYMENT', 'CARD'); // 결제수단 (CARD, VBANK 등)
+    addField('P_INI_PAYMENT', 'CARD:VBANK'); // 결제수단 (카드:무통장입금)
     addField('P_MID', this.MID); // 상점 ID (필수)
     addField('P_OID', orderId); // 주문번호 (필수, Unique값)
     addField('P_AMT', String(params.amount)); // 결제금액 (필수, 숫자만, 콤마 사용불가)
