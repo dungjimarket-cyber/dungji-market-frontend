@@ -61,35 +61,75 @@ export async function POST(req: NextRequest) {
         const authToken = P_TID || '';
         const amount = params.get('P_AMT') || P_AMT || '';
         
-        // 백엔드 검증을 위한 파라미터 구성
-        const queryParams = new URLSearchParams({
-          payment: 'success',
-          orderId: orderId,
-          authResultCode: finalStatus,
-          payMethod: payMethod,
-          authToken: authToken,
-          tid: P_TID || '',
-          amount: amount
-        });
-        
-        // 가상계좌 관련 파라미터 추가 (무통장입금인 경우)
-        if (payMethod === 'VBANK') {
-          const vbankInfo = {
-            vactBankName: params.get('P_VACT_BANKNAME') || '',
-            VACT_Num: params.get('P_VACT_NUM') || '',
-            VACT_Date: params.get('P_VACT_DATE') || '',
-            VACT_Name: params.get('P_VACT_NAME') || '',
-            vactBankCode: params.get('P_VACT_BANKCODE') || ''
-          };
-          
-          Object.entries(vbankInfo).forEach(([key, value]) => {
-            if (value) queryParams.set(key, value);
+        // 먼저 백엔드에서 결제를 검증하고 사용자 인증 정보를 가져옵니다
+        try {
+          const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/mobile-verify/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              orderId: orderId,
+              authToken: authToken,
+              authResultCode: finalStatus,
+              payMethod: payMethod,
+              tid: P_TID || '',
+              amount: amount,
+              // 가상계좌 정보 추가
+              ...(payMethod === 'VBANK' && {
+                vactBankName: params.get('P_VACT_BANKNAME') || '',
+                VACT_Num: params.get('P_VACT_NUM') || '',
+                VACT_Date: params.get('P_VACT_DATE') || '',
+                VACT_Name: params.get('P_VACT_NAME') || '',
+                vactBankCode: params.get('P_VACT_BANKCODE') || ''
+              })
+            }),
           });
+
+          if (verifyResponse.ok) {
+            const verifyData = await verifyResponse.json();
+            
+            // 백엔드에서 검증이 성공하면 일시적 토큰을 포함하여 리다이렉트
+            const queryParams = new URLSearchParams({
+              payment: 'success',
+              orderId: orderId,
+              verified: 'true',
+              // 일시적 인증을 위한 토큰 추가 (백엔드에서 제공)
+              ...(verifyData.tempToken && { temp_token: verifyData.tempToken })
+            });
+            
+            const successUrl = `/payment-success?${queryParams.toString()}`;
+            console.log('모바일 결제 검증 성공 - 리다이렉트 URL:', successUrl);
+            return NextResponse.redirect(new URL(successUrl, req.url));
+          } else {
+            console.error('백엔드 결제 검증 실패:', await verifyResponse.text());
+            throw new Error('결제 검증 실패');
+          }
+        } catch (verifyError) {
+          console.error('결제 검증 중 오류:', verifyError);
+          // 검증 실패 시 기존 방식대로 처리 (fallback)
+          const queryParams = new URLSearchParams({
+            payment: 'success',
+            orderId: orderId,
+            authResultCode: finalStatus,
+            payMethod: payMethod,
+            authToken: authToken,
+            tid: P_TID || '',
+            amount: amount,
+            // 가상계좌 관련 파라미터 추가 (무통장입금인 경우)
+            ...(payMethod === 'VBANK' && {
+              vactBankName: params.get('P_VACT_BANKNAME') || '',
+              VACT_Num: params.get('P_VACT_NUM') || '',
+              VACT_Date: params.get('P_VACT_DATE') || '',
+              VACT_Name: params.get('P_VACT_NAME') || '',
+              vactBankCode: params.get('P_VACT_BANKCODE') || ''
+            })
+          });
+          
+          const successUrl = `/payment-success?${queryParams.toString()}`;
+          console.log('모바일 결제 성공 (검증 우회) - 리다이렉트 URL:', successUrl);
+          return NextResponse.redirect(new URL(successUrl, req.url));
         }
-        
-        const successUrl = `/mypage/seller/bid-tokens?${queryParams.toString()}`;
-        console.log('모바일 결제 성공 - 리다이렉트 URL:', successUrl);
-        return NextResponse.redirect(new URL(successUrl, req.url));
       } else {
         // 결제 실패
         const failUrl = `/mypage/seller/bid-tokens?payment=failed&msg=${encodeURIComponent(finalMessage || '결제 승인 실패')}`;
