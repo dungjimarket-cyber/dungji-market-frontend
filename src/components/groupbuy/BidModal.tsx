@@ -245,6 +245,11 @@ export default function BidModal({
       console.log('입찰 전송 데이터:', bidData);
       
       const result = await createBid(bidData);
+      
+      // 응답 데이터 확인
+      console.log('[BidModal] 입찰 응답 데이터:', result);
+      console.log('[BidModal] is_updated 값:', result.is_updated);
+      console.log('[BidModal] existingBid 값:', existingBid);
 
       // 견적이용권 정보 실시간 업데이트
       try {
@@ -257,7 +262,7 @@ export default function BidModal({
       toast({
         title: result.is_updated 
           ? '견적이 성공적으로 수정되었습니다' 
-          : '견적이 성공적으로 등록되었습니다',
+          : '견적이 성공적으로 제출되었습니다',
         description: result.is_updated
           ? '기존 견적 정보가 새로운 금액으로 업데이트되었습니다.'
           : '견적 내역은 마이페이지에서 확인할 수 있습니다.',
