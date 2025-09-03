@@ -762,12 +762,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('__auth_time');
         localStorage.removeItem('dungji_redirect_url');
         
+        // 프로필 관련 캐시 제거
+        localStorage.removeItem('profile_cache');
+        localStorage.removeItem('seller_profile');
+        localStorage.removeItem('buyer_profile');
+        localStorage.removeItem('business_number');
+        localStorage.removeItem('representative_name');
+        localStorage.removeItem('business_address');
+        
         // 추가로 생성된 수 있는 로컬 스토리지 클리어
         Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('auth.') || key.includes('token') || key.includes('Token')) {
+          if (key.startsWith('auth.') || 
+              key.includes('token') || 
+              key.includes('Token') ||
+              key.includes('profile') ||
+              key.includes('Profile') ||
+              key.includes('business') ||
+              key.includes('user')) {
             localStorage.removeItem(key);
           }
         });
+        
+        // 세션 스토리지도 정리
+        sessionStorage.clear();
         
         // 로그아웃 이벤트 발생
         window.dispatchEvent(new Event('storage'));

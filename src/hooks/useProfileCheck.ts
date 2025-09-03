@@ -111,11 +111,35 @@ export function useProfileCheck(): ProfileCheckResult {
     });
   }, [user]);
 
-  // 캐시 초기화 함수 (더 이상 필요 없지만 호환성 위해 유지)
-  const clearCache = useCallback(() => {
-    console.log('[ProfileCheck] clearCache 호출됨 (로컬 데이터 사용으로 실제 동작 없음)');
-    // AuthContext에서 user 객체를 직접 사용하므로 캐시 초기화 불필요
-  }, []);
+  // 캐시 초기화 함수 - 프로필 업데이트 후 최신 정보 재확인
+  const clearCache = useCallback(async () => {
+    console.log('[ProfileCheck] clearCache 호출됨 - 프로필 정보 갱신');
+    
+    // 판매자인 경우 API를 통해 최신 프로필 정보 가져와서 확인
+    if (user && (user.role === 'seller' || user.user_type === '판매')) {
+      try {
+        const token = localStorage.getItem('dungji_auth_token') || localStorage.getItem('accessToken');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const profileData = await response.json();
+          console.log('[ProfileCheck] 갱신된 프로필 데이터:', profileData);
+          
+          // 갱신된 데이터로 누락 필드 체크
+          const missing = checkMissingFields(profileData);
+          setMissingFields(missing);
+          setIsProfileComplete(missing.length === 0);
+        }
+      } catch (error) {
+        console.error('[ProfileCheck] 프로필 갱신 실패:', error);
+      }
+    }
+  }, [user]);
 
   // user 객체가 변경될 때마다 프로필 완성도 업데이트
   useEffect(() => {
