@@ -53,25 +53,56 @@ export async function POST(req: NextRequest) {
       const finalMessage = params.get('P_RMESG1');
       
       if (finalStatus === '00') {
-        // 결제 성공 - 성공 페이지로 리다이렉트
-        const orderId = P_OID || P_NOTI || 'unknown'; // P_OID가 없으면 P_NOTI 사용, 둘 다 없으면 'unknown'
-        const successUrl = `/payment/inicis/complete?status=success&tid=${P_TID}&amount=${P_AMT}&orderId=${orderId}`;
+        // 결제 성공 - 입찰권 페이지로 리다이렉트하면서 백엔드 검증 파라미터 전달
+        const orderId = P_OID || P_NOTI || 'unknown';
         
+        // 승인 응답에서 추가 데이터 파싱
+        const payMethod = params.get('P_TYPE') || P_TYPE || 'mobile';
+        const authToken = P_TID || '';
+        const amount = params.get('P_AMT') || P_AMT || '';
+        
+        // 백엔드 검증을 위한 파라미터 구성
+        const queryParams = new URLSearchParams({
+          payment: 'success',
+          orderId: orderId,
+          authResultCode: finalStatus,
+          payMethod: payMethod,
+          authToken: authToken,
+          tid: P_TID || '',
+          amount: amount
+        });
+        
+        // 가상계좌 관련 파라미터 추가 (무통장입금인 경우)
+        if (payMethod === 'VBANK') {
+          const vbankInfo = {
+            vactBankName: params.get('P_VACT_BANKNAME') || '',
+            VACT_Num: params.get('P_VACT_NUM') || '',
+            VACT_Date: params.get('P_VACT_DATE') || '',
+            VACT_Name: params.get('P_VACT_NAME') || '',
+            vactBankCode: params.get('P_VACT_BANKCODE') || ''
+          };
+          
+          Object.entries(vbankInfo).forEach(([key, value]) => {
+            if (value) queryParams.set(key, value);
+          });
+        }
+        
+        const successUrl = `/mypage/seller/bid-tokens?${queryParams.toString()}`;
         console.log('모바일 결제 성공 - 리다이렉트 URL:', successUrl);
         return NextResponse.redirect(new URL(successUrl, req.url));
       } else {
         // 결제 실패
-        const failUrl = `/payment/inicis/complete?status=fail&message=${encodeURIComponent(finalMessage || '결제 승인 실패')}`;
+        const failUrl = `/mypage/seller/bid-tokens?payment=failed&msg=${encodeURIComponent(finalMessage || '결제 승인 실패')}`;
         return NextResponse.redirect(new URL(failUrl, req.url));
       }
     } else {
       // 인증 실패 또는 취소
-      const cancelUrl = `/payment/inicis/complete?status=cancel&message=${encodeURIComponent(P_RMESG1 || '결제가 취소되었습니다')}`;
+      const cancelUrl = `/mypage/seller/bid-tokens?payment=cancelled&msg=${encodeURIComponent(P_RMESG1 || '결제가 취소되었습니다')}`;
       return NextResponse.redirect(new URL(cancelUrl, req.url));
     }
   } catch (error) {
     console.error('모바일 결제 응답 처리 오류:', error);
-    const errorUrl = `/payment/inicis/complete?status=error&message=${encodeURIComponent('결제 처리 중 오류가 발생했습니다')}`;
+    const errorUrl = `/mypage/seller/bid-tokens?payment=failed&msg=${encodeURIComponent('결제 처리 중 오류가 발생했습니다')}`;
     return NextResponse.redirect(new URL(errorUrl, req.url));
   }
 }

@@ -65,6 +65,27 @@ export default function BidTokensPage() {
     return tokenType === 'unlimited' ? priceInfo[tokenType] : priceInfo[tokenType] * quantity;
   };
 
+  // YYYYMMDD 형식의 날짜를 파싱하는 함수
+  const parseVbankDate = (vbankDate: string) => {
+    if (!vbankDate || vbankDate.length !== 8) {
+      return new Date().toLocaleString(); // 기본값
+    }
+    
+    // YYYYMMDD를 YYYY-MM-DD로 변환
+    const year = vbankDate.substring(0, 4);
+    const month = vbankDate.substring(4, 6);
+    const day = vbankDate.substring(6, 8);
+    
+    const date = new Date(`${year}-${month}-${day}T23:59:59`);
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit', 
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   // 결제 검증 함수
   const verifyPayment = async (orderId: string) => {
     try {
@@ -497,7 +518,7 @@ export default function BidTokensPage() {
                               <div className="flex justify-between">
                                 <span className="text-gray-600">입금기한</span>
                                 <span className="font-medium text-red-600">
-                                  {new Date(payment.vbank_date).toLocaleString()}
+                                  {parseVbankDate(payment.vbank_date)}
                                 </span>
                               </div>
                             </div>
