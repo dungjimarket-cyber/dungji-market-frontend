@@ -2718,8 +2718,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         isOpen={showProfileModal}
         onClose={() => {
           setShowProfileModal(false);
-          // "나중에 할게요" 클릭 시 이전 페이지로 돌아가기
-          router.back();
+          // 모달만 닫기 - 사용자가 나중에 다시 시도할 수 있도록
         }}
         missingFields={missingFields}
         onUpdateProfile={() => {
