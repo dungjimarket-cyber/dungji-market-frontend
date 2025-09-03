@@ -24,6 +24,7 @@ function InicisProcessContent() {
       const merchantData = searchParams.get('merchantData');
       const checkAckUrl = searchParams.get('checkAckUrl');
       const idc_name = searchParams.get('idc_name');
+      const payMethod = searchParams.get('payMethod'); // 결제 수단
       
       try {
         
@@ -34,7 +35,8 @@ function InicisProcessContent() {
           authToken,
           authUrl,
           mid,
-          idc_name
+          idc_name,
+          payMethod
         });
         
         // 결제 성공 여부 확인
@@ -55,6 +57,7 @@ function InicisProcessContent() {
               authUrl: authUrl,
               netCancelUrl: netCancelUrl,
               idc_name: idc_name,
+              payMethod: payMethod, // 결제 수단 추가
             }),
           });
 
