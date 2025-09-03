@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Phone, Shield, CheckCircle } from 'lucide-react';
 import { phoneVerificationService } from '@/lib/api/phoneVerification';
 import {
@@ -253,7 +252,7 @@ export function PhoneVerification({
               className={isVerified ? 'bg-gray-50' : ''}
             />
             {isDuplicate && (
-              <p className="text-sm text-red-500 mt-1">이미 등록된 번호입니다.</p>
+              <p className="text-xs text-red-500 mt-0.5">이미 등록된 번호입니다.</p>
             )}
           </div>
           
@@ -309,16 +308,16 @@ export function PhoneVerification({
       )}
 
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="text-xs text-red-500 bg-red-50 px-3 py-1.5 rounded-md">
+          {error}
+        </div>
       )}
 
       {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">{success}</AlertDescription>
-        </Alert>
+        <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-3 py-1.5 rounded-md">
+          <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+          {success}
+        </div>
       )}
 
       {purpose === 'signup' && (
