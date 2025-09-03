@@ -104,11 +104,23 @@ function InicisProcessContent() {
             console.log('결제 검증 성공 결과:', result);
             setStatus('success');
             
-            // 구독권과 견적이용권 구분하여 메시지 표시
+            // 가상계좌, 구독권, 견적이용권 구분하여 메시지 표시
             let purchaseMessage = '결제가 완료되었습니다.';
-            if (result.is_subscription) {
+            
+            if (result.is_vbank) {
+              // 가상계좌 결제인 경우
+              purchaseMessage = result.message || '가상계좌가 발급되었습니다. 입금 후 이용권이 지급됩니다.';
+              console.log('가상계좌 결제 완료:', {
+                vbank_name: result.vbank_name,
+                vbank_num: result.vbank_num,
+                vbank_date: result.vbank_date,
+                vbank_holder: result.vbank_holder
+              });
+            } else if (result.is_subscription) {
+              // 즉시 지급되는 구독권
               purchaseMessage = result.message || '구독권이 구매 완료되었습니다.';
             } else if (result.token_count) {
+              // 즉시 지급되는 견적이용권
               purchaseMessage = result.message || `견적이용권 ${result.token_count}개가 구매 완료되었습니다.`;
             }
             
