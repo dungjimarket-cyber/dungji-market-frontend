@@ -265,8 +265,8 @@ export default function BidModal({
       
       toast({
         title: isUpdate 
-          ? '견적이 성공적으로 수정되었습니다' 
-          : '견적이 성공적으로 제출되었습니다',
+          ? '견적이 수정되었습니다' 
+          : '견적이 제출되었습니다',
         description: isUpdate
           ? '기존 견적 정보가 새로운 금액으로 업데이트되었습니다.'
           : '견적 내역은 마이페이지에서 확인할 수 있습니다.',
