@@ -26,13 +26,41 @@ function InicisProcessContent() {
       const idc_name = searchParams.get('idc_name');
       const payMethod = searchParams.get('payMethod'); // 결제 수단
       
+      // 모든 가능한 TID 관련 파라미터 확인
+      const tid = searchParams.get('tid');
+      const P_TID = searchParams.get('P_TID');
+      const transactionId = searchParams.get('transactionId');
+      const paymentId = searchParams.get('paymentId');
+      const MOID = searchParams.get('MOID');
+      const TotPrice = searchParams.get('TotPrice');
+      const goodName = searchParams.get('goodName');
+      
       try {
+        
+        // 모든 URL 파라미터 로깅
+        const allParams: { [key: string]: string | null } = {};
+        for (const [key, value] of searchParams.entries()) {
+          allParams[key] = value;
+        }
+        
+        console.log('=== 이니시스 전체 파라미터 분석 ===');
+        console.log('모든 URL 파라미터:', allParams);
+        console.log('TID 관련 파라미터들:', {
+          tid,
+          P_TID,
+          transactionId,
+          paymentId,
+          authToken: authToken ? `${authToken.substring(0, 50)}...(${authToken.length}자)` : null,
+          MOID,
+          TotPrice,
+          goodName
+        });
         
         console.log('결제 처리 파라미터:', {
           resultCode,
           resultMsg,
           oid,
-          authToken,
+          authToken: authToken ? `${authToken.substring(0, 50)}...(${authToken.length}자)` : null,
           authUrl,
           mid,
           idc_name,
@@ -52,12 +80,20 @@ function InicisProcessContent() {
               orderId: oid,
               authResultCode: resultCode,
               authToken: authToken,
-              tid: authToken, // authToken 사용 (tid는 없음)
+              tid: tid || P_TID || authToken, // 실제 TID 우선 사용
               mid: mid,
               authUrl: authUrl,
               netCancelUrl: netCancelUrl,
               idc_name: idc_name,
               payMethod: payMethod, // 결제 수단 추가
+              // 추가 파라미터들도 전달
+              P_TID: P_TID,
+              transactionId: transactionId,
+              paymentId: paymentId,
+              MOID: MOID,
+              TotPrice: TotPrice,
+              goodName: goodName,
+              allParams: allParams, // 모든 파라미터 전달
             }),
           });
 
