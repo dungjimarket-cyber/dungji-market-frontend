@@ -99,8 +99,11 @@ class InicisService {
    * 모바일 전용 결제 폼 전송
    */
   private async submitMobilePaymentForm(orderId: string, params: InicisPaymentParams) {
+    // 타임스탬프 생성 (TimeInMillis Long형)
+    const timestamp = String(Date.now());
+    
     // 모바일 결제는 해시키 생성이 필요
-    const mobileHash = await this.generateMobileHash(orderId, params.amount);
+    const mobileHash = await this.generateMobileHash(orderId, params.amount, timestamp);
     
     // DOM에 직접 폼을 생성하고 제출
     const form = document.createElement('form');
@@ -118,23 +121,23 @@ class InicisService {
       form.appendChild(input);
     };
     
-    // 모바일 결제 파라미터 설정
-    addField('P_INI_PAYMENT', 'CARD'); // 결제수단 (CARD, VBANK, MOBILE 등)
-    addField('P_MID', this.MID); // 상점 ID
-    addField('P_OID', orderId); // 주문번호
-    addField('P_AMT', String(params.amount)); // 금액
-    addField('P_GOODS', params.productName); // 상품명
-    addField('P_UNAME', params.buyerName); // 구매자명
-    addField('P_MOBILE', params.buyerTel); // 구매자 전화번호
-    addField('P_EMAIL', params.buyerEmail); // 구매자 이메일
-    addField('P_NEXT_URL', `${window.location.origin}/api/payments/inicis/return/`); // 결과 리턴 URL
-    addField('P_CHARSET', 'utf8'); // 인코딩
-    addField('P_RESERVED', 'below1000=Y&vbank_receipt=Y&centerCd=Y'); // 추가 옵션
+    // 모바일 결제 파라미터 설정 (이니시스 공식 스펙)
+    addField('P_INI_PAYMENT', 'CARD'); // 결제수단 (CARD, VBANK 등)
+    addField('P_MID', this.MID); // 상점 ID (필수)
+    addField('P_OID', orderId); // 주문번호 (필수, Unique값)
+    addField('P_AMT', String(params.amount)); // 결제금액 (필수, 숫자만, 콤마 사용불가)
+    addField('P_GOODS', params.productName); // 상품명 (필수)
+    addField('P_UNAME', params.buyerName); // 구매자명 (필수)
+    addField('P_NEXT_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 결과수신 URL (필수)
+    addField('P_NOTI_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 가상계좌입금통보 URL
+    addField('P_HPP_METHOD', '2'); // 휴대폰결제 상품유형 [1:컨텐츠, 2:실물]
+    addField('P_RESERVED', 'centerCd=Y'); // IDC센터코드 수신 사용옵션 (필수)
     addField('P_NOTI', orderId); // 가맹점 임의 데이터
-    addField('P_HPP_METHOD', '1'); // 휴대폰 결제 허용
-    addField('P_VBANK_DT', '7'); // 가상계좌 입금기한 (7일)
+    
+    // 타임스탬프와 해시 추가 (선택사항, 권장)
+    addField('P_TIMESTAMP', timestamp); // 타임스탬프
     if (mobileHash) {
-      addField('P_HASH', mobileHash); // 모바일 해시키
+      addField('P_CHKFAKE', mobileHash); // BASE64_ENCODE(SHA512(P_AMT + P_OID + P_TIMESTAMP + HashKey))
     }
     
     // 폼을 body에 추가하고 제출
@@ -334,7 +337,7 @@ class InicisService {
   /**
    * 모바일 해시키 생성 (백엔드에서 처리)
    */
-  private async generateMobileHash(orderId: string, amount: number): Promise<string | null> {
+  private async generateMobileHash(orderId: string, amount: number, timestamp: string): Promise<string | null> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/mobile-hash/`, {
         method: 'POST',
@@ -345,6 +348,7 @@ class InicisService {
         body: JSON.stringify({
           orderId,
           amount,
+          timestamp,
         }),
       });
 
