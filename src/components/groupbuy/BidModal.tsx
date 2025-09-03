@@ -249,6 +249,7 @@ export default function BidModal({
       // 응답 데이터 확인
       console.log('[BidModal] 입찰 응답 데이터:', result);
       console.log('[BidModal] is_updated 값:', result.is_updated);
+      console.log('[BidModal] is_updated 타입:', typeof result.is_updated);
       console.log('[BidModal] existingBid 값:', existingBid);
 
       // 견적이용권 정보 실시간 업데이트
@@ -259,11 +260,14 @@ export default function BidModal({
         console.error('견적이용권 정보 업데이트 오류:', error);
       }
 
+      // is_updated가 명시적으로 true인 경우만 수정으로 처리
+      const isUpdate = result.is_updated === true;
+      
       toast({
-        title: result.is_updated 
+        title: isUpdate 
           ? '견적이 성공적으로 수정되었습니다' 
           : '견적이 성공적으로 제출되었습니다',
-        description: result.is_updated
+        description: isUpdate
           ? '기존 견적 정보가 새로운 금액으로 업데이트되었습니다.'
           : '견적 내역은 마이페이지에서 확인할 수 있습니다.',
         variant: 'default'
