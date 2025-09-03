@@ -48,8 +48,17 @@ export default function BidTokensPage() {
   // 상품 가격 정보
   const priceInfo = {
     'single': 1990, // 견적 이용권 단품 가격 (원)
-    'unlimited': 29900 // 무제한 구독제(30일) 가격 (원)
+    'unlimited': 59000 // 무제한 구독제(30일) 할인가 (원) - 정상가 99,000원
   };
+  
+  // 정상가 정보
+  const originalPrices = {
+    'single': 1990,
+    'unlimited': 99000 // 정상가
+  };
+  
+  // 할인율 계산
+  const discountRate = Math.round((1 - priceInfo.unlimited / originalPrices.unlimited) * 100);
 
   // 총 가격 계산
   const calculateTotalPrice = () => {
@@ -536,21 +545,50 @@ export default function BidTokensPage() {
                     value={tokenType}
                     onValueChange={(value) => 
                       setTokenType(value as 'single' | 'unlimited')}
-                    className="grid grid-cols-3 gap-4 mt-2"
+                    className="grid grid-cols-1 gap-4 mt-2"
                   >
-                    <div>
-                      <RadioGroupItem
-                        value="single"
-                        id="single"
-                      />
-                      <Label htmlFor="single">견적 이용권</Label>
+                    <div className="border rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors"
+                         onClick={() => setTokenType('single')}>
+                      <div className="flex items-start">
+                        <RadioGroupItem
+                          value="single"
+                          id="single"
+                          className="mt-1"
+                        />
+                        <div className="ml-3 flex-1">
+                          <Label htmlFor="single" className="cursor-pointer text-base font-medium">
+                            견적 이용권
+                          </Label>
+                          <p className="text-sm text-gray-600 mt-1">건당 1,990원</p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <RadioGroupItem
-                        value="unlimited"
-                        id="unlimited"
-                      />
-                      <Label htmlFor="unlimited">무제한 구독권(30일)</Label>
+                    
+                    <div className="border rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors relative"
+                         onClick={() => setTokenType('unlimited')}>
+                      {/* 할인 배지 */}
+                      <div className="absolute -top-3 -right-3 bg-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg">
+                        🎉 오픈기념 {discountRate}% 할인
+                      </div>
+                      <div className="flex items-start">
+                        <RadioGroupItem
+                          value="unlimited"
+                          id="unlimited"
+                          className="mt-1"
+                        />
+                        <div className="ml-3 flex-1">
+                          <Label htmlFor="unlimited" className="cursor-pointer text-base font-medium">
+                            무제한 구독권 (30일)
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              추천
+                            </span>
+                          </Label>
+                          <div className="flex items-center mt-1 gap-2">
+                            <span className="text-sm text-gray-400 line-through">99,000원</span>
+                            <span className="text-lg font-bold text-blue-600">59,000원</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </RadioGroup>
 
@@ -603,23 +641,44 @@ export default function BidTokensPage() {
                 )}
 
                 <div className="bg-slate-50 p-4 rounded-md">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">단가</span>
-                    <span>{priceInfo[tokenType].toLocaleString()}원</span>
-                  </div>
+                  {tokenType === 'unlimited' && (
+                    <>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">정상가</span>
+                        <span className="line-through text-gray-400">{originalPrices[tokenType].toLocaleString()}원</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">할인가 ({discountRate}% 할인)</span>
+                        <span className="text-red-600 font-bold">{priceInfo[tokenType].toLocaleString()}원</span>
+                      </div>
+                    </>
+                  )}
                   
-                  {tokenType !== 'unlimited' && (
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-600">수량</span>
-                      <span>{quantity}개</span>
-                    </div>
+                  {tokenType === 'single' && (
+                    <>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">단가</span>
+                        <span>{priceInfo[tokenType].toLocaleString()}원</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">수량</span>
+                        <span>{quantity}개</span>
+                      </div>
+                    </>
                   )}
                   
                   <Separator className="my-3" />
                   
                   <div className="flex justify-between items-center text-lg font-bold">
                     <span>총 결제금액</span>
-                    <span>{calculateTotalPrice().toLocaleString()}원</span>
+                    <div className="text-right">
+                      {tokenType === 'unlimited' && (
+                        <div className="text-xs text-green-600 mb-1">
+                          🎆 {(originalPrices.unlimited - priceInfo.unlimited).toLocaleString()}원 할인!
+                        </div>
+                      )}
+                      <span>{calculateTotalPrice().toLocaleString()}원</span>
+                    </div>
                   </div>
                 </div>
               </div>
