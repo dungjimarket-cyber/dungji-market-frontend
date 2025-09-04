@@ -78,21 +78,6 @@ export default function BidModal({
   const [pendingBidData, setPendingBidData] = useState<BidFormData | null>(null);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
-  // 모달이 열릴 때 패널티 체크
-  useEffect(() => {
-    if (isOpen && user) {
-      console.log('🔴 BidModal Open - User:', user);
-      console.log('🔴 BidModal Open - Penalty info:', user?.penalty_info);
-      console.log('🔴 BidModal Open - Is active:', user?.penalty_info?.is_active);
-      
-      if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
-        console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
-        setShowPenaltyModal(true);
-        onClose(); // 입찰 모달은 닫기
-      }
-    }
-  }, [isOpen, user, onClose]);
-  
   // 마감된 경우 모달 자체에서 방어
   if (isClosed) {
     return (

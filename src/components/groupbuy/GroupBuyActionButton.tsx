@@ -6,6 +6,7 @@ import JoinGroupBuyModal from './JoinGroupBuyModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { useRouter } from 'next/navigation';
 
 interface GroupBuyActionButtonProps {
@@ -41,6 +42,7 @@ export default function GroupBuyActionButton({
 }: GroupBuyActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   
@@ -76,7 +78,20 @@ export default function GroupBuyActionButton({
   const handleClick = async () => {
     console.log('[GroupBuyActionButton] 버튼 클릭, user:', user);
     
-    // 먼저 프로필 체크 수행 (모든 회원 대상)
+    // 먼저 패널티 체크 수행
+    if (user) {
+      console.log('🔴 GroupBuyActionButton - Penalty check');
+      console.log('🔴 Penalty info:', user?.penalty_info);
+      console.log('🔴 Is active:', user?.penalty_info?.is_active);
+      
+      if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+        console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+        setShowPenaltyModal(true);
+        return;
+      }
+    }
+    
+    // 프로필 체크 수행 (모든 회원 대상)
     if (user) {
       console.log('[GroupBuyActionButton] 프로필 체크 시작');
       const isProfileComplete = await checkProfile();
@@ -154,6 +169,14 @@ export default function GroupBuyActionButton({
       >
         {getButtonText()}
       </Button>
+
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole={isSeller ? 'seller' : 'buyer'}
+      />
 
       {/* 프로필 체크 모달 */}
       <ProfileCheckModal
