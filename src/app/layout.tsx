@@ -28,10 +28,10 @@ export const metadata: Metadata = {
     siteName: '둥지마켓',
     images: [
       {
-        url: '/logo.png',
+        url: '/dungji_logo_text.jpg',
         width: 1200,
         height: 630,
-        alt: '둥지마켓 로고',
+        alt: '둥지마켓',
       },
     ],
     locale: 'ko_KR',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
     description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
-    images: ['/logo.png'],
+    images: ['/dungji_logo_text.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
   icons: {
