@@ -61,23 +61,27 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+  
+  // 모달이 열릴 때 패널티 체크
+  useEffect(() => {
+    if (isOpen && user) {
+      console.log('🔴 JoinModal Open - User:', user);
+      console.log('🔴 JoinModal Open - Penalty info:', user?.penalty_info);
+      console.log('🔴 JoinModal Open - Is active:', user?.penalty_info?.is_active);
+      
+      if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+        console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+        setShowPenaltyModal(true);
+        onClose(); // 공구 참여 모달은 닫기
+      }
+    }
+  }, [isOpen, user]);
 
   /**
    * 공구 참여 처리를 수행하는 함수
    * 로그인 상태와 JWT 토큰을 확인하고 API 호출
    */
   const handleJoin = async () => {
-    // 패널티 체크
-    console.log('🔴 JoinModal - User:', user);
-    console.log('🔴 JoinModal - Penalty info:', user?.penalty_info);
-    console.log('🔴 JoinModal - Is active:', user?.penalty_info?.is_active);
-    
-    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
-      console.log('🔴 패널티 활성 상태 감지! 모달 표시');
-      setShowPenaltyModal(true);
-      return;
-    }
-    
     // 로그인 상태 확인
     if (!isAuthenticated || !accessToken) {
       toast({
