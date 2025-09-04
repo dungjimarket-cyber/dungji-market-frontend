@@ -303,6 +303,7 @@ export default function MyPageClient() {
                     <p className="text-sm text-gray-500">닉네임</p>
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
+                      {console.log('Penalty info:', user?.penalty_info, 'Is active:', user?.penalty_info?.is_active)}
                       {user?.penalty_info?.is_active && (
                         <div className="flex items-center gap-1 text-xs">
                           <span className="text-red-600 font-medium">
