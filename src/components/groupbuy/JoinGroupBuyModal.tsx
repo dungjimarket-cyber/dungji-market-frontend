@@ -247,6 +247,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
 
   if (loading) return null;
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         {step === 'confirm' && (
@@ -378,5 +379,6 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
       penaltyInfo={user?.penalty_info}
       userRole="buyer"
     />
+    </>
   );
 }
