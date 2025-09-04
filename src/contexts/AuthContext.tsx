@@ -321,9 +321,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     business_address: profileData.business_address,
                     representative_name: profileData.representative_name, // 대표자명 추가
                     penalty_info: profileData.penalty_info, // 패널티 정보 추가
-                    penaltyInfo: profileData.penaltyInfo // camelCase 버전도 추가
+                    penaltyInfo: profileData.penalty_info // camelCase 버전도 추가 (동일한 데이터)
                   };
                   console.log('병합된 사용자 데이터:', userData);
+                  console.log('🔴 병합된 패널티 정보:', userData.penalty_info);
                   logDebug('사용자 정보 업데이트 완료', userData);
                 } else {
                   // 로컬 스토리지에 사용자 정보가 없는 경우
@@ -343,7 +344,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     business_number: profileData.business_number, // 사업자등록번호 추가
                     business_address: profileData.business_address,
                     representative_name: profileData.representative_name, // 대표자명 추가
+                    penalty_info: profileData.penalty_info, // 패널티 정보 추가
+                    penaltyInfo: profileData.penalty_info // camelCase 버전도 추가
                   };
+                  console.log('🔴 새로 생성된 사용자 데이터의 패널티 정보:', userData.penalty_info);
                   logDebug('새 사용자 정보 생성', userData);
                 }
                 
