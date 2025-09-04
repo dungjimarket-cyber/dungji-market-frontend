@@ -22,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { tokenUtils } from '@/lib/tokenUtils';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 interface BidModalProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ export default function BidModal({
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingBidData, setPendingBidData] = useState<BidFormData | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 마감된 경우 모달 자체에서 방어
   if (isClosed) {
@@ -162,6 +164,12 @@ export default function BidModal({
 
   // 입찰 제출 핸들러
   const onSubmit = async (data: BidFormData) => {
+    // 패널티 체크
+    if (user?.penalty_info?.is_active) {
+      setShowPenaltyModal(true);
+      return;
+    }
+    
     // 판매회원 필수 정보 완성도 체크
     if (user?.role === 'seller') {
       const missingFields = [];
@@ -642,6 +650,14 @@ export default function BidModal({
         </div>
       </DialogContent>
     </Dialog>
+    
+    {/* 패널티 모달 */}
+    <PenaltyModal
+      isOpen={showPenaltyModal}
+      onClose={() => setShowPenaltyModal(false)}
+      penaltyInfo={user?.penalty_info}
+      userRole="seller"
+    />
     </>
   );
 }

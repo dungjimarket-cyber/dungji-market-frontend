@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { toast } from '@/components/ui/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import {
@@ -352,6 +353,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const [createdGroupBuyId, setCreatedGroupBuyId] = useState<number | null>(null);
   const [createdProductName, setCreatedProductName] = useState('');
   const [createdProductImage, setCreatedProductImage] = useState('');
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 공구 제목 자동 생성 함수
   const generateTitle = () => {
@@ -938,6 +940,12 @@ const onSubmit = async (values: FormData) => {
     return;
   }
   
+  // 패널티 체크
+  if (user?.penalty_info?.is_active) {
+    setShowPenaltyModal(true);
+    return;
+  }
+  
   setIsSubmitting(true);
 
   // API 요청 데이터 및 상품 세부 정보 변수 선언
@@ -1257,6 +1265,14 @@ const onSubmit = async (values: FormData) => {
         onClose={() => setShowProfileModal(false)}
         missingFields={missingFields}
         onUpdateProfile={clearCache}
+      />
+      
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info}
+        userRole="buyer"
       />
       
       <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">

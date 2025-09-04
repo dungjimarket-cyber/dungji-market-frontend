@@ -7,6 +7,7 @@ import { CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 /**
  * 가입유형을 표시하는 유틸리티 함수
@@ -59,12 +60,19 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
   const [step, setStep] = useState<'confirm' | 'success' | 'error'>('confirm');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
   /**
    * 공구 참여 처리를 수행하는 함수
    * 로그인 상태와 JWT 토큰을 확인하고 API 호출
    */
   const handleJoin = async () => {
+    // 패널티 체크
+    if (user?.penalty_info?.is_active) {
+      setShowPenaltyModal(true);
+      return;
+    }
+    
     // 로그인 상태 확인
     if (!isAuthenticated || !accessToken) {
       toast({
@@ -362,5 +370,13 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
 
       </DialogContent>
     </Dialog>
+    
+    {/* 패널티 모달 */}
+    <PenaltyModal
+      isOpen={showPenaltyModal}
+      onClose={() => setShowPenaltyModal(false)}
+      penaltyInfo={user?.penalty_info}
+      userRole="buyer"
+    />
   );
 }
