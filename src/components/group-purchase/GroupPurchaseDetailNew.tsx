@@ -10,6 +10,7 @@ import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, Chevron
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import BidConfirmModal from '@/components/groupbuy/BidConfirmModal';
@@ -194,6 +195,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   
   // 구매자 확정률 모달 상태
   const [showBuyerConfirmationModal, setShowBuyerConfirmationModal] = useState(false);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   const [buyerConfirmationData, setBuyerConfirmationData] = useState<{
     total_participants: number;
     confirmed_count: number;
@@ -825,7 +827,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   const handleBidClick = async () => {
-    // 프로필 체크 먼저 수행
+    // 패널티 체크 먼저 수행
+    console.log('🔴 GroupPurchaseDetailNew - Bid Penalty check');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
+    }
+
+    // 프로필 체크 수행
     console.log('[GroupPurchaseDetailNew] 견적 제안하기 버튼 클릭, 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
     console.log('[GroupPurchaseDetailNew] 프로필 체크 결과:', isProfileComplete);
@@ -1025,6 +1039,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const handleJoinClick = async () => {
     if (!isAuthenticated) {
       router.push(`/login?callbackUrl=/groupbuys/${groupBuy.id}`);
+      return;
+    }
+
+    // 패널티 체크 먼저 수행
+    console.log('🔴 GroupPurchaseDetailNew - Penalty check');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
       return;
     }
 
@@ -2746,6 +2772,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           const isSeller = user?.role === 'seller' || user?.user_type === '판매';
           router.push(isSeller ? '/mypage/seller/settings' : '/mypage/settings');
         }}
+      />
+
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole={isSeller ? 'seller' : 'buyer'}
       />
       </div>
     </EndedGroupBuyAccessControl>
