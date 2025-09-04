@@ -916,6 +916,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
   const handleBidConfirm = async () => {
     setShowBidConfirmModal(false);
+    
+    // 확인 버튼 누르는 시점에 타이머 재확인
+    const now = new Date();
+    const endTime = new Date(groupBuy.end_time);
+    
+    if (now > endTime) {
+      toast({
+        title: '공구가 마감되었습니다',
+        description: '마감된 공구에는 견적을 제안할 수 없습니다.',
+        variant: 'destructive',
+      });
+      // 3초 후 목록으로 이동
+      setTimeout(() => {
+        router.push('/group-purchases');
+      }, 3000);
+      return;
+    }
+    
     setIsBidding(true);
     
     try {
