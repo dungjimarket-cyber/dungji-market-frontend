@@ -315,6 +315,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     business_number: profileData.business_number, // 사업자등록번호 추가
                     business_address: profileData.business_address,
                     representative_name: profileData.representative_name, // 대표자명 추가
+                    penalty_info: profileData.penalty_info, // 패널티 정보 추가
+                    penaltyInfo: profileData.penaltyInfo // camelCase 버전도 추가
                   };
                   console.log('병합된 사용자 데이터:', userData);
                   logDebug('사용자 정보 업데이트 완료', userData);
@@ -661,7 +663,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 representative_name: profileData.representative_name, // 대표자명 추가
                 sns_type: profileData.sns_type,
                 provider: profileData.sns_type,
-                token: access
+                token: access,
+                penalty_info: profileData.penalty_info, // 패널티 정보 추가
+                penaltyInfo: profileData.penaltyInfo // camelCase 버전도 추가
               };
               
               setUser(user);
