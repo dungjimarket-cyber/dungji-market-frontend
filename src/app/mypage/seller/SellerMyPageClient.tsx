@@ -188,8 +188,16 @@ export default function SellerMyPageClient() {
                   <Users className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
                   <span className="font-medium text-sm sm:text-base">구매자 최종선택 대기중</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.waitingBuyer}건</span>
+                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                  {counts.waitingBuyer > 0 ? (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-yellow-500 text-white text-sm font-semibold rounded-full">
+                      {counts.waitingBuyer}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                      {counts.waitingBuyer}
+                    </span>
+                  )}
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -207,10 +215,19 @@ export default function SellerMyPageClient() {
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
                   <span className="font-medium text-orange-700 text-sm sm:text-base">판매확정/포기 선택하기</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-orange-600 font-semibold">
-                    {counts.pendingSeller}건 선택 대기중
-                  </span>
+                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                  {counts.pendingSeller > 0 ? (
+                    <>
+                      <span className="text-xs sm:text-sm text-orange-600 font-medium">선택 대기중</span>
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-orange-500 text-white text-sm font-semibold rounded-full animate-pulse">
+                        {counts.pendingSeller}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                      {counts.pendingSeller}
+                    </span>
+                  )}
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
                 </div>
               </div>
@@ -228,8 +245,16 @@ export default function SellerMyPageClient() {
                   <Package className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
                   <span className="font-medium text-sm sm:text-base">거래중</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.trading}건</span>
+                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                  {counts.trading > 0 ? (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-green-500 text-white text-sm font-semibold rounded-full">
+                      {counts.trading}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                      {counts.trading}
+                    </span>
+                  )}
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -247,8 +272,10 @@ export default function SellerMyPageClient() {
                   <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
                   <span className="font-medium text-sm sm:text-base">판매완료</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.completed}건</span>
+                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                  <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                    {counts.completed}
+                  </span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -266,8 +293,10 @@ export default function SellerMyPageClient() {
                   <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
                   <span className="font-medium text-sm sm:text-base">취소된 공구</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {counts.cancelled}건</span>
+                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                  <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                    {counts.cancelled}
+                  </span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>

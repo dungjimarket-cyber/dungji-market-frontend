@@ -324,8 +324,16 @@ export default function MyPageClient() {
                     <Package className="w-5 h-5 mr-2 text-blue-500" />
                     <span className="font-medium">참여중인 공구</span>
                   </div>
-                  <div className="flex items-center text-blue-600">
-                    <span className="mr-1 text-sm">{participatingCount}</span>
+                  <div className="flex items-center gap-2">
+                    {participatingCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-blue-500 text-white text-sm font-semibold rounded-full">
+                        {participatingCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {participatingCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-blue-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -343,8 +351,16 @@ export default function MyPageClient() {
                     <ShoppingBag className="w-5 h-5 mr-2 text-amber-500" />
                     <span className="font-medium">구매확정/포기 선택하기</span>
                   </div>
-                  <div className="flex items-center text-amber-600">
-                    <span className="mr-1 text-sm">{pendingSelectionCount}</span>
+                  <div className="flex items-center gap-2">
+                    {pendingSelectionCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-amber-500 text-white text-sm font-semibold rounded-full">
+                        {pendingSelectionCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {pendingSelectionCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-amber-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -362,8 +378,16 @@ export default function MyPageClient() {
                     <Clock className="w-5 h-5 mr-2 text-purple-500" />
                     <span className="font-medium">판매자 최종선택 대기중</span>
                   </div>
-                  <div className="flex items-center text-purple-600">
-                    <span className="mr-1 text-sm">{waitingSellerCount}</span>
+                  <div className="flex items-center gap-2">
+                    {waitingSellerCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
+                        {waitingSellerCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {waitingSellerCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -381,8 +405,16 @@ export default function MyPageClient() {
                     <CheckCircle2 className="w-5 h-5 mr-2 text-green-500" />
                     <span className="font-medium">거래중</span>
                   </div>
-                  <div className="flex items-center text-green-600">
-                    <span className="mr-1 text-sm">{purchaseInProgressCount}</span>
+                  <div className="flex items-center gap-2">
+                    {purchaseInProgressCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-green-500 text-white text-sm font-semibold rounded-full">
+                        {purchaseInProgressCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {purchaseInProgressCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-green-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -400,8 +432,10 @@ export default function MyPageClient() {
                     <CheckCircle2 className="w-5 h-5 mr-2 text-gray-500" />
                     <span className="font-medium">구매 완료</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <span className="mr-1 text-sm">{completedGroupBuysCount}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                      {completedGroupBuysCount}
+                    </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -419,8 +453,10 @@ export default function MyPageClient() {
                     <XCircle className="w-5 h-5 mr-2 text-red-500" />
                     <span className="font-medium">취소된 공구</span>
                   </div>
-                  <div className="flex items-center text-red-600">
-                    <span className="mr-1 text-sm">{cancelledGroupBuysCount}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                      {cancelledGroupBuysCount}
+                    </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-red-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
