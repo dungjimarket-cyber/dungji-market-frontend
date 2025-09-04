@@ -162,7 +162,17 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         isAuthenticated,
         user,
         roles: user?.roles,
-        id: user?.id
+        id: user?.id,
+        penalty_info: user?.penalty_info,
+        penaltyInfo: user?.penaltyInfo
+      });
+      
+      // 패널티 정보 디버깅
+      console.log('🔴 GroupBuyClient - User penalty info check:', {
+        penalty_info: user?.penalty_info,
+        penaltyInfo: user?.penaltyInfo,
+        is_active_snake: user?.penalty_info?.is_active,
+        is_active_camel: user?.penaltyInfo?.isActive
       });
       
       // 1. 사용자 객체에서 역할 정보 확인

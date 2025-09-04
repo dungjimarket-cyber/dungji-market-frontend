@@ -77,34 +77,41 @@ export default function GroupBuyActionButton({
 
   const handleClick = async () => {
     console.log('[GroupBuyActionButton] 버튼 클릭, user:', user);
+    console.log('[GroupBuyActionButton] isAuthenticated:', isAuthenticated);
+    
+    // 비로그인 사용자는 로그인 페이지로 이동
+    if (!isAuthenticated) {
+      console.log('[GroupBuyActionButton] 비로그인 사용자, 로그인 페이지로 이동');
+      router.push(`/login?callbackUrl=/groupbuys/${groupBuy.id}`);
+      return;
+    }
     
     // 먼저 패널티 체크 수행
-    if (user) {
-      console.log('🔴 GroupBuyActionButton - Penalty check');
-      console.log('🔴 Penalty info:', user?.penalty_info);
-      console.log('🔴 Is active:', user?.penalty_info?.is_active);
-      
-      if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
-        console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
-        setShowPenaltyModal(true);
-        return;
-      }
+    console.log('🔴 GroupBuyActionButton - Penalty check');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 PenaltyInfo (camelCase):', user?.penaltyInfo);
+    console.log('🔴 Is active (snake):', user?.penalty_info?.is_active);
+    console.log('🔴 Is active (camel):', user?.penaltyInfo?.isActive);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
     }
     
     // 프로필 체크 수행 (모든 회원 대상)
-    if (user) {
-      console.log('[GroupBuyActionButton] 프로필 체크 시작');
-      const isProfileComplete = await checkProfile();
-      console.log('[GroupBuyActionButton] 프로필 체크 결과:', isProfileComplete);
-      console.log('[GroupBuyActionButton] missingFields:', missingFields);
-      
-      if (!isProfileComplete) {
-        console.log('[GroupBuyActionButton] 프로필 미완성, 모달 표시 시도');
-        console.log('[GroupBuyActionButton] showProfileModal 이전 값:', showProfileModal);
-        setShowProfileModal(true);
-        console.log('[GroupBuyActionButton] setShowProfileModal(true) 호출됨');
-        return;
-      }
+    console.log('[GroupBuyActionButton] 프로필 체크 시작');
+    const isProfileComplete = await checkProfile();
+    console.log('[GroupBuyActionButton] 프로필 체크 결과:', isProfileComplete);
+    console.log('[GroupBuyActionButton] missingFields:', missingFields);
+    
+    if (!isProfileComplete) {
+      console.log('[GroupBuyActionButton] 프로필 미완성, 모달 표시 시도');
+      console.log('[GroupBuyActionButton] showProfileModal 이전 값:', showProfileModal);
+      setShowProfileModal(true);
+      console.log('[GroupBuyActionButton] setShowProfileModal(true) 호출됨');
+      return;
     }
     
     // 판매회원은 상세 페이지에서 입찰 처리하도록 이벤트 발생
