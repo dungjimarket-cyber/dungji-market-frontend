@@ -9,6 +9,7 @@ import PendingSellerDecision from '@/components/mypage/seller/PendingSellerDecis
 import TradingGroupBuys from '@/components/mypage/seller/TradingGroupBuys';
 import CompletedSales from '@/components/mypage/seller/CompletedSales';
 import CancelledGroupBuys from '@/components/mypage/seller/CancelledGroupBuys';
+import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import {
   Accordion,
   AccordionContent,
@@ -158,6 +159,9 @@ export default function SellerMyPageClient() {
       
       {/* 프로필 섹션 */}
       <ProfileSection />
+      
+      {/* 패널티 알림 표시 */}
+      <PenaltyAlert penaltyInfo={user?.penalty_info || user?.penaltyInfo} userRole="seller" />
       
       {/* 판매 활동 섹션 */}
       <div className="mt-8 space-y-4">

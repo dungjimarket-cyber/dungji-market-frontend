@@ -11,6 +11,7 @@ import WaitingSellerDecisionGroupBuys from '@/components/mypage/WaitingSellerDec
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import CancelledGroupBuys from '@/components/mypage/CancelledGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
+import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import {
   Accordion,
   AccordionContent,
@@ -310,6 +311,9 @@ export default function MyPageClient() {
               </div>
             </CardContent>
           </Card>
+          
+          {/* 패널티 알림 표시 */}
+          <PenaltyAlert penaltyInfo={user?.penalty_info} userRole="buyer" />
           
           {/* 동의 알림 표시 */}
           <ConsentNotification />
