@@ -68,7 +68,12 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
    */
   const handleJoin = async () => {
     // 패널티 체크
-    if (user?.penalty_info?.is_active) {
+    console.log('🔴 JoinModal - User:', user);
+    console.log('🔴 JoinModal - Penalty info:', user?.penalty_info);
+    console.log('🔴 JoinModal - Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 모달 표시');
       setShowPenaltyModal(true);
       return;
     }
@@ -376,7 +381,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
     <PenaltyModal
       isOpen={showPenaltyModal}
       onClose={() => setShowPenaltyModal(false)}
-      penaltyInfo={user?.penalty_info}
+      penaltyInfo={user?.penalty_info || user?.penaltyInfo}
       userRole="buyer"
     />
     </>
