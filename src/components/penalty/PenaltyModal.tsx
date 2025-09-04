@@ -81,22 +81,22 @@ export default function PenaltyModal({ isOpen, onClose, penaltyInfo, userRole }:
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-1.5 text-red-600 text-sm">
+            <AlertCircle className="h-4 w-4" />
             패널티 안내
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <DialogDescription className="text-gray-900 space-y-2">
-              <div className="font-semibold text-red-800 text-base">
+        <div className="space-y-3">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <DialogDescription className="text-gray-900 space-y-1.5">
+              <div className="font-semibold text-red-800 text-sm">
                 {penaltyType} 패널티가 부여되었습니다 (누적 {penaltyInfo.count}회)
               </div>
               
-              <div className="space-y-1 text-sm">
+              <div className="space-y-1 text-xs">
                 <div>
                   <span className="font-medium">사유:</span> {penaltyInfo.reason}
                 </div>
@@ -110,15 +110,15 @@ export default function PenaltyModal({ isOpen, onClose, penaltyInfo, userRole }:
             </DialogDescription>
           </div>
 
-          <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+          <div className="text-xs text-gray-600 bg-gray-50 rounded-lg p-2.5">
             <p className="font-medium mb-1">⚠️ 제한사항</p>
-            <p>{getRestrictionMessage()}</p>
-            <p className="mt-2 text-xs">패널티 기간이 종료되면 정상적으로 이용하실 수 있습니다.</p>
+            <p className="text-xs">{getRestrictionMessage()}</p>
+            <p className="mt-1.5 text-xs text-gray-500">패널티 기간이 종료되면 정상적으로 이용하실 수 있습니다.</p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose} className="w-full">
+          <Button onClick={onClose} className="w-full h-9 text-sm">
             확인
           </Button>
         </DialogFooter>
