@@ -18,12 +18,12 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
-  description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
+  title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
+  description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
   manifest: "/manifest.json",
   openGraph: {
-    title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
-    description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
+    title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
+    description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
     url: process.env.NEXTAUTH_URL || 'https://dungji-market.com',
     siteName: '둥지마켓',
     images: [
@@ -39,8 +39,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "둥지마켓 - 휴대폰,인터넷 공동구매로 최고 지원금 혜택받기!",
-    description: "휴대폰,인터넷 바꿀 때, 한 곳에서 비교 끝! 공동구매로 견적받고 최고 지원금 혜택을 누려보세요!",
+    title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
+    description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
     images: ['/logos/dungji_logo_text.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
