@@ -22,7 +22,7 @@ interface PenaltyInfo {
 }
 
 interface PenaltyAlertProps {
-  penaltyInfo: PenaltyInfo | null;
+  penaltyInfo: PenaltyInfo | null | undefined;
   userRole: 'buyer' | 'seller' | null;
 }
 
