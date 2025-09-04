@@ -31,6 +31,8 @@ type User = {
   business_address?: string; // 사업장 주소
   is_business_verified?: boolean; // 사업자 인증 완료 여부
   representative_name?: string; // 사업자등록증상 대표자명
+  penalty_info?: any; // 패널티 정보 (snake_case)
+  penaltyInfo?: any; // 패널티 정보 (camelCase)
 };
 
 /**
