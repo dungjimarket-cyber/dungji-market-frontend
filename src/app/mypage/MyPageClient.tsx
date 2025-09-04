@@ -303,14 +303,16 @@ export default function MyPageClient() {
                     <p className="text-sm text-gray-500">닉네임</p>
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
-                      {console.log('Penalty info:', user?.penalty_info, 'Is active:', user?.penalty_info?.is_active)}
-                      {user?.penalty_info?.is_active && (
+                      {console.log('🔴 MyPage - User 전체:', user)}
+                      {console.log('🔴 MyPage - Penalty info:', user?.penalty_info)}
+                      {console.log('🔴 MyPage - Is active:', user?.penalty_info?.is_active)}
+                      {(user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) && (
                         <div className="flex items-center gap-1 text-xs">
                           <span className="text-red-600 font-medium">
-                            [{user.penalty_info.penalty_type || user.penalty_info.type}]
+                            [{(user.penalty_info || user.penaltyInfo)?.penalty_type || (user.penalty_info || user.penaltyInfo)?.type || '패널티'}]
                           </span>
                           <span className="text-gray-500">
-                            (~{new Date(user.penalty_info.end_date || user.penalty_info.endDate).toLocaleString('ko-KR', { 
+                            (~{new Date((user.penalty_info || user.penaltyInfo)?.end_date || (user.penalty_info || user.penaltyInfo)?.endDate).toLocaleString('ko-KR', { 
                               month: '2-digit', 
                               day: '2-digit', 
                               hour: '2-digit', 

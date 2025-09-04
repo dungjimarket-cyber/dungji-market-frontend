@@ -301,6 +301,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const profileData = await response.json();
                 console.log('프로필 API 응답 데이터:', profileData);
                 console.log('sns_type 값:', profileData.sns_type);
+                console.log('🔴 패널티 정보:', profileData.penalty_info);
+                console.log('🔴 패널티 활성 상태:', profileData.penalty_info?.is_active);
+                console.log('🔴 패널티 종료시간:', profileData.penalty_info?.end_date);
                 logDebug('백엔드에서 프로필 정보 가져오기 성공', profileData);
                 
                 // 기존 로컬 데이터와 병합
