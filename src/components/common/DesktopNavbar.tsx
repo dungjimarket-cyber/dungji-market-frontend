@@ -10,6 +10,7 @@ import AuthButtons from '@/components/auth/AuthButtons';
 import NotificationBell from '@/components/notification/NotificationBell';
 import NotificationDropdown from '@/components/notification/NotificationDropdown';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 /**
  * 데스크탑용 상단 네비게이션 바 컴포넌트
@@ -18,6 +19,7 @@ export default function DesktopNavbar() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 프로필 체크 Hook 사용
   const { 
@@ -38,8 +40,20 @@ export default function DesktopNavbar() {
       return;
     }
     
+    // 패널티 체크
+    console.log('🔴 DesktopNavbar - 공구 등록하기 클릭');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
+    }
+    
     // 프로필 완성도 체크
-    console.log('[DesktopNavbar] 공구 등록하기 클릭, 프로필 체크 시작');
+    console.log('[DesktopNavbar] 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
     
     if (!isProfileComplete) {
@@ -134,6 +148,14 @@ export default function DesktopNavbar() {
           </div>
         </div>
       </div>
+      
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole="buyer"
+      />
       
       {/* 프로필 체크 모달 */}
       <ProfileCheckModal
