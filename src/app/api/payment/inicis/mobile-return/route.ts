@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
         
         try {
           // 백엔드로 결제 검증 및 입찰권 지급 요청
-          const backendApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http://localhost:8000', 'http://localhost:8000') || 'http://localhost:8000';
-          const verifyResponse = await fetch(`${backendApiUrl}/api/payments/inicis/verify/`, {
+          const backendApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+          const verifyResponse = await fetch(`${backendApiUrl}/payments/inicis/verify/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
