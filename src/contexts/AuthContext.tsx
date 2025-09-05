@@ -654,6 +654,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 phone_number: profileData.phone_number,
                 region: profileData.region,
                 address_region: profileData.address_region,
+                business_number: profileData.business_number, // 사업자등록번호 추가
                 business_address: profileData.business_address,
                 representative_name: profileData.representative_name, // 대표자명 추가
                 sns_type: profileData.sns_type,

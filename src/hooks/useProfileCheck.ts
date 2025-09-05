@@ -144,9 +144,20 @@ export function useProfileCheck(): ProfileCheckResult {
   // user 객체가 변경될 때마다 프로필 완성도 업데이트
   useEffect(() => {
     if (user) {
+      console.log('[ProfileCheck] User 변경 감지, 프로필 재확인:', {
+        userId: user.id,
+        role: user.role,
+        business_number: user.business_number,
+        representative_name: user.representative_name
+      });
       const missing = checkMissingFields(user);
       setMissingFields(missing);
       setIsProfileComplete(missing.length === 0);
+    } else {
+      // user가 null이면 (로그아웃) 상태 초기화
+      console.log('[ProfileCheck] User null - 상태 초기화');
+      setMissingFields([]);
+      setIsProfileComplete(false);
     }
   }, [user]);
 
