@@ -140,7 +140,7 @@ export default function BannerCarousel() {
       
       {/* 인디케이터 - 배너 영역 밖 하단에 위치, 배너가 2개 이상일 때만 표시 */}
       {banners.length > 1 && (
-        <div className="flex justify-center items-center gap-1.5 mt-4">
+        <div className="flex justify-center items-center gap-1.5 mt-2 md:mt-4">
           {banners.map((_, index) => (
             <button
               key={index}
