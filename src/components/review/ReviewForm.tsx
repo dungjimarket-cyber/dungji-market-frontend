@@ -32,6 +32,10 @@ interface ReviewFormProps {
   onCancel?: () => void;
   /** 공구 생성자 ID */
   creatorId?: number;
+  /** 상품명 */
+  productName?: string;
+  /** 선택된 판매자 닉네임 */
+  sellerNickname?: string;
 }
 
 /**
@@ -60,6 +64,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onComplete,
   onCancel,
   creatorId,
+  productName,
+  sellerNickname,
 }) => {
   const { isAuthenticated, accessToken, user } = useAuth();
   const router = useRouter();
@@ -188,6 +194,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <h3 className="text-lg font-medium mb-2">
           {isEditMode ? '후기 수정하기' : '후기 작성하기'}
         </h3>
+        
+        {/* 상품명 및 판매자 정보 표시 */}
+        {(productName || sellerNickname) && (
+          <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+            {productName && (
+              <p className="text-sm text-gray-700 font-medium mb-1">{productName}</p>
+            )}
+            {sellerNickname && (
+              <p className="text-xs text-gray-600">담당 판매자: {sellerNickname}</p>
+            )}
+          </div>
+        )}
+        
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">별점:</span>
           <StarRating
@@ -214,7 +233,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         </p>
       </div>
       
-      <div className="flex items-center space-x-2">
+      {/* 구매 확인 체크박스 - 임시 주석처리 */}
+      {/* <div className="flex items-center space-x-2">
         <Checkbox
           id="isPurchased"
           checked={isPurchased}
@@ -223,7 +243,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <Label htmlFor="isPurchased" className="text-sm">
           이 상품을 실제로 구매/사용했습니다.
         </Label>
-      </div>
+      </div> */}
       
       <div className="flex justify-end space-x-2">
         {onCancel && (

@@ -112,6 +112,8 @@ function ReviewCreateContent() {
             initialContent={existingReview?.content || ''}
             initialIsPurchased={existingReview?.is_purchased || false}
             creatorId={groupBuyData?.creator?.id || groupBuyData?.creator}
+            productName={groupBuyData?.product_details?.name || groupBuyData?.title}
+            sellerNickname={groupBuyData?.winning_bid?.seller_nickname || groupBuyData?.selected_seller?.nickname}
           />
         </CardContent>
       </Card>
