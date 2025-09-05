@@ -248,7 +248,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const token = localStorage.getItem(key);
             if (token) {
               storedToken = token;
-              console.log(`토큰 발견: ${key}`);
               break;
             }
           }
@@ -288,7 +287,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(userData);
             } else {
               try {
-                console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
                 const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`;
                 const response = await fetch(apiUrl, {
                   method: 'GET',
@@ -299,11 +297,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (response.ok) {
                 const profileData = await response.json();
-                console.log('프로필 API 응답 데이터:', profileData);
-                console.log('sns_type 값:', profileData.sns_type);
-                console.log('🔴 패널티 정보:', profileData.penalty_info);
-                console.log('🔴 패널티 활성 상태:', profileData.penalty_info?.is_active);
-                console.log('🔴 패널티 종료시간:', profileData.penalty_info?.end_date);
                 logDebug('백엔드에서 프로필 정보 가져오기 성공', profileData);
                 
                 // 기존 로컬 데이터와 병합
@@ -323,8 +316,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     penalty_info: profileData.penalty_info, // 패널티 정보 추가
                     penaltyInfo: profileData.penalty_info // camelCase 버전도 추가 (동일한 데이터)
                   };
-                  console.log('병합된 사용자 데이터:', userData);
-                  console.log('🔴 병합된 패널티 정보:', userData.penalty_info);
                   logDebug('사용자 정보 업데이트 완료', userData);
                 } else {
                   // 로컬 스토리지에 사용자 정보가 없는 경우
@@ -347,7 +338,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     penalty_info: profileData.penalty_info, // 패널티 정보 추가
                     penaltyInfo: profileData.penalty_info // camelCase 버전도 추가
                   };
-                  console.log('🔴 새로 생성된 사용자 데이터의 패널티 정보:', userData.penalty_info);
                   logDebug('새 사용자 정보 생성', userData);
                 }
                 
@@ -365,12 +355,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 
                 // 백엔드 요청 실패시 로컬 데이터만 사용
                 if (userData) {
-                  console.log('프로필 API 실패, 로컬 데이터 사용:', userData);
                   setUser(userData);
-                  console.log('로컬 스토리지에서 사용자 정보 복원 성공', userData.role || 'role 없음');
                 } else {
                   // 로컬 데이터도 없는 경우 토큰에서 추출
-                  console.log('사용자 정보 발견 실패, 토큰에서 정보 추출 시도...');
                   
                   const decoded = decodeJwtPayload(storedToken);
                   if (decoded) {
@@ -390,7 +377,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     localStorage.setItem('user', JSON.stringify(extractedUser));
                     localStorage.setItem('auth.user', JSON.stringify(extractedUser));
                     localStorage.setItem('userRole', userRole);
-                    console.log('토큰에서 사용자 정보 추출 성공:', userRole);
                   }
                 }
               }

@@ -246,12 +246,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         if (response.ok) {
           const data = await response.json();
-          console.log('인증된 사용자로 가져온 공구 데이터:', {
-            winning_bid_amount: data.winning_bid_amount,
-            bid_ranking: data.bid_ranking,
-            my_bid_info: data.my_bid_info,
-            status: data.status
-          });
           setGroupBuyData(data);
           
           // 내 입찰 정보 설정
@@ -297,39 +291,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   
-  // 노쇼 신고 버튼 표시 조건 디버깅
-  useEffect(() => {
-    console.log('노쇼 신고 버튼 표시 조건 체크:');
-    console.log('- groupBuyData.status:', groupBuyData.status);
-    console.log('- isInProgress:', isInProgress);
-    console.log('- isSellerFinalSelection:', isSellerFinalSelection);
-    console.log('- isSeller:', isSeller);
-    console.log('- isParticipant:', isParticipant);
-    console.log('- myParticipationFinalDecision:', myParticipationFinalDecision);
-    console.log('- myBidFinalDecision:', myBidFinalDecision);
-    console.log('구매자 노쇼 신고 버튼 표시 조건:');
-    console.log('  - !isSeller && isParticipant:', !isSeller && isParticipant);
-    console.log('  - (isInProgress || isSellerFinalSelection):', (isInProgress || isSellerFinalSelection));
-    console.log('  - myParticipationFinalDecision === "confirmed":', myParticipationFinalDecision === 'confirmed');
-    console.log('  => 최종 표시 여부:', !isSeller && isParticipant && (isInProgress || isSellerFinalSelection) && myParticipationFinalDecision === 'confirmed');
-  }, [groupBuyData.status, isInProgress, isSellerFinalSelection, isSeller, isParticipant, myParticipationFinalDecision, myBidFinalDecision]);
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
   const isInternetCategory = groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV';
   const isSupportBidType = isTelecom || isInternetCategory;
   
-  // 디버깅 로그
-  console.log('공구 상태 체크:', {
-    status: groupBuyData.status,
-    actualStatus,
-    isBuyerFinalSelection,
-    isSellerFinalSelection,
-    isInProgress,
-    isCompleted,
-    myParticipationFinalDecision,
-    myBidFinalDecision,
-    isParticipant,
-    hasWinningBid
-  });
   
   // 판매자가 낙찰된 입찰을 가지고 있는지 확인
   const checkWinningBidStatus = useCallback(async () => {

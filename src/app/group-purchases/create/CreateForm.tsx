@@ -385,22 +385,12 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   useEffect(() => {
     // 인증 상태 및 사용자 역할 확인
     if (isLoading) {
-      console.log('[CreateForm] 인증 상태 로딩 중...');
       return; // 로딩 중에는 아무 작업도 수행하지 않음
     }
     
-    // 인증 상태 디버깅
-    console.log('[CreateForm] 인증 상태:', { 
-      isAuthenticated, 
-      isLoading,
-      user, 
-      accessToken: accessToken ? '토큰 있음' : '토큰 없음',
-      tokenLength: accessToken?.length
-    });
     
     // 아직 인증 상태 로딩 중이면 대기
     if (isLoading) {
-      console.log('[CreateForm] 인증 상태 로딩 중...');
       return;
     }
     
@@ -411,18 +401,15 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // 비인증 상태일 때 로그인 페이지로 리디렉션
     if (!isAuthenticated && !localToken) {
-      console.log('[CreateForm] 인증되지 않음, 로그인 페이지로 리디렉션');
       router.push('/login?callbackUrl=/group-purchases/create');
       return;
     }
     
     // 토큰은 있지만 인증 상태가 false인 경우 (불일치 상태)
     if (!isAuthenticated && localToken && !isLoading) {
-      console.log('[CreateForm] 토큰은 있지만 인증 상태가 false, 재확인 중...');
       // 약간의 지연 후 다시 확인 (AuthContext 초기화 대기)
       const checkTimer = setTimeout(() => {
         if (!isAuthenticated && !isLoading) {
-          console.log('[CreateForm] 여전히 인증되지 않음, 새로고침');
           window.location.reload();
         }
       }, 1000);
@@ -432,13 +419,11 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // 사용자 정보가 아직 로드되지 않은 경우 대기
     if (isAuthenticated && !user) {
-      console.log('[CreateForm] 사용자 정보 로딩 대기 중...');
       return;
     }
     
     // 로딩 상태가 아니고 인증된 상태이지만 사용자 정보가 여전히 불완전한 경우 추가 대기
     if (!isLoading && isAuthenticated && user && (!user.id || user.id === undefined)) {
-      console.log('[CreateForm] 사용자 정보가 불완전함, 추가 대기 중...');
       return;
     }
     
@@ -454,7 +439,6 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // userDataLoaded가 false이면 아직 검증하지 않음
     if (isAuthenticated && !userDataLoaded) {
-      console.log('[CreateForm] 사용자 데이터 로딩 완료 대기 중...');
       return;
     }
     
@@ -787,14 +771,10 @@ const continueSubmitWithUserId = async (
     }
     
     // 최종 API 요청 데이터 로깅
-    console.log('최종 API 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
     if (mode !== 'edit') {
-      console.log('사용자 ID 확인:', apiRequestData.creator);
     }
-    console.log('[regions 데이터 상세]:', apiRequestData.regions);
     
     // 공구 등록/수정 API 요청 실행
-    console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} API 요청 시작`);
     const apiUrl = mode === 'edit' && groupBuyId 
       ? `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/`
       : `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
@@ -807,7 +787,6 @@ const continueSubmitWithUserId = async (
       body: JSON.stringify(apiRequestData),
     });
     
-    console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} 성공:`, response);
     
     if (mode === 'edit') {
       // 수정 모드일 때는 기존처럼 토스트 메시지 표시 후 이동
@@ -849,9 +828,6 @@ const continueSubmitWithUserId = async (
     
     return true;
   } catch (apiError: unknown) {
-    console.error('===== API 요청 실패 상세 정보 =====');
-    console.error('오류 객체:', apiError);
-    console.error('오류 메시지:', (apiError as Error).message);
     console.error('오류 스택:', (apiError as Error).stack);
     console.error('오류 타입:', typeof apiError);
     console.error('Error instanceof Error:', apiError instanceof Error);
