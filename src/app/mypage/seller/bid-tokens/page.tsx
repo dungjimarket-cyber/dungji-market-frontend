@@ -20,7 +20,7 @@ import bidTokenService, {
   PendingPayment
 } from '@/lib/bid-token-service';
 import { inicisService } from '@/lib/api/inicisService';
-import { refundService, UserPayment } from '@/lib/api/refundService';
+import { refundService, UserPayment, RefundRequest } from '@/lib/api/refundService';
 import RefundRequestModal from '@/components/payment/RefundRequestModal';
 
 export default function BidTokensPage() {
@@ -41,6 +41,7 @@ export default function BidTokensPage() {
   const [refundModalOpen, setRefundModalOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<UserPayment | null>(null);
   const [userPayments, setUserPayments] = useState<UserPayment[]>([]);
+  const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
 
   // 입금 대기 중인 결제 내역 로드
   const loadPendingPayments = async () => {
@@ -59,6 +60,17 @@ export default function BidTokensPage() {
       setUserPayments(response.payments);
     } catch (error) {
       console.error('결제 내역 로드 실패:', error);
+    }
+  };
+
+  // 환불 요청 목록 로드
+  const loadRefundRequests = async () => {
+    try {
+      const requests = await refundService.getRefundRequests();
+      setRefundRequests(requests);
+      console.log('환불 요청 목록 로드 완료:', requests);
+    } catch (error) {
+      console.error('환불 요청 목록 로드 실패:', error);
     }
   };
 
@@ -221,9 +233,10 @@ export default function BidTokensPage() {
         setLoading(true);
         await loadBidTokens();
         
-        // 입금 대기 내역과 사용자 결제 내역도 함께 로드
+        // 입금 대기 내역, 사용자 결제 내역, 환불 요청 목록을 함께 로드
         await loadPendingPayments();
         await loadUserPayments();
+        await loadRefundRequests();
       } catch (error) {
         console.error('견적 이용권 정보 로드 오류:', error);
         
@@ -353,6 +366,7 @@ export default function BidTokensPage() {
   // 환불 요청 완료 후 처리
   const handleRefundRequested = async () => {
     await loadUserPayments(); // 결제 내역 다시 로드
+    await loadRefundRequests(); // 환불 요청 목록 다시 로드
     await loadBidTokens(); // 토큰 정보도 다시 로드
     toast({
       title: '환불 요청 완료',
@@ -378,6 +392,13 @@ export default function BidTokensPage() {
       
       return amountMatch && productMatch && dateMatch;
     });
+  };
+
+  // 해당 결제의 환불 요청 찾기
+  const findRefundRequest = (payment: UserPayment): RefundRequest | undefined => {
+    return refundRequests.find(request => 
+      request.payment_info.order_id === payment.order_id
+    );
   };
 
   // 견적 이용권 유형에 따른 정보 텍스트
@@ -537,7 +558,38 @@ export default function BidTokensPage() {
                                 {(() => {
                                   const userPayment = findUserPayment(purchase);
                                   if (userPayment) {
-                                    if (userPayment.has_refund_request) {
+                                    const refundRequest = findRefundRequest(userPayment);
+                                    
+                                    // 환불 요청이 있는 경우 상태에 따라 다르게 표시
+                                    if (refundRequest) {
+                                      switch (refundRequest.status) {
+                                        case 'pending':
+                                          return (
+                                            <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
+                                              환불 검토중
+                                            </span>
+                                          );
+                                        case 'approved':
+                                          return (
+                                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">
+                                              환불 승인됨
+                                            </span>
+                                          );
+                                        case 'rejected':
+                                          return (
+                                            <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded">
+                                              환불 거부됨
+                                            </span>
+                                          );
+                                        default:
+                                          return (
+                                            <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
+                                              환불 요청됨
+                                            </span>
+                                          );
+                                      }
+                                    } else if (userPayment.has_refund_request) {
+                                      // 환불 요청이 있다고 표시되지만 실제 요청을 찾지 못한 경우
                                       return (
                                         <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
                                           환불 요청됨
