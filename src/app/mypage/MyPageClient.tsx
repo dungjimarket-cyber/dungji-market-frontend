@@ -12,7 +12,6 @@ import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import CancelledGroupBuys from '@/components/mypage/CancelledGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
 import PenaltyAlert from '@/components/penalty/PenaltyAlert';
-import PenaltyReasonModal from '@/components/penalty/PenaltyReasonModal';
 import {
   Accordion,
   AccordionContent,
@@ -36,7 +35,6 @@ export default function MyPageClient() {
   const [isSeller, setIsSeller] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
-  const [showPenaltyReasonModal, setShowPenaltyReasonModal] = useState(false);
   
   // 각 섹션의 데이터 카운트 상태 관리
   const [participatingCount, setParticipatingCount] = useState(0);
@@ -301,36 +299,7 @@ export default function MyPageClient() {
                 <div className="flex-1 flex flex-col justify-center space-y-3">
                   <div>
                     <p className="text-sm text-gray-500">닉네임</p>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
-                      {console.log('🔴 MyPage - User 전체:', user)}
-                      {console.log('🔴 MyPage - Penalty info:', user?.penalty_info)}
-                      {console.log('🔴 MyPage - Is active:', user?.penalty_info?.is_active)}
-                      {(user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) && (
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-red-600 font-medium">
-                            [{(user.penalty_info || user.penaltyInfo)?.penalty_type || (user.penalty_info || user.penaltyInfo)?.type || '패널티'}]
-                          </span>
-                          <span className="text-gray-500">
-                            (~{new Date((user.penalty_info || user.penaltyInfo)?.end_date || (user.penalty_info || user.penaltyInfo)?.endDate).toLocaleString('ko-KR', { 
-                              month: '2-digit', 
-                              day: '2-digit', 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })})
-                          </span>
-                          <span className="text-red-500">
-                            누적 {user.penalty_info.count}회
-                          </span>
-                          <button 
-                            onClick={() => setShowPenaltyReasonModal(true)}
-                            className="text-blue-500 underline hover:text-blue-700"
-                          >
-                            사유보기
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">주요활동지역</p>
@@ -343,7 +312,8 @@ export default function MyPageClient() {
             </CardContent>
           </Card>
           
-          {/* 패널티 알림 표시 - 별도 Alert는 제거하고 닉네임 옆에만 표시 */}
+          {/* 패널티 알림 표시 */}
+          <PenaltyAlert penaltyInfo={user?.penalty_info || user?.penaltyInfo} userRole="buyer" />
           
           {/* 동의 알림 표시 */}
           <ConsentNotification />
@@ -528,13 +498,6 @@ export default function MyPageClient() {
         </div>
       )}
       
-      {/* 패널티 사유 모달 */}
-      <PenaltyReasonModal
-        isOpen={showPenaltyReasonModal}
-        onClose={() => setShowPenaltyReasonModal(false)}
-        reason={user?.penalty_info?.reason || ''}
-        penaltyType={user?.penalty_info?.penalty_type || user?.penalty_info?.type || '패널티'}
-      />
     </div>
   );
 }
