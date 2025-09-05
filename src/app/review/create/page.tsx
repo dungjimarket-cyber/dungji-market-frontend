@@ -26,7 +26,26 @@ function ReviewCreateContent() {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/`);
           if (response.ok) {
             const data = await response.json();
+            console.log('🔍 Review - GroupBuy 데이터:', data);
+            console.log('🔍 Review - winning_bid:', data.winning_bid);
+            console.log('🔍 Review - selected_seller:', data.selected_seller);
             setGroupBuyData(data);
+            
+            // winning_bid API 호출 시도
+            try {
+              const winningBidResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/winning_bid/`);
+              if (winningBidResponse.ok) {
+                const winningBidData = await winningBidResponse.json();
+                console.log('🔍 Review - Winning Bid API 데이터:', winningBidData);
+                // winning_bid 정보를 groupBuyData에 추가
+                setGroupBuyData(prev => ({
+                  ...prev,
+                  winning_bid: winningBidData
+                }));
+              }
+            } catch (error) {
+              console.log('Winning bid API 호출 실패:', error);
+            }
           }
           
           // 기존 후기 확인
@@ -113,7 +132,7 @@ function ReviewCreateContent() {
             initialIsPurchased={existingReview?.is_purchased || false}
             creatorId={groupBuyData?.creator?.id || groupBuyData?.creator}
             productName={groupBuyData?.product_details?.name || groupBuyData?.title}
-            sellerNickname={groupBuyData?.winning_bid?.seller_nickname || groupBuyData?.selected_seller?.nickname}
+            sellerNickname={groupBuyData?.winning_bid?.seller?.nickname || groupBuyData?.winning_bid?.seller?.username || groupBuyData?.selected_seller?.nickname}
           />
         </CardContent>
       </Card>
