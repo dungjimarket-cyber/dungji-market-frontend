@@ -20,6 +20,8 @@ import bidTokenService, {
   PendingPayment
 } from '@/lib/bid-token-service';
 import { inicisService } from '@/lib/api/inicisService';
+import { refundService, UserPayment } from '@/lib/api/refundService';
+import RefundRequestModal from '@/components/payment/RefundRequestModal';
 
 export default function BidTokensPage() {
   const [loading, setLoading] = useState(true);
@@ -35,6 +37,11 @@ export default function BidTokensPage() {
   // 입금 대기 중인 결제 내역을 위한 state
   const [pendingPayments, setPendingPayments] = useState<PendingPayment[]>([]);
 
+  // 환불 관련 state
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<UserPayment | null>(null);
+  const [userPayments, setUserPayments] = useState<UserPayment[]>([]);
+
   // 입금 대기 중인 결제 내역 로드
   const loadPendingPayments = async () => {
     try {
@@ -42,6 +49,27 @@ export default function BidTokensPage() {
       setPendingPayments(payments);
     } catch (error) {
       console.error('입금 대기 내역 로드 실패:', error);
+    }
+  };
+
+  // 사용자 결제 내역 로드 (환불 가능 여부 포함)
+  const loadUserPayments = async () => {
+    try {
+      const response = await refundService.getUserPayments();
+      setUserPayments(response.payments);
+    } catch (error) {
+      console.error('결제 내역 로드 실패:', error);
+    }
+  };
+
+  // 견적 이용권 정보 로드
+  const loadBidTokens = async () => {
+    try {
+      const data = await bidTokenService.getBidTokens();
+      setBidTokens(data);
+    } catch (error) {
+      console.error('견적 이용권 정보 로드 실패:', error);
+      throw error;
     }
   };
 
@@ -191,11 +219,11 @@ export default function BidTokensPage() {
       
       try {
         setLoading(true);
-        const data = await bidTokenService.getBidTokens();
-        setBidTokens(data);
+        await loadBidTokens();
         
-        // 입금 대기 내역도 함께 로드
+        // 입금 대기 내역과 사용자 결제 내역도 함께 로드
         await loadPendingPayments();
+        await loadUserPayments();
       } catch (error) {
         console.error('견적 이용권 정보 로드 오류:', error);
         
@@ -292,7 +320,42 @@ export default function BidTokensPage() {
       setPurchasing(false);
     }
   };
-  
+
+  // 환불 요청 핸들러
+  const handleRefundRequest = (payment: UserPayment) => {
+    setSelectedPayment(payment);
+    setRefundModalOpen(true);
+  };
+
+  // 환불 요청 완료 후 처리
+  const handleRefundRequested = async () => {
+    await loadUserPayments(); // 결제 내역 다시 로드
+    await loadBidTokens(); // 토큰 정보도 다시 로드
+    toast({
+      title: '환불 요청 완료',
+      description: '환불 요청이 접수되었습니다.',
+    });
+  };
+
+  // 결제 정보와 UserPayment 매칭
+  const findUserPayment = (purchase: BidTokenPurchase): UserPayment | undefined => {
+    return userPayments.find(payment => {
+      // 가격이 일치하는 결제를 찾기
+      const amountMatch = payment.amount === purchase.total_price;
+      
+      // 상품 타입 매칭
+      const productMatch = purchase.token_type === 'single' 
+        ? payment.product_name.includes('견적') 
+        : payment.product_name.includes('무제한') || payment.product_name.includes('구독');
+      
+      // 결제일이 비슷한 시기인지 확인 (같은 날짜)
+      const purchaseDate = new Date(purchase.purchase_date).toDateString();
+      const paymentDate = new Date(payment.created_at).toDateString();
+      const dateMatch = purchaseDate === paymentDate;
+      
+      return amountMatch && productMatch && dateMatch;
+    });
+  };
 
   // 견적 이용권 유형에 따른 정보 텍스트
   const getTokenTypeInfo = (type: string) => {
@@ -422,8 +485,8 @@ export default function BidTokensPage() {
                         .map((purchase) => (
                         <Card key={purchase.id} className="bg-slate-50">
                           <CardContent className="p-3">
-                            <div className="flex justify-between">
-                              <div>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
                                 <p className="text-sm font-medium">
                                   {purchase.token_type === 'single' || purchase.token_type_display?.includes('단품') 
                                     ? `견적 이용권 ${purchase.quantity}개`
@@ -435,10 +498,50 @@ export default function BidTokensPage() {
                                 <p className="text-xs text-gray-500">
                                   {new Date(purchase.purchase_date).toLocaleDateString()}
                                 </p>
+                                {(() => {
+                                  const userPayment = findUserPayment(purchase);
+                                  return userPayment?.order_id ? (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      주문번호: {userPayment.order_id}
+                                    </p>
+                                  ) : null;
+                                })()}
                               </div>
-                              <p className="text-sm font-semibold">
-                                {purchase.total_price.toLocaleString()}원
-                              </p>
+                              <div className="flex flex-col items-end gap-2">
+                                <p className="text-sm font-semibold">
+                                  {purchase.total_price.toLocaleString()}원
+                                </p>
+                                {(() => {
+                                  const userPayment = findUserPayment(purchase);
+                                  if (userPayment) {
+                                    if (userPayment.has_refund_request) {
+                                      return (
+                                        <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
+                                          환불 요청됨
+                                        </span>
+                                      );
+                                    } else if (userPayment.can_refund) {
+                                      return (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleRefundRequest(userPayment)}
+                                          className="text-xs px-2 py-1 h-6"
+                                        >
+                                          환불 요청
+                                        </Button>
+                                      );
+                                    } else {
+                                      return (
+                                        <span className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded">
+                                          환불 불가
+                                        </span>
+                                      );
+                                    }
+                                  }
+                                  return null;
+                                })()}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -743,6 +846,24 @@ export default function BidTokensPage() {
           </Card>
         </div>
       </div>
+
+      {/* 환불 요청 모달 */}
+      <RefundRequestModal
+        isOpen={refundModalOpen}
+        onClose={() => setRefundModalOpen(false)}
+        payment={selectedPayment ? {
+          id: selectedPayment.id,
+          order_id: selectedPayment.order_id,
+          amount: selectedPayment.amount,
+          product_name: selectedPayment.product_name,
+          pay_method: selectedPayment.pay_method,
+          created_at: selectedPayment.created_at,
+          can_refund: selectedPayment.can_refund,
+          refund_deadline: selectedPayment.refund_deadline,
+          usage_count: 0 // 기본값
+        } : null}
+        onRefundRequested={handleRefundRequested}
+      />
     </div>
   );
 }
