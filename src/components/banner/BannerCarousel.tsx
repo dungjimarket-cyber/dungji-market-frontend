@@ -57,13 +57,13 @@ export default function BannerCarousel() {
 
   if (loading) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[21/7] lg:aspect-[21/6] max-h-[280px] md:max-h-[320px] lg:max-h-[380px] bg-gray-100 animate-pulse md:rounded-xl" />
+      <div className="w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gray-100 animate-pulse md:rounded-xl" />
     );
   }
 
   if (error) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[21/7] lg:aspect-[21/6] max-h-[280px] md:max-h-[320px] lg:max-h-[380px] bg-red-100 md:rounded-xl flex items-center justify-center">
+      <div className="w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-red-100 md:rounded-xl flex items-center justify-center">
         <p className="text-red-600">{error}</p>
       </div>
     );
@@ -71,7 +71,7 @@ export default function BannerCarousel() {
 
   if (banners.length === 0) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[21/7] lg:aspect-[21/6] max-h-[280px] md:max-h-[320px] lg:max-h-[380px] bg-gray-100 md:rounded-xl flex items-center justify-center">
+      <div className="w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gray-100 md:rounded-xl flex items-center justify-center">
         <p className="text-gray-600">표시할 배너가 없습니다.</p>
       </div>
     );
@@ -89,7 +89,7 @@ export default function BannerCarousel() {
     <div className="w-full max-w-7xl mx-auto px-0 md:px-4 lg:px-6">
       <div className="relative w-full overflow-hidden md:rounded-xl shadow-sm md:shadow-lg">
         {/* 배너 컨테이너 - 반응형 비율과 최대 높이 제한 */}
-        <div className="relative w-full aspect-[16/9] md:aspect-[21/7] lg:aspect-[21/6] max-h-[280px] md:max-h-[320px] lg:max-h-[380px] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="relative w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
           {/* 배너 이미지 */}
           {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
             <Link 
