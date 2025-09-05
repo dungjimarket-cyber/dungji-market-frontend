@@ -46,7 +46,40 @@ class InicisService {
       console.log('결제 파라미터:', { orderId, amount: params.amount, productName: params.productName });
       
       if (isMobile) {
-        // 모바일 전용 결제 방식
+        // 모바일도 결제 준비 API 호출
+        console.log('모바일 결제 준비 요청 시작');
+        
+        const prepareData = {
+          orderId,
+          amount: params.amount,
+          productName: params.productName,
+          buyerName: params.buyerName,
+          buyerTel: params.buyerTel,
+          buyerEmail: params.buyerEmail,
+        };
+        
+        console.log('백엔드 prepare 요청:', prepareData);
+        
+        const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+          },
+          body: JSON.stringify(prepareData),
+        });
+
+        console.log('prepare 응답 상태:', prepareResponse.status);
+
+        if (!prepareResponse.ok) {
+          const errorText = await prepareResponse.text();
+          console.error('prepare 실패:', errorText);
+          throw new Error(`결제 준비에 실패했습니다: ${prepareResponse.status}`);
+        }
+
+        const prepareResponseData = await prepareResponse.json();
+        console.log('prepare 응답 데이터:', prepareResponseData);
+        
         console.log('모바일 결제 진행');
         await this.submitMobilePaymentForm(orderId, params);
       } else {
