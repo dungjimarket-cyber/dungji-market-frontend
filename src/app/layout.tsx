@@ -20,6 +20,26 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
   description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
+  keywords: "둥지마켓, 휴대폰 공동구매, 인터넷 비교견적, 휴대폰 지원금, 인터넷 가입, 통신사 비교, SKT, KT, LGU+",
+  authors: [{ name: '둥지마켓' }],
+  creator: '둥지마켓',
+  publisher: '둥지마켓',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    other: {
+      'naver-site-verification': '', // 네이버 서치어드바이저에서 발급받은 코드 입력
+    },
+  },
   manifest: "/manifest.json",
   openGraph: {
     title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
