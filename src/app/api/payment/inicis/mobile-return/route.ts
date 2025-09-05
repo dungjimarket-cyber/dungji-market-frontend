@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
                 P_TYPE: payMethod,
                 P_RMESG1: params.get('P_RMESG1') || '',
                 P_AUTH_DT: P_AUTH_DT,
+                P_REQ_URL: P_REQ_URL, // 모바일 승인에 필수적인 P_REQ_URL 추가
                 // 가상계좌 관련 모든 파라미터
                 ...(payMethod === 'VBANK' && {
                   P_VACT_BANKNAME: params.get('P_VACT_BANKNAME') || '',
