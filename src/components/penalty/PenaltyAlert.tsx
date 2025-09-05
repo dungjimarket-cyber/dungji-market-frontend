@@ -48,19 +48,19 @@ export default function PenaltyAlert({ penaltyInfo, userRole }: PenaltyAlertProp
   
   return (
     <Alert className="mb-4 border-red-200 bg-red-50">
-      <AlertCircle className="h-4 w-4 text-red-600" />
-      <AlertDescription className="text-sm">
-        <div className="flex flex-col space-y-1">
+      <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+      <AlertDescription className="text-xs sm:text-sm">
+        <div className="flex flex-col space-y-0.5 sm:space-y-1">
           <div className="font-semibold text-red-800">
-            패널티가 부여되었습니다 (누적 {penaltyInfo.count}회)
+            패널티 (누적 {penaltyInfo.count}회)
           </div>
-          <div className="text-red-700">
+          <div className="text-red-700 break-words">
             <span className="font-medium">사유:</span> {penaltyInfo.reason}
           </div>
-          <div className="text-red-700">
-            <span className="font-medium">남은 시간:</span> {remainingText || `${remainingHours}시간 ${remainingMinutes}분`}
+          <div className="text-red-700 break-words">
+            <span className="font-medium">남은:</span> {remainingText || `${remainingHours}시간 ${remainingMinutes}분`}
           </div>
-          <div className="text-red-600 font-medium">
+          <div className="text-red-600 font-medium text-xs">
             ⚠️ {getRestrictionMessage()}
           </div>
         </div>
