@@ -17,6 +17,7 @@ function PaymentSuccessContent() {
   const orderId = searchParams.get('orderId');
   const verified = searchParams.get('verified');
   const tempToken = searchParams.get('temp_token');
+  const bidTokensAdded = searchParams.get('bid_tokens_added');
 
   useEffect(() => {
     // 결제 성공이 아닌 경우 처리
@@ -84,7 +85,10 @@ function PaymentSuccessContent() {
           </div>
           <CardTitle className="text-green-600">결제 완료!</CardTitle>
           <CardDescription>
-            입찰권 구매가 성공적으로 완료되었습니다.
+            {bidTokensAdded === 'true' 
+              ? '입찰권 구매가 성공적으로 완료되어 계정에 입찰권이 추가되었습니다.'
+              : '입찰권 구매가 성공적으로 완료되었습니다.'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -92,6 +96,9 @@ function PaymentSuccessContent() {
             <p>주문번호: <strong>{orderId}</strong></p>
             {verified === 'true' && (
               <p className="text-green-600">✓ 결제 검증 완료</p>
+            )}
+            {bidTokensAdded === 'true' && (
+              <p className="text-blue-600">✓ 입찰권 추가 완료</p>
             )}
           </div>
           

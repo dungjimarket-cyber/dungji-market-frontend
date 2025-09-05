@@ -454,6 +454,53 @@ class InicisService {
       throw error;
     }
   }
+
+  /**
+   * 결제 취소/환불 (관리자용)
+   * @param tid 취소할 거래번호
+   * @param reason 취소 사유
+   * @param refundType 환불 타입 ('full' | 'partial')
+   * @param partialAmount 부분환불 금액 (부분환불시 필요)
+   * @param refundAccount 환불 계좌정보 (가상계좌 결제시 필요)
+   */
+  async requestRefund(params: {
+    tid: string;
+    reason: string;
+    refundType?: 'full' | 'partial';
+    partialAmount?: number;
+    refundAccount?: {
+      accountNumber: string;
+      bankCode: string;
+      accountHolder: string;
+    };
+  }) {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/refund/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+        },
+        body: JSON.stringify({
+          tid: params.tid,
+          reason: params.reason,
+          refund_type: params.refundType || 'full',
+          partial_amount: params.partialAmount,
+          refund_account: params.refundAccount,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '환불 처리에 실패했습니다.');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('환불 처리 실패:', error);
+      throw error;
+    }
+  }
 }
 
 export const inicisService = new InicisService();
