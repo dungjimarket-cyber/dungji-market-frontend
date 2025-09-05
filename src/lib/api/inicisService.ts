@@ -161,8 +161,8 @@ class InicisService {
     addField('P_AMT', String(params.amount)); // 결제금액 (필수, 숫자만, 콤마 사용불가)
     addField('P_GOODS', params.productName); // 상품명 (필수)
     addField('P_UNAME', params.buyerName); // 구매자명 (필수)
-    addField('P_NEXT_URL', `${window.location.origin}/api/payments/inicis/return/`); // 결과수신 URL (필수)
-    addField('P_NOTI_URL', `${window.location.origin}/api/payments/inicis/return/`); // 가상계좌입금통보 URL
+    addField('P_NEXT_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 결과수신 URL (필수)
+    addField('P_NOTI_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 가상계좌입금통보 URL
     addField('P_HPP_METHOD', '2'); // 휴대폰결제 상품유형 [1:컨텐츠, 2:실물]
     addField('P_RESERVED', 'centerCd=Y'); // IDC센터코드 수신 사용옵션 (필수)
     addField('P_NOTI', orderId); // 가맹점 임의 데이터
@@ -308,8 +308,8 @@ class InicisService {
     <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
     
     <!-- 리턴 URL -->
-    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payments/inicis/return/">
-    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payments/inicis/close/">
+    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payment/inicis/complete">
+    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payment/inicis/close">
     
     <!-- 추가 옵션 -->
     <input type="hidden" name="acceptmethod" value="HPP(1):va_receipt:below1000:centerCd(Y)">
