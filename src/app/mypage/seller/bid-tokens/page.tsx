@@ -203,7 +203,7 @@ export default function BidTokensPage() {
 
   // 견적 이용권 정보 로드
   useEffect(() => {
-    async function loadBidTokens() {
+    async function initializePage() {
       // 인증 상태가 확정되지 않았으면 대기
       if (isAuthenticated === undefined) {
         return;
@@ -242,16 +242,39 @@ export default function BidTokensPage() {
       }
     }
     
-    loadBidTokens();
+    initializePage();
     
     // 결제 완료 후 리디렉션 처리
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = params.get('payment');
+    const paymentCompleted = params.get('payment_completed');
     const orderId = params.get('orderId');
     const message = params.get('msg');
     
-    if (paymentStatus === 'success' && orderId) {
-      // 결제 검증 API 호출
+    // payment_completed=true인 경우 성공적으로 완료된 것으로 간주하고 데이터 새로고침
+    if (paymentCompleted === 'true') {
+      console.log('결제 완료됨 - 견적이용권 데이터 새로고침');
+      toast({
+        title: '결제 완료',
+        description: '견적이용권이 성공적으로 지급되었습니다.',
+        duration: 5000,
+      });
+      
+      // 견적이용권 데이터 즉시 새로고침
+      setTimeout(async () => {
+        try {
+          const data = await bidTokenService.getBidTokens();
+          setBidTokens(data);
+          console.log('견적이용권 새로고침 완료:', data);
+        } catch (error) {
+          console.error('견적이용권 새로고침 실패:', error);
+        }
+      }, 500); // 500ms 후 새로고침하여 백엔드 처리 완료 대기
+      
+      // URL 파라미터 제거
+      window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
+    } else if (paymentStatus === 'success' && orderId) {
+      // 기존 결제 검증 로직 유지
       verifyPayment(orderId);
     } else if (paymentStatus === 'failed') {
       toast({

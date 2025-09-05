@@ -79,12 +79,13 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({
               orderId: orderId,
-              authUrl: '',  // 모바일에서는 authUrl이 없음
+              authUrl: P_REQ_URL || '',  // 모바일 승인 요청 URL 사용
               authToken: authToken,
               authResultCode: finalStatus,
               payMethod: payMethod,
               tid: authToken, // 승인된 TID 사용
               amount: parseInt(amount) || 0,
+              isMobile: true,  // 모바일 결제임을 명시
               // 가상계좌 정보 추가
               ...(payMethod === 'VBANK' && {
                 vactBankName: params.get('P_VACT_BANKNAME') || '',

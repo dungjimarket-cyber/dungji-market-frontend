@@ -38,7 +38,7 @@ function ReviewCreateContent() {
                 const winningBidData = await winningBidResponse.json();
                 console.log('🔍 Review - Winning Bid API 데이터:', winningBidData);
                 // winning_bid 정보를 groupBuyData에 추가
-                setGroupBuyData(prev => ({
+                setGroupBuyData((prev: any) => ({
                   ...prev,
                   winning_bid: winningBidData
                 }));
