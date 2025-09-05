@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          P_MID: P_TID ? P_TID.substring(10, 20) : '', // TID에서 MID 추출
+          P_MID: 'dungjima14', // 이니시스 상점 ID (고정값)
           P_TID: P_TID || '',
         }),
       });
@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
         const orderId = P_OID || P_NOTI || 'unknown';
         
         // 승인 응답에서 추가 데이터 파싱
-        const payMethod = params.get('P_TYPE') || P_TYPE || 'mobile';
-        const authToken = P_TID || '';
+        const payMethod = params.get('P_TYPE') || P_TYPE || 'CARD';
+        const authToken = params.get('P_TID') || P_TID || ''; // 승인 응답의 TID 우선 사용
         const amount = params.get('P_AMT') || P_AMT || '';
         
         console.log('백엔드 결제 검증 시작:', {
@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
         
         try {
           // 백엔드로 결제 검증 및 입찰권 지급 요청
-          const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
+          const backendApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('http://localhost:8000', 'http://localhost:8000') || 'http://localhost:8000';
+          const verifyResponse = await fetch(`${backendApiUrl}/api/payments/inicis/verify/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
               authToken: authToken,
               authResultCode: finalStatus,
               payMethod: payMethod,
-              tid: P_TID || '',
+              tid: authToken, // 승인된 TID 사용
               amount: parseInt(amount) || 0,
               // 가상계좌 정보 추가
               ...(payMethod === 'VBANK' && {
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
               // 추가 파라미터들
               allParams: {
                 P_STATUS: finalStatus,
-                P_TID: P_TID,
+                P_TID: authToken, // 승인된 TID 사용
                 P_OID: orderId,
                 P_AMT: amount,
                 P_TYPE: payMethod,
