@@ -3,7 +3,7 @@
   "short_name": "둥지마켓",
   "description": "통신 및 인터넷 서비스 공동구매 플랫폼",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "orientation": "portrait",
