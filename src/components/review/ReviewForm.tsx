@@ -94,15 +94,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       return;
     }
     
-    if (!content.trim()) {
-      toast.error('후기 내용을 입력해주세요.');
-      return;
-    }
-    
-    if (content.trim().length < 10) {
-      toast.error('후기 내용은 최소 10자 이상 작성해주세요.');
-      return;
-    }
+    // 텍스트는 선택 입력 - 별점만 필수
     
     setIsSubmitting(true);
     
@@ -110,7 +102,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       const reviewData = {
         groupbuy: groupbuyId,
         rating,
-        content: content.trim(),
+        content: content.trim() || '',
         is_purchased: isPurchased,
       };
       
@@ -118,7 +110,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         // 후기 수정
         await updateReview(reviewId, {
           rating,
-          content: content.trim(),
+          content: content.trim() || '',
           is_purchased: isPurchased,
         }, accessToken);
         
@@ -220,17 +212,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       
       <div>
         <Textarea
-          placeholder="후기 내용을 입력해주세요. (최소 10자 이상)"
-          minLength={10}
-          maxLength={500}
+          placeholder="후기 내용을 입력해주세요."
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={4}
           className="resize-none"
         />
-        <p className="text-xs text-gray-500 mt-1 text-right">
-          {content.length}/500자
-        </p>
       </div>
       
       {/* 구매 확인 체크박스 - 임시 주석처리 */}
@@ -258,7 +245,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         )}
         <Button
           type="submit"
-          disabled={isSubmitting || !content.trim() || rating < 1}
+          disabled={isSubmitting || rating < 1}
         >
           {isSubmitting 
             ? '저장 중...' 
