@@ -489,8 +489,25 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
         );
         
         if (tokenResponse && Array.isArray(tokenResponse)) {
-          // 출시일 기준 최신순 정렬 (release_date가 없는 경우 맨 뒤로)
+          // 브랜드 우선순위와 출시일 기준 정렬
           const sortedProducts = tokenResponse.sort((a, b) => {
+            // 브랜드 우선순위 결정 (Galaxy > iPhone > 기타)
+            const getBrandPriority = (name: string) => {
+              const lowerName = name.toLowerCase();
+              if (lowerName.includes('galaxy') || lowerName.includes('갤럭시')) return 1;
+              if (lowerName.includes('iphone') || lowerName.includes('아이폰')) return 2;
+              return 3;
+            };
+            
+            const aPriority = getBrandPriority(a.name);
+            const bPriority = getBrandPriority(b.name);
+            
+            // 브랜드 우선순위가 다르면 우선순위로 정렬
+            if (aPriority !== bPriority) {
+              return aPriority - bPriority;
+            }
+            
+            // 같은 브랜드 내에서는 출시일 기준 최신순 정렬
             if (!a.release_date && !b.release_date) return 0;
             if (!a.release_date) return 1;
             if (!b.release_date) return -1;
