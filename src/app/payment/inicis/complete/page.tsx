@@ -24,9 +24,10 @@ function InicisCompleteContent() {
             const tid = searchParams.get('tid');
             const amount = searchParams.get('amount');
             const orderId = searchParams.get('orderId');
+            const isSubscription = searchParams.get('is_subscription') === 'true';
             
             setStatus('success');
-            setMessage(`결제가 완료되었습니다. (주문번호: ${orderId})`);
+            setMessage(isSubscription ? '구독권 구매가 완료되었습니다.' : '이용권이 추가되었습니다.');
             
             // 3초 후 견적이용권 페이지로 리다이렉트
             setTimeout(() => {
@@ -104,14 +105,11 @@ function InicisCompleteContent() {
               setStatus('success');
               
               // 구독권과 견적이용권 구분하여 메시지 표시
-              let purchaseMessage = '결제가 완료되었습니다.';
               if (result.is_subscription) {
-                purchaseMessage = result.message || '구독권이 구매 완료되었습니다.';
-              } else if (result.token_count) {
-                purchaseMessage = result.message || `견적이용권 ${result.token_count}개가 구매 완료되었습니다.`;
+                setMessage('구독권 구매가 완료되었습니다.');
+              } else {
+                setMessage('이용권이 추가되었습니다.');
               }
-              
-              setMessage(purchaseMessage);
               
               // 3초 후 견적이용권 페이지로 리다이렉트
               setTimeout(() => {
@@ -147,7 +145,7 @@ function InicisCompleteContent() {
   const getIcon = () => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />;
+        return <CheckCircle className="h-16 w-16 text-blue-500 mx-auto" />;
       case 'failed':
         return <XCircle className="h-16 w-16 text-red-500 mx-auto" />;
       default:
@@ -158,7 +156,7 @@ function InicisCompleteContent() {
   const getStatusColor = () => {
     switch (status) {
       case 'success':
-        return 'text-green-600';
+        return 'text-blue-600';
       case 'failed':
         return 'text-red-600';
       default:

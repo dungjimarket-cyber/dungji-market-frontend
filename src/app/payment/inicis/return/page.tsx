@@ -23,7 +23,7 @@ function InicisReturnContent() {
           setStatus('success');
           setMessage(`결제가 완료되었습니다. (${amount ? parseInt(amount).toLocaleString() : ''}원)`);
           
-          // 3초 후 입찰권 페이지로 리다이렉트
+          // 3초 후 이용권 페이지로 리다이렉트
           setTimeout(() => {
             router.push('/mypage/seller/bid-tokens?payment=success');
           }, 3000);
@@ -31,7 +31,7 @@ function InicisReturnContent() {
           setStatus('failed');
           setMessage(resultMsg || '결제에 실패했습니다.');
           
-          // 3초 후 입찰권 페이지로 리다이렉트
+          // 3초 후 이용권 페이지로 리다이렉트
           setTimeout(() => {
             router.push('/mypage/seller/bid-tokens?payment=failed');
           }, 3000);

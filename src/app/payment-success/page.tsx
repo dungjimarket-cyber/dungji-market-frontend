@@ -27,7 +27,7 @@ function PaymentSuccessContent() {
       return;
     }
 
-    // 3초 후 입찰권 페이지로 이동
+    // 3초 후 이용권 페이지로 이동
     const timer = setTimeout(() => {
       setIsProcessing(false);
       
@@ -36,7 +36,7 @@ function PaymentSuccessContent() {
         localStorage.setItem('dungji_auth_token', tempToken);
       }
       
-      // 입찰권 페이지로 리다이렉트
+      // 이용권 페이지로 리다이렉트
       router.push('/mypage/seller/bid-tokens?payment_completed=true');
     }, 3000);
 
@@ -68,7 +68,7 @@ function PaymentSuccessContent() {
               className="w-full"
               variant="outline"
             >
-              입찰권 구매 페이지로 돌아가기
+              이용권 구매 페이지로 돌아가기
             </Button>
           </CardContent>
         </Card>
@@ -86,8 +86,8 @@ function PaymentSuccessContent() {
           <CardTitle className="text-green-600">결제 완료!</CardTitle>
           <CardDescription>
             {bidTokensAdded === 'true' 
-              ? '입찰권 구매가 성공적으로 완료되어 계정에 입찰권이 추가되었습니다.'
-              : '입찰권 구매가 성공적으로 완료되었습니다.'
+              ? '이용권 구매가 성공적으로 완료되어 계정에 이용권이 추가되었습니다.'
+              : '이용권 구매가 성공적으로 완료되었습니다.'
             }
           </CardDescription>
         </CardHeader>
@@ -98,7 +98,7 @@ function PaymentSuccessContent() {
               <p className="text-green-600">✓ 결제 검증 완료</p>
             )}
             {bidTokensAdded === 'true' && (
-              <p className="text-blue-600">✓ 입찰권 추가 완료</p>
+              <p className="text-blue-600">✓ 이용권 추가 완료</p>
             )}
           </div>
           
@@ -107,7 +107,7 @@ function PaymentSuccessContent() {
               <div className="flex items-center justify-center space-x-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-sm text-gray-600">
-                  입찰권 페이지로 이동 중...
+                  이용권 페이지로 이동 중...
                 </span>
               </div>
               <Button 
@@ -123,7 +123,7 @@ function PaymentSuccessContent() {
               onClick={handleGoToBidTokens} 
               className="w-full"
             >
-              입찰권 확인하기
+              이용권 확인하기
             </Button>
           )}
         </CardContent>

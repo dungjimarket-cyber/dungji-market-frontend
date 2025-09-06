@@ -309,7 +309,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     }
   }, [groupBuyState?.status]);
   
-  // 판매자 입찰권 보유 여부 확인
+  // 판매자 이용권 보유 여부 확인
   const checkBidTokens = async () => {
     if (!isSeller) {
       setHasBidTokens(false);
@@ -320,7 +320,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       const hasTokens = await bidTokenService.hasAvailableBidTokens();
       setHasBidTokens(hasTokens);
     } catch (error) {
-      console.error('입찰권 확인 중 오류:', error);
+      console.error('이용권 확인 중 오류:', error);
       setHasBidTokens(false);
     }
   };
@@ -973,12 +973,12 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                       return;
                     }
                     
-                    // 입찰권이 없는 경우 입찰 불가 메시지 표시
+                    // 이용권이 없는 경우 입찰 불가 메시지 표시
                     if (hasBidTokens === false) {
                       toast({
                         variant: 'destructive',
-                        title: '입찰권 없음',
-                        description: '사용 가능한 입찰권이 없습니다. 입찰권을 구매하신 후 다시 시도해주세요.'
+                        title: '이용권 없음',
+                        description: '사용 가능한 이용권이 없습니다. 이용권을 구매하신 후 다시 시도해주세요.'
                       });
                       return;
                     }
@@ -1008,7 +1008,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                           {calculatedStatus === 'expired' && '공구 기간이 마감되었습니다.'}
                           {calculatedStatus === 'completed' && '공구가 완료되었습니다.'}
                           {isFull && '공구 인원이 다 차었습니다.'}
-                          {hasBidTokens === false && '입찰권이 없습니다.'}
+                          {hasBidTokens === false && '이용권이 없습니다.'}
                           {!isValidBidStatus && '입찰 불가능한 상태입니다.'}
                         </span>
                       </p>

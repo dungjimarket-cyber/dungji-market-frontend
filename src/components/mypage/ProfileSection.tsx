@@ -404,13 +404,13 @@ export default function ProfileSection() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">사용자 정보</h2>
         <div className="flex flex-col gap-4 mt-6">
-          {/* 판매회원인 경우 입찰권 관리 링크 표시 */}
+          {/* 판매회원인 경우 이용권 관리 링크 표시 */}
           {role === 'seller' && (
             <button
               onClick={() => router.push('/mypage/seller/bid-tokens')}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
             >
-              입찰권 관리
+              이용권 관리
             </button>
           )}
           
