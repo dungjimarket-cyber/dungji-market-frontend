@@ -1673,25 +1673,31 @@ const onSubmit = async (values: FormData) => {
                             href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
-                            SK브로드밴드 →
+                            SK브로드밴드
+                            <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3.5 w-auto" />
+                            →
                           </a>
                           <a
                             href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
-                            KT →
+                            KT
+                            <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                            →
                           </a>
                           <a
                             href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
-                            LG U+ →
+                            LG U+
+                            <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                            →
                           </a>
                         </div>
                       </div>
@@ -1793,25 +1799,31 @@ const onSubmit = async (values: FormData) => {
                         href="https://www.tworld.co.kr/web/product/plan/list"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        SK텔레콤 →
+                        SK텔레콤
+                        <img src="/logos/skt.png" alt="SKT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a
                         href="https://product.kt.com/wDic/index.do?CateCode=6002"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        KT →
+                        KT
+                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a
                         href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        LG U+ →
+                        LG U+
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                        →
                       </a>
                     </div>
                   </div>
