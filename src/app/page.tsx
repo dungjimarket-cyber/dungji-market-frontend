@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic';
 import { SearchBar } from '@/components/search/SearchBar';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 import NoticeSection from '@/components/home/NoticeSection';
+import { PopupManager } from '@/components/popup/PopupDisplay';
 
 const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
@@ -170,6 +171,9 @@ function HomeContent() {
 
   return (
     <>
+      {/* 팝업 매니저 */}
+      <PopupManager />
+      
       {/* 공지사항 섹션 - 최상단 */}
       <NoticeSection />
       

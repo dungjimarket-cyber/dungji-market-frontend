@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronRight, Megaphone, Calendar, X } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import NoticePopup from '@/components/notice/NoticePopup';
 
 interface Notice {
   id: number;
@@ -20,25 +19,18 @@ interface Notice {
   created_at: string;
   published_at: string;
   show_in_main: boolean;
-  display_type: 'banner' | 'text' | 'both' | 'popup';
+  display_type: 'banner' | 'text' | 'both';
   main_banner_image: string | null;
   banner_link: string | null;
   main_display_order: number;
-  popup_width?: number;
-  popup_height?: number;
-  popup_image?: string | null;
-  popup_link?: string | null;
-  popup_expires_at?: string | null;
 }
 
 export default function NoticeSection() {
   const [bannerNotices, setBannerNotices] = useState<Notice[]>([]);
   const [textNotices, setTextNotices] = useState<Notice[]>([]);
-  const [popupNotices, setPopupNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
-  const [activePopup, setActivePopup] = useState<Notice | null>(null);
 
   useEffect(() => {
     fetchMainNotices();
@@ -64,10 +56,9 @@ export default function NoticeSection() {
         const data = await response.json();
         console.log('Main notices response:', data);
         
-        // 배너, 텍스트, 팝업 공지 분류
+        // 배너, 텍스트 공지 분류
         setBannerNotices(data.banners || []);
         setTextNotices(data.texts || []);
-        setPopupNotices(data.popups || []);
         
         // 첫 번째 텍스트 공지에 대한 숨김 상태 확인
         if (data.texts && data.texts.length > 0) {
@@ -75,20 +66,6 @@ export default function NoticeSection() {
           const hiddenUntil = localStorage.getItem(`notice_hidden_${firstText.id}`);
           if (hiddenUntil && new Date(hiddenUntil) > new Date()) {
             setIsTopBarVisible(false);
-          }
-        }
-        
-        // 팝업 공지 표시 처리
-        if (data.popups && data.popups.length > 0) {
-          const firstPopup = data.popups[0];
-          const popupHiddenUntil = localStorage.getItem(`notice_popup_hidden_${firstPopup.id}`);
-          
-          // 숨김 기간이 지났거나 설정되지 않은 경우 팝업 표시
-          if (!popupHiddenUntil || new Date(popupHiddenUntil) <= new Date()) {
-            // 페이지 로드 후 1초 뒤에 팝업 표시 (사용자 경험 개선)
-            setTimeout(() => {
-              setActivePopup(firstPopup);
-            }, 1000);
           }
         }
       } else {
@@ -129,8 +106,8 @@ export default function NoticeSection() {
     return null;
   }
   
-  if (bannerNotices.length === 0 && textNotices.length === 0 && popupNotices.length === 0) {
-    console.log('NoticeSection: No notices to display', { bannerNotices, textNotices, popupNotices });
+  if (bannerNotices.length === 0 && textNotices.length === 0) {
+    console.log('NoticeSection: No notices to display', { bannerNotices, textNotices });
     return null;
   }
 
@@ -266,14 +243,6 @@ export default function NoticeSection() {
             )}
           </div>
         </div>
-      )}
-      
-      {/* 팝업 공지 */}
-      {activePopup && (
-        <NoticePopup
-          popup={activePopup}
-          onClose={() => setActivePopup(null)}
-        />
       )}
     </>
   );
