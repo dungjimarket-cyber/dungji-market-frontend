@@ -31,7 +31,7 @@ export default function PopupManagementPage() {
   const [selectedPopup, setSelectedPopup] = useState<Popup | null>(null);
 
   useEffect(() => {
-    if (!user || user.userType !== 'admin') {
+    if (!user || user.user_type !== 'admin') {
       router.push('/');
       return;
     }
