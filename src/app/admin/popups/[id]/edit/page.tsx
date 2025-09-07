@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -40,7 +41,12 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function EditPopupPage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function EditPopupPage({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const { token } = useAuth();
   const [popup, setPopup] = useState<Popup | null>(null);
@@ -52,57 +58,69 @@ export default function EditPopupPage({ params }: { params: { id: string } }) {
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
-    reset,
-    formState: { errors },
+    watch,
+    formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      popup_type: 'image',
+      link_target: '_blank',
+      position: 'center',
+      width: 500,
+      height: 600,
+      priority: 0,
+      is_active: true,
+      show_on_main: true,
+      show_on_mobile: true,
+      show_today_close: true,
+      show_week_close: false,
+    }
   });
+
+  const popupType = watch('popup_type');
+  const position = watch('position');
 
   useEffect(() => {
     fetchPopup();
-  }, [params.id]);
+  }, [id]);
 
   const fetchPopup = async () => {
     try {
-      const data = await getPopup(Number(params.id));
+      const data = await getPopup(Number(id));
       setPopup(data);
-      setImagePreview(data.image || '');
-      
-      const formData: FormData = {
-        title: data.title,
-        popup_type: data.popup_type,
-        content: data.content || '',
-        link_url: data.link_url || '',
-        link_target: data.link_target,
-        position: data.position,
-        position_x: data.position_x || 0,
-        position_y: data.position_y || 0,
-        width: data.width,
-        height: data.height,
-        start_date: data.start_date.slice(0, 16),
-        end_date: data.end_date?.slice(0, 16) || '',
-        priority: data.priority,
-        is_active: data.is_active,
-        show_on_main: data.show_on_main,
-        show_on_mobile: data.show_on_mobile,
-        show_today_close: data.show_today_close,
-        show_week_close: data.show_week_close,
-      };
-      
-      reset(formData);
+
+      // 폼 데이터 설정
+      setValue('title', data.title);
+      setValue('popup_type', data.popup_type);
+      setValue('content', data.content || '');
+      setValue('link_url', data.link_url || '');
+      setValue('link_target', data.link_target);
+      setValue('position', data.position);
+      setValue('position_x', data.position_x || 0);
+      setValue('position_y', data.position_y || 0);
+      setValue('width', data.width);
+      setValue('height', data.height);
+      setValue('start_date', data.start_date.split('T')[0]);
+      setValue('end_date', data.end_date ? data.end_date.split('T')[0] : '');
+      setValue('priority', data.priority);
+      setValue('is_active', data.is_active);
+      setValue('show_on_main', data.show_on_main);
+      setValue('show_on_mobile', data.show_on_mobile);
+      setValue('show_today_close', data.show_today_close);
+      setValue('show_week_close', data.show_week_close);
+
+      if (data.image) {
+        setImagePreview(data.image);
+      }
     } catch (error) {
       console.error('팝업 조회 실패:', error);
-      toast.error('팝업 정보를 불러오는데 실패했습니다.');
+      toast.error('팝업 정보를 불러올 수 없습니다.');
       router.push('/admin/popups');
     } finally {
       setLoading(false);
     }
   };
-
-  const popupType = watch('popup_type');
-  const position = watch('position');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,52 +171,57 @@ export default function EditPopupPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-6">
         <Button
-          variant="ghost"
-          size="icon"
           onClick={() => router.push('/admin/popups')}
+          variant="ghost"
+          className="gap-2"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="h-4 w-4" />
+          목록으로
         </Button>
-        <h1 className="text-3xl font-bold">팝업 수정</h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Card>
-          <CardHeader>
-            <CardTitle>기본 정보</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="title">팝업 제목 (관리용)</Label>
-              <Input
-                id="title"
-                {...register('title')}
-                placeholder="예: 2024 신년 이벤트 팝업"
-              />
-              {errors.title && (
-                <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-              )}
-            </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>팝업 수정</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* 기본 정보 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">기본 정보</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">제목 *</Label>
+                  <Input
+                    id="title"
+                    {...register('title')}
+                    placeholder="팝업 제목"
+                  />
+                  {errors.title && (
+                    <span className="text-sm text-red-500">{errors.title.message}</span>
+                  )}
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="popup_type">팝업 타입</Label>
-                <Select
-                  value={popupType}
-                  onValueChange={(value) => setValue('popup_type', value as any)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="image">이미지</SelectItem>
-                    <SelectItem value="text">텍스트</SelectItem>
-                    <SelectItem value="mixed">이미지 + 텍스트</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div>
+                  <Label htmlFor="popup_type">팝업 타입 *</Label>
+                  <Select
+                    value={watch('popup_type')}
+                    onValueChange={(value: 'image' | 'text' | 'mixed') => setValue('popup_type', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">이미지</SelectItem>
+                      <SelectItem value="text">텍스트</SelectItem>
+                      <SelectItem value="mixed">이미지 + 텍스트</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
@@ -209,273 +232,239 @@ export default function EditPopupPage({ params }: { params: { id: string } }) {
                   {...register('priority', { valueAsNumber: true })}
                   placeholder="0"
                 />
-                <p className="text-xs text-muted-foreground mt-1">높은 숫자가 먼저 표시됩니다</p>
+                <span className="text-sm text-gray-500">높은 숫자가 먼저 표시됩니다</span>
               </div>
             </div>
 
-            {(popupType === 'text' || popupType === 'mixed') && (
-              <div>
-                <Label htmlFor="content">팝업 내용</Label>
-                <Textarea
-                  id="content"
-                  {...register('content')}
-                  rows={5}
-                  placeholder="팝업에 표시할 텍스트 내용을 입력하세요"
-                />
-              </div>
-            )}
+            {/* 내용 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">내용</h3>
 
-            {(popupType === 'image' || popupType === 'mixed') && (
-              <div>
-                <Label htmlFor="image">팝업 이미지</Label>
-                <div className="mt-2">
-                  <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                    <input
+              {(popupType === 'text' || popupType === 'mixed') && (
+                <div>
+                  <Label htmlFor="content">텍스트 내용</Label>
+                  <Textarea
+                    id="content"
+                    {...register('content')}
+                    placeholder="팝업 내용을 입력하세요"
+                    rows={5}
+                  />
+                </div>
+              )}
+
+              {(popupType === 'image' || popupType === 'mixed') && (
+                <div>
+                  <Label htmlFor="image">이미지</Label>
+                  <div className="space-y-2">
+                    <Input
+                      id="image"
                       type="file"
-                      className="hidden"
                       accept="image/*"
                       onChange={handleImageChange}
                     />
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <Upload className="w-12 h-12 text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">클릭하여 이미지 업로드</p>
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-xs max-h-48 object-contain border rounded"
+                        />
                       </div>
                     )}
-                  </label>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>표시 설정</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="position">팝업 위치</Label>
-                <Select
-                  value={position}
-                  onValueChange={(value) => setValue('position', value as any)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="center">중앙</SelectItem>
-                    <SelectItem value="top">상단</SelectItem>
-                    <SelectItem value="bottom">하단</SelectItem>
-                    <SelectItem value="custom">사용자 지정</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {position === 'custom' && (
-                <>
-                  <div>
-                    <Label htmlFor="position_x">X 좌표 (px)</Label>
-                    <Input
-                      id="position_x"
-                      type="number"
-                      {...register('position_x', { valueAsNumber: true })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="position_y">Y 좌표 (px)</Label>
-                    <Input
-                      id="position_y"
-                      type="number"
-                      {...register('position_y', { valueAsNumber: true })}
-                    />
-                  </div>
-                </>
               )}
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="width">너비 (px)</Label>
-                <Input
-                  id="width"
-                  type="number"
-                  {...register('width', { valueAsNumber: true })}
-                />
-                <p className="text-xs text-muted-foreground mt-1">200-1200px</p>
-              </div>
-
-              <div>
-                <Label htmlFor="height">높이 (px)</Label>
-                <Input
-                  id="height"
-                  type="number"
-                  {...register('height', { valueAsNumber: true })}
-                />
-                <p className="text-xs text-muted-foreground mt-1">200-900px</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="start_date">시작일시</Label>
-                <Input
-                  id="start_date"
-                  type="datetime-local"
-                  {...register('start_date')}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="end_date">종료일시 (선택)</Label>
-                <Input
-                  id="end_date"
-                  type="datetime-local"
-                  {...register('end_date')}
-                />
-                <p className="text-xs text-muted-foreground mt-1">비어있으면 계속 표시</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>링크 설정</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="link_url">링크 URL (선택)</Label>
-              <Input
-                id="link_url"
-                type="url"
-                {...register('link_url')}
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="link_target">링크 열기 방식</Label>
-              <Select
-                value={watch('link_target')}
-                onValueChange={(value) => setValue('link_target', value as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_self">현재 창</SelectItem>
-                  <SelectItem value="_blank">새 창</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>옵션</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="is_active">팝업 활성화</Label>
-              <Switch
-                id="is_active"
-                checked={watch('is_active')}
-                onCheckedChange={(checked) => setValue('is_active', checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show_on_main">메인 페이지 표시</Label>
-              <Switch
-                id="show_on_main"
-                checked={watch('show_on_main')}
-                onCheckedChange={(checked) => setValue('show_on_main', checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show_on_mobile">모바일 표시</Label>
-              <Switch
-                id="show_on_mobile"
-                checked={watch('show_on_mobile')}
-                onCheckedChange={(checked) => setValue('show_on_mobile', checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show_today_close">오늘 하루 보지 않기 옵션</Label>
-              <Switch
-                id="show_today_close"
-                checked={watch('show_today_close')}
-                onCheckedChange={(checked) => setValue('show_today_close', checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show_week_close">일주일 보지 않기 옵션</Label>
-              <Switch
-                id="show_week_close"
-                checked={watch('show_week_close')}
-                onCheckedChange={(checked) => setValue('show_week_close', checked)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {popup && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>통계 정보</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-muted-foreground">조회수:</span> {popup.view_count}
+                  <Label htmlFor="link_url">링크 URL</Label>
+                  <Input
+                    id="link_url"
+                    {...register('link_url')}
+                    placeholder="https://example.com"
+                  />
                 </div>
+
                 <div>
-                  <span className="text-muted-foreground">클릭수:</span> {popup.click_count}
+                  <Label htmlFor="link_target">링크 열기 방식</Label>
+                  <Select
+                    value={watch('link_target')}
+                    onValueChange={(value: '_self' | '_blank') => setValue('link_target', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_self">현재 창</SelectItem>
+                      <SelectItem value="_blank">새 창</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                {popup.view_count > 0 && (
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">CTR:</span>{' '}
-                    {((popup.click_count / popup.view_count) * 100).toFixed(2)}%
-                  </div>
+              </div>
+            </div>
+
+            {/* 표시 설정 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">표시 설정</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="position">위치</Label>
+                  <Select
+                    value={watch('position')}
+                    onValueChange={(value: 'center' | 'top' | 'bottom' | 'custom') => setValue('position', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="center">중앙</SelectItem>
+                      <SelectItem value="top">상단</SelectItem>
+                      <SelectItem value="bottom">하단</SelectItem>
+                      <SelectItem value="custom">사용자 지정</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {position === 'custom' && (
+                  <>
+                    <div>
+                      <Label htmlFor="position_x">X 좌표</Label>
+                      <Input
+                        id="position_x"
+                        type="number"
+                        {...register('position_x', { valueAsNumber: true })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="position_y">Y 좌표</Label>
+                      <Input
+                        id="position_y"
+                        type="number"
+                        {...register('position_y', { valueAsNumber: true })}
+                        placeholder="0"
+                      />
+                    </div>
+                  </>
                 )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-muted-foreground">생성일:</span>{' '}
-                  {new Date(popup.created_at).toLocaleString('ko-KR')}
+                  <Label htmlFor="width">너비 (px)</Label>
+                  <Input
+                    id="width"
+                    type="number"
+                    {...register('width', { valueAsNumber: true })}
+                    placeholder="500"
+                  />
                 </div>
                 <div>
-                  <span className="text-muted-foreground">수정일:</span>{' '}
-                  {new Date(popup.updated_at).toLocaleString('ko-KR')}
+                  <Label htmlFor="height">높이 (px)</Label>
+                  <Input
+                    id="height"
+                    type="number"
+                    {...register('height', { valueAsNumber: true })}
+                    placeholder="600"
+                  />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
 
-        <div className="flex gap-4 mt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push('/admin/popups')}
-          >
-            취소
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? '수정 중...' : '팝업 수정'}
-          </Button>
-        </div>
-      </form>
+            {/* 표시 기간 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">표시 기간</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="start_date">시작일 *</Label>
+                  <Input
+                    id="start_date"
+                    type="date"
+                    {...register('start_date')}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="end_date">종료일</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    {...register('end_date')}
+                  />
+                  <span className="text-sm text-gray-500">비워두면 계속 표시</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 옵션 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">옵션</h3>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is_active">활성화</Label>
+                  <Switch
+                    id="is_active"
+                    checked={watch('is_active')}
+                    onCheckedChange={(checked) => setValue('is_active', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show_on_main">메인 페이지 표시</Label>
+                  <Switch
+                    id="show_on_main"
+                    checked={watch('show_on_main')}
+                    onCheckedChange={(checked) => setValue('show_on_main', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show_on_mobile">모바일 표시</Label>
+                  <Switch
+                    id="show_on_mobile"
+                    checked={watch('show_on_mobile')}
+                    onCheckedChange={(checked) => setValue('show_on_mobile', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show_today_close">오늘 하루 보지 않기 옵션</Label>
+                  <Switch
+                    id="show_today_close"
+                    checked={watch('show_today_close')}
+                    onCheckedChange={(checked) => setValue('show_today_close', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show_week_close">일주일 보지 않기 옵션</Label>
+                  <Switch
+                    id="show_week_close"
+                    checked={watch('show_week_close')}
+                    onCheckedChange={(checked) => setValue('show_week_close', checked)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 제출 버튼 */}
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push('/admin/popups')}
+              >
+                취소
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? '수정 중...' : '수정'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
