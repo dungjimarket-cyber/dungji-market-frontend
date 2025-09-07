@@ -80,9 +80,7 @@ export const getPopups = async (isActive?: boolean): Promise<Popup[]> => {
  */
 export const getActivePopups = async (): Promise<Popup[]> => {
   try {
-    console.log('API 호출:', `${API_URL}/popups/active_popups/`);
     const response = await axios.get(`${API_URL}/popups/active_popups/`);
-    console.log('API 응답:', response.data);
     return response.data;
   } catch (error) {
     console.error('활성 팝업 조회 실패:', error);

@@ -291,9 +291,7 @@ export function PopupManager() {
 
   const loadPopups = async () => {
     try {
-      console.log('팝업 로드 시작...');
       const activePopups = await getActivePopups();
-      console.log('활성 팝업:', activePopups);
       
       // 쿠키에서 숨김 처리된 팝업 필터링
       const filteredPopups = activePopups.filter(popup => {
@@ -307,7 +305,6 @@ export function PopupManager() {
         return true;
       });
       
-      console.log('필터링된 팝업:', filteredPopups);
       setPopups(filteredPopups);
     } catch (error) {
       console.error('팝업 로드 실패:', error);
