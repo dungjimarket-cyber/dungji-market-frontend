@@ -136,7 +136,7 @@ function FindUsernameForm({ onClose }: { onClose: () => void }): ReactNode {
  */
 function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
   const router = useRouter();
-  const [method, setMethod] = useState<'email' | 'phone'>('email');
+  const [method, setMethod] = useState<'email' | 'phone'>('phone'); // 기본값을 phone으로 변경
   const [step, setStep] = useState<'input' | 'verify' | 'verify-phone' | 'reset' | 'complete'>('input');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -577,8 +577,8 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           </div>
         )}
 
-        {/* Method selection tabs */}
-        <div className="flex mb-4 border-b">
+        {/* Method selection tabs - 이메일 인증 임시 주석 처리 */}
+        {/* <div className="flex mb-4 border-b">
           <button 
             type="button"
             className={`flex-1 py-2 text-sm font-semibold ${method === 'email' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`} 
@@ -593,7 +593,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           >
             휴대폰 인증
           </button>
-        </div>
+        </div> */
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {method === 'phone' && (
@@ -610,7 +610,8 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
             </div>
           )}
 
-          {method === 'email' ? (
+          {/* 이메일 인증 임시 주석 처리 */}
+          {/* {method === 'email' ? (
             <div>
               <label className="block text-sm font-medium text-gray-700">이메일</label>
               <input 
@@ -625,7 +626,8 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
                 가입하신 이메일 주소로 비밀번호 재설정 링크가 발송됩니다.
               </p>
             </div>
-          ) : (
+          ) : ( */}
+          {method === 'phone' && (
             <div>
               <label className="block text-sm font-medium text-gray-700">휴대폰 번호</label>
               <input 
@@ -645,7 +647,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
             disabled={loading} 
             className="w-full py-2 rounded bg-blue-600 text-white font-semibold disabled:bg-gray-400"
           >
-            {loading ? '확인 중...' : (method === 'email' ? '재설정 링크 발송' : '다음 단계')}
+            {loading ? '확인 중...' : '다음 단계'}
           </button>
         </form>
       </div>
