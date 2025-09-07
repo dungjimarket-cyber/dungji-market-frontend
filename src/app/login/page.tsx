@@ -214,11 +214,11 @@ function LoginForm() {
           <div className="space-y-2 text-sm text-blue-800">
             <div className="flex items-center gap-2">
               <span className="text-blue-600">🔒</span>
-              <span><strong>일반회원:</strong> 공동구매 참여 및 견적 받기</span>
+              <span><strong>일반회원:</strong> 공동구매 참여, 견적 받기</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-green-600">🏪</span>
-              <span><strong>판매회원:</strong> 견적 제안 및 판매 활동</span>
+              <span><strong>판매회원:</strong> 견적 제안, 판매 활동</span>
             </div>
           </div>
         </div>
