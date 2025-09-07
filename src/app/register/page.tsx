@@ -852,7 +852,7 @@ function RegisterPageContent() {
                     <span className="text-xl">💼</span>
                     <div className="flex-1">
                       <span className="font-semibold text-green-600 text-sm">판매회원</span>
-                      <span className="text-gray-600 text-xs ml-1">견적 제안하고 판매 기회 얻기</span>
+                      <span className="text-gray-600 text-xs ml-1">견적 제안 및 판매 활동</span>
                     </div>
                   </div>
                 </div>
