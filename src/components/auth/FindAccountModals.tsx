@@ -593,7 +593,7 @@ function ResetPasswordForm({ onClose }: { onClose: () => void }): ReactNode {
           >
             휴대폰 인증
           </button>
-        </div> */
+        </div> */}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {method === 'phone' && (
