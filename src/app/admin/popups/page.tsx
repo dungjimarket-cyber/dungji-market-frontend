@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 
 export default function PopupManagementPage() {
   const router = useRouter();
-  const { user, token } = useAuth();
+  const { user, accessToken } = useAuth();
   const [popups, setPopups] = useState<Popup[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -52,13 +52,13 @@ export default function PopupManagementPage() {
   };
 
   const handleToggleActive = async (popup: Popup) => {
-    if (!token) return;
+    if (!accessToken) return;
     
     try {
       await updatePopup(
         popup.id,
         { ...popup, is_active: !popup.is_active },
-        token
+        accessToken
       );
       await fetchPopups();
       toast.success(popup.is_active ? '팝업이 비활성화되었습니다.' : '팝업이 활성화되었습니다.');
@@ -69,10 +69,10 @@ export default function PopupManagementPage() {
   };
 
   const handleDelete = async () => {
-    if (!selectedPopup || !token) return;
+    if (!selectedPopup || !accessToken) return;
     
     try {
-      await deletePopup(selectedPopup.id, token);
+      await deletePopup(selectedPopup.id, accessToken);
       await fetchPopups();
       toast.success('팝업이 삭제되었습니다.');
       setDeleteDialogOpen(false);

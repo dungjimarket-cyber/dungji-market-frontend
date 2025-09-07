@@ -42,7 +42,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CreatePopupPage() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { accessToken } = useAuth();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -87,7 +87,7 @@ export default function CreatePopupPage() {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!token) {
+    if (!accessToken) {
       toast.error('로그인이 필요합니다.');
       return;
     }
@@ -106,7 +106,7 @@ export default function CreatePopupPage() {
         exclude_pages: [],
       };
 
-      await createPopup(formData, token);
+      await createPopup(formData, accessToken);
       toast.success('팝업이 생성되었습니다.');
       router.push('/admin/popups');
     } catch (error) {
