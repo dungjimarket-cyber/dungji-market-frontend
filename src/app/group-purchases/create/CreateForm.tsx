@@ -1676,7 +1676,7 @@ const onSubmit = async (values: FormData) => {
                             className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
                             SK브로드밴드
-                            <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3.5 w-auto" />
+                            <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3 w-auto" />
                             →
                           </a>
                           <a

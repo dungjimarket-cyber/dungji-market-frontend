@@ -1087,7 +1087,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
                         • SK : 인터넷 요금제 확인하기
-                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3.5 w-auto" />
+                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3 w-auto" />
                         →
                       </a>
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
@@ -1221,7 +1221,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-800 hover:underline">
                         • SK : 인터넷+TV 요금제 확인하기
-                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3.5 w-auto" />
+                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-3 w-auto" />
                         →
                       </a>
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
