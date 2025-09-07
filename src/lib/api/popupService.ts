@@ -190,7 +190,8 @@ export const recordPopupView = async (id: number): Promise<void> => {
   try {
     await axios.post(`${API_URL}/popups/${id}/record_view/`);
   } catch (error) {
-    console.error('팝업 조회수 기록 실패:', error);
+    // 조회수 기록 실패는 무시 (서버 재시작 대기 중)
+    // console.error('팝업 조회수 기록 실패:', error);
   }
 };
 
@@ -201,6 +202,7 @@ export const recordPopupClick = async (id: number): Promise<void> => {
   try {
     await axios.post(`${API_URL}/popups/${id}/record_click/`);
   } catch (error) {
-    console.error('팝업 클릭수 기록 실패:', error);
+    // 클릭수 기록 실패는 무시 (서버 재시작 대기 중)
+    // console.error('팝업 클릭수 기록 실패:', error);
   }
 };
