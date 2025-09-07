@@ -48,7 +48,7 @@ interface PageProps {
 export default function EditPopupPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const { token } = useAuth();
+  const { accessToken } = useAuth();
   const [popup, setPopup] = useState<Popup | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -135,7 +135,7 @@ export default function EditPopupPage({ params }: PageProps) {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!token || !popup) {
+    if (!accessToken || !popup) {
       toast.error('로그인이 필요합니다.');
       return;
     }
@@ -149,7 +149,7 @@ export default function EditPopupPage({ params }: PageProps) {
         exclude_pages: popup.exclude_pages,
       };
 
-      await updatePopup(popup.id, formData, token);
+      await updatePopup(popup.id, formData, accessToken);
       toast.success('팝업이 수정되었습니다.');
       router.push('/admin/popups');
     } catch (error) {
