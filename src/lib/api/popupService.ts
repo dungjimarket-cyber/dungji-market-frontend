@@ -188,10 +188,10 @@ export const deletePopup = async (id: number, token: string): Promise<void> => {
  */
 export const recordPopupView = async (id: number): Promise<void> => {
   try {
-    await axios.post(`${API_URL}/popups/${id}/record_view/`);
+    const response = await axios.post(`${API_URL}/popups/${id}/record_view/`);
+    console.log('조회수 기록 성공:', response.data);
   } catch (error) {
-    // 조회수 기록 실패는 무시 (서버 재시작 대기 중)
-    // console.error('팝업 조회수 기록 실패:', error);
+    console.error('팝업 조회수 기록 실패:', error);
   }
 };
 
@@ -200,9 +200,9 @@ export const recordPopupView = async (id: number): Promise<void> => {
  */
 export const recordPopupClick = async (id: number): Promise<void> => {
   try {
-    await axios.post(`${API_URL}/popups/${id}/record_click/`);
+    const response = await axios.post(`${API_URL}/popups/${id}/record_click/`);
+    console.log('클릭수 기록 성공:', response.data);
   } catch (error) {
-    // 클릭수 기록 실패는 무시 (서버 재시작 대기 중)
-    // console.error('팝업 클릭수 기록 실패:', error);
+    console.error('팝업 클릭수 기록 실패:', error);
   }
 };
