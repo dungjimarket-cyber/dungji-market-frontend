@@ -79,25 +79,15 @@ export default function EventDetailPage() {
       </button>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="aspect-[16/9] md:aspect-[21/9] relative bg-gray-100 max-h-[400px]">
-          <Image
-            src={event.thumbnail_url ? `${event.thumbnail_url}${event.thumbnail_url.includes('?') ? '&' : '?'}t=${Date.now()}` : '/placeholder.png'}
-            alt={event.title}
-            fill
-            className="object-contain md:object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-            priority
-            quality={85}
-          />
-          {event.is_active && (
-            <div className="absolute top-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-              진행중
-            </div>
-          )}
-        </div>
-
         <div className="p-6 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4">{event.title}</h1>
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold">{event.title}</h1>
+            {event.is_active && (
+              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium ml-4">
+                진행중
+              </span>
+            )}
+          </div>
           
           <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-6">
             <p>

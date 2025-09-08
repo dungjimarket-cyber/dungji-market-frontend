@@ -75,12 +75,12 @@ export default function EventListPage() {
               href={`/events/${event.slug}`}
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-1"
             >
-              <div className="aspect-[4/3] relative bg-gray-100">
+              <div className="aspect-[4/3] relative bg-gray-50">
                 <Image
                   src={event.thumbnail_url || '/placeholder.png'}
                   alt={event.title}
                   fill
-                  className="object-cover"
+                  className="object-contain p-2"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                   quality={75}
                   priority={false}
