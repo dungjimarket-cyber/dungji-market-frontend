@@ -69,7 +69,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl lg:max-w-3xl">
+    <div className="container mx-auto px-4 py-8 max-w-xl lg:max-w-2xl xl:max-w-3xl">
       <button
         onClick={() => router.back()}
         className="mb-6 flex items-center text-gray-600 hover:text-gray-800"
@@ -101,17 +101,17 @@ export default function EventDetailPage() {
 
           {event.content_image_url && (
             <div className="mb-6">
-              <div className="bg-gray-50 rounded-lg p-3 md:p-4 lg:p-6">
-                <div className="relative w-full max-w-xl lg:max-w-2xl mx-auto">
+              <div className="bg-gray-50 rounded-lg p-2 md:p-3 lg:p-4">
+                <div className="relative w-full max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
                   <Image
                     src={`${event.content_image_url}${event.content_image_url.includes('?') ? '&' : '?'}t=${Date.now()}`}
                     alt={`${event.title} 상세 이미지`}
-                    width={720}
-                    height={1080}
+                    width={600}
+                    height={900}
                     className="w-full h-auto rounded-lg shadow-sm"
                     style={{ maxWidth: '100%', height: 'auto' }}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 600px, 720px"
-                    quality={80}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 500px, 600px"
+                    quality={75}
                   />
                 </div>
               </div>
