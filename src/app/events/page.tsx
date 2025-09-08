@@ -86,7 +86,7 @@ export default function EventListPage() {
                   priority={false}
                 />
                 {(event.is_active || event.is_valid || event.status === 'ongoing') && (
-                  <div className="absolute top-2 right-2 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
                     진행중
                   </div>
                 )}
