@@ -60,7 +60,7 @@ export default function EventListPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-5xl lg:max-w-6xl">
       <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">이벤트</h1>
 
       {events.length === 0 ? (
@@ -68,21 +68,21 @@ export default function EventListPage() {
           <p className="text-gray-500">진행 중인 이벤트가 없습니다.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {events.map((event) => (
             <Link
               key={event.id}
               href={`/events/${event.slug}`}
-              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-1"
+              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 transform scale-95 lg:scale-90"
             >
-              <div className="aspect-[4/3] relative bg-gray-50">
+              <div className="aspect-square sm:aspect-[4/3] relative bg-gray-50">
                 <Image
                   src={event.thumbnail_url || '/placeholder.png'}
                   alt={event.title}
                   fill
-                  className="object-contain p-2"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                  quality={75}
+                  className="object-contain p-1 sm:p-2"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  quality={70}
                   priority={false}
                 />
                 {(event.is_active || event.is_valid || event.status === 'ongoing') && (
@@ -91,13 +91,13 @@ export default function EventListPage() {
                   </div>
                 )}
               </div>
-              <div className="p-3 md:p-4">
-                <h2 className="text-base md:text-lg font-semibold mb-2 line-clamp-2">{event.title}</h2>
-                <p className="text-xs md:text-sm text-gray-600">
+              <div className="p-2 sm:p-3">
+                <h2 className="text-sm sm:text-base font-semibold mb-1 line-clamp-2">{event.title}</h2>
+                <p className="text-xs text-gray-600">
                   {format(new Date(event.start_date), 'MM.dd', { locale: ko })} ~ 
                   {format(new Date(event.end_date), 'MM.dd', { locale: ko })}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-0.5">
                   조회 {event.view_count.toLocaleString()}
                 </p>
               </div>
