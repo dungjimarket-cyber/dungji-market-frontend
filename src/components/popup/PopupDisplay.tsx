@@ -91,7 +91,7 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
           style={{
             width: 'auto',
             maxWidth: `${Math.min(popup.width, window.innerWidth * 0.9)}px`,
-            maxHeight: `${window.innerHeight * 0.9}px`,
+            maxHeight: `${window.innerHeight * 0.85}px`,
           }}
         >
           {/* 닫기 버튼 */}
@@ -113,7 +113,10 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
               alt={popup.title}
               width={popup.width}
               height={popup.height}
-              className="w-auto h-auto max-w-full max-h-[80vh] object-contain"
+              className="w-auto h-auto max-w-full object-contain"
+              style={{
+                maxHeight: `${Math.min(popup.height, window.innerHeight * 0.7)}px`
+              }}
               priority
             />
           </div>
@@ -172,7 +175,7 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         className={`fixed z-[9999] bg-white rounded-lg shadow-2xl ${getPositionStyles()}`}
         style={{
           width: `${Math.min(popup.width, window.innerWidth * 0.9)}px`,
-          maxHeight: `${Math.min(popup.height, window.innerHeight * 0.9)}px`,
+          maxHeight: `${Math.min(popup.height, window.innerHeight * 0.85)}px`,
         }}
       >
         {/* 헤더 */}
