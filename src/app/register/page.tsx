@@ -13,6 +13,7 @@ import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import { useToast } from '@/components/ui/use-toast';
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
 import { verifyBusinessNumberForRegistration, type BusinessVerificationRegistrationResult } from '@/lib/api/businessVerification';
+import { trackSignupConversion } from '@/lib/gtag';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -779,7 +780,10 @@ function RegisterPageContent() {
         throw new Error(errorData.error || errorData.detail || '회원가입에 실패했습니다.');
       }
 
-      await response.json();
+      const userData = await response.json();
+      
+      // Google Ads 전환 이벤트 트리거
+      trackSignupConversion(userData.id || formData.username);
       
       // 회원가입 성공 후 처리
       if (signupType === 'email') {
