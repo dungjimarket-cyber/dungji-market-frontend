@@ -1782,9 +1782,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="mt-6 lg:mt-0 px-4 lg:px-0">
             <div className="bg-white lg:rounded-lg lg:p-6">
               {/* 참여인원 카드 */}
-              <div className="bg-gray-50 lg:bg-white rounded-lg p-4 mb-4">
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-4 mb-3">
                 <p className="text-gray-500 text-sm mb-2 text-center">참여인원</p>
-                <p className="text-3xl font-bold text-center">{currentParticipants}/{groupBuy.max_participants}</p>
+                <p className="text-2xl font-bold text-center">{currentParticipants}/{groupBuy.max_participants}</p>
                 <p className="text-xs text-gray-500 mt-1 text-center">명</p>
                 {/* 참여 진행률 바 */}
                 <div className="mt-3">
