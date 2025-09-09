@@ -187,8 +187,12 @@ export default function CreateUsedPhonePage() {
       });
 
       // API 호출
-      const response = await fetch('/api/used/phones', {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: uploadData,
       });
 

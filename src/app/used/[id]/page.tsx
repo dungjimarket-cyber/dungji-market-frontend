@@ -43,7 +43,12 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
   const fetchPhoneDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/used/phones/${params.id}`);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${params.id}/`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch');
       
       const data = await response.json();
@@ -91,10 +96,13 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
     }
 
     try {
-      const response = await fetch('/api/used/favorites', {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${params.id}/favorite/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneId: params.id }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.ok) {
@@ -132,11 +140,14 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
     }
 
     try {
-      const response = await fetch('/api/used/offers', {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${params.id}/offer/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
-          phoneId: params.id,
           amount,
           message: offerMessage,
         }),

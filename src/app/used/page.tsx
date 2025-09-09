@@ -64,7 +64,7 @@ export default function UsedPhonesPage() {
         ...currentFilters
       });
 
-      const response = await fetch(`/api/used/phones?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones?${params}`);
       const data = await response.json();
 
       if (reset) {
@@ -108,10 +108,13 @@ export default function UsedPhonesPage() {
     }
 
     try {
-      const response = await fetch('/api/used/favorites', {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/favorite/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneId })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.ok) {
