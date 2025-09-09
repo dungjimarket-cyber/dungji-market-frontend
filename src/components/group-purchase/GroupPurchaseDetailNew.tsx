@@ -1350,9 +1350,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
 
       {/* 메인 컨텐츠 래퍼 - PC에서 좌우 분할 */}
-      <div className="lg:flex lg:gap-6 lg:px-4">
+      <div className="lg:flex lg:gap-8 lg:max-w-7xl lg:mx-auto lg:px-6">
         {/* 왼쪽 영역 - 상품 정보 (PC: 60%, 모바일: 100%) */}
-        <div className="lg:flex-1">
+        <div className="lg:flex-1 lg:border-r lg:border-gray-200 lg:pr-8">
           {/* 상품 정보 */}
           <div className="px-4 lg:px-0 py-6">
         <h2 className="text-2xl font-bold mb-3">
@@ -1391,7 +1391,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         </div>
         
-        {/* 지역 하단 약한 구분선 */}
+        {/* 공구 주최자 - 공구 지역 바로 아래로 이동 */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-1">
+            <span className="text-sm">👑</span>
+            <span className="text-gray-500 text-xs">방장</span>
+          </div>
+          <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
+        </div>
+        
+        {/* 지역 및 방장 하단 약한 구분선 */}
         <div className="border-b border-gray-100 mb-4"></div>
         
         {/* 가격 - 인터넷/인터넷+TV 카테고리가 아닌 경우에만 표시 */}
@@ -1774,10 +1783,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {/* 왼쪽 영역 끝 */}
 
         {/* 오른쪽 영역 - 참여 정보 (PC: 40%, 모바일: 100%) */}
-        <div className="lg:w-[380px] lg:sticky lg:top-4 lg:h-fit">
-          {/* 공구 상태 정보 - 모바일에서는 아래로, PC에서는 오른쪽 상단 */}
+        <div className="lg:w-[400px] lg:sticky lg:top-20 lg:h-fit">
+          {/* 모바일에서는 하단 고정, PC에서는 오른쪽 사이드바 */}
           <div className="mt-6 lg:mt-0 px-4 lg:px-0">
-            <div className="bg-white lg:border lg:border-gray-200 lg:rounded-lg lg:p-4">
+            <div className="bg-white lg:rounded-lg lg:p-6">
               {/* 참여인원 카드 */}
               <div className="bg-gray-50 lg:bg-white rounded-lg p-4 mb-4">
                 <p className="text-gray-500 text-sm mb-2 text-center">참여인원</p>
@@ -1794,15 +1803,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   {remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}
                 </p>
               </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span className="text-sm">👑</span>
-              <span className="text-gray-500 text-xs">방장</span>
-            </div>
-            <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
-          </div>
-          <ChevronRight className="w-5 h-5 text-gray-400" />
-        </div>
 
 
               {/* 시간 정보 카드 */}
@@ -1909,20 +1909,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </>
             )}
               </div>
-
-              {/* 공구 주최자 - PC에서는 오른쪽 사이드바 하단 */}
-              <div className="border-t border-gray-200 lg:border-t-0 lg:mt-4">
-                <div className="px-4 py-4 lg:px-0 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm">👑</span>
-                      <span className="text-gray-500 text-xs">방장</span>
-                    </div>
-                    <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -2017,8 +2003,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       )} */}
 
-      {/* 버튼 영역 (고정되지 않음) */}
-      <div className="px-4 py-6">
+      {/* 모바일 버튼 영역 (PC에서는 숨김) */}
+      <div className="lg:hidden px-4 py-6">
         {/* 일반회원 버튼 구성 */}
         {!isSeller && isParticipant ? (
           // 참여한 일반회원
@@ -2778,6 +2764,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         penaltyInfo={user?.penalty_info || user?.penaltyInfo}
         userRole={isSeller ? 'seller' : 'buyer'}
       />
+    </div>
     </EndedGroupBuyAccessControl>
   );
 }
