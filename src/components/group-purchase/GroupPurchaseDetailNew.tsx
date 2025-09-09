@@ -2187,7 +2187,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     <div className="space-y-2 text-sm text-amber-700">
                       {groupBuy.product_details?.category_name === '휴대폰' ? (
                         <>
-                          <p className="break-keep">• 본 페이지는 <span className="font-bold">참고용</span>이며, 실제 개통은 영업사원이 직접 방문하여 진행합니다.</p>
+                          <p className="break-keep">• 실제 개통은 영업사원이 직접 방문하여 진행합니다.</p>
                           <p className="break-keep">• 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.</p>
                           <p className="break-keep">• 자세한 내용은 통신사 앱 또는 고객센터를 통해 확인하세요.</p>
                         </>
