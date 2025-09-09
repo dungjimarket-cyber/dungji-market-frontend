@@ -1564,6 +1564,148 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
           </div>
 
+        {/* 최고 지원금/최종 낙찰 지원금 박스 */}
+        {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
+          // 최종선택 상태일 때 낙찰 정보 표시
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
+            <div className="text-center">
+              
+              {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 - 판매자와 참여자만 표시 */}
+              {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller) && (
+                <div className="mb-4">
+                  <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
+                    <span className="inline-block">🎉</span>
+                    <span className="inline-block mx-1">
+                      {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '견적이 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
+                    </span>
+                    <span className="inline-block">🎉</span>
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Crown className="h-6 w-6 text-orange-500" />
+                <p className="text-xl font-bold text-gray-800">
+                  최종 지원금
+                </p>
+              </div>
+              <p className="text-3xl sm:text-4xl font-bold text-orange-600 mb-1">
+                {/* 최종선택 단계 이후부터는 참여자와 판매회원에게 정상 금액 표시, 미참여자는 마스킹 */}
+                {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
+                  <>
+                    <span>{
+                      groupBuyData.winning_bid_amount?.toLocaleString() || 
+                      (groupBuyData.bid_ranking && groupBuyData.bid_ranking[0]?.amount ? groupBuyData.bid_ranking[0].amount.toLocaleString() : '0')
+                    }원</span>
+                  </>
+                ) : (
+                  <span>{groupBuyData.winning_bid_amount_masked || '***,***원'}</span>
+                )}
+              </p>
+              <div className="mt-4 space-y-3">
+                {/* 견적 내역 보기 버튼과 구매자 확정률 버튼을 나란히 배치 */}
+                {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
+                  <div className="flex justify-center items-center gap-3 mt-4">
+                    <Button
+                      onClick={() => setShowBidHistoryModal(true)}
+                      variant="outline"
+                      size="default"
+                      className="px-6"
+                    >
+                      견적 내역 보기
+                    </Button>
+                    
+                    {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 - 입찰내역보기 우측에 나란히 배치 */}
+                    {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                              headers: {
+                                'Authorization': `Bearer ${accessToken}`,
+                              }
+                            });
+                            if (res.ok) {
+                              const data = await res.json();
+                              setBuyerConfirmationData(data);
+                              setShowBuyerConfirmationModal(true);
+                            }
+                          } catch (error) {
+                            console.error('구매자 확정률 조회 실패:', error);
+                            toast({
+                              title: '오류',
+                              description: '구매자 확정률을 조회할 수 없습니다.',
+                              variant: 'destructive'
+                            });
+                          }
+                        }}
+                        variant="outline"
+                        size="default"
+                        className="px-6"
+                      >
+                        구매자확정률 확인하기
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          // 진행중인 상태일 때 기존 표시
+          <div className="bg-yellow-50 rounded-lg p-4 mb-6">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
+              <p className="text-3xl font-bold text-orange-500">
+                {highestBidAmount && highestBidAmount > 0 ? (
+                  <span>{maskAmount(highestBidAmount)}원</span>
+                ) : (
+                  <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
+                )}
+              </p>
+              {totalBids > 0 && (
+                <>
+                  <div className="flex items-center justify-center gap-3 mt-2">
+                    {!isSeller && (
+                      <button
+                        onClick={() => setShowBidHistoryModal(true)}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        견적 내역 보기
+                      </button>
+                    )}
+                    {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 */}
+                    {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
+                      <>
+                        <span className="text-gray-400">|</span>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                                headers: {
+                                  'Authorization': `Bearer ${accessToken}`,
+                                }
+                              });
+                              const data = await res.json();
+                              setBuyerConfirmationData(data);
+                              setShowBuyerConfirmationModal(true);
+                            } catch (error) {
+                              console.error('Error fetching buyer confirmation stats:', error);
+                            }
+                          }}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          구매자확정률 확인하기
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
           {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 */}
       {(groupBuy.product_details?.category_name === 'telecom' || 
         groupBuy.product_details?.category_name === '휴대폰') && (
@@ -1966,17 +2108,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
       {/* 메인 컨텐츠 래퍼 끝 */}
 
-      {/* 하단 영역 - 최고지원금 및 중요안내사항 */}
+      {/* 하단 구분선 */}
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-8">
+        <hr className="border-gray-200" />
+      </div>
+
+      {/* 하단 영역 - 최고지원금 및 중요안내사항 (2열 배치) */}
       <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-8">
         <div className="lg:flex lg:gap-8">
-          {/* 왼쪽: 최고 지원금/최종 낙찰 지원금 박스 */}
+          {/* 왼쪽: 최고 지원금 정보 (복사본) */}
           <div className="lg:w-[50%] px-4 lg:px-0 mb-6 lg:mb-0">
             {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
               // 최종선택 상태일 때 낙찰 정보 표시
-              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 border border-orange-200 shadow-md h-full">
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 border border-orange-200 shadow-md">
                 <div className="text-center">
-                  
-                  {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 - 판매자와 참여자만 표시 */}
                   {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller) && (
                     <div className="mb-4">
                       <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
@@ -1996,7 +2141,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     </p>
                   </div>
                   <p className="text-3xl sm:text-4xl font-bold text-orange-600 mb-1">
-                    {/* 최종선택 단계 이후부터는 참여자와 판매회원에게 정상 금액 표시, 미참여자는 마스킹 */}
                     {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
                       <>
                         <span>{
@@ -2008,58 +2152,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       <span>{groupBuyData.winning_bid_amount_masked || '***,***원'}</span>
                     )}
                   </p>
-                  <div className="mt-4 space-y-3">
-                    {/* 견적 내역 보기 버튼과 구매자 확정률 버튼을 나란히 배치 */}
-                    {(groupBuyData.status !== 'recruiting' && groupBuyData.status !== 'bidding') && (
-                      <div className="flex justify-center items-center gap-3 mt-4">
-                        <Button
-                          onClick={() => setShowBidHistoryModal(true)}
-                          variant="outline"
-                          size="default"
-                          className="px-6"
-                        >
-                          견적 내역 보기
-                        </Button>
-                        
-                        {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 - 입찰내역보기 우측에 나란히 배치 */}
-                        {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
-                          <Button
-                            onClick={async () => {
-                              try {
-                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                                  headers: {
-                                    'Authorization': `Bearer ${accessToken}`,
-                                  }
-                                });
-                                if (res.ok) {
-                                  const data = await res.json();
-                                  setBuyerConfirmationData(data);
-                                  setShowBuyerConfirmationModal(true);
-                                }
-                              } catch (error) {
-                                console.error('구매자 확정률 조회 실패:', error);
-                                toast({
-                                  title: '오류',
-                                  description: '구매자 확정률을 조회할 수 없습니다.',
-                                  variant: 'destructive'
-                                });
-                              }
-                            }}
-                            variant="outline"
-                            size="default"
-                            className="px-6"
-                          >
-                            구매자확정률 확인하기
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             ) : (
               // 진행중인 상태일 때 기존 표시
-              <div className="bg-yellow-50 rounded-lg p-4 h-full flex items-center justify-center">
+              <div className="bg-yellow-50 rounded-lg p-4">
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
                   <p className="text-3xl font-bold text-orange-500">
@@ -2069,57 +2166,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
                     )}
                   </p>
-                  {totalBids > 0 && (
-                    <>
-                      <div className="flex items-center justify-center gap-3 mt-2">
-                        {!isSeller && (
-                          <button
-                            onClick={() => setShowBidHistoryModal(true)}
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            견적 내역 보기
-                          </button>
-                        )}
-                        {/* 낙찰된 판매자에게 구매자 확정률 버튼 표시 */}
-                        {isSeller && hasWinningBid && (groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller') && (
-                          <>
-                            <span className="text-gray-400">|</span>
-                            <button
-                              onClick={async () => {
-                                try {
-                                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                                    headers: {
-                                      'Authorization': `Bearer ${accessToken}`,
-                                    }
-                                  });
-                                  const data = await res.json();
-                                  setBuyerConfirmationData(data);
-                                  setShowBuyerConfirmationModal(true);
-                                } catch (error) {
-                                  console.error('Error fetching buyer confirmation stats:', error);
-                                }
-                              }}
-                              className="text-xs text-blue-600 hover:underline"
-                            >
-                              구매자확정률 확인하기
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* 오른쪽: 중요 안내사항 */}
+          {/* 오른쪽: 중요 안내사항 (복사본) */}
           <div className="lg:w-[50%] px-4 lg:px-0">
-            {/* 통신 관련 안내사항 - 모바일과 동일하게 카테고리별로 표시 */}
             {(groupBuy.product_details?.category_name === '휴대폰' || 
               groupBuy.product_details?.category_name === '인터넷' || 
               groupBuy.product_details?.category_name === '인터넷+TV') && (
-              <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm h-full">
+              <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 mt-0.5">
                     <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2128,48 +2185,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-amber-800 mb-2">⚠️ 중요 안내사항</h3>
-                    <div className="space-y-3 text-sm text-amber-700">
+                    <div className="space-y-2 text-sm text-amber-700">
                       {groupBuy.product_details?.category_name === '휴대폰' ? (
                         <>
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
-                            <div className="text-left leading-relaxed">
-                              <p className="break-keep">본 페이지는 <span className="font-bold">참고용</span>이며, 실제 개통은 영업사원이 직접 방문하여 진행합니다.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
-                            <div className="text-left leading-relaxed">
-                              <p className="break-keep">기존 사용하시던 기기의 남은 할부금과 약정기간 이전 해지시 위약금은 본인 부담입니다.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
-                            <div className="text-left leading-relaxed">
-                              <p className="break-keep">자세한 내용은 해당 통신사 어플 또는 고객센터를 통해 확인 부탁드립니다.</p>
-                            </div>
-                          </div>
+                          <p className="break-keep">• 본 페이지는 <span className="font-bold">참고용</span>이며, 실제 개통은 영업사원이 직접 방문하여 진행합니다.</p>
+                          <p className="break-keep">• 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.</p>
+                          <p className="break-keep">• 자세한 내용은 통신사 앱 또는 고객센터를 통해 확인하세요.</p>
                         </>
                       ) : (
                         <>
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
-                            <div className="text-left leading-relaxed">
-                              <p className="break-keep">기존 사용 중인 인터넷 또는 TV 서비스의 약정기간 이전 해지 시 위약금은 본인 부담입니다.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
-                            <div className="text-left leading-relaxed">
-                              <p className="break-keep">설치비, 철거비, 이전설치비 등의 추가 비용이 발생할 수 있습니다.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
-                            <div className="text-left leading-relaxed">
-                              <p className="break-keep">자세한 내용은 해당 통신사 홈페이지 또는 고객센터를 통해 확인 부탁드립니다.</p>
-                            </div>
-                          </div>
+                          <p className="break-keep">• 기존 서비스의 위약금은 본인 부담입니다.</p>
+                          <p className="break-keep">• 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.</p>
+                          <p className="break-keep">• 자세한 내용은 통신사 홈페이지 또는 고객센터를 통해 확인하세요.</p>
                         </>
                       )}
                     </div>
