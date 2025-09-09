@@ -113,9 +113,9 @@ export default function Footer() {
                 className="inline-flex items-center text-gray-600 hover:text-green-600 transition-colors duration-200"
                 title="둥지마켓 블로그"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm2 0v14h14V5H5zm2.5 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm2.5 4h7v-1h-7v1zm0-5h2v-1h-2v1zm4 0h3v-1h-3v1z"/>
-                </svg>
+                <div className="w-6 h-6 bg-green-500 rounded text-white flex items-center justify-center font-bold text-sm">
+                  N
+                </div>
                 <span className="ml-2 text-sm">블로그</span>
               </a>
             </div>
