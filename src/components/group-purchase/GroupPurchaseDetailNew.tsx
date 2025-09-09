@@ -1784,8 +1784,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {/* 참여인원 카드 */}
               <div className="bg-gray-50 lg:bg-white rounded-lg p-4 mb-3">
                 <p className="text-gray-500 text-sm mb-2 text-center">참여인원</p>
-                <p className="text-2xl font-bold text-center">{currentParticipants}/{groupBuy.max_participants}</p>
-                <p className="text-xs text-gray-500 mt-1 text-center">명</p>
+                <p className="text-2xl font-bold text-center">
+                  {currentParticipants}/{groupBuy.max_participants}
+                  <span className="text-sm text-gray-500 ml-1">명</span>
+                </p>
                 {/* 참여 진행률 바 */}
                 <div className="mt-3">
                   <Progress 
