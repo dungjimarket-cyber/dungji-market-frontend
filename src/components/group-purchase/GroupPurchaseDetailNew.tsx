@@ -2817,7 +2817,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>공구 나가기</AlertDialogTitle>
             <AlertDialogDescription>
-              {isCreator ? (
+              {totalBids > 0 ? (
+                <>
+                  견적이 제안된 공구는 나가기가 불가합니다.
+                  <br />
+                  이미 판매자가 견적을 제안한 상태입니다.
+                </>
+              ) : isCreator ? (
                 <>
                   정말로 이 공구를 삭제하시겠습니까?
                   <br />
