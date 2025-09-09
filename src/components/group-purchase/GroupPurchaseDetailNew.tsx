@@ -1921,10 +1921,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                           공동구매 초대하기
                         </Button>
                         {/* 공구 나가기 버튼 - 조건부 표시 */}
-                        {groupBuy.status === 'recruiting' && (
+                        {groupBuy.status === 'recruiting' && totalBids === 0 && (
                           isCreator ? (
                             // 생성자: 참여자가 본인만 있고 입찰이 없을 때만 삭제 가능
-                            currentParticipants <= 1 && totalBids === 0 && (
+                            currentParticipants <= 1 && (
                               <Button
                                 onClick={() => setShowWithdrawDialog(true)}
                                 variant="outline"
@@ -1934,7 +1934,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                               </Button>
                             )
                           ) : (
-                            // 일반 참여자: 모집중일 때 나가기 가능
+                            // 일반 참여자: 모집중이고 입찰이 없을 때만 나가기 가능
                             <Button
                               onClick={() => setShowWithdrawDialog(true)}
                               variant="outline"
@@ -2326,10 +2326,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   공동구매 초대하기
                 </Button>
                 {/* 공구 나가기 버튼 - 조건부 표시 */}
-                {groupBuy.status === 'recruiting' && (
+                {groupBuy.status === 'recruiting' && totalBids === 0 && (
                   isCreator ? (
                     // 생성자: 참여자가 본인만 있고 입찰이 없을 때만 삭제 가능
-                    currentParticipants <= 1 && totalBids === 0 && (
+                    currentParticipants <= 1 && (
                       <Button
                         onClick={() => setShowWithdrawDialog(true)}
                         variant="outline"
@@ -2339,7 +2339,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       </Button>
                     )
                   ) : (
-                    // 일반 참여자: 모집중일 때 나가기 가능
+                    // 일반 참여자: 모집중이고 입찰이 없을 때만 나가기 가능
                     <Button
                       onClick={() => setShowWithdrawDialog(true)}
                       variant="outline"
