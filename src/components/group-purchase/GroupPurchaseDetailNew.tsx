@@ -1595,7 +1595,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <>
                     <span>{
                       groupBuyData.winning_bid_amount?.toLocaleString() || 
-                      (groupBuyData.bid_ranking && groupBuyData.bid_ranking[0]?.amount ? groupBuyData.bid_ranking[0].amount.toLocaleString() : '0')
+                      (groupBuyData.bid_ranking?.[0]?.amount ? groupBuyData.bid_ranking?.[0]?.amount?.toLocaleString() : '0')
                     }원</span>
                   </>
                 ) : (
@@ -2144,7 +2144,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       <>
                         <span>{
                           groupBuyData.winning_bid_amount?.toLocaleString() || 
-                          (groupBuyData.bid_ranking && groupBuyData.bid_ranking[0]?.amount ? groupBuyData.bid_ranking[0].amount.toLocaleString() : '0')
+                          (groupBuyData.bid_ranking?.[0]?.amount ? groupBuyData.bid_ranking?.[0]?.amount?.toLocaleString() : '0')
                         }원</span>
                       </>
                     ) : (
