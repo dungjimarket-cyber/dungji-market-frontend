@@ -1349,8 +1349,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       </div>
 
-      {/* 상품 정보 */}
-      <div className="px-4 py-6">
+      {/* 메인 컨텐츠 래퍼 - PC에서 좌우 분할 */}
+      <div className="lg:flex lg:gap-6 lg:px-4">
+        {/* 왼쪽 영역 - 상품 정보 (PC: 60%, 모바일: 100%) */}
+        <div className="lg:flex-1">
+          {/* 상품 정보 */}
+          <div className="px-4 lg:px-0 py-6">
         <h2 className="text-2xl font-bold mb-3">
           {groupBuy.product_details?.name || '상품명 없음'}
         </h2>
@@ -1697,9 +1701,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <p className="mt-1">(공시지원금+추가지원금)</p>
           <p className="mt-1">*앞자리를 제외한 견적 금액은 비공개 입니다.</p>
         </div> */}
-      </div>
+          </div>
 
-      {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 */}
+          {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 */}
       {(groupBuy.product_details?.category_name === 'telecom' || 
         groupBuy.product_details?.category_name === '휴대폰') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
@@ -1728,9 +1732,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           </div>
         </div>
-      )}
+          )}
 
-      {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 */}
+          {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 */}
       {(groupBuy.product_details?.category_name === '인터넷' || 
         groupBuy.product_details?.category_name === '인터넷+TV') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
@@ -1765,12 +1769,31 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           </div>
         </div>
-      )}
+          )}
+        </div>
+        {/* 왼쪽 영역 끝 */}
 
-      {/* 공구 정보 섹션 */}
-      <div className="border-t border-gray-200">
-        {/* 공구 주최자 */}
-        <div className="px-4 py-4 flex items-center justify-between">
+        {/* 오른쪽 영역 - 참여 정보 (PC: 40%, 모바일: 100%) */}
+        <div className="lg:w-[380px] lg:sticky lg:top-4 lg:h-fit">
+          {/* 공구 상태 정보 - 모바일에서는 아래로, PC에서는 오른쪽 상단 */}
+          <div className="mt-6 lg:mt-0 px-4 lg:px-0">
+            <div className="bg-white lg:border lg:border-gray-200 lg:rounded-lg lg:p-4">
+              {/* 참여인원 카드 */}
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-4 mb-4">
+                <p className="text-gray-500 text-sm mb-2 text-center">참여인원</p>
+                <p className="text-3xl font-bold text-center">{currentParticipants}/{groupBuy.max_participants}</p>
+                <p className="text-xs text-gray-500 mt-1 text-center">명</p>
+                {/* 참여 진행률 바 */}
+                <div className="mt-3">
+                  <Progress 
+                    value={(currentParticipants / groupBuy.max_participants) * 100}
+                    className="h-2"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  {remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}
+                </p>
+              </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <span className="text-sm">👑</span>
@@ -1782,17 +1805,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
 
 
-      </div>
-
-      {/* 공구 상태 정보 */}
-      <div className="mt-2 px-4 py-4 bg-gray-50">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg p-4 text-center">
-            <p className="text-gray-500 text-sm mb-1">참여인원</p>
-            <p className="text-2xl font-bold">{currentParticipants}/{groupBuy.max_participants}</p>
-            <p className="text-xs text-gray-500 mt-1">명</p>
-          </div>
-          <div className="bg-white rounded-lg p-4">
+              {/* 시간 정보 카드 */}
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-4">
             {/* 상태별 타이머 표시 */}
             {groupBuyData.status === 'recruiting' && (
               <>
@@ -1894,9 +1908,27 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </p>
               </>
             )}
+              </div>
+
+              {/* 공구 주최자 - PC에서는 오른쪽 사이드바 하단 */}
+              <div className="border-t border-gray-200 lg:border-t-0 lg:mt-4">
+                <div className="px-4 py-4 lg:px-0 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm">👑</span>
+                      <span className="text-gray-500 text-xs">방장</span>
+                    </div>
+                    <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        {/* 오른쪽 영역 끝 */}
       </div>
+      {/* 메인 컨텐츠 래퍼 끝 */}
       
       {/* 판매자 입찰 정보 - 낙찰 실패 시 안내 메시지 강화 */}
       {isSeller && myBidInfo && groupBuyData.status !== 'recruiting' && (
