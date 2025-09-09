@@ -1351,8 +1351,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 메인 컨텐츠 래퍼 - PC에서 좌우 분할 */}
       <div className="lg:flex lg:gap-8 lg:max-w-7xl lg:mx-auto lg:px-6">
-        {/* 왼쪽 영역 - 상품 정보 (PC: 60%, 모바일: 100%) */}
-        <div className="lg:flex-1 lg:border-r lg:border-gray-200 lg:pr-8">
+        {/* 왼쪽 영역 - 상품 정보 (PC: 50%, 모바일: 100%) */}
+        <div className="lg:w-[50%] lg:border-r lg:border-gray-200 lg:pr-8">
           {/* 상품 정보 */}
           <div className="px-4 lg:px-0 py-6">
         <h2 className="text-2xl font-bold mb-3">
@@ -1782,8 +1782,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
         {/* 왼쪽 영역 끝 */}
 
-        {/* 오른쪽 영역 - 참여 정보 (PC: 40%, 모바일: 100%) */}
-        <div className="lg:w-[400px] lg:sticky lg:top-20 lg:h-fit">
+        {/* 오른쪽 영역 - 참여 정보 (PC: 50%, 모바일: 100%) */}
+        <div className="lg:w-[50%] lg:sticky lg:top-20 lg:h-fit">
           {/* 모바일에서는 하단 고정, PC에서는 오른쪽 사이드바 */}
           <div className="mt-6 lg:mt-0 px-4 lg:px-0">
             <div className="bg-white lg:rounded-lg lg:p-6">
