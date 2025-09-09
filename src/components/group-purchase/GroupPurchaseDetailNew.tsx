@@ -1910,6 +1910,203 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
               </div>
               
+              {/* PC에서만 표시되는 버튼 및 견적 영역 */}
+              <div className="hidden lg:block mt-6 border-t pt-4 space-y-4">
+                {/* 일반회원 버튼 구성 */}
+                {!isSeller && isParticipant ? (
+                  // 참여한 일반회원
+                  <div className="space-y-3">
+                    {/* 참여중인 공구 */}
+                    {groupBuyData.status === 'recruiting' && (
+                      <>
+                        <Button
+                          onClick={handleShare}
+                          variant="outline"
+                          className="w-full py-3"
+                        >
+                          공동구매 초대하기
+                        </Button>
+                        <Button
+                          onClick={() => setShowWithdrawDialog(true)}
+                          variant="outline"
+                          className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                        >
+                          공구 나가기
+                        </Button>
+                      </>
+                    )}
+
+                    {/* 구매확정/포기 선택하기 */}
+                    {isBuyerFinalSelection && !isFinalSelectionExpired && (
+                      <>
+                        {myParticipationFinalDecision === 'pending' ? (
+                          <>
+                            <Button
+                              onClick={() => handleFinalSelection('confirm')}
+                              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                            >
+                              구매확정
+                            </Button>
+                            <Button
+                              onClick={() => handleFinalSelection('cancel')}
+                              variant="outline"
+                              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                            >
+                              구매포기
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            disabled
+                            className="w-full py-4 text-base font-medium"
+                          >
+                            {myParticipationFinalDecision === 'confirmed' ? '✓ 구매확정' : '✓ 구매포기'}
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : isSeller && !isFinalSelection && 
+                 groupBuyData.status === 'recruiting' && 
+                 !isEnded ? (
+                  // 판매자용 인터페이스
+                  <div className="space-y-4">
+                    {/* 견적 제안 현황 */}
+                    {(topBids.length > 0 || myBidRank) && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <h4 className="text-sm font-medium mb-2">견적 제안 현황</h4>
+                        
+                        {myBidRank && hasBid && (
+                          <div className="mb-2 py-1 px-2 bg-blue-50 border border-blue-100 rounded">
+                            <span className="text-sm font-medium text-blue-700">
+                              내 견적 순위: 총 {myBidRank.total}개 중 {myBidRank.rank}위
+                            </span>
+                          </div>
+                        )}
+                        
+                        {topBids.length > 0 && (
+                          <>
+                            <div className="space-y-1">
+                              {topBids.map((bid: any, index: number) => {
+                                const isMyBid = (() => {
+                                  const sellerId = bid.seller_id 
+                                    ? (typeof bid.seller_id === 'string' ? parseInt(bid.seller_id) : bid.seller_id)
+                                    : (typeof bid.seller === 'object' && bid.seller?.id 
+                                      ? bid.seller.id 
+                                      : (typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller));
+                                  const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id;
+                                  return sellerId === userId;
+                                })();
+                                return (
+                                  <div key={bid.id} className={`flex text-sm ${isMyBid ? 'font-bold' : ''}`}>
+                                    <span className={`${isMyBid ? 'text-blue-600' : ''} flex items-center gap-2`}>
+                                      <span>{bid.actualRank || (index + 1)}위</span>
+                                      <span className={`ml-2 ${isMyBid ? 'text-blue-600' : ''}`}>
+                                        {isMyBid
+                                          ? `${bid.amount.toLocaleString()}원`
+                                          : maskAmount(bid.amount) + '원'}
+                                      </span>
+                                      {isMyBid && (
+                                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold ml-2">
+                                          내순위
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <p className="text-sm font-semibold text-blue-800 mt-2 bg-blue-50 p-2 rounded border border-blue-200">❗ 앞자리를 제외한 견적금액은 비공개 처리됩니다.</p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* 견적 입력 폼 */}
+                    {groupBuyData.status === 'recruiting' && (
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center space-x-2">
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={typeof bidAmount === 'number' ? formatCurrency(bidAmount) : bidAmount}
+                            onChange={(e) => handleBidAmountChange(e)}
+                            className="w-full p-2 pl-3 pr-10 border border-gray-300 rounded-lg"
+                            placeholder={`${bidType === 'support' ? '지원금' : '가격'} 입력`}
+                            disabled={isEnded || isFinalSelection}
+                          />
+                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">원</span>
+                        </div>
+                        
+                        <button
+                          onClick={handleBidClick}
+                          disabled={isBidding || isEnded || isFinalSelection}
+                          className={`whitespace-nowrap py-2 px-4 rounded-lg font-medium ${
+                            isEnded || isFinalSelection
+                              ? 'bg-gray-200 text-gray-500'
+                              : isBidding
+                                ? 'bg-gray-400 text-white'
+                                : 'bg-orange-600 text-white hover:bg-orange-700'
+                          }`}
+                        >
+                          {isBidding ? (
+                            <span className="flex items-center">
+                              <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                              제안 중...
+                            </span>
+                          ) : hasBid && myBidAmount ? (
+                            '견적 수정'
+                          ) : (
+                            '견적 제안'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    )}
+                    
+                    {/* 견적 취소 버튼 */}
+                    {groupBuyData.status === 'recruiting' && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
+                      <button
+                        onClick={() => setShowCancelBidDialog(true)}
+                        className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
+                      >
+                        견적 철회하기
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  // 비참여자 또는 비회원
+                  <>
+                    {(groupBuyData.status === 'completed' || groupBuyData.status === 'cancelled' || 
+                      groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ||
+                      groupBuyData.status === 'in_progress') ? (
+                      <div className="p-4 bg-gray-100 rounded-lg text-center">
+                        <p className="font-semibold text-gray-700">공구종료</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {groupBuyData.status === 'recruiting' && (
+                          <Button
+                            onClick={handleJoinClick}
+                            className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
+                          >
+                            공구 참여하기
+                          </Button>
+                        )}
+                        <Button
+                          onClick={handleShare}
+                          variant="outline"
+                          className="w-full py-3"
+                        >
+                          공동구매 초대하기
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -2004,8 +2201,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       )} */}
 
-      {/* 하단 버튼 영역 */}
-      <div className="px-4 py-6">
+      {/* 하단 버튼 영역 - 모바일에서만 표시 */}
+      <div className="lg:hidden px-4 py-6">
         {/* 일반회원 버튼 구성 */}
         {!isSeller && isParticipant ? (
           // 참여한 일반회원
