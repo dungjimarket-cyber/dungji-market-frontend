@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
 
         return {
           originalName: file.name,
-          webp: compressed.webp,
-          thumbnail: compressed.thumbnail,
+          buffer: compressed.buffer,
+          filename: compressed.filename,
           isMain: index === mainImageIndex,
           order: index,
         };

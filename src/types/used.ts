@@ -37,6 +37,7 @@ export interface UsedPhone {
   
   // 상태 정보
   conditionGrade: ConditionGrade;
+  conditionDescription?: string;
   batteryStatus?: BatteryStatus;
   purchasePeriod?: PurchasePeriod;
   manufactureDate?: string; // YYYY-MM format
@@ -47,8 +48,14 @@ export interface UsedPhone {
   minOfferPrice?: number;
   accessories?: string[]; // ["charger", "box", "earphone", "case"]
   
+  // 구성품
+  hasBox?: boolean;
+  hasCharger?: boolean;
+  hasEarphones?: boolean;
+  
   // 거래 정보
   tradeLocation?: string;
+  meetingPlace?: string;
   description?: string;
   
   // 지역 정보
@@ -59,6 +66,7 @@ export interface UsedPhone {
   status: PhoneStatus;
   viewCount: number;
   offerCount: number;
+  favoriteCount?: number;
   
   // 관계 데이터
   images?: PhoneImage[];

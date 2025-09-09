@@ -17,10 +17,11 @@ const respondOfferSchema = z.object({
 // PUT: 제안 수락/거절/취소
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const offerId = parseInt(params.id);
+    const { id } = await params;
+    const offerId = parseInt(id);
     
     if (isNaN(offerId)) {
       return NextResponse.json(
@@ -165,10 +166,11 @@ export async function PUT(
 // DELETE: 제안 삭제 (취소된 제안만 삭제 가능)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const offerId = parseInt(params.id);
+    const { id } = await params;
+    const offerId = parseInt(id);
     
     if (isNaN(offerId)) {
       return NextResponse.json(

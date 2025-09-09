@@ -33,10 +33,11 @@ const updatePhoneSchema = z.object({
 // GET: 상품 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const phoneId = parseInt(params.id);
+    const { id } = await params;
+    const phoneId = parseInt(id);
     
     if (isNaN(phoneId)) {
       return NextResponse.json(
@@ -106,12 +107,12 @@ export async function GET(
 
     // 현재 사용자가 찜했는지 확인
     const session = await getServerSession();
-    if (session?.user) {
-      // TODO: DB에서 찜 여부 확인
-      mockPhone['isFavorite'] = false;
-    }
+    const phoneWithFavorite = {
+      ...mockPhone,
+      isFavorite: session?.user ? false : undefined // TODO: DB에서 찜 여부 확인
+    };
 
-    return NextResponse.json(mockPhone);
+    return NextResponse.json(phoneWithFavorite);
 
   } catch (error) {
     console.error('GET /api/used/phones/[id] error:', error);
@@ -125,10 +126,11 @@ export async function GET(
 // PUT: 상품 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const phoneId = parseInt(params.id);
+    const { id } = await params;
+    const phoneId = parseInt(id);
     
     if (isNaN(phoneId)) {
       return NextResponse.json(
@@ -210,10 +212,11 @@ export async function PUT(
 // DELETE: 상품 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const phoneId = parseInt(params.id);
+    const { id } = await params;
+    const phoneId = parseInt(id);
     
     if (isNaN(phoneId)) {
       return NextResponse.json(
@@ -247,7 +250,7 @@ export async function DELETE(
     const phoneStatus = 'active'; // DB 조회
     const hasOffers = false; // DB 조회
     
-    if (phoneStatus === 'reserved' || phoneStatus === 'sold') {
+    if (phoneStatus !== 'active') {
       return NextResponse.json(
         { error: '예약 중이거나 판매 완료된 상품은 삭제할 수 없습니다.' },
         { status: 400 }

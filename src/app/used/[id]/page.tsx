@@ -22,7 +22,12 @@ import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-export default function UsedPhoneDetailPage({ params }: { params: { id: string } }) {
+export default async function UsedPhoneDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <UsedPhoneDetailClient phoneId={id} />;
+}
+
+function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
@@ -38,13 +43,13 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
   // 상품 정보 조회
   useEffect(() => {
     fetchPhoneDetail();
-  }, [params.id]);
+  }, [phoneId]);
 
   const fetchPhoneDetail = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${params.id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : ''
         }
@@ -56,7 +61,7 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
       setIsFavorite(data.isFavorite || false);
       
       // 조회수 증가 (비동기)
-      fetch(`/api/used/phones/${params.id}/view`, { method: 'POST' });
+      fetch(`/api/used/phones/${phoneId}/view`, { method: 'POST' });
       
     } catch (error) {
       console.error('Failed to fetch phone:', error);
@@ -97,7 +102,7 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${params.id}/favorite/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/favorite/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -141,7 +146,7 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${params.id}/offer/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/offer/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -303,7 +308,7 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
                     }`}
                   >
                     <Image
-                      src={img.thumbnailUrl || img.imageUrl}
+                      src={img.imageUrl}
                       alt={`${phone.model} ${index + 1}`}
                       fill
                       className="object-cover"
@@ -433,7 +438,7 @@ export default function UsedPhoneDetailPage({ params }: { params: { id: string }
                   <div>
                     <p className="font-medium">{phone.seller?.name || '판매자'}</p>
                     <p className="text-sm text-gray-600">
-                      거래 {phone.seller?.transactionCount || 0}회
+                      거래 {phone.seller?.tradeStats?.soldCount || 0}회
                     </p>
                   </div>
                 </div>

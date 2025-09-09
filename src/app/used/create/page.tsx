@@ -65,9 +65,9 @@ export default function CreateUsedPhonePage() {
     hasCharger: false,
     hasEarphones: false,
     description: '',
-    sido: user?.region?.sido || '',
-    sigungu: user?.region?.sigungu || '',
-    dong: user?.region?.dong || '',
+    sido: '',
+    sigungu: '',
+    dong: '',
     meetingPlace: '',
   });
 
