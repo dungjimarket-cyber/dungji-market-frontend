@@ -1909,6 +1909,78 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </>
             )}
               </div>
+              
+              {/* PC 버튼 영역 - 사이드바 하단에 추가 */}
+              <div className="mt-6 border-t pt-4">
+                {/* 비참여자/비로그인 - 공구 참여하기 버튼 */}
+                {!isParticipant && !isSeller && groupBuyData.status === 'recruiting' && (
+                  <Button
+                    onClick={handleJoinClick}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    공구 참여하기
+                  </Button>
+                )}
+                
+                {/* 참여자 - 공구 초대하기 버튼 */}
+                {isParticipant && groupBuyData.status === 'recruiting' && (
+                  <Button
+                    onClick={handleShare}
+                    variant="outline"
+                    className="w-full py-3"
+                  >
+                    공동구매 초대하기
+                  </Button>
+                )}
+                
+                {/* 판매자 - 견적 제안하기 버튼 */}
+                {isSeller && !hasBid && groupBuyData.status === 'recruiting' && (
+                  <Button
+                    onClick={() => setShowBidConfirmModal(true)}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700"
+                  >
+                    견적 제안하기
+                  </Button>
+                )}
+                
+                {/* 구매자 최종선택 버튼 */}
+                {isParticipant && isBuyerFinalSelection && !isFinalSelectionExpired && myParticipationFinalDecision === 'pending' && (
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleFinalSelection('confirm')}
+                      className="w-full py-3 bg-green-600 hover:bg-green-700"
+                    >
+                      구매확정
+                    </Button>
+                    <Button
+                      onClick={() => handleFinalSelection('cancel')}
+                      variant="outline"
+                      className="w-full py-3 border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      구매포기
+                    </Button>
+                  </div>
+                )}
+                
+                {/* 판매자 최종선택 버튼 */}
+                {isSeller && hasWinningBid && isSellerFinalSelection && myBidFinalDecision === 'pending' && (
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleFinalSelection('confirm')}
+                      className="w-full py-3 bg-green-600 hover:bg-green-700"
+                    >
+                      판매확정
+                    </Button>
+                    <Button
+                      onClick={() => handleFinalSelection('cancel')}
+                      variant="outline"
+                      className="w-full py-3 border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      판매포기
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
