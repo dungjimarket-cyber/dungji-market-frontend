@@ -1564,8 +1564,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
           </div>
 
-        {/* 최고 지원금/최종 낙찰 지원금 박스 */}
-        {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
+        {/* 최고 지원금/최종 낙찰 지원금 박스 - 하단으로 이동됨 */}
+        {false && (isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
@@ -1704,10 +1704,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               )}
             </div>
           </div>
-        )}
+        ))}
 
-          {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 */}
-      {(groupBuy.product_details?.category_name === 'telecom' || 
+          {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 - 하단으로 이동됨 */}
+          {false && ((groupBuy.product_details?.category_name === 'telecom' || 
         groupBuy.product_details?.category_name === '휴대폰') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
           <div className="flex items-start gap-3">
@@ -1735,10 +1735,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           </div>
         </div>
-          )}
+          ))}
 
-          {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 */}
-      {(groupBuy.product_details?.category_name === '인터넷' || 
+          {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 - 하단으로 이동됨 */}
+      {false && ((groupBuy.product_details?.category_name === '인터넷' || 
         groupBuy.product_details?.category_name === '인터넷+TV') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
           <div className="flex items-start gap-3">
@@ -1772,7 +1772,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             </div>
           </div>
         </div>
-          )}
+          ))}
         </div>
         {/* 왼쪽 영역 끝 */}
 
@@ -2113,11 +2113,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <hr className="border-gray-200" />
       </div>
 
-      {/* 하단 영역 - 최고지원금 및 중요안내사항 (2열 배치) */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-8">
-        <div className="lg:flex lg:gap-8">
-          {/* 왼쪽: 최고 지원금 정보 (복사본) */}
-          <div className="lg:w-[50%] px-4 lg:px-0 mb-6 lg:mb-0">
+      {/* 하단 영역 - 최고지원금 및 중요안내사항 (위아래 2줄 배치) */}
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-8 space-y-6">
+        {/* 첫번째 줄: 최고 지원금 */}
+        <div className="px-4 lg:px-0">
             {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
               // 최종선택 상태일 때 낙찰 정보 표시
               <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 border border-orange-200 shadow-md">
@@ -2169,10 +2168,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </div>
               </div>
             )}
-          </div>
+        </div>
 
-          {/* 오른쪽: 중요 안내사항 (복사본) */}
-          <div className="lg:w-[50%] px-4 lg:px-0">
+        {/* 두번째 줄: 중요 안내사항 */}
+        <div className="px-4 lg:px-0">
             {(groupBuy.product_details?.category_name === '휴대폰' || 
               groupBuy.product_details?.category_name === '인터넷' || 
               groupBuy.product_details?.category_name === '인터넷+TV') && (
@@ -2204,7 +2203,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </div>
               </div>
             )}
-          </div>
         </div>
       </div>
       
