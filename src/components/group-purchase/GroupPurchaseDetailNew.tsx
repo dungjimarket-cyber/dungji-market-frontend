@@ -2778,7 +2778,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         penaltyInfo={user?.penalty_info || user?.penaltyInfo}
         userRole={isSeller ? 'seller' : 'buyer'}
       />
-      </div>
     </EndedGroupBuyAccessControl>
   );
 }
