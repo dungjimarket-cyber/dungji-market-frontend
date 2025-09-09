@@ -1920,13 +1920,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                         >
                           공동구매 초대하기
                         </Button>
-                        <Button
-                          onClick={() => setShowWithdrawDialog(true)}
-                          variant="outline"
-                          className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          공구 나가기
-                        </Button>
+                        {/* 공구 나가기 버튼 - 모집중일 때만 표시 */}
+                        {groupBuy.status === 'recruiting' && (
+                          <Button
+                            onClick={() => setShowWithdrawDialog(true)}
+                            variant="outline"
+                            className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            공구 나가기
+                          </Button>
+                        )}
                       </>
                     )}
 
@@ -2309,13 +2312,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   공동구매 초대하기
                 </Button>
-                <Button
-                  onClick={() => setShowWithdrawDialog(true)}
-                  variant="outline"
-                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  공구 나가기
-                </Button>
+                {/* 공구 나가기 버튼 - 모집중일 때만 표시 */}
+                {groupBuy.status === 'recruiting' && (
+                  <Button
+                    onClick={() => setShowWithdrawDialog(true)}
+                    variant="outline"
+                    className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    공구 나가기
+                  </Button>
+                )}
               </>
             )}
 
