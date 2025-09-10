@@ -96,12 +96,12 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           aria-label="찜하기"
         >
           <Heart 
-            className={`w-4 h-4 ${phone.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
+            className={`w-4 h-4 ${phone.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
           />
         </button>
 
         {/* 제안 가능 표시 */}
-        {phone.acceptOffers && (
+        {phone.accept_offers && (
           <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-2 py-1 text-xs rounded font-medium">
             가격제안 가능
           </div>
@@ -120,24 +120,24 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           <span className="text-lg font-bold text-gray-900">
             {formatPrice(phone.price)}
           </span>
-          {phone.minOfferPrice && (
+          {phone.min_offer_price && (
             <span className="text-xs text-gray-500">
-              (최소 {formatPrice(phone.minOfferPrice)})
+              (최소 {formatPrice(phone.min_offer_price)})
             </span>
           )}
         </div>
 
         {/* 상태 정보 */}
         <div className="mt-2 flex items-center gap-3 text-xs text-gray-600">
-          {phone.conditionGrade && (
+          {phone.condition_grade && (
             <span className="inline-flex items-center">
               <span className={`
                 px-1.5 py-0.5 rounded font-medium
-                ${phone.conditionGrade === 'A' ? 'bg-green-100 text-green-700' : ''}
-                ${phone.conditionGrade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
-                ${phone.conditionGrade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
+                ${phone.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
+                ${phone.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
+                ${phone.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
               `}>
-                {CONDITION_GRADES[phone.conditionGrade]}
+                {CONDITION_GRADES[phone.condition_grade]}
               </span>
             </span>
           )}
@@ -147,9 +147,9 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         </div>
 
         {/* 배터리 상태 */}
-        {phone.batteryStatus && phone.batteryStatus !== 'unknown' && (
+        {phone.battery_status && phone.battery_status !== 'unknown' && (
           <div className="mt-1 text-xs text-gray-600">
-            배터리 {BATTERY_STATUS_LABELS[phone.batteryStatus]}
+            배터리 {BATTERY_STATUS_LABELS[phone.battery_status]}
           </div>
         )}
 
@@ -166,16 +166,16 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Eye className="w-3 h-3" />
-              {phone.viewCount || 0}
+              {phone.view_count || 0}
             </span>
             <span className="flex items-center gap-1">
               <MessageCircle className="w-3 h-3" />
-              {phone.offerCount || 0}
+              {phone.offer_count || 0}
             </span>
           </div>
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {formatDate(phone.createdAt)}
+            {formatDate(phone.created_at)}
           </span>
         </div>
       </div>
