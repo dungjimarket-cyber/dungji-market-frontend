@@ -230,6 +230,8 @@ export interface UsedNotification {
 export interface UserBasicInfo {
   id: number;
   name: string;
+  username?: string;
+  email?: string;
   phone?: string;
   profileImage?: string;
   sido?: string;
@@ -237,6 +239,11 @@ export interface UserBasicInfo {
   
   // 거래 통계 (선택적)
   tradeStats?: UserTradeStats;
+  
+  // 거래 횟수
+  sell_count?: number;
+  buy_count?: number;
+  total_trade_count?: number;
 }
 
 /**

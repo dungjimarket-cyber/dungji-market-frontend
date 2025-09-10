@@ -655,15 +655,24 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             <div className="bg-white rounded-lg p-6 shadow-sm mt-4">
               <h2 className="font-semibold mb-4">판매자 정보</h2>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-gray-500" />
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm text-gray-500">닉네임</span>
+                    <p className="font-semibold text-lg">{phone.seller?.username || phone.seller?.name || '알 수 없음'}</p>
                   </div>
-                  <div>
-                    <p className="font-medium">{phone.seller?.name || '판매자'}</p>
-                    <p className="text-sm text-gray-600">
-                      거래 {phone.seller?.tradeStats?.soldCount || 0}회
-                    </p>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-600">판매완료</span>
+                      <span className="font-semibold text-blue-600">{phone.seller?.sell_count || 0}회</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-600">구매완료</span>
+                      <span className="font-semibold text-green-600">{phone.seller?.buy_count || 0}회</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-600">총 거래</span>
+                      <span className="font-semibold text-purple-600">{phone.seller?.total_trade_count || 0}회</span>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -686,11 +695,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         삭제하기
                       </Button>
                     </>
-                  )}
-                  {user?.id !== phone.seller?.id && (
-                    <Button variant="outline" size="sm">
-                      프로필 보기
-                    </Button>
                   )}
                 </div>
               </div>
