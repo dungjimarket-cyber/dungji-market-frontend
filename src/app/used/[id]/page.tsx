@@ -473,13 +473,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             </div>
 
             {/* 상품 설명 */}
-            {(phone.description || phone.conditionDescription) && (
+            {(phone.description || phone.condition_description) && (
               <div className="bg-white rounded-lg p-6 shadow-sm mt-4">
                 <h2 className="font-semibold mb-4">상품 설명</h2>
-                {phone.conditionDescription && (
+                {phone.condition_description && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-600 mb-2">상태 설명</p>
-                    <p className="text-gray-800 whitespace-pre-wrap">{phone.conditionDescription}</p>
+                    <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
                   </div>
                 )}
                 {phone.description && (
