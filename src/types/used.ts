@@ -26,7 +26,7 @@ export type ReportReason = 'spam' | 'fraud' | 'inappropriate' | 'duplicate' | 'p
  */
 export interface UsedPhone {
   id: number;
-  userId: number;
+  user_id: number;
   
   // 기본 정보
   brand: PhoneBrand;
@@ -36,50 +36,53 @@ export interface UsedPhone {
   color?: string;
   
   // 상태 정보
-  conditionGrade: ConditionGrade;
-  conditionDescription?: string;
-  batteryStatus?: BatteryStatus;
-  purchasePeriod?: PurchasePeriod;
-  manufactureDate?: string; // YYYY-MM format
+  condition_grade: ConditionGrade;
+  condition_description?: string;
+  battery_status?: BatteryStatus;
+  purchase_period?: PurchasePeriod;
+  manufacture_date?: string; // YYYY-MM format
   
   // 판매 정보
   price: number;
-  acceptOffers: boolean;
-  minOfferPrice?: number;
+  accept_offers: boolean;
+  min_offer_price?: number;
   accessories?: string[]; // ["charger", "box", "earphone", "case"]
   
   // 구성품
-  hasBox?: boolean;
-  hasCharger?: boolean;
-  hasEarphones?: boolean;
+  has_box?: boolean;
+  has_charger?: boolean;
+  has_earphones?: boolean;
+  body_only?: boolean;
   
   // 거래 정보
-  tradeLocation?: string;
-  meetingPlace?: string;
+  trade_location?: string;
+  meeting_place?: string;
   description?: string;
   
   // 지역 정보
-  sido: string;
-  sigungu: string;
+  sido?: string;
+  sigungu?: string;
+  region_name?: string;
+  regions?: any[];
   
   // 상태 관리
   status: PhoneStatus;
-  viewCount: number;
-  offerCount: number;
-  favoriteCount?: number;
+  view_count: number;
+  offer_count: number;
+  favorite_count?: number;
   
   // 관계 데이터
   images?: PhoneImage[];
   offers?: UsedOffer[];
   seller?: UserBasicInfo;
-  isFavorite?: boolean; // 현재 사용자가 찜했는지 여부
+  is_favorite?: boolean; // 현재 사용자가 찜했는지 여부
   
   // 타임스탬프
-  createdAt: string;
-  updatedAt: string;
-  reservedAt?: string;
-  soldAt?: string;
-  deletedAt?: string;
+  created_at: string;
+  updated_at: string;
+  reserved_at?: string;
+  sold_at?: string;
+  deleted_at?: string;
 }
 
 /**
@@ -278,17 +281,23 @@ export interface PhoneFormData {
   model: string;
   storage?: StorageSize;
   color?: string;
-  conditionGrade: ConditionGrade;
-  batteryStatus?: BatteryStatus;
-  purchasePeriod?: PurchasePeriod;
-  manufactureDate?: string;
+  condition_grade: ConditionGrade;
+  battery_status?: BatteryStatus;
+  purchase_period?: PurchasePeriod;
+  manufacture_date?: string;
   price: number;
-  acceptOffers: boolean;
-  minOfferPrice?: number;
+  accept_offers: boolean;
+  min_offer_price?: number;
   accessories?: string[];
-  tradeLocation?: string;
+  trade_location?: string;
   description?: string;
   images?: File[] | string[]; // 신규 등록 시 File[], 수정 시 기존 URL string[]
+  body_only?: boolean;
+  has_box?: boolean;
+  has_charger?: boolean;
+  has_earphones?: boolean;
+  meeting_place?: string;
+  regions?: string[];
 }
 
 /**

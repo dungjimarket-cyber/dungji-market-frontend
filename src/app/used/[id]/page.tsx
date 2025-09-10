@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { 
   Heart, MapPin, Eye, Clock, Shield, MessageCircle, 
   ChevronLeft, ChevronRight, Share2, AlertTriangle,
-  Check, X, Phone, User
+  Check, X, Phone, User, Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -248,14 +248,18 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           {/* 이미지 섹션 */}
           <div>
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-              {phone.images && phone.images.length > 0 ? (
+              {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
                 <>
                   <Image
-                    src={phone.images[currentImageIndex].imageUrl}
-                    alt={phone.model}
+                    src={phone.images[currentImageIndex].imageUrl || '/images/phone-placeholder.png'}
+                    alt={phone.model || '중고폰 이미지'}
                     fill
                     className="object-contain"
                     priority
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/phone-placeholder.png';
+                    }}
                   />
                   
                   {/* 이미지 네비게이션 */}
@@ -290,8 +294,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   )}
                 </>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>이미지 없음</p>
+                <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <Smartphone className="w-24 h-24 mb-4 text-gray-300" />
+                  <p>이미지가 없습니다</p>
                 </div>
               )}
 
