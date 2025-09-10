@@ -1025,7 +1025,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       {phone && phone.status === 'active' && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
           <div className="flex gap-3 max-w-screen-sm mx-auto">
-            {isOwner ? (
+            {user?.id === phone.seller?.id ? (
               <>
                 <Button
                   variant="outline"
