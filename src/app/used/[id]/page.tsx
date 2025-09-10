@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { 
   Heart, MapPin, Eye, Clock, Shield, MessageCircle, 
   ChevronLeft, ChevronRight, Share2, AlertTriangle,
-  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign, Info
+  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign, Info, ZoomIn
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,6 +45,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [offerCount, setOfferCount] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showGradeInfo, setShowGradeInfo] = useState(false);
+  const [showImageLightbox, setShowImageLightbox] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -423,24 +425,35 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4 py-6 lg:py-8 overflow-x-hidden">
+      <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
           <div className="w-full">
-            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden w-full">
+            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
               {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
                 <>
                   <Image
                     src={phone.images[currentImageIndex].imageUrl || '/images/phone-placeholder.png'}
                     alt={phone.model || '중고폰 이미지'}
                     fill
-                    className="object-contain"
+                    className="object-contain p-4"
                     priority
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/images/phone-placeholder.png';
                     }}
                   />
+                  
+                  {/* 돋보기 버튼 */}
+                  <button
+                    onClick={() => {
+                      setLightboxImageIndex(currentImageIndex);
+                      setShowImageLightbox(true);
+                    }}
+                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md transition-all group-hover:opacity-100 opacity-0"
+                  >
+                    <ZoomIn className="w-5 h-5" />
+                  </button>
                   
                   {/* 이미지 네비게이션 */}
                   {phone.images.length > 1 && (
@@ -1078,6 +1091,55 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   판매자 연락하기
                 </Button>
               )
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 이미지 라이트박스 */}
+      {showImageLightbox && phone.images && (
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60] p-4">
+          <button
+            onClick={() => setShowImageLightbox(false)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Image
+              src={phone.images[lightboxImageIndex]?.imageUrl || '/images/phone-placeholder.png'}
+              alt={phone.model || '중고폰 이미지'}
+              width={1200}
+              height={1200}
+              className="object-contain max-w-full max-h-full"
+            />
+            
+            {/* 라이트박스 네비게이션 */}
+            {phone.images.length > 1 && (
+              <>
+                <button
+                  onClick={() => setLightboxImageIndex((prev) => 
+                    prev === 0 ? phone.images!.length - 1 : prev - 1
+                  )}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30"
+                >
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </button>
+                <button
+                  onClick={() => setLightboxImageIndex((prev) => 
+                    prev === phone.images!.length - 1 ? 0 : prev + 1
+                  )}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30"
+                >
+                  <ChevronRight className="w-6 h-6 text-white" />
+                </button>
+                
+                {/* 이미지 카운터 */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full">
+                  {lightboxImageIndex + 1} / {phone.images.length}
+                </div>
+              </>
             )}
           </div>
         </div>
