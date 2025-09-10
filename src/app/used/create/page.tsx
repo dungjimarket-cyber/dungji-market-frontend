@@ -181,14 +181,15 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    if (selectedRegions.length === 0) {
-      toast({
-        title: '거래 지역 선택',
-        description: '최소 1개 이상의 거래 지역을 선택해주세요.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // 지역 선택은 선택사항으로 변경 (백엔드 처리 문제 해결 시까지)
+    // if (selectedRegions.length === 0) {
+    //   toast({
+    //     title: '거래 지역 선택',
+    //     description: '최소 1개 이상의 거래 지역을 선택해주세요.',
+    //     variant: 'destructive',
+    //   });
+    //   return;
+    // }
 
     setLoading(true);
 
@@ -211,11 +212,12 @@ export default function CreateUsedPhonePage() {
         }
       });
 
-      // 지역 정보 추가 (지역 코드를 가져와야 함)
-      // 임시로 지역명을 전송 (백엔드에서 처리 필요)
-      selectedRegions.forEach((region) => {
-        uploadData.append('regions', `${region.province} ${region.city}`);
-      });
+      // 지역 정보 추가 (선택된 경우에만)
+      if (selectedRegions.length > 0) {
+        selectedRegions.forEach((region) => {
+          uploadData.append('regions', `${region.province} ${region.city}`);
+        });
+      }
 
       // 디버깅용 FormData 내용 출력
       console.log('전송할 FormData:');
