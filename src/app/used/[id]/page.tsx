@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { 
   Heart, MapPin, Eye, Clock, Shield, MessageCircle, 
   ChevronLeft, ChevronRight, Share2, AlertTriangle,
-  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign
+  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign, Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -532,13 +532,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 가격 */}
               <div className="mb-4">
-                <p className="text-3xl font-bold text-gray-900">
-                  {phone.price.toLocaleString()}원
-                </p>
-                {phone.accept_offers && phone.min_offer_price && (
-                  <p className="text-sm text-blue-600 mt-1">
-                    가격 제안 가능 (최소 {phone.min_offer_price.toLocaleString()}원)
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-sm text-gray-600">즉시구매</span>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {phone.price.toLocaleString()}원
                   </p>
+                </div>
+                {phone.accept_offers && phone.min_offer_price && (
+                  <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                    <p className="text-sm font-medium text-blue-900">
+                      💰 가격 제안 가능
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      최소 제안가: {phone.min_offer_price.toLocaleString()}원부터
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -582,51 +590,62 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               </div>
 
-              {/* 위치 및 조회수 */}
+              {/* 조회수 및 통계 */}
               <div className="py-4 flex items-center justify-between text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>{phone.region_name || '지역 미정'}</span>
-                </div>
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <Eye className="w-4 h-4" />
-                    {phone.view_count}
+                    조회 {phone.view_count}
                   </span>
                   <span className="flex items-center gap-1">
                     <Heart className="w-4 h-4" />
-                    {phone.favorite_count}
+                    찜 {phone.favorite_count}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {phone.created_at ? formatDistanceToNow(new Date(phone.created_at), { addSuffix: true, locale: ko }) : '-'}
+                    <MessageCircle className="w-4 h-4" />
+                    제안 {phone.offer_count || 0}
                   </span>
                 </div>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {phone.created_at ? formatDistanceToNow(new Date(phone.created_at), { addSuffix: true, locale: ko }) : '-'}
+                </span>
               </div>
 
               {/* 액션 버튼 */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleFavorite}
-                  className="flex items-center gap-2"
-                >
-                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                  찜하기
-                </Button>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={handleFavorite}
+                    className="flex items-center justify-center gap-2 h-12"
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                    {isFavorite ? '찜 해제' : '찜하기'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleShare}
+                    className="flex items-center justify-center gap-2 h-12"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    공유하기
+                  </Button>
+                </div>
                 {phone.accept_offers ? (
                   <Button
                     onClick={() => setShowOfferModal(true)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   >
+                    <DollarSign className="w-5 h-5 mr-2" />
                     가격 제안하기
                   </Button>
                 ) : (
                   <Button
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    채팅하기
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    판매자와 대화하기
                   </Button>
                 )}
               </div>
@@ -676,35 +695,31 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               </div>
               
-              {/* 거래 가능 지역 - 다중 지역 표시 */}
-              {phone.regions && phone.regions.length > 0 ? (
-                <div className="mt-4 p-3 bg-gray-50 rounded">
-                  <p className="text-sm text-gray-600 mb-2">거래 가능 지역</p>
-                  <div className="space-y-1">
+              {/* 거래 가능 지역 - 통합 표시 */}
+              {(phone.regions && phone.regions.length > 0) && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-blue-900 mb-2 flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    거래 가능 지역
+                  </p>
+                  <div className="flex flex-wrap gap-2">
                     {phone.regions.map((region, index) => (
-                      <div key={index} className="text-sm">
-                        <span className="font-medium">{region.full_name || region.name}</span>
-                      </div>
+                      <span key={index} className="px-3 py-1 bg-white rounded-full text-sm font-medium text-blue-700 border border-blue-200">
+                        {region.full_name || region.name}
+                      </span>
                     ))}
                   </div>
                 </div>
-              ) : (
-                /* 단일 지역 표시 (기존 데이터 호환) */
-                phone.region_name && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-gray-600 mb-2">거래 가능 지역</p>
-                    <div className="text-sm">
-                      <span className="font-medium">{phone.region_name}</span>
-                    </div>
-                  </div>
-                )
               )}
               
               {/* 거래 요청사항 */}
               {phone.meeting_place && (
-                <div className="mt-4 p-3 bg-gray-50 rounded">
-                  <p className="text-sm text-gray-600 mb-1">거래 요청사항</p>
-                  <p className="font-medium whitespace-pre-wrap">{phone.meeting_place}</p>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                    <Info className="w-4 h-4" />
+                    판매자 요청사항
+                  </p>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap">{phone.meeting_place}</p>
                 </div>
               )}
             </div>
@@ -717,16 +732,25 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             )}
 
-            {/* 주의사항 */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+            {/* 안전 거래 안내 */}
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg p-4 mt-4">
               <div className="flex gap-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-yellow-800">
-                  <p className="font-medium mb-1">안전거래 안내</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>직거래 시 안전한 장소에서 만나세요</li>
-                    <li>제품 상태를 꼼꼼히 확인 후 거래하세요</li>
-                    <li>선입금은 피하고 직접 확인 후 결제하세요</li>
+                <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-amber-900 mb-2">둥지마켓 안전거래 약속</p>
+                  <ul className="space-y-1.5 text-amber-800">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>공공장소에서 만나 안전하게 거래하세요</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>휴대폰 상태를 꼼꼼히 확인 후 구매 결정하세요</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>현금 거래로 안전하게 진행하세요</span>
+                    </li>
                   </ul>
                 </div>
               </div>

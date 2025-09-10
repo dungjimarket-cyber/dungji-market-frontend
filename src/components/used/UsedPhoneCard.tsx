@@ -100,12 +100,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           />
         </button>
 
-        {/* 제안 가능 표시 */}
-        {phone.accept_offers && (
-          <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-2 py-1 text-xs rounded font-medium">
-            가격제안 가능
-          </div>
-        )}
+        {/* 제안 가능 표시 - 제거 (가격에 통합) */}
         
         {/* 수정됨 표시 */}
         {phone.is_modified && phone.offer_count && phone.offer_count > 0 && (
@@ -124,14 +119,19 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         </h3>
 
         {/* 가격 */}
-        <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-gray-900">
-            {formatPrice(phone.price)}
-          </span>
-          {phone.min_offer_price && (
-            <span className="text-xs text-gray-500">
-              (최소 {formatPrice(phone.min_offer_price)})
+        <div className="mt-2">
+          <div className="flex items-baseline gap-1">
+            <span className="text-xs text-gray-500">즉시구매</span>
+            <span className="text-lg font-bold text-gray-900">
+              {formatPrice(phone.price)}
             </span>
+          </div>
+          {phone.accept_offers && phone.min_offer_price && (
+            <div className="mt-1 flex items-center gap-1">
+              <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">
+                가격제안 {formatPrice(phone.min_offer_price)}부터
+              </span>
+            </div>
           )}
         </div>
 

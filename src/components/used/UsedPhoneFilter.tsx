@@ -6,7 +6,7 @@
 'use client';
 
 import React, { memo, useCallback, useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Filter, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -101,7 +101,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
   ).length;
 
   return (
-    <div className="bg-white border-b sticky top-0 z-40">
+    <div className="bg-white/95 backdrop-blur-sm border-b sticky top-0 z-40 shadow-sm">
       <div className="container mx-auto px-4 py-3">
         {/* 모바일 & 태블릿 뷰 */}
         <div className="lg:hidden">
@@ -111,20 +111,23 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="모델명 검색..."
+                placeholder="아이폰 14 Pro, 갤럭시 S23..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-9 pr-4"
+                className="pl-9 pr-4 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
               />
             </div>
             
             {/* 필터 버튼 */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="relative">
-                  <SlidersHorizontal className="w-4 h-4" />
+                <Button 
+                  variant={activeFilterCount > 0 ? "default" : "outline"} 
+                  className="relative"
+                >
+                  <Filter className="w-4 h-4" />
                   {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 px-1 flex items-center justify-center font-bold">
                       {activeFilterCount}
                     </span>
                   )}
@@ -132,9 +135,12 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:w-96">
                 <SheetHeader>
-                  <SheetTitle>필터</SheetTitle>
+                  <SheetTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                    상세 필터
+                  </SheetTitle>
                   <SheetDescription>
-                    원하는 조건으로 검색하세요
+                    원하는 조건을 선택해 딱 맞는 상품을 찾아보세요
                   </SheetDescription>
                 </SheetHeader>
                 <FilterContent
@@ -231,8 +237,10 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             )}
 
             {/* 결과 수 */}
-            <div className="ml-auto text-sm text-gray-600">
-              총 <span className="font-medium">{totalCount.toLocaleString()}</span>개
+            <div className="ml-auto px-3 py-1.5 bg-blue-50 rounded-lg">
+              <span className="text-sm text-blue-700 font-medium">
+                📱 총 {totalCount.toLocaleString()}개 상품
+              </span>
             </div>
           </div>
         </div>
