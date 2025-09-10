@@ -38,15 +38,15 @@ interface PenaltyModalProps {
 }
 
 export default function PenaltyModal({ isOpen, onClose, penaltyInfo, userRole }: PenaltyModalProps) {
-  console.log('🔴 PenaltyModal render:', { isOpen, penaltyInfo, userRole });
+  // console.log('🔴 PenaltyModal render:', { isOpen, penaltyInfo, userRole });
   
   if (!isOpen) {
-    console.log('🔴 PenaltyModal: isOpen이 false라서 렌더링 안함');
+    // console.log('🔴 PenaltyModal: isOpen이 false라서 렌더링 안함');
     return null;
   }
   
   if (!penaltyInfo) {
-    console.log('🔴 PenaltyModal: penaltyInfo가 없어서 렌더링 안함');
+    // console.log('🔴 PenaltyModal: penaltyInfo가 없어서 렌더링 안함');
     return null;
   }
 
