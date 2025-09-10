@@ -52,7 +52,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [loadingOffers, setLoadingOffers] = useState(false);
   const [myOffer, setMyOffer] = useState<any>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
-  const [offerCount, setOfferCount] = useState(0);
   const [remainingOffers, setRemainingOffers] = useState(5);
 
   // 메시지 템플릿
@@ -824,13 +823,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         
                         {/* 내가 제안한 금액 표시 */}
                         {myOffer && (
-                          <div className="mt-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                          <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-sm font-medium text-green-900 mb-1">
+                                <p className="text-sm font-medium text-gray-900 mb-1">
                                   내가 제안한 금액
                                 </p>
-                                <p className="text-2xl font-bold text-green-600">
+                                <p className="text-2xl font-bold text-gray-900">
                                   {myOffer.amount.toLocaleString()}원
                                 </p>
                                 {myOffer.message && (
@@ -875,49 +874,48 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {/* 판매자 정보 */}
             <div className="bg-white rounded-lg p-6 shadow-sm mt-4">
               <h2 className="font-semibold mb-4">판매자 정보</h2>
-              <div className="flex items-center justify-between">
+              <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <span className="text-sm text-gray-500">닉네임</span>
                     <p className="font-semibold text-lg">{phone.seller?.username || phone.seller?.name || '알 수 없음'}</p>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
-                      <span className="text-gray-600">판매완료</span>
+                      <span className="text-gray-600">판매</span>
                       <span className="font-semibold text-blue-600">{phone.seller?.sell_count || 0}회</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-gray-600">구매완료</span>
+                      <span className="text-gray-600">구매</span>
                       <span className="font-semibold text-green-600">{phone.seller?.buy_count || 0}회</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-gray-600">총 거래</span>
+                      <span className="text-gray-600">거래</span>
                       <span className="font-semibold text-purple-600">{phone.seller?.total_trade_count || 0}회</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  {/* 판매자 본인인 경우 수정/삭제 버튼 표시 */}
-                  {user?.id === phone.seller?.id && (
-                    <>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => router.push(`/used/${phoneId}/edit`)}
-                      >
-                        수정하기
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setShowDeleteModal(true)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        삭제하기
-                      </Button>
-                    </>
-                  )}
-                </div>
+                {/* 판매자 본인인 경우 수정/삭제 버튼 표시 */}
+                {user?.id === phone.seller?.id && (
+                  <div className="flex gap-2 pt-3 border-t">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => router.push(`/used/${phoneId}/edit`)}
+                      className="flex-1"
+                    >
+                      수정하기
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowDeleteModal(true)}
+                      className="flex-1 text-red-600 hover:text-red-700"
+                    >
+                      삭제하기
+                    </Button>
+                  </div>
+                )}
               </div>
               
               {/* 거래 가능 지역 - 통합 표시 */}
