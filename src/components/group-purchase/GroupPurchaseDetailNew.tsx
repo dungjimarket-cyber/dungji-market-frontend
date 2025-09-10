@@ -110,9 +110,10 @@ interface GroupBuy {
   region?: string;
   region_name?: string;
   regions?: Array<{
-    id: number;
+    id?: number;
+    code?: string;
     name: string;
-    parent?: string;
+    full_name?: string;
   }>;
 }
 
@@ -1380,7 +1381,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   .replace('특별자치도', '');
                 
                 return (
-                  <span key={region.id} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  <span key={region.id || region.code || region.name} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                     {displayName}
                   </span>
                 );
