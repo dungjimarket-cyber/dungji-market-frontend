@@ -227,10 +227,18 @@ export default function CreateUsedPhonePage() {
       }
 
       // 디버깅용 FormData 내용 출력
-      console.log('전송할 FormData:');
+      console.log('===== 전송할 FormData =====');
+      console.log('FormData 내용:');
       for (let [key, value] of uploadData.entries()) {
-        console.log(key, value);
+        if (value instanceof File) {
+          console.log(`${key}: [File] ${value.name} (${value.size} bytes)`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
       }
+      console.log('API URL:', apiUrl);
+      console.log('Token 존재:', !!token);
+      console.log('=============================')
 
       // API 호출
       const token = localStorage.getItem('accessToken');
@@ -238,6 +246,9 @@ export default function CreateUsedPhonePage() {
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/`
         : `${baseUrl}/api/used/phones/`;
+      
+      console.log('Base URL:', baseUrl);
+      console.log('Final API URL:', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -246,9 +257,21 @@ export default function CreateUsedPhonePage() {
         body: uploadData,
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response statusText:', response.statusText);
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('API 에러 응답:', errorData);
+        const errorText = await response.text();
+        let errorData = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { detail: errorText };
+        }
+        console.error('===== API 에러 응답 =====');
+        console.error('Status:', response.status);
+        console.error('Error Data:', errorData);
+        console.error('=============================')
         
         // 상세한 오류 메시지 처리
         let errorMessage = '상품 등록에 실패했습니다.';
