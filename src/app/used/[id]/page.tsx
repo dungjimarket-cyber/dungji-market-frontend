@@ -47,6 +47,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showGradeInfo, setShowGradeInfo] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  const [showOffersModal, setShowOffersModal] = useState(false);
+  const [offers, setOffers] = useState<any[]>([]);
+  const [loadingOffers, setLoadingOffers] = useState(false);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -656,21 +659,64 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     공유하기
                   </Button>
                 </div>
-                {phone.accept_offers ? (
-                  <Button
-                    onClick={() => setShowOfferModal(true)}
-                    className="w-full h-14 text-lg font-semibold"
-                  >
-                    <DollarSign className="w-5 h-5 mr-2" />
-                    가격 제안하기
-                  </Button>
+                {/* 본인이 등록한 상품인 경우 */}
+                {user?.id === phone.seller?.id ? (
+                  phone.accept_offers && (
+                    <Button
+                      onClick={async () => {
+                        setLoadingOffers(true);
+                        try {
+                          const token = localStorage.getItem('accessToken');
+                          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+                          const apiUrl = baseUrl.includes('api.dungjimarket.com')
+                            ? `${baseUrl}/used/phones/${phoneId}/offers/`
+                            : `${baseUrl}/api/used/phones/${phoneId}/offers/`;
+                          const response = await fetch(apiUrl, {
+                            headers: {
+                              'Authorization': `Bearer ${token}`
+                            }
+                          });
+                          if (response.ok) {
+                            const data = await response.json();
+                            setOffers(data);
+                            setShowOffersModal(true);
+                          }
+                        } catch (error) {
+                          console.error('Failed to fetch offers:', error);
+                          toast({
+                            title: '오류',
+                            description: '제안 목록을 불러올 수 없습니다.',
+                            variant: 'destructive'
+                          });
+                        } finally {
+                          setLoadingOffers(false);
+                        }
+                      }}
+                      className="w-full h-14 text-lg font-semibold"
+                      disabled={loadingOffers}
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      받은 제안 보기 {phone.offer_count > 0 && `(${phone.offer_count})`}
+                    </Button>
+                  )
                 ) : (
-                  <Button
-                    className="w-full h-14 text-lg font-semibold"
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    판매자와 대화하기
-                  </Button>
+                  /* 다른 사람의 상품인 경우 */
+                  phone.accept_offers ? (
+                    <Button
+                      onClick={() => setShowOfferModal(true)}
+                      className="w-full h-14 text-lg font-semibold"
+                    >
+                      <DollarSign className="w-5 h-5 mr-2" />
+                      가격 제안하기
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full h-14 text-lg font-semibold"
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      판매자와 대화하기
+                    </Button>
+                  )
                 )}
               </div>
             </div>
@@ -752,10 +798,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
 
-            {/* 상태 및 설명 */}
+            {/* 제품상태 및 설명 */}
             {phone.condition_description && (
               <div className="bg-white rounded-lg p-6 shadow-sm mt-4">
-                <h2 className="font-semibold mb-4">상태 및 설명</h2>
+                <h2 className="font-semibold mb-4">제품상태 및 설명</h2>
                 <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
               </div>
             )}
@@ -1211,6 +1257,90 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 확인
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 받은 제안 목록 모달 */}
+      {showOffersModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">
+                받은 제안 목록 {offers.length > 0 && `(${offers.length}개)`}
+              </h3>
+              <button
+                onClick={() => setShowOffersModal(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {offers.length === 0 ? (
+              <div className="text-center py-12">
+                <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">가격 제안을 기다리는 중입니다</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  구매 희망자가 제안을 보내면 여기에 표시됩니다
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {offers.map((offer) => (
+                  <div key={offer.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="font-semibold">{offer.buyer?.username || '익명'}</span>
+                          <span className="text-sm text-gray-500">
+                            {offer.created_at && formatDistanceToNow(new Date(offer.created_at), { addSuffix: true, locale: ko })}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-2xl font-bold text-blue-600">
+                            {offer.amount.toLocaleString()}원
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            (원가 대비 {Math.round((offer.amount / phone.price) * 100)}%)
+                          </span>
+                        </div>
+                        {offer.message && (
+                          <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                            {offer.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            // 수락 처리
+                            if (confirm(`${offer.amount.toLocaleString()}원에 판매하시겠습니까?`)) {
+                              // API 호출 로직
+                            }
+                          }}
+                        >
+                          수락
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // 거절 처리
+                            if (confirm('이 제안을 거절하시겠습니까?')) {
+                              // API 호출 로직
+                            }
+                          }}
+                        >
+                          거절
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

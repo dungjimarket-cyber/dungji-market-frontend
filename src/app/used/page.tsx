@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle } from 'lucide-react';
+import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
@@ -47,6 +47,7 @@ export default function UsedPhonesPage() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({});
+  const MAX_PAGES = 10; // 최대 10페이지까지만 로드 (총 200개 상품)
   
   // Intersection Observer를 위한 ref
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -167,11 +168,14 @@ export default function UsedPhonesPage() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loading && hasMore) {
+        if (entries[0].isIntersecting && !loading && hasMore && page < MAX_PAGES) {
           setPage(prev => {
             const nextPage = prev + 1;
-            fetchPhones(nextPage, filters);
-            return nextPage;
+            if (nextPage <= MAX_PAGES) {
+              fetchPhones(nextPage, filters);
+              return nextPage;
+            }
+            return prev;
           });
         }
       },
@@ -187,7 +191,7 @@ export default function UsedPhonesPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [loading, hasMore, filters, fetchPhones]);
+  }, [loading, hasMore, filters, fetchPhones, page, MAX_PAGES]);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -337,8 +341,23 @@ export default function UsedPhonesPage() {
         </div>
 
         {/* 무한 스크롤 트리거 */}
-        {hasMore && !loading && (
+        {hasMore && !loading && page < MAX_PAGES && (
           <div ref={loadMoreRef} className="h-10 mt-4" />
+        )}
+        
+        {/* 최대 페이지 도달 안내 */}
+        {page >= MAX_PAGES && phones.length > 0 && (
+          <div className="text-center py-8">
+            <div className="inline-flex flex-col items-center gap-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full text-blue-600">
+                <Info className="w-5 h-5" />
+                <p className="text-sm font-medium">최대 표시 개수에 도달했습니다</p>
+              </div>
+              <p className="text-xs text-gray-500">
+                더 많은 상품을 보시려면 필터를 사용해주세요
+              </p>
+            </div>
+          </div>
         )}
 
         {/* 추가 로딩 인디케이터 */}
