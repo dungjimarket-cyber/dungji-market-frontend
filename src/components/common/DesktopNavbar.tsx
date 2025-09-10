@@ -19,6 +19,7 @@ export default function DesktopNavbar() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 프로필 체크 Hook 사용
@@ -128,7 +129,11 @@ export default function DesktopNavbar() {
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
               <div className="relative">
-                <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
+                <NotificationBell 
+                  onClick={() => setShowNotifications(!showNotifications)} 
+                  unreadCount={unreadCount}
+                  onUnreadCountChange={setUnreadCount}
+                />
                 {showNotifications && (
                   <>
                     {/* Click outside to close */}
@@ -138,7 +143,8 @@ export default function DesktopNavbar() {
                     />
                     <NotificationDropdown 
                       isOpen={showNotifications} 
-                      onClose={() => setShowNotifications(false)} 
+                      onClose={() => setShowNotifications(false)}
+                      onUnreadCountChange={setUnreadCount}
                     />
                   </>
                 )}

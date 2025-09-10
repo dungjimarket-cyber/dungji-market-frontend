@@ -9,7 +9,7 @@
 export type PhoneBrand = 'samsung' | 'apple' | 'lg' | 'xiaomi' | 'other';
 export type PhoneSeries = 'Galaxy S' | 'Galaxy Z' | 'Galaxy A' | 'iPhone' | 'V' | 'Redmi' | string;
 export type StorageSize = 64 | 128 | 256 | 512 | 1024;
-export type ConditionGrade = 'A' | 'B' | 'C';
+export type ConditionGrade = 'S' | 'A' | 'B' | 'C';
 export type BatteryStatus = 'excellent' | 'good' | 'fair' | 'poor' | 'unknown';
 export type PurchasePeriod = '1' | '3' | '6' | '12' | 'over';
 export type PhoneStatus = 'active' | 'reserved' | 'sold' | 'deleted';
@@ -76,6 +76,7 @@ export interface UsedPhone {
   offers?: UsedOffer[];
   seller?: UserBasicInfo;
   is_favorite?: boolean; // 현재 사용자가 찜했는지 여부
+  is_modified?: boolean; // 견적 후 수정됨 여부
   
   // 타임스탬프
   created_at: string;
@@ -421,9 +422,10 @@ export const PHONE_BRANDS = {
 } as const;
 
 export const CONDITION_GRADES = {
-  A: 'A급 (최상)',
-  B: 'B급 (상)',
-  C: 'C급 (중)'
+  S: 'S급 - 최상품',
+  A: 'A급 - 상품',
+  B: 'B급 - 중품',
+  C: 'C급 - 하품'
 } as const;
 
 export const BATTERY_STATUS_LABELS = {

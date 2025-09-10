@@ -66,6 +66,10 @@ export default function CreateUsedPhonePage() {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [checkingLimit, setCheckingLimit] = useState(true);
+  const [activeCount, setActiveCount] = useState(0);
+  const [canRegister, setCanRegister] = useState(true);
+  const [penaltyEnd, setPenaltyEnd] = useState<string | null>(null);
   
   // 다중 지역 선택 관련 상태
   const [selectedRegions, setSelectedRegions] = useState<SelectedRegion[]>([]);
@@ -77,7 +81,7 @@ export default function CreateUsedPhonePage() {
     color: '',
     price: '',
     min_offer_price: '',
-    accept_offers: false,
+    accept_offers: true,  // 항상 true로 설정
     condition_grade: '',
     condition_description: '',
     battery_status: '',
@@ -90,12 +94,81 @@ export default function CreateUsedPhonePage() {
     meeting_place: '',
   });
 
-  // 페이지 진입 시 프로필 체크 (중고폰용)
+  // 가격 포맷팅 헬퍼 함수
+  const formatPrice = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers) return '';
+    
+    // 숫자를 원화 형식으로 변환
+    return parseInt(numbers).toLocaleString('ko-KR');
+  };
+
+  // 가격 언포맷팅 헬퍼 함수
+  const unformatPrice = (value: string) => {
+    return value.replace(/[^\d]/g, '');
+  };
+
+  // 페이지 진입 시 프로필 체크 및 등록 제한 체크
   useEffect(() => {
     if (isAuthenticated) {
       checkProfile();
+      checkRegistrationLimit();
     }
   }, [isAuthenticated, checkProfile]);
+
+  // 등록 가능 여부 체크 (활성 상품 5개 제한 및 패널티)
+  const checkRegistrationLimit = async () => {
+    try {
+      setCheckingLimit(true);
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/check-limit/`
+        : `${baseUrl}/api/used/phones/check-limit/`;
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to check limit');
+      
+      const data = await response.json();
+      
+      setActiveCount(data.active_count || 0);
+      setCanRegister(data.can_register || false);
+      setPenaltyEnd(data.penalty_end || null);
+      
+      if (!data.can_register) {
+        if (data.penalty_end) {
+          const penaltyTime = new Date(data.penalty_end);
+          const now = new Date();
+          const hoursLeft = Math.ceil((penaltyTime.getTime() - now.getTime()) / (1000 * 60 * 60));
+          
+          toast({
+            title: '등록 제한',
+            description: `패널티 적용 중입니다. ${hoursLeft}시간 후 등록 가능합니다.`,
+            variant: 'destructive',
+          });
+        } else if (data.active_count >= 5) {
+          toast({
+            title: '등록 제한',
+            description: '활성 상품이 5개에 도달했습니다. 기존 상품을 삭제하거나 판매 완료 후 등록 가능합니다.',
+            variant: 'destructive',
+          });
+        }
+      }
+      
+    } catch (error) {
+      console.error('Failed to check registration limit:', error);
+      // 에러 시에도 등록 페이지는 볼 수 있도록 함
+      setCanRegister(true);
+    } finally {
+      setCheckingLimit(false);
+    }
+  };
 
   // 이미지 업로드 핸들러
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
@@ -180,6 +253,50 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
+    // 등록 제한 실시간 체크 (사용자가 등록 버튼을 눌렀을 때 최신 상태 확인)
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/check-limit/`
+        : `${baseUrl}/api/used/phones/check-limit/`;
+      
+      const checkResponse = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (checkResponse.ok) {
+        const limitData = await checkResponse.json();
+        
+        if (!limitData.can_register) {
+          if (limitData.penalty_end) {
+            const penaltyTime = new Date(limitData.penalty_end);
+            const now = new Date();
+            const hoursLeft = Math.ceil((penaltyTime.getTime() - now.getTime()) / (1000 * 60 * 60));
+            
+            toast({
+              title: '등록 제한',
+              description: `패널티 적용 중입니다. ${hoursLeft}시간 후 등록 가능합니다.`,
+              variant: 'destructive',
+            });
+          } else if (limitData.active_count >= 5) {
+            toast({
+              title: '동시 판매 제한',
+              description: `현재 판매 중인 상품이 ${limitData.active_count}개입니다. 최대 5개까지만 동시 판매 가능합니다. 기존 상품을 삭제하거나 판매 완료 후 등록해주세요.`,
+              variant: 'destructive',
+              duration: 5000,
+            });
+          }
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check registration limit:', error);
+      // 체크 실패 시에도 등록 시도는 계속 진행 (서버에서 최종 확인)
+    }
+
     // 프로필 완성도 체크 (중고폰용)
     const profileComplete = await checkProfile();
     if (!profileComplete) {
@@ -187,34 +304,134 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    // 유효성 검사
+    // 유효성 검사 - 사용자 친화적인 메시지
     if (images.length === 0) {
       toast({
-        title: '이미지 필요',
-        description: '최소 1장 이상의 이미지를 등록해주세요.',
+        title: '대표 이미지를 등록해주세요',
+        description: '최소 1장 이상의 상품 이미지가 필요합니다.',
         variant: 'destructive',
       });
       return;
     }
 
-    if (!formData.brand || !formData.model || !formData.price || !formData.condition_grade) {
+    if (!formData.brand) {
       toast({
-        title: '필수 정보 입력',
-        description: '브랜드, 모델명, 가격, 상태등급은 필수입니다.',
+        title: '브랜드를 선택해주세요',
+        description: '상품의 브랜드를 선택해야 합니다.',
         variant: 'destructive',
       });
       return;
     }
 
-    // 지역 선택은 선택사항으로 변경 (백엔드 처리 문제 해결 시까지)
-    // if (selectedRegions.length === 0) {
-    //   toast({
-    //     title: '거래 지역 선택',
-    //     description: '최소 1개 이상의 거래 지역을 선택해주세요.',
-    //     variant: 'destructive',
-    //   });
-    //   return;
-    // }
+    if (!formData.model) {
+      toast({
+        title: '모델명을 입력해주세요',
+        description: '상품의 모델명을 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.storage) {
+      toast({
+        title: '저장공간을 선택해주세요',
+        description: '상품의 저장공간 용량을 선택하거나 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.color) {
+      toast({
+        title: '색상을 입력해주세요',
+        description: '상품의 색상을 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.price) {
+      toast({
+        title: '즉시 판매가를 입력해주세요',
+        description: '상품의 즉시 판매가를 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.min_offer_price) {
+      toast({
+        title: '최소 제안가를 입력해주세요',
+        description: '최소 제안 가격을 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 최소 제안가가 즉시 판매가보다 높거나 같은지 체크
+    if (parseInt(formData.min_offer_price) >= parseInt(formData.price)) {
+      toast({
+        title: '최소 제안가를 확인해주세요',
+        description: '최소 제안가는 즉시 판매가보다 낮아야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.condition_grade) {
+      toast({
+        title: '상태 등급을 선택해주세요',
+        description: 'S급부터 C급 중 상품 상태를 선택해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.battery_status) {
+      toast({
+        title: '배터리 상태를 선택해주세요',
+        description: '배터리 성능 상태를 선택해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 구성품 체크 (최소 하나는 선택)
+    if (!formData.body_only && !formData.has_box && !formData.has_charger && !formData.has_earphones) {
+      toast({
+        title: '구성품을 선택해주세요',
+        description: '본체만 또는 포함된 구성품을 선택해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (selectedRegions.length === 0) {
+      toast({
+        title: '거래 가능 지역을 선택해주세요',
+        description: '최소 1개 이상의 거래 가능 지역을 선택해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.meeting_place) {
+      toast({
+        title: '거래 요청사항을 입력해주세요',
+        description: '거래 장소나 시간대 등의 요청사항을 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.description || formData.description.length < 10) {
+      toast({
+        title: '제품 상태 및 설명을 입력해주세요',
+        description: '제품 상태와 설명을 10자 이상 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setLoading(true);
 
@@ -434,6 +651,37 @@ export default function CreateUsedPhonePage() {
       <div className="container mx-auto px-4 max-w-4xl">
         <h1 className="text-2xl font-bold mb-6">중고폰 판매 등록</h1>
 
+        {/* 활성 상품 개수 표시 */}
+        {!checkingLimit && activeCount > 0 && (
+          <div className={`border rounded-lg p-4 mb-6 ${
+            activeCount >= 5 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  activeCount >= 5 ? 'bg-amber-100' : 'bg-blue-100'
+                }`}>
+                  <span className={`text-sm font-semibold ${
+                    activeCount >= 5 ? 'text-amber-700' : 'text-blue-700'
+                  }`}>{activeCount}</span>
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${
+                    activeCount >= 5 ? 'text-amber-900' : 'text-blue-900'
+                  }`}>
+                    활성 상품 {activeCount}/5개
+                  </p>
+                  <p className={`text-xs ${
+                    activeCount >= 5 ? 'text-amber-700' : 'text-blue-700'
+                  }`}>
+                    {activeCount >= 5 ? '상품 등록 제한에 도달했습니다' : '최대 5개까지 동시 판매 가능'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 이미지 업로드 */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -475,33 +723,37 @@ export default function CreateUsedPhonePage() {
                         </div>
                       )}
                       
-                      {/* 액션 버튼들 - 모바일에서는 항상 보이도록 */}
-                      <div className="absolute bottom-2 left-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <label
-                          htmlFor={`image-replace-${index}`}
-                          className="flex-1 bg-white/90 backdrop-blur text-xs py-1 rounded hover:bg-white text-center cursor-pointer"
-                        >
-                          변경
-                        </label>
-                        {!image.isMain && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSetMainImage(index);
-                            }}
-                            className="flex-1 bg-white/90 backdrop-blur text-xs py-1 rounded hover:bg-white"
+                      {/* 액션 버튼들 - 모바일에서는 X만, PC에서는 전체 버튼 */}
+                      <div className="absolute bottom-2 right-2 sm:left-2 sm:right-2 flex gap-1">
+                        {/* PC에서만 변경/대표 버튼 표시 */}
+                        <div className="hidden sm:flex gap-1 flex-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <label
+                            htmlFor={`image-replace-${index}`}
+                            className="flex-1 bg-white/90 backdrop-blur text-xs py-1 rounded hover:bg-white text-center cursor-pointer"
                           >
-                            대표
-                          </button>
-                        )}
+                            변경
+                          </label>
+                          {!image.isMain && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetMainImage(index);
+                              }}
+                              className="flex-1 bg-white/90 backdrop-blur text-xs py-1 rounded hover:bg-white"
+                            >
+                              대표
+                            </button>
+                          )}
+                        </div>
+                        {/* X 버튼은 모바일/PC 모두 표시 */}
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleImageRemove(index);
                           }}
-                          className="bg-red-500/90 backdrop-blur text-white px-2 py-1 rounded hover:bg-red-600"
+                          className="bg-red-500/90 backdrop-blur text-white px-2 py-1 rounded hover:bg-red-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -546,7 +798,9 @@ export default function CreateUsedPhonePage() {
 
             <p className="text-sm text-gray-500 mt-4">
               * 첫 번째 이미지가 대표 이미지로 설정됩니다.
-              * 최대 5장까지 등록 가능합니다.
+              * 최대 5장까지 등록 가능합니다. (각 3MB 이하)
+              * 전면, 후면, 측면, 모서리 사진을 포함하면 신뢰도가 높아집니다.
+              * 흠집이나 파손 부위는 선명하게 촬영해주세요.
               * 이미지를 클릭하면 크게 볼 수 있습니다.
             </p>
           </div>
@@ -588,12 +842,18 @@ export default function CreateUsedPhonePage() {
                 />
               </div>
 
-              {/* 용량 */}
+              {/* 저장공간 */}
               <div>
-                <Label htmlFor="storage">용량</Label>
+                <Label htmlFor="storage">저장공간 <span className="text-red-500">*</span></Label>
                 <Select 
-                  value={formData.storage} 
-                  onValueChange={(value) => handleInputChange('storage', value)}
+                  value={formData.storage === '64' || formData.storage === '128' || formData.storage === '256' || formData.storage === '512' || formData.storage === '1024' ? formData.storage : 'custom'} 
+                  onValueChange={(value) => {
+                    if (value === 'custom') {
+                      handleInputChange('storage', '');
+                    } else {
+                      handleInputChange('storage', value);
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="선택하세요" />
@@ -604,13 +864,24 @@ export default function CreateUsedPhonePage() {
                     <SelectItem value="256">256GB</SelectItem>
                     <SelectItem value="512">512GB</SelectItem>
                     <SelectItem value="1024">1TB</SelectItem>
+                    <SelectItem value="custom">직접 입력</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* 직접 입력 필드 */}
+                {(formData.storage !== '64' && formData.storage !== '128' && formData.storage !== '256' && formData.storage !== '512' && formData.storage !== '1024') && (
+                  <Input
+                    type="number"
+                    placeholder="저장공간을 입력하세요 (GB)"
+                    value={formData.storage}
+                    onChange={(e) => handleInputChange('storage', e.target.value)}
+                    className="mt-2"
+                  />
+                )}
               </div>
 
               {/* 색상 */}
               <div>
-                <Label htmlFor="color">색상</Label>
+                <Label htmlFor="color">색상 <span className="text-red-500">*</span></Label>
                 <Input
                   id="color"
                   placeholder="예: 스페이스 블랙"
@@ -626,47 +897,67 @@ export default function CreateUsedPhonePage() {
             <h2 className="text-lg font-semibold mb-4">가격 정보</h2>
             
             <div className="grid grid-cols-2 gap-4">
-              {/* 판매 가격 */}
+              {/* 즉시 판매가 */}
               <div>
-                <Label htmlFor="price">판매 가격 <span className="text-red-500">*</span></Label>
+                <Label htmlFor="price">즉시 판매가 <span className="text-red-500">*</span></Label>
                 <Input
                   id="price"
-                  type="number"
+                  type="text"
                   placeholder="0"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  value={formatPrice(formData.price)}
+                  onChange={(e) => {
+                    const unformatted = unformatPrice(e.target.value);
+                    handleInputChange('price', unformatted);
+                  }}
                   required
                 />
-                <p className="text-sm text-gray-500 mt-1">원 단위로 입력</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  즉시 판매가 입력 시 해당 금액이 제출되면 판매완료로 전환됩니다
+                </p>
               </div>
 
               {/* 최소 제안 가격 */}
               <div>
-                <Label htmlFor="min_offer_price">최소 제안 가격</Label>
+                <Label htmlFor="min_offer_price">최소 제안 가격 <span className="text-red-500">*</span></Label>
                 <Input
                   id="min_offer_price"
-                  type="number"
+                  type="text"
                   placeholder="0"
-                  value={formData.min_offer_price}
-                  onChange={(e) => handleInputChange('min_offer_price', e.target.value)}
-                  disabled={!formData.accept_offers}
+                  value={formatPrice(formData.min_offer_price)}
+                  onChange={(e) => {
+                    const unformatted = unformatPrice(e.target.value);
+                    // 즉시 판매가보다 낮은지 체크
+                    if (formData.price && parseInt(unformatted) >= parseInt(formData.price)) {
+                      toast({
+                        title: '최소 제안가는 즉시 판매가보다 낮아야 합니다',
+                        description: '즉시 판매가보다 낮게 입력 부탁드립니다.',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    handleInputChange('min_offer_price', unformatted);
+                  }}
+                  required
                 />
-                <p className="text-sm text-gray-500 mt-1">제안 받을 최소 금액</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  즉시 판매가보다 낮게 입력해주세요
+                </p>
               </div>
             </div>
 
-            {/* 가격 제안 허용 */}
-            <div className="flex items-center justify-between py-3 border-t">
-              <div>
-                <Label htmlFor="accept_offers" className="text-base">가격 제안 받기</Label>
-                <p className="text-sm text-gray-500">구매자가 가격을 제안할 수 있습니다</p>
+            {/* 가격 정보 표시 */}
+            {formData.price && formData.min_offer_price && (
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">즉시 판매가:</span>
+                  <span className="font-medium">{parseInt(formData.price).toLocaleString('ko-KR')}원</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-gray-600">최소 제안가:</span>
+                  <span className="font-medium">{parseInt(formData.min_offer_price).toLocaleString('ko-KR')}원</span>
+                </div>
               </div>
-              <Switch
-                id="accept_offers"
-                checked={formData.accept_offers}
-                onCheckedChange={(checked) => handleInputChange('accept_offers', checked)}
-              />
-            </div>
+            )}
           </div>
 
           {/* 상태 정보 */}
@@ -676,7 +967,7 @@ export default function CreateUsedPhonePage() {
             <div className="grid grid-cols-2 gap-4">
               {/* 상태 등급 */}
               <div>
-                <Label htmlFor="condition_grade">상태 등급</Label>
+                <Label htmlFor="condition_grade">상태 등급 <span className="text-red-500">*</span></Label>
                 <Select 
                   value={formData.condition_grade} 
                   onValueChange={(value) => handleInputChange('condition_grade', value)}
@@ -692,11 +983,17 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                  <div><span className="font-medium">S급:</span> 사용감 거의 없음, 미세 기스 이하</div>
+                  <div><span className="font-medium">A급:</span> 생활기스 있으나 깨끗한 상태</div>
+                  <div><span className="font-medium">B급:</span> 사용감 있음, 모서리 찍힘 등</div>
+                  <div><span className="font-medium">C급:</span> 사용감 많음, 기능 정상</div>
+                </div>
               </div>
 
               {/* 배터리 상태 */}
               <div>
-                <Label htmlFor="battery_status">배터리 상태</Label>
+                <Label htmlFor="battery_status">배터리 상태 <span className="text-red-500">*</span></Label>
                 <Select 
                   value={formData.battery_status} 
                   onValueChange={(value) => handleInputChange('battery_status', value)}
@@ -712,12 +1009,16 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  iPhone: 설정 → 배터리 → 배터리 성능 상태<br/>
+                  Android: 설정 → 디바이스 케어 → 배터리
+                </p>
               </div>
             </div>
 
             {/* 구성품 */}
             <div>
-              <Label className="mb-3 block">구성품</Label>
+              <Label className="mb-3 block">구성품 <span className="text-red-500">*</span></Label>
               <div className="space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -773,16 +1074,19 @@ export default function CreateUsedPhonePage() {
               </p>
             </div>
 
-            {/* 상태 설명 */}
+            {/* 제품 상태 및 설명 - 통합 */}
             <div>
-              <Label htmlFor="condition_description">상태 설명</Label>
+              <Label htmlFor="description">제품 상태 및 설명 <span className="text-red-500">*</span></Label>
               <Textarea
-                id="condition_description"
-                placeholder="기스, 찍힘 등 상태를 자세히 설명해주세요"
-                value={formData.condition_description}
-                onChange={(e) => handleInputChange('condition_description', e.target.value)}
-                rows={3}
+                id="description"
+                placeholder="기스, 찍힘 등 제품 상태와 설명을 입력해주세요 (최소 10자)"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={4}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.description.length}/10자 {formData.description.length >= 10 && '✓'}
+              </p>
             </div>
           </div>
 
@@ -790,9 +1094,9 @@ export default function CreateUsedPhonePage() {
           <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
             <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
             
-            {/* 거래 지역 선택 */}
+            {/* 거래 가능 지역 선택 */}
             <div className="space-y-2">
-              <Label>거래 지역 <span className="text-red-500">*</span></Label>
+              <Label>거래 가능 지역 <span className="text-red-500">*</span></Label>
               <p className="text-sm text-gray-500 mb-2">최대 3개 지역까지 선택 가능합니다</p>
               <MultiRegionDropdown
                 maxSelections={3}
@@ -801,15 +1105,17 @@ export default function CreateUsedPhonePage() {
               />
             </div>
             
-            {/* 거래 희망 장소 */}
+            {/* 거래 요청사항 */}
             <div>
-              <Label htmlFor="meeting_place">거래 희망 장소</Label>
-              <Input
+              <Label htmlFor="meeting_place">거래 요청사항 <span className="text-red-500">*</span></Label>
+              <Textarea
                 id="meeting_place"
-                placeholder="예: 강남역 2번 출구"
+                placeholder="예: 강남역 10번 출구 선호, 평일 저녁만 가능, 주말 오전 가능 등"
                 value={formData.meeting_place}
                 onChange={(e) => handleInputChange('meeting_place', e.target.value)}
+                rows={2}
               />
+              <p className="text-xs text-gray-500 mt-1">구체적인 거래 장소나 시간대를 입력해주세요</p>
             </div>
 
             {/* 상품 설명 */}
@@ -825,6 +1131,15 @@ export default function CreateUsedPhonePage() {
             </div>
           </div>
 
+          {/* 안내 메시지 */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-sm text-yellow-800">
+              <span className="font-medium">⚠️ 주의사항</span><br/>
+              • 가격 제안이 들어온 후에는 즉시 판매가와 설명만 수정 가능합니다<br/>
+              • 제품 정보, 상태, 거래 지역은 변경할 수 없으니 신중하게 입력해주세요
+            </p>
+          </div>
+
           {/* 등록 버튼 */}
           <div className="flex gap-3">
             <Button
@@ -838,10 +1153,10 @@ export default function CreateUsedPhonePage() {
             </Button>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || checkingLimit}
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              {loading ? '등록 중...' : '등록하기'}
+              {loading ? '등록 중...' : checkingLimit ? '확인 중...' : '등록하기'}
             </Button>
           </div>
         </form>

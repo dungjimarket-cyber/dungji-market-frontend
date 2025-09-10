@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface NotificationBellProps {
   onClick: () => void;
+  unreadCount?: number;
+  onUnreadCountChange?: (count: number) => void;
 }
 
 /**
@@ -18,21 +20,30 @@ interface NotificationBellProps {
  * <NotificationBell onClick={() => setShowNotifications(true)} />
  * ```
  */
-const NotificationBell: React.FC<NotificationBellProps> = ({ onClick }) => {
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, unreadCount: propUnreadCount, onUnreadCountChange }) => {
+  const [localUnreadCount, setLocalUnreadCount] = useState<number>(0);
   const { isAuthenticated } = useAuth();
+  
+  // prop으로 받은 unreadCount가 있으면 사용, 없으면 localUnreadCount 사용
+  const unreadCount = propUnreadCount !== undefined ? propUnreadCount : localUnreadCount;
 
   useEffect(() => {
     // 로그인하지 않은 경우 알림을 가져오지 않음
     if (!isAuthenticated) {
-      setUnreadCount(0);
+      setLocalUnreadCount(0);
+      if (onUnreadCountChange) {
+        onUnreadCountChange(0);
+      }
       return;
     }
 
     const fetchNotifications = async () => {
       try {
         const response = await getNotifications();
-        setUnreadCount(response.unread_count);
+        setLocalUnreadCount(response.unread_count);
+        if (onUnreadCountChange) {
+          onUnreadCountChange(response.unread_count);
+        }
       } catch (error) {
         // 401 에러는 콘솔에 출력하지 않음 (로그아웃 상태일 수 있음)
         if (error instanceof Error && !error.message.includes('401')) {
@@ -47,7 +58,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onClick }) => {
     const intervalId = setInterval(fetchNotifications, 30000);
     
     return () => clearInterval(intervalId);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, onUnreadCountChange]);
 
   return (
     <div className="relative cursor-pointer" onClick={onClick}>

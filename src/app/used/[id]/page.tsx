@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { 
   Heart, MapPin, Eye, Clock, Shield, MessageCircle, 
   ChevronLeft, ChevronRight, Share2, AlertTriangle,
-  Check, X, Phone, User, Smartphone
+  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,10 +39,45 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [offerCount, setOfferCount] = useState(0);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+
+  // 메시지 템플릿
+  const messageTemplates = {
+    "즉시 거래": [
+      "오늘 바로 거래 가능합니다",
+      "2시간 내 만날 수 있습니다",
+      "지금 출발 가능합니다"
+    ],
+    "일정 조율": [
+      "이번 주말 거래 가능합니다",
+      "평일 저녁 7시 이후 가능합니다",
+      "내일 거래 가능합니다"
+    ],
+    "위치 관련": [
+      "거래 장소 근처입니다",
+      "어디든 찾아가겠습니다",
+      "중간 지점에서 만나요"
+    ],
+    "구매 확정": [
+      "제안 금액에 구매하겠습니다",
+      "실물 확인 후 구매 확정합니다",
+      "이 가격에 구매 의사 있습니다"
+    ],
+    "간단 인사": [
+      "거래 부탁드립니다",
+      "연락 주세요",
+      "확인 부탁드립니다"
+    ]
+  };
 
   // 상품 정보 조회
   useEffect(() => {
     fetchPhoneDetail();
+    fetchOfferCount();
   }, [phoneId]);
 
   const fetchPhoneDetail = async () => {
@@ -76,6 +111,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 사용자의 제안 횟수 조회
+  const fetchOfferCount = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/offer-count/`
+        : `${baseUrl}/api/used/phones/${phoneId}/offer-count/`;
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setOfferCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch offer count:', error);
     }
   };
 
@@ -130,6 +191,54 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
   };
 
+  // 가격 포맷팅
+  const formatCurrency = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers) return '';
+    return parseInt(numbers).toLocaleString();
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^\d]/g, '');
+    if (parseInt(value) <= 9900000) { // 990만원 제한
+      setOfferAmount(value);
+    }
+  };
+
+  // 가격 제안 확인
+  const handleOfferConfirm = () => {
+    const amount = parseInt(offerAmount);
+    
+    if (!amount || amount < (phone?.min_offer_price || 0)) {
+      toast({
+        title: '제안 금액 확인',
+        description: `최소 제안 금액은 ${phone?.min_offer_price?.toLocaleString()}원입니다.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (amount > 9900000) {
+      toast({
+        title: '제안 금액 초과',
+        description: '최대 제안 가능 금액은 990만원입니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (offerCount >= 5) {
+      toast({
+        title: '제안 횟수 초과',
+        description: '해당 상품에 최대 5회까지만 제안 가능합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setShowConfirmModal(true);
+  };
+
   // 가격 제안
   const handleSubmitOffer = async () => {
     if (!isAuthenticated) {
@@ -143,14 +252,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
 
     const amount = parseInt(offerAmount);
-    if (!amount || amount < (phone?.min_offer_price || 0)) {
-      toast({
-        title: '제안 금액 확인',
-        description: `최소 제안 금액은 ${phone?.min_offer_price?.toLocaleString()}원입니다.`,
-        variant: 'destructive',
-      });
-      return;
-    }
 
     try {
       const token = localStorage.getItem('accessToken');
@@ -176,16 +277,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           description: '판매자에게 가격 제안이 전달되었습니다.',
         });
         setShowOfferModal(false);
+        setShowConfirmModal(false);
         setOfferAmount('');
         setOfferMessage('');
+        setSelectedTemplate('');
+        setOfferCount(prev => prev + 1);
+      } else {
+        const error = await response.json();
+        if (error.message?.includes('5회')) {
+          toast({
+            title: '제안 횟수 초과',
+            description: '해당 상품에 최대 5회까지만 제안 가능합니다.',
+            variant: 'destructive',
+          });
+        } else {
+          throw new Error(error.message || '제안 실패');
+        }
       }
     } catch (error) {
       console.error('Failed to submit offer:', error);
       toast({
         title: '제안 실패',
-        description: '가격 제안 중 오류가 발생했습니다.',
+        description: error instanceof Error ? error.message : '가격 제안 중 오류가 발생했습니다.',
         variant: 'destructive',
       });
+    } finally {
+      setShowConfirmModal(false);
     }
   };
 
@@ -204,6 +321,68 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         title: '링크 복사',
         description: '링크가 클립보드에 복사되었습니다.',
       });
+    }
+  };
+
+  // 삭제 처리
+  const handleDelete = async () => {
+    if (!phone) return;
+    
+    setDeleting(true);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/`
+        : `${baseUrl}/api/used/phones/${phoneId}/`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        // 견적 제안이 있는 경우 패널티 경고
+        if (errorData.has_offers) {
+          toast({
+            title: '삭제 제한',
+            description: errorData.message || '제안된 견적이 있어 6시간 패널티가 적용됩니다.',
+            variant: 'destructive',
+          });
+          // 사용자가 확인 후에도 삭제하길 원할 수 있으므로 모달은 열어둠
+          setDeleting(false);
+          return;
+        }
+        
+        throw new Error(errorData.message || '삭제 실패');
+      }
+      
+      const result = await response.json();
+      
+      toast({
+        title: '삭제 완료',
+        description: result.penalty_applied 
+          ? '상품이 삭제되었습니다. 견적 제안이 있어 6시간 후 재등록 가능합니다.'
+          : '상품이 삭제되었습니다.',
+      });
+      
+      setShowDeleteModal(false);
+      router.push('/used');
+      
+    } catch (error) {
+      console.error('Failed to delete phone:', error);
+      toast({
+        title: '삭제 실패',
+        description: '상품 삭제 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -340,7 +519,16 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           <div>
             {/* 기본 정보 */}
             <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h1 className="text-2xl font-bold mb-2">{phone.model}</h1>
+              <div className="flex items-start justify-between mb-2">
+                <h1 className="text-2xl font-bold">{phone.model}</h1>
+                {/* 수정됨 표시 */}
+                {phone.is_modified && phone.offer_count > 0 && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
+                    <Edit3 className="w-3 h-3" />
+                    <span>수정됨</span>
+                  </div>
+                )}
+              </div>
               
               {/* 가격 */}
               <div className="mb-4">
@@ -363,7 +551,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">용량</p>
+                  <p className="text-sm text-gray-600 mb-1">저장공간</p>
                   <p className="font-medium">{phone.storage}GB</p>
                 </div>
                 <div>
@@ -459,9 +647,33 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  프로필 보기
-                </Button>
+                <div className="flex gap-2">
+                  {/* 판매자 본인인 경우 수정/삭제 버튼 표시 */}
+                  {user?.id === phone.seller?.id && (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => router.push(`/used/${phoneId}/edit`)}
+                      >
+                        수정하기
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowDeleteModal(true)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        삭제하기
+                      </Button>
+                    </>
+                  )}
+                  {user?.id !== phone.seller?.id && (
+                    <Button variant="outline" size="sm">
+                      프로필 보기
+                    </Button>
+                  )}
+                </div>
               </div>
               
               {/* 거래 가능 지역 - 다중 지역 표시 */}
@@ -488,11 +700,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 )
               )}
               
-              {/* 거래 희망 장소 */}
+              {/* 거래 요청사항 */}
               {phone.meeting_place && (
                 <div className="mt-4 p-3 bg-gray-50 rounded">
-                  <p className="text-sm text-gray-600 mb-1">거래 희망 장소</p>
-                  <p className="font-medium">{phone.meeting_place}</p>
+                  <p className="text-sm text-gray-600 mb-1">거래 요청사항</p>
+                  <p className="font-medium whitespace-pre-wrap">{phone.meeting_place}</p>
                 </div>
               )}
             </div>
@@ -537,42 +749,217 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       {/* 가격 제안 모달 */}
       {showOfferModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">가격 제안하기</h3>
+          <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">가격 제안하기</h3>
+              <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full">
+                <span className="text-sm font-medium text-blue-700">
+                  제안 {offerCount}/5회
+                </span>
+              </div>
+            </div>
+            
+            {offerCount >= 5 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-red-700">
+                  제안 횟수를 모두 사용했습니다.
+                </p>
+              </div>
+            )}
             
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">제안 금액</label>
-              <Input
-                type="number"
-                placeholder={`최소 ${phone.min_offer_price?.toLocaleString()}원`}
-                value={offerAmount}
-                onChange={(e) => setOfferAmount(e.target.value)}
+              <label className="block text-sm font-medium mb-2">
+                제안 금액 <span className="text-red-500">*</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  (최소: {phone.min_offer_price?.toLocaleString()}원 / 최대: 990만원)
+                </span>
+              </label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="0"
+                  value={formatCurrency(offerAmount)}
+                  onChange={handlePriceChange}
+                  className="pr-12"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">메시지 선택</label>
+              <div className="space-y-2">
+                {Object.entries(messageTemplates).map(([category, messages]) => (
+                  <div key={category}>
+                    <p className="text-xs text-gray-600 mb-1">{category}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {messages.map((msg) => (
+                        <button
+                          key={msg}
+                          type="button"
+                          onClick={() => {
+                            setOfferMessage(msg);
+                            setSelectedTemplate(msg);
+                          }}
+                          className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                            selectedTemplate === msg
+                              ? 'bg-blue-50 border-blue-300 text-blue-700'
+                              : 'bg-white border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {msg}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">메시지 직접 입력</label>
+              <Textarea
+                placeholder="메시지를 입력하거나 위에서 선택하세요"
+                value={offerMessage}
+                onChange={(e) => {
+                  setOfferMessage(e.target.value);
+                  setSelectedTemplate('');
+                }}
+                rows={2}
               />
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">메시지 (선택)</label>
-              <Textarea
-                placeholder="판매자에게 전달할 메시지를 입력하세요"
-                value={offerMessage}
-                onChange={(e) => setOfferMessage(e.target.value)}
-                rows={3}
-              />
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <p className="text-xs text-amber-700">
+                <span className="font-medium">⚠️ 주의사항</span><br/>
+                견적 제안은 구매 약속입니다. 신중하게 결정해주세요.
+              </p>
             </div>
 
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setShowOfferModal(false)}
+                onClick={() => {
+                  setShowOfferModal(false);
+                  setOfferAmount('');
+                  setOfferMessage('');
+                  setSelectedTemplate('');
+                }}
                 className="flex-1"
               >
                 취소
               </Button>
               <Button
-                onClick={handleSubmitOffer}
+                onClick={handleOfferConfirm}
+                disabled={!offerAmount || offerCount >= 5}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 제안하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">상품 삭제</h3>
+                <p className="text-sm text-gray-600">정말로 이 상품을 삭제하시겠습니까?</p>
+              </div>
+            </div>
+            
+            {phone.offer_count > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                <div className="flex gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-900">제안된 견적이 있습니다</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      상품 삭제 시 6시간 동안 새로운 상품을 등록할 수 없습니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                • 삭제된 상품은 복구할 수 없습니다<br/>
+                • 관련된 모든 견적 제안이 취소됩니다<br/>
+                {phone.offer_count > 0 && '• 6시간 패널티가 적용됩니다'}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1"
+              >
+                취소
+              </Button>
+              <Button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleting ? '삭제 중...' : '삭제하기'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 제안 확인 모달 */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-lg max-w-sm w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">가격 제안 확인</h3>
+              <p className="text-2xl font-bold text-blue-600 mb-2">
+                {parseInt(offerAmount).toLocaleString()}원
+              </p>
+              <p className="text-sm text-gray-600">
+                이 금액으로 제안하시겠습니까?
+              </p>
+              {offerMessage && (
+                <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700 text-left">
+                  <p className="font-medium mb-1">메시지:</p>
+                  <p>{offerMessage}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <p className="text-xs text-amber-700">
+                제안 후에는 취소할 수 없으며, 판매자가 수락 시 구매해야 합니다.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1"
+              >
+                아니오
+              </Button>
+              <Button
+                onClick={handleSubmitOffer}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                예, 제안합니다
               </Button>
             </div>
           </div>

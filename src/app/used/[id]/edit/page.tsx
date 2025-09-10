@@ -1,0 +1,737 @@
+/**
+ * 중고폰 수정 페이지
+ * /used/[id]/edit
+ */
+
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { 
+  ArrowLeft, Plus, X, Camera, AlertCircle, MapPin, 
+  DollarSign, Package, Smartphone, Info, Lock
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
+import RegionSelector from '@/components/common/RegionSelector';
+
+// 수정 가능/불가능 필드 정의
+const EDITABLE_AFTER_OFFERS = ['price', 'description', 'meeting_place'];
+const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 수정할 수 없습니다.';
+
+export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <UsedPhoneEditClient phoneId={id} />;
+}
+
+function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [phone, setPhone] = useState<UsedPhone | null>(null);
+  const [hasOffers, setHasOffers] = useState(false);
+  const [isModified, setIsModified] = useState(false);
+  
+  // 폼 데이터
+  const [formData, setFormData] = useState({
+    model: '',
+    storage: '',
+    color: '',
+    condition_grade: 'A',
+    battery_status: '80_89',
+    price: '',
+    min_offer_price: '',
+    description: '',
+    meeting_place: '',
+    has_box: false,
+    has_charger: false,
+    has_earphones: false,
+  });
+  
+  const [images, setImages] = useState<Array<{ file?: File; preview: string; id?: number }>>([]);
+  const [selectedRegions, setSelectedRegions] = useState<any[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 기존 상품 정보 로드
+  useEffect(() => {
+    fetchPhoneDetail();
+  }, [phoneId]);
+
+  const fetchPhoneDetail = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/`
+        : `${baseUrl}/api/used/phones/${phoneId}/`;
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast({
+            title: '상품을 찾을 수 없습니다',
+            variant: 'destructive',
+          });
+          router.push('/used');
+          return;
+        }
+        throw new Error('Failed to fetch');
+      }
+      
+      const data = await response.json();
+      
+      // 권한 체크
+      if (data.seller?.id !== user?.id) {
+        toast({
+          title: '수정 권한이 없습니다',
+          description: '본인이 등록한 상품만 수정할 수 있습니다.',
+          variant: 'destructive',
+        });
+        router.push(`/used/${phoneId}`);
+        return;
+      }
+      
+      setPhone(data);
+      setHasOffers(data.offer_count > 0);
+      
+      // 폼 데이터 설정
+      setFormData({
+        model: data.model || '',
+        storage: data.storage || '',
+        color: data.color || '',
+        condition_grade: data.condition_grade || 'A',
+        battery_status: data.battery_status || '80_89',
+        price: data.price?.toString() || '',
+        min_offer_price: data.min_offer_price?.toString() || '',
+        description: data.description || '',
+        meeting_place: data.meeting_place || '',
+        has_box: data.has_box || false,
+        has_charger: data.has_charger || false,
+        has_earphones: data.has_earphones || false,
+      });
+      
+      // 이미지 설정
+      if (data.images && data.images.length > 0) {
+        setImages(data.images.map((img: any) => ({
+          id: img.id,
+          preview: img.imageUrl
+        })));
+      }
+      
+      // 지역 설정
+      if (data.regions && data.regions.length > 0) {
+        setSelectedRegions(data.regions);
+      }
+      
+    } catch (error) {
+      console.error('Failed to fetch phone:', error);
+      toast({
+        title: '오류',
+        description: '상품 정보를 불러오는데 실패했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 필드 수정 가능 여부 체크
+  const isFieldEditable = (fieldName: string) => {
+    if (!hasOffers) return true;
+    return EDITABLE_AFTER_OFFERS.includes(fieldName);
+  };
+
+  // 입력 값 변경 핸들러
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    // 수정 불가능한 필드는 변경 막기
+    if (!isFieldEditable(name)) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
+    setIsModified(true);
+    setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  // 가격 포맷팅
+  const formatCurrency = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers) return '';
+    return parseInt(numbers).toLocaleString();
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'price' | 'min_offer_price') => {
+    if (!isFieldEditable(field)) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const value = e.target.value.replace(/[^\d]/g, '');
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setIsModified(true);
+  };
+
+  // 이미지 처리
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isFieldEditable('images')) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const files = Array.from(e.target.files || []);
+    const remainingSlots = 10 - images.length;
+    
+    if (files.length > remainingSlots) {
+      toast({
+        title: '이미지 제한',
+        description: `최대 10장까지만 등록 가능합니다. (${remainingSlots}장 추가 가능)`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    
+    setImages(prev => [...prev, ...newImages]);
+    setIsModified(true);
+  };
+
+  const removeImage = (index: number) => {
+    if (!isFieldEditable('images')) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setIsModified(true);
+  };
+
+  // 폼 제출
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isModified) {
+      toast({
+        title: '변경사항 없음',
+        description: '수정된 내용이 없습니다.',
+      });
+      return;
+    }
+    
+    // 유효성 검사
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.model.trim()) newErrors.model = '모델명을 입력해주세요';
+    if (!formData.storage) newErrors.storage = '저장공간을 선택해주세요';
+    if (!formData.price) newErrors.price = '즉시 판매가를 입력해주세요';
+    if (!formData.min_offer_price) newErrors.min_offer_price = '최소 제안가를 입력해주세요';
+    if (!formData.description.trim()) newErrors.description = '제품 상태 및 설명을 입력해주세요';
+    if (selectedRegions.length === 0) newErrors.region = '거래 가능 지역을 선택해주세요';
+    if (images.length === 0) newErrors.images = '상품 이미지를 등록해주세요';
+    
+    // 가격 검증
+    if (parseInt(formData.min_offer_price) >= parseInt(formData.price)) {
+      newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      const firstErrorField = Object.keys(newErrors)[0];
+      toast({
+        title: '입력 확인',
+        description: newErrors[firstErrorField],
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/`
+        : `${baseUrl}/api/used/phones/${phoneId}/`;
+      
+      const submitData = new FormData();
+      
+      // 수정 가능한 필드만 전송
+      if (isFieldEditable('model')) submitData.append('model', formData.model);
+      if (isFieldEditable('storage')) submitData.append('storage', formData.storage);
+      if (isFieldEditable('color')) submitData.append('color', formData.color);
+      if (isFieldEditable('condition_grade')) submitData.append('condition_grade', formData.condition_grade);
+      if (isFieldEditable('battery_status')) submitData.append('battery_status', formData.battery_status);
+      if (isFieldEditable('price')) submitData.append('price', formData.price);
+      if (isFieldEditable('min_offer_price')) submitData.append('min_offer_price', formData.min_offer_price);
+      if (isFieldEditable('description')) submitData.append('description', formData.description);
+      if (isFieldEditable('meeting_place')) submitData.append('meeting_place', formData.meeting_place);
+      
+      if (isFieldEditable('has_box')) submitData.append('has_box', formData.has_box.toString());
+      if (isFieldEditable('has_charger')) submitData.append('has_charger', formData.has_charger.toString());
+      if (isFieldEditable('has_earphones')) submitData.append('has_earphones', formData.has_earphones.toString());
+      
+      // 지역 정보
+      if (isFieldEditable('regions')) {
+        selectedRegions.forEach((region, index) => {
+          submitData.append(`regions[${index}]`, region.id.toString());
+        });
+      }
+      
+      // 새로운 이미지만 전송
+      if (isFieldEditable('images')) {
+        images.forEach((image, index) => {
+          if (image.file) {
+            submitData.append('new_images', image.file);
+          }
+        });
+        
+        // 기존 이미지 ID 전송 (삭제되지 않은 것들)
+        const existingImageIds = images
+          .filter(img => img.id)
+          .map(img => img.id);
+        submitData.append('existing_images', JSON.stringify(existingImageIds));
+      }
+      
+      // 수정됨 플래그 추가
+      if (hasOffers) {
+        submitData.append('is_modified', 'true');
+      }
+      
+      const response = await fetch(apiUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: submitData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update');
+      }
+      
+      toast({
+        title: '수정 완료',
+        description: hasOffers ? '상품이 수정되었습니다. (수정됨 표시)' : '상품이 수정되었습니다.',
+      });
+      
+      router.push(`/used/${phoneId}`);
+      
+    } catch (error) {
+      console.error('Failed to update phone:', error);
+      toast({
+        title: '수정 실패',
+        description: '상품 수정 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* 헤더 */}
+      <div className="sticky top-0 z-50 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <button onClick={() => router.back()}>
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-lg font-semibold">중고폰 수정</h1>
+            </div>
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || !isModified}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              {submitting ? '수정 중...' : '수정 완료'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* 견적 제안 후 수정 제한 안내 */}
+      {hasOffers && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex gap-3">
+              <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-amber-900">수정 제한 안내</p>
+                <p className="text-sm text-amber-700 mt-1">
+                  견적이 제안된 상품입니다. 즉시 판매가, 제품 설명, 거래 요청사항만 수정 가능합니다.
+                </p>
+                <p className="text-xs text-amber-600 mt-1">
+                  수정 시 구매자에게 "수정됨" 표시가 나타납니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="container mx-auto px-4 py-6 max-w-3xl">
+        {/* 기본 정보 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">기본 정보</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-1">
+                모델명 <span className="text-red-500">*</span>
+                {!isFieldEditable('model') && <Lock className="w-3 h-3 text-gray-400" />}
+              </Label>
+              <Input
+                name="model"
+                value={formData.model}
+                onChange={handleInputChange}
+                placeholder="예: iPhone 15 Pro Max"
+                disabled={!isFieldEditable('model')}
+                className={errors.model ? 'border-red-500' : ''}
+              />
+              {errors.model && <p className="text-xs text-red-500 mt-1">{errors.model}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="flex items-center gap-1">
+                  저장공간 <span className="text-red-500">*</span>
+                  {!isFieldEditable('storage') && <Lock className="w-3 h-3 text-gray-400" />}
+                </Label>
+                <select
+                  name="storage"
+                  value={formData.storage}
+                  onChange={handleInputChange}
+                  disabled={!isFieldEditable('storage')}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    errors.storage ? 'border-red-500' : 'border-gray-300'
+                  } ${!isFieldEditable('storage') ? 'bg-gray-100' : ''}`}
+                >
+                  <option value="">선택</option>
+                  <option value="64">64GB</option>
+                  <option value="128">128GB</option>
+                  <option value="256">256GB</option>
+                  <option value="512">512GB</option>
+                  <option value="1024">1TB</option>
+                  <option value="other">직접 입력</option>
+                </select>
+                {errors.storage && <p className="text-xs text-red-500 mt-1">{errors.storage}</p>}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-1">
+                  색상
+                  {!isFieldEditable('color') && <Lock className="w-3 h-3 text-gray-400" />}
+                </Label>
+                <Input
+                  name="color"
+                  value={formData.color}
+                  onChange={handleInputChange}
+                  placeholder="예: 블랙 티타늄"
+                  disabled={!isFieldEditable('color')}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="flex items-center gap-1">
+                  상태 등급 <span className="text-red-500">*</span>
+                  {!isFieldEditable('condition_grade') && <Lock className="w-3 h-3 text-gray-400" />}
+                </Label>
+                <select
+                  name="condition_grade"
+                  value={formData.condition_grade}
+                  onChange={handleInputChange}
+                  disabled={!isFieldEditable('condition_grade')}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    !isFieldEditable('condition_grade') ? 'bg-gray-100' : ''
+                  }`}
+                >
+                  {Object.entries(CONDITION_GRADES).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-1">
+                  배터리 성능 <span className="text-red-500">*</span>
+                  {!isFieldEditable('battery_status') && <Lock className="w-3 h-3 text-gray-400" />}
+                </Label>
+                <select
+                  name="battery_status"
+                  value={formData.battery_status}
+                  onChange={handleInputChange}
+                  disabled={!isFieldEditable('battery_status')}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    !isFieldEditable('battery_status') ? 'bg-gray-100' : ''
+                  }`}
+                >
+                  {Object.entries(BATTERY_STATUS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 이미지 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            상품 이미지 <span className="text-red-500">*</span>
+            {!isFieldEditable('images') && <Lock className="w-3 h-3 text-gray-400" />}
+          </h2>
+          
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            {images.map((image, index) => (
+              <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                <Image
+                  src={image.preview}
+                  alt={`상품 이미지 ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+                {isFieldEditable('images') && (
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+            
+            {images.length < 10 && isFieldEditable('images') && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                <span className="text-xs text-gray-600">{images.length}/10</span>
+              </button>
+            )}
+          </div>
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          
+          {errors.images && <p className="text-xs text-red-500 mt-2">{errors.images}</p>}
+        </div>
+
+        {/* 가격 정보 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">가격 정보</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-1">
+                즉시 판매가 <span className="text-red-500">*</span>
+                {!isFieldEditable('price') && <Lock className="w-3 h-3 text-gray-400" />}
+              </Label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  value={formatCurrency(formData.price)}
+                  onChange={(e) => handlePriceChange(e, 'price')}
+                  placeholder="0"
+                  disabled={!isFieldEditable('price')}
+                  className={`pr-12 ${errors.price ? 'border-red-500' : ''}`}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+              </div>
+              {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-1">
+                최소 제안가 <span className="text-red-500">*</span>
+                {!isFieldEditable('min_offer_price') && <Lock className="w-3 h-3 text-gray-400" />}
+              </Label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  value={formatCurrency(formData.min_offer_price)}
+                  onChange={(e) => handlePriceChange(e, 'min_offer_price')}
+                  placeholder="0"
+                  disabled={!isFieldEditable('min_offer_price')}
+                  className={`pr-12 ${errors.min_offer_price ? 'border-red-500' : ''}`}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+              </div>
+              {errors.min_offer_price && <p className="text-xs text-red-500 mt-1">{errors.min_offer_price}</p>}
+              <p className="text-xs text-gray-500 mt-1">구매자가 제안할 수 있는 최소 금액입니다.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 구성품 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            구성품
+            {!isFieldEditable('has_box') && <Lock className="w-3 h-3 text-gray-400" />}
+          </h2>
+          
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="has_box"
+                checked={formData.has_box}
+                onChange={handleInputChange}
+                disabled={!isFieldEditable('has_box')}
+                className="rounded"
+              />
+              <span>박스</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="has_charger"
+                checked={formData.has_charger}
+                onChange={handleInputChange}
+                disabled={!isFieldEditable('has_charger')}
+                className="rounded"
+              />
+              <span>충전기</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="has_earphones"
+                checked={formData.has_earphones}
+                onChange={handleInputChange}
+                disabled={!isFieldEditable('has_earphones')}
+                className="rounded"
+              />
+              <span>이어폰</span>
+            </label>
+          </div>
+        </div>
+
+        {/* 상품 설명 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            제품 상태 및 설명 <span className="text-red-500">*</span>
+          </h2>
+          
+          <Textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            placeholder="제품의 상태와 특징을 상세히 설명해주세요.&#10;예: 사용감, 기스, 파손 여부, 기능 이상 등"
+            rows={6}
+            className={errors.description ? 'border-red-500' : ''}
+          />
+          {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
+        </div>
+
+        {/* 거래 정보 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-1">
+                거래 가능 지역 <span className="text-red-500">*</span>
+                {!isFieldEditable('regions') && <Lock className="w-3 h-3 text-gray-400" />}
+              </Label>
+              {isFieldEditable('regions') ? (
+                <RegionSelector
+                  selectedRegions={selectedRegions}
+                  onRegionsChange={setSelectedRegions}
+                  maxSelections={3}
+                />
+              ) : (
+                <div className="p-3 bg-gray-100 rounded-md">
+                  {selectedRegions.map((region, index) => (
+                    <div key={index} className="text-sm text-gray-700">
+                      {region.full_name || region.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {errors.region && <p className="text-xs text-red-500 mt-1">{errors.region}</p>}
+            </div>
+
+            <div>
+              <Label>거래 요청사항</Label>
+              <Textarea
+                name="meeting_place"
+                value={formData.meeting_place}
+                onChange={handleInputChange}
+                placeholder="거래 시 요청사항이나 선호하는 거래 방식을 입력해주세요.&#10;예: 직거래 선호, 택배 가능, 특정 지하철역 등"
+                rows={3}
+              />
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}

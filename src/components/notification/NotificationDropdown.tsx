@@ -18,6 +18,7 @@ interface NotificationDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   isMobile?: boolean;
+  onUnreadCountChange?: (count: number) => void;
 }
 
 /**
@@ -30,7 +31,7 @@ interface NotificationDropdownProps {
  * <NotificationDropdown isOpen={isOpen} onClose={() => setIsOpen(false)} />
  * ```
  */
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose, isMobile = false }) => {
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose, isMobile = false, onUnreadCountChange }) => {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<{
@@ -56,6 +57,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onC
       setLoading(true);
       const data = await getNotifications();
       setNotifications(data);
+      // 카운트 변경을 상위 컴포넌트에 알림
+      if (onUnreadCountChange) {
+        onUnreadCountChange(data.unread_count);
+      }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
     } finally {

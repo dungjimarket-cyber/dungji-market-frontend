@@ -8,7 +8,7 @@
 import React, { memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MapPin, Clock, Eye, MessageCircle } from 'lucide-react';
+import { Heart, MapPin, Clock, Eye, MessageCircle, Edit3 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
@@ -31,7 +31,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
   // 가격 포맷팅
   const formatPrice = (price?: number) => {
     if (!price) return '가격 협의';
-    return `${(price / 10000).toFixed(0)}만원`;
+    return `${price.toLocaleString('ko-KR')}원`;
   };
 
   // 날짜 포맷팅
@@ -106,6 +106,14 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
             가격제안 가능
           </div>
         )}
+        
+        {/* 수정됨 표시 */}
+        {phone.is_modified && phone.offer_count > 0 && (
+          <div className="absolute bottom-2 right-2 bg-yellow-500/90 backdrop-blur-sm text-white px-2 py-1 text-xs rounded font-medium flex items-center gap-1">
+            <Edit3 className="w-3 h-3" />
+            수정됨
+          </div>
+        )}
       </div>
 
       {/* 정보 영역 */}
@@ -133,6 +141,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
             <span className="inline-flex items-center">
               <span className={`
                 px-1.5 py-0.5 rounded font-medium
+                ${phone.condition_grade === 'S' ? 'bg-blue-100 text-blue-700' : ''}
                 ${phone.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
                 ${phone.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
                 ${phone.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
