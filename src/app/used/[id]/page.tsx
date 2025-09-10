@@ -404,7 +404,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* 모바일 헤더 */}
       <div className="lg:hidden sticky top-0 z-50 bg-white border-b">
         <div className="flex items-center justify-between p-4">
@@ -422,11 +422,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 lg:py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-6 lg:py-8">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
-          <div>
-            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+          <div className="w-full">
+            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden w-full">
               {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
                 <>
                   <Image
@@ -494,12 +494,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
             {/* 썸네일 */}
             {phone.images && phone.images.length > 1 && (
-              <div className="mt-4 grid grid-cols-6 gap-2">
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
                 {phone.images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative aspect-square rounded overflow-hidden border-2 ${
+                    className={`relative flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 ${
                       index === currentImageIndex ? 'border-blue-500' : 'border-transparent'
                     }`}
                   >
@@ -516,9 +516,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           </div>
 
           {/* 정보 섹션 */}
-          <div>
+          <div className="w-full">
             {/* 기본 정보 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm w-full">
               <div className="flex items-start justify-between mb-2">
                 <h1 className="text-2xl font-bold">{phone.model}</h1>
                 {/* 수정됨 표시 */}
@@ -1017,6 +1017,54 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 예, 제안합니다
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 모바일 하단 고정 버튼 */}
+      {phone && phone.status === 'active' && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
+          <div className="flex gap-3 max-w-screen-sm mx-auto">
+            {isOwner ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/used/${phoneId}/edit`)}
+                  className="flex-1"
+                >
+                  수정하기
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="flex-1"
+                >
+                  삭제하기
+                </Button>
+              </>
+            ) : (
+              phone.accept_offers ? (
+                <Button
+                  onClick={() => setShowOfferModal(true)}
+                  disabled={phone.status !== 'active'}
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  💵 가격 제안하기
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    if (phone.seller?.email) {
+                      window.location.href = `mailto:${phone.seller.email}?subject=${encodeURIComponent(`[둥지마켓] ${phone.model} 문의`)}&body=${encodeURIComponent(`안녕하세요,\n\n${phone.model} 상품에 대해 문의드립니다.\n\n`)}`;
+                    }
+                  }}
+                  disabled={phone.status !== 'active'}
+                  className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700"
+                >
+                  📞 판매자 연락하기
+                </Button>
+              )
+            )}
           </div>
         </div>
       )}
