@@ -22,7 +22,7 @@ import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 
 // 수정 가능/불가능 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'description', 'meeting_place'];
+const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
 const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 수정할 수 없습니다.';
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
@@ -51,7 +51,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     battery_status: '80_89',
     price: '',
     min_offer_price: '',
-    description: '',
+    condition_description: '',
+    description: '', // 현재 사용 안함
     meeting_place: '',
     has_box: false,
     has_charger: false,
@@ -119,6 +120,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         battery_status: data.battery_status || '80_89',
         price: data.price?.toString() || '',
         min_offer_price: data.min_offer_price?.toString() || '',
+        condition_description: data.condition_description || '',
         description: data.description || '',
         meeting_place: data.meeting_place || '',
         has_box: data.has_box || false,
@@ -269,7 +271,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     if (!formData.storage) newErrors.storage = '저장공간을 선택해주세요';
     if (!formData.price) newErrors.price = '즉시 판매가를 입력해주세요';
     if (!formData.min_offer_price) newErrors.min_offer_price = '최소 제안가를 입력해주세요';
-    if (!formData.description.trim()) newErrors.description = '제품 상태 및 설명을 입력해주세요';
+    if (!formData.condition_description.trim()) newErrors.condition_description = '제품 상태 및 설명을 입력해주세요';
     if (selectedRegions.length === 0) newErrors.region = '거래 가능 지역을 선택해주세요';
     if (images.length === 0) newErrors.images = '상품 이미지를 등록해주세요';
     
@@ -414,7 +416,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               <div>
                 <p className="text-sm font-medium text-amber-900">수정 제한 안내</p>
                 <p className="text-sm text-amber-700 mt-1">
-                  견적이 제안된 상품입니다. 즉시 판매가, 제품 설명, 거래 요청사항만 수정 가능합니다.
+                  견적이 제안된 상품입니다. 즉시 판매가와 거래 요청사항만 수정 가능합니다.
                 </p>
                 <p className="text-xs text-amber-600 mt-1">
                   수정 시 구매자에게 "수정됨" 표시가 나타납니다.
@@ -590,9 +592,13 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           
           <div className="space-y-4">
             <div>
-              <Label className="flex items-center gap-1">
+              <Label className="flex items-center gap-2">
                 즉시 판매가 <span className="text-red-500">*</span>
-                {!isFieldEditable('price') && <Lock className="w-3 h-3 text-gray-400" />}
+                {isFieldEditable('price') ? (
+                  <span className="text-xs text-green-600 font-normal">수정 가능</span>
+                ) : (
+                  <Lock className="w-3 h-3 text-gray-400" />
+                )}
               </Label>
               <div className="relative">
                 <Input
@@ -674,21 +680,47 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           </div>
         </div>
 
-        {/* 상품 설명 */}
+        {/* 상태 및 설명 */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            제품 상태 및 설명 <span className="text-red-500">*</span>
+            상태 및 설명 <span className="text-red-500">*</span>
+            {!isFieldEditable('condition_description') && (
+              <span className="text-xs text-gray-500 font-normal flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                견적 제안 후 수정 불가
+              </span>
+            )}
           </h2>
           
-          <Textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="제품의 상태와 특징을 상세히 설명해주세요.&#10;예: 사용감, 기스, 파손 여부, 기능 이상 등"
-            rows={6}
-            className={errors.description ? 'border-red-500' : ''}
-          />
-          {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
+          <div className="space-y-2">
+            <div className="relative">
+              <Textarea
+                name="condition_description"
+                value={formData.condition_description}
+                onChange={(e) => {
+                  if (isFieldEditable('condition_description') && e.target.value.length <= 2000) {
+                    handleInputChange(e);
+                  }
+                }}
+                placeholder="제품의 상태를 자세히 설명해주세요\n예: 기스, 찍힘, 배터리 성능, 기능 이상 유무 등\n구매자가 제품 상태를 정확히 파악할 수 있도록 작성해주세요"
+                rows={6}
+                disabled={!isFieldEditable('condition_description')}
+                className={`min-h-[150px] resize-y ${
+                  !isFieldEditable('condition_description') ? 'bg-gray-100 cursor-not-allowed' : ''
+                } ${errors.condition_description ? 'border-red-500' : ''}`}
+                maxLength={2000}
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-gray-500">
+                최소 10자 이상 입력해주세요
+              </p>
+              <p className={`text-xs ${formData.condition_description.length >= 1900 ? 'text-red-500' : 'text-gray-500'}`}>
+                {formData.condition_description.length}/2000자
+              </p>
+            </div>
+            {errors.condition_description && <p className="text-xs text-red-500">{errors.condition_description}</p>}
+          </div>
         </div>
 
         {/* 거래 정보 */}
@@ -729,15 +761,30 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               {errors.region && <p className="text-xs text-red-500 mt-1">{errors.region}</p>}
             </div>
 
-            <div>
-              <Label>거래 요청사항</Label>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                거래 요청사항
+                {isFieldEditable('meeting_place') && (
+                  <span className="text-xs text-green-600 font-normal">
+                    수정 가능
+                  </span>
+                )}
+              </Label>
               <Textarea
                 name="meeting_place"
                 value={formData.meeting_place}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  if (e.target.value.length <= 500) {
+                    handleInputChange(e);
+                  }
+                }}
                 placeholder="거래 시 요청사항이나 선호하는 거래 방식을 입력해주세요.&#10;예: 직거래 선호, 택배 가능, 특정 지하철역 등"
                 rows={3}
+                maxLength={500}
               />
+              <div className="flex justify-end">
+                <p className="text-xs text-gray-500">{formData.meeting_place.length}/500자</p>
+              </div>
             </div>
           </div>
         </div>

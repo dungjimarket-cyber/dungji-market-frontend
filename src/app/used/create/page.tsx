@@ -89,7 +89,7 @@ export default function CreateUsedPhonePage() {
     has_box: false,
     has_charger: false,
     has_earphones: false,
-    description: '',
+    description: '', // 추가 설명용 - 현재 사용 안함
     region: '',  // Region ID
     meeting_place: '',
   });
@@ -424,7 +424,7 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    if (!formData.description || formData.description.length < 10) {
+    if (!formData.condition_description || formData.condition_description.length < 10) {
       toast({
         title: '제품 상태 및 설명을 입력해주세요',
         description: '제품 상태와 설명을 10자 이상 입력해야 합니다.',
@@ -837,9 +837,15 @@ export default function CreateUsedPhonePage() {
                   id="model"
                   placeholder="예: iPhone 15 Pro"
                   value={formData.model}
-                  onChange={(e) => handleInputChange('model', e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      handleInputChange('model', e.target.value);
+                    }
+                  }}
+                  maxLength={50}
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.model.length}/50자</p>
               </div>
 
               {/* 저장공간 */}
@@ -886,8 +892,14 @@ export default function CreateUsedPhonePage() {
                   id="color"
                   placeholder="예: 스페이스 블랙"
                   value={formData.color}
-                  onChange={(e) => handleInputChange('color', e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 30) {
+                      handleInputChange('color', e.target.value);
+                    }
+                  }}
+                  maxLength={30}
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.color.length}/30자</p>
               </div>
             </div>
           </div>
@@ -1075,18 +1087,31 @@ export default function CreateUsedPhonePage() {
             </div>
 
             {/* 제품 상태 및 설명 - 통합 */}
-            <div>
-              <Label htmlFor="description">제품 상태 및 설명 <span className="text-red-500">*</span></Label>
-              <Textarea
-                id="description"
-                placeholder="기스, 찍힘 등 제품 상태와 설명을 입력해주세요 (최소 10자)"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={4}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.description.length}/10자 {formData.description.length >= 10 && '✓'}
-              </p>
+            <div className="space-y-2">
+              <Label htmlFor="condition_description">제품 상태 및 설명 <span className="text-red-500">*</span></Label>
+              <div className="relative">
+                <Textarea
+                  id="condition_description"
+                  placeholder="제품의 상태를 자세히 설명해주세요\n예: 기스, 찍힘, 배터리 성능, 기능 이상 유무 등\n구매자가 제품 상태를 정확히 파악할 수 있도록 작성해주세요"
+                  value={formData.condition_description}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 2000) {
+                      handleInputChange('condition_description', e.target.value);
+                    }
+                  }}
+                  rows={6}
+                  className="min-h-[150px] resize-y"
+                  maxLength={2000}
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500">
+                  최소 10자 이상 입력해주세요
+                </p>
+                <p className={`text-xs ${formData.condition_description.length >= 1900 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {formData.condition_description.length}/2000자
+                </p>
+              </div>
             </div>
           </div>
 
@@ -1106,20 +1131,28 @@ export default function CreateUsedPhonePage() {
             </div>
             
             {/* 거래 요청사항 */}
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="meeting_place">거래 요청사항 <span className="text-red-500">*</span></Label>
               <Textarea
                 id="meeting_place"
                 placeholder="예: 강남역 10번 출구 선호, 평일 저녁만 가능, 주말 오전 가능 등"
                 value={formData.meeting_place}
-                onChange={(e) => handleInputChange('meeting_place', e.target.value)}
-                rows={2}
+                onChange={(e) => {
+                  if (e.target.value.length <= 500) {
+                    handleInputChange('meeting_place', e.target.value);
+                  }
+                }}
+                rows={3}
+                maxLength={500}
               />
-              <p className="text-xs text-gray-500 mt-1">구체적인 거래 장소나 시간대를 입력해주세요</p>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-500">구체적인 거래 장소나 시간대를 입력해주세요</p>
+                <p className="text-xs text-gray-500">{formData.meeting_place.length}/500자</p>
+              </div>
             </div>
 
-            {/* 상품 설명 */}
-            <div>
+            {/* 상품 설명 - 주석 처리 */}
+            {/* <div>
               <Label htmlFor="description">상품 설명</Label>
               <Textarea
                 id="description"
@@ -1128,7 +1161,7 @@ export default function CreateUsedPhonePage() {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={5}
               />
-            </div>
+            </div> */
           </div>
 
           {/* 안내 메시지 */}

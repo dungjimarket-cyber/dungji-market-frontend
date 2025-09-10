@@ -122,8 +122,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/offer-count/`
-        : `${baseUrl}/api/used/phones/${phoneId}/offer-count/`;
+        ? `${baseUrl}/used/phones/${phoneId}/offer_count/`
+        : `${baseUrl}/api/used/phones/${phoneId}/offer_count/`;
       
       const response = await fetch(apiUrl, {
         headers: {
@@ -257,8 +257,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/api/used/phones/${phoneId}/offer/`
-        : `${baseUrl}/used/phones/${phoneId}/offer/`;
+        ? `${baseUrl}/used/phones/${phoneId}/offer/`
+        : `${baseUrl}/api/used/phones/${phoneId}/offer/`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
@@ -709,22 +709,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
 
-            {/* 상품 설명 */}
-            {(phone.description || phone.condition_description) && (
+            {/* 상태 및 설명 */}
+            {phone.condition_description && (
               <div className="bg-white rounded-lg p-6 shadow-sm mt-4">
-                <h2 className="font-semibold mb-4">상품 설명</h2>
-                {phone.condition_description && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 mb-2">상태 설명</p>
-                    <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
-                  </div>
-                )}
-                {phone.description && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">추가 설명</p>
-                    <p className="text-gray-800 whitespace-pre-wrap">{phone.description}</p>
-                  </div>
-                )}
+                <h2 className="font-semibold mb-4">상태 및 설명</h2>
+                <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
               </div>
             )}
 
