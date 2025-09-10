@@ -1,13 +1,15 @@
 /**
  * 중고폰 등록 API
  * POST /api/used/phones/create
+ * 
+ * Sharp 제거하여 Vercel 배포 크기 문제 해결
+ * 이미지 압축은 클라이언트에서 처리
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { compressImage } from '@/lib/api/used/image-utils';
 
 // 파일 업로드 제한
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 const MAX_FILES = 5;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
@@ -18,64 +20,55 @@ export async function POST(request: NextRequest) {
     
     // 이미지 파일 추출
     const imageFiles: File[] = [];
-    const images = formData.getAll('images');
+    let mainImageIndex = 0;
     
-    for (const image of images) {
-      if (image instanceof File) {
-        // 파일 유효성 검사
-        if (!ALLOWED_TYPES.includes(image.type)) {
+    for (let i = 0; i < MAX_FILES; i++) {
+      const file = formData.get(`image${i}`) as File;
+      if (file && file.size > 0) {
+        // 파일 크기 검증
+        if (file.size > MAX_FILE_SIZE) {
           return NextResponse.json(
-            { error: '지원하지 않는 이미지 형식입니다.' },
+            { error: `이미지 ${file.name}의 크기가 3MB를 초과합니다.` },
             { status: 400 }
           );
         }
-        if (image.size > MAX_FILE_SIZE) {
+        
+        // 파일 형식 검증
+        if (!ALLOWED_TYPES.includes(file.type)) {
           return NextResponse.json(
-            { error: '이미지 크기는 10MB 이하여야 합니다.' },
+            { error: `이미지 ${file.name}의 형식이 지원되지 않습니다.` },
             { status: 400 }
           );
         }
-        imageFiles.push(image);
+        
+        imageFiles.push(file);
       }
     }
-
+    
+    // 대표 이미지 인덱스
+    const mainIdx = formData.get('mainImageIndex');
+    if (mainIdx) {
+      mainImageIndex = parseInt(mainIdx as string);
+    }
+    
+    // 이미지가 없는 경우
     if (imageFiles.length === 0) {
       return NextResponse.json(
-        { error: '최소 1장 이상의 이미지를 업로드해주세요.' },
+        { error: '최소 1개의 이미지를 업로드해주세요.' },
         { status: 400 }
       );
     }
-
-    if (imageFiles.length > MAX_FILES) {
-      return NextResponse.json(
-        { error: `최대 ${MAX_FILES}장까지 업로드 가능합니다.` },
-        { status: 400 }
-      );
-    }
-
-    // 대표 이미지 인덱스
-    const mainImageIndex = parseInt(formData.get('mainImageIndex') as string || '0');
-
-    // 이미지 압축 처리
-    const processedImages = await Promise.all(
-      imageFiles.map(async (file, index) => {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const compressed = await compressImage(buffer, {
-          quality: 85,
-          maxWidth: 1200,
-          maxHeight: 1200,
-        });
-
-        return {
-          originalName: file.name,
-          buffer: compressed.buffer,
-          filename: compressed.filename,
-          isMain: index === mainImageIndex,
-          order: index,
-        };
-      })
-    );
-
+    
+    // 이미지는 이미 클라이언트에서 압축되었으므로 그대로 저장
+    // 실제 저장 로직은 백엔드 API로 전달
+    const processedImages = imageFiles.map((file, index) => ({
+      originalName: file.name,
+      size: file.size,
+      type: file.type,
+      isMain: index === mainImageIndex,
+      order: index,
+    }));
+    
     // 폰 정보 추출
     const phoneData = {
       brand: formData.get('brand') as string,
@@ -88,65 +81,43 @@ export async function POST(request: NextRequest) {
       conditionGrade: formData.get('conditionGrade') as string || null,
       conditionDescription: formData.get('conditionDescription') as string || null,
       batteryStatus: formData.get('batteryStatus') as string || null,
+      purchasePeriod: formData.get('purchasePeriod') as string || null,
+      manufactureDate: formData.get('manufactureDate') as string || null,
+      accessories: formData.get('accessories') ? JSON.parse(formData.get('accessories') as string) : [],
       hasBox: formData.get('hasBox') === 'true',
       hasCharger: formData.get('hasCharger') === 'true',
       hasEarphones: formData.get('hasEarphones') === 'true',
-      description: formData.get('description') as string || null,
-      sido: formData.get('sido') as string || null,
-      sigungu: formData.get('sigungu') as string || null,
-      dong: formData.get('dong') as string || null,
+      tradeLocation: formData.get('tradeLocation') as string || null,
       meetingPlace: formData.get('meetingPlace') as string || null,
+      description: formData.get('description') as string || null,
+      sido: formData.get('sido') as string,
+      sigungu: formData.get('sigungu') as string,
     };
-
-    // 유효성 검사
-    if (!phoneData.brand || !phoneData.model || !phoneData.price) {
-      return NextResponse.json(
-        { error: '필수 정보를 입력해주세요.' },
-        { status: 400 }
-      );
-    }
-
-    // 실제 환경에서는 여기서 데이터베이스에 저장
-    // 1. used_phones 테이블에 폰 정보 저장
-    // 2. used_phone_images 테이블에 이미지 정보 저장
-    // 3. 실제 이미지 파일을 S3 등 스토리지에 업로드
-
-    // 개발 환경 - 임시 응답
-    const mockPhoneId = Date.now();
     
-    // 이미지 URL 생성 (실제로는 S3 URL)
-    const savedImages = processedImages.map((img, index) => ({
-      id: index + 1,
-      phoneId: mockPhoneId,
-      imageUrl: `/api/used/images/${mockPhoneId}/${index}.webp`,
-      thumbnailUrl: `/api/used/images/${mockPhoneId}/${index}_thumb.webp`,
-      isMain: img.isMain,
-      order: img.order,
-    }));
-
-    const savedPhone = {
-      id: mockPhoneId,
-      ...phoneData,
-      images: savedImages,
-      status: 'active',
-      viewCount: 0,
-      favoriteCount: 0,
-      offerCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    // 성공 응답
+    // TODO: 실제 백엔드 API 호출하여 데이터 저장
+    // const response = await fetch(`${process.env.BACKEND_URL}/api/used/phones/`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Authorization': `Bearer ${token}`,
+    //   },
+    //   body: formData,
+    // });
+    
+    // 임시 응답
     return NextResponse.json({
       success: true,
-      id: mockPhoneId,
-      data: savedPhone,
+      data: {
+        ...phoneData,
+        images: processedImages,
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+      }
     });
-
+    
   } catch (error) {
-    console.error('Phone registration error:', error);
+    console.error('POST /api/used/phones/create error:', error);
     return NextResponse.json(
-      { error: '상품 등록 중 오류가 발생했습니다.' },
+      { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

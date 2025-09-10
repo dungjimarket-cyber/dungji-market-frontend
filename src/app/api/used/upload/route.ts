@@ -1,20 +1,35 @@
 /**
  * 중고폰 이미지 업로드 API
  * POST /api/used/upload
+ * 
+ * Sharp 제거하여 Vercel 배포 크기 문제 해결
+ * 이미지 압축은 클라이언트에서 처리
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  compressImage, 
-  validateImage, 
-  saveImageToLocal,
-  createThumbnail 
-} from '@/lib/api/used/image-utils';
+import { v4 as uuidv4 } from 'uuid';
 
 // 업로드 설정
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_FILES = 5;
 const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+/**
+ * 간단한 이미지 검증
+ */
+function validateImage(file: File): { valid: boolean; error?: string } {
+  // 파일 타입 검증
+  if (!ALLOWED_FORMATS.includes(file.type)) {
+    return { valid: false, error: '지원하지 않는 파일 형식입니다.' };
+  }
+
+  // 파일 크기 검증
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, error: '파일 크기가 5MB를 초과합니다.' };
+  }
+
+  return { valid: true };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,52 +60,28 @@ export async function POST(request: NextRequest) {
       const file = files[i];
       
       try {
-        // 파일 타입 검증
-        if (!ALLOWED_FORMATS.includes(file.type)) {
-          errors.push(`${file.name}: 지원하지 않는 파일 형식입니다.`);
-          continue;
-        }
-
-        // 파일 크기 검증
-        if (file.size > MAX_FILE_SIZE) {
-          errors.push(`${file.name}: 파일 크기가 5MB를 초과합니다.`);
-          continue;
-        }
-
-        // ArrayBuffer를 Buffer로 변환
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
         // 이미지 검증
-        const validation = await validateImage(buffer);
+        const validation = validateImage(file);
         if (!validation.valid) {
           errors.push(`${file.name}: ${validation.error}`);
           continue;
         }
 
-        // 이미지 압축
-        const compressed = await compressImage(buffer, {
-          maxWidth: 1200,
-          maxHeight: 1200,
-          quality: 85,
-          format: 'webp'
-        });
+        // 고유 파일명 생성
+        const fileExt = file.name.split('.').pop() || 'webp';
+        const filename = `${uuidv4()}.${fileExt}`;
+        const thumbnailFilename = `thumb_${filename}`;
 
-        // 썸네일 생성
-        const thumbnail = await createThumbnail(buffer, 300);
-        const thumbnailFilename = `thumb_${compressed.filename}`;
+        // TODO: 실제 백엔드 API로 이미지 업로드
+        // 현재는 임시 URL 반환
+        const imageUrl = `/uploads/used/${filename}`;
+        const thumbnailUrl = `/uploads/used/${thumbnailFilename}`;
 
-        // 로컬 저장 (프로덕션에서는 S3 등으로 변경)
-        const imageUrl = await saveImageToLocal(compressed.buffer, compressed.filename);
-        const thumbnailUrl = await saveImageToLocal(thumbnail, thumbnailFilename);
-
-        // 결과 저장
+        // 결과 저장 (이미지는 클라이언트에서 이미 압축됨)
         uploadedImages.push({
           url: imageUrl,
           thumbnailUrl: thumbnailUrl,
-          width: compressed.width,
-          height: compressed.height,
-          size: compressed.size,
+          size: file.size,
           originalName: file.name,
           order: i
         });
