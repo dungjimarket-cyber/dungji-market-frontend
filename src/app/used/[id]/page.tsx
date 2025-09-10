@@ -760,7 +760,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 setShowOfferModal(true);
                               }
                             }}
-                            className="w-full h-14 text-lg font-semibold"
+                            className="w-full h-14 text-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white"
                             disabled={remainingOffers <= 0 && !myOffer}
                           >
                             <DollarSign className="w-5 h-5 mr-2" />
@@ -1244,9 +1244,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       )}
 
-      {/* 모바일 하단 고정 버튼 */}
+      {/* 모바일 하단 버튼 (고정 제거) */}
       {phone && phone.status === 'active' && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
+        <div className="lg:hidden bg-white border-t p-4 mt-6">
           <div className="flex gap-3 max-w-screen-sm mx-auto">
             {user?.id === phone.seller?.id ? (
               <>
@@ -1280,7 +1280,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     }
                   }}
                   disabled={phone.status !== 'active' || (remainingOffers <= 0 && !myOffer)}
-                  className="w-full h-12 text-base font-semibold"
+                  className="w-full h-12 text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
                 </Button>
