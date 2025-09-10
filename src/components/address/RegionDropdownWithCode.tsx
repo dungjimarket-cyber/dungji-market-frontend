@@ -98,8 +98,10 @@ export default function RegionDropdownWithCode({
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
       if (response.ok) {
         const data = await response.json();
+        console.log('RegionDropdown API Response:', typeof data, Array.isArray(data), data);
         // data가 배열이 아니라 객체일 수도 있음
         const regions = Array.isArray(data) ? data : data.results || [];
+        console.log('RegionDropdown Processed regions:', regions);
         cachedRegions = regions;
         cacheTimestamp = now;
         return regions;
