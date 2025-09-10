@@ -10,7 +10,7 @@ export type PhoneBrand = 'samsung' | 'apple' | 'lg' | 'xiaomi' | 'other';
 export type PhoneSeries = 'Galaxy S' | 'Galaxy Z' | 'Galaxy A' | 'iPhone' | 'V' | 'Redmi' | string;
 export type StorageSize = 64 | 128 | 256 | 512 | 1024;
 export type ConditionGrade = 'A' | 'B' | 'C';
-export type BatteryStatus = '85+' | '80-85' | 'under' | 'unknown';
+export type BatteryStatus = 'excellent' | 'good' | 'fair' | 'poor' | 'unknown';
 export type PurchasePeriod = '1' | '3' | '6' | '12' | 'over';
 export type PhoneStatus = 'active' | 'reserved' | 'sold' | 'deleted';
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'expired';
@@ -418,10 +418,11 @@ export const CONDITION_GRADES = {
 } as const;
 
 export const BATTERY_STATUS_LABELS = {
-  '85+': '85% 이상',
-  '80-85': '80-85%',
-  'under': '80% 미만',
-  'unknown': '확인 필요'
+  'excellent': '90% 이상',
+  'good': '80~89%',
+  'fair': '70~79%',
+  'poor': '70% 미만',
+  'unknown': '확인불가'
 } as const;
 
 export const PURCHASE_PERIOD_LABELS = {
