@@ -29,6 +29,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { searchRegionsByName, type Region } from '@/lib/api/regionService';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
+import { errorLogger } from '@/lib/errorLogger';
 
 // 모바일 디버그 패널 (클라이언트 사이드에서만 로드)
 const MobileDebugPanel = dynamic(
@@ -326,7 +327,48 @@ export default function CreateUsedPhonePage() {
     } catch (error) {
       console.error('Registration failed:', error);
       
-      const errorMessage = error instanceof Error ? error.message : '상품 등록 중 오류가 발생했습니다.';
+      // 에러 로깅
+      errorLogger.log(error instanceof Error ? error : new Error(String(error)), {
+        page: 'used/create',
+        formData: Object.fromEntries(
+          Object.entries(formData).filter(([_, v]) => v !== '' && v !== false)
+        ),
+        imageCount: images.length,
+        regionCount: selectedRegions.length
+      });
+      
+      let errorMessage = '상품 등록 중 오류가 발생했습니다.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // 네트워크 오류 체크
+        if (error.message.includes('fetch')) {
+          errorMessage = '서버 연결에 실패했습니다. 인터넷 연결을 확인해주세요.';
+        }
+        // 인증 오류 체크
+        else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          errorMessage = '로그인이 필요합니다. 다시 로그인해주세요.';
+        }
+        // 권한 오류 체크
+        else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+          errorMessage = '권한이 없습니다.';
+        }
+        // 서버 오류 체크
+        else if (error.message.includes('500') || error.message.includes('Internal')) {
+          errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        }
+      }
+      
+      // 화면에 에러 표시 (더 눈에 띄게)
+      const copyLogs = confirm(`등록 실패!\n\n${errorMessage}\n\n'확인'을 누르면 오류 로그를 클립보드에 복사합니다.\n'취소'를 누르면 디버그 패널(🐛)을 확인하세요.`);
+      
+      if (copyLogs) {
+        const copied = await errorLogger.copyToClipboard();
+        if (copied) {
+          alert('오류 로그가 클립보드에 복사되었습니다.\n메모장에 붙여넣기(Ctrl+V)하여 확인하거나 개발자에게 전달해주세요.');
+        }
+      }
       
       toast({
         title: '등록 실패',
