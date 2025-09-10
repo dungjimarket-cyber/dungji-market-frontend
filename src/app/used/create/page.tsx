@@ -39,9 +39,10 @@ const MobileDebugPanel = dynamic(
 
 // 이미지 미리보기 타입
 interface ImagePreview {
-  file: File;
+  file: File | null;
   url: string;
   isMain: boolean;
+  isEmpty?: boolean;
 }
 
 // 선택된 지역 타입
@@ -209,14 +210,17 @@ export default function CreateUsedPhonePage() {
     }
   }, [images, toast]);
 
-  // 이미지 삭제
+  // 이미지 삭제 (빈 슬롯으로 변경)
   const handleImageRemove = useCallback((index: number) => {
     setImages(prev => {
-      const updated = prev.filter((_, i) => i !== index);
-      // 대표 이미지가 삭제되면 첫 번째 이미지를 대표로
-      if (prev[index].isMain && updated.length > 0) {
-        updated[0].isMain = true;
-      }
+      const updated = [...prev];
+      // 이미지를 삭제하고 빈 슬롯으로 변경
+      updated[index] = {
+        file: null,
+        url: '',
+        isMain: index === 0,
+        isEmpty: true
+      };
       return updated;
     });
   }, []);
@@ -304,10 +308,21 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    // 유효성 검사 - 사용자 친화적인 메시지
-    if (images.length === 0) {
+    // 유효성 검사 - 첫 번째 슬롯(대표 이미지) 필수
+    if (images.length === 0 || !images[0] || images[0].isEmpty) {
       toast({
         title: '대표 이미지를 등록해주세요',
+        description: '첫 번째 슬롯에 대표 이미지가 필수입니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // 실제 이미지가 있는지 확인
+    const actualImages = images.filter(img => img && !img.isEmpty);
+    if (actualImages.length === 0) {
+      toast({
+        title: '이미지를 등록해주세요',
         description: '최소 1장 이상의 상품 이미지가 필요합니다.',
         variant: 'destructive',
       });
@@ -694,7 +709,7 @@ export default function CreateUsedPhonePage() {
               {[...Array(5)].map((_, index) => {
                 const image = images[index];
                 
-                if (image) {
+                if (image && !image.isEmpty) {
                   return (
                     <div key={index} className="relative aspect-square group">
                       <input
@@ -762,26 +777,45 @@ export default function CreateUsedPhonePage() {
                   );
                 } else {
                   // 빈 슬롯
+                  const actualImageCount = images.filter(img => img && !img.isEmpty).length;
+                  const isNextSlot = index === actualImageCount;
+                  const isFirstSlot = index === 0;
+                  const canUpload = isFirstSlot || (isNextSlot && actualImageCount > 0);
+                  
                   return (
                     <label
                       key={index}
-                      className={`aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors ${
-                        index === images.length
-                          ? 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50'
+                      className={`relative aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors ${
+                        canUpload
+                          ? 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50 cursor-pointer'
                           : 'border-gray-200 bg-gray-50 cursor-not-allowed'
                       }`}
                     >
-                      {index === images.length ? (
+                      {/* 첫 번째 슬롯에 대표 표시 */}
+                      {isFirstSlot && (
+                        <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 text-xs rounded font-medium z-10">
+                          대표
+                        </div>
+                      )}
+                      
+                      {canUpload ? (
                         <>
                           <Camera className="w-6 h-6 text-gray-400 mb-1" />
                           <span className="text-xs text-gray-500">{index + 1}/5</span>
                           <input
                             type="file"
                             accept="image/*"
-                            multiple
-                            onChange={handleImageUpload}
+                            multiple={isNextSlot && !isFirstSlot}
+                            onChange={(e) => {
+                              if (isFirstSlot && (!images[0] || images[0].isEmpty)) {
+                                // 첫 번째 슬롯이 비어있으면 교체
+                                handleImageUpload(e, 0);
+                              } else {
+                                handleImageUpload(e);
+                              }
+                            }}
                             className="hidden"
-                            disabled={loading || images.length >= 5}
+                            disabled={loading || !canUpload}
                           />
                         </>
                       ) : (
@@ -797,7 +831,7 @@ export default function CreateUsedPhonePage() {
             </div>
 
             <p className="text-sm text-gray-500 mt-4">
-              * 첫 번째 이미지가 대표 이미지로 설정됩니다.
+              * <span className="font-semibold">첫 번째 슬롯(대표)에 반드시 이미지를 등록해주세요.</span>
               * 최대 5장까지 등록 가능합니다. (각 3MB 이하)
               * 전면, 후면, 측면, 모서리 사진을 포함하면 신뢰도가 높아집니다.
               * 흠집이나 파손 부위는 선명하게 촬영해주세요.
