@@ -50,6 +50,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [offers, setOffers] = useState<any[]>([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
+  const [myOffer, setMyOffer] = useState<any>(null);
+  const [loadingMyOffer, setLoadingMyOffer] = useState(false);
+  const [offerCount, setOfferCount] = useState(0);
+  const [remainingOffers, setRemainingOffers] = useState(5);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -84,7 +88,45 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   useEffect(() => {
     fetchPhoneDetail();
     fetchOfferCount();
-  }, [phoneId]);
+    // 로그인한 경우 내가 제안한 금액 확인
+    if (isAuthenticated) {
+      fetchMyOffer();
+    }
+  }, [phoneId, isAuthenticated]);
+  
+  // 내가 제안한 금액 조회
+  const fetchMyOffer = async () => {
+    try {
+      setLoadingMyOffer(true);
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/my-offer/`
+        : `${baseUrl}/api/used/phones/${phoneId}/my-offer/`;
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.amount) {
+          setMyOffer(data);
+          // 사용자의 총 제안 횟수 가져오기
+          if (data.user_offer_count) {
+            setOfferCount(data.user_offer_count);
+            setRemainingOffers(Math.max(0, 5 - data.user_offer_count));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch my offer:', error);
+    } finally {
+      setLoadingMyOffer(false);
+    }
+  };
 
   const fetchPhoneDetail = async () => {
     try {
@@ -701,22 +743,131 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   )
                 ) : (
                   /* 다른 사람의 상품인 경우 */
-                  phone.accept_offers ? (
-                    <Button
-                      onClick={() => setShowOfferModal(true)}
-                      className="w-full h-14 text-lg font-semibold"
-                    >
-                      <DollarSign className="w-5 h-5 mr-2" />
-                      가격 제안하기
-                    </Button>
-                  ) : (
-                    <Button
-                      className="w-full h-14 text-lg font-semibold"
-                    >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      판매자와 대화하기
-                    </Button>
-                  )
+                  <>
+                    {phone.accept_offers ? (
+                      <>
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => {
+                              if (myOffer && myOffer.status === 'pending') {
+                                // 수정 제안
+                                setShowOfferModal(true);
+                                toast({
+                                  title: '수정 제안',
+                                  description: '기존 제안을 수정합니다.',
+                                });
+                              } else {
+                                // 신규 제안
+                                setShowOfferModal(true);
+                              }
+                            }}
+                            className="w-full h-14 text-lg font-semibold"
+                            disabled={remainingOffers <= 0 && !myOffer}
+                          >
+                            <DollarSign className="w-5 h-5 mr-2" />
+                            {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
+                          </Button>
+                          
+                          {/* 제안 취소 버튼 */}
+                          {myOffer && myOffer.status === 'pending' && (
+                            <Button
+                              variant="outline"
+                              onClick={async () => {
+                                if (confirm('제안을 취소하시겚습니까?')) {
+                                  try {
+                                    const token = localStorage.getItem('accessToken');
+                                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+                                    const apiUrl = baseUrl.includes('api.dungjimarket.com')
+                                      ? `${baseUrl}/used/phones/${phoneId}/offers/${myOffer.id}/cancel/`
+                                      : `${baseUrl}/api/used/phones/${phoneId}/offers/${myOffer.id}/cancel/`;
+                                    
+                                    const response = await fetch(apiUrl, {
+                                      method: 'POST',
+                                      headers: {
+                                        'Authorization': `Bearer ${token}`
+                                      }
+                                    });
+                                    
+                                    if (response.ok) {
+                                      setMyOffer(null);
+                                      setRemainingOffers(prev => Math.min(5, prev + 1));
+                                      toast({
+                                        title: '제안 취소',
+                                        description: '가격 제안이 취소되었습니다.',
+                                      });
+                                    }
+                                  } catch (error) {
+                                    console.error('Failed to cancel offer:', error);
+                                  }
+                                }
+                              }}
+                              className="w-full"
+                            >
+                              가격 제안 취소하기
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* 제안 횟수 표시 */}
+                        {(myOffer || offerCount > 0) && (
+                          <div className="mt-2 text-center">
+                            <p className="text-sm text-gray-600">
+                              남은 제안 횟수: <span className="font-semibold text-blue-600">{remainingOffers}/5회</span>
+                            </p>
+                            {remainingOffers === 0 && (
+                              <p className="text-xs text-red-500 mt-1">
+                                제안 횟수를 모두 사용하셨습니다
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* 내가 제안한 금액 표시 */}
+                        {myOffer && (
+                          <div className="mt-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-green-900 mb-1">
+                                  내가 제안한 금액
+                                </p>
+                                <p className="text-2xl font-bold text-green-600">
+                                  {myOffer.amount.toLocaleString()}원
+                                </p>
+                                {myOffer.message && (
+                                  <p className="text-xs text-gray-600 mt-2 italic">
+                                    "{myOffer.message}"
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                  myOffer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  myOffer.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                  myOffer.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {myOffer.status === 'pending' ? '대기중' :
+                                   myOffer.status === 'accepted' ? '수락됨' :
+                                   myOffer.status === 'rejected' ? '거절됨' :
+                                   myOffer.status}
+                                </span>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {myOffer.created_at && formatDistanceToNow(new Date(myOffer.created_at), { addSuffix: true, locale: ko })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <Button
+                        className="w-full h-14 text-lg font-semibold"
+                      >
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        판매자와 대화하기
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1119,11 +1270,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             ) : (
               phone.accept_offers ? (
                 <Button
-                  onClick={() => setShowOfferModal(true)}
-                  disabled={phone.status !== 'active'}
+                  onClick={() => {
+                    if (myOffer && myOffer.status === 'pending') {
+                      setShowOfferModal(true);
+                      toast({
+                        title: '수정 제안',
+                        description: '기존 제안을 수정합니다.',
+                      });
+                    } else {
+                      setShowOfferModal(true);
+                    }
+                  }}
+                  disabled={phone.status !== 'active' || (remainingOffers <= 0 && !myOffer)}
                   className="w-full h-12 text-base font-semibold"
                 >
-                  가격 제안하기
+                  {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
                 </Button>
               ) : (
                 <Button
