@@ -26,6 +26,7 @@ import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import Image from 'next/image';
+import MultiRegionSelector from '@/components/address/MultiRegionSelector';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -186,6 +187,12 @@ export default function CreateUsedPhonePage() {
         }
       });
 
+      // 디버깅용 FormData 내용 출력
+      console.log('전송할 FormData:');
+      for (let [key, value] of uploadData.entries()) {
+        console.log(key, value);
+      }
+
       // API 호출
       const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
@@ -198,7 +205,9 @@ export default function CreateUsedPhonePage() {
       });
 
       if (!response.ok) {
-        throw new Error('등록 실패');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API 에러 응답:', errorData);
+        throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData) || '등록 실패');
       }
 
       const data = await response.json();
@@ -545,6 +554,34 @@ export default function CreateUsedPhonePage() {
           {/* 거래 정보 */}
           <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
             <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
+            
+            {/* 거래 지역 선택 */}
+            <div>
+              <Label>거래 지역 <span className="text-red-500">*</span></Label>
+              <MultiRegionSelector
+                maxSelections={1}
+                onSelectionChange={(regions) => {
+                  if (regions.length > 0) {
+                    const region = regions[0];
+                    handleInputChange('sido', region.sido);
+                    handleInputChange('sigungu', region.sigungu);
+                  } else {
+                    handleInputChange('sido', '');
+                    handleInputChange('sigungu', '');
+                  }
+                }}
+                selectedRegions={
+                  formData.sido && formData.sigungu 
+                    ? [{
+                        sido: formData.sido,
+                        sigungu: formData.sigungu,
+                        fullAddress: `${formData.sido} ${formData.sigungu}`,
+                        zonecode: ''
+                      }]
+                    : []
+                }
+              />
+            </div>
             
             {/* 거래 희망 장소 */}
             <div>
