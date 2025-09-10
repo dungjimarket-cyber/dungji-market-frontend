@@ -121,6 +121,8 @@ export default function RegionDropdownWithCode({
       
       // 시/도 목록 추출 (level 0)
       const provinceList = regions.filter((r: Region) => r.level === 0);
+      console.log('Province list:', provinceList);
+      console.log('First province:', provinceList[0]);
       setProvinces(provinceList);
     };
     
@@ -224,11 +226,14 @@ export default function RegionDropdownWithCode({
           className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">시/도 선택</option>
-          {provinces && provinces.length > 0 && provinces.map((region) => (
-            <option key={region?.code || ''} value={region?.name || ''}>
-              {region?.name || ''}
-            </option>
-          ))}
+          {provinces && provinces.length > 0 && provinces.map((region) => {
+            if (!region || typeof region !== 'object') return null;
+            return (
+              <option key={region.code || ''} value={region.name || ''}>
+                {String(region.name || '')}
+              </option>
+            );
+          })}
         </select>
         <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
       </div>
@@ -242,11 +247,14 @@ export default function RegionDropdownWithCode({
           className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">시/군/구 선택</option>
-          {cities && cities.length > 0 && cities.map((cityData) => (
-            <option key={cityData?.code || ''} value={cityData?.code || ''}>
-              {cityData?.name || ''}
-            </option>
-          ))}
+          {cities && cities.length > 0 && cities.map((cityData) => {
+            if (!cityData || typeof cityData !== 'object') return null;
+            return (
+              <option key={cityData.code || ''} value={cityData.code || ''}>
+                {String(cityData.name || '')}
+              </option>
+            );
+          })}
         </select>
         <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
       </div>
