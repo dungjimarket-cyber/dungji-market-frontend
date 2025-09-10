@@ -26,7 +26,8 @@ import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import Image from 'next/image';
-import { searchRegionsByName, type Region } from '@/lib/api/regionService';
+import RegionDropdownWithCode from '@/components/address/RegionDropdownWithCode';
+import { MapPin } from 'lucide-react';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -52,11 +53,10 @@ export default function CreateUsedPhonePage() {
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   
-  // 지역 검색 관련 상태
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Region[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  // 지역 선택 관련 상태
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedCityCode, setSelectedCityCode] = useState('');
   
   const [formData, setFormData] = useState({
     brand: '',
@@ -131,36 +131,29 @@ export default function CreateUsedPhonePage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // 지역 검색 핸들러
-  const handleRegionSearch = useCallback(async (term: string) => {
-    setSearchTerm(term);
-    
-    if (term.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    
-    setIsSearching(true);
-    try {
-      const results = await searchRegionsByName(term);
-      // 시/군/구 레벨(level 2)만 필터링
-      const filteredResults = results.filter(r => r.level === 2);
-      setSearchResults(filteredResults);
-    } catch (error) {
-      console.error('지역 검색 오류:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
+  // 지역 선택 핸들러
+  const handleRegionSelect = useCallback((province: string, city: string, cityCode: string) => {
+    setSelectedProvince(province);
+    setSelectedCity(city);
+    setSelectedCityCode(cityCode);
+    handleInputChange('region', cityCode);
   }, []);
 
-  // 지역 선택 핸들러
-  const handleRegionSelect = useCallback((region: Region) => {
-    setSelectedRegion(region);
-    setFormData(prev => ({ ...prev, region: region.code }));
-    setSearchTerm('');
-    setSearchResults([]);
-  }, []);
+  // 내 지역 설정 핸들러
+  const handleSetMyRegion = useCallback(() => {
+    if (user?.address_region) {
+      // address_region 형식: "서울특별시 강남구" 
+      const parts = user.address_region.split(' ');
+      if (parts.length >= 2) {
+        const province = parts[0];
+        const city = parts.slice(1).join(' ');
+        
+        setSelectedProvince(province);
+        setSelectedCity(city);
+        // cityCode는 RegionDropdownWithCode 컴포넌트가 내부적으로 처리
+      }
+    }
+  }, [user]);
 
   // 등록 처리
   const handleSubmit = async (e: React.FormEvent) => {
@@ -601,59 +594,35 @@ export default function CreateUsedPhonePage() {
             <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
             
             {/* 거래 지역 선택 */}
-            <div className="space-y-2">
-              <Label>거래 지역 <span className="text-red-500">*</span></Label>
-              
-              {/* 선택된 지역 표시 */}
-              {selectedRegion && (
-                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium">{selectedRegion.full_name || selectedRegion.name}</span>
-                  <button
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>거래 지역 <span className="text-red-500">*</span></Label>
+                {user?.address_region && (
+                  <Button
                     type="button"
-                    onClick={() => {
-                      setSelectedRegion(null);
-                      handleInputChange('region', '');
-                    }}
-                    className="ml-auto text-gray-500 hover:text-red-500"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSetMyRegion}
+                    className="flex items-center gap-1 text-xs"
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+                    <MapPin className="w-3 h-3" />
+                    내 지역 ({user.address_region})
+                  </Button>
+                )}
+              </div>
               
-              {/* 지역 검색 입력 */}
-              {!selectedRegion && (
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="지역명을 입력하세요 (예: 강남구, 분당구)"
-                    value={searchTerm}
-                    onChange={(e) => handleRegionSearch(e.target.value)}
-                    className="pr-10"
-                  />
-                  {isSearching && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full" />
-                    </div>
-                  )}
-                  
-                  {/* 검색 결과 */}
-                  {searchResults.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {searchResults.map((region) => (
-                        <button
-                          key={region.code}
-                          type="button"
-                          onClick={() => handleRegionSelect(region)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b last:border-b-0"
-                        >
-                          <div className="font-medium text-sm">{region.name}</div>
-                          <div className="text-xs text-gray-500">{region.full_name}</div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              <RegionDropdownWithCode
+                selectedProvince={selectedProvince}
+                selectedCity={selectedCity}
+                selectedCityCode={selectedCityCode}
+                onSelect={handleRegionSelect}
+                required={true}
+              />
+              
+              {selectedProvince && selectedCity && (
+                <p className="text-sm text-gray-600">
+                  선택된 지역: {selectedProvince} {selectedCity}
+                </p>
               )}
             </div>
             
