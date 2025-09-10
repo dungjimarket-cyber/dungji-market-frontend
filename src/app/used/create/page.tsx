@@ -22,8 +22,8 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfileCheck } from '@/hooks/useProfileCheck';
-import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
+import UsedPhoneProfileCheckModal from '@/components/common/UsedPhoneProfileCheckModal';
 import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import Image from 'next/image';
 import RegionDropdownWithCode from '@/components/address/RegionDropdownWithCode';
@@ -47,7 +47,7 @@ export default function CreateUsedPhonePage() {
     checkProfile,
     showProfileModal,
     setShowProfileModal,
-  } = useProfileCheck();
+  } = useUsedPhoneProfileCheck();
   
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
@@ -77,7 +77,7 @@ export default function CreateUsedPhonePage() {
     meetingPlace: '',
   });
 
-  // 페이지 진입 시 프로필 체크
+  // 페이지 진입 시 프로필 체크 (중고폰용)
   useEffect(() => {
     if (isAuthenticated) {
       checkProfile();
@@ -169,7 +169,7 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    // 프로필 완성도 체크
+    // 프로필 완성도 체크 (중고폰용)
     const profileComplete = await checkProfile();
     if (!profileComplete) {
       setShowProfileModal(true);
@@ -672,8 +672,8 @@ export default function CreateUsedPhonePage() {
         </form>
       </div>
 
-      {/* 프로필 체크 모달 */}
-      <ProfileCheckModal
+      {/* 중고폰용 프로필 체크 모달 */}
+      <UsedPhoneProfileCheckModal
         isOpen={showProfileModal}
         onClose={() => {
           setShowProfileModal(false);
