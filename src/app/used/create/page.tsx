@@ -172,10 +172,10 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    if (!formData.brand || !formData.model || !formData.price) {
+    if (!formData.brand || !formData.model || !formData.price || !formData.condition_grade) {
       toast({
         title: '필수 정보 입력',
-        description: '브랜드, 모델명, 가격은 필수입니다.',
+        description: '브랜드, 모델명, 가격, 상태등급은 필수입니다.',
         variant: 'destructive',
       });
       return;
@@ -205,10 +205,17 @@ export default function CreateUsedPhonePage() {
         }
       });
 
-      // 폼 데이터 추가 (region 필드 제외)
+      // 폼 데이터 추가 (region 필드 제외, boolean 값 특별 처리)
       Object.entries(formData).forEach(([key, value]) => {
-        if (key !== 'region' && value !== '' && value !== undefined && value !== null) {
-          uploadData.append(key, value.toString());
+        if (key !== 'region') {
+          // boolean 값은 항상 전송 (false도 전송해야 함)
+          if (typeof value === 'boolean') {
+            uploadData.append(key, value.toString());
+          } 
+          // 빈 문자열이 아닌 경우만 전송
+          else if (value !== '' && value !== undefined && value !== null) {
+            uploadData.append(key, value.toString());
+          }
         }
       });
 
@@ -242,7 +249,32 @@ export default function CreateUsedPhonePage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('API 에러 응답:', errorData);
-        throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData) || '등록 실패');
+        
+        // 상세한 오류 메시지 처리
+        let errorMessage = '상품 등록에 실패했습니다.';
+        
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData.non_field_errors) {
+          errorMessage = errorData.non_field_errors[0];
+        } else if (typeof errorData === 'object') {
+          // 필드별 오류 처리
+          const fieldErrors = Object.entries(errorData)
+            .map(([field, errors]) => {
+              if (Array.isArray(errors)) {
+                return `${field}: ${errors.join(', ')}`;
+              }
+              return `${field}: ${errors}`;
+            })
+            .join('\n');
+          if (fieldErrors) {
+            errorMessage = fieldErrors;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -257,9 +289,12 @@ export default function CreateUsedPhonePage() {
       
     } catch (error) {
       console.error('Registration failed:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : '상품 등록 중 오류가 발생했습니다.';
+      
       toast({
         title: '등록 실패',
-        description: '상품 등록 중 오류가 발생했습니다.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
