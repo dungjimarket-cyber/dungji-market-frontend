@@ -91,7 +91,7 @@ export default function UsedPhoneProfileCheckModal({
           </div>
           
           <div className="mt-4 text-sm text-gray-600">
-            <p>안전한 거래를 위해 연락처 정보가 필요합니다.</p>
+            <p>안전한 거래를 위해 연락처와 활동지역 정보가 필요합니다.</p>
             <p className="mt-1">내 정보 설정 페이지로 이동하시겠습니까?</p>
           </div>
         </div>

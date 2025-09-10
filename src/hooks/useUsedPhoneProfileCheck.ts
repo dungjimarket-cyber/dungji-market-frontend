@@ -16,15 +16,15 @@ interface UsedPhoneProfileCheckResult {
 function checkMissingFieldsForUsedPhone(profileData: any): string[] {
   const missing: string[] = [];
   
-  // 중고폰 거래를 위한 기본 필수 정보만 체크
+  // 중고폰 거래를 위한 기본 필수 정보 체크
   if (!profileData.phone_number) {
     missing.push('연락처');
   }
   
-  // 거래 지역은 선택사항 (등록 시 별도 입력 가능)
-  // if (!profileData.address_region) {
-  //   missing.push('활동지역');
-  // }
+  // 거래 지역도 필수 (내 지역 기능 사용을 위해)
+  if (!profileData.address_region) {
+    missing.push('활동지역');
+  }
   
   // 판매자/일반회원 구분 없이 동일한 체크
   // 비즈니스 정보는 중고폰 거래에서는 불필요
