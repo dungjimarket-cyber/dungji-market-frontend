@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
-import RegionSelector from '@/components/common/RegionSelector';
+import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'description', 'meeting_place'];
@@ -702,9 +702,19 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 {!isFieldEditable('regions') && <Lock className="w-3 h-3 text-gray-400" />}
               </Label>
               {isFieldEditable('regions') ? (
-                <RegionSelector
-                  selectedRegions={selectedRegions}
-                  onRegionsChange={setSelectedRegions}
+                <MultiRegionDropdown
+                  selectedRegions={selectedRegions.map(r => ({
+                    province: r.sido || r.province || '',
+                    city: r.sigungu || r.city || ''
+                  }))}
+                  onRegionsChange={(regions) => {
+                    setSelectedRegions(regions.map((r: any) => ({
+                      ...r,
+                      id: r.id,
+                      full_name: `${r.province} ${r.city}`.trim(),
+                      name: r.city || r.province
+                    })));
+                  }}
                   maxSelections={3}
                 />
               ) : (
