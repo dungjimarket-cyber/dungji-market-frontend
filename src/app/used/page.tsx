@@ -65,7 +65,7 @@ export default function UsedPhonesPage() {
       });
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/?${params}`);
+      const response = await fetch(`${apiUrl}/used/phones/?${params}`);
       const data = await response.json();
 
       if (reset) {
@@ -111,7 +111,7 @@ export default function UsedPhonesPage() {
     try {
       const token = localStorage.getItem('accessToken');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/favorite/`, {
+      const response = await fetch(`${apiUrl}/used/phones/${phoneId}/favorite/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
