@@ -147,7 +147,7 @@ export default function UsedPhonesPage() {
         // 상태 업데이트
         setPhones(prev => prev.map(phone => 
           phone.id === phoneId 
-            ? { ...phone, isFavorite: !phone.isFavorite }
+            ? { ...phone, is_favorite: !phone.is_favorite }
             : phone
         ));
         

@@ -62,7 +62,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
       const data = await response.json();
       setPhone(data);
-      setIsFavorite(data.isFavorite || false);
+      setIsFavorite(data.is_favorite || false);
       
       // 조회수는 백엔드에서 자동으로 증가됨 (retrieve 메서드에서 처리)
       // fetch(`/api/used/phones/${phoneId}/view`, { method: 'POST' });
