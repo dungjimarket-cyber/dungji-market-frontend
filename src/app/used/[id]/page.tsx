@@ -398,7 +398,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="py-4 flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{phone.sigungu || phone.sido || '지역 미정'}</span>
+                  <span>{phone.region_name || '지역 미정'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">

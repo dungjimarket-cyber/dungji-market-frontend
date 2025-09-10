@@ -157,7 +157,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
           <MapPin className="w-3 h-3" />
           <span className="truncate">
-            {phone.sigungu || phone.sido || '지역 미정'}
+            {phone.region_name || '지역 미정'}
           </span>
         </div>
 
