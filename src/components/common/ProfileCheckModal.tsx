@@ -30,13 +30,6 @@ export default function ProfileCheckModal({
 }: ProfileCheckModalProps) {
   const router = useRouter();
   const { user } = useAuth();
-  
-  // 디버깅 로그 추가
-  console.log('[ProfileCheckModal] 렌더링됨:', {
-    isOpen,
-    missingFields,
-    missingFieldsLength: missingFields?.length || 0
-  });
 
   const handleUpdateProfile = () => {
     // 프로필 업데이트 콜백 호출
