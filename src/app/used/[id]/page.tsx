@@ -464,6 +464,31 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </Button>
               </div>
               
+              {/* 거래 가능 지역 - 다중 지역 표시 */}
+              {phone.regions && phone.regions.length > 0 ? (
+                <div className="mt-4 p-3 bg-gray-50 rounded">
+                  <p className="text-sm text-gray-600 mb-2">거래 가능 지역</p>
+                  <div className="space-y-1">
+                    {phone.regions.map((region, index) => (
+                      <div key={index} className="text-sm">
+                        <span className="font-medium">{region.full_name || region.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* 단일 지역 표시 (기존 데이터 호환) */
+                phone.region_name && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-600 mb-2">거래 가능 지역</p>
+                    <div className="text-sm">
+                      <span className="font-medium">{phone.region_name}</span>
+                    </div>
+                  </div>
+                )
+              )}
+              
+              {/* 거래 희망 장소 */}
               {phone.meeting_place && (
                 <div className="mt-4 p-3 bg-gray-50 rounded">
                   <p className="text-sm text-gray-600 mb-1">거래 희망 장소</p>

@@ -192,7 +192,9 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                             ? '전국' 
                             : groupBuy.regions && groupBuy.regions.length > 0
                               ? groupBuy.regions.map(r => r.name).join(', ')
-                              : groupBuy.region_name || groupBuy.region || '미지정'}
+                              : groupBuy.region_name 
+                                ? groupBuy.region_name.split(' ').pop() // "서울특별시 강남구" -> "강남구"
+                                : groupBuy.region || '미지정'}
                         </span>
                       )}
                     </div>
