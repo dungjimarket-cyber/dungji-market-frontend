@@ -707,7 +707,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     province: r.sido || r.province || '',
                     city: r.sigungu || r.city || ''
                   }))}
-                  onRegionsChange={(regions) => {
+                  onSelectionChange={(regions) => {
                     setSelectedRegions(regions.map((r: any) => ({
                       ...r,
                       id: r.id,

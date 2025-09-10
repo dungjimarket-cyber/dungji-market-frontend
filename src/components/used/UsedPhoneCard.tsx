@@ -108,7 +108,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         )}
         
         {/* 수정됨 표시 */}
-        {phone.is_modified && phone.offer_count > 0 && (
+        {phone.is_modified && phone.offer_count && phone.offer_count > 0 && (
           <div className="absolute bottom-2 right-2 bg-yellow-500/90 backdrop-blur-sm text-white px-2 py-1 text-xs rounded font-medium flex items-center gap-1">
             <Edit3 className="w-3 h-3" />
             수정됨
