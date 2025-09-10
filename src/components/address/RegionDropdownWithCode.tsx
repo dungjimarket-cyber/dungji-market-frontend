@@ -98,9 +98,12 @@ export default function RegionDropdownWithCode({
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
       if (response.ok) {
         const data = await response.json();
-        cachedRegions = data;
+        console.log('API Response:', data);
+        // data가 배열이 아니라 객체일 수도 있음
+        const regions = Array.isArray(data) ? data : data.results || [];
+        cachedRegions = regions;
         cacheTimestamp = now;
-        return data;
+        return regions;
       }
     } catch (error) {
       console.error('지역 데이터 로드 오류:', error);
@@ -117,6 +120,7 @@ export default function RegionDropdownWithCode({
       
       // 시/도 목록 추출 (level 0)
       const provinceList = regions.filter((r: Region) => r.level === 0);
+      console.log('Province list:', provinceList);
       setProvinces(provinceList);
     };
     
