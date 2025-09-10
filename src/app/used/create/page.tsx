@@ -98,10 +98,11 @@ export default function CreateUsedPhonePage() {
   }, [isAuthenticated, checkProfile]);
 
   // 이미지 업로드 핸들러
-  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
     const files = Array.from(e.target.files || []);
     
-    if (images.length + files.length > 5) {
+    // 교체 모드가 아닌 경우 개수 체크
+    if (replaceIndex === undefined && images.length + files.length > 5) {
       toast({
         title: '이미지 개수 초과',
         description: '최대 5장까지 업로드 가능합니다.',
@@ -110,13 +111,29 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    const newImages = files.map((file, index) => ({
-      file,
-      url: URL.createObjectURL(file),
-      isMain: images.length === 0 && index === 0,
-    }));
+    if (replaceIndex !== undefined && files.length > 0) {
+      // 특정 이미지 교체
+      const newImage = {
+        file: files[0],
+        url: URL.createObjectURL(files[0]),
+        isMain: images[replaceIndex].isMain,
+      };
+      
+      setImages(prev => {
+        const updated = [...prev];
+        updated[replaceIndex] = newImage;
+        return updated;
+      });
+    } else {
+      // 새 이미지 추가
+      const newImages = files.map((file, index) => ({
+        file,
+        url: URL.createObjectURL(file),
+        isMain: images.length === 0 && index === 0,
+      }));
 
-    setImages(prev => [...prev, ...newImages]);
+      setImages(prev => [...prev, ...newImages]);
+    }
   }, [images, toast]);
 
   // 이미지 삭제
@@ -432,6 +449,14 @@ export default function CreateUsedPhonePage() {
                 if (image) {
                   return (
                     <div key={index} className="relative aspect-square group">
+                      <input
+                        type="file"
+                        id={`image-replace-${index}`}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, index)}
+                      />
+                      
                       <Image
                         src={image.url}
                         alt={`상품 이미지 ${index + 1}`}
@@ -450,8 +475,14 @@ export default function CreateUsedPhonePage() {
                         </div>
                       )}
                       
-                      {/* 액션 버튼들 */}
-                      <div className="absolute bottom-2 left-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* 액션 버튼들 - 모바일에서는 항상 보이도록 */}
+                      <div className="absolute bottom-2 left-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <label
+                          htmlFor={`image-replace-${index}`}
+                          className="flex-1 bg-white/90 backdrop-blur text-xs py-1 rounded hover:bg-white text-center cursor-pointer"
+                        >
+                          변경
+                        </label>
                         {!image.isMain && (
                           <button
                             type="button"

@@ -153,12 +153,28 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           </div>
         )}
 
-        {/* 위치 정보 */}
-        <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate">
-            {phone.region_name || '지역 미정'}
-          </span>
+        {/* 위치 정보 - 여러 지역 표시 */}
+        <div className="mt-2 text-xs text-gray-500">
+          {phone.regions && phone.regions.length > 0 ? (
+            <div className="space-y-0.5">
+              {phone.regions.map((region: any, index: number) => (
+                <div key={index} className="flex items-center gap-1">
+                  {index === 0 && <MapPin className="w-3 h-3" />}
+                  {index > 0 && <span className="w-3" />}
+                  <span className="truncate">
+                    {region.full_name || region.name || '지역 미정'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              <span className="truncate">
+                {phone.region_name || '지역 미정'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* 하단 정보 */}
