@@ -275,7 +275,7 @@ export default function CreateUsedPhonePage() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        let errorData = {};
+        let errorData: any = {};
         try {
           errorData = JSON.parse(errorText);
         } catch {
