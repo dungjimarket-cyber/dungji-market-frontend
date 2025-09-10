@@ -66,6 +66,12 @@ export default function UsedPhonesPage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const response = await fetch(`${apiUrl}/used/phones/?${params}`);
+      
+      // 응답 체크
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
 
       // DRF 기본 응답 형식 처리
@@ -88,6 +94,8 @@ export default function UsedPhonesPage() {
       
     } catch (error) {
       console.error('Failed to fetch phones:', error);
+      // 에러 발생 시 더 이상 로드하지 않도록 설정
+      setHasMore(false);
       toast({
         title: '오류',
         description: '상품을 불러오는데 실패했습니다.',
@@ -152,9 +160,12 @@ export default function UsedPhonesPage() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage(prev => prev + 1);
-          fetchPhones(page + 1, filters);
+        if (entries[0].isIntersecting && !loading && hasMore) {
+          setPage(prev => {
+            const nextPage = prev + 1;
+            fetchPhones(nextPage, filters);
+            return nextPage;
+          });
         }
       },
       { threshold: 0.1 }
@@ -169,7 +180,7 @@ export default function UsedPhonesPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [loading, hasMore, page, filters, fetchPhones]);
+  }, [loading, hasMore, filters, fetchPhones]);
 
   // 초기 데이터 로드
   useEffect(() => {
