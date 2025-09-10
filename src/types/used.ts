@@ -429,10 +429,10 @@ export const PHONE_BRANDS = {
 } as const;
 
 export const CONDITION_GRADES = {
-  S: 'S급 - 최상품',
-  A: 'A급 - 상품',
-  B: 'B급 - 중품',
-  C: 'C급 - 하품'
+  S: 'S급',
+  A: 'A급',
+  B: 'B급',
+  C: 'C급'
 } as const;
 
 export const BATTERY_STATUS_LABELS = {

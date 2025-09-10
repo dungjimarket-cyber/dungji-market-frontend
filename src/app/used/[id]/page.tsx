@@ -44,6 +44,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [deleting, setDeleting] = useState(false);
   const [offerCount, setOfferCount] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showGradeInfo, setShowGradeInfo] = useState(false);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -422,7 +423,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4 py-6 lg:py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-6 lg:py-8 overflow-x-hidden">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
           <div className="w-full">
@@ -553,7 +554,16 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               {/* 상태 정보 */}
               <div className="grid grid-cols-2 gap-4 py-4 border-y">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">상태</p>
+                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+                    상태
+                    <button
+                      onClick={() => setShowGradeInfo(true)}
+                      className="p-0.5 hover:bg-gray-100 rounded-full transition-colors"
+                      title="등급 안내 보기"
+                    >
+                      <Info className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+                  </p>
                   <p className="font-medium">
                     {phone.condition_grade && CONDITION_GRADES[phone.condition_grade]}
                   </p>
@@ -635,14 +645,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 {phone.accept_offers ? (
                   <Button
                     onClick={() => setShowOfferModal(true)}
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="w-full h-14 text-lg font-semibold"
                   >
                     <DollarSign className="w-5 h-5 mr-2" />
                     가격 제안하기
                   </Button>
                 ) : (
                   <Button
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="w-full h-14 text-lg font-semibold"
                   >
                     <MessageCircle className="w-5 h-5 mr-2" />
                     판매자와 대화하기
@@ -1051,7 +1061,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Button
                   onClick={() => setShowOfferModal(true)}
                   disabled={phone.status !== 'active'}
-                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="w-full h-12 text-base font-semibold"
                 >
                   가격 제안하기
                 </Button>
@@ -1063,12 +1073,81 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     }
                   }}
                   disabled={phone.status !== 'active'}
-                  className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700"
+                  className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90"
                 >
                   판매자 연락하기
                 </Button>
               )
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 상태 등급 안내 모달 */}
+      {showGradeInfo && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">상품 상태 등급 안내</h3>
+              <button
+                onClick={() => setShowGradeInfo(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="border-l-4 border-blue-500 pl-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-blue-700">S급</span>
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">최상급</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  미개봉 또는 개봉 후 사용하지 않은 새 제품
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-green-500 pl-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-green-700">A급</span>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">상급</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  사용감이 거의 없고 미세한 흠집만 있는 상태
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-yellow-500 pl-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-yellow-700">B급</span>
+                  <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">중급</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  일반적인 사용감과 작은 흠집이 있는 상태
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-orange-500 pl-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-orange-700">C급</span>
+                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">하급</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  사용감이 많고 눈에 띄는 흠집이 있지만 작동에는 문제 없는 상태
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <Button
+                onClick={() => setShowGradeInfo(false)}
+                className="w-full"
+                variant="outline"
+              >
+                확인
+              </Button>
+            </div>
           </div>
         </div>
       )}
