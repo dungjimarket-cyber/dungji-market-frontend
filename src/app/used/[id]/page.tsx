@@ -425,10 +425,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
+      <div className="w-full overflow-x-hidden">
+        <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
-          <div className="w-full">
+          <div className="w-full overflow-hidden">
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
               {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
                 <>
@@ -436,7 +437,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     src={phone.images[currentImageIndex].imageUrl || '/images/phone-placeholder.png'}
                     alt={phone.model || '중고폰 이미지'}
                     fill
-                    className="object-contain p-4"
+                    className="object-contain"
                     priority
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -530,9 +531,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           </div>
 
           {/* 정보 섹션 */}
-          <div className="w-full">
+          <div className="w-full overflow-hidden">
             {/* 기본 정보 */}
-            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm w-full">
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
               <div className="flex items-start justify-between mb-2">
                 <h1 className="text-2xl font-bold">{phone.model}</h1>
                 {/* 수정됨 표시 */}
@@ -1213,6 +1214,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
