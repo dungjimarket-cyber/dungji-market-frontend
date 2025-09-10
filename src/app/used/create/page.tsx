@@ -235,11 +235,43 @@ export default function CreateUsedPhonePage() {
         }
       });
 
-      // 지역 정보 추가 (선택된 경우에만)
+      // 지역 정보 추가
       if (selectedRegions.length > 0) {
+        // regions 필드 - 다중 지역 (추후 처리용)
         selectedRegions.forEach((region) => {
           uploadData.append('regions', `${region.province} ${region.city}`);
         });
+        
+        // region 필드 - 단일 지역 (현재 필수 필드)
+        // 첫 번째 선택 지역을 기본 지역으로 설정
+        try {
+          const primaryRegion = selectedRegions[0];
+          // 지역명으로 실제 지역 코드 찾기
+          const searchName = primaryRegion.city || primaryRegion.province;
+          const regions = await searchRegionsByName(searchName);
+          
+          if (regions && regions.length > 0) {
+            // 가장 정확한 매칭 찾기
+            const exactMatch = regions.find(r => 
+              r.full_name.includes(primaryRegion.province) && 
+              r.full_name.includes(primaryRegion.city)
+            ) || regions[0];
+            
+            uploadData.append('region', exactMatch.code);
+            console.log('Region code found:', exactMatch.code, exactMatch.full_name);
+          } else {
+            // 기본값 사용
+            uploadData.append('region', '11');  // 서울특별시 코드
+            console.log('Region not found, using default: Seoul');
+          }
+        } catch (error) {
+          console.error('Failed to fetch region code:', error);
+          uploadData.append('region', '11');  // 서울특별시 코드
+        }
+      } else {
+        // 지역을 선택하지 않은 경우 기본값 설정
+        uploadData.append('region', '11');  // 서울특별시 코드
+        console.log('No region selected, using default: Seoul');
       }
 
       // API 설정
