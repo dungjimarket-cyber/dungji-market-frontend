@@ -64,8 +64,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       setPhone(data);
       setIsFavorite(data.isFavorite || false);
       
-      // 조회수 증가 (비동기)
-      fetch(`/api/used/phones/${phoneId}/view`, { method: 'POST' });
+      // 조회수는 백엔드에서 자동으로 증가됨 (retrieve 메서드에서 처리)
+      // fetch(`/api/used/phones/${phoneId}/view`, { method: 'POST' });
       
     } catch (error) {
       console.error('Failed to fetch phone:', error);
@@ -143,10 +143,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
 
     const amount = parseInt(offerAmount);
-    if (!amount || amount < (phone?.minOfferPrice || 0)) {
+    if (!amount || amount < (phone?.min_offer_price || 0)) {
       toast({
         title: '제안 금액 확인',
-        description: `최소 제안 금액은 ${phone?.minOfferPrice?.toLocaleString()}원입니다.`,
+        description: `최소 제안 금액은 ${phone?.min_offer_price?.toLocaleString()}원입니다.`,
         variant: 'destructive',
       });
       return;
@@ -342,9 +342,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <p className="text-3xl font-bold text-gray-900">
                   {phone.price.toLocaleString()}원
                 </p>
-                {phone.acceptOffers && phone.minOfferPrice && (
+                {phone.accept_offers && phone.min_offer_price && (
                   <p className="text-sm text-blue-600 mt-1">
-                    가격 제안 가능 (최소 {phone.minOfferPrice.toLocaleString()}원)
+                    가격 제안 가능 (최소 {phone.min_offer_price.toLocaleString()}원)
                   </p>
                 )}
               </div>
@@ -354,7 +354,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">상태</p>
                   <p className="font-medium">
-                    {phone.conditionGrade && CONDITION_GRADES[phone.conditionGrade]}
+                    {phone.condition_grade && CONDITION_GRADES[phone.condition_grade]}
                   </p>
                 </div>
                 <div>
@@ -368,7 +368,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">배터리</p>
                   <p className="font-medium">
-                    {phone.batteryStatus && BATTERY_STATUS_LABELS[phone.batteryStatus]}
+                    {phone.battery_status && BATTERY_STATUS_LABELS[phone.battery_status]}
                   </p>
                 </div>
               </div>
@@ -377,13 +377,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="py-4 border-b">
                 <p className="text-sm text-gray-600 mb-2">구성품</p>
                 <div className="flex gap-3">
-                  <span className={`px-2 py-1 rounded text-sm ${phone.hasBox ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
+                  <span className={`px-2 py-1 rounded text-sm ${phone.has_box ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
                     박스
                   </span>
-                  <span className={`px-2 py-1 rounded text-sm ${phone.hasCharger ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
+                  <span className={`px-2 py-1 rounded text-sm ${phone.has_charger ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
                     충전기
                   </span>
-                  <span className={`px-2 py-1 rounded text-sm ${phone.hasEarphones ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
+                  <span className={`px-2 py-1 rounded text-sm ${phone.has_earphones ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
                     이어폰
                   </span>
                 </div>
@@ -398,15 +398,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <Eye className="w-4 h-4" />
-                    {phone.viewCount}
+                    {phone.view_count}
                   </span>
                   <span className="flex items-center gap-1">
                     <Heart className="w-4 h-4" />
-                    {phone.favoriteCount}
+                    {phone.favorite_count}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {formatDistanceToNow(new Date(phone.createdAt), { addSuffix: true, locale: ko })}
+                    {phone.created_at ? formatDistanceToNow(new Date(phone.created_at), { addSuffix: true, locale: ko }) : '-'}
                   </span>
                 </div>
               </div>
@@ -421,7 +421,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                   찜하기
                 </Button>
-                {phone.acceptOffers ? (
+                {phone.accept_offers ? (
                   <Button
                     onClick={() => setShowOfferModal(true)}
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -459,10 +459,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </Button>
               </div>
               
-              {phone.meetingPlace && (
+              {phone.meeting_place && (
                 <div className="mt-4 p-3 bg-gray-50 rounded">
                   <p className="text-sm text-gray-600 mb-1">거래 희망 장소</p>
-                  <p className="font-medium">{phone.meetingPlace}</p>
+                  <p className="font-medium">{phone.meeting_place}</p>
                 </div>
               )}
             </div>
@@ -514,7 +514,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <label className="block text-sm font-medium mb-2">제안 금액</label>
               <Input
                 type="number"
-                placeholder={`최소 ${phone.minOfferPrice?.toLocaleString()}원`}
+                placeholder={`최소 ${phone.min_offer_price?.toLocaleString()}원`}
                 value={offerAmount}
                 onChange={(e) => setOfferAmount(e.target.value)}
               />
