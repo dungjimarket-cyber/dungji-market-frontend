@@ -454,9 +454,10 @@ export default function CreateUsedPhonePage() {
       // FormData 생성
       const uploadData = new FormData();
       
-      // 이미지 추가
-      images.forEach((img, index) => {
-        uploadData.append('images', img.file);
+      // 이미지 추가 (빈 슬롯 제외)
+      const actualImages = images.filter(img => img && !img.isEmpty && img.file);
+      actualImages.forEach((img, index) => {
+        uploadData.append('images', img.file!);  // ! operator since we filtered for img.file
         if (img.isMain) {
           uploadData.append('mainImageIndex', index.toString());
         }
