@@ -188,7 +188,8 @@ export default function CreateUsedPhonePage() {
 
       // API 호출
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const response = await fetch(`${apiUrl}/api/used/phones/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

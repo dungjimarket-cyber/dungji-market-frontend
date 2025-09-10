@@ -49,7 +49,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : ''
         }
@@ -102,7 +103,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/favorite/`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/favorite/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -146,7 +148,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/used/phones/${phoneId}/offer/`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/offer/`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
