@@ -186,9 +186,9 @@ export default function RegionDropdownWithCode({
     const selectedProvinceData = provinces.find(p => p.name === newProvince);
     
     if (selectedProvinceData) {
-      // parent_id로 하위 지역 찾기
+      // parent_code로 하위 지역 찾기
       const cityList = regions.filter((r: Region) => 
-        r.level === 1 && r.parent_id === selectedProvinceData.code
+        r.level === 1 && r.parent_code === selectedProvinceData.code
       );
       setCities(cityList);
     }
