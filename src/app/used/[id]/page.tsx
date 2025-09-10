@@ -39,11 +39,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
+  const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [offerCount, setOfferCount] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState('');
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -280,7 +280,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         setShowConfirmModal(false);
         setOfferAmount('');
         setOfferMessage('');
-        setSelectedTemplate('');
+        setSelectedMessages([]);
         setOfferCount(prev => prev + 1);
       } else {
         const error = await response.json();
@@ -746,32 +746,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       </div>
 
-      {/* 가격 제안 모달 */}
+      {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold">가격 제안하기</h3>
-              <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full">
-                <span className="text-sm font-medium text-blue-700">
+              <div className="flex items-center gap-2 px-2 py-1 bg-blue-100 rounded-full">
+                <span className="text-xs font-medium text-blue-700">
                   제안 {offerCount}/5회
                 </span>
               </div>
             </div>
             
             {offerCount >= 5 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-red-700">
+              <div className="bg-red-50 border border-red-200 rounded p-2 mb-3">
+                <p className="text-xs text-red-700">
                   제안 횟수를 모두 사용했습니다.
                 </p>
               </div>
             )}
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">
                 제안 금액 <span className="text-red-500">*</span>
-                <span className="text-xs text-gray-500 ml-2">
-                  (최소: {phone.min_offer_price?.toLocaleString()}원 / 최대: 990만원)
+                <span className="text-xs text-gray-500 ml-1">
+                  (최소: {phone.min_offer_price?.toLocaleString()}원)
                 </span>
               </label>
               <div className="relative">
@@ -780,78 +780,116 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   placeholder="0"
                   value={formatCurrency(offerAmount)}
                   onChange={handlePriceChange}
-                  className="pr-12"
+                  className="pr-12 h-9"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">원</span>
               </div>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">메시지 선택</label>
-              <div className="space-y-2">
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">
+                  메시지 선택 
+                  <span className="text-xs text-gray-500 ml-1">
+                    (최대 5개)
+                  </span>
+                </label>
+                {selectedMessages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMessages([])}
+                    className="text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    초기화
+                  </button>
+                )}
+              </div>
+              
+              {/* 선택된 메시지 표시 */}
+              {selectedMessages.length > 0 && (
+                <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
+                  <p className="text-xs text-blue-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
+                  <div className="space-y-1">
+                    {selectedMessages.map((msg, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-xs text-blue-900">• {msg}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMessages(prev => prev.filter((_, i) => i !== index));
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 컴팩트한 템플릿 선택 영역 */}
+              <div className="border rounded-lg p-2 max-h-48 overflow-y-auto">
                 {Object.entries(messageTemplates).map(([category, messages]) => (
-                  <div key={category}>
-                    <p className="text-xs text-gray-600 mb-1">{category}</p>
-                    <div className="flex flex-wrap gap-2">
+                  <details key={category} className="mb-2 last:mb-0">
+                    <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-1">
+                      {category}
+                    </summary>
+                    <div className="mt-1 pl-3 space-y-1">
                       {messages.map((msg) => (
                         <button
                           key={msg}
                           type="button"
                           onClick={() => {
-                            setOfferMessage(msg);
-                            setSelectedTemplate(msg);
+                            if (selectedMessages.length < 5) {
+                              setSelectedMessages(prev => [...prev, msg]);
+                            }
                           }}
-                          className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                            selectedTemplate === msg
-                              ? 'bg-blue-50 border-blue-300 text-blue-700'
-                              : 'bg-white border-gray-300 hover:bg-gray-50'
-                          }`}
+                          disabled={selectedMessages.length >= 5}
+                          className={`block w-full text-left text-xs py-1 px-2 rounded hover:bg-gray-100 transition-colors ${
+                            selectedMessages.includes(msg)
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'text-gray-700'
+                          } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           {msg}
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </details>
                 ))}
               </div>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">메시지 직접 입력</label>
-              <Textarea
-                placeholder="메시지를 입력하거나 위에서 선택하세요"
-                value={offerMessage}
-                onChange={(e) => {
-                  setOfferMessage(e.target.value);
-                  setSelectedTemplate('');
-                }}
-                rows={2}
-              />
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+            <div className="bg-amber-50 border border-amber-200 rounded p-2 mb-3">
               <p className="text-xs text-amber-700">
-                <span className="font-medium">⚠️ 주의사항</span><br/>
-                견적 제안은 구매 약속입니다. 신중하게 결정해주세요.
+                <span className="font-medium">⚠️ 주의</span>
+                <span className="ml-1">견적 제안은 구매 약속입니다.</span>
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
                   setShowOfferModal(false);
                   setOfferAmount('');
-                  setOfferMessage('');
-                  setSelectedTemplate('');
+                  setSelectedMessages([]);
                 }}
+                size="sm"
                 className="flex-1"
               >
                 취소
               </Button>
               <Button
-                onClick={handleOfferConfirm}
-                disabled={!offerAmount || offerCount >= 5}
+                onClick={() => {
+                  // 선택된 메시지들을 합쳐서 하나의 메시지로 만들기
+                  const combinedMessage = selectedMessages.join(' / ');
+                  setOfferMessage(combinedMessage);
+                  handleOfferConfirm();
+                }}
+                disabled={!offerAmount || selectedMessages.length === 0 || offerCount >= 5}
+                size="sm"
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 제안하기
@@ -935,8 +973,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </p>
               {offerMessage && (
                 <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700 text-left">
-                  <p className="font-medium mb-1">메시지:</p>
-                  <p>{offerMessage}</p>
+                  <p className="font-medium mb-1">선택한 메시지:</p>
+                  <div className="space-y-1">
+                    {offerMessage.split(' / ').map((msg, index) => (
+                      <p key={index} className="text-xs">• {msg}</p>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
