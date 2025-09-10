@@ -744,15 +744,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   <p className="font-semibold text-amber-900 mb-2">둥지마켓 안전거래 약속</p>
                   <ul className="space-y-1.5 text-amber-800">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-0.5">✓</span>
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
                       <span>공공장소에서 만나 안전하게 거래하세요</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-0.5">✓</span>
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
                       <span>휴대폰 상태를 꼼꼼히 확인 후 구매 결정하세요</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-600 mt-0.5">✓</span>
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
                       <span>현금 거래로 안전하게 진행하세요</span>
                     </li>
                   </ul>
@@ -880,7 +880,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
             <div className="bg-amber-50 border border-amber-200 rounded p-2 mb-3">
               <p className="text-xs text-amber-700">
-                <span className="font-medium">⚠️ 주의</span>
+                <span className="font-medium">주의:</span>
                 <span className="ml-1">견적 제안은 구매 약속입니다.</span>
               </p>
             </div>
@@ -1053,7 +1053,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   disabled={phone.status !== 'active'}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
-                  💵 가격 제안하기
+                  가격 제안하기
                 </Button>
               ) : (
                 <Button
@@ -1065,7 +1065,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   disabled={phone.status !== 'active'}
                   className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700"
                 >
-                  📞 판매자 연락하기
+                  판매자 연락하기
                 </Button>
               )
             )}

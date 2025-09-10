@@ -237,10 +237,8 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             )}
 
             {/* 결과 수 */}
-            <div className="ml-auto px-3 py-1.5 bg-blue-50 rounded-lg">
-              <span className="text-sm text-blue-700 font-medium">
-                📱 총 {totalCount.toLocaleString()}개 상품
-              </span>
+            <div className="ml-auto text-sm text-gray-600">
+              총 <span className="font-medium">{totalCount.toLocaleString()}</span>개
             </div>
           </div>
         </div>

@@ -225,37 +225,35 @@ export default function UsedPhonesPage() {
   return (
     <>
       {/* 히어로 섹션 */}
-      <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-8 lg:py-12">
+      <section className="bg-gray-50 border-b py-8 lg:py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                중고폰 직거래 마켓
-              </span>
+              중고폰 직거래 마켓
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              🛡️ 안전거래 보장 · 💰 수수료 0% · ⚡ 당일거래 가능
+              안전거래 보장 · 수수료 0% · 당일거래 가능
             </p>
             
             {/* 특징 아이콘 */}
             <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-2xl mx-auto mb-8">
-              <div className="text-center group cursor-pointer">
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-100 text-blue-600 rounded-full mb-2 transition-all group-hover:scale-110 group-hover:bg-blue-200">
-                  <Shield className="w-7 h-7" />
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
+                  <Shield className="w-6 h-6" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">안전거래</p>
                 <p className="text-xs text-gray-500 mt-1">둥지페이 보호</p>
               </div>
-              <div className="text-center group cursor-pointer">
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 text-green-600 rounded-full mb-2 transition-all group-hover:scale-110 group-hover:bg-green-200">
-                  <TrendingUp className="w-7 h-7" />
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
+                  <TrendingUp className="w-6 h-6" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">가격협상</p>
                 <p className="text-xs text-gray-500 mt-1">원하는 가격 제안</p>
               </div>
-              <div className="text-center group cursor-pointer">
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-purple-100 text-purple-600 rounded-full mb-2 transition-all group-hover:scale-110 group-hover:bg-purple-200">
-                  <Zap className="w-7 h-7" />
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
+                  <Zap className="w-6 h-6" />
                 </div>
                 <p className="text-sm font-medium text-gray-700">빠른거래</p>
                 <p className="text-xs text-gray-500 mt-1">당일 직거래 가능</p>
@@ -267,7 +265,7 @@ export default function UsedPhonesPage() {
               <Button
                 size="lg"
                 onClick={handleCreateClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all px-8 py-6 text-lg"
+                className="px-8"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 내 폰 판매하기
@@ -282,28 +280,27 @@ export default function UsedPhonesPage() {
 
       {/* 프로필 미완성 안내 */}
       {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
-          <div className="container mx-auto px-4 py-4">
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="container mx-auto px-4 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-full">
-                  <AlertCircle className="w-5 h-5 text-yellow-600" />
-                </div>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-900">
-                    프로필을 완성하고 판매를 시작하세요!
+                  <p className="text-sm font-medium text-yellow-800">
+                    프로필을 완성하고 판매를 시작하세요
                   </p>
-                  <p className="text-xs text-yellow-700">
+                  <p className="text-xs text-yellow-600">
                     {missingFields.join(', ')} 정보만 입력하면 바로 판매 가능합니다
                   </p>
                 </div>
               </div>
               <Button
                 size="sm"
+                variant="outline"
                 onClick={() => router.push('/mypage')}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-sm"
+                className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
               >
-                지금 입력하기 →
+                정보 입력하기
               </Button>
             </div>
           </div>
@@ -356,26 +353,21 @@ export default function UsedPhonesPage() {
 
         {/* 검색 결과 없음 */}
         {!loading && phones.length === 0 && (
-          <div className="max-w-md mx-auto text-center py-20">
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Smartphone className="w-10 h-10 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                아직 등록된 상품이 없어요
-              </h3>
-              <p className="text-gray-600 mb-6">
-                지금 바로 첫 번째 판매자가 되어보세요!<br/>
-                수수료 없이 안전하게 거래할 수 있습니다.
-              </p>
-              <Button
-                onClick={handleCreateClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                판매 시작하기
-              </Button>
-            </div>
+          <div className="text-center py-16">
+            <Smartphone className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              등록된 상품이 없습니다
+            </h3>
+            <p className="text-gray-600 mb-6">
+              첫 번째 판매자가 되어보세요
+            </p>
+            <Button
+              onClick={handleCreateClick}
+              variant="outline"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              상품 등록하기
+            </Button>
           </div>
         )}
 
@@ -398,7 +390,7 @@ export default function UsedPhonesPage() {
         <Button
           size="icon"
           onClick={handleCreateClick}
-          className="w-14 h-14 rounded-full shadow-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-110 transition-all animate-pulse"
+          className="w-14 h-14 rounded-full shadow-lg"
         >
           <Plus className="w-6 h-6" />
         </Button>
