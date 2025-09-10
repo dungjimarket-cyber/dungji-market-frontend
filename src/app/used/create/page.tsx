@@ -27,12 +27,19 @@ import UsedPhoneProfileCheckModal from '@/components/common/UsedPhoneProfileChec
 import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import Image from 'next/image';
 import { searchRegionsByName, type Region } from '@/lib/api/regionService';
+import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
   file: File;
   url: string;
   isMain: boolean;
+}
+
+// 선택된 지역 타입
+interface SelectedRegion {
+  province: string;
+  city: string;
 }
 
 export default function CreateUsedPhonePage() {
@@ -52,11 +59,8 @@ export default function CreateUsedPhonePage() {
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   
-  // 지역 검색 관련 상태
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Region[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  // 다중 지역 선택 관련 상태
+  const [selectedRegions, setSelectedRegions] = useState<SelectedRegion[]>([]);
   
   const [formData, setFormData] = useState({
     brand: '',
@@ -64,17 +68,18 @@ export default function CreateUsedPhonePage() {
     storage: '',
     color: '',
     price: '',
-    minOfferPrice: '',
-    acceptOffers: false,
-    conditionGrade: '',
-    conditionDescription: '',
-    batteryStatus: '',
-    hasBox: false,
-    hasCharger: false,
-    hasEarphones: false,
+    min_offer_price: '',
+    accept_offers: false,
+    condition_grade: '',
+    condition_description: '',
+    battery_status: '',
+    body_only: false,  // 본체만 옵션 추가
+    has_box: false,
+    has_charger: false,
+    has_earphones: false,
     description: '',
     region: '',  // Region ID
-    meetingPlace: '',
+    meeting_place: '',
   });
 
   // 페이지 진입 시 프로필 체크 (중고폰용)
@@ -131,35 +136,9 @@ export default function CreateUsedPhonePage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // 지역 검색 핸들러
-  const handleRegionSearch = useCallback(async (term: string) => {
-    setSearchTerm(term);
-    
-    if (term.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    
-    setIsSearching(true);
-    try {
-      const results = await searchRegionsByName(term);
-      // 시/군/구 레벨(level 2)만 필터링
-      const filteredResults = results.filter(r => r.level === 2);
-      setSearchResults(filteredResults);
-    } catch (error) {
-      console.error('지역 검색 오류:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
-
-  // 지역 선택 핸들러
-  const handleRegionSelect = useCallback((region: Region) => {
-    setSelectedRegion(region);
-    setFormData(prev => ({ ...prev, region: region.code }));
-    setSearchTerm('');
-    setSearchResults([]);
+  // 다중 지역 선택 핸들러
+  const handleRegionSelectionChange = useCallback((regions: SelectedRegion[]) => {
+    setSelectedRegions(regions);
   }, []);
 
   // 등록 처리
@@ -202,10 +181,10 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    if (!formData.region) {
+    if (selectedRegions.length === 0) {
       toast({
         title: '거래 지역 선택',
-        description: '거래 지역을 선택해주세요.',
+        description: '최소 1개 이상의 거래 지역을 선택해주세요.',
         variant: 'destructive',
       });
       return;
@@ -225,11 +204,17 @@ export default function CreateUsedPhonePage() {
         }
       });
 
-      // 폼 데이터 추가
+      // 폼 데이터 추가 (region 필드 제외)
       Object.entries(formData).forEach(([key, value]) => {
-        if (value !== '' && value !== undefined && value !== null) {
+        if (key !== 'region' && value !== '' && value !== undefined && value !== null) {
           uploadData.append(key, value.toString());
         }
+      });
+
+      // 지역 정보 추가 (지역 코드를 가져와야 함)
+      // 임시로 지역명을 전송 (백엔드에서 처리 필요)
+      selectedRegions.forEach((region) => {
+        uploadData.append('regions', `${region.province} ${region.city}`);
       });
 
       // 디버깅용 FormData 내용 출력
@@ -476,14 +461,14 @@ export default function CreateUsedPhonePage() {
 
               {/* 최소 제안 가격 */}
               <div>
-                <Label htmlFor="minOfferPrice">최소 제안 가격</Label>
+                <Label htmlFor="min_offer_price">최소 제안 가격</Label>
                 <Input
-                  id="minOfferPrice"
+                  id="min_offer_price"
                   type="number"
                   placeholder="0"
-                  value={formData.minOfferPrice}
-                  onChange={(e) => handleInputChange('minOfferPrice', e.target.value)}
-                  disabled={!formData.acceptOffers}
+                  value={formData.min_offer_price}
+                  onChange={(e) => handleInputChange('min_offer_price', e.target.value)}
+                  disabled={!formData.accept_offers}
                 />
                 <p className="text-sm text-gray-500 mt-1">제안 받을 최소 금액</p>
               </div>
@@ -492,13 +477,13 @@ export default function CreateUsedPhonePage() {
             {/* 가격 제안 허용 */}
             <div className="flex items-center justify-between py-3 border-t">
               <div>
-                <Label htmlFor="acceptOffers" className="text-base">가격 제안 받기</Label>
+                <Label htmlFor="accept_offers" className="text-base">가격 제안 받기</Label>
                 <p className="text-sm text-gray-500">구매자가 가격을 제안할 수 있습니다</p>
               </div>
               <Switch
-                id="acceptOffers"
-                checked={formData.acceptOffers}
-                onCheckedChange={(checked) => handleInputChange('acceptOffers', checked)}
+                id="accept_offers"
+                checked={formData.accept_offers}
+                onCheckedChange={(checked) => handleInputChange('accept_offers', checked)}
               />
             </div>
           </div>
@@ -510,10 +495,10 @@ export default function CreateUsedPhonePage() {
             <div className="grid grid-cols-2 gap-4">
               {/* 상태 등급 */}
               <div>
-                <Label htmlFor="conditionGrade">상태 등급</Label>
+                <Label htmlFor="condition_grade">상태 등급</Label>
                 <Select 
-                  value={formData.conditionGrade} 
-                  onValueChange={(value) => handleInputChange('conditionGrade', value)}
+                  value={formData.condition_grade} 
+                  onValueChange={(value) => handleInputChange('condition_grade', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="선택하세요" />
@@ -530,10 +515,10 @@ export default function CreateUsedPhonePage() {
 
               {/* 배터리 상태 */}
               <div>
-                <Label htmlFor="batteryStatus">배터리 상태</Label>
+                <Label htmlFor="battery_status">배터리 상태</Label>
                 <Select 
-                  value={formData.batteryStatus} 
-                  onValueChange={(value) => handleInputChange('batteryStatus', value)}
+                  value={formData.battery_status} 
+                  onValueChange={(value) => handleInputChange('battery_status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="선택하세요" />
@@ -556,41 +541,65 @@ export default function CreateUsedPhonePage() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={formData.hasBox}
-                    onChange={(e) => handleInputChange('hasBox', e.target.checked)}
+                    checked={formData.body_only}
+                    onChange={(e) => {
+                      const isBodyOnly = e.target.checked;
+                      handleInputChange('body_only', isBodyOnly);
+                      // 본체만 선택 시 다른 구성품 체크 해제
+                      if (isBodyOnly) {
+                        handleInputChange('has_box', false);
+                        handleInputChange('has_charger', false);
+                        handleInputChange('has_earphones', false);
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  <span className="font-medium text-orange-600">본체만</span>
+                </label>
+                <label className={`flex items-center gap-2 cursor-pointer ${formData.body_only ? 'opacity-50' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={formData.has_box}
+                    onChange={(e) => handleInputChange('has_box', e.target.checked)}
+                    disabled={formData.body_only}
                     className="rounded"
                   />
                   <span>박스</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className={`flex items-center gap-2 cursor-pointer ${formData.body_only ? 'opacity-50' : ''}`}>
                   <input
                     type="checkbox"
-                    checked={formData.hasCharger}
-                    onChange={(e) => handleInputChange('hasCharger', e.target.checked)}
+                    checked={formData.has_charger}
+                    onChange={(e) => handleInputChange('has_charger', e.target.checked)}
+                    disabled={formData.body_only}
                     className="rounded"
                   />
                   <span>충전기</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className={`flex items-center gap-2 cursor-pointer ${formData.body_only ? 'opacity-50' : ''}`}>
                   <input
                     type="checkbox"
-                    checked={formData.hasEarphones}
-                    onChange={(e) => handleInputChange('hasEarphones', e.target.checked)}
+                    checked={formData.has_earphones}
+                    onChange={(e) => handleInputChange('has_earphones', e.target.checked)}
+                    disabled={formData.body_only}
                     className="rounded"
                   />
                   <span>이어폰</span>
                 </label>
               </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {formData.body_only ? '폰 본체만 거래합니다' : '포함된 구성품을 모두 선택해주세요'}
+              </p>
             </div>
 
             {/* 상태 설명 */}
             <div>
-              <Label htmlFor="conditionDescription">상태 설명</Label>
+              <Label htmlFor="condition_description">상태 설명</Label>
               <Textarea
-                id="conditionDescription"
+                id="condition_description"
                 placeholder="기스, 찍힘 등 상태를 자세히 설명해주세요"
-                value={formData.conditionDescription}
-                onChange={(e) => handleInputChange('conditionDescription', e.target.value)}
+                value={formData.condition_description}
+                onChange={(e) => handleInputChange('condition_description', e.target.value)}
                 rows={3}
               />
             </div>
@@ -603,68 +612,22 @@ export default function CreateUsedPhonePage() {
             {/* 거래 지역 선택 */}
             <div className="space-y-2">
               <Label>거래 지역 <span className="text-red-500">*</span></Label>
-              
-              {/* 선택된 지역 표시 */}
-              {selectedRegion && (
-                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium">{selectedRegion.full_name || selectedRegion.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedRegion(null);
-                      handleInputChange('region', '');
-                    }}
-                    className="ml-auto text-gray-500 hover:text-red-500"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-              
-              {/* 지역 검색 입력 */}
-              {!selectedRegion && (
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="지역명을 입력하세요 (예: 강남구, 분당구)"
-                    value={searchTerm}
-                    onChange={(e) => handleRegionSearch(e.target.value)}
-                    className="pr-10"
-                  />
-                  {isSearching && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full" />
-                    </div>
-                  )}
-                  
-                  {/* 검색 결과 */}
-                  {searchResults.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {searchResults.map((region) => (
-                        <button
-                          key={region.code}
-                          type="button"
-                          onClick={() => handleRegionSelect(region)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b last:border-b-0"
-                        >
-                          <div className="font-medium text-sm">{region.name}</div>
-                          <div className="text-xs text-gray-500">{region.full_name}</div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <p className="text-sm text-gray-500 mb-2">최대 3개 지역까지 선택 가능합니다</p>
+              <MultiRegionDropdown
+                maxSelections={3}
+                onSelectionChange={handleRegionSelectionChange}
+                selectedRegions={selectedRegions}
+              />
             </div>
             
             {/* 거래 희망 장소 */}
             <div>
-              <Label htmlFor="meetingPlace">거래 희망 장소</Label>
+              <Label htmlFor="meeting_place">거래 희망 장소</Label>
               <Input
-                id="meetingPlace"
+                id="meeting_place"
                 placeholder="예: 강남역 2번 출구"
-                value={formData.meetingPlace}
-                onChange={(e) => handleInputChange('meetingPlace', e.target.value)}
+                value={formData.meeting_place}
+                onChange={(e) => handleInputChange('meeting_place', e.target.value)}
               />
             </div>
 
