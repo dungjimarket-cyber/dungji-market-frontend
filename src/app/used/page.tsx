@@ -68,14 +68,23 @@ export default function UsedPhonesPage() {
       const response = await fetch(`${apiUrl}/used/phones/?${params}`);
       const data = await response.json();
 
+      // DRF 기본 응답 형식 처리
+      const items = Array.isArray(data) ? data : (data.results || data.items || []);
+      
       if (reset) {
-        setPhones(data.items || []);
+        setPhones(items);
       } else {
-        setPhones(prev => [...prev, ...(data.items || [])]);
+        setPhones(prev => [...prev, ...items]);
       }
       
-      setTotalCount(data.totalCount || 0);
-      setHasMore(data.hasMore || false);
+      // 페이지네이션 정보
+      if (data.count !== undefined) {
+        setTotalCount(data.count);
+        setHasMore(!!data.next);
+      } else {
+        setTotalCount(items.length);
+        setHasMore(items.length >= 20); // limit이 20이므로
+      }
       
     } catch (error) {
       console.error('Failed to fetch phones:', error);
