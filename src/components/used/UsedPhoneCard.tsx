@@ -25,8 +25,9 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
   onFavorite 
 }: UsedPhoneCardProps) {
   // 기본 이미지 설정
-  const imageUrl = phone.images?.[0]?.imageUrl || '/images/no-image.png';
-  const thumbnailUrl = imageUrl.replace(/\.(jpg|jpeg|png|webp)$/i, '_thumb.$1');
+  const imageUrl = phone.images?.[0]?.imageUrl || phone.images?.[0]?.thumbnailUrl || '/images/phone-placeholder.svg';
+  // 썸네일이 있으면 사용, 없으면 원본 이미지 사용
+  const thumbnailUrl = phone.images?.[0]?.thumbnailUrl || imageUrl;
   
   // 가격 포맷팅
   const formatPrice = (price?: number) => {
