@@ -174,39 +174,72 @@ export default function CreateUsedPhonePage() {
   // 이미지 업로드 핸들러
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
     
-    // 교체 모드가 아닌 경우 개수 체크
-    if (replaceIndex === undefined && images.length + files.length > 5) {
-      toast({
-        title: '이미지 개수 초과',
-        description: '최대 5장까지 업로드 가능합니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (replaceIndex !== undefined && files.length > 0) {
-      // 특정 이미지 교체
-      const newImage = {
+    if (replaceIndex !== undefined) {
+      // 특정 슬롯에 이미지 교체/추가
+      const newImage: ImagePreview = {
         file: files[0],
         url: URL.createObjectURL(files[0]),
-        isMain: images[replaceIndex].isMain,
+        isMain: replaceIndex === 0,
+        isEmpty: false
       };
       
       setImages(prev => {
         const updated = [...prev];
-        updated[replaceIndex] = newImage;
+        // 해당 위치에 이미지가 이미 있는지 확인
+        if (replaceIndex < updated.length) {
+          updated[replaceIndex] = newImage;
+        } else {
+          // 새 위치에 추가 (빈 슬롯 채우기)
+          while (updated.length < replaceIndex) {
+            updated.push({
+              file: null,
+              url: '',
+              isMain: false,
+              isEmpty: true
+            });
+          }
+          updated.push(newImage);
+        }
         return updated;
       });
     } else {
-      // 새 이미지 추가
+      // 새 이미지 추가 (다음 빈 슬롯에)
+      const actualImageCount = images.filter(img => img && !img.isEmpty).length;
+      
+      if (actualImageCount + files.length > 5) {
+        toast({
+          title: '이미지 개수 초과',
+          description: '최대 5장까지 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       const newImages = files.map((file, index) => ({
         file,
         url: URL.createObjectURL(file),
-        isMain: images.length === 0 && index === 0,
+        isMain: actualImageCount === 0 && index === 0,
+        isEmpty: false
       }));
 
-      setImages(prev => [...prev, ...newImages]);
+      setImages(prev => {
+        const updated = [...prev];
+        // 빈 슬롯 채우기
+        let addedCount = 0;
+        for (let i = 0; i < 5 && addedCount < newImages.length; i++) {
+          if (!updated[i] || updated[i].isEmpty) {
+            updated[i] = newImages[addedCount];
+            addedCount++;
+          }
+        }
+        // 남은 이미지가 있으면 추가
+        if (addedCount < newImages.length) {
+          updated.push(...newImages.slice(addedCount));
+        }
+        return updated.slice(0, 5); // 최대 5개로 제한
+      });
     }
   }, [images, toast]);
 
