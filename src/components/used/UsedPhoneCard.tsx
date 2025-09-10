@@ -25,9 +25,8 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
   onFavorite 
 }: UsedPhoneCardProps) {
   // 기본 이미지 설정
-  const imageUrl = phone.images?.[0]?.imageUrl || phone.images?.[0]?.thumbnailUrl || '/images/phone-placeholder.svg';
-  // 썸네일이 있으면 사용, 없으면 원본 이미지 사용
-  const thumbnailUrl = phone.images?.[0]?.thumbnailUrl || imageUrl;
+  const imageUrl = phone.images?.[0]?.imageUrl;
+  const hasImage = !!imageUrl;
   
   // 가격 포맷팅
   const formatPrice = (price?: number) => {
@@ -64,22 +63,19 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
     >
       {/* 이미지 영역 */}
       <div className="relative aspect-square bg-gray-100 overflow-hidden">
-        <Image
-          src={thumbnailUrl}
-          alt={phone.model || '중고폰'}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          priority={priority}
-          loading={priority ? 'eager' : 'lazy'}
-          onError={(e) => {
-            // 썸네일 로드 실패 시 원본 이미지 시도
-            const target = e.target as HTMLImageElement;
-            if (target.src !== imageUrl) {
-              target.src = imageUrl;
-            }
-          }}
-        />
+        {hasImage ? (
+          <Image
+            src={imageUrl}
+            alt={phone.model || '중고폰'}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100" />
+        )}
         
         {/* 상태 뱃지 */}
         {phone.status === 'reserved' && (
