@@ -49,8 +49,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/`
+        : `${baseUrl}/api/used/phones/${phoneId}/`;
+      const response = await fetch(apiUrl, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : ''
         }
@@ -103,8 +106,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/favorite/`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/favorite/`
+        : `${baseUrl}/api/used/phones/${phoneId}/favorite/`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -148,8 +154,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/offer/`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/api/used/phones/${phoneId}/offer/`
+        : `${baseUrl}/used/phones/${phoneId}/offer/`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

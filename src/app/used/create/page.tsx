@@ -227,8 +227,11 @@ export default function CreateUsedPhonePage() {
 
       // API 호출
       const token = localStorage.getItem('accessToken');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/used/phones/`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/`
+        : `${baseUrl}/api/used/phones/`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

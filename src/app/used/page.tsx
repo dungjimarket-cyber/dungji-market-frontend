@@ -64,8 +64,12 @@ export default function UsedPhonesPage() {
         ...currentFilters
       });
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/?${params}`);
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      // API URL이 이미 /api 경로를 포함하는지 확인
+      const apiUrl = baseUrl.includes('api.dungjimarket.com') 
+        ? `${baseUrl}/used/phones/?${params}`
+        : `${baseUrl}/api/used/phones/?${params}`;
+      const response = await fetch(apiUrl);
       
       // 응답 체크
       if (!response.ok) {
@@ -127,8 +131,11 @@ export default function UsedPhonesPage() {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const response = await fetch(`${apiUrl}/api/used/phones/${phoneId}/favorite/`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/favorite/`
+        : `${baseUrl}/api/used/phones/${phoneId}/favorite/`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
