@@ -1161,7 +1161,7 @@ export default function CreateUsedPhonePage() {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={5}
               />
-            </div> */
+            </div> */}
           </div>
 
           {/* 안내 메시지 */}
