@@ -26,7 +26,7 @@ import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import Image from 'next/image';
-import MultiRegionSelector from '@/components/address/MultiRegionSelector';
+import { searchRegionsByName, type Region } from '@/lib/api/regionService';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -51,6 +51,13 @@ export default function CreateUsedPhonePage() {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  
+  // 지역 검색 관련 상태
+  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Region[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   const [formData, setFormData] = useState({
     brand: '',
     model: '',
@@ -66,9 +73,7 @@ export default function CreateUsedPhonePage() {
     hasCharger: false,
     hasEarphones: false,
     description: '',
-    sido: '',
-    sigungu: '',
-    dong: '',
+    region: '',  // Region ID
     meetingPlace: '',
   });
 
@@ -126,6 +131,37 @@ export default function CreateUsedPhonePage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // 지역 검색 핸들러
+  const handleRegionSearch = useCallback(async (term: string) => {
+    setSearchTerm(term);
+    
+    if (term.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const results = await searchRegionsByName(term);
+      // 시/군/구 레벨(level 2)만 필터링
+      const filteredResults = results.filter(r => r.level === 2);
+      setSearchResults(filteredResults);
+    } catch (error) {
+      console.error('지역 검색 오류:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // 지역 선택 핸들러
+  const handleRegionSelect = useCallback((region: Region) => {
+    setSelectedRegion(region);
+    setFormData(prev => ({ ...prev, region: region.code }));
+    setSearchTerm('');
+    setSearchResults([]);
+  }, []);
+
   // 등록 처리
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,6 +197,15 @@ export default function CreateUsedPhonePage() {
       toast({
         title: '필수 정보 입력',
         description: '브랜드, 모델명, 가격은 필수입니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.region) {
+      toast({
+        title: '거래 지역 선택',
+        description: '거래 지역을 선택해주세요.',
         variant: 'destructive',
       });
       return;
@@ -556,31 +601,60 @@ export default function CreateUsedPhonePage() {
             <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
             
             {/* 거래 지역 선택 */}
-            <div>
+            <div className="space-y-2">
               <Label>거래 지역 <span className="text-red-500">*</span></Label>
-              <MultiRegionSelector
-                maxSelections={1}
-                onSelectionChange={(regions) => {
-                  if (regions.length > 0) {
-                    const region = regions[0];
-                    handleInputChange('sido', region.sido);
-                    handleInputChange('sigungu', region.sigungu);
-                  } else {
-                    handleInputChange('sido', '');
-                    handleInputChange('sigungu', '');
-                  }
-                }}
-                selectedRegions={
-                  formData.sido && formData.sigungu 
-                    ? [{
-                        sido: formData.sido,
-                        sigungu: formData.sigungu,
-                        fullAddress: `${formData.sido} ${formData.sigungu}`,
-                        zonecode: ''
-                      }]
-                    : []
-                }
-              />
+              
+              {/* 선택된 지역 표시 */}
+              {selectedRegion && (
+                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+                  <span className="text-sm font-medium">{selectedRegion.full_name || selectedRegion.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRegion(null);
+                      handleInputChange('region', '');
+                    }}
+                    className="ml-auto text-gray-500 hover:text-red-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              
+              {/* 지역 검색 입력 */}
+              {!selectedRegion && (
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="지역명을 입력하세요 (예: 강남구, 분당구)"
+                    value={searchTerm}
+                    onChange={(e) => handleRegionSearch(e.target.value)}
+                    className="pr-10"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+                    </div>
+                  )}
+                  
+                  {/* 검색 결과 */}
+                  {searchResults.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {searchResults.map((region) => (
+                        <button
+                          key={region.code}
+                          type="button"
+                          onClick={() => handleRegionSelect(region)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b last:border-b-0"
+                        >
+                          <div className="font-medium text-sm">{region.name}</div>
+                          <div className="text-xs text-gray-500">{region.full_name}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             {/* 거래 희망 장소 */}
