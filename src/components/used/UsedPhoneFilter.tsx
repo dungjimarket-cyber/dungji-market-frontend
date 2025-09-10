@@ -164,12 +164,12 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             </div>
 
             {/* 브랜드 필터 */}
-            <Select value={filters.brand || ''} onValueChange={(value) => updateFilter('brand', value)}>
+            <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="브랜드" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 {Object.entries(PHONE_BRANDS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -179,12 +179,12 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             </Select>
 
             {/* 상태 필터 */}
-            <Select value={filters.condition || ''} onValueChange={(value) => updateFilter('condition', value)}>
+            <Select value={filters.condition || 'all'} onValueChange={(value) => updateFilter('condition', value === 'all' ? undefined : value)}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 {Object.entries(CONDITION_GRADES).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -258,12 +258,12 @@ const FilterContent = memo(function FilterContent({
       {/* 브랜드 */}
       <div>
         <Label>브랜드</Label>
-        <Select value={filters.brand || ''} onValueChange={(value) => updateFilter('brand', value)}>
+        <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
           <SelectTrigger className="mt-2">
             <SelectValue placeholder="전체" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
+            <SelectItem value="all">전체</SelectItem>
             {Object.entries(PHONE_BRANDS).map(([value, label]) => (
               <SelectItem key={value} value={value}>
                 {label}
@@ -295,12 +295,12 @@ const FilterContent = memo(function FilterContent({
       {/* 상태 */}
       <div>
         <Label>상태</Label>
-        <Select value={filters.condition || ''} onValueChange={(value) => updateFilter('condition', value)}>
+        <Select value={filters.condition || 'all'} onValueChange={(value) => updateFilter('condition', value === 'all' ? undefined : value)}>
           <SelectTrigger className="mt-2">
             <SelectValue placeholder="전체" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
+            <SelectItem value="all">전체</SelectItem>
             {Object.entries(CONDITION_GRADES).map(([value, label]) => (
               <SelectItem key={value} value={value}>
                 {label}
@@ -313,12 +313,12 @@ const FilterContent = memo(function FilterContent({
       {/* 용량 */}
       <div>
         <Label>용량</Label>
-        <Select value={filters.storage?.toString() || ''} onValueChange={(value) => updateFilter('storage', value ? parseInt(value) : undefined)}>
+        <Select value={filters.storage?.toString() || 'all'} onValueChange={(value) => updateFilter('storage', value === 'all' ? undefined : parseInt(value))}>
           <SelectTrigger className="mt-2">
             <SelectValue placeholder="전체" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
+            <SelectItem value="all">전체</SelectItem>
             <SelectItem value="64">64GB</SelectItem>
             <SelectItem value="128">128GB</SelectItem>
             <SelectItem value="256">256GB</SelectItem>
