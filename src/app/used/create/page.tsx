@@ -26,8 +26,15 @@ import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import UsedPhoneProfileCheckModal from '@/components/common/UsedPhoneProfileCheckModal';
 import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { searchRegionsByName, type Region } from '@/lib/api/regionService';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
+
+// 모바일 디버그 패널 (클라이언트 사이드에서만 로드)
+const MobileDebugPanel = dynamic(
+  () => import('@/components/common/MobileDebugPanel'),
+  { ssr: false }
+);
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -765,6 +772,9 @@ export default function CreateUsedPhonePage() {
           </div>
         </div>
       )}
+      
+      {/* 모바일 디버그 패널 */}
+      <MobileDebugPanel />
     </div>
   );
 }
