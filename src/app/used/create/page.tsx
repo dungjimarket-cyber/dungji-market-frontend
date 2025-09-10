@@ -212,14 +212,22 @@ export default function CreateUsedPhonePage() {
         }
       });
 
-      // 폼 데이터 추가 (region 필드 제외, boolean 값 특별 처리)
+      // 폼 데이터 추가 (region 필드 제외, 타입별 처리)
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== 'region') {
           // boolean 값은 항상 전송 (false도 전송해야 함)
           if (typeof value === 'boolean') {
             uploadData.append(key, value.toString());
           } 
-          // 빈 문자열이 아닌 경우만 전송
+          // 숫자 필드 처리 (빈 문자열이 아닌 경우만)
+          else if ((key === 'price' || key === 'min_offer_price' || key === 'storage') && value !== '') {
+            // 숫자로 변환 가능한 경우만 전송
+            const numValue = parseInt(value.toString());
+            if (!isNaN(numValue)) {
+              uploadData.append(key, numValue.toString());
+            }
+          }
+          // 나머지 필드 (빈 문자열이 아닌 경우만 전송)
           else if (value !== '' && value !== undefined && value !== null) {
             uploadData.append(key, value.toString());
           }
@@ -233,8 +241,18 @@ export default function CreateUsedPhonePage() {
         });
       }
 
+      // API 설정
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/`
+        : `${baseUrl}/api/used/phones/`;
+
       // 디버깅용 FormData 내용 출력
       console.log('===== 전송할 FormData =====');
+      console.log('Base URL:', baseUrl);
+      console.log('Final API URL:', apiUrl);
+      console.log('Token 존재:', !!token);
       console.log('FormData 내용:');
       for (let [key, value] of uploadData.entries()) {
         if (value instanceof File) {
@@ -243,19 +261,7 @@ export default function CreateUsedPhonePage() {
           console.log(`${key}: ${value}`);
         }
       }
-      console.log('API URL:', apiUrl);
-      console.log('Token 존재:', !!token);
       console.log('=============================')
-
-      // API 호출
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/`
-        : `${baseUrl}/api/used/phones/`;
-      
-      console.log('Base URL:', baseUrl);
-      console.log('Final API URL:', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
