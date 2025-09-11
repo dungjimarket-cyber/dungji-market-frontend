@@ -7,7 +7,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
@@ -305,6 +306,18 @@ export default function UsedPhonesPage() {
                 <Plus className="w-5 h-5 mr-2" />
                 내 폰 판매하기
               </Button>
+              {isAuthenticated && (
+                <Link href="/used/mypage">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="px-8"
+                  >
+                    <User className="w-5 h-5 mr-2" />
+                    마이페이지
+                  </Button>
+                </Link>
+              )}
               <p className="text-sm text-gray-500">
                 최대 5개까지 동시 등록 가능
               </p>
