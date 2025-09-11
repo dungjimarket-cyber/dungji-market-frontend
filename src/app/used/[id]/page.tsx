@@ -343,6 +343,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         setOfferMessage('');
         setSelectedMessages([]);
         setOfferCount(prev => prev + 1);
+        // 실시간 제안 횟수 차감 카운팅
+        setRemainingOffers(prev => Math.max(0, prev - 1));
+        // 내 제안 정보 다시 불러오기
+        fetchMyOffer();
       } else {
         const error = await response.json();
         if (error.message?.includes('5회')) {
@@ -1057,13 +1061,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             </div>
             
             {/* 제안 횟수 표시 */}
-            <div className="flex items-center justify-between mb-4 p-3 bg-dungji-secondary rounded-lg">
-              <span className="text-sm font-medium text-dungji-primary-900">
+            <div className="flex items-center justify-between mb-4 p-3 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
+              <span className="text-sm font-medium text-gray-700">
                 남은 제안 횟수
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-dungji-primary">{remainingOffers}</span>
-                <span className="text-sm text-dungji-primary-700">/ 5회</span>
+                <span className="text-sm text-gray-600">/ 5회</span>
               </div>
             </div>
             
@@ -1107,7 +1111,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <label className="text-sm font-medium">
                   메시지 선택 
                   <span className="text-xs text-gray-500 ml-1">
-                    (최대 5개)
+                    (선택사항, 최대 5개)
                   </span>
                 </label>
                 {selectedMessages.length > 0 && (
@@ -1177,16 +1181,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             </div>
 
-            {/* 주의사항 */}
+            {/* 제안 안내사항 */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
               <div className="flex items-start gap-2">
                 <Info className="w-4 h-4 text-amber-600 mt-0.5" />
                 <div className="text-xs text-amber-800">
-                  <p className="font-semibold mb-1">제안 전 확인사항</p>
+                  <p className="font-semibold mb-1">제안 안내사항</p>
                   <ul className="space-y-0.5 text-amber-700">
-                    <li>• 가격 제안은 구매 의사 표현입니다</li>
-                    <li>• 판매자가 수락하면 거래가 진행됩니다</li>
-                    <li>• 허위 제안 시 제재를 받을 수 있습니다</li>
+                    <li>• 가격 제안은 신중하게 부탁드립니다</li>
+                    <li>• 판매자가 제안을 수락하면 연락처가 공개됩니다</li>
                   </ul>
                 </div>
               </div>
@@ -1212,7 +1215,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setOfferMessage(combinedMessage);
                   handleOfferConfirm();
                 }}
-                disabled={!offerAmount || selectedMessages.length === 0 || remainingOffers === 0}
+                disabled={!offerAmount || remainingOffers === 0}
                 className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
               >
                 제안하기
