@@ -566,11 +566,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
 
-            {/* 썸네일 - 최대 4개까지 균등하게 배치 */}
+            {/* 썸네일 - 최대 5개까지 모두 표시 */}
             {phone.images && phone.images.length > 1 && (
               <div className="mt-4">
-                <div className="grid grid-cols-4 gap-2">
-                  {phone.images.slice(0, 4).map((img, index) => (
+                <div className="grid grid-cols-5 gap-2">
+                  {phone.images.slice(0, 5).map((img, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -593,31 +593,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       )}
                     </button>
                   ))}
-                  {/* 5개 이상일 때 +더보기 표시 */}
-                  {phone.images.length > 4 && (
-                    <button
-                      onClick={() => setCurrentImageIndex(4)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 bg-gray-100 flex items-center justify-center transition-all ${
-                        currentImageIndex >= 4
-                          ? 'border-dungji-primary shadow-lg'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      {phone.images[4] && (
-                        <Image
-                          src={phone.images[4].imageUrl}
-                          alt={`${phone.model} 5`}
-                          fill
-                          className="object-cover opacity-50"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <span className="text-white font-semibold text-lg">
-                          +{phone.images.length - 4}
-                        </span>
-                      </div>
-                    </button>
-                  )}
                 </div>
               </div>
             )}
