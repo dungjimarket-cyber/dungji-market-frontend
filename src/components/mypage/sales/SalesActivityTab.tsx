@@ -334,7 +334,6 @@ export default function SalesActivityTab() {
   // 거래 상대 정보 조회
   const fetchBuyerInfo = async (phoneId: number) => {
     setLoadingBuyerInfo(true);
-    console.log('Fetching buyer info for phone:', phoneId); // 디버깅용 로그
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
@@ -342,7 +341,6 @@ export default function SalesActivityTab() {
         ? `${baseUrl}/used/phones/${phoneId}/buyer-info/`
         : `${baseUrl}/api/used/phones/${phoneId}/buyer-info/`;
 
-      console.log('Buyer info API URL:', apiUrl); // 디버깅용 로그
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -352,13 +350,10 @@ export default function SalesActivityTab() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Buyer info response:', data); // 디버깅용 로그
         setSelectedBuyerInfo(data);
         setShowBuyerInfoModal(true);
       } else {
-        const errorData = await response.json();
-        console.error('Buyer info error:', errorData); // 디버깅용 로그
-        throw new Error('구매자 정보 조회 실패');
+        throw new Error('구매자 정보를 불러올 수 없습니다.');
       }
     } catch (error) {
       console.error('Failed to fetch buyer info:', error);

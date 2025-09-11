@@ -155,32 +155,18 @@ export default function PurchaseActivityTab() {
         ? `${baseUrl}/used/phones/my-trading/`
         : `${baseUrl}/api/used/phones/my-trading/`;
 
-      console.log('Fetching trading items from:', apiUrl); // URL 확인
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      console.log('Response status:', response.status); // 응답 상태 확인
       if (response.ok) {
         const data = await response.json();
-        console.log('Trading items API response:', data); // 디버깅용 로그
         setTradingItems(data.results || data || []);
       } else {
-        console.error('API error:', response.status, response.statusText);
-        // 404인 경우 대체 방법 시도
-        if (response.status === 404) {
-          console.log('Trying alternative: fetching all my offers and filtering...');
-          // 대안: sent offers에서 accepted이면서 phone.status가 trading인 것 필터
-          const offersData = await buyerAPI.getMySentOffers();
-          const offers = offersData.results || offersData || [];
-          const tradingOffers = offers.filter((offer: any) => 
-            offer.status === 'accepted' && offer.phone?.status === 'trading'
-          );
-          console.log('Filtered trading offers:', tradingOffers);
-          setTradingItems(tradingOffers);
-        }
+        console.error('Failed to fetch trading items:', response.status);
+        setTradingItems([]);
       }
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
@@ -264,7 +250,6 @@ export default function PurchaseActivityTab() {
         ? `${baseUrl}/used/phones/${phoneId}/seller-info/`
         : `${baseUrl}/api/used/phones/${phoneId}/seller-info/`;
 
-      console.log('Fetching seller info from:', apiUrl);
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -275,21 +260,8 @@ export default function PurchaseActivityTab() {
         const data = await response.json();
         setSelectedSellerInfo(data);
         setShowSellerInfoModal(true);
-      } else if (response.status === 404) {
-        // 404 에러시 거래중 아이템에서 판매자 정보 찾기
-        console.log('Seller-info API 404, using trading item data...');
-        const tradingItem = tradingItems.find(item => item.phone.id === phoneId);
-        if (tradingItem && tradingItem.phone.seller) {
-          const sellerInfo = {
-            ...tradingItem.phone.seller,
-            accepted_price: tradingItem.offered_price || tradingItem.phone.price,
-          };
-          console.log('Using fallback seller info:', sellerInfo);
-          setSelectedSellerInfo(sellerInfo);
-          setShowSellerInfoModal(true);
-        } else {
-          throw new Error('판매자 정보를 찾을 수 없습니다.');
-        }
+      } else {
+        throw new Error('판매자 정보를 불러올 수 없습니다.');
       }
     } catch (error) {
       console.error('Failed to fetch seller info:', error);
