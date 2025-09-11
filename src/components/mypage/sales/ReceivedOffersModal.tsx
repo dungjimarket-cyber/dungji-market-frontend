@@ -58,7 +58,7 @@ export default function ReceivedOffersModal({
     switch (status) {
       case 'accepted':
         return (
-          <Badge className="bg-green-500 text-white">
+          <Badge variant="success">
             <CheckCircle className="w-3 h-3 mr-1" />
             수락됨
           </Badge>
@@ -160,7 +160,7 @@ export default function ReceivedOffersModal({
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">제안 금액</span>
                     <div className="text-right">
-                      <p className="font-semibold text-lg text-blue-600">
+                      <p className="font-semibold text-lg text-dungji-primary">
                         {offer.offered_price.toLocaleString()}원
                       </p>
                       <p className="text-xs text-gray-500">

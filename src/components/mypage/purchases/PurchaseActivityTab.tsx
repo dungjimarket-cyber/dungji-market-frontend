@@ -187,7 +187,7 @@ export default function PurchaseActivityTab() {
         );
       case 'accepted':
         return (
-          <Badge className="bg-green-500 text-white">
+          <Badge variant="success">
             <CheckCircle className="w-3 h-3 mr-1" />
             수락됨
           </Badge>
@@ -271,7 +271,7 @@ export default function PurchaseActivityTab() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">제안가</span>
-                        <span className="font-semibold text-blue-600">
+                        <span className="font-semibold text-dungji-primary">
                           {offer.offered_price.toLocaleString()}원
                           <span className="text-xs text-gray-500 ml-1">
                             (-{calculateDiscount(offer.phone.price, offer.offered_price)}%)

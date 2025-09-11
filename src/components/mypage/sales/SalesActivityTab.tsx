@@ -143,9 +143,9 @@ export default function SalesActivityTab() {
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      active: <Badge className="bg-blue-500 text-white">판매중</Badge>,
-      reserved: <Badge className="bg-orange-500 text-white">예약중</Badge>,
-      sold: <Badge variant="secondary">판매완료</Badge>,
+      active: <Badge variant="default">판매중</Badge>,
+      reserved: <Badge variant="warning">예약중</Badge>,
+      sold: <Badge variant="soft">판매완료</Badge>,
     };
     return badges[status as keyof typeof badges];
   };
