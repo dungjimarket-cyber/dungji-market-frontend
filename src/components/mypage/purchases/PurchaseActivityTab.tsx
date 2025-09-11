@@ -246,7 +246,8 @@ export default function PurchaseActivityTab() {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = `${baseUrl}/used/phones/${phoneId}/seller-info/`;
-
+      
+      console.log('Fetching seller info from:', apiUrl);
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -343,6 +344,14 @@ export default function PurchaseActivityTab() {
     }
   };
 
+  // 처음 로드시 모든 데이터 가져오기
+  useEffect(() => {
+    fetchMyOffers();
+    fetchTradingItems();
+    fetchFavorites();
+  }, []);
+
+  // 탭 변경시 해당 데이터 새로고침
   useEffect(() => {
     if (activeTab === 'offers') {
       fetchMyOffers();

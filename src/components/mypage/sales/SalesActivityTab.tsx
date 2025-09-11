@@ -336,7 +336,8 @@ export default function SalesActivityTab() {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = `${baseUrl}/used/phones/${phoneId}/buyer-info/`;
-
+      
+      console.log('Fetching buyer info from:', apiUrl);
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
