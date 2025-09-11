@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -31,6 +32,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
+  const { hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
   
   const [phone, setPhone] = useState<UsedPhone | null>(null);
   const [loading, setLoading] = useState(true);
@@ -246,9 +248,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d]/g, '');
-    if (parseInt(value) <= 9900000) { // 990만원 제한
-      setOfferAmount(value);
+    const inputValue = e.target.value;
+    const cursorPosition = e.target.selectionStart || 0;
+    
+    // 콤마를 제거하고 숫자만 추출
+    const numbers = inputValue.replace(/[^\d]/g, '');
+    
+    // 빈 값이면 빈 문자열로 설정
+    if (!numbers) {
+      setOfferAmount('');
+      return;
+    }
+    
+    // 990만원 제한
+    if (parseInt(numbers) <= 9900000) {
+      setOfferAmount(numbers);
     }
   };
 
@@ -748,6 +762,27 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="space-y-2">
                           <Button
                             onClick={() => {
+                              // 로그인 체크
+                              if (!isAuthenticated) {
+                                toast({
+                                  title: '로그인 필요',
+                                  description: '가격 제안은 로그인 후 이용 가능합니다.',
+                                  variant: 'destructive',
+                                });
+                                router.push('/login');
+                                return;
+                              }
+                              
+                              // 프로필 체크
+                              if (!hasUsedPhoneProfile) {
+                                toast({
+                                  title: '프로필 등록 필요',
+                                  description: '중고폰 거래를 위해 프로필 등록이 필요합니다.',
+                                  variant: 'destructive',
+                                });
+                                return;
+                              }
+                              
                               if (myOffer && myOffer.status === 'pending') {
                                 // 수정 제안
                                 setShowOfferModal(true);
@@ -984,42 +1019,88 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-5 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">가격 제안하기</h3>
-              <div className="flex items-center gap-2 px-2 py-1 bg-blue-100 rounded-full">
-                <span className="text-xs font-medium text-blue-700">
-                  제안 {offerCount}/5회
-                </span>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between mb-4 pb-4 border-b">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">가격 제안하기</h3>
+                <p className="text-sm text-gray-500 mt-1">판매자에게 희망 가격을 제안해보세요</p>
+              </div>
+              <button
+                onClick={() => setShowOfferModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* 제품 정보 미리보기 */}
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="flex items-center gap-3">
+                {phone.images?.[0] && (
+                  <Image
+                    src={phone.images[0].image}
+                    alt={phone.model}
+                    width={60}
+                    height={60}
+                    className="rounded-lg object-cover"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{phone.model}</p>
+                  <p className="text-xs text-gray-600">{phone.storage}GB | {phone.color}</p>
+                  <p className="text-sm font-bold text-blue-600 mt-1">
+                    즉시 구매가: {phone.price?.toLocaleString()}원
+                  </p>
+                </div>
               </div>
             </div>
             
-            {offerCount >= 5 && (
-              <div className="bg-red-50 border border-red-200 rounded p-2 mb-3">
-                <p className="text-xs text-red-700">
-                  제안 횟수를 모두 사용했습니다.
-                </p>
+            {/* 제안 횟수 표시 */}
+            <div className="flex items-center justify-between mb-4 p-3 bg-blue-50 rounded-lg">
+              <span className="text-sm font-medium text-blue-900">
+                남은 제안 횟수
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-blue-600">{remainingOffers}</span>
+                <span className="text-sm text-blue-700">/ 5회</span>
+              </div>
+            </div>
+            
+            {remainingOffers === 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-900">
+                      제안 횟수를 모두 사용했습니다
+                    </p>
+                    <p className="text-xs text-red-700 mt-1">
+                      기존 제안을 취소하면 다시 제안할 수 있습니다
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
             
-            <div className="mb-3">
-              <label className="block text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-2 text-gray-900">
                 제안 금액 <span className="text-red-500">*</span>
-                <span className="text-xs text-gray-500 ml-1">
-                  (최소: {phone.min_offer_price?.toLocaleString()}원)
-                </span>
               </label>
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="0"
+                  placeholder="금액을 입력해주세요"
                   value={formatCurrency(offerAmount)}
                   onChange={handlePriceChange}
-                  className="pr-12 h-9"
+                  className="pr-12 h-12 text-lg font-semibold"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">원</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium">원</span>
               </div>
+              <p className="text-xs text-gray-500 mt-2">
+                최소 제안가: {phone.min_offer_price?.toLocaleString()}원 | 최대: 9,900,000원
+              </p>
             </div>
 
             <div className="mb-3">
@@ -1097,14 +1178,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded p-2 mb-3">
-              <p className="text-xs text-amber-700">
-                <span className="font-medium">주의:</span>
-                <span className="ml-1">견적 제안은 구매 약속입니다.</span>
-              </p>
+            {/* 주의사항 */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-amber-600 mt-0.5" />
+                <div className="text-xs text-amber-800">
+                  <p className="font-semibold mb-1">제안 전 확인사항</p>
+                  <ul className="space-y-0.5 text-amber-700">
+                    <li>• 가격 제안은 구매 의사 표현입니다</li>
+                    <li>• 판매자가 수락하면 거래가 진행됩니다</li>
+                    <li>• 허위 제안 시 제재를 받을 수 있습니다</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-2">
+            {/* 버튼 */}
+            <div className="flex gap-3">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -1112,8 +1202,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setOfferAmount('');
                   setSelectedMessages([]);
                 }}
-                size="sm"
-                className="flex-1"
+                className="flex-1 h-12"
               >
                 취소
               </Button>
@@ -1124,9 +1213,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setOfferMessage(combinedMessage);
                   handleOfferConfirm();
                 }}
-                disabled={!offerAmount || selectedMessages.length === 0 || offerCount >= 5}
-                size="sm"
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                disabled={!offerAmount || selectedMessages.length === 0 || remainingOffers === 0}
+                className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
               >
                 제안하기
               </Button>
