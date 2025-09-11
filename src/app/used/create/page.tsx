@@ -407,10 +407,30 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
+    // 최대 금액 검증 (990만원)
+    if (parseInt(formData.price) > 9900000) {
+      toast({
+        title: '금액 제한',
+        description: '최대 판매 금액은 990만원입니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!formData.min_offer_price) {
       toast({
         title: '최소 제안가를 입력해주세요',
         description: '최소 제안 가격을 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 최대 금액 검증 (990만원)
+    if (parseInt(formData.min_offer_price) > 9900000) {
+      toast({
+        title: '금액 제한',
+        description: '최대 제안 금액은 990만원입니다.',
         variant: 'destructive',
       });
       return;
@@ -996,10 +1016,19 @@ export default function CreateUsedPhonePage() {
                 <Input
                   id="price"
                   type="text"
-                  placeholder="0"
+                  placeholder="0 (최대 990만원)"
                   value={formatPrice(formData.price)}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
+                    // 최대 금액 제한 (990만원)
+                    if (parseInt(unformatted) > 9900000) {
+                      toast({
+                        title: '금액 제한',
+                        description: '최대 판매 금액은 990만원입니다.',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
                     handleInputChange('price', unformatted);
                   }}
                   required
@@ -1015,10 +1044,19 @@ export default function CreateUsedPhonePage() {
                 <Input
                   id="min_offer_price"
                   type="text"
-                  placeholder="0"
+                  placeholder="0 (최대 990만원)"
                   value={formatPrice(formData.min_offer_price)}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
+                    // 최대 금액 제한 (990만원)
+                    if (parseInt(unformatted) > 9900000) {
+                      toast({
+                        title: '금액 제한',
+                        description: '최대 제안 금액은 990만원입니다.',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
                     // 즉시 판매가보다 낮은지 체크
                     if (formData.price && parseInt(unformatted) >= parseInt(formData.price)) {
                       toast({

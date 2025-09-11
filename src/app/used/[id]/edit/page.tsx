@@ -202,6 +202,27 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     }
     
     const value = e.target.value.replace(/[^\d]/g, '');
+    
+    // 최대 금액 제한 (990만원)
+    if (parseInt(value) > 9900000) {
+      toast({
+        title: '금액 제한',
+        description: '최대 금액은 990만원입니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // 최소 제안가가 즉시 판매가보다 높을 때 경고
+    if (field === 'min_offer_price' && formData.price && parseInt(value) >= parseInt(formData.price)) {
+      toast({
+        title: '가격 오류',
+        description: '최소 제안가는 즉시 판매가보다 낮아야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsModified(true);
   };
@@ -276,6 +297,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     if (images.length === 0) newErrors.images = '상품 이미지를 등록해주세요';
     
     // 가격 검증
+    if (parseInt(formData.price) > 9900000) {
+      newErrors.price = '최대 판매 금액은 990만원입니다';
+    }
+    if (parseInt(formData.min_offer_price) > 9900000) {
+      newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+    }
     if (parseInt(formData.min_offer_price) >= parseInt(formData.price)) {
       newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
     }
