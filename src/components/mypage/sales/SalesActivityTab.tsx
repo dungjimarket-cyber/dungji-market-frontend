@@ -284,9 +284,7 @@ export default function SalesActivityTab() {
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/cancel-trade/`
-        : `${baseUrl}/api/used/phones/${phoneId}/cancel-trade/`;
+      const apiUrl = `${baseUrl}/api/used/phones/${phoneId}/cancel-trade/`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -337,9 +335,7 @@ export default function SalesActivityTab() {
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/buyer-info/`
-        : `${baseUrl}/api/used/phones/${phoneId}/buyer-info/`;
+      const apiUrl = `${baseUrl}/api/used/phones/${phoneId}/buyer-info/`;
 
       const response = await fetch(apiUrl, {
         headers: {

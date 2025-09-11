@@ -151,9 +151,7 @@ export default function PurchaseActivityTab() {
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/my-trading/`
-        : `${baseUrl}/api/used/phones/my-trading/`;
+      const apiUrl = `${baseUrl}/api/used/phones/my-trading/`;
 
       const response = await fetch(apiUrl, {
         headers: {
@@ -246,9 +244,7 @@ export default function PurchaseActivityTab() {
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/seller-info/`
-        : `${baseUrl}/api/used/phones/${phoneId}/seller-info/`;
+      const apiUrl = `${baseUrl}/api/used/phones/${phoneId}/seller-info/`;
 
       const response = await fetch(apiUrl, {
         headers: {
@@ -306,9 +302,7 @@ export default function PurchaseActivityTab() {
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${cancellingItem.phone.id}/cancel-trade/`
-        : `${baseUrl}/api/used/phones/${cancellingItem.phone.id}/cancel-trade/`;
+      const apiUrl = `${baseUrl}/api/used/phones/${cancellingItem.phone.id}/cancel-trade/`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -398,7 +392,7 @@ export default function PurchaseActivityTab() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="offers" className="text-xs sm:text-sm">
-            제안내역 ({offers.length})
+            제안내역 ({offers.filter(offer => offer.status !== 'accepted' || offer.phone?.status !== 'trading').length})
           </TabsTrigger>
           <TabsTrigger value="trading" className="text-xs sm:text-sm">
             거래중 ({tradingItems.length})
