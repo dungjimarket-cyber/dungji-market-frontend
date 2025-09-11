@@ -61,6 +61,12 @@ export const sellerAPI = {
     return response.data;
   },
 
+  // 거래 진행 (수락된 제안을 거래중으로 전환)
+  proceedTrade: async (offerId: number) => {
+    const response = await api.post(`/used/offers/${offerId}/proceed-trade/`);
+    return response.data;
+  },
+
   // 상품 상태 변경
   updateListingStatus: async (phoneId: number, status: string) => {
     const response = await api.patch(`/used/phones/${phoneId}/`, { status });

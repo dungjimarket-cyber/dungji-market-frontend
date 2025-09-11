@@ -43,6 +43,7 @@ interface ReceivedOffersModalProps {
   phone: Phone;
   offers: ReceivedOffer[];
   onRespond: (offerId: number, action: 'accept' | 'reject') => void;
+  onProceedTrade?: (offerId: number) => void;
 }
 
 export default function ReceivedOffersModal({
@@ -51,6 +52,7 @@ export default function ReceivedOffersModal({
   phone,
   offers,
   onRespond,
+  onProceedTrade,
 }: ReceivedOffersModalProps) {
   const [expandedMessage, setExpandedMessage] = useState<number | null>(null);
 
@@ -215,8 +217,9 @@ export default function ReceivedOffersModal({
                         size="sm"
                         className="flex-1"
                         onClick={() => {
-                          // TODO: 거래 진행 API 호출
-                          console.log('거래 진행', offer.id);
+                          if (onProceedTrade) {
+                            onProceedTrade(offer.id);
+                          }
                         }}
                       >
                         거래 진행

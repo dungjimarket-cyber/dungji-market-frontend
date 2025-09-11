@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, DollarSign, Clock, CheckCircle, Phone, Mail, MapPin, Info, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -155,6 +156,27 @@ export default function SalesActivityTab() {
       toast({
         title: '오류',
         description: '제안 응답에 실패했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // 거래 진행 (수락된 제안을 거래중으로 전환)
+  const handleProceedTrade = async (offerId: number) => {
+    try {
+      await sellerAPI.proceedTrade(offerId);
+      toast({
+        title: '거래 시작',
+        description: '거래가 시작되었습니다. 구매자 정보를 확인해주세요.',
+      });
+      setShowOffersModal(false);
+      setSelectedPhone(null);
+      fetchMyListings(); // 목록 새로고침
+      fetchTradingItems(); // 거래중 목록 새로고침
+    } catch (error) {
+      toast({
+        title: '오류',
+        description: '거래 진행에 실패했습니다.',
         variant: 'destructive',
       });
     }
@@ -377,7 +399,7 @@ export default function SalesActivityTab() {
               listings.filter(item => item.status === 'active').map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                       <Image
                         src={item.images[0]?.image_url || '/placeholder.png'}
                         alt={item.title}
@@ -385,11 +407,11 @@ export default function SalesActivityTab() {
                         height={80}
                         className="object-cover w-full h-full"
                       />
-                    </div>
+                    </Link>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="min-w-0 flex-1">
+                        <Link href={`/used/${item.id}`} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
                           <h4 className="font-medium text-sm truncate">
                             {item.brand} {item.model}
                           </h4>
@@ -447,7 +469,7 @@ export default function SalesActivityTab() {
               listings.filter(item => item.offer_count > 0 && item.status !== 'trading').map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                       <Image
                         src={item.images[0]?.image_url || '/placeholder.png'}
                         alt={item.title}
@@ -455,12 +477,14 @@ export default function SalesActivityTab() {
                         height={80}
                         className="object-cover w-full h-full"
                       />
-                    </div>
+                    </Link>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">
-                        {item.brand} {item.model}
-                      </h4>
+                      <Link href={`/used/${item.id}`} className="cursor-pointer hover:opacity-80 transition-opacity">
+                        <h4 className="font-medium text-sm truncate">
+                          {item.brand} {item.model}
+                        </h4>
+                      </Link>
                       <p className="text-sm text-gray-600">
                         판매가: {item.price.toLocaleString()}원
                       </p>
@@ -617,6 +641,7 @@ export default function SalesActivityTab() {
           phone={selectedPhone}
           offers={receivedOffers}
           onRespond={handleOfferResponse}
+          onProceedTrade={handleProceedTrade}
         />
       )}
 
@@ -654,13 +679,14 @@ export default function SalesActivityTab() {
                   onChange={(e) => setCancellationReason(e.target.value)}
                 >
                   <option value="">취소 사유를 선택하세요</option>
-                  <option value="change_mind">단순 변심</option>
-                  <option value="found_better">더 나은 조건 발견</option>
-                  <option value="no_response">상대방 연락 두절</option>
-                  <option value="condition_mismatch">상품 상태 불일치</option>
-                  <option value="price_disagreement">가격 재협상 실패</option>
-                  <option value="schedule_conflict">일정 조율 실패</option>
-                  <option value="location_issue">거래 장소 문제</option>
+                  <option value="product_sold">다른 경로로 판매됨</option>
+                  <option value="buyer_no_response">구매자 연락 두절</option>
+                  <option value="buyer_no_show">구매자 약속 불이행</option>
+                  <option value="payment_issue">결제 문제 발생</option>
+                  <option value="buyer_unreasonable">구매자 무리한 요구</option>
+                  <option value="schedule_conflict">거래 일정 조율 실패</option>
+                  <option value="personal_reason">개인 사정으로 판매 불가</option>
+                  <option value="buyer_cancel_request">구매자 취소 요청</option>
                   <option value="other">기타</option>
                 </select>
               </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Heart, Clock, CheckCircle, XCircle, MessageSquare, DollarSign, Phone, Mail, MapPin, Info, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -416,7 +417,10 @@ export default function PurchaseActivityTab() {
             offers.map((offer) => (
               <Card key={offer.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <Link 
+                    href={`/used/${offer.phone.id}`}
+                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
+                  >
                     <Image
                       src={offer.phone.images[0]?.image_url || '/placeholder.png'}
                       alt={offer.phone.title}
@@ -424,14 +428,19 @@ export default function PurchaseActivityTab() {
                       height={80}
                       className="object-cover w-full h-full"
                     />
-                  </div>
+                  </Link>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm truncate">
-                          {offer.phone.brand} {offer.phone.model}
-                        </h4>
+                        <Link 
+                          href={`/used/${offer.phone.id}`}
+                          className="hover:text-dungji-primary transition-colors"
+                        >
+                          <h4 className="font-medium text-sm truncate">
+                            {offer.phone.brand} {offer.phone.model}
+                          </h4>
+                        </Link>
                         <p className="text-xs text-gray-500">
                           판매자: {offer.phone.seller.nickname}
                         </p>
@@ -597,7 +606,10 @@ export default function PurchaseActivityTab() {
             favorites.map((item) => (
               <Card key={item.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <Link 
+                    href={`/used/${item.phone.id}`}
+                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
+                  >
                     <Image
                       src={item.phone.images[0]?.image_url || '/placeholder.png'}
                       alt={item.phone.title}
@@ -605,12 +617,17 @@ export default function PurchaseActivityTab() {
                       height={80}
                       className="object-cover w-full h-full"
                     />
-                  </div>
+                  </Link>
                   
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm truncate">
-                      {item.phone.brand} {item.phone.model}
-                    </h4>
+                    <Link 
+                      href={`/used/${item.phone.id}`}
+                      className="hover:text-dungji-primary transition-colors"
+                    >
+                      <h4 className="font-medium text-sm truncate">
+                        {item.phone.brand} {item.phone.model}
+                      </h4>
+                    </Link>
                     <p className="text-base sm:text-lg font-semibold mt-1">
                       {item.phone.price.toLocaleString()}원
                     </p>
@@ -682,12 +699,13 @@ export default function PurchaseActivityTab() {
                 >
                   <option value="">취소 사유를 선택하세요</option>
                   <option value="change_mind">단순 변심</option>
-                  <option value="found_better">더 나은 조건 발견</option>
-                  <option value="no_response">상대방 연락 두절</option>
-                  <option value="condition_mismatch">상품 상태 불일치</option>
-                  <option value="price_disagreement">가격 재협상 실패</option>
-                  <option value="schedule_conflict">일정 조율 실패</option>
-                  <option value="location_issue">거래 장소 문제</option>
+                  <option value="found_better">다른 상품 구매 결정</option>
+                  <option value="seller_no_response">판매자 연락 두절</option>
+                  <option value="condition_mismatch">상품 상태가 설명과 다름</option>
+                  <option value="price_disagreement">추가 비용 요구</option>
+                  <option value="schedule_conflict">거래 일정 조율 실패</option>
+                  <option value="location_issue">거래 장소 너무 멀음</option>
+                  <option value="seller_cancel_request">판매자 취소 요청</option>
                   <option value="other">기타</option>
                 </select>
               </div>
