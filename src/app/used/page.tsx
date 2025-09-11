@@ -45,29 +45,21 @@ export default function UsedPhonesPage() {
   
   const [phones, setPhones] = useState<UsedPhone[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({});
-  const MAX_PAGES = 10; // 최대 10페이지까지만 로드 (총 200개 상품)
   
   // 등록 제한 관련 상태
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [registrationLimit, setRegistrationLimit] = useState({ current: 0, max: 5 });
-  
-  // Intersection Observer를 위한 ref
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // 상품 목록 조회
-  const fetchPhones = useCallback(async (pageNum: number, currentFilters: any, reset = false) => {
+  // 상품 목록 조회 (전체 조회)
+  const fetchPhones = useCallback(async (currentFilters: any) => {
     try {
       setLoading(true);
       
-      // 쿼리 파라미터 생성
+      // 쿼리 파라미터 생성 (페이지네이션 없이 전체 조회)
       const params = new URLSearchParams({
-        page: pageNum.toString(),
-        limit: '20',
+        limit: '1000', // 충분히 큰 수로 전체 조회
         ...currentFilters
       });
 
@@ -88,25 +80,11 @@ export default function UsedPhonesPage() {
       // DRF 기본 응답 형식 처리
       const items = Array.isArray(data) ? data : (data.results || data.items || []);
       
-      if (reset) {
-        setPhones(items);
-      } else {
-        setPhones(prev => [...prev, ...items]);
-      }
-      
-      // 페이지네이션 정보
-      if (data.count !== undefined) {
-        setTotalCount(data.count);
-        setHasMore(!!data.next);
-      } else {
-        setTotalCount(items.length);
-        setHasMore(items.length >= 20); // limit이 20이므로
-      }
+      setPhones(items);
+      setTotalCount(items.length);
       
     } catch (error) {
       console.error('Failed to fetch phones:', error);
-      // 에러 발생 시 더 이상 로드하지 않도록 설정
-      setHasMore(false);
       toast({
         title: '오류',
         description: '상품을 불러오는데 실패했습니다.',
@@ -120,8 +98,7 @@ export default function UsedPhonesPage() {
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((newFilters: any) => {
     setFilters(newFilters);
-    setPage(1);
-    fetchPhones(1, newFilters, true);
+    fetchPhones(newFilters);
   }, [fetchPhones]);
 
   // 찜하기 핸들러
@@ -168,40 +145,9 @@ export default function UsedPhonesPage() {
     }
   }, [isAuthenticated, toast, router]);
 
-  // 무한 스크롤 설정
-  useEffect(() => {
-    if (loading || !hasMore) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loading && hasMore && page < MAX_PAGES) {
-          setPage(prev => {
-            const nextPage = prev + 1;
-            if (nextPage <= MAX_PAGES) {
-              fetchPhones(nextPage, filters);
-              return nextPage;
-            }
-            return prev;
-          });
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [loading, hasMore, filters, fetchPhones, page, MAX_PAGES]);
-
   // 초기 데이터 로드
   useEffect(() => {
-    fetchPhones(1, {}, true);
+    fetchPhones({});
   }, []);
 
   // 프로필 체크 (로그인한 경우)
@@ -375,7 +321,7 @@ export default function UsedPhonesPage() {
           ))}
           
           {/* 로딩 스켈레톤 */}
-          {loading && phones.length === 0 && (
+          {loading && (
             <>
               {[...Array(20)].map((_, i) => (
                 <SkeletonCard key={`skeleton-${i}`} />
@@ -383,36 +329,6 @@ export default function UsedPhonesPage() {
             </>
           )}
         </div>
-
-        {/* 무한 스크롤 트리거 */}
-        {hasMore && !loading && page < MAX_PAGES && (
-          <div ref={loadMoreRef} className="h-10 mt-4" />
-        )}
-        
-        {/* 최대 페이지 도달 안내 */}
-        {page >= MAX_PAGES && phones.length > 0 && (
-          <div className="text-center py-8">
-            <div className="inline-flex flex-col items-center gap-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-dungji-secondary rounded-full text-dungji-primary">
-                <Info className="w-5 h-5" />
-                <p className="text-sm font-medium">최대 표시 개수에 도달했습니다</p>
-              </div>
-              <p className="text-xs text-gray-500">
-                더 많은 상품을 보시려면 필터를 사용해주세요
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 추가 로딩 인디케이터 */}
-        {loading && phones.length > 0 && (
-          <div className="text-center py-4">
-            <div className="inline-flex items-center gap-2 text-gray-600">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              <span>더 불러오는 중...</span>
-            </div>
-          </div>
-        )}
 
         {/* 검색 결과 없음 */}
         {!loading && phones.length === 0 && (
@@ -434,16 +350,10 @@ export default function UsedPhonesPage() {
           </div>
         )}
 
-        {/* 마지막 페이지 */}
-        {!hasMore && phones.length > 0 && (
-          <div className="text-center py-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-gray-600">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm font-medium">모든 상품을 확인했습니다</p>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">총 {phones.length}개의 상품</p>
+        {/* 상품 개수 표시 */}
+        {!loading && phones.length > 0 && (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500">총 {phones.length}개의 상품</p>
           </div>
         )}
       </section>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, DollarSign, Clock, CheckCircle, Phone, Mail, MapPin, Info, X } from 'lucide-react';
+import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, DollarSign, Clock, CheckCircle, Phone, Mail, MapPin, Info, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -71,6 +71,11 @@ export default function SalesActivityTab() {
   const [showBuyerInfoModal, setShowBuyerInfoModal] = useState(false);
   const [selectedBuyerInfo, setSelectedBuyerInfo] = useState<BuyerInfo | null>(null);
   const [loadingBuyerInfo, setLoadingBuyerInfo] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellingItem, setCancellingItem] = useState<SalesItem | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+  const [returnToSale, setReturnToSale] = useState(true);
 
   // 전체 목록 가져오기 (캐싱용)
   const fetchAllListings = async () => {
@@ -222,8 +227,39 @@ export default function SalesActivityTab() {
     }
   };
 
+  // 거래 취소 모달 열기
+  const openCancelModal = (item: SalesItem) => {
+    setCancellingItem(item);
+    setCancellationReason('');
+    setCustomReason('');
+    setReturnToSale(true);
+    setShowCancelModal(true);
+  };
+
   // 거래 취소 처리
-  const handleCancelTransaction = async (phoneId: number) => {
+  const handleCancelTransaction = async () => {
+    if (!cancellingItem) return;
+    
+    if (!cancellationReason) {
+      toast({
+        title: '오류',
+        description: '취소 사유를 선택해주세요.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (cancellationReason === 'other' && !customReason.trim()) {
+      toast({
+        title: '오류',
+        description: '기타 사유를 입력해주세요.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const phoneId = cancellingItem.id;
+
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
@@ -236,17 +272,24 @@ export default function SalesActivityTab() {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          reason: cancellationReason,
+          custom_reason: cancellationReason === 'other' ? customReason : null,
+          return_to_sale: returnToSale
+        })
       });
 
       if (response.ok) {
         toast({
           title: '거래 취소',
-          description: '거래가 취소되었습니다.',
+          description: returnToSale ? '거래가 취소되고 상품이 판매중으로 변경되었습니다.' : '거래가 취소되었습니다.',
         });
+        setShowCancelModal(false);
+        setCancellingItem(null);
         // 목록 새로고침
         fetchAllListings();
-        setActiveTab('active');
+        setActiveTab(returnToSale ? 'active' : 'sold');
       } else {
         throw new Error('거래 취소 처리 실패');
       }
@@ -511,11 +554,7 @@ export default function SalesActivityTab() {
                           size="sm" 
                           variant="outline"
                           className="border-red-300 text-red-600 hover:bg-red-50 w-full"
-                          onClick={() => {
-                            if (confirm('거래를 취소하시겠습니까? 구매자에게 알림이 전송됩니다.')) {
-                              handleCancelTransaction(item.id);
-                            }
-                          }}
+                          onClick={() => openCancelModal(item)}
                         >
                           거래 취소
                         </Button>
@@ -579,6 +618,115 @@ export default function SalesActivityTab() {
           offers={receivedOffers}
           onRespond={handleOfferResponse}
         />
+      )}
+
+      {/* 거래 취소 모달 */}
+      {showCancelModal && cancellingItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <XCircle className="w-5 h-5 text-red-500" />
+                거래 취소
+              </h3>
+              <button
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setCancellingItem(null);
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600">
+                <p className="font-medium mb-2">상품: {cancellingItem.brand} {cancellingItem.model}</p>
+                <p className="text-red-500">거래를 취소하시겠습니까?</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">취소 사유 선택 *</label>
+                <select
+                  className="w-full p-2 border rounded-lg"
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                >
+                  <option value="">취소 사유를 선택하세요</option>
+                  <option value="change_mind">단순 변심</option>
+                  <option value="found_better">더 나은 조건 발견</option>
+                  <option value="no_response">상대방 연락 두절</option>
+                  <option value="condition_mismatch">상품 상태 불일치</option>
+                  <option value="price_disagreement">가격 재협상 실패</option>
+                  <option value="schedule_conflict">일정 조율 실패</option>
+                  <option value="location_issue">거래 장소 문제</option>
+                  <option value="other">기타</option>
+                </select>
+              </div>
+
+              {cancellationReason === 'other' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">기타 사유 입력 *</label>
+                  <textarea
+                    className="w-full p-2 border rounded-lg"
+                    rows={3}
+                    placeholder="취소 사유를 입력해주세요"
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="returnToSale"
+                    checked={returnToSale}
+                    onChange={(e) => setReturnToSale(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <label htmlFor="returnToSale" className="text-sm">
+                    <span className="font-medium">상품을 다시 판매중으로 전환</span>
+                    <p className="text-gray-600 mt-1">
+                      체크하면 상품이 다시 '판매중' 상태가 되어 다른 구매자들이 제안할 수 있습니다.
+                    </p>
+                  </label>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <span className="font-medium">주의사항</span><br />
+                  • 구매자에게 취소 알림이 전송됩니다<br />
+                  • 취소 사유는 통계 자료로 활용됩니다<br />
+                  • 빈번한 취소는 신뢰도에 영향을 줄 수 있습니다
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setCancellingItem(null);
+                }}
+                className="flex-1"
+              >
+                닫기
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCancelTransaction}
+                className="flex-1"
+              >
+                거래 취소
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 구매자 정보 모달 */}
