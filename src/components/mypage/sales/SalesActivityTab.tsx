@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, DollarSign, Clock, CheckCircle } from 'lucide-react';
+import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, DollarSign, Clock, CheckCircle, Phone, Mail, MapPin, Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -38,11 +38,25 @@ interface ReceivedOffer {
     id: number;
     nickname: string;
     profile_image?: string;
+    phone?: string;
+    email?: string;
+    region?: string;
   };
   offered_price: number;
   message?: string;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
+}
+
+interface BuyerInfo {
+  id: number;
+  nickname: string;
+  phone?: string;
+  email?: string;
+  region?: string;
+  profile_image?: string;
+  offered_price: number;
+  message?: string;
 }
 
 export default function SalesActivityTab() {
@@ -54,6 +68,9 @@ export default function SalesActivityTab() {
   const [loading, setLoading] = useState(true);
   const [selectedPhone, setSelectedPhone] = useState<SalesItem | null>(null);
   const [showOffersModal, setShowOffersModal] = useState(false);
+  const [showBuyerInfoModal, setShowBuyerInfoModal] = useState(false);
+  const [selectedBuyerInfo, setSelectedBuyerInfo] = useState<BuyerInfo | null>(null);
+  const [loadingBuyerInfo, setLoadingBuyerInfo] = useState(false);
 
   // 전체 목록 가져오기 (캐싱용)
   const fetchAllListings = async () => {
@@ -166,10 +183,122 @@ export default function SalesActivityTab() {
     // 전체 목록에서 카운트 계산
     return allListings.filter(item => item.status === status).length;
   };
+
+  // 거래 완료 처리
+  const handleCompleteTransaction = async (phoneId: number) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/complete/`
+        : `${baseUrl}/api/used/phones/${phoneId}/complete/`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast({
+          title: '거래 완료',
+          description: '거래가 완료되었습니다.',
+        });
+        // 목록 새로고침
+        fetchAllListings();
+        setActiveTab('sold');
+      } else {
+        throw new Error('거래 완료 처리 실패');
+      }
+    } catch (error) {
+      console.error('Failed to complete transaction:', error);
+      toast({
+        title: '오류',
+        description: '거래 완료 처리 중 문제가 발생했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // 거래 취소 처리
+  const handleCancelTransaction = async (phoneId: number) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/cancel-trade/`
+        : `${baseUrl}/api/used/phones/${phoneId}/cancel-trade/`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast({
+          title: '거래 취소',
+          description: '거래가 취소되었습니다.',
+        });
+        // 목록 새로고침
+        fetchAllListings();
+        setActiveTab('active');
+      } else {
+        throw new Error('거래 취소 처리 실패');
+      }
+    } catch (error) {
+      console.error('Failed to cancel transaction:', error);
+      toast({
+        title: '오류',
+        description: '거래 취소 처리 중 문제가 발생했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
   
   const getTotalOfferCount = () => {
     // 전체 목록에서 offer_count 합계 계산
     return allListings.reduce((sum, item) => sum + (item.offer_count || 0), 0);
+  };
+
+  // 거래 상대 정보 조회
+  const fetchBuyerInfo = async (phoneId: number) => {
+    setLoadingBuyerInfo(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/buyer-info/`
+        : `${baseUrl}/api/used/phones/${phoneId}/buyer-info/`;
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedBuyerInfo(data);
+        setShowBuyerInfoModal(true);
+      } else {
+        throw new Error('구매자 정보 조회 실패');
+      }
+    } catch (error) {
+      console.error('Failed to fetch buyer info:', error);
+      toast({
+        title: '오류',
+        description: '구매자 정보를 불러올 수 없습니다.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingBuyerInfo(false);
+    }
   };
 
   return (
@@ -334,15 +463,62 @@ export default function SalesActivityTab() {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">
-                        {item.brand} {item.model}
-                      </h4>
-                      <p className="text-base font-semibold">
-                        {item.price.toLocaleString()}원
-                      </p>
-                      <div className="flex items-center gap-2 mt-3">
-                        <Button size="sm">거래 완료</Button>
-                        <Button size="sm" variant="outline">거래 취소</Button>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <h4 className="font-medium text-sm truncate">
+                            {item.brand} {item.model}
+                          </h4>
+                          <p className="text-base font-semibold text-green-600">
+                            {item.price.toLocaleString()}원
+                          </p>
+                        </div>
+                        <Badge className="bg-green-100 text-green-700">거래중</Badge>
+                      </div>
+                      
+                      {/* 거래 진행 상태 */}
+                      <div className="bg-green-50 rounded-lg p-2 mb-3 text-xs">
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>구매자와 거래가 진행중입니다</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="flex items-center gap-1"
+                            onClick={() => fetchBuyerInfo(item.id)}
+                            disabled={loadingBuyerInfo}
+                          >
+                            <User className="w-3.5 h-3.5" />
+                            구매자 정보
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              if (confirm('거래를 완료하시겠습니까?')) {
+                                handleCompleteTransaction(item.id);
+                              }
+                            }}
+                          >
+                            거래 완료
+                          </Button>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50 w-full"
+                          onClick={() => {
+                            if (confirm('거래를 취소하시겠습니까? 구매자에게 알림이 전송됩니다.')) {
+                              handleCancelTransaction(item.id);
+                            }
+                          }}
+                        >
+                          거래 취소
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -403,6 +579,125 @@ export default function SalesActivityTab() {
           offers={receivedOffers}
           onRespond={handleOfferResponse}
         />
+      )}
+
+      {/* 구매자 정보 모달 */}
+      {showBuyerInfoModal && selectedBuyerInfo && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">구매자 정보</h3>
+              <button
+                onClick={() => {
+                  setShowBuyerInfoModal(false);
+                  setSelectedBuyerInfo(null);
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* 프로필 섹션 */}
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  {selectedBuyerInfo.profile_image ? (
+                    <Image
+                      src={selectedBuyerInfo.profile_image}
+                      alt={selectedBuyerInfo.nickname}
+                      width={64}
+                      height={64}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <User className="w-8 h-8 text-gray-500" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold text-lg">{selectedBuyerInfo.nickname}</p>
+                  <p className="text-sm text-gray-600">구매자</p>
+                </div>
+              </div>
+              
+              {/* 거래 정보 */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-green-800 mb-2">거래 진행중</p>
+                <p className="text-lg font-bold text-green-700">
+                  {selectedBuyerInfo.offered_price.toLocaleString()}원
+                </p>
+              </div>
+              
+              {/* 연락처 정보 */}
+              <div className="space-y-3">
+                {selectedBuyerInfo.phone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">{selectedBuyerInfo.phone}</span>
+                    <button
+                      onClick={() => {
+                        window.location.href = `tel:${selectedBuyerInfo.phone}`;
+                      }}
+                      className="ml-auto text-blue-600 text-sm hover:underline"
+                    >
+                      전화하기
+                    </button>
+                  </div>
+                )}
+                
+                {selectedBuyerInfo.email && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">{selectedBuyerInfo.email}</span>
+                    <button
+                      onClick={() => {
+                        window.location.href = `mailto:${selectedBuyerInfo.email}`;
+                      }}
+                      className="ml-auto text-blue-600 text-sm hover:underline"
+                    >
+                      이메일
+                    </button>
+                  </div>
+                )}
+                
+                {selectedBuyerInfo.region && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">{selectedBuyerInfo.region}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* 메시지 */}
+              {selectedBuyerInfo.message && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-600 mb-1">구매자 메시지</p>
+                  <p className="text-sm">{selectedBuyerInfo.message}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-blue-700">
+                  <p>• 거래 약속을 잡아 안전한 장소에서 만나세요</p>
+                  <p>• 물품과 대금을 직접 확인 후 거래하세요</p>
+                </div>
+              </div>
+            </div>
+            
+            <Button
+              onClick={() => {
+                setShowBuyerInfoModal(false);
+                setSelectedBuyerInfo(null);
+              }}
+              className="w-full mt-4"
+            >
+              확인
+            </Button>
+          </div>
+        </div>
       )}
     </>
   );
