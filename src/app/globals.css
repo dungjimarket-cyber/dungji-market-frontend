@@ -25,6 +25,33 @@
   --gradient-accent: linear-gradient(135deg, #00c9a7 0%, #00e5c3 100%);
 }
 
+/* 둥지마켓 버튼 스타일 - Tailwind 색상과 통합 */
+.btn-primary {
+  @apply bg-dungji-primary text-white hover:bg-dungji-primary-dark transition-all duration-200 shadow-md hover:shadow-lg;
+}
+
+.btn-secondary {
+  @apply bg-dungji-secondary text-dungji-primary hover:bg-dungji-secondary-dark transition-all duration-200 shadow-md hover:shadow-lg;
+}
+
+.btn-accent {
+  @apply bg-dungji-accent text-white hover:bg-dungji-accent-dark transition-all duration-200 shadow-md hover:shadow-lg;
+}
+
+.btn-purple {
+  @apply bg-dungji-primary text-white hover:bg-dungji-primary-dark transition-all duration-200 shadow-md hover:shadow-lg;
+}
+
+/* 애니메이션 버튼 */
+.btn-animated {
+  @apply rounded-lg font-medium inline-flex items-center justify-center transition-all duration-200 transform hover:scale-105 active:scale-95;
+}
+
+/* Outline 버튼 스타일 */
+.btn-outline {
+  @apply border-2 border-dungji-primary text-dungji-primary hover:bg-dungji-primary hover:text-white transition-all duration-200;
+}
+
 /* iOS Safe area padding */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe {

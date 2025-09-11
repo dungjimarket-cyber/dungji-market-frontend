@@ -87,9 +87,9 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': '둥지마켓',
-    'theme-color': '#3b82f6',
-    'msapplication-navbutton-color': '#3b82f6',
-    'msapplication-TileColor': '#3b82f6',
+    'theme-color': '#845ec2',
+    'msapplication-navbutton-color': '#845ec2',
+    'msapplication-TileColor': '#845ec2',
     'msapplication-TileImage': '/icons/icon-144x144.png',
   }
 };
@@ -108,7 +108,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#3b82f6" />
+        <meta name="theme-color" content="#845ec2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="둥지마켓" />

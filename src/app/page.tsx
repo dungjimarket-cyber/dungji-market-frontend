@@ -202,7 +202,7 @@ function HomeContent() {
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <RoleButton 
             href="/group-purchases/create"
-            className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
+            className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 w-full sm:w-auto"
             disableForRoles={['seller']}            
           >
             <span className="text-xs sm:text-base">공구 등록하기</span>
@@ -210,14 +210,14 @@ function HomeContent() {
           
           <Link 
             href="/group-purchases"
-            className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto"
+            className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">공구 둘러보기</span>
           </Link>
           
           <Link 
             href="/events"
-            className="btn-animated btn-accent whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto"
+            className="btn-animated btn-accent whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이벤트</span>
           </Link>
@@ -226,7 +226,7 @@ function HomeContent() {
             href="https://doongji-market-1vi5n3i.gamma.site/"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-animated btn-purple whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white"
+            className="btn-animated btn-purple whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이용가이드</span>
           </a>

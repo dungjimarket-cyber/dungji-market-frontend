@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Package, ShoppingCart, MessageSquare, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import SalesTab from '../sales/SalesTab';
-import PurchasesTab from '../purchases/PurchasesTab';
+import SalesActivityTab from '../sales/SalesActivityTab';
+import PurchaseActivityTab from '../purchases/PurchaseActivityTab';
 import ReviewsTab from '../reviews/ReviewsTab';
 import SettingsTab from '../settings/SettingsTab';
 
@@ -16,12 +16,12 @@ export default function MyPageTabs() {
       <TabsList className="grid w-full grid-cols-4 mb-6">
         <TabsTrigger value="sales" className="gap-1.5">
           <Package className="w-4 h-4" />
-          <span className="hidden sm:inline">판매관리</span>
+          <span className="hidden sm:inline">판매활동</span>
           <span className="sm:hidden">판매</span>
         </TabsTrigger>
         <TabsTrigger value="purchases" className="gap-1.5">
           <ShoppingCart className="w-4 h-4" />
-          <span className="hidden sm:inline">구매관리</span>
+          <span className="hidden sm:inline">구매활동</span>
           <span className="sm:hidden">구매</span>
         </TabsTrigger>
         <TabsTrigger value="reviews" className="gap-1.5">
@@ -37,11 +37,11 @@ export default function MyPageTabs() {
       </TabsList>
 
       <TabsContent value="sales" className="space-y-4">
-        <SalesTab />
+        <SalesActivityTab />
       </TabsContent>
 
       <TabsContent value="purchases" className="space-y-4">
-        <PurchasesTab />
+        <PurchaseActivityTab />
       </TabsContent>
 
       <TabsContent value="reviews" className="space-y-4">
