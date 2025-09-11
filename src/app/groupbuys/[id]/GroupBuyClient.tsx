@@ -553,9 +553,9 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           <Link href="/" className="mr-2">
             <ArrowLeft size={24} />
           </Link>
-          <h1 className="text-lg font-medium">공구 참여하기</h1>
+          <h1 className="text-lg font-medium">함께 견적받기</h1>
         </div>
-        <p className="text-sm text-gray-500 mt-1">공구에 참여하세요</p>
+        <p className="text-sm text-gray-500 mt-1">함께 더 좋은 조건으로 견적받으세요</p>
       </div>
 
       {/* 메인 컨텐츠 */}

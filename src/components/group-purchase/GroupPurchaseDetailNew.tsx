@@ -1021,7 +1021,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
 
     // 프로필 체크 수행
-    console.log('[GroupPurchaseDetailNew] 공구 참여하기 버튼 클릭, 프로필 체크 시작');
+    console.log('[GroupPurchaseDetailNew] 함께 견적받기 버튼 클릭, 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
     console.log('[GroupPurchaseDetailNew] 프로필 체크 결과:', isProfileComplete);
     
@@ -1209,7 +1209,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         onClick={handleJoinClick}
         className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
       >
-        공구 참여하기
+        함께 견적받기
       </Button>
     );
   };
@@ -2106,7 +2106,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                             onClick={handleJoinClick}
                             className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
                           >
-                            공구 참여하기
+                            함께 견적받기
                           </Button>
                         )}
                         <Button
@@ -2771,13 +2771,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             ) : (
               // 진행 중인 공구 - 참여 가능
               <div className="space-y-3">
-                {/* 공구 참여하기 버튼 */}
+                {/* 함께 견적받기 버튼 */}
                 {groupBuyData.status === 'recruiting' && (
                   <Button
                     onClick={handleJoinClick}
                     className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
                   >
-                    공구 참여하기
+                    함께 견적받기
                   </Button>
                 )}
                 {/* 공유하기 버튼 */}

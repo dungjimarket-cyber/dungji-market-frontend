@@ -202,6 +202,39 @@ export default function ReceivedOffersModal({
                     </Button>
                   </div>
                 )}
+                
+                {offer.status === 'accepted' && (
+                  <div className="space-y-2">
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <p className="text-sm text-green-700">
+                        ✅ 제안을 수락했습니다. 연락처가 공개되었습니다.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          // TODO: 거래 진행 API 호출
+                          console.log('거래 진행', offer.id);
+                        }}
+                      >
+                        거래 진행
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          // TODO: 수락 취소 API 호출
+                          console.log('수락 취소', offer.id);
+                        }}
+                      >
+                        수락 취소
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

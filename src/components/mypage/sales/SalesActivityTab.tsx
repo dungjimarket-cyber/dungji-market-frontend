@@ -146,7 +146,7 @@ export default function SalesActivityTab() {
     } else {
       const statusMap: { [key: string]: string } = {
         active: 'active',
-        reserved: 'reserved',
+        trading: 'trading',
         sold: 'sold',
       };
       fetchListings(statusMap[activeTab]);
@@ -156,7 +156,7 @@ export default function SalesActivityTab() {
   const getStatusBadge = (status: string) => {
     const badges = {
       active: <Badge variant="default">판매중</Badge>,
-      reserved: <Badge variant="warning">예약중</Badge>,
+      trading: <Badge variant="warning">거래중</Badge>,
       sold: <Badge variant="soft">판매완료</Badge>,
     };
     return badges[status as keyof typeof badges];
@@ -185,8 +185,8 @@ export default function SalesActivityTab() {
             <TabsTrigger value="offers" className="text-xs sm:text-sm">
               받은제안 ({getTotalOfferCount()})
             </TabsTrigger>
-            <TabsTrigger value="reserved" className="text-xs sm:text-sm">
-              거래중 ({getTabCount('reserved')})
+            <TabsTrigger value="trading" className="text-xs sm:text-sm">
+              거래중 ({getTabCount('trading')})
             </TabsTrigger>
             <TabsTrigger value="sold" className="text-xs sm:text-sm">
               판매완료 ({getTabCount('sold')})
@@ -314,13 +314,13 @@ export default function SalesActivityTab() {
           </TabsContent>
 
           {/* 거래중 탭 */}
-          <TabsContent value="reserved" className="space-y-3">
-            {listings.filter(item => item.status === 'reserved').length === 0 ? (
+          <TabsContent value="trading" className="space-y-3">
+            {listings.filter(item => item.status === 'trading').length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 거래중인 상품이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.status === 'reserved').map((item) => (
+              listings.filter(item => item.status === 'trading').map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
