@@ -149,24 +149,9 @@ export default function PurchaseActivityTab() {
   const fetchTradingItems = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = `${baseUrl}/used/phones/my-trading/`;
-
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // 백엔드가 배열을 직접 반환
-        setTradingItems(Array.isArray(data) ? data : data.results || []);
-      } else {
-        console.error('Failed to fetch trading items:', response.status);
-        setTradingItems([]);
-      }
+      const data = await buyerAPI.getMyTradingItems();
+      // 백엔드가 배열을 직접 반환
+      setTradingItems(Array.isArray(data) ? data : data.results || []);
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
       setTradingItems([]);
@@ -243,24 +228,9 @@ export default function PurchaseActivityTab() {
   // 판매자 정보 조회
   const fetchSellerInfo = async (phoneId: number) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = `${baseUrl}/used/phones/${phoneId}/seller-info/`;
-      
-      console.log('Fetching seller info from:', apiUrl);
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedSellerInfo(data);
-        setShowSellerInfoModal(true);
-      } else {
-        throw new Error('판매자 정보를 불러올 수 없습니다.');
-      }
+      const data = await buyerAPI.getSellerInfo(phoneId);
+      setSelectedSellerInfo(data);
+      setShowSellerInfoModal(true);
     } catch (error) {
       console.error('Failed to fetch seller info:', error);
       toast({

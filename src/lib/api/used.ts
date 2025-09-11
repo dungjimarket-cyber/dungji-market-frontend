@@ -72,6 +72,12 @@ export const sellerAPI = {
     const response = await api.patch(`/used/phones/${phoneId}/`, { status });
     return response.data;
   },
+  
+  // 구매자 정보 조회 (거래중인 판매자용)
+  getBuyerInfo: async (phoneId: number) => {
+    const response = await api.get(`/used/phones/${phoneId}/buyer-info/`);
+    return response.data;
+  },
 };
 
 // 구매 관련 API
@@ -80,6 +86,12 @@ export const buyerAPI = {
   getMySentOffers: async (status?: string) => {
     const params = status ? { status } : {};
     const response = await api.get('/used/offers/sent/', { params });
+    return response.data;
+  },
+  
+  // 거래중인 아이템 목록 조회 (구매자용)
+  getMyTradingItems: async () => {
+    const response = await api.get('/used/phones/my-trading/');
     return response.data;
   },
 
@@ -116,6 +128,12 @@ export const buyerAPI = {
   // 제안 취소
   cancelOffer: async (offerId: number) => {
     const response = await api.delete(`/used/offers/${offerId}/`);
+    return response.data;
+  },
+  
+  // 판매자 정보 조회 (거래중인 구매자용)
+  getSellerInfo: async (phoneId: number) => {
+    const response = await api.get(`/used/phones/${phoneId}/seller-info/`);
     return response.data;
   },
 };

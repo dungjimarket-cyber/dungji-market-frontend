@@ -333,25 +333,9 @@ export default function SalesActivityTab() {
   const fetchBuyerInfo = async (phoneId: number) => {
     setLoadingBuyerInfo(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = `${baseUrl}/used/phones/${phoneId}/buyer-info/`;
-      
-      console.log('Fetching buyer info from:', apiUrl);
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedBuyerInfo(data);
-        setShowBuyerInfoModal(true);
-      } else {
-        throw new Error('구매자 정보를 불러올 수 없습니다.');
-      }
+      const data = await sellerAPI.getBuyerInfo(phoneId);
+      setSelectedBuyerInfo(data);
+      setShowBuyerInfoModal(true);
     } catch (error) {
       console.error('Failed to fetch buyer info:', error);
       toast({
