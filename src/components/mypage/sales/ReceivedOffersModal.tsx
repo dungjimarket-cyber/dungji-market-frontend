@@ -89,15 +89,7 @@ export default function ReceivedOffersModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>받은 제안</span>
-            <button
-              onClick={onClose}
-              className="rounded-full p-1 hover:bg-gray-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </DialogTitle>
+          <DialogTitle>받은 제안</DialogTitle>
         </DialogHeader>
 
         {/* 상품 정보 */}
