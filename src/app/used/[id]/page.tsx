@@ -766,7 +766,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           setLoadingOffers(false);
                         }
                       }}
-                      className="w-full h-14 text-lg font-semibold"
+                      className="w-full h-14 text-lg font-semibold bg-dungji-secondary hover:bg-dungji-secondary-dark"
                       disabled={loadingOffers}
                     >
                       <MessageCircle className="w-5 h-5 mr-2" />
@@ -974,14 +974,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 거래 가능 지역 - 통합 표시 */}
               {(phone.regions && phone.regions.length > 0) && (
-                <div className="mt-4 p-4 bg-dungji-secondary rounded-lg">
+                <div className="mt-4 p-4 bg-dungji-primary-50 rounded-lg border border-dungji-primary-200">
                   <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
                     거래 가능 지역
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {phone.regions.map((region, index) => (
-                      <span key={index} className="px-3 py-1 bg-white rounded-full text-sm font-medium text-dungji-primary-700 border border-dungji-primary-200">
+                      <span key={index} className="px-3 py-1 bg-dungji-primary text-white rounded-full text-sm font-medium">
                         {region.full_name || region.name}
                       </span>
                     ))}
