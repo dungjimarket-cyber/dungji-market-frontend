@@ -264,7 +264,7 @@ export default function PurchaseActivityTab() {
       }
 
       alert('구매가 완료되었습니다.');
-      loadTradingItems(); // 목록 새로고침
+      fetchTradingItems(); // 목록 새로고침
     } catch (error) {
       console.error('구매 완료 처리 실패:', error);
       alert('구매 완료 처리 중 오류가 발생했습니다.');
