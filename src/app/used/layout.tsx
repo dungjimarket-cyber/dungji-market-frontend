@@ -22,10 +22,9 @@ export default function UsedLayout({
 }) {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 배너 - 베타 서비스 안내 */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-4 text-center text-sm">
-        <span className="font-medium">🎉 NEW</span> 중고폰 직거래 서비스가 오픈했습니다! 
-        <span className="ml-2 text-xs opacity-90">베타 기간 중 수수료 무료</span>
+      {/* 상단 배너 - 서비스 안내 */}
+      <div className="bg-gradient-to-r from-dungji-primary to-dungji-secondary text-white py-2 px-4 text-center text-sm">
+        <span className="font-medium">🎉 NEW</span> 중고폰 직거래 서비스가 오픈했습니다!
       </div>
       
       {/* 메인 컨텐츠 */}
