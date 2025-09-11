@@ -60,8 +60,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
       id: 'internet_tv',
       name: '인터넷+TV',
       icon: Monitor,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 border-purple-200'
+      color: 'text-dungji-primary',
+      bgColor: 'bg-dungji-primary-50 border-dungji-primary-200'
     }
   ];
 

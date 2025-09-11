@@ -1213,13 +1213,13 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   </div>
                   
                   {/* 인터넷+TV 요금제 알아보기 링크 */}
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <p className="text-sm font-medium text-purple-900 mb-2">📺 통신사별 인터넷+TV 요금제 알아보기</p>
+                  <div className="bg-dungji-primary-50 p-4 rounded-lg border border-dungji-primary-200">
+                    <p className="text-sm font-medium text-dungji-primary-900 mb-2">📺 통신사별 인터넷+TV 요금제 알아보기</p>
                     <div className="flex flex-col gap-2">
                       <a href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                         className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
                         • SK : 인터넷+TV 요금제 확인하기
                         <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-2.5 w-auto" />
                         →
@@ -1227,7 +1227,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                         className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
                         • KT : 인터넷+TV 요금제 확인하기
                         <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
                         →
@@ -1235,7 +1235,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-800 hover:underline">
+                         className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
                         • LG U+ : 인터넷+TV 요금제 확인하기
                         <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
                         →

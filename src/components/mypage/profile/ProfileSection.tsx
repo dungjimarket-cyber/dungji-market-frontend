@@ -24,7 +24,7 @@ export default function ProfileSection() {
       case 'bronze': return 'bg-amber-600';
       case 'silver': return 'bg-gray-400';
       case 'gold': return 'bg-yellow-500';
-      case 'platinum': return 'bg-purple-600';
+      case 'platinum': return 'bg-dungji-primary';
       default: return 'bg-gray-400';
     }
   };
@@ -140,7 +140,7 @@ export default function ProfileSection() {
           <div className="text-sm text-gray-600">제안중</div>
         </div>
         <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-purple-600">{stats.purchased}</div>
+          <div className="text-2xl font-bold text-dungji-primary">{stats.purchased}</div>
           <div className="text-sm text-gray-600">구매완료</div>
         </div>
       </div>

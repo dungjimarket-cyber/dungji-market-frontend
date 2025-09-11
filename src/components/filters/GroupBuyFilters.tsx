@@ -229,7 +229,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone', currentRe
                   className={cn(
                     "h-8 px-3 font-normal transition-all",
                     isSelected
-                      ? "bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:border-purple-700"
+                      ? "bg-dungji-primary text-white border-dungji-primary hover:bg-dungji-primary-dark hover:border-dungji-primary-dark"
                       : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                   )}
                 >

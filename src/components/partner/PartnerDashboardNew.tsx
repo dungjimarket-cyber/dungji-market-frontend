@@ -192,8 +192,8 @@ function DashboardTab({ summary, stats, recentMembers, partner }: any) {
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100">
-              <Wallet className="h-6 w-6 text-purple-600" />
+            <div className="p-3 rounded-full bg-dungji-primary-100">
+              <Wallet className="h-6 w-6 text-dungji-primary" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">이번달 수익</p>
@@ -712,7 +712,7 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
         <div className="space-y-4">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-dungji-primary-100 text-dungji-primary">
                 1
               </div>
             </div>
@@ -725,7 +725,7 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
           </div>
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-dungji-primary-100 text-dungji-primary">
                 2
               </div>
             </div>
@@ -738,7 +738,7 @@ function LinkTab({ referralLink, copyToClipboard, copiedItem, downloadQRCode }: 
           </div>
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-dungji-primary-100 text-dungji-primary">
                 3
               </div>
             </div>

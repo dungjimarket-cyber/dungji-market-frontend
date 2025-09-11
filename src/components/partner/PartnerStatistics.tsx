@@ -271,7 +271,7 @@ export default function PartnerStatistics({ className }: PartnerStatisticsProps)
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <BarChart3 className="h-8 w-8 text-purple-600" />
+                <BarChart3 className="h-8 w-8 text-dungji-primary" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">이번달 수익</p>
                   <p className="text-2xl font-bold text-gray-900">

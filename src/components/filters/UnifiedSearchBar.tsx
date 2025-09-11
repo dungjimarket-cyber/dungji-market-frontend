@@ -486,7 +486,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
           <Button 
             onClick={handleSearch} 
             variant="default"
-            className="px-4 sm:px-6 bg-purple-600 hover:bg-purple-700 text-white"
+            className="px-4 sm:px-6 bg-dungji-primary hover:bg-dungji-primary-dark text-white"
           >
             <Search className="w-4 h-4 sm:mr-1" />
             <span className="hidden sm:inline">검색</span>
@@ -511,7 +511,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
             <select
               value={selectedProvince}
               onChange={handleProvinceChange}
-              className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+              className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-dungji-primary focus:border-dungji-primary text-sm"
             >
               <option value="">시/도 선택</option>
               {regions.map((region) => (
@@ -529,7 +529,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
               value={selectedCity}
               onChange={handleCityChange}
               disabled={!selectedProvince}
-              className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+              className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-dungji-primary focus:border-dungji-primary disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
             >
               <option value="">시/군/구 선택</option>
               {cities.map((city) => (

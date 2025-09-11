@@ -1255,7 +1255,7 @@ export default function CreateUsedPhonePage() {
             <Button
               type="submit"
               disabled={loading || checkingLimit}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-dungji-primary hover:from-blue-700 hover:to-dungji-primary-dark"
             >
               {loading ? '등록 중...' : checkingLimit ? '확인 중...' : '등록하기'}
             </Button>

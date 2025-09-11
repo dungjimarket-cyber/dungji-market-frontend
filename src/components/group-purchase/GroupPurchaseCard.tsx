@@ -244,7 +244,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
   const getParticipantColor = () => {
     if (isCompleted) return 'text-blue-600';
-    if (isUrgent) return 'text-purple-600';
+    if (isUrgent) return 'text-dungji-danger';
     return 'text-green-600';
   };
 
@@ -306,16 +306,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     if (status === 'recruiting') {
       if (user?.role === 'buyer' && isParticipant) {
-        return 'bg-blue-600 text-white hover:bg-blue-700';
+        return 'bg-dungji-secondary text-white hover:bg-dungji-secondary-dark';
       }
       if (user?.role === 'seller' && hasBid) {
-        return 'bg-indigo-600 text-white hover:bg-indigo-700';
+        return 'bg-dungji-primary-dark text-white hover:bg-dungji-primary-darker';
       }
-      return 'bg-purple-600 text-white hover:bg-purple-700';
+      return 'bg-dungji-primary text-white hover:bg-dungji-primary-dark';
     }
     
     // 진행상황 확인 버튼
-    return 'bg-orange-600 text-white hover:bg-orange-700';
+    return 'bg-dungji-secondary-dark text-white hover:bg-dungji-secondary-darker';
   };
 
   /**
@@ -381,7 +381,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                   );
                 }
                 return (
-                  <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <div className="flex items-center gap-1 bg-dungji-secondary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Users className="w-4 h-4" />
                     <span>모집중</span>
                   </div>
@@ -391,7 +391,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               // 견적중 상태
               if (status === 'bidding') {
                 return (
-                  <div className="flex items-center gap-1 bg-purple-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <div className="flex items-center gap-1 bg-dungji-primary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Gavel className="w-4 h-4" />
                     <span>견적중</span>
                   </div>
@@ -401,7 +401,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               // 진행 상태별 배지
               if (status === 'final_selection_buyers') {
                 return (
-                  <div className="flex items-center gap-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <div className="flex items-center gap-1 bg-dungji-secondary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Clock className="w-4 h-4" />
                     <span>구매자 선택중</span>
                   </div>
@@ -619,7 +619,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div 
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  isUrgent ? 'bg-red-500' : 'bg-blue-500'
+                  isUrgent ? 'bg-dungji-danger' : 'bg-dungji-secondary'
                 }`}
                 style={{ width: `${timeRemainingPercent}%` }}
               />

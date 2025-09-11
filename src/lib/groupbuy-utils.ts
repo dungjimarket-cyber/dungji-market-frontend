@@ -81,7 +81,7 @@ export function getStatusClass(status: string): string {
     case 'recruiting':
       return 'bg-blue-100 text-blue-800';
     case 'bidding':
-      return 'bg-purple-100 text-purple-800';
+      return 'bg-dungji-primary-100 text-dungji-primary-800';
     case 'final_selection':
       return 'bg-orange-100 text-orange-800';
     case 'final_selection_buyers':

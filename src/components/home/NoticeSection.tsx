@@ -91,7 +91,7 @@ export default function NoticeSection() {
   const getCategoryBadge = (category: string) => {
     const categoryMap: Record<string, { label: string; className: string }> = {
       general: { label: '공지', className: 'bg-gray-100 text-gray-700' },
-      event: { label: '이벤트', className: 'bg-purple-100 text-purple-700' },
+      event: { label: '이벤트', className: 'bg-dungji-primary-50 text-dungji-primary-700' },
       update: { label: '업데이트', className: 'bg-blue-100 text-blue-700' },
       maintenance: { label: '점검', className: 'bg-yellow-100 text-yellow-700' },
       important: { label: '중요', className: 'bg-red-100 text-red-700' }
@@ -191,7 +191,7 @@ export default function NoticeSection() {
                             className="object-cover rounded-lg"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" />
+                          <div className="w-full h-full bg-gradient-to-r from-blue-500 to-dungji-primary rounded-lg" />
                         )}
                         
                         {/* 오버레이 텍스트 */}

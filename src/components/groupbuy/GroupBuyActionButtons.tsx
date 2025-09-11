@@ -108,7 +108,8 @@ export default function GroupBuyActionButtons({
     <>
       <div className="mt-6 flex gap-2">
         <Button 
-          className="flex-1 py-6 bg-blue-500 hover:bg-blue-600" 
+          variant="secondary"
+          className="flex-1 py-6" 
           onClick={handleShare}
         >
           <Share2 className="mr-2 h-5 w-5" />

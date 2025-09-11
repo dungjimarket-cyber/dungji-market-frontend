@@ -379,12 +379,12 @@ export default function MyPageClient() {
               <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <Clock className="w-5 h-5 mr-2 text-purple-500" />
+                    <Clock className="w-5 h-5 mr-2 text-dungji-primary" />
                     <span className="font-medium">판매자 최종선택 대기중</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {waitingSellerCount > 0 ? (
-                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-dungji-primary text-white text-sm font-semibold rounded-full">
                         {waitingSellerCount}
                       </span>
                     ) : (
@@ -392,7 +392,7 @@ export default function MyPageClient() {
                         {waitingSellerCount}
                       </span>
                     )}
-                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-dungji-primary transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
               </AccordionTrigger>

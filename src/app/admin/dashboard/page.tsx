@@ -56,8 +56,8 @@ export default function AdminDashboard() {
       description: '셀러 승인, 공구 동의서, 상품 등록',
       icon: Settings,
       href: '/admin',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      color: 'text-dungji-primary',
+      bgColor: 'bg-dungji-primary-50'
     },
     {
       title: '사용자 관리',
