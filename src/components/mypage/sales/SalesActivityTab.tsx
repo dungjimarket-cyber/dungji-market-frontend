@@ -171,8 +171,7 @@ export default function SalesActivityTab() {
       });
       setShowOffersModal(false);
       setSelectedPhone(null);
-      fetchMyListings(); // 목록 새로고침
-      fetchTradingItems(); // 거래중 목록 새로고침
+      fetchListings(); // 목록 새로고침
     } catch (error) {
       toast({
         title: '오류',
@@ -418,7 +417,7 @@ export default function SalesActivityTab() {
                           <p className="text-base sm:text-lg font-semibold">
                             {item.price.toLocaleString()}원
                           </p>
-                        </div>
+                        </Link>
                         {getStatusBadge(item.status)}
                       </div>
                       
