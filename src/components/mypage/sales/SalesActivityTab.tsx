@@ -325,8 +325,10 @@ export default function SalesActivityTab() {
   };
   
   const getTotalOfferCount = () => {
-    // 전체 목록에서 offer_count 합계 계산
-    return allListings.reduce((sum, item) => sum + (item.offer_count || 0), 0);
+    // 거래중이 아닌 상품들의 offer_count 합계 계산
+    return allListings
+      .filter(item => item.status !== 'trading')
+      .reduce((sum, item) => sum + (item.offer_count || 0), 0);
   };
 
   // 거래 상대 정보 조회
