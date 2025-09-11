@@ -30,7 +30,7 @@ export default function MyPageLayout({ children }: MyPageLayoutProps) {
                 <span className="hidden sm:inline">중고거래</span>
               </Button>
             </Link>
-            <Link href="/groupbuys">
+            <Link href="/group-purchases">
               <Button variant="outline" size="sm" className="gap-1.5">
                 <ShoppingBag className="h-4 w-4" />
                 <span className="hidden sm:inline">공동구매</span>
