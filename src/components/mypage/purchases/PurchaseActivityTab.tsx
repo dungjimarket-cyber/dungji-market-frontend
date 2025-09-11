@@ -554,7 +554,7 @@ export default function PurchaseActivityTab() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        className="border-red-300 text-red-600 hover:bg-red-50 w-full"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
                         onClick={() => openCancelModal(item)}
                       >
                         거래 취소
