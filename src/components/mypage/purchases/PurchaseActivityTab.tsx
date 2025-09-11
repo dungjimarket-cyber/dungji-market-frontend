@@ -264,6 +264,7 @@ export default function PurchaseActivityTab() {
         ? `${baseUrl}/used/phones/${phoneId}/seller-info/`
         : `${baseUrl}/api/used/phones/${phoneId}/seller-info/`;
 
+      console.log('Fetching seller info from:', apiUrl);
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -274,6 +275,21 @@ export default function PurchaseActivityTab() {
         const data = await response.json();
         setSelectedSellerInfo(data);
         setShowSellerInfoModal(true);
+      } else if (response.status === 404) {
+        // 404 에러시 거래중 아이템에서 판매자 정보 찾기
+        console.log('Seller-info API 404, using trading item data...');
+        const tradingItem = tradingItems.find(item => item.phone.id === phoneId);
+        if (tradingItem && tradingItem.phone.seller) {
+          const sellerInfo = {
+            ...tradingItem.phone.seller,
+            accepted_price: tradingItem.offered_price || tradingItem.phone.price,
+          };
+          console.log('Using fallback seller info:', sellerInfo);
+          setSelectedSellerInfo(sellerInfo);
+          setShowSellerInfoModal(true);
+        } else {
+          throw new Error('판매자 정보를 찾을 수 없습니다.');
+        }
       }
     } catch (error) {
       console.error('Failed to fetch seller info:', error);
