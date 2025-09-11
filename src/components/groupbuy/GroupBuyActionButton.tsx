@@ -154,7 +154,7 @@ export default function GroupBuyActionButton({
       return '판매회원 없음';
     }
     
-    return '함께 견적받기';
+    return '같이 견적받기';
   };
 
   // 버튼 비활성화 조건
