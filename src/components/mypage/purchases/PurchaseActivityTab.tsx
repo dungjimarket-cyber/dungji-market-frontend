@@ -21,6 +21,7 @@ interface OfferItem {
     brand: string;
     model: string;
     price: number;
+    status?: 'active' | 'trading' | 'sold';  // 상품 상태 추가
     images: { image_url: string; is_main: boolean }[];
     seller: {
       nickname: string;
@@ -409,12 +410,12 @@ export default function PurchaseActivityTab() {
         <TabsContent value="offers" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : offers.length === 0 ? (
+          ) : offers.filter(offer => offer.phone.status !== 'trading').length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               제안한 상품이 없습니다
             </div>
           ) : (
-            offers.map((offer) => (
+            offers.filter(offer => offer.phone.status !== 'trading').map((offer) => (
               <Card key={offer.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <Link 
