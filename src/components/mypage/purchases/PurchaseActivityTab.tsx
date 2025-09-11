@@ -242,6 +242,35 @@ export default function PurchaseActivityTab() {
   };
 
   // 거래 취소 모달 열기
+  // 구매 완료 처리
+  const handleCompleteTransaction = async (phoneId: number) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/buyer-complete/`
+        : `${baseUrl}/api/used/phones/${phoneId}/buyer-complete/`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('구매 완료 처리 실패');
+      }
+
+      alert('구매가 완료되었습니다.');
+      loadTradingItems(); // 목록 새로고침
+    } catch (error) {
+      console.error('구매 완료 처리 실패:', error);
+      alert('구매 완료 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   const openCancelModal = (item: TradingItem) => {
     setCancellingItem(item);
     setCancellationReason('');
@@ -547,8 +576,13 @@ export default function PurchaseActivityTab() {
                         <Button 
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            if (confirm('구매를 완료하시겠습니까?')) {
+                              handleCompleteTransaction(item.phone.id);
+                            }
+                          }}
                         >
-                          거래 완료
+                          구매 완료
                         </Button>
                       </div>
                       <Button 

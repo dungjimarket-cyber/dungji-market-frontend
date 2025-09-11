@@ -210,14 +210,14 @@ export default function SalesActivityTab() {
     return allListings.filter(item => item.status === status).length;
   };
 
-  // 거래 완료 처리
+  // 판매 완료 처리
   const handleCompleteTransaction = async (phoneId: number) => {
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/complete/`
-        : `${baseUrl}/api/used/phones/${phoneId}/complete/`;
+        ? `${baseUrl}/used/phones/${phoneId}/seller-complete/`
+        : `${baseUrl}/api/used/phones/${phoneId}/seller-complete/`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -548,12 +548,12 @@ export default function SalesActivityTab() {
                             size="sm" 
                             className="bg-green-600 hover:bg-green-700"
                             onClick={() => {
-                              if (confirm('거래를 완료하시겠습니까?')) {
+                              if (confirm('판매를 완료하시겠습니까?')) {
                                 handleCompleteTransaction(item.id);
                               }
                             }}
                           >
-                            거래 완료
+                            판매 완료
                           </Button>
                         </div>
                         <Button 

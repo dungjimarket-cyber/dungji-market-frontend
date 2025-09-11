@@ -78,6 +78,14 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         )}
         
         {/* 상태 뱃지 */}
+        {phone.status === 'trading' && (
+          <>
+            <div className="absolute inset-0 bg-black/30 z-10" />
+            <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded font-medium z-20">
+              거래중
+            </div>
+          </>
+        )}
         {phone.status === 'reserved' && (
           <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 text-xs rounded font-medium">
             예약중
