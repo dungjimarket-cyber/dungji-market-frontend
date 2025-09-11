@@ -487,8 +487,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
-          <div className="w-full overflow-hidden">
-            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
+          <div className="w-full">
+            {/* 메인 이미지 */}
+            <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden group shadow-sm border border-gray-200">
               {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
                 <>
                   <Image
@@ -565,25 +566,68 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
 
-            {/* 썸네일 */}
+            {/* 썸네일 - 최대 4개까지 균등하게 배치 */}
             {phone.images && phone.images.length > 1 && (
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                {phone.images.map((img, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`relative flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 ${
-                      index === currentImageIndex ? 'border-blue-500' : 'border-transparent'
-                    }`}
-                  >
-                    <Image
-                      src={img.imageUrl}
-                      alt={`${phone.model} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+              <div className="mt-4">
+                <div className="grid grid-cols-4 gap-2">
+                  {phone.images.slice(0, 4).map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex 
+                          ? 'border-blue-500 shadow-lg scale-105' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Image
+                        src={img.imageUrl}
+                        alt={`${phone.model} ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                      {index === 0 && (
+                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                          대표
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                  {/* 5개 이상일 때 +더보기 표시 */}
+                  {phone.images.length > 4 && (
+                    <button
+                      onClick={() => setCurrentImageIndex(4)}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 bg-gray-100 flex items-center justify-center transition-all ${
+                        currentImageIndex >= 4
+                          ? 'border-blue-500 shadow-lg'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {phone.images[4] && (
+                        <Image
+                          src={phone.images[4].imageUrl}
+                          alt={`${phone.model} 5`}
+                          fill
+                          className="object-cover opacity-50"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <span className="text-white font-semibold text-lg">
+                          +{phone.images.length - 4}
+                        </span>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* 이미지가 1개만 있을 때 안내 */}
+            {phone.images && phone.images.length === 1 && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600 text-center">
+                  등록된 이미지가 1개입니다
+                </p>
               </div>
             )}
           </div>
