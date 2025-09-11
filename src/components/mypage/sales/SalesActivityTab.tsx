@@ -49,36 +49,50 @@ export default function SalesActivityTab() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('active');
   const [listings, setListings] = useState<SalesItem[]>([]);
+  const [allListings, setAllListings] = useState<SalesItem[]>([]); // 전체 목록 캐시
   const [receivedOffers, setReceivedOffers] = useState<ReceivedOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPhone, setSelectedPhone] = useState<SalesItem | null>(null);
   const [showOffersModal, setShowOffersModal] = useState(false);
 
+  // 전체 목록 가져오기 (캐싱용)
+  const fetchAllListings = async () => {
+    try {
+      const data = await sellerAPI.getMyListings(); // status 없이 전체 조회
+      const listings = Array.isArray(data) ? data : (data.results || []);
+      setAllListings(listings);
+      return listings;
+    } catch (error) {
+      console.error('Failed to fetch all listings:', error);
+      return [];
+    }
+  };
+
   // 판매 상품 목록 조회
   const fetchListings = async (status?: string) => {
     setLoading(true);
     try {
-      const data = await sellerAPI.getMyListings(status);
-      setListings(data.results || data);
+      // 전체 목록이 없으면 먼저 가져오기
+      let allItems = allListings;
+      if (allItems.length === 0) {
+        allItems = await fetchAllListings();
+      }
+      
+      // status에 따라 필터링
+      if (status) {
+        const filtered = allItems.filter(item => item.status === status);
+        setListings(filtered);
+      } else {
+        setListings(allItems);
+      }
     } catch (error) {
       console.error('Failed to fetch listings:', error);
-      // 실제 API 연동 전 목업 데이터
-      setListings([
-        {
-          id: 1,
-          title: 'iPhone 14 Pro 256GB',
-          brand: 'Apple',
-          model: 'iPhone 14 Pro',
-          storage: 256,
-          price: 850000,
-          images: [{ image_url: '/placeholder.png', is_main: true }],
-          status: 'active',
-          view_count: 125,
-          favorite_count: 8,
-          offer_count: 3,
-          created_at: '2024-12-20',
-        },
-      ]);
+      setListings([]);
+      toast({
+        title: '데이터 로드 실패',
+        description: '판매 상품 목록을 불러올 수 없습니다.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -88,26 +102,19 @@ export default function SalesActivityTab() {
   const fetchReceivedOffers = async (phoneId: number) => {
     try {
       const data = await sellerAPI.getReceivedOffers(phoneId);
-      setReceivedOffers(data.results || data);
+      const offers = Array.isArray(data) ? data : (data.results || []);
+      setReceivedOffers(offers);
       setShowOffersModal(true);
     } catch (error) {
       console.error('Failed to fetch offers:', error);
-      // 목업 데이터
-      setReceivedOffers([
-        {
-          id: 1,
-          buyer: {
-            id: 1,
-            nickname: '구매희망자',
-            profile_image: '/images/default-profile.jpg',
-          },
-          offered_price: 800000,
-          message: '상태가 좋으면 바로 구매하고 싶습니다.',
-          status: 'pending',
-          created_at: '2024-12-25',
-        },
-      ]);
+      // 에러 발생 시 빈 배열로 설정
+      setReceivedOffers([]);
       setShowOffersModal(true);
+      toast({
+        title: '제안 로드 실패',
+        description: '받은 제안을 불러올 수 없습니다.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -133,12 +140,17 @@ export default function SalesActivityTab() {
 
   // 상태별 데이터 필터링
   useEffect(() => {
-    const statusMap: { [key: string]: string } = {
-      active: 'active',
-      reserved: 'reserved',
-      sold: 'sold',
-    };
-    fetchListings(statusMap[activeTab]);
+    if (activeTab === 'offers') {
+      // 받은제안 탭 선택 시 전체 상품 목록 조회 (offer_count가 있는 상품만 표시)
+      fetchListings(); // status 없이 전체 조회
+    } else {
+      const statusMap: { [key: string]: string } = {
+        active: 'active',
+        reserved: 'reserved',
+        sold: 'sold',
+      };
+      fetchListings(statusMap[activeTab]);
+    }
   }, [activeTab]);
 
   const getStatusBadge = (status: string) => {
@@ -151,7 +163,13 @@ export default function SalesActivityTab() {
   };
 
   const getTabCount = (status: string) => {
-    return listings.filter(item => item.status === status).length;
+    // 전체 목록에서 카운트 계산
+    return allListings.filter(item => item.status === status).length;
+  };
+  
+  const getTotalOfferCount = () => {
+    // 전체 목록에서 offer_count 합계 계산
+    return allListings.reduce((sum, item) => sum + (item.offer_count || 0), 0);
   };
 
   return (
@@ -165,7 +183,7 @@ export default function SalesActivityTab() {
               판매중 ({getTabCount('active')})
             </TabsTrigger>
             <TabsTrigger value="offers" className="text-xs sm:text-sm">
-              받은제안 ({listings.reduce((sum, item) => sum + item.offer_count, 0)})
+              받은제안 ({getTotalOfferCount()})
             </TabsTrigger>
             <TabsTrigger value="reserved" className="text-xs sm:text-sm">
               거래중 ({getTabCount('reserved')})
