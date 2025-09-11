@@ -851,7 +851,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             <Button
                               variant="outline"
                               onClick={async () => {
-                                if (confirm('제안을 취소하시겚습니까?')) {
+                                if (confirm('제안을 취소하시겠습니까?')) {
                                   try {
                                     const token = localStorage.getItem('accessToken');
                                     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
@@ -1353,7 +1353,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
               <p className="text-xs text-amber-700">
-                제안 후에는 취소할 수 없으며, 판매자가 수락 시 구매해야 합니다.
+                구매 의사가 확실한 경우에만 제안 부탁드립니다. 판매자가 수락하기 전까지는 취소 가능합니다.
               </p>
             </div>
 
