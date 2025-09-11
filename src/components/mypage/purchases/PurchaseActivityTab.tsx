@@ -155,16 +155,32 @@ export default function PurchaseActivityTab() {
         ? `${baseUrl}/used/phones/my-trading/`
         : `${baseUrl}/api/used/phones/my-trading/`;
 
+      console.log('Fetching trading items from:', apiUrl); // URL 확인
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
+      console.log('Response status:', response.status); // 응답 상태 확인
       if (response.ok) {
         const data = await response.json();
         console.log('Trading items API response:', data); // 디버깅용 로그
         setTradingItems(data.results || data || []);
+      } else {
+        console.error('API error:', response.status, response.statusText);
+        // 404인 경우 대체 방법 시도
+        if (response.status === 404) {
+          console.log('Trying alternative: fetching all my offers and filtering...');
+          // 대안: sent offers에서 accepted이면서 phone.status가 trading인 것 필터
+          const offersData = await buyerAPI.getMySentOffers();
+          const offers = offersData.results || offersData || [];
+          const tradingOffers = offers.filter((offer: any) => 
+            offer.status === 'accepted' && offer.phone?.status === 'trading'
+          );
+          console.log('Filtered trading offers:', tradingOffers);
+          setTradingItems(tradingOffers);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
