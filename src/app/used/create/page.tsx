@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Plus, AlertCircle, Check } from 'lucide-react';
+import { Camera, X, Plus, AlertCircle, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -976,6 +976,19 @@ export default function CreateUsedPhonePage() {
           <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
             <h2 className="text-lg font-semibold mb-4">가격 정보</h2>
             
+            {/* 즉시구매 안내 */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-green-700">
+                  <p className="font-semibold mb-1">즉시구매 기능 안내</p>
+                  <p>• 구매자가 즉시판매가로 구매 시 자동으로 거래중 상태로 전환됩니다</p>
+                  <p>• 거래중 전환 시 구매자와 연락처가 자동 공개됩니다</p>
+                  <p>• 별도의 수락 과정 없이 바로 거래가 진행됩니다</p>
+                </div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               {/* 즉시 판매가 */}
               <div>
@@ -992,7 +1005,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  즉시 판매가 입력 시 해당 금액이 제출되면 판매완료로 전환됩니다
+                  구매자가 이 금액으로 구매 시 즉시 거래 진행
                 </p>
               </div>
 

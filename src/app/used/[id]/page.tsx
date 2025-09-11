@@ -247,24 +247,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     return parseInt(numbers).toLocaleString();
   };
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const cursorPosition = e.target.selectionStart || 0;
-    
-    // 콤마를 제거하고 숫자만 추출
-    const numbers = inputValue.replace(/[^\d]/g, '');
-    
-    // 빈 값이면 빈 문자열로 설정
-    if (!numbers) {
-      setOfferAmount('');
-      return;
-    }
-    
-    // 990만원 제한
-    if (parseInt(numbers) <= 9900000) {
-      setOfferAmount(numbers);
-    }
-  };
 
   // 가격 제안 확인
   const handleOfferConfirm = () => {
@@ -333,10 +315,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       });
 
       if (response.ok) {
-        toast({
-          title: '제안 완료',
-          description: '판매자에게 가격 제안이 전달되었습니다.',
-        });
+        const data = await response.json();
+        
+        // 즉시구매 여부 확인
+        if (data.type === 'instant_purchase') {
+          toast({
+            title: '즉시구매 완료!',
+            description: '거래가 시작되었습니다. 판매자 연락처를 확인해주세요.',
+          });
+          
+          // 판매자 연락처 표시 모달 또는 알림
+          if (data.seller_contact) {
+            // 연락처 정보를 표시하거나 저장
+            console.log('판매자 연락처:', data.seller_contact);
+          }
+          
+          // 페이지 새로고침 또는 상태 업데이트
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          toast({
+            title: '제안 완료',
+            description: '판매자에게 가격 제안이 전달되었습니다.',
+          });
+        }
+        
         setShowOfferModal(false);
         setShowConfirmModal(false);
         setOfferAmount('');
@@ -1096,14 +1100,30 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   type="text"
                   placeholder="금액을 입력해주세요"
                   value={formatCurrency(offerAmount)}
-                  onChange={handlePriceChange}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d]/g, '');
+                    const numValue = parseInt(value) || 0;
+                    // 즉시구매가 이상 입력 방지
+                    if (numValue <= phone.price) {
+                      setOfferAmount(value);
+                    }
+                  }}
                   className="pr-12 h-12 text-lg font-semibold"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium">원</span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                최소 제안가: {phone.min_offer_price?.toLocaleString()}원 | 최대: 9,900,000원
-              </p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-gray-500">
+                  최소: {phone.min_offer_price?.toLocaleString()}원 | 최대: {phone.price.toLocaleString()}원
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setOfferAmount(phone.price.toString())}
+                  className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                >
+                  즉시구매가 입력
+                </button>
+              </div>
             </div>
 
             <div className="mb-3">
@@ -1287,15 +1307,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-lg max-w-sm w-full p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <DollarSign className="w-8 h-8 text-blue-600" />
+              <div className={`w-16 h-16 ${parseInt(offerAmount) === phone.price ? 'bg-green-100' : 'bg-blue-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <DollarSign className={`w-8 h-8 ${parseInt(offerAmount) === phone.price ? 'text-green-600' : 'text-blue-600'}`} />
               </div>
-              <h3 className="text-lg font-semibold mb-2">가격 제안 확인</h3>
-              <p className="text-2xl font-bold text-blue-600 mb-2">
+              <h3 className="text-lg font-semibold mb-2">
+                {parseInt(offerAmount) === phone.price ? '즉시구매 확인' : '가격 제안 확인'}
+              </h3>
+              <p className={`text-2xl font-bold ${parseInt(offerAmount) === phone.price ? 'text-green-600' : 'text-blue-600'} mb-2`}>
                 {parseInt(offerAmount).toLocaleString()}원
               </p>
               <p className="text-sm text-gray-600">
-                이 금액으로 제안하시겠습니까?
+                {parseInt(offerAmount) === phone.price 
+                  ? '즉시구매가로 구매하시겠습니까?' 
+                  : '이 금액으로 제안하시겠습니까?'}
               </p>
               {offerMessage && (
                 <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700 text-left">
@@ -1309,9 +1333,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
             
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-              <p className="text-xs text-amber-700">
-                구매 의사가 확실한 경우에만 제안 부탁드립니다. 판매자가 수락하기 전까지는 취소 가능합니다.
+            <div className={`${parseInt(offerAmount) === phone.price ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mb-4`}>
+              <p className={`text-xs ${parseInt(offerAmount) === phone.price ? 'text-green-700' : 'text-amber-700'}`}>
+                {parseInt(offerAmount) === phone.price 
+                  ? '즉시구매 시 바로 거래중 상태로 전환되며, 판매자와 연락처가 공개됩니다.'
+                  : '구매 의사가 확실한 경우에만 제안 부탁드립니다. 판매자가 수락하기 전까지는 취소 가능합니다.'}
               </p>
             </div>
 
@@ -1325,9 +1351,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </Button>
               <Button
                 onClick={handleSubmitOffer}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className={`flex-1 ${parseInt(offerAmount) === phone.price 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'}`}
               >
-                예, 제안합니다
+                {parseInt(offerAmount) === phone.price ? '즉시구매' : '예, 제안합니다'}
               </Button>
             </div>
           </div>
@@ -1549,9 +1577,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="flex items-baseline gap-2 mb-2">
                           <span className="text-2xl font-bold text-blue-600">
                             {offer.amount.toLocaleString()}원
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            (원가 대비 {Math.round((offer.amount / phone.price) * 100)}%)
                           </span>
                         </div>
                         {offer.message && (
