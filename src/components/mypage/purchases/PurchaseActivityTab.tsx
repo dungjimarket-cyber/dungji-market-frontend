@@ -161,7 +161,8 @@ export default function PurchaseActivityTab() {
 
       if (response.ok) {
         const data = await response.json();
-        setTradingItems(data.results || data || []);
+        // 백엔드가 배열을 직접 반환
+        setTradingItems(Array.isArray(data) ? data : data.results || []);
       } else {
         console.error('Failed to fetch trading items:', response.status);
         setTradingItems([]);
