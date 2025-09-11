@@ -22,7 +22,7 @@ interface SalesItem {
   title: string;
   price: number;
   images: { image_url: string; is_main: boolean }[];
-  status: 'active' | 'reserved' | 'sold';
+  status: 'active' | 'trading' | 'sold';
   view_count: number;
   favorite_count: number;
   offer_count: number;
