@@ -260,7 +260,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     // 일반회원
     if (user?.role === 'buyer' || !user?.role) {
       if (status === 'recruiting') {
-        return isParticipant ? '참여 완료' : '공구 참여하기';
+        return isParticipant ? '참여 완료' : '같이 견적받기';
       }
       if (status === 'final_selection_buyers' || 
           status === 'final_selection_seller' || 

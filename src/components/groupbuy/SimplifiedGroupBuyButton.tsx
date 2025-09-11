@@ -33,7 +33,7 @@ export function SimplifiedGroupBuyButton({
     if (userRole === 'buyer') {
       // 모집중
       if (status === 'recruiting') {
-        return isParticipant ? '참여 완료' : '공구 참여하기';
+        return isParticipant ? '참여 완료' : '같이 견적받기';
       }
       
       // 종료 후 모든 진행 단계 → "진행상황 확인"
