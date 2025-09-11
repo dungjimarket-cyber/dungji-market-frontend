@@ -775,8 +775,8 @@ function GroupPurchasesPageContent() {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`w-fit py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border ${
                   showFilters 
-                    ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' 
-                    : 'bg-white text-blue-600 border-blue-400 hover:bg-blue-50'
+                    ? 'bg-dungji-primary text-white border-dungji-primary hover:bg-dungji-primary-dark' 
+                    : 'bg-white text-dungji-primary border-dungji-primary-400 hover:bg-dungji-secondary'
                 }`}
               >
                 <svg 

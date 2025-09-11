@@ -450,7 +450,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dungji-primary"></div>
       </div>
     );
   }
@@ -576,7 +576,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       onClick={() => setCurrentImageIndex(index)}
                       className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                         index === currentImageIndex 
-                          ? 'border-blue-500 shadow-lg scale-105' 
+                          ? 'border-dungji-primary shadow-lg scale-105' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -587,7 +587,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         className="object-cover"
                       />
                       {index === 0 && (
-                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                        <div className="absolute top-1 left-1 bg-dungji-primary text-white text-xs px-1.5 py-0.5 rounded font-medium">
                           대표
                         </div>
                       )}
@@ -599,7 +599,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       onClick={() => setCurrentImageIndex(4)}
                       className={`relative aspect-square rounded-lg overflow-hidden border-2 bg-gray-100 flex items-center justify-center transition-all ${
                         currentImageIndex >= 4
-                          ? 'border-blue-500 shadow-lg'
+                          ? 'border-dungji-primary shadow-lg'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -657,10 +657,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
                 {phone.accept_offers && phone.min_offer_price && (
                   <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900">
+                    <p className="text-sm font-medium text-dungji-primary-900">
                       💰 가격 제안 가능
                     </p>
-                    <p className="text-xs text-blue-700 mt-1">
+                    <p className="text-xs text-dungji-primary-700 mt-1">
                       최소 제안가: {phone.min_offer_price.toLocaleString()}원부터
                     </p>
                   </div>
@@ -839,7 +839,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 setShowOfferModal(true);
                               }
                             }}
-                            className="w-full h-14 text-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white"
+                            className="w-full h-14 text-lg font-semibold bg-dungji-primary hover:bg-dungji-primary-dark text-white"
                             disabled={remainingOffers <= 0 && !myOffer}
                           >
                             <DollarSign className="w-5 h-5 mr-2" />
@@ -890,7 +890,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         {(myOffer || offerCount > 0) && (
                           <div className="mt-2 text-center">
                             <p className="text-sm text-gray-600">
-                              남은 제안 횟수: <span className="font-semibold text-blue-600">{remainingOffers}/5회</span>
+                              남은 제안 횟수: <span className="font-semibold text-dungji-primary">{remainingOffers}/5회</span>
                             </p>
                             {remainingOffers === 0 && (
                               <p className="text-xs text-red-500 mt-1">
@@ -962,7 +962,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <span className="text-gray-600">판매</span>
-                      <span className="font-semibold text-blue-600">{phone.seller?.sell_count || 0}회</span>
+                      <span className="font-semibold text-dungji-primary">{phone.seller?.sell_count || 0}회</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-gray-600">구매</span>
@@ -999,14 +999,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 거래 가능 지역 - 통합 표시 */}
               {(phone.regions && phone.regions.length > 0) && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm font-medium text-blue-900 mb-2 flex items-center gap-1">
+                <div className="mt-4 p-4 bg-dungji-secondary rounded-lg">
+                  <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
                     거래 가능 지역
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {phone.regions.map((region, index) => (
-                      <span key={index} className="px-3 py-1 bg-white rounded-full text-sm font-medium text-blue-700 border border-blue-200">
+                      <span key={index} className="px-3 py-1 bg-white rounded-full text-sm font-medium text-dungji-primary-700 border border-dungji-primary-200">
                         {region.full_name || region.name}
                       </span>
                     ))}
@@ -1094,7 +1094,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div className="flex-1">
                   <p className="font-semibold text-sm">{phone.model}</p>
                   <p className="text-xs text-gray-600">{phone.storage}GB | {phone.color}</p>
-                  <p className="text-sm font-bold text-blue-600 mt-1">
+                  <p className="text-sm font-bold text-dungji-primary mt-1">
                     즉시 구매가: {phone.price?.toLocaleString()}원
                   </p>
                 </div>
@@ -1102,13 +1102,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             </div>
             
             {/* 제안 횟수 표시 */}
-            <div className="flex items-center justify-between mb-4 p-3 bg-blue-50 rounded-lg">
-              <span className="text-sm font-medium text-blue-900">
+            <div className="flex items-center justify-between mb-4 p-3 bg-dungji-secondary rounded-lg">
+              <span className="text-sm font-medium text-dungji-primary-900">
                 남은 제안 횟수
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-blue-600">{remainingOffers}</span>
-                <span className="text-sm text-blue-700">/ 5회</span>
+                <span className="text-2xl font-bold text-dungji-primary">{remainingOffers}</span>
+                <span className="text-sm text-dungji-primary-700">/ 5회</span>
               </div>
             </div>
             
@@ -1168,12 +1168,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 선택된 메시지 표시 */}
               {selectedMessages.length > 0 && (
-                <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
-                  <p className="text-xs text-blue-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
+                <div className="mb-2 p-2 bg-dungji-secondary rounded border border-dungji-primary-200">
+                  <p className="text-xs text-dungji-primary-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
                   <div className="space-y-1">
                     {selectedMessages.map((msg, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-xs text-blue-900">• {msg}</span>
+                        <span className="text-xs text-dungji-primary-900">• {msg}</span>
                         <button
                           type="button"
                           onClick={() => {
@@ -1209,7 +1209,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           disabled={selectedMessages.length >= 5}
                           className={`block w-full text-left text-xs py-1 px-2 rounded hover:bg-gray-100 transition-colors ${
                             selectedMessages.includes(msg)
-                              ? 'bg-blue-100 text-blue-700'
+                              ? 'bg-dungji-secondary-light text-dungji-primary-700'
                               : 'text-gray-700'
                           } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >

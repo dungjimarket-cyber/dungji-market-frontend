@@ -13,6 +13,44 @@ export default {
     },
   	extend: {
   		colors: {
+  			// 둥지마켓 브랜드 컬러
+  			dungji: {
+  				primary: {
+  					DEFAULT: '#845ec2',
+  					light: '#a178df',
+  					dark: '#6b4aa0',
+  					50: '#faf7fd',
+  					100: '#f3ecfb',
+  					200: '#e8d5f7',
+  					300: '#d8b3f0',
+  					400: '#c085e5',
+  					500: '#a559d6',
+  					600: '#845ec2',
+  					700: '#6e4ca5',
+  					800: '#5c4088',
+  					900: '#4d366f',
+  				},
+  				secondary: {
+  					DEFAULT: '#fbeaff',
+  					light: '#fdf4ff',
+  					dark: '#f4d6fc',
+  				},
+  				accent: {
+  					DEFAULT: '#00c9a7',
+  					light: '#00e5c3',
+  					dark: '#00a88a',
+  					50: '#e6fcf7',
+  					100: '#c2f8ec',
+  					200: '#85f1d9',
+  					300: '#42e3c3',
+  					400: '#00c9a7',
+  					500: '#00a88a',
+  					600: '#00866e',
+  					700: '#006957',
+  					800: '#005446',
+  					900: '#00453a',
+  				},
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

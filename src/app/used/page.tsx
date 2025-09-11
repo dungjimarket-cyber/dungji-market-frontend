@@ -380,7 +380,7 @@ export default function UsedPhonesPage() {
         {page >= MAX_PAGES && phones.length > 0 && (
           <div className="text-center py-8">
             <div className="inline-flex flex-col items-center gap-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full text-blue-600">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-dungji-secondary rounded-full text-dungji-primary">
                 <Info className="w-5 h-5" />
                 <p className="text-sm font-medium">최대 표시 개수에 도달했습니다</p>
               </div>

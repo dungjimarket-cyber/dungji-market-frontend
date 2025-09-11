@@ -1248,7 +1248,7 @@ const onSubmit = async (values: FormData) => {
       <p className="text-xl font-bold text-blue-700">{mode === 'edit' ? '공구 수정 중...' : '공구 등록 중...'}</p>
       <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
       <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
-        <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+        <div className="h-full bg-dungji-primary rounded-full animate-pulse" style={{ width: '100%' }}></div>
       </div>
     </div>
   );
@@ -1335,7 +1335,7 @@ const onSubmit = async (values: FormData) => {
                   }}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     manufacturerFilter === 'samsung' 
-                      ? 'bg-blue-600 text-white' 
+                      ? 'bg-dungji-primary text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -1460,14 +1460,14 @@ const onSubmit = async (values: FormData) => {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
-                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'local' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'local' ? 'bg-dungji-primary text-white' : 'bg-gray-200 text-gray-700'}`}
                   onClick={() => setRegionType('local')}
                 >
                   지역
                 </button>
                 <button
                   type="button"
-                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'nationwide' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'nationwide' ? 'bg-dungji-primary text-white' : 'bg-gray-200 text-gray-700'}`}
                   onClick={() => {
                     setRegionType('nationwide');
                     setSelectedRegion(null);
@@ -2016,7 +2016,7 @@ const onSubmit = async (values: FormData) => {
 
             <Button 
               type="submit" 
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 rounded-lg font-bold text-lg cursor-pointer" 
+              className="w-full bg-dungji-primary hover:bg-dungji-primary-dark text-white py-6 rounded-lg font-bold text-lg cursor-pointer" 
               disabled={isSubmitting || form.formState.isSubmitting}
             >
               {isSubmitting ? (

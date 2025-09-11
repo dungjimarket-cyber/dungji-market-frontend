@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 둥지마켓 메인 컬러 시스템 */
+:root {
+  /* Primary Color - Purple */
+  --color-primary: #845ec2;
+  --color-primary-light: #a178df;
+  --color-primary-dark: #6b4aa0;
+  
+  /* Secondary Color - Light Purple/Pink */
+  --color-secondary: #fbeaff;
+  --color-secondary-light: #fdf4ff;
+  --color-secondary-dark: #f4d6fc;
+  
+  /* Accent Color - Teal */
+  --color-accent: #00c9a7;
+  --color-accent-light: #00e5c3;
+  --color-accent-dark: #00a88a;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #845ec2 0%, #00c9a7 100%);
+  --gradient-secondary: linear-gradient(135deg, #fbeaff 0%, #e8d5ff 100%);
+  --gradient-accent: linear-gradient(135deg, #00c9a7 0%, #00e5c3 100%);
+}
+
 /* iOS Safe area padding */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe {
@@ -96,7 +119,7 @@ html {
 
 /* 버튼 타입별 스타일 */
 .btn-primary {
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  background: var(--gradient-primary);
   color: white;
   box-shadow: 0 4px 14px rgba(52, 211, 153, 0.4);
 }

@@ -703,25 +703,25 @@ export default function CreateUsedPhonePage() {
         {/* 활성 상품 개수 표시 */}
         {!checkingLimit && activeCount > 0 && (
           <div className={`border rounded-lg p-4 mb-6 ${
-            activeCount >= 5 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'
+            activeCount >= 5 ? 'bg-amber-50 border-amber-200' : 'bg-dungji-secondary border-dungji-primary-200'
           }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  activeCount >= 5 ? 'bg-amber-100' : 'bg-blue-100'
+                  activeCount >= 5 ? 'bg-amber-100' : 'bg-dungji-secondary-light'
                 }`}>
                   <span className={`text-sm font-semibold ${
-                    activeCount >= 5 ? 'text-amber-700' : 'text-blue-700'
+                    activeCount >= 5 ? 'text-amber-700' : 'text-dungji-primary-700'
                   }`}>{activeCount}</span>
                 </div>
                 <div>
                   <p className={`text-sm font-medium ${
-                    activeCount >= 5 ? 'text-amber-900' : 'text-blue-900'
+                    activeCount >= 5 ? 'text-amber-900' : 'text-dungji-primary-900'
                   }`}>
                     활성 상품 {activeCount}/5개
                   </p>
                   <p className={`text-xs ${
-                    activeCount >= 5 ? 'text-amber-700' : 'text-blue-700'
+                    activeCount >= 5 ? 'text-amber-700' : 'text-dungji-primary-700'
                   }`}>
                     {activeCount >= 5 ? '상품 등록 제한에 도달했습니다' : '최대 5개까지 동시 판매 가능'}
                   </p>
@@ -767,7 +767,7 @@ export default function CreateUsedPhonePage() {
                       
                       {/* 대표 이미지 표시 */}
                       {image.isMain && (
-                        <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 text-xs rounded font-medium">
+                        <div className="absolute top-2 left-2 bg-dungji-primary text-white px-2 py-1 text-xs rounded font-medium">
                           대표
                         </div>
                       )}
@@ -821,13 +821,13 @@ export default function CreateUsedPhonePage() {
                       key={index}
                       className={`relative aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors ${
                         canUpload
-                          ? 'border-gray-300 hover:border-blue-500 bg-gray-50 hover:bg-blue-50 cursor-pointer'
+                          ? 'border-gray-300 hover:border-dungji-primary bg-gray-50 hover:bg-dungji-secondary cursor-pointer'
                           : 'border-gray-200 bg-gray-50 cursor-not-allowed'
                       }`}
                     >
                       {/* 첫 번째 슬롯에 대표 표시 */}
                       {isFirstSlot && (
-                        <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 text-xs rounded font-medium z-10">
+                        <div className="absolute top-2 left-2 bg-dungji-primary text-white px-2 py-1 text-xs rounded font-medium z-10">
                           대표
                         </div>
                       )}
