@@ -163,6 +163,7 @@ export default function PurchaseActivityTab() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Trading items API response:', data); // 디버깅용 로그
         setTradingItems(data.results || data || []);
       }
     } catch (error) {
