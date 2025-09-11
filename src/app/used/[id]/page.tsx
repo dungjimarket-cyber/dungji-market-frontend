@@ -691,6 +691,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               </div>
 
+              {/* 제품상태 및 설명 */}
+              {phone.condition_description && (
+                <div className="py-4 border-b">
+                  <h2 className="text-sm text-gray-600 mb-2">제품상태 및 설명</h2>
+                  <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
+                </div>
+              )}
+
               {/* 조회수 및 통계 */}
               <div className="py-4 flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center gap-3">
@@ -949,27 +957,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     </div>
                   </div>
                 </div>
-                {/* 판매자 본인인 경우 수정/삭제 버튼 표시 */}
-                {user?.id === phone.seller?.id && (
-                  <div className="flex gap-2 pt-3 border-t">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => router.push(`/used/${phoneId}/edit`)}
-                      className="flex-1"
-                    >
-                      수정하기
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowDeleteModal(true)}
-                      className="flex-1 text-red-600 hover:text-red-700"
-                    >
-                      삭제하기
-                    </Button>
-                  </div>
-                )}
               </div>
               
               {/* 거래 가능 지역 - 통합 표시 */}
@@ -1001,13 +988,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
 
-            {/* 제품상태 및 설명 */}
-            {phone.condition_description && (
-              <div className="bg-white rounded-lg p-6 shadow-sm mt-4">
-                <h2 className="font-semibold mb-4">제품상태 및 설명</h2>
-                <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
-              </div>
-            )}
 
             {/* 안전 거래 안내 */}
             <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg p-4 mt-4">

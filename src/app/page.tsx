@@ -226,7 +226,7 @@ function HomeContent() {
             href="https://doongji-market-1vi5n3i.gamma.site/"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-animated bg-dungji-primary hover:bg-dungji-primary-dark text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
+            className="btn-animated btn-soft whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이용가이드</span>
           </a>
