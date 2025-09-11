@@ -866,7 +866,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   }
                                 }
                               }}
-                              className="w-full"
+                              className="w-full border-gray-300 hover:bg-dungji-danger hover:text-white hover:border-dungji-danger transition-colors"
                             >
                               가격 제안 취소하기
                             </Button>
