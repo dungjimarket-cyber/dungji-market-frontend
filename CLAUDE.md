@@ -215,6 +215,49 @@ GOOGLE_CLIENT_SECRET
 - **Next.js Rules**: Enforced for proper HTML link usage
 - Lint command: `npm run lint`
 
+## 중고폰 직거래 기능 (Used Phone Trading)
+
+### 개발 문서
+- **PRD**: `PRD_중고폰직거래.md` - 제품 요구사항 및 비즈니스 목표
+- **기능 명세서**: `기능개발명세서_중고폰직거래.md` - 상세 기술 구현 사양
+- **작업 관리**: `작업관리문서_중고폰직거래.md` - 진행 상황 및 이슈 트래킹
+
+### 주요 기능
+- **상품 관리**: 최대 5개 동시 등록, 다중 이미지 업로드
+- **거래 시스템**: 가격 제안, 즉시구매, 거래 상태 관리
+- **프로필 체크**: 중고폰 거래용 필수 정보 확인 (연락처, 활동지역)
+- **검색/필터**: 브랜드, 가격, 용량, 상태별 필터링
+
+### 핵심 컴포넌트
+```
+src/components/used/
+├── UsedPhoneCard.tsx         # 상품 카드
+├── UsedPhoneFilter.tsx        # 필터 UI  
+├── UsedPhoneGallery.tsx       # 이미지 갤러리
+├── PriceOfferModal.tsx        # 가격 제안 모달
+├── RegistrationLimitModal.tsx # 등록 제한 안내
+└── UsedPhoneForm.tsx          # 등록/수정 폼
+```
+
+### API 엔드포인트
+- `GET/POST /api/used/phones/` - 상품 목록/등록
+- `GET/PUT/DELETE /api/used/phones/{id}/` - 상품 상세/수정/삭제
+- `POST /api/used/phones/{id}/offer/` - 가격 제안
+- `GET /api/used/phones/{id}/my-offer/` - 내 제안 조회
+- `POST /api/used/phones/{id}/favorite/` - 찜하기
+- `GET /api/used/phones/check-limit/` - 등록 제한 체크
+
+### Custom Hooks
+- `useUsedPhoneProfileCheck()` - 중고폰 거래 프로필 체크
+- `useImageUpload()` - 다중 이미지 업로드 처리
+- `usePriceOffer()` - 가격 제안 관리
+
+### 개발 현황
+- **진행률**: 75% (Phase 1 완료, Phase 2 진행중)
+- **완료**: 기본 CRUD, 이미지 업로드, 가격 제안, 찜하기
+- **진행중**: 메시지 시스템, 거래 완료 프로세스
+- **예정**: 평가 시스템, 검색 고도화, 알림 기능
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
