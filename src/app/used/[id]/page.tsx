@@ -32,7 +32,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
-  const { hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
+  const { isProfileComplete: hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
   
   const [phone, setPhone] = useState<UsedPhone | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1084,7 +1084,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="flex items-center gap-3">
                 {phone.images?.[0] && (
                   <Image
-                    src={phone.images[0].image}
+                    src={phone.images[0].imageUrl}
                     alt={phone.model}
                     width={60}
                     height={60}

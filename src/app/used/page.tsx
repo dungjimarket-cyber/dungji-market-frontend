@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import RegistrationLimitModal from '@/components/used/RegistrationLimitModal';
 
 // 스켈레톤 로더 컴포넌트
 const SkeletonCard = () => (
@@ -48,6 +49,10 @@ export default function UsedPhonesPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({});
   const MAX_PAGES = 10; // 최대 10페이지까지만 로드 (총 200개 상품)
+  
+  // 등록 제한 관련 상태
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [registrationLimit, setRegistrationLimit] = useState({ current: 0, max: 5 });
   
   // Intersection Observer를 위한 ref
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -221,6 +226,32 @@ export default function UsedPhonesPage() {
     if (!profileComplete) {
       setShowProfileModal(true);
       return;
+    }
+
+    // 등록 제한 체크
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/check-limit/`
+        : `${baseUrl}/api/used/phones/check-limit/`;
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (!data.can_register) {
+          setRegistrationLimit({ current: data.current_count, max: data.max_count });
+          setShowLimitModal(true);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check registration limit:', error);
     }
 
     router.push('/used/create');
@@ -424,6 +455,18 @@ export default function UsedPhonesPage() {
         missingFields={missingFields}
         onUpdateProfile={() => {
           router.push('/mypage');
+        }}
+      />
+      
+      {/* 등록 제한 모달 */}
+      <RegistrationLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        currentCount={registrationLimit.current}
+        maxCount={registrationLimit.max}
+        onViewMyPhones={() => {
+          setShowLimitModal(false);
+          router.push('/mypage?tab=used-phones');
         }}
       />
     </>
