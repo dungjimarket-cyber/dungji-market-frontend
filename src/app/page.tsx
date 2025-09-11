@@ -217,7 +217,7 @@ function HomeContent() {
           
           <Link 
             href="/events"
-            className="btn-animated btn-accent whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
+            className="btn-animated bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이벤트</span>
           </Link>
