@@ -439,12 +439,12 @@ export default function SalesActivityTab() {
 
           {/* 받은 제안 탭 */}
           <TabsContent value="offers" className="space-y-3">
-            {listings.filter(item => item.offer_count > 0).length === 0 ? (
+            {listings.filter(item => item.offer_count > 0 && item.status !== 'trading').length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 받은 제안이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.offer_count > 0).map((item) => (
+              listings.filter(item => item.offer_count > 0 && item.status !== 'trading').map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">

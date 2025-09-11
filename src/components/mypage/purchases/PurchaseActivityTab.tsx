@@ -491,11 +491,7 @@ export default function PurchaseActivityTab() {
                             제안 취소
                           </Button>
                         )}
-                        {offer.status === 'accepted' && (
-                          <Button size="sm">
-                            판매자 연락하기
-                          </Button>
-                        )}
+                        {/* 수락된 제안은 거래중 탭으로 이동 */}
                       </div>
                     </div>
                   </div>
