@@ -1016,7 +1016,7 @@ export default function CreateUsedPhonePage() {
                 <Input
                   id="price"
                   type="text"
-                  placeholder="0 (최대 990만원)"
+                  placeholder="0"
                   value={formatPrice(formData.price)}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
@@ -1044,7 +1044,7 @@ export default function CreateUsedPhonePage() {
                 <Input
                   id="min_offer_price"
                   type="text"
-                  placeholder="0 (최대 990만원)"
+                  placeholder="0"
                   value={formatPrice(formData.min_offer_price)}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
