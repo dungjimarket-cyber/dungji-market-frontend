@@ -796,8 +796,9 @@ export default function SellerSettings() {
                     {!isEditingNickname && (
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
+                        className="text-gray-500"
                         onClick={async () => {
                           // 닉네임 변경 가능 여부 먼저 확인
                           try {
@@ -828,7 +829,6 @@ export default function SellerSettings() {
                             setShowLimitModal(true);
                           }
                         }}
-                        className="text-xs text-blue-600 hover:text-blue-800"
                       >
                         수정
                       </Button>

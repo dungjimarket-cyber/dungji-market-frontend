@@ -793,6 +793,8 @@ export default function ProfileSection() {
                   <div className="flex gap-2">
                     <button
                       onClick={async () => {
+                        // editField를 설정해야 handleProfileUpdate에서 주소 업데이트 로직이 실행됨
+                        setEditField('address');
                         await handleProfileUpdate();
                         setIsEditingAddress(false);
                       }}
