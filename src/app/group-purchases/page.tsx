@@ -87,7 +87,7 @@ function GroupPurchasesPageContent() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const itemsPerPage = 12; // 한 번에 로드할 아이템 수
+  const itemsPerPage = 8; // 한 번에 로드할 아이템 수 (초기 로딩 속도 개선)
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false); // loadingMore 상태를 ref로도 관리

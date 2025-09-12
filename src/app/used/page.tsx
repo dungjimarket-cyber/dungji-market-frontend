@@ -45,46 +45,45 @@ export default function UsedPhonesPage() {
   
   const [phones, setPhones] = useState<UsedPhone[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false); // 추가 로딩 상태
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({});
+  const [hasLoadedAll, setHasLoadedAll] = useState(false); // 모든 데이터 로드 완료 여부
   
   // 등록 제한 관련 상태
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [registrationLimit, setRegistrationLimit] = useState({ current: 0, max: 5 });
 
-  // 상품 목록 조회 (전체 조회)
-  const fetchPhones = useCallback(async (currentFilters: any) => {
+  // 초기 상품 목록 조회 (빠른 로딩)
+  const fetchInitialPhones = useCallback(async (currentFilters: any) => {
     try {
       setLoading(true);
+      setHasLoadedAll(false);
       
-      // 쿼리 파라미터 생성 (페이지네이션 없이 전체 조회)
+      // 첫 화면용 20개만 빠르게 로드
       const params = new URLSearchParams({
-        limit: '1000', // 충분히 큰 수로 전체 조회
+        limit: '20',
         ...currentFilters
       });
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      // API URL이 이미 /api 경로를 포함하는지 확인
       const apiUrl = baseUrl.includes('api.dungjimarket.com') 
         ? `${baseUrl}/used/phones/?${params}`
         : `${baseUrl}/api/used/phones/?${params}`;
       const response = await fetch(apiUrl);
       
-      // 응답 체크
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-
-      // DRF 기본 응답 형식 처리
       const items = Array.isArray(data) ? data : (data.results || data.items || []);
       
       setPhones(items);
       setTotalCount(items.length);
       
     } catch (error) {
-      console.error('Failed to fetch phones:', error);
+      console.error('Failed to fetch initial phones:', error);
       toast({
         title: '오류',
         description: '상품을 불러오는데 실패했습니다.',
@@ -95,11 +94,54 @@ export default function UsedPhonesPage() {
     }
   }, [toast]);
 
+  // 나머지 상품 목록 조회 (백그라운드)
+  const fetchRemainingPhones = useCallback(async (currentFilters: any) => {
+    try {
+      setLoadingMore(true);
+      
+      // 나머지 데이터 로드 (offset 20부터)
+      const params = new URLSearchParams({
+        limit: '1000',
+        offset: '20',
+        ...currentFilters
+      });
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com') 
+        ? `${baseUrl}/used/phones/?${params}`
+        : `${baseUrl}/api/used/phones/?${params}`;
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const items = Array.isArray(data) ? data : (data.results || data.items || []);
+      
+      // 기존 데이터에 추가
+      setPhones(prev => [...prev, ...items]);
+      setTotalCount(prev => prev + items.length);
+      setHasLoadedAll(true);
+      
+    } catch (error) {
+      console.error('Failed to fetch remaining phones:', error);
+      // 백그라운드 로딩이므로 에러 토스트는 표시하지 않음
+    } finally {
+      setLoadingMore(false);
+    }
+  }, []);
+
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((newFilters: any) => {
     setFilters(newFilters);
-    fetchPhones(newFilters);
-  }, [fetchPhones]);
+    // 필터 변경 시 초기 데이터만 로드 (빠른 응답)
+    fetchInitialPhones(newFilters);
+    // 0.5초 후 나머지 데이터 로드
+    setTimeout(() => {
+      fetchRemainingPhones(newFilters);
+    }, 500);
+  }, [fetchInitialPhones, fetchRemainingPhones]);
 
   // 찜하기 핸들러
   const handleFavorite = useCallback(async (phoneId: number) => {
@@ -147,7 +189,15 @@ export default function UsedPhonesPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    fetchPhones({});
+    // 1단계: 초기 20개 빠르게 로드
+    fetchInitialPhones({});
+    
+    // 2단계: 0.5초 후 나머지 백그라운드 로드
+    const timer = setTimeout(() => {
+      fetchRemainingPhones({});
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // 프로필 체크 (로그인한 경우)
@@ -330,6 +380,25 @@ export default function UsedPhonesPage() {
           )}
         </div>
 
+        {/* 추가 데이터 로딩 중 표시 */}
+        {!loading && loadingMore && phones.length > 0 && (
+          <div className="mt-4 py-4 text-center">
+            <div className="inline-flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              <span>더 많은 상품을 불러오는 중...</span>
+            </div>
+          </div>
+        )}
+        
+        {/* 모든 데이터 로드 완료 표시 */}
+        {!loading && !loadingMore && hasLoadedAll && phones.length > 20 && (
+          <div className="mt-4 py-4 text-center">
+            <p className="text-sm text-gray-500">
+              총 {totalCount}개의 상품을 모두 불러왔습니다
+            </p>
+          </div>
+        )}
+        
         {/* 검색 결과 없음 */}
         {!loading && phones.length === 0 && (
           <div className="text-center py-16">
