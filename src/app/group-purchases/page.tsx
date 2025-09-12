@@ -427,7 +427,7 @@ function GroupPurchasesPageContent() {
         console.log('==============================================');
       }
       
-      // API 응답 처리 - 안전장치 추가
+      // API 응답 처리
       let newItems: GroupBuy[] = [];
       if (data.results && Array.isArray(data.results)) {
         // Django REST Framework 페이징 응답 형식
@@ -437,22 +437,12 @@ function GroupPurchasesPageContent() {
         setHasMore(hasMoreData);
         console.log('HasMore 설정:', hasMoreData, 'next:', data.next, 'items:', newItems.length);
       } else if (Array.isArray(data)) {
-        // 페이징 없는 배열 응답 - 백엔드가 limit을 무시하는 경우 대비
-        console.warn('[경고] API가 페이징 없이 배열로 응답함. 요청한 limit:', limit, '받은 데이터:', data.length);
-        
-        // 안전장치: 요청한 limit만큼만 사용
-        if (isLoadMore) {
-          // 무한스크롤 시 currentOffset부터 limit개만 추출
-          newItems = data.slice(currentOffset, currentOffset + limit);
-        } else {
-          // 초기 로드 시 limit개만 사용
-          newItems = data.slice(0, limit);
-        }
-        
-        // 전체 데이터에서 더 가져올 것이 있는지 확인
-        const hasMoreData = data.length > currentOffset + limit;
+        // 페이징 없는 배열 응답
+        newItems = data;
+        // itemsPerPage보다 적으면 더 이상 없음
+        const hasMoreData = newItems.length >= itemsPerPage;
         setHasMore(hasMoreData);
-        console.log('HasMore 설정 (배열 안전모드):', hasMoreData, '전체:', data.length, '사용:', newItems.length);
+        console.log('HasMore 설정 (배열):', hasMoreData, 'items:', newItems.length);
       }
       
       if (isLoadMore) {
@@ -696,14 +686,8 @@ function GroupPurchasesPageContent() {
         fetchGroupBuys(filters, activeTab, true).then(() => {
           setSecondaryLoading(false);
           setOffset(initialItemsCount + secondaryItemsCount);
-        }).catch(err => {
-          console.error('2단계 로드 실패:', err);
-          setSecondaryLoading(false);
         });
       }, 100);
-    }).catch(err => {
-      console.error('초기 로드 실패:', err);
-      setInitialLoading(false);
     });
     
     // 사용자가 로그인한 경우 참여/입찰 정보 가져오기
