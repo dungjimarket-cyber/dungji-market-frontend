@@ -58,7 +58,9 @@ interface TradingItem {
     model: string;
     price: number;
     images: { image_url: string; is_main: boolean }[];
-    status: 'trading';
+    status: 'trading' | 'sold';
+    seller_completed: boolean;
+    buyer_completed: boolean;
     seller: {
       id: number;
       nickname: string;
@@ -573,26 +575,31 @@ export default function PurchaseActivityTab() {
                           <User className="w-3.5 h-3.5" />
                           판매자 정보
                         </Button>
+                        {item.phone.seller_completed && !item.phone.buyer_completed && (
+                          <Button 
+                            size="sm" 
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              if (confirm('구매를 완료하시겠습니까?')) {
+                                handleCompleteTransaction(item.phone.id);
+                              }
+                            }}
+                          >
+                            구매 완료
+                          </Button>
+                        )}
+                      </div>
+                      {/* 판매자가 완료하지 않은 경우에만 취소 버튼 표시 */}
+                      {!item.phone.seller_completed && (
                         <Button 
                           size="sm" 
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => {
-                            if (confirm('구매를 완료하시겠습니까?')) {
-                              handleCompleteTransaction(item.phone.id);
-                            }
-                          }}
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          onClick={() => openCancelModal(item)}
                         >
-                          구매 완료
+                          거래 취소
                         </Button>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                        onClick={() => openCancelModal(item)}
-                      >
-                        거래 취소
-                      </Button>
+                      )}
                     </div>
                   </div>
                 </div>
