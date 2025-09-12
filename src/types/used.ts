@@ -44,6 +44,7 @@ export interface UsedPhone {
   
   // 판매 정보
   price: number;
+  final_price?: number; // 거래완료된 경우 실제 거래 금액
   accept_offers: boolean;
   min_offer_price?: number;
   accessories?: string[]; // ["charger", "box", "earphone", "case"]

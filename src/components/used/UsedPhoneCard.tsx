@@ -92,9 +92,17 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           </div>
         )}
         {phone.status === 'sold' && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white text-lg font-bold">판매완료</span>
-          </div>
+          <>
+            <div className="absolute inset-0 bg-black/50 z-10" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+              <span className="text-white text-lg font-bold mb-1">판매완료</span>
+              {phone.final_price && (
+                <span className="text-white text-sm font-medium">
+                  {phone.final_price.toLocaleString()}원
+                </span>
+              )}
+            </div>
+          </>
         )}
         
         {/* 찜하기 버튼 */}
