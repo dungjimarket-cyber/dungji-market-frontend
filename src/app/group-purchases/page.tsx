@@ -83,11 +83,17 @@ function GroupPurchasesPageContent() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   
+  // 순차 로딩 관련 상태
+  const [initialLoading, setInitialLoading] = useState(true); // 초기 4개 로딩
+  const [secondaryLoading, setSecondaryLoading] = useState(false); // 추가 16개 로딩
+  
   // 무한 스크롤 관련 상태
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const itemsPerPage = 20; // 초기 로딩 속도 개선을 위해 20개로 증가
+  const initialItemsCount = 4; // 초기 빠른 로드
+  const secondaryItemsCount = 16; // 추가 로드
+  const itemsPerPage = 20; // 무한 스크롤 시
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false); // loadingMore 상태를 ref로도 관리
@@ -142,8 +148,19 @@ function GroupPurchasesPageContent() {
     try {
       const params = new URLSearchParams();
       
-      // 무한 스크롤 파라미터 추가 - 초기 로드는 더 많이
-      const limit = currentOffset === 0 ? 20 : itemsPerPage;
+      // 로딩 단계별 limit 설정
+      let limit;
+      if (currentOffset === 0 && !isLoadMore) {
+        // 초기 로딩: 4개만 빠르게
+        limit = initialItemsCount;
+      } else if (currentOffset === initialItemsCount && !isLoadMore) {
+        // 두 번째 로딩: 추가 16개
+        limit = secondaryItemsCount;
+      } else {
+        // 무한 스크롤: 20개씩
+        limit = itemsPerPage;
+      }
+      
       params.append('limit', limit.toString());
       params.append('offset', currentOffset.toString());
       
@@ -619,7 +636,7 @@ function GroupPurchasesPageContent() {
   }, [accessToken, user?.role]);
 
   /**
-   * 초기 데이터 로딩
+   * 초기 데이터 로딩 - 순차적으로
    */
   useEffect(() => {
     // URL 쿼리 파라미터에서 필터 추출
@@ -657,7 +674,21 @@ function GroupPurchasesPageContent() {
       return; // URL 업데이트 후 리턴하여 중복 호출 방지
     }
     
-    fetchGroupBuys(filters, activeTab);
+    // 1단계: 초기 4개 빠른 로드
+    setInitialLoading(true);
+    fetchGroupBuys(filters, activeTab).then(() => {
+      setInitialLoading(false);
+      
+      // 2단계: 100ms 후 추가 16개 로드
+      setTimeout(() => {
+        setSecondaryLoading(true);
+        setOffset(initialItemsCount);
+        fetchGroupBuys(filters, activeTab, true).then(() => {
+          setSecondaryLoading(false);
+          setOffset(initialItemsCount + secondaryItemsCount);
+        });
+      }, 100);
+    });
     
     // 사용자가 로그인한 경우 참여/입찰 정보 가져오기
     if (accessToken) {
@@ -857,9 +888,21 @@ function GroupPurchasesPageContent() {
             {/* 통합된 콘텐츠 영역 - 모든 탭이 동일한 데이터 표시 */}
             <div className="mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {loading ? (
-                  [...Array(12)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
+                {/* 초기 로딩 시 20개 스켈레톤 표시 */}
+                {initialLoading ? (
+                  [...Array(20)].map((_, i) => (
+                    <div key={`skeleton-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-lg animate-pulse">
+                      <div className="h-52 bg-gray-200" />
+                      <div className="p-4 space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                        <div className="h-8 bg-gray-200 rounded" />
+                      </div>
+                      <div className="p-4 bg-gray-50 space-y-2">
+                        <div className="h-3 bg-gray-200 rounded w-full" />
+                        <div className="h-10 bg-gray-300 rounded" />
+                      </div>
+                    </div>
                   ))
                 ) : error ? (
                   <div className="col-span-full text-center py-8">
@@ -875,15 +918,37 @@ function GroupPurchasesPageContent() {
                     </p>
                   </div>
                 ) : (
-                  groupBuys.map((groupBuy) => (
-                    <GroupPurchaseCard 
-                      key={groupBuy.id} 
-                      groupBuy={groupBuy}
-                      isParticipant={userParticipations.includes(groupBuy.id)}
-                      hasBid={userBids.includes(groupBuy.id)}
-                      isCompletedTab={activeTab === 'completed'}
-                    />
-                  ))
+                  <>
+                    {/* 실제 데이터 표시 */}
+                    {groupBuys.map((groupBuy, index) => (
+                      <GroupPurchaseCard 
+                        key={groupBuy.id} 
+                        groupBuy={groupBuy}
+                        isParticipant={userParticipations.includes(groupBuy.id)}
+                        hasBid={userBids.includes(groupBuy.id)}
+                        isCompletedTab={activeTab === 'completed'}
+                        priority={index < 4} // 첫 4개 우선 로딩
+                      />
+                    ))}
+                    
+                    {/* 두 번째 로딩 중일 때 나머지 자리에 스켈레톤 표시 */}
+                    {secondaryLoading && groupBuys.length <= initialItemsCount && (
+                      [...Array(secondaryItemsCount)].map((_, i) => (
+                        <div key={`secondary-skeleton-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-lg animate-pulse">
+                          <div className="h-52 bg-gray-200" />
+                          <div className="p-4 space-y-3">
+                            <div className="h-4 bg-gray-200 rounded w-3/4" />
+                            <div className="h-3 bg-gray-200 rounded w-1/2" />
+                            <div className="h-8 bg-gray-200 rounded" />
+                          </div>
+                          <div className="p-4 bg-gray-50 space-y-2">
+                            <div className="h-3 bg-gray-200 rounded w-full" />
+                            <div className="h-10 bg-gray-300 rounded" />
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </>
                 )}
               </div>
               
