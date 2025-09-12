@@ -830,15 +830,25 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 setShowOfferModal(true);
                               }
                             }}
-                            className="w-full h-14 text-lg font-semibold bg-dungji-primary hover:bg-dungji-primary-dark text-white"
-                            disabled={remainingOffers <= 0 && !myOffer}
+                            className={`w-full h-14 text-lg font-semibold ${
+                              phone.status === 'trading' || phone.status === 'sold' 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-dungji-primary hover:bg-dungji-primary-dark'
+                            } text-white`}
+                            disabled={remainingOffers <= 0 && !myOffer || phone.status === 'trading' || phone.status === 'sold'}
                           >
                             <DollarSign className="w-5 h-5 mr-2" />
-                            {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
+                            {phone.status === 'trading' 
+                              ? '거래중인 상품입니다' 
+                              : phone.status === 'sold' 
+                              ? '판매완료된 상품입니다'
+                              : myOffer && myOffer.status === 'pending' 
+                              ? '제안 수정하기' 
+                              : '가격 제안하기'}
                           </Button>
                           
-                          {/* 제안 취소 버튼 */}
-                          {myOffer && myOffer.status === 'pending' && (
+                          {/* 제안 취소 버튼 - 거래중/판매완료가 아닌 경우에만 표시 */}
+                          {myOffer && myOffer.status === 'pending' && phone.status === 'active' && (
                             <Button
                               variant="outline"
                               onClick={async () => {
@@ -876,6 +886,36 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             </Button>
                           )}
                         </div>
+                        
+                        {/* 상태별 안내 메시지 */}
+                        {phone.status === 'trading' && (
+                          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                            <div className="flex items-center gap-2 text-orange-700">
+                              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                              <span className="text-sm font-medium">현재 다른 구매자와 거래가 진행중입니다</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {phone.status === 'sold' && phone.final_price && (
+                          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div className="flex items-center gap-2 text-gray-700">
+                              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                              <span className="text-sm font-medium">
+                                {phone.final_price.toLocaleString()}원에 판매완료된 상품입니다
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {phone.status === 'sold' && !phone.final_price && (
+                          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div className="flex items-center gap-2 text-gray-700">
+                              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                              <span className="text-sm font-medium">판매완료된 상품입니다</span>
+                            </div>
+                          </div>
+                        )}
                         
                         {/* 제안 횟수 표시 */}
                         {(myOffer || offerCount > 0) && (
