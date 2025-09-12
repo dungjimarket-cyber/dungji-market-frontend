@@ -14,7 +14,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Phone, Upload, FileText, Trash2, LogOut } from 'lucide-react';
+import { ArrowLeft, Loader2, Phone, Upload, FileText, LogOut } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { getRegions } from '@/lib/api/regionService';
@@ -1275,7 +1275,7 @@ export default function SellerSettings() {
                               });
                               
                               if (response.ok) {
-                                // 로컬 상태 업데이트 - 신청 폼으로 되돌리기
+                                // 로컬 상태 즉시 초기화 - 신청 폼으로 되돌리기
                                 setFormData(prev => ({ 
                                   ...prev, 
                                   isRemoteSales: false, 
@@ -1283,21 +1283,12 @@ export default function SellerSettings() {
                                   existingCertification: null 
                                 }));
                                 
+                                // 비대면 인증 상태 즉시 초기화
+                                setRemoteSalesStatus(null);
+                                
                                 // 프로필 데이터 새로고침
                                 const updatedProfile = await getSellerProfile();
                                 setProfile(updatedProfile);
-                                
-                                // 비대면 인증 상태 새로고침
-                                const statusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/remote-sales-status/`, {
-                                  headers: {
-                                    'Authorization': `Bearer ${accessToken}`
-                                  }
-                                });
-                                
-                                if (statusResponse.ok) {
-                                  const statusData = await statusResponse.json();
-                                  setRemoteSalesStatus(statusData);
-                                }
                                 
                                 toast({
                                   title: '비대면 인증 취소 완료',
@@ -1359,20 +1350,18 @@ export default function SellerSettings() {
                             </div>
                             <Button
                               type="button"
-                              variant="destructive"
+                              variant="outline"
                               size="sm"
                               onClick={() => {
-                                if (confirm('인증서를 삭제하시겠습니까?')) {
-                                  setFormData(prev => ({ 
-                                    ...prev, 
-                                    deleteCertification: true,
-                                    businessRegFile: null
-                                  }));
-                                }
+                                // 파일 변경 모드로 전환
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  businessRegFile: null,
+                                  existingCertification: null
+                                }));
                               }}
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              삭제
+                              변경
                             </Button>
                           </div>
                           {/* 인증 상태 표시 */}
@@ -1385,6 +1374,85 @@ export default function SellerSettings() {
                                   제출일: {new Date(remoteSalesStatus.submitted_at).toLocaleDateString('ko-KR')}
                                 </p>
                               )}
+                              <div className="flex gap-2 mt-3">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    // 파일 변경 모드로 전환
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      businessRegFile: null,
+                                      existingCertification: null
+                                    }));
+                                  }}
+                                  className="text-xs"
+                                >
+                                  변경
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={async () => {
+                                    if (confirm('비대면 인증 신청을 취소하시겠습니까?\n제출된 인증서가 삭제됩니다.')) {
+                                      try {
+                                        setSaving(true);
+                                        
+                                        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
+                                          method: 'PATCH',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${accessToken}`
+                                          },
+                                          body: JSON.stringify({
+                                            delete_remote_sales_certification: 'true'
+                                          })
+                                        });
+                                        
+                                        if (response.ok) {
+                                          // 로컬 상태 즉시 초기화
+                                          setFormData(prev => ({ 
+                                            ...prev, 
+                                            isRemoteSales: false, 
+                                            businessRegFile: null, 
+                                            existingCertification: null 
+                                          }));
+                                          
+                                          // 비대면 인증 상태 즉시 초기화
+                                          setRemoteSalesStatus(null);
+                                          
+                                          // 프로필 데이터 새로고침
+                                          const updatedProfile = await getSellerProfile();
+                                          setProfile(updatedProfile);
+                                          
+                                          toast({
+                                            title: '신청 취소 완료',
+                                            description: '비대면 인증 신청이 취소되었습니다.'
+                                          });
+                                        } else {
+                                          const errorData = await response.json().catch(() => ({}));
+                                          throw new Error(errorData.detail || '취소 처리 실패');
+                                        }
+                                      } catch (error) {
+                                        console.error('신청 취소 오류:', error);
+                                        toast({
+                                          variant: 'destructive',
+                                          title: '취소 실패',
+                                          description: '신청 취소 중 오류가 발생했습니다.'
+                                        });
+                                      } finally {
+                                        setSaving(false);
+                                      }
+                                    }
+                                  }}
+                                  className="text-xs"
+                                  disabled={saving}
+                                >
+                                  신청 취소하기
+                                </Button>
+                              </div>
                             </div>
                           )}
                           {remoteSalesStatus?.status === 'approved' && (
