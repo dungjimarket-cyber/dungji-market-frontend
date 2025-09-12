@@ -37,6 +37,7 @@ npm test -- src/components/                            # Test all files in direc
 - **State Management**: Zustand for global state, React Hook Form for forms
 - **Authentication**: NextAuth.js with JWT tokens, supports Kakao/Google OAuth
 - **Backend Integration**: Axios for API calls, WebSocket for real-time features
+- **API Base URL**: `${process.env.NEXT_PUBLIC_API_URL}` = `https://api.dungjimarket.com/api`
 - **Testing**: Jest with React Testing Library
 - **Deployment**: Vercel with serverless functions
 - **PWA**: next-pwa with Service Worker and offline caching
@@ -73,10 +74,17 @@ The app uses a dual authentication system:
 4. Role-based access control for buyers (일반회원) and sellers (판매자)
 
 ### API Integration Pattern
-- Base API URL: Set via `NEXT_PUBLIC_API_URL` environment variable
+- **Base API URL**: `${process.env.NEXT_PUBLIC_API_URL}` = `https://api.dungjimarket.com/api`
+- **API URL Pattern**: `${NEXT_PUBLIC_API_URL}/auth/endpoint` → `https://api.dungjimarket.com/api/auth/endpoint`
+- **Important**: NEXT_PUBLIC_API_URL already includes `/api`, so don't add it again!
 - Auth headers automatically attached via axios interceptors
 - Token refresh handled automatically on 401 responses
 - API services organized in `src/lib/api/` by feature
+
+#### Common API Endpoints
+- Profile: `${NEXT_PUBLIC_API_URL}/auth/profile/`
+- Nickname Check: `${NEXT_PUBLIC_API_URL}/auth/check-nickname/`
+- Nickname Change Status: `${NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`
 
 ### Key Features & Routes
 
