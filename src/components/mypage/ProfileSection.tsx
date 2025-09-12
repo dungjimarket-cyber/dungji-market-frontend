@@ -8,6 +8,7 @@ import { LogOut } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
+import { getRegions } from '@/lib/api/regionService';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -176,11 +177,8 @@ export default function ProfileSection() {
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-        if (response.ok) {
-          const data = await response.json();
-          setRegions(data);
-        }
+        const data = await getRegions();
+        setRegions(data);
       } catch (error) {
         console.error('지역 정보 가져오기 오류:', error);
       }
@@ -220,7 +218,7 @@ export default function ProfileSection() {
       email?: string,
       nickname?: string,  // username이 아닌 nickname 필드 사용
       phone_number?: string,
-      address_region_id?: number | null,
+      address_region_id?: string | null,  // 지역 코드는 string 타입
       address_province?: string,
       address_city?: string,
       business_number?: string,
@@ -247,9 +245,8 @@ export default function ProfileSection() {
       // 주소 업데이트 시 지역 코드를 찾아서 전송
       if (addressProvince && addressCity) {
         try {
-          // 모든 지역 데이터 가져오기
-          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-          const regionsData = await regionsResponse.json();
+          // 모든 지역 데이터 가져오기 - regionService 사용으로 인증 헤더 자동 포함
+          const regionsData = await getRegions();
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           // 세종특별자치시는 특수한 경우로 level 1이면서 시/도와 시/군/구가 동일

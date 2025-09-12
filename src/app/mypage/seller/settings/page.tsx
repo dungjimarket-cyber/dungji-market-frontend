@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, Save, Phone, Upload, FileText, Trash2, LogOut } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
+import { getRegions } from '@/lib/api/regionService';
 import { SellerProfile } from '@/types/seller';
 import { tokenUtils } from '@/lib/tokenUtils';
 import { useToast } from '@/hooks/use-toast';
@@ -503,9 +504,8 @@ export default function SellerSettings() {
       // 주소 정보 처리 - 일반회원과 동일한 방식으로 처리
       if (formData.addressProvince && formData.addressCity) {
         try {
-          // 모든 지역 데이터 가져오기
-          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-          const regionsData = await regionsResponse.json();
+          // 모든 지역 데이터 가져오기 - regionService 사용으로 인증 헤더 자동 포함
+          const regionsData = await getRegions();
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           let cityRegion;
