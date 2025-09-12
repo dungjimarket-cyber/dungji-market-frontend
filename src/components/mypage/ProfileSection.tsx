@@ -446,7 +446,7 @@ export default function ProfileSection() {
                 onClick={async () => {
                   // 닉네임 변경 가능 여부 먼저 확인
                   try {
-                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/nickname-change-status/`, {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
                       headers: {
                         'Authorization': `Bearer ${accessToken}`
                       }
