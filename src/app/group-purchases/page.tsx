@@ -87,7 +87,7 @@ function GroupPurchasesPageContent() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const itemsPerPage = 8; // 한 번에 로드할 아이템 수 (초기 로딩 속도 개선)
+  const itemsPerPage = 20; // 초기 로딩 속도 개선을 위해 20개로 증가
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false); // loadingMore 상태를 ref로도 관리
@@ -142,8 +142,9 @@ function GroupPurchasesPageContent() {
     try {
       const params = new URLSearchParams();
       
-      // 무한 스크롤 파라미터 추가
-      params.append('limit', itemsPerPage.toString());
+      // 무한 스크롤 파라미터 추가 - 초기 로드는 더 많이
+      const limit = currentOffset === 0 ? 20 : itemsPerPage;
+      params.append('limit', limit.toString());
       params.append('offset', currentOffset.toString());
       
       // 기본 상태 설정 - 탭에 따라
@@ -857,7 +858,7 @@ function GroupPurchasesPageContent() {
             <div className="mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {loading ? (
-                  [...Array(8)].map((_, i) => (
+                  [...Array(12)].map((_, i) => (
                     <div key={i} className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
                   ))
                 ) : error ? (
