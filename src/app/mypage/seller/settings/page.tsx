@@ -1024,7 +1024,7 @@ export default function SellerSettings() {
                   <Label htmlFor="businessAddress">
                     사업장주소/영업활동지역 <span className="text-red-500">*</span>
                   </Label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-start">
                     {!isEditingAddress && profile?.addressRegion ? (
                       <>
                         <Input
@@ -1037,7 +1037,7 @@ export default function SellerSettings() {
                           size="sm"
                           onClick={() => setIsEditingAddress(true)}
                           variant="outline"
-                          className="text-gray-500"
+                          className="text-gray-500 mt-2"
                         >
                           수정
                         </Button>
@@ -1066,7 +1066,7 @@ export default function SellerSettings() {
                           }}
                           disabled={saving || !formData.addressProvince || !formData.addressCity}
                           variant={profile?.addressRegion ? 'outline' : 'default'}
-                          className={profile?.addressRegion ? 'text-gray-600' : ''}
+                          className={`mt-2 ${profile?.addressRegion ? 'text-gray-600' : ''}`}
                         >
                           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                           저장
@@ -1079,6 +1079,7 @@ export default function SellerSettings() {
                               setIsEditingAddress(false);
                             }}
                             variant="ghost"
+                            className="mt-2"
                           >
                             취소
                           </Button>
@@ -1263,7 +1264,7 @@ export default function SellerSettings() {
                               
                               // 비대면 인증 취소 API 호출
                               const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
-                                method: 'PUT',
+                                method: 'PATCH',
                                 headers: {
                                   'Content-Type': 'application/json',
                                   'Authorization': `Bearer ${accessToken}`
