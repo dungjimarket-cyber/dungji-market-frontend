@@ -208,11 +208,6 @@ export default function SellerSettings() {
           const regionName = data.addressRegion.name || '';
           const fullName = data.addressRegion.full_name || '';
           
-          console.log('주소 정보:', {
-            code: regionCode,
-            name: regionName,
-            full_name: fullName
-          });
           
           // 세종특별자치시 특수 처리
           if (fullName === '세종특별자치시' || regionName === '세종특별자치시') {
@@ -233,11 +228,6 @@ export default function SellerSettings() {
               const cityName = parts.length === 2 ? parts[1] : 
                               (parts[1].endsWith('시') || parts[1].endsWith('군') ? parts[1] : parts.slice(1).join(' '));
               
-              console.log('주소 설정:', {
-                provinceName,
-                cityName,
-                regionCode
-              });
               
               setFormData(prev => ({
                 ...prev,
@@ -810,7 +800,6 @@ export default function SellerSettings() {
                             
                             if (response.ok) {
                               const data = await response.json();
-                              console.log('[판매자] 닉네임 변경 상태 API 응답:', data);
                               
                               // 모달 데이터 설정
                               setLimitModalData({
@@ -823,7 +812,7 @@ export default function SellerSettings() {
                               setShowLimitModal(true);
                             }
                           } catch (error) {
-                            console.error('[판매자] 닉네임 변경 상태 확인 실패:', error);
+                            console.error('닉네임 변경 상태 확인 실패:', error);
                             // 에러 발생시에도 일단 모달 표시
                             setLimitModalData({ remainingChanges: 0, nextAvailableDate: null, canChange: false });
                             setShowLimitModal(true);
@@ -1296,11 +1285,9 @@ export default function SellerSettings() {
                                 });
                               } else {
                                 const errorData = await response.json().catch(() => ({}));
-                                console.error('취소 API 응답 오류:', response.status, errorData);
                                 throw new Error(errorData.detail || `취소 처리 실패 (${response.status})`);
                               }
                             } catch (error) {
-                              console.error('비대면 인증 취소 오류:', error);
                               toast({
                                 variant: 'destructive',
                                 title: '취소 실패',
@@ -1436,8 +1423,7 @@ export default function SellerSettings() {
                                           throw new Error(errorData.detail || '취소 처리 실패');
                                         }
                                       } catch (error) {
-                                        console.error('신청 취소 오류:', error);
-                                        toast({
+                                          toast({
                                           variant: 'destructive',
                                           title: '취소 실패',
                                           description: '신청 취소 중 오류가 발생했습니다.'
