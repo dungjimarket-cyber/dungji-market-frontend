@@ -508,21 +508,30 @@ export default function SellerSettings() {
           console.log('🔍 accessToken 존재 여부:', !!accessToken);
           // 모든 지역 데이터 가져오기 - regionService 사용으로 인증 헤더 자동 포함
           const regionsData = await getRegions();
-          console.log('✅ 지역 데이터 가져오기 성공:', regionsData?.length, '개');
+          console.log('✅ 지역 데이터 가져오기 성공, 타입:', typeof regionsData);
+          console.log('✅ 지역 데이터 내용:', regionsData);
+          
+          // 배열인지 확인하고, 아니면 results 필드 확인
+          const regionsArray = Array.isArray(regionsData) ? regionsData : (regionsData as any)?.results;
+          
+          if (!regionsArray || !Array.isArray(regionsArray)) {
+            console.error('❌ 지역 데이터가 배열이 아닙니다:', regionsData);
+            throw new Error('지역 데이터 형식이 올바르지 않습니다');
+          }
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           let cityRegion;
           
           if (formData.addressProvince === '세종특별자치시') {
             // 세종시는 특별한 처리 필요
-            cityRegion = regionsData.find((r: any) => 
+            cityRegion = regionsArray?.find((r: any) => 
               r.level === 1 && 
               r.name === '세종특별자치시' &&
               r.full_name === '세종특별자치시'
             );
           } else {
             // 일반적인 시/도의 경우
-            cityRegion = regionsData.find((r: any) => 
+            cityRegion = regionsArray?.find((r: any) => 
               (r.level === 1 || r.level === 2) && 
               r.name === formData.addressCity && 
               r.full_name.includes(formData.addressProvince)
