@@ -47,6 +47,13 @@ export default function SellerSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [editingFields, setEditingFields] = useState({
+    email: false,
+    address: false,
+    representativeName: false,
+    businessNumber: false,
+    remoteSales: false
+  });
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [limitModalData, setLimitModalData] = useState({ remainingChanges: 2, nextAvailableDate: null, canChange: true });
   const [formData, setFormData] = useState({
