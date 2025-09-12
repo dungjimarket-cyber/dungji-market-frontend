@@ -494,7 +494,7 @@ export default function ProfileSection() {
                     setShowLimitModal(true);
                   }
                 }}
-                className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded flex-shrink-0"
+                className="text-xs text-blue-600 hover:text-blue-800"
               >
                 수정
               </button>
