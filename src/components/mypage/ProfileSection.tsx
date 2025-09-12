@@ -102,6 +102,7 @@ export default function ProfileSection() {
   const [firstName, setFirstName] = useState(''); // 실명
   const [isEditing, setIsEditing] = useState(false);
   const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | 'business_address' | 'remote_sales' | null>(null);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [error, setError] = useState('');
   const [nicknameError, setNicknameError] = useState('');
   const [nicknameChecked, setNicknameChecked] = useState(false);
@@ -768,6 +769,7 @@ export default function ProfileSection() {
                 </label>
                 <button
                   onClick={() => {
+                    setIsEditingAddress(true);
                     setIsEditing(true);
                     setEditField('address');
                   }}
@@ -777,7 +779,7 @@ export default function ProfileSection() {
                 </button>
               </div>
               
-              {isEditing && editField === 'address' ? (
+              {isEditingAddress ? (
                 <div className="space-y-2">
                   <RegionDropdown
                     selectedProvince={addressProvince}
@@ -790,15 +792,31 @@ export default function ProfileSection() {
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleProfileUpdate()}
+                      onClick={async () => {
+                        await handleProfileUpdate();
+                        setIsEditingAddress(false);
+                      }}
                       className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
                       저장
                     </button>
                     <button
                       onClick={() => {
+                        setIsEditingAddress(false);
                         setIsEditing(false);
                         setEditField(null);
+                        // Reset to saved values if available
+                        if (addressRegion) {
+                          const fullName = addressRegion.full_name || addressRegion.name || '';
+                          const parts = fullName.split(' ');
+                          if (fullName === '세종특별자치시') {
+                            setAddressProvince('세종특별자치시');
+                            setAddressCity('세종특별자치시');
+                          } else if (parts.length >= 2) {
+                            setAddressProvince(parts[0]);
+                            setAddressCity(parts[1]);
+                          }
+                        }
                       }}
                       className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
                     >

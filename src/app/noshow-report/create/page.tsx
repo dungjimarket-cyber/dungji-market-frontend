@@ -138,6 +138,15 @@ function NoShowReportContent() {
           setExistingReport(myReport);
           setContent(myReport.content || '');
           setIsEditMode(true);
+          
+          // 기존에 신고했던 구매자 ID 설정 (판매자가 수정하는 경우)
+          if ((user?.role === 'seller' || user?.user_type === '판매') && myReport.reported_user) {
+            // reported_user가 객체인 경우 id 추출, 아니면 그대로 사용
+            const reportedUserId = typeof myReport.reported_user === 'object' 
+              ? myReport.reported_user.id 
+              : myReport.reported_user;
+            setSelectedBuyerIds([reportedUserId.toString()]);
+          }
         }
       }
     } catch (error) {
@@ -690,8 +699,8 @@ function NoShowReportContent() {
                           return null;
                         }
                         
-                        const displayName = participant.user?.username || participant.user?.nickname || 
-                                          participant.username || participant.nickname || 
+                        const displayName = participant.user?.nickname || participant.user?.username || 
+                                          participant.nickname || participant.username || 
                                           `참여자 ${userId}`;
                         // buyers 엔드포인트는 'phone', participants_detail은 'phone_number' 사용
                         const phoneNumber = participant.user?.phone || participant.user?.phone_number || 

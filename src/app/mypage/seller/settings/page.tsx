@@ -85,6 +85,9 @@ export default function SellerSettings() {
   const [savingReferral, setSavingReferral] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  
+  // 주소 편집 모드 상태
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -986,30 +989,66 @@ export default function SellerSettings() {
                     사업장주소/영업활동지역 <span className="text-red-500">*</span>
                   </Label>
                   <div className="flex gap-2">
-                    <RegionDropdown
-                      selectedProvince={formData.addressProvince}
-                      selectedCity={formData.addressCity}
-                      onSelect={(province, city) => {
-                        setFormData(prev => ({
-                          ...prev,
-                          addressProvince: province,
-                          addressCity: city
-                        }));
-                      }}
-                      required
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={saveAddress}
-                      disabled={saving || !formData.addressProvince || !formData.addressCity}
-                      variant={profile?.addressRegion ? 'outline' : 'default'}
-                      className={profile?.addressRegion ? 'text-gray-600' : ''}
-                    >
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      {profile?.addressRegion ? '수정' : '저장'}
-                    </Button>
+                    {!isEditingAddress && profile?.addressRegion ? (
+                      <>
+                        <Input
+                          value={profile.addressRegion && typeof profile.addressRegion === 'string' ? profile.addressRegion : `${formData.addressProvince || ''} ${formData.addressCity || ''}`.trim()}
+                          disabled
+                          className="flex-1 bg-gray-50"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setIsEditingAddress(true)}
+                          variant="outline"
+                          className="text-gray-600"
+                        >
+                          수정
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <RegionDropdown
+                          selectedProvince={formData.addressProvince}
+                          selectedCity={formData.addressCity}
+                          onSelect={(province, city) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              addressProvince: province,
+                              addressCity: city
+                            }));
+                          }}
+                          required
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={async () => {
+                            await saveAddress();
+                            setIsEditingAddress(false);
+                          }}
+                          disabled={saving || !formData.addressProvince || !formData.addressCity}
+                          variant={profile?.addressRegion ? 'outline' : 'default'}
+                          className={profile?.addressRegion ? 'text-gray-600' : ''}
+                        >
+                          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                          저장
+                        </Button>
+                        {isEditingAddress && profile?.addressRegion && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              setIsEditingAddress(false);
+                            }}
+                            variant="ghost"
+                          >
+                            취소
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 
