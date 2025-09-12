@@ -447,6 +447,22 @@ export default function ProfileSection() {
                   console.log('🔥 닉네임 수정 버튼 클릭됨!');
                   console.log('Access Token:', accessToken ? 'exists' : 'missing');
                   
+                  // 🧪 디버그: 테이블 상태 먼저 확인
+                  try {
+                    console.log('🧪 디버그 API 호출:', `${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-test/`);
+                    const debugResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-test/`, {
+                      headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                      }
+                    });
+                    if (debugResponse.ok) {
+                      const debugData = await debugResponse.json();
+                      console.log('🧪 테이블 상태:', debugData);
+                    }
+                  } catch (e) {
+                    console.log('🧪 디버그 API 오류:', e);
+                  }
+                  
                   // 닉네임 변경 가능 여부 먼저 확인
                   try {
                     console.log('🌐 API 호출 시작:', `${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`);
