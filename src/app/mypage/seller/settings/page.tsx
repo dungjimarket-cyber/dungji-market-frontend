@@ -504,8 +504,11 @@ export default function SellerSettings() {
       // 주소 정보 처리 - 일반회원과 동일한 방식으로 처리
       if (formData.addressProvince && formData.addressCity) {
         try {
+          console.log('🔍 지역 정보 가져오기 시작...');
+          console.log('🔍 accessToken 존재 여부:', !!accessToken);
           // 모든 지역 데이터 가져오기 - regionService 사용으로 인증 헤더 자동 포함
           const regionsData = await getRegions();
+          console.log('✅ 지역 데이터 가져오기 성공:', regionsData?.length, '개');
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           let cityRegion;
@@ -538,7 +541,10 @@ export default function SellerSettings() {
             setSaving(false);
             return;
           }
-        } catch (err) {
+        } catch (err: any) {
+          console.error('❌ 지역 정보 가져오기 실패:', err);
+          console.error('❌ 에러 응답:', err.response?.data);
+          console.error('❌ 에러 상태:', err.response?.status);
           toast({
             variant: 'destructive',
             title: '오류',
