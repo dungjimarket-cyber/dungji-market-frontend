@@ -180,7 +180,7 @@ export default function SellerSettings() {
           representativeName: data.representativeName || '', // 대표자명 설정
           addressProvince: '',
           addressCity: '',
-          addressDetail: data.addressDetail || '', // 상세주소 추가
+          addressDetail: data.address || '', // 백엔드는 address 필드를 상세주소로 사용
           businessNumber1: businessNum1,
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
