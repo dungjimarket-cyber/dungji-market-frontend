@@ -775,7 +775,7 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="nickname">닉네임 (상호명)</Label>
+                    <Label htmlFor="nickname">닉네임 (상호명) <span className="text-red-500">*</span></Label>
                     {!isEditingNickname && (
                       <Button
                         type="button"
@@ -825,6 +825,9 @@ export default function SellerSettings() {
                         disabled
                         className="bg-gray-50"
                       />
+                      {!formData.nickname && (
+                        <p className="text-xs text-red-500 mt-1">* 판매자 닉네임(상호명)은 필수 입력 항목입니다</p>
+                      )}
                     </div>
                   ) : (
                     <>
