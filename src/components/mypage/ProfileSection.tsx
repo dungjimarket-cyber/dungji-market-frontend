@@ -460,13 +460,13 @@ export default function ProfileSection() {
           {user?.sns_type !== 'kakao' && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
-              <span className="font-medium text-lg">{user?.username || '아이디 정보 없음'}</span>
+              <span className="font-medium text-xl">{user?.username || '아이디 정보 없음'}</span>
             </div>
           )}
           
           {/* 닉네임 섹션 */}
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">닉네임</label>
               <button
                 onClick={async () => {
@@ -503,7 +503,7 @@ export default function ProfileSection() {
                     setShowLimitModal(true);
                   }
                 }}
-                className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded"
+                className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded flex-shrink-0"
               >
                 수정
               </button>
@@ -623,14 +623,16 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-3 bg-gray-50 rounded-md">
-                <span className="font-medium">{nickname || '닉네임 정보 없음'}</span>
+                <span className={`font-medium ${nickname && nickname.length >= 10 ? 'text-lg' : 'text-xl'} break-all`}>
+                  {nickname || '닉네임 정보 없음'}
+                </span>
               </div>
             )}
           </div>
           
           {/* 이메일 섹션 */}
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">
                 이메일
                 {user?.sns_type && user?.sns_type !== 'email' && (
@@ -679,7 +681,7 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium">{email || '이메일 정보 없음'}</span>
+                <span className="font-medium text-xl">{email || '이메일 정보 없음'}</span>
               </div>
             )}
           </div>
@@ -691,7 +693,7 @@ export default function ProfileSection() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium">{firstName || '정보 없음'}</span>
+                  <span className="font-medium text-xl">{firstName || '정보 없음'}</span>
                 </div>
               </div>
             </>
@@ -699,7 +701,7 @@ export default function ProfileSection() {
           
           {/* 휴대폰 번호 섹션 */}
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">
                 휴대폰 번호
                 {authUser?.sns_type === 'kakao' && !phoneNumber && (
@@ -753,7 +755,7 @@ export default function ProfileSection() {
               <>
                 {phoneNumber ? (
                   <>
-                    <span className="font-medium text-lg">
+                    <span className="font-medium text-xl">
                       {phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">
@@ -769,7 +771,7 @@ export default function ProfileSection() {
           
           {/* 주소 섹션 - 모든 회원 공통 */}
             <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-start mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   {role === 'seller' ? '사업장 주소/영업활동 지역' : '주요활동지역'}
                   {authUser?.sns_type === 'kakao' && (!addressProvince || !addressCity) && (
@@ -842,7 +844,7 @@ export default function ProfileSection() {
                 </div>
               ) : (
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <div className="font-medium">
+                  <div className="font-medium text-xl">
                     {addressProvince && addressCity ? `${addressProvince} ${addressCity}` : '지역 정보 없음'}
                   </div>
                 </div>
