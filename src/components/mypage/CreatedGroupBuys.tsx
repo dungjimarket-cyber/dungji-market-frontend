@@ -106,7 +106,7 @@ export default function CreatedGroupBuys() {
         }
 
         const data = await response.json();
-        setGroupBuys(data);
+        setGroupBuys(Array.isArray(data) ? data : (data.results || []));
       } catch (err) {
         console.error('내가 만든 공구 목록 조회 오류:', err);
         setError('내가 만든 공구 목록을 불러오는데 실패했습니다.');

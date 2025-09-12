@@ -87,7 +87,7 @@ export default function PurchaseConfirmedGroupBuys() {
         }
 
         const data = await response.json();
-        setGroupBuys(data);
+        setGroupBuys(Array.isArray(data) ? data : (data.results || []));
       } catch (err) {
         console.error('구매 확정된 공구 목록 조회 오류:', err);
         setGroupBuys([]);

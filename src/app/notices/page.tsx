@@ -34,7 +34,9 @@ export default function NoticesPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setNotices(data);
+        // 페이징 응답 형식과 배열 형식 모두 지원
+        const noticeItems = Array.isArray(data) ? data : (data.results || []);
+        setNotices(noticeItems);
       }
     } catch (error) {
       console.error('공지사항 조회 실패:', error);

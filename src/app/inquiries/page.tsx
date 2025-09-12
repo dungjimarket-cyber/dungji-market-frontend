@@ -60,7 +60,7 @@ export default function InquiriesPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setInquiries(data);
+        setInquiries(Array.isArray(data) ? data : (data.results || []));
       }
     } catch (error) {
       console.error('문의 목록 조회 실패:', error);

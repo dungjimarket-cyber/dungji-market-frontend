@@ -36,7 +36,7 @@ export default function CompletedSales() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
         }
       } catch (error) {
         console.error('판매완료 공구 조회 오류:', error);

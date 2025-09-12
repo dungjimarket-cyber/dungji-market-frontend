@@ -107,7 +107,7 @@ export default function ParticipatingGroupBuys() {
 
         const data = await response.json();
         console.log('참여중인 공구 데이터:', data);
-        setGroupBuys(data);
+        setGroupBuys(Array.isArray(data) ? data : (data.results || []));
       } catch (err) {
         console.error('참여중인 공구 목록 조회 오류:', err);
         setError('참여중인 공구 목록을 불러오는데 실패했습니다.');

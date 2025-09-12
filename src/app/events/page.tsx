@@ -39,7 +39,9 @@ export default function EventListPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        setEvents(data);
+        // 페이징 응답 형식과 배열 형식 모두 지원
+        const eventItems = Array.isArray(data) ? data : (data.results || []);
+        setEvents(eventItems);
       }
     } catch (error) {
       console.error('이벤트 목록 조회 오류:', error);

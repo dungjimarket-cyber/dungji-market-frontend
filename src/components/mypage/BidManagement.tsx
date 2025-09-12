@@ -35,7 +35,7 @@ export default function BidManagement() {
       
       try {
         const data = await getSellerBids();
-        setBids(data);
+        setBids(Array.isArray(data) ? data : ((data as any).results || []));
       } catch (error) {
         console.error('입찰 내역 조회 중 오류 발생:', error);
       } finally {

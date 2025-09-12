@@ -41,7 +41,7 @@ export default function TradingGroupBuys() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
           
           // 각 공구에 대한 노쇼 신고 여부 확인
           const reportStatus: {[key: number]: boolean} = {};
