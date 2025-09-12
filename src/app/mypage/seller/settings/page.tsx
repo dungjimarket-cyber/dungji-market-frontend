@@ -86,8 +86,10 @@ export default function SellerSettings() {
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   
-  // 주소 편집 모드 상태
+  // 편집 모드 상태
   const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingRepresentativeName, setIsEditingRepresentativeName] = useState(false);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -959,27 +961,61 @@ export default function SellerSettings() {
                     이메일
                   </Label>
                   <div className="flex gap-2">
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
-                      disabled={!!profile?.email}
-                      className={`flex-1 ${profile?.email ? 'bg-gray-50' : ''}`}
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={saveEmail}
-                      disabled={saving || !formData.email}
-                      variant={profile?.email ? 'outline' : 'default'}
-                      className={profile?.email ? 'text-gray-600' : ''}
-                    >
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      {profile?.email ? '수정' : '저장'}
-                    </Button>
+                    {!isEditingEmail && profile?.email ? (
+                      <>
+                        <Input
+                          value={profile.email}
+                          disabled
+                          className="flex-1 bg-gray-50"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setIsEditingEmail(true)}
+                          variant="outline"
+                          className="text-gray-500"
+                        >
+                          수정
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={async () => {
+                            await saveEmail();
+                            setIsEditingEmail(false);
+                          }}
+                          disabled={saving || !formData.email}
+                        >
+                          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                          저장
+                        </Button>
+                        {isEditingEmail && profile?.email && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              setIsEditingEmail(false);
+                              setFormData(prev => ({ ...prev, email: profile.email || '' }));
+                            }}
+                            variant="ghost"
+                          >
+                            취소
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500">비밀번호 찾기 및 중요 안내사항 수신에 필요합니다</p>
                 </div>
@@ -1001,7 +1037,7 @@ export default function SellerSettings() {
                           size="sm"
                           onClick={() => setIsEditingAddress(true)}
                           variant="outline"
-                          className="text-gray-600"
+                          className="text-gray-500"
                         >
                           수정
                         </Button>
@@ -1061,27 +1097,60 @@ export default function SellerSettings() {
                       사업자등록증상 대표자명 <span className="text-red-500">*</span>
                     </Label>
                     <div className="flex gap-2">
-                      <Input
-                        id="representativeName"
-                        name="representativeName"
-                        value={formData.representativeName}
-                        onChange={handleChange}
-                        placeholder="사업자등록증상 대표자명을 입력하세요"
-                        required={!formData.representativeName}
-                        disabled={!!profile?.representativeName}
-                        className={`flex-1 ${profile?.representativeName ? 'bg-gray-50' : ''}`}
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={saveRepresentativeName}
-                        disabled={saving || !formData.representativeName}
-                        variant={profile?.representativeName ? 'outline' : 'default'}
-                        className={profile?.representativeName ? 'text-gray-600' : ''}
-                      >
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        {profile?.representativeName ? '수정' : '저장'}
-                      </Button>
+                      {!isEditingRepresentativeName && profile?.representativeName ? (
+                        <>
+                          <Input
+                            value={profile.representativeName}
+                            disabled
+                            className="flex-1 bg-gray-50"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => setIsEditingRepresentativeName(true)}
+                            variant="outline"
+                            className="text-gray-500"
+                          >
+                            수정
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Input
+                            id="representativeName"
+                            name="representativeName"
+                            value={formData.representativeName}
+                            onChange={handleChange}
+                            placeholder="사업자등록증상 대표자명을 입력하세요"
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={async () => {
+                              await saveRepresentativeName();
+                              setIsEditingRepresentativeName(false);
+                            }}
+                            disabled={saving || !formData.representativeName}
+                          >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            저장
+                          </Button>
+                          {isEditingRepresentativeName && profile?.representativeName && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                setIsEditingRepresentativeName(false);
+                                setFormData(prev => ({ ...prev, representativeName: profile.representativeName || '' }));
+                              }}
+                              variant="ghost"
+                            >
+                              취소
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </div>
                     {!formData.representativeName ? (
                       <p className="text-xs text-red-500">* 사업자등록증에 명시된 대표자명을 정확히 입력해주세요</p>
