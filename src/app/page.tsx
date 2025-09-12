@@ -147,9 +147,17 @@ function HomeContent() {
           const popularData = await popularResponse.json();
           const newData = await newResponse.json();
           
+          // 페이징 응답 형식과 배열 형식 모두 지원
+          const popularItems = Array.isArray(popularData) 
+            ? popularData 
+            : (popularData.results || []);
+          const newItems = Array.isArray(newData) 
+            ? newData 
+            : (newData.results || []);
+          
           // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
-          setPopularGroupBuys(popularData.slice(0, 2));
-          setNewGroupBuys(newData.slice(0, 2));
+          setPopularGroupBuys(popularItems.slice(0, 2));
+          setNewGroupBuys(newItems.slice(0, 2));
         }
       } catch (error) {
         console.error('공구 데이터 로딩 실패:', error);
