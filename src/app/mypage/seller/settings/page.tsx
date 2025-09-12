@@ -698,19 +698,33 @@ export default function SellerSettings() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          // 닉네임 변경 가능 여부 체크
-                          const now = new Date();
-                          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                          
-                          if (lastNicknameChangeDate && lastNicknameChangeDate > thirtyDaysAgo && nicknameChangeCount >= 2) {
-                            toast({
-                              variant: 'destructive',
-                              title: '변경 제한',
-                              description: '30일 이내에 2회까지만 변경 가능합니다.'
+                        onClick={async () => {
+                          // 닉네임 변경 가능 여부 먼저 확인
+                          try {
+                            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
+                              headers: {
+                                'Authorization': `Bearer ${accessToken}`
+                              }
                             });
-                            return;
+                            
+                            if (response.ok) {
+                              const data = await response.json();
+                              if (!data.can_change) {
+                                const nextDate = data.next_available_date ? new Date(data.next_available_date).toLocaleDateString('ko-KR') : '알 수 없음';
+                                toast({
+                                  variant: 'destructive',
+                                  title: '변경 제한',
+                                  description: `30일에 2회까지만 변경 가능합니다. 다음 변경 가능일: ${nextDate}`
+                                });
+                                return;
+                              }
+                            }
+                          } catch (error) {
+                            console.error('닉네임 변경 상태 확인 실패:', error);
+                            // 에러가 발생해도 수정은 진행 (백엔드에서 최종 검증)
                           }
+                          
+                          // 변경 가능하면 수정 모드 활성화
                           setIsEditingNickname(true);
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800"

@@ -443,7 +443,29 @@ export default function ProfileSection() {
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">닉네임</label>
               <button
-                onClick={() => {
+                onClick={async () => {
+                  // 닉네임 변경 가능 여부 먼저 확인
+                  try {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
+                      headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                      }
+                    });
+                    
+                    if (response.ok) {
+                      const data = await response.json();
+                      if (!data.can_change) {
+                        const nextDate = data.next_available_date ? new Date(data.next_available_date).toLocaleDateString('ko-KR') : '알 수 없음';
+                        setNicknameError(`30일에 2회까지만 변경 가능합니다. 다음 변경 가능일: ${nextDate}`);
+                        return;
+                      }
+                    }
+                  } catch (error) {
+                    console.error('닉네임 변경 상태 확인 실패:', error);
+                    // 에러가 발생해도 수정은 진행 (백엔드에서 최종 검증)
+                  }
+                  
+                  // 변경 가능하면 수정 모드 활성화
                   setIsEditing(true);
                   setEditField('nickname');
                   setNicknameError('');
