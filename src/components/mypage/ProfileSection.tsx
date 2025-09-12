@@ -4,10 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, ArrowLeft } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
+import { Button } from '@/components/ui/button';
 import { getRegions } from '@/lib/api/regionService';
 
 /**
@@ -405,13 +406,24 @@ export default function ProfileSection() {
     <div className="bg-white p-6 rounded-lg shadow mb-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">사용자 정보</h2>
-        <div className="flex flex-col gap-4 mt-6">
-          {/* 판매회원인 경우 이용권 관리 링크 표시 */}
-          {role === 'seller' && (
-            <button
-              onClick={() => router.push('/mypage/seller/bid-tokens')}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-            >
+        <Button 
+          type="button" 
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/mypage')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          뒤로가기
+        </Button>
+      </div>
+      
+      <div className="flex flex-col gap-4 mt-6">
+        {/* 판매회원인 경우 이용권 관리 링크 표시 */}
+        {role === 'seller' && (
+          <button
+            onClick={() => router.push('/mypage/seller/bid-tokens')}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
               이용권 관리
             </button>
           )}

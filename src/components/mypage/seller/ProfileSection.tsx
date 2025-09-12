@@ -16,7 +16,7 @@ import { SellerProfile } from '@/types/seller';
  * 판매자 프로필 섹션
  */
 export default function ProfileSection() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [bidTokens, setBidTokens] = useState<BidTokenResponse | null>(null);
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,11 @@ export default function ProfileSection() {
         ]);
         setBidTokens(tokenData);
         setSellerProfile(profileData);
+        
+        // useAuth의 user 정보도 최신으로 업데이트
+        if (refreshUser) {
+          refreshUser();
+        }
       } catch (error) {
         console.error('데이터 조회 오류:', error);
       } finally {
@@ -39,7 +44,7 @@ export default function ProfileSection() {
     };
 
     fetchData();
-  }, []);
+  }, [refreshUser]);
 
   if (!user) return null;
 
@@ -84,7 +89,7 @@ export default function ProfileSection() {
                   />
                   <span className="text-sm text-gray-500 font-medium">닉네임</span>
                   <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-                    {user.nickname || user.username}
+                    {sellerProfile?.nickname || user.nickname || user.username}
                   </h2>
                 </div>
               </div>

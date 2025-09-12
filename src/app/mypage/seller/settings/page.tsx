@@ -749,23 +749,28 @@ export default function SellerSettings() {
 
   return (
     <div className="container py-8 max-w-4xl mx-auto">
-        <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          className="mr-2"
-          onClick={() => router.push('/mypage/seller')}
-        >
-          <ArrowLeft className="h-5 w-5 mr-1" />
-          뒤로가기
-        </Button>
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">판매자 설정</h1>
       </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>프로필 정보</CardTitle>
-              <CardDescription>
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>프로필 정보</CardTitle>
+                  <CardDescription>
+                  </CardDescription>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/mypage/seller')}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  뒤로가기
+                </Button>
+              </div>
             </CardHeader>
             <div>
               <CardContent className="space-y-4">
@@ -958,16 +963,19 @@ export default function SellerSettings() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
-                      className="flex-1"
+                      disabled={!!user?.email}
+                      className={`flex-1 ${user?.email ? 'bg-gray-50' : ''}`}
                     />
                     <Button
                       type="button"
                       size="sm"
                       onClick={saveEmail}
                       disabled={saving || !formData.email}
+                      variant={user?.email ? 'outline' : 'default'}
+                      className={user?.email ? 'text-gray-600' : ''}
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      저장
+                      {user?.email ? '수정' : '저장'}
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500">비밀번호 찾기 및 중요 안내사항 수신에 필요합니다</p>
@@ -989,6 +997,7 @@ export default function SellerSettings() {
                         }));
                       }}
                       required
+                      disabled={!!user?.address_region}
                       className="flex-1"
                     />
                     <Button
@@ -996,9 +1005,11 @@ export default function SellerSettings() {
                       size="sm"
                       onClick={saveAddress}
                       disabled={saving || !formData.addressProvince || !formData.addressCity}
+                      variant={user?.address_region ? 'outline' : 'default'}
+                      className={user?.address_region ? 'text-gray-600' : ''}
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      저장
+                      {user?.address_region ? '수정' : '저장'}
                     </Button>
                   </div>
                 </div>
@@ -1019,16 +1030,19 @@ export default function SellerSettings() {
                         onChange={handleChange}
                         placeholder="사업자등록증상 대표자명을 입력하세요"
                         required={!formData.representativeName}
-                        className="flex-1"
+                        disabled={!!user?.representative_name}
+                        className={`flex-1 ${user?.representative_name ? 'bg-gray-50' : ''}`}
                       />
                       <Button
                         type="button"
                         size="sm"
                         onClick={saveRepresentativeName}
                         disabled={saving || !formData.representativeName}
+                        variant={user?.representative_name ? 'outline' : 'default'}
+                        className={user?.representative_name ? 'text-gray-600' : ''}
                       >
                         {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        저장
+                        {user?.representative_name ? '수정' : '저장'}
                       </Button>
                     </div>
                     {!formData.representativeName ? (
@@ -1121,10 +1135,7 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
-                      <span className="text-xs text-gray-500">6개월마다 재검증을 진행할 수 있습니다</span>
-                    </div>
+                    <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
                     <Switch
                       id="remoteSales"
                       checked={formData.isRemoteSales}
@@ -1201,6 +1212,7 @@ export default function SellerSettings() {
                                   만료일: {new Date(remoteSalesStatus.expires_at).toLocaleDateString('ko-KR')}
                                 </p>
                               )}
+                              <p className="text-xs text-gray-500 mt-1">6개월마다 재검증을 진행할 수 있습니다</p>
                             </div>
                           )}
                           {remoteSalesStatus?.status === 'rejected' && (
@@ -1279,16 +1291,6 @@ export default function SellerSettings() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-start">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={() => router.push('/mypage/seller')}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  뒤로가기
-                </Button>
-              </CardFooter>
             </div>
           </Card>
 

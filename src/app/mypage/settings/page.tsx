@@ -34,15 +34,7 @@ export default function BuyerSettings() {
   return (
     <RequireAuth>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            className="mr-2"
-            onClick={() => router.push('/mypage')}
-          >
-            <ArrowLeft className="h-5 w-5 mr-1" />
-            뒤로가기
-          </Button>
+        <div className="mb-6">
           <h1 className="text-2xl font-bold">내 정보 설정</h1>
         </div>
         
