@@ -1553,21 +1553,24 @@ export default function SellerSettings() {
                         </div>
                       )}
                     </div>
-                    <div className="flex justify-end mt-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={async () => {
-                          // 파일이 첨부되었을 때 자동으로 isRemoteSales를 true로 설정
-                          setFormData(prev => ({ ...prev, isRemoteSales: true }));
-                          await saveRemoteSales();
-                        }}
-                        disabled={saving || (!formData.businessRegFile && !formData.existingCertification)}
-                      >
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        비대면 인증 신청하기
-                      </Button>
-                    </div>
+                    {/* pending 상태가 아닐 때만 신청 버튼 표시 */}
+                    {remoteSalesStatus?.status !== 'pending' && (
+                      <div className="flex justify-end mt-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={async () => {
+                            // 파일이 첨부되었을 때 자동으로 isRemoteSales를 true로 설정
+                            setFormData(prev => ({ ...prev, isRemoteSales: true }));
+                            await saveRemoteSales();
+                          }}
+                          disabled={saving || (!formData.businessRegFile && !formData.existingCertification)}
+                        >
+                          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                          비대면 인증 신청하기
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
