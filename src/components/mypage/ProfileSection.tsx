@@ -306,8 +306,18 @@ export default function ProfileSection() {
         if (response.status === 401) {
           throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
         }
+        if (response.status === 429) {
+          // 닉네임 변경 제한
+          const errorData = await response.json();
+          setNicknameError(errorData.message || '닉네임 변경 제한에 도달했습니다.');
+          return;
+        }
         const errorData = await response.json();
-        setError(errorData.error || '프로필 업데이트에 실패했습니다.');
+        if (editField === 'nickname') {
+          setNicknameError(errorData.error || '닉네임 업데이트에 실패했습니다.');
+        } else {
+          setError(errorData.error || '프로필 업데이트에 실패했습니다.');
+        }
         return;
       }
 
