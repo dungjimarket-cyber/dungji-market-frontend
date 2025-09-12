@@ -785,13 +785,13 @@ export default function SellerSettings() {
                   <Input
                     value={profile?.username || ''}
                     disabled
-                    className="bg-gray-50"
+                    className="bg-gray-50 text-lg font-medium"
                   />
                   <p className="text-xs text-gray-500">아이디는 변경할 수 없습니다</p>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between">
                     <Label htmlFor="nickname">닉네임 (상호명) <span className="text-red-500">*</span></Label>
                     {!isEditingNickname && (
                       <Button
@@ -840,7 +840,7 @@ export default function SellerSettings() {
                       <Input
                         value={formData.nickname}
                         disabled
-                        className="bg-gray-50"
+                        className="bg-gray-50 text-lg font-medium"
                       />
                       {!formData.nickname && (
                         <p className="text-xs text-red-500 mt-1">* 판매자 닉네임(상호명)은 필수 입력 항목입니다</p>
@@ -848,7 +848,7 @@ export default function SellerSettings() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-start">
                         <div className="relative flex-1">
                           <Input
                             id="nickname"
@@ -858,7 +858,7 @@ export default function SellerSettings() {
                             placeholder="닉네임 또는 상호명 (2-15자)"
                             maxLength={15}
                             required
-                            className={nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}
+                            className={`text-lg font-medium ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
                           />
                           {checkingNickname && (
                             <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
@@ -973,7 +973,7 @@ export default function SellerSettings() {
                           size="sm"
                           onClick={() => setIsEditingEmail(true)}
                           variant="outline"
-                          className="text-gray-500"
+                          className="text-gray-500 mt-2"
                         >
                           수정
                         </Button>
@@ -987,7 +987,7 @@ export default function SellerSettings() {
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
-                          className="flex-1"
+                          className="flex-1 text-lg font-medium"
                         />
                         <Button
                           type="button"
@@ -1096,7 +1096,7 @@ export default function SellerSettings() {
                     <Label htmlFor="representativeName">
                       사업자등록증상 대표자명 <span className="text-red-500">*</span>
                     </Label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-start">
                       {!isEditingRepresentativeName && profile?.representativeName ? (
                         <>
                           <Input
@@ -1109,7 +1109,7 @@ export default function SellerSettings() {
                             size="sm"
                             onClick={() => setIsEditingRepresentativeName(true)}
                             variant="outline"
-                            className="text-gray-500"
+                            className="text-gray-500 mt-2"
                           >
                             수정
                           </Button>
@@ -1122,7 +1122,7 @@ export default function SellerSettings() {
                             value={formData.representativeName}
                             onChange={handleChange}
                             placeholder="사업자등록증상 대표자명을 입력하세요"
-                            className="flex-1"
+                            className="flex-1 text-lg font-medium"
                           />
                           <Button
                             type="button"
@@ -1173,7 +1173,7 @@ export default function SellerSettings() {
                         disabled={isBusinessNumberVerified}
                         placeholder="123"
                         maxLength={3}
-                        className={`flex-1 ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
+                        className={`flex-1 text-lg font-medium text-center ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
                       />
                       <span className="text-gray-500">-</span>
                       <Input
@@ -1184,7 +1184,7 @@ export default function SellerSettings() {
                         disabled={isBusinessNumberVerified}
                         placeholder="45"
                         maxLength={2}
-                        className={`flex-1 ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
+                        className={`flex-1 text-lg font-medium text-center ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
                       />
                       <span className="text-gray-500">-</span>
                       <Input
@@ -1195,7 +1195,7 @@ export default function SellerSettings() {
                         disabled={isBusinessNumberVerified}
                         placeholder="67890"
                         maxLength={5}
-                        className={`flex-1 ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
+                        className={`flex-1 text-lg font-medium text-center ${isBusinessNumberVerified ? 'bg-gray-50' : ''}`}
                       />
                     </div>
                     {!isBusinessNumberVerified && (
@@ -1244,23 +1244,33 @@ export default function SellerSettings() {
 
                 {/* 비대면 판매 인증 섹션 - 승인된 경우 완료 메시지만 표시 */}
                 {(remoteSalesStatus?.status === 'approved' || profile?.remoteSalesVerified || profile?.remoteSalesStatus === 'approved') ? (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800">✅ 비대면 판매 인증 완료</p>
-                    <p className="text-xs text-green-700 mt-1">전국 배송이 가능한 비대면 판매 인증이 완료되었습니다.</p>
+                  <div className="space-y-2">
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm font-medium text-green-800">✅ 비대면 판매 인증 완료</p>
+                      <p className="text-xs text-green-700 mt-1">전국 판매가 가능한 비대면 인증이 완료되었습니다.</p>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-gray-500 hover:text-red-600"
+                        onClick={async () => {
+                          if (confirm('비대면 인증을 취소하시겠습니까?\n다시 인증 신청이 가능합니다.')) {
+                            // 비대면 인증 취소 처리
+                            setFormData(prev => ({ ...prev, isRemoteSales: false, businessRegFile: null, existingCertification: null }));
+                            // API 호출로 상태 업데이트 필요
+                            await saveRemoteSales();
+                          }
+                        }}
+                      >
+                        비대면 인증 취소하기
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
-                      <Switch
-                        id="remoteSales"
-                        checked={formData.isRemoteSales}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ ...prev, isRemoteSales: checked }))
-                        }
-                      />
-                    </div>
-                    {formData.isRemoteSales && (
+                    <Label>비대면 판매가능 영업소 인증</Label>
                     <div className="mt-3 p-4 border rounded-lg bg-gray-50">
                       <Label htmlFor="businessRegFile" className="text-sm font-medium">인증서 업로드</Label>
                       
@@ -1393,19 +1403,22 @@ export default function SellerSettings() {
                         </div>
                       )}
                     </div>
-                  )}
-                  <div className="flex justify-end mt-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={saveRemoteSales}
-                      disabled={saving}
-                    >
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      비대면 판매 설정 저장
-                    </Button>
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={async () => {
+                          // 파일이 첨부되었을 때 자동으로 isRemoteSales를 true로 설정
+                          setFormData(prev => ({ ...prev, isRemoteSales: true }));
+                          await saveRemoteSales();
+                        }}
+                        disabled={saving || (!formData.businessRegFile && !formData.existingCertification)}
+                      >
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        비대면 인증 신청하기
+                      </Button>
+                    </div>
                   </div>
-                </div>
                 )}
               </CardContent>
             </div>

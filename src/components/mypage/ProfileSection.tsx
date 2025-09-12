@@ -419,8 +419,7 @@ export default function ProfileSection() {
   if (isLoading) return null;
   return (
     <div className="bg-white p-6 rounded-lg shadow mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">사용자 정보</h2>
+      <div className="flex items-center justify-end mb-6">
         <Button 
           type="button" 
           variant="outline"
@@ -432,25 +431,17 @@ export default function ProfileSection() {
         </Button>
       </div>
       
-      <div className="flex flex-col gap-4 mt-6">
-        {/* 판매회원인 경우 이용권 관리 링크 표시 */}
-        {role === 'seller' && (
+      {/* 판매회원인 경우 이용권 관리 링크 표시 */}
+      {role === 'seller' && (
+        <div className="flex justify-center mb-6">
           <button
             onClick={() => router.push('/mypage/seller/bid-tokens')}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
-              이용권 관리
-            </button>
-          )}
-          
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            로그아웃
+            이용권 관리
           </button>
         </div>
+      )}
       
       <div className="flex flex-col gap-4">
         <div className="mb-6">
@@ -460,7 +451,7 @@ export default function ProfileSection() {
           {user?.sns_type !== 'kakao' && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
-              <span className="font-medium text-xl">{user?.username || '아이디 정보 없음'}</span>
+              <span className="font-medium text-lg">{user?.username || '아이디 정보 없음'}</span>
             </div>
           )}
           
@@ -623,7 +614,7 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-3 bg-gray-50 rounded-md">
-                <span className={`font-medium ${nickname && nickname.length >= 10 ? 'text-lg' : 'text-xl'} break-all`}>
+                <span className={`font-medium ${nickname && nickname.length >= 10 ? 'text-base' : 'text-lg'} break-all`}>
                   {nickname || '닉네임 정보 없음'}
                 </span>
               </div>
@@ -681,7 +672,7 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium text-xl">{email || '이메일 정보 없음'}</span>
+                <span className="font-medium text-lg">{email || '이메일 정보 없음'}</span>
               </div>
             )}
           </div>
@@ -693,7 +684,7 @@ export default function ProfileSection() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium text-xl">{firstName || '정보 없음'}</span>
+                  <span className="font-medium text-lg">{firstName || '정보 없음'}</span>
                 </div>
               </div>
             </>
@@ -755,7 +746,7 @@ export default function ProfileSection() {
               <>
                 {phoneNumber ? (
                   <>
-                    <span className="font-medium text-xl">
+                    <span className="font-medium text-lg">
                       {phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">
@@ -844,7 +835,7 @@ export default function ProfileSection() {
                 </div>
               ) : (
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <div className="font-medium text-xl">
+                  <div className="font-medium text-lg">
                     {addressProvince && addressCity ? `${addressProvince} ${addressCity}` : '지역 정보 없음'}
                   </div>
                 </div>
@@ -1045,6 +1036,17 @@ export default function ProfileSection() {
             <span>{error}</span>
           </div>
         )}
+        
+        {/* 로그아웃 버튼을 왼쪽 하단에 배치 */}
+        <div className="mt-8">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors text-sm text-gray-600"
+          >
+            <LogOut className="h-4 w-4" />
+            로그아웃
+          </button>
+        </div>
       </div>
     </div>
   );
