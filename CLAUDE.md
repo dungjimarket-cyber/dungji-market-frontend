@@ -76,15 +76,25 @@ The app uses a dual authentication system:
 ### API Integration Pattern
 - **Base API URL**: `${process.env.NEXT_PUBLIC_API_URL}` = `https://api.dungjimarket.com/api`
 - **API URL Pattern**: `${NEXT_PUBLIC_API_URL}/auth/endpoint` → `https://api.dungjimarket.com/api/auth/endpoint`
-- **Important**: NEXT_PUBLIC_API_URL already includes `/api`, so don't add it again!
+- **❗️ CRITICAL**: NEXT_PUBLIC_API_URL already includes `/api`, so NEVER add `/api` again!
 - Auth headers automatically attached via axios interceptors
 - Token refresh handled automatically on 401 responses
 - API services organized in `src/lib/api/` by feature
 
-#### Common API Endpoints
+#### ✅ Correct API URL Examples
 - Profile: `${NEXT_PUBLIC_API_URL}/auth/profile/`
 - Nickname Check: `${NEXT_PUBLIC_API_URL}/auth/check-nickname/`
 - Nickname Change Status: `${NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`
+- Regions: `${NEXT_PUBLIC_API_URL}/regions/`
+
+#### ❌ WRONG Examples (Never Use These!)
+- `${NEXT_PUBLIC_API_URL}/api/auth/endpoint` ← WRONG! Duplicate `/api`
+- `https://api.dungjimarket.com/auth/endpoint` ← WRONG! Hardcoded URL
+
+#### 📋 Before Adding New API Calls:
+1. Check existing API calls in the same file for pattern
+2. Use `${NEXT_PUBLIC_API_URL}/path` format
+3. Never add `/api` prefix to the path
 
 ### Key Features & Routes
 
