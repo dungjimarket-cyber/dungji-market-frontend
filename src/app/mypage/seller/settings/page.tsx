@@ -997,7 +997,6 @@ export default function SellerSettings() {
                         }));
                       }}
                       required
-                      disabled={!!profile?.addressRegion}
                       className="flex-1"
                     />
                     <Button
