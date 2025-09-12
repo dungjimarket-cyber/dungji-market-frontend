@@ -436,7 +436,6 @@ export default function ProfileSection() {
             로그아웃
           </button>
         </div>
-      </div>
       
       <div className="flex flex-col gap-4">
         <div className="mb-6">
