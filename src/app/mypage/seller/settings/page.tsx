@@ -76,6 +76,7 @@ export default function SellerSettings() {
   const [nicknameError, setNicknameError] = useState('');
   const [nicknameAvailable, setNicknameAvailable] = useState(false);
   const [remoteSalesStatus, setRemoteSalesStatus] = useState<any>(null);
+  const [isEditingRemoteFile, setIsEditingRemoteFile] = useState(false);
   const [isBusinessNumberVerified, setIsBusinessNumberVerified] = useState(false);
   const [verifyingBusinessNumber, setVerifyingBusinessNumber] = useState(false);
   const [referralCode, setReferralCode] = useState('');
@@ -720,6 +721,11 @@ export default function SellerSettings() {
           });
           const updatedData = await getSellerProfile();
           setProfile(updatedData);
+          
+          // 파일 변경 모드 종료
+          if (isEditingRemoteFile) {
+            setIsEditingRemoteFile(false);
+          }
         }
       }
     } catch (error) {
@@ -1335,21 +1341,6 @@ export default function SellerSettings() {
                                 </a>
                               </div>
                             </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                // 파일 변경 모드로 전환
-                                setFormData(prev => ({ 
-                                  ...prev, 
-                                  businessRegFile: null,
-                                  existingCertification: null
-                                }));
-                              }}
-                            >
-                              변경
-                            </Button>
                           </div>
                           {/* 인증 상태 표시 */}
                           {remoteSalesStatus?.status === 'pending' && (
@@ -1367,12 +1358,8 @@ export default function SellerSettings() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    // 파일 변경 모드로 전환
-                                    setFormData(prev => ({
-                                      ...prev,
-                                      businessRegFile: null,
-                                      existingCertification: null
-                                    }));
+                                    // 파일 변경 모드로 전환 (pending 상태 유지)
+                                    setIsEditingRemoteFile(true);
                                   }}
                                   className="text-xs"
                                 >
@@ -1439,6 +1426,58 @@ export default function SellerSettings() {
                                   신청 취소하기
                                 </Button>
                               </div>
+                              {/* pending 상태에서 파일 변경 UI */}
+                              {isEditingRemoteFile && (
+                                <div className="mt-3 p-3 bg-gray-50 rounded">
+                                  <p className="text-xs text-gray-600 mb-2">새로운 인증서를 업로드하세요:</p>
+                                  <Input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0] || null;
+                                      if (file) {
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          businessRegFile: file
+                                        }));
+                                      }
+                                    }}
+                                    className="text-xs"
+                                  />
+                                  {formData.businessRegFile && (
+                                    <p className="text-xs text-green-600 mt-2">
+                                      ✓ 새 파일 선택됨: {formData.businessRegFile.name}
+                                    </p>
+                                  )}
+                                  <div className="flex gap-2 mt-3">
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={saveRemoteSales}
+                                      disabled={!formData.businessRegFile || saving}
+                                      className="text-xs"
+                                    >
+                                      {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                                      변경 완료
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setIsEditingRemoteFile(false);
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          businessRegFile: null
+                                        }));
+                                      }}
+                                      className="text-xs"
+                                    >
+                                      취소
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                           {remoteSalesStatus?.status === 'approved' && (
