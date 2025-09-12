@@ -80,6 +80,7 @@ export default function ProfileSection() {
   const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
+  const [originalNickname, setOriginalNickname] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [addressRegion, setAddressRegion] = useState<any>(null);
   const [addressProvince, setAddressProvince] = useState('');
@@ -100,6 +101,8 @@ export default function ProfileSection() {
   const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | 'business_address' | 'remote_sales' | null>(null);
   const [error, setError] = useState('');
   const [nicknameError, setNicknameError] = useState('');
+  const [nicknameChecked, setNicknameChecked] = useState(false);
+  const [nicknameAvailable, setNicknameAvailable] = useState(false);
   const errorRef = useRef<HTMLDivElement>(null);
   const nicknameRef = useRef<HTMLDivElement>(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -116,6 +119,7 @@ export default function ProfileSection() {
       // nickname 필드 사용, 없으면 이메일 앞부분 사용 (username은 아이디이므로 닉네임으로 사용하지 않음)
       const displayNickname = user.nickname || (user.email ? user.email.split('@')[0] : '');
       setNickname(displayNickname);
+      setOriginalNickname(displayNickname);
       setPhoneNumber(user.phone_number || '');
       setAddressRegion(user.address_region || null);
             
@@ -223,21 +227,9 @@ export default function ProfileSection() {
     if (editField === 'email') {
       updateData.email = email;
     } else if (editField === 'nickname') {
-      // 닉네임 변경
-      if (!nickname) {
-        setNicknameError('닉네임을 입력해주세요.');
-        return;
-      }
-
-      // 닉네임 길이 체크 (2-10자)
-      if (nickname.length < 2 || nickname.length > 10) {
-        setNicknameError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
-        return;
-      }
-
-      // 공백 체크
-      if (nickname.includes(' ')) {
-        setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+      // 닉네임 중복체크가 완료되지 않은 경우
+      if (!nicknameChecked || !nicknameAvailable) {
+        setNicknameError('닉네임 중복체크를 해주세요.');
         return;
       }
       
@@ -445,6 +437,8 @@ export default function ProfileSection() {
                   setIsEditing(true);
                   setEditField('nickname');
                   setNicknameError('');
+                  setNicknameChecked(false);
+                  setNicknameAvailable(false);
                 }}
                 className="text-xs text-blue-600 hover:text-blue-800"
               >
@@ -454,20 +448,78 @@ export default function ProfileSection() {
             
             {isEditing && editField === 'nickname' ? (
               <div ref={nicknameRef}>
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={nickname}
                     onChange={(e) => {
                       setNickname(e.target.value);
                       setNicknameError('');
+                      setNicknameChecked(false);
+                      setNicknameAvailable(false);
                     }}
-                    className={`flex-1 p-2 border rounded-md mr-2 ${nicknameError ? 'border-red-500' : ''}`}
-                    placeholder="닉네임을 입력하세요"
+                    className={`flex-1 p-2 border rounded-md ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
+                    placeholder="닉네임 (2-15자)"
+                    maxLength={15}
                   />
                   <button
-                    onClick={() => handleProfileUpdate()}
+                    onClick={async () => {
+                      // 닉네임 유효성 검사
+                      if (!nickname || nickname.length < 2 || nickname.length > 15) {
+                        setNicknameError('닉네임은 2자 이상 15자 이하로 입력해주세요.');
+                        return;
+                      }
+                      if (nickname.includes(' ')) {
+                        setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+                        return;
+                      }
+                      const nicknameRegex = /^[가-힣a-zA-Z0-9]+$/;
+                      if (!nicknameRegex.test(nickname)) {
+                        setNicknameError('닉네임은 한글, 영문, 숫자만 사용 가능합니다.');
+                        return;
+                      }
+                      
+                      // 기존 닉네임과 같으면 사용 가능
+                      if (nickname === originalNickname) {
+                        setNicknameChecked(true);
+                        setNicknameAvailable(true);
+                        return;
+                      }
+                      
+                      // 닉네임 중복 체크
+                      try {
+                        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+                          },
+                          body: JSON.stringify({ nickname })
+                        });
+                        const data = await response.json();
+                        setNicknameChecked(true);
+                        setNicknameAvailable(data.available);
+                        if (!data.available) {
+                          setNicknameError('이미 사용 중인 닉네임입니다.');
+                        }
+                      } catch (err) {
+                        setNicknameError('닉네임 중복 확인 중 오류가 발생했습니다.');
+                      }
+                    }}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm"
+                  >
+                    중복체크
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!nicknameChecked || !nicknameAvailable) {
+                        setNicknameError('닉네임 중복체크를 해주세요.');
+                        return;
+                      }
+                      handleProfileUpdate();
+                    }}
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    disabled={!nicknameChecked || !nicknameAvailable}
                   >
                     저장
                   </button>
@@ -475,11 +527,12 @@ export default function ProfileSection() {
                     onClick={() => {
                       setIsEditing(false);
                       setEditField(null);
-                      // 원래 닉네임으로 되돌리기
-                      setNickname(user?.nickname || '');
+                      setNickname(originalNickname);
                       setNicknameError('');
+                      setNicknameChecked(false);
+                      setNicknameAvailable(false);
                     }}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
                   >
                     취소
                   </button>
@@ -494,10 +547,16 @@ export default function ProfileSection() {
                     </p>
                   </div>
                 )}
+                {nicknameAvailable && !nicknameError && (
+                  <p className="text-sm text-green-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
+                )}
               </div>
             ) : (
-              <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium">{nickname || '닉네임 정보 없음'}</span>
+              <div>
+                <div className="p-2 bg-gray-50 rounded-md">
+                  <span className="font-medium">{nickname || '닉네임 정보 없음'}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">30일에 2회 변경 가능합니다</p>
               </div>
             )}
           </div>

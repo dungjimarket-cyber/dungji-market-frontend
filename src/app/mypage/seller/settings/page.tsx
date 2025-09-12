@@ -44,6 +44,9 @@ export default function SellerSettings() {
   const [profile, setProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nicknameChangeCount, setNicknameChangeCount] = useState(0);
+  const [lastNicknameChangeDate, setLastNicknameChangeDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
@@ -259,9 +262,9 @@ export default function SellerSettings() {
       return;
     }
 
-    // 닉네임 길이 체크 (2-10자)
-    if (nickname.length < 2 || nickname.length > 10) {
-      setNicknameError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
+    // 닉네임 길이 체크 (2-15자, 당근마켓 기준)
+    if (nickname.length < 2 || nickname.length > 15) {
+      setNicknameError('닉네임은 2자 이상 15자 이하로 입력해주세요.');
       setNicknameAvailable(false);
       return;
     }
@@ -269,6 +272,14 @@ export default function SellerSettings() {
     // 공백 체크
     if (nickname.includes(' ')) {
       setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+      setNicknameAvailable(false);
+      return;
+    }
+    
+    // 특수문자 및 이모티콘 체크 (당근마켓 기준: 한글, 영문, 숫자만 허용)
+    const nicknameRegex = /^[가-힣a-zA-Z0-9]+$/;
+    if (!nicknameRegex.test(nickname)) {
+      setNicknameError('닉네임은 한글, 영문, 숫자만 사용 가능합니다.');
       setNicknameAvailable(false);
       return;
     }
@@ -448,8 +459,8 @@ export default function SellerSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 닉네임 중복체크 확인
-    if (formData.nickname !== profile?.nickname && !nicknameAvailable) {
+    // 닉네임 수정 중인 경우 중복체크 확인
+    if (isEditingNickname && formData.nickname !== profile?.nickname && !nicknameAvailable) {
       toast({
         variant: 'destructive',
         title: '확인 필요',
@@ -595,6 +606,23 @@ export default function SellerSettings() {
       }
       
       if (updateSuccess) {
+        // 닉네임이 변경된 경우 변경 횟수 업데이트
+        if (isEditingNickname && formData.nickname !== profile?.nickname) {
+          const now = new Date();
+          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          
+          if (!lastNicknameChangeDate || lastNicknameChangeDate < thirtyDaysAgo) {
+            // 30일이 지났으면 카운트 리셋
+            setNicknameChangeCount(1);
+            setLastNicknameChangeDate(now);
+          } else {
+            // 30일 이내면 카운트 증가
+            setNicknameChangeCount(prev => prev + 1);
+          }
+          
+          setIsEditingNickname(false);
+        }
+        
         toast({
           title: '저장 완료',
           description: '판매자 정보가 성공적으로 저장되었습니다.'
@@ -663,36 +691,91 @@ export default function SellerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nickname">닉네임 (상호명)</Label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        id="nickname"
-                        name="nickname"
-                        value={formData.nickname}
-                        onChange={handleChange}
-                        placeholder="닉네임 또는 상호명을 입력하세요"
-                        required
-                        className={nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}
-                      />
-                      {checkingNickname && (
-                        <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
-                      )}
-                    </div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={checkNicknameDuplicate}
-                      disabled={checkingNickname || !formData.nickname}
-                    >
-                      중복체크
-                    </Button>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="nickname">닉네임 (상호명)</Label>
+                    {!isEditingNickname && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          // 닉네임 변경 가능 여부 체크
+                          const now = new Date();
+                          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                          
+                          if (lastNicknameChangeDate && lastNicknameChangeDate > thirtyDaysAgo && nicknameChangeCount >= 2) {
+                            toast({
+                              variant: 'destructive',
+                              title: '변경 제한',
+                              description: '30일 이내에 2회까지만 변경 가능합니다.'
+                            });
+                            return;
+                          }
+                          setIsEditingNickname(true);
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        수정
+                      </Button>
+                    )}
                   </div>
-                  {nicknameError && (
-                    <p className="text-sm text-red-500 mt-1">{nicknameError}</p>
-                  )}
-                  {nicknameAvailable && !nicknameError && formData.nickname && (
-                    <p className="text-sm text-green-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
+                  
+                  {!isEditingNickname ? (
+                    <div>
+                      <Input
+                        value={formData.nickname}
+                        disabled
+                        className="bg-gray-50"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">30일에 2회 변경 가능합니다</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Input
+                            id="nickname"
+                            name="nickname"
+                            value={formData.nickname}
+                            onChange={handleChange}
+                            placeholder="닉네임 또는 상호명 (2-15자)"
+                            maxLength={15}
+                            required
+                            className={nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}
+                          />
+                          {checkingNickname && (
+                            <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
+                          )}
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={checkNicknameDuplicate}
+                          disabled={checkingNickname || !formData.nickname}
+                        >
+                          중복체크
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setIsEditingNickname(false);
+                            setFormData(prev => ({ ...prev, nickname: profile?.nickname || '' }));
+                            setNicknameError('');
+                            setNicknameAvailable(false);
+                          }}
+                        >
+                          취소
+                        </Button>
+                      </div>
+                      {nicknameError && (
+                        <p className="text-sm text-red-500 mt-1">{nicknameError}</p>
+                      )}
+                      {nicknameAvailable && !nicknameError && formData.nickname && (
+                        <p className="text-sm text-green-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
+                      )}
+                    </>
                   )}
                 </div>
 
