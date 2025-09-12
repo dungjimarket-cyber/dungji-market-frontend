@@ -699,16 +699,27 @@ export default function SellerSettings() {
                         variant="ghost"
                         size="sm"
                         onClick={async () => {
+                          console.log('[판매자] 닉네임 수정 버튼 클릭됨');
+                          console.log('[판매자] API URL:', process.env.NEXT_PUBLIC_API_URL);
+                          console.log('[판매자] Access Token:', accessToken ? 'exists' : 'missing');
+                          
                           // 닉네임 변경 가능 여부 먼저 확인
                           try {
-                            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
+                            const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`;
+                            console.log('[판매자] Making request to:', apiUrl);
+                            
+                            const response = await fetch(apiUrl, {
                               headers: {
                                 'Authorization': `Bearer ${accessToken}`
                               }
                             });
                             
+                            console.log('[판매자] Response status:', response.status);
+                            console.log('[판매자] Response headers:', [...response.headers.entries()]);
+                            
                             if (response.ok) {
                               const data = await response.json();
+                              console.log('[판매자] Response data:', data);
                               if (!data.can_change) {
                                 const nextDate = data.next_available_date ? new Date(data.next_available_date).toLocaleDateString('ko-KR') : '알 수 없음';
                                 toast({
@@ -718,13 +729,17 @@ export default function SellerSettings() {
                                 });
                                 return;
                               }
+                            } else {
+                              const errorData = await response.text();
+                              console.log('[판매자] Error response:', errorData);
                             }
                           } catch (error) {
-                            console.error('닉네임 변경 상태 확인 실패:', error);
+                            console.error('[판매자] 닉네임 변경 상태 확인 실패:', error);
                             // 에러가 발생해도 수정은 진행 (백엔드에서 최종 검증)
                           }
                           
                           // 변경 가능하면 수정 모드 활성화
+                          console.log('[판매자] 수정 모드 활성화');
                           setIsEditingNickname(true);
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800"
