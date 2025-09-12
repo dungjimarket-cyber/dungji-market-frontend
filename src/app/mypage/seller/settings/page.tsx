@@ -535,6 +535,7 @@ export default function SellerSettings() {
               title: '오류',
               description: '선택한 지역을 찾을 수 없습니다.'
             });
+            setSaving(false);
             return;
           }
         } catch (err) {
@@ -543,6 +544,7 @@ export default function SellerSettings() {
             title: '오류',
             description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
           });
+          setSaving(false);
           return;
         }
       }
