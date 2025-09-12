@@ -161,7 +161,115 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
     );
   }
 
-  // 텍스트 또는 혼합 팝업
+  // 텍스트 전용 팝업 (컴팩트 디자인)
+  if (popup.popup_type === 'text') {
+    return (
+      <>
+        {/* 배경 오버레이 */}
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+          onClick={handleClose}
+        />
+        
+        {/* 텍스트 팝업 - 공지사항 스타일 */}
+        <div 
+          className={`fixed z-[9999] bg-white rounded-xl shadow-2xl ${getPositionStyles()}`}
+          style={{
+            width: `${Math.min(popup.width || 400, window.innerWidth * 0.9)}px`,
+            maxWidth: '500px',
+            maxHeight: `${Math.min(popup.height || 500, window.innerHeight * 0.85)}px`,
+          }}
+        >
+          {/* 컴팩트 헤더 */}
+          <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 rounded-t-xl">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-blue-500 rounded-full" />
+              <h3 className="font-semibold text-base text-gray-800">{popup.title}</h3>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-1.5 hover:bg-white hover:bg-opacity-70 rounded-full transition-all"
+              aria-label="닫기"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+          
+          {/* 텍스트 내용 - 줄바꿈과 간격 유지 */}
+          <div 
+            className="overflow-y-auto px-5 py-4"
+            style={{ maxHeight: `${(popup.height || 500) - 120}px` }}
+          >
+            {popup.content && (
+              <div 
+                className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words"
+                style={{ 
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                  wordBreak: 'keep-all'
+                }}
+              >
+                {popup.content}
+              </div>
+            )}
+            
+            {popup.link_url && (
+              <button 
+                onClick={handleContentClick}
+                className="inline-flex items-center gap-1 mt-4 px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors shadow-sm"
+              >
+                자세히 보기
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {/* 컴팩트 하단 */}
+          {(popup.show_today_close || popup.show_week_close) && (
+            <div className="flex items-center justify-center gap-3 px-5 py-3 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+              {popup.show_today_close && (
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={dontShowToday}
+                    onChange={(e) => {
+                      setDontShowToday(e.target.checked);
+                      if (e.target.checked) setDontShowWeek(false);
+                    }}
+                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 group-hover:text-gray-800">오늘 하루 보지 않기</span>
+                </label>
+              )}
+              {popup.show_week_close && (
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={dontShowWeek}
+                    onChange={(e) => {
+                      setDontShowWeek(e.target.checked);
+                      if (e.target.checked) setDontShowToday(false);
+                    }}
+                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 group-hover:text-gray-800">일주일간 보지 않기</span>
+                </label>
+              )}
+              <button
+                onClick={handleClose}
+                className="ml-auto px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+  
+  // 혼합 팝업 (기존 스타일 유지)
   return (
     <>
       {/* 배경 오버레이 */}
@@ -212,9 +320,9 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
           
           {popup.content && (
             <div 
-              className="prose prose-sm max-w-none"
+              className="prose prose-sm max-w-none whitespace-pre-wrap"
               dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(popup.content, {
+                __html: DOMPurify.sanitize(popup.content.replace(/\n/g, '<br>'), {
                   ALLOWED_TAGS: [
                     'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 
                     'h4', 'h5', 'h6', 'blockquote', 'ul', 'ol', 'li', 
