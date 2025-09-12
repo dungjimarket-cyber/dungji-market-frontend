@@ -1255,12 +1255,66 @@ export default function SellerSettings() {
                         variant="ghost"
                         size="sm"
                         className="text-xs text-gray-500 hover:text-red-600"
+                        disabled={saving}
                         onClick={async () => {
                           if (confirm('비대면 인증을 취소하시겠습니까?\n다시 인증 신청이 가능합니다.')) {
-                            // 비대면 인증 취소 처리
-                            setFormData(prev => ({ ...prev, isRemoteSales: false, businessRegFile: null, existingCertification: null }));
-                            // API 호출로 상태 업데이트 필요
-                            await saveRemoteSales();
+                            try {
+                              setSaving(true);
+                              
+                              // 비대면 인증 취소 API 호출
+                              const formDataToSend = new FormData();
+                              formDataToSend.append('delete_remote_sales_certification', 'true');
+                              
+                              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/profile/update/`, {
+                                method: 'PUT',
+                                headers: {
+                                  'Authorization': `Bearer ${accessToken}`
+                                },
+                                body: formDataToSend
+                              });
+                              
+                              if (response.ok) {
+                                // 로컬 상태 업데이트 - 신청 폼으로 되돌리기
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  isRemoteSales: false, 
+                                  businessRegFile: null, 
+                                  existingCertification: null 
+                                }));
+                                
+                                // 프로필 데이터 새로고침
+                                const updatedProfile = await getSellerProfile();
+                                setProfile(updatedProfile);
+                                
+                                // 비대면 인증 상태 새로고침
+                                const statusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/remote-sales-status/`, {
+                                  headers: {
+                                    'Authorization': `Bearer ${accessToken}`
+                                  }
+                                });
+                                
+                                if (statusResponse.ok) {
+                                  const statusData = await statusResponse.json();
+                                  setRemoteSalesStatus(statusData);
+                                }
+                                
+                                toast({
+                                  title: '비대면 인증 취소 완료',
+                                  description: '비대면 인증이 취소되었습니다. 다시 인증을 신청할 수 있습니다.'
+                                });
+                              } else {
+                                throw new Error('취소 처리 실패');
+                              }
+                            } catch (error) {
+                              console.error('비대면 인증 취소 오류:', error);
+                              toast({
+                                variant: 'destructive',
+                                title: '취소 실패',
+                                description: '비대면 인증 취소 중 오류가 발생했습니다.'
+                              });
+                            } finally {
+                              setSaving(false);
+                            }
                           }
                         }}
                       >
