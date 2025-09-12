@@ -1156,17 +1156,19 @@ export default function SellerSettings() {
                   {isBusinessNumberVerified && (
                     <p className="text-xs text-gray-400">*사업자등록번호를 변경하시려면, 고객센터를 통해 문의 부탁드립니다.</p>
                   )}
-                  <div className="flex justify-end mt-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={saveBusinessNumber}
-                      disabled={saving || !formData.businessNumber1 || !formData.businessNumber2 || !formData.businessNumber3}
-                    >
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      사업자등록번호 저장
-                    </Button>
-                  </div>
+                  {!isBusinessNumberVerified && (
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={saveBusinessNumber}
+                        disabled={saving || !formData.businessNumber1 || !formData.businessNumber2 || !formData.businessNumber3}
+                      >
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        사업자등록번호 저장
+                      </Button>
+                    </div>
+                  )}
                   </div>
                 </div>
 
