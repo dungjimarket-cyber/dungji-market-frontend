@@ -56,6 +56,7 @@ export default function SellerSettings() {
     representativeName: '', // 대표자명 필드
     addressProvince: '',
     addressCity: '',
+    addressDetail: '', // 상세주소 필드 추가
     businessNumber1: '',
     businessNumber2: '',
     businessNumber3: '',
@@ -179,6 +180,7 @@ export default function SellerSettings() {
           representativeName: data.representativeName || '', // 대표자명 설정
           addressProvince: '',
           addressCity: '',
+          addressDetail: data.addressDetail || '', // 상세주소 추가
           businessNumber1: businessNum1,
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
@@ -1109,7 +1111,10 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
+                      <span className="text-xs text-gray-500">6개월마다 재검증을 진행할 수 있습니다</span>
+                    </div>
                     <Switch
                       id="remoteSales"
                       checked={formData.isRemoteSales}
