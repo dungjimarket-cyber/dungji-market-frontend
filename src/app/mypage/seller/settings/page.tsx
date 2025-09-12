@@ -1498,6 +1498,132 @@ export default function SellerSettings() {
                                 <p className="text-xs text-gray-600 mt-1">사유: {remoteSalesStatus.rejection_reason}</p>
                               )}
                               <p className="text-xs text-gray-600 mt-1">새로운 인증서를 업로드해주세요.</p>
+                              <div className="flex gap-2 mt-3">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    // 파일 변경 모드로 전환
+                                    setIsEditingRemoteFile(true);
+                                  }}
+                                  className="text-xs"
+                                >
+                                  변경
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={async () => {
+                                    if (confirm('비대면 인증을 취소하시겠습니까?\n제출된 인증서가 삭제됩니다.')) {
+                                      try {
+                                        setSaving(true);
+                                        
+                                        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
+                                          method: 'PATCH',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${accessToken}`
+                                          },
+                                          body: JSON.stringify({
+                                            delete_remote_sales_certification: 'true'
+                                          })
+                                        });
+                                        
+                                        if (response.ok) {
+                                          // 로컬 상태 즉시 초기화
+                                          setFormData(prev => ({ 
+                                            ...prev, 
+                                            isRemoteSales: false, 
+                                            businessRegFile: null, 
+                                            existingCertification: null 
+                                          }));
+                                          
+                                          // 비대면 인증 상태 즉시 초기화
+                                          setRemoteSalesStatus(null);
+                                          
+                                          // 프로필 데이터 새로고침
+                                          const updatedProfile = await getSellerProfile();
+                                          setProfile(updatedProfile);
+                                          
+                                          toast({
+                                            title: '신청 취소 완료',
+                                            description: '비대면 인증이 취소되었습니다.'
+                                          });
+                                        } else {
+                                          const errorData = await response.json().catch(() => ({}));
+                                          throw new Error(errorData.detail || '취소 처리 실패');
+                                        }
+                                      } catch (error) {
+                                        toast({
+                                          variant: 'destructive',
+                                          title: '취소 실패',
+                                          description: '신청 취소 중 오류가 발생했습니다.'
+                                        });
+                                      } finally {
+                                        setSaving(false);
+                                      }
+                                    }
+                                  }}
+                                  className="text-xs"
+                                  disabled={saving}
+                                >
+                                  신청 취소하기
+                                </Button>
+                              </div>
+                              {/* rejected 상태에서 파일 변경 UI */}
+                              {isEditingRemoteFile && (
+                                <div className="mt-3 p-3 bg-gray-50 rounded">
+                                  <p className="text-xs text-gray-600 mb-2">새로운 인증서를 업로드하세요:</p>
+                                  <Input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0] || null;
+                                      if (file) {
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          businessRegFile: file
+                                        }));
+                                      }
+                                    }}
+                                    className="text-xs"
+                                  />
+                                  {formData.businessRegFile && (
+                                    <p className="text-xs text-green-600 mt-2">
+                                      ✓ 새 파일 선택됨: {formData.businessRegFile.name}
+                                    </p>
+                                  )}
+                                  <div className="flex gap-2 mt-3">
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={saveRemoteSales}
+                                      disabled={!formData.businessRegFile || saving}
+                                      className="text-xs"
+                                    >
+                                      {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                                      재신청하기
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setIsEditingRemoteFile(false);
+                                        setFormData(prev => ({ 
+                                          ...prev, 
+                                          businessRegFile: null
+                                        }));
+                                      }}
+                                      className="text-xs"
+                                    >
+                                      취소
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                           {remoteSalesStatus?.status === 'expired' && (
@@ -1567,7 +1693,7 @@ export default function SellerSettings() {
                           disabled={saving || (!formData.businessRegFile && !formData.existingCertification)}
                         >
                           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                          비대면 인증 신청하기
+                          {remoteSalesStatus?.status === 'rejected' || remoteSalesStatus?.status === 'expired' ? '재신청하기' : '비대면 인증 신청하기'}
                         </Button>
                       </div>
                     )}
