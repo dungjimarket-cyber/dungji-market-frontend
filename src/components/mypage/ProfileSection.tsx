@@ -9,7 +9,6 @@ import RegionDropdown from '@/components/address/RegionDropdown';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
 import { Button } from '@/components/ui/button';
-import { getRegions } from '@/lib/api/regionService';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -175,12 +174,21 @@ export default function ProfileSection() {
     }
   }, [user?.user_type]);
   
-  // 지역 목록 가져오기
+  // 지역 목록 가져오기 - 현재 사용하지 않지만 향후 사용 가능성을 위해 유지
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const data = await getRegions();
-        setRegions(data);
+        const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+        if (!token) return;
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        const regionsArray = data?.results || data;
+        setRegions(regionsArray);
       } catch (error) {
         console.error('지역 정보 가져오기 오류:', error);
       }
@@ -247,8 +255,14 @@ export default function ProfileSection() {
       // 주소 업데이트 시 지역 코드를 찾아서 전송
       if (addressProvince && addressCity) {
         try {
-          // 모든 지역 데이터 가져오기 - regionService 사용으로 인증 헤더 자동 포함
-          const regionsData = await getRegions();
+          // 모든 지역 데이터 가져오기 - fetch 직접 사용하여 limit 파라미터 전달
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          const regionsJson = await regionsResponse.json();
+          const regionsData = regionsJson?.results || regionsJson;
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           // 세종특별자치시는 특수한 경우로 level 1이면서 시/도와 시/군/구가 동일
