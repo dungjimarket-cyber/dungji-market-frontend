@@ -1262,15 +1262,15 @@ export default function SellerSettings() {
                               setSaving(true);
                               
                               // 비대면 인증 취소 API 호출
-                              const formDataToSend = new FormData();
-                              formDataToSend.append('delete_remote_sales_certification', 'true');
-                              
                               const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/profile/update/`, {
                                 method: 'PUT',
                                 headers: {
+                                  'Content-Type': 'application/json',
                                   'Authorization': `Bearer ${accessToken}`
                                 },
-                                body: formDataToSend
+                                body: JSON.stringify({
+                                  delete_remote_sales_certification: 'true'
+                                })
                               });
                               
                               if (response.ok) {
@@ -1303,7 +1303,9 @@ export default function SellerSettings() {
                                   description: '비대면 인증이 취소되었습니다. 다시 인증을 신청할 수 있습니다.'
                                 });
                               } else {
-                                throw new Error('취소 처리 실패');
+                                const errorData = await response.json().catch(() => ({}));
+                                console.error('취소 API 응답 오류:', response.status, errorData);
+                                throw new Error(errorData.detail || `취소 처리 실패 (${response.status})`);
                               }
                             } catch (error) {
                               console.error('비대면 인증 취소 오류:', error);
