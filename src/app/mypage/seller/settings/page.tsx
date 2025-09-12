@@ -1679,8 +1679,8 @@ export default function SellerSettings() {
                         </div>
                       )}
                     </div>
-                    {/* pending이나 approved 상태가 아닐 때만 신청 버튼 표시 */}
-                    {remoteSalesStatus?.status !== 'pending' && remoteSalesStatus?.status !== 'approved' && (
+                    {/* pending, approved, rejected 상태가 아닐 때만 신청 버튼 표시 */}
+                    {remoteSalesStatus?.status !== 'pending' && remoteSalesStatus?.status !== 'approved' && remoteSalesStatus?.status !== 'rejected' && (
                       <div className="flex justify-end mt-2">
                         <Button
                           type="button"
