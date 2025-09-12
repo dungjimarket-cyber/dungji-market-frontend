@@ -728,6 +728,7 @@ export default function SellerSettings() {
                             
                             if (response.ok) {
                               const data = await response.json();
+                              console.log('[판매자] 닉네임 변경 상태 API 응답:', data);
                               
                               // 모달 데이터 설정
                               setLimitModalData({
