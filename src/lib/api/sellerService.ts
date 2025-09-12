@@ -25,7 +25,6 @@ const getAxiosAuthHeaders = async () => {
       ? Object.fromEntries(headers)
       : headers;
   
-  console.log('인증 헤더:', authHeader);
   return authHeader;
 };
 
