@@ -320,7 +320,11 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
           
           {popup.content && (
             <div 
-              className="prose prose-sm max-w-none whitespace-pre-wrap"
+              className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words"
+              style={{ 
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                wordBreak: 'keep-all'
+              }}
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(popup.content.replace(/\n/g, '<br>'), {
                   ALLOWED_TAGS: [
