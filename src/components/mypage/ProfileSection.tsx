@@ -444,35 +444,21 @@ export default function ProfileSection() {
               <label className="block text-sm font-medium text-gray-700">닉네임</label>
               <button
                 onClick={async () => {
-                  console.log('닉네임 수정 버튼 클릭됨');
-                  console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
-                  console.log('Access Token:', accessToken ? 'exists' : 'missing');
-                  
                   // 닉네임 변경 가능 여부 먼저 확인
                   try {
-                    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`;
-                    console.log('Making request to:', apiUrl);
-                    
-                    const response = await fetch(apiUrl, {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
                       headers: {
                         'Authorization': `Bearer ${accessToken}`
                       }
                     });
                     
-                    console.log('Response status:', response.status);
-                    console.log('Response headers:', [...response.headers.entries()]);
-                    
                     if (response.ok) {
                       const data = await response.json();
-                      console.log('Response data:', data);
                       if (!data.can_change) {
                         const nextDate = data.next_available_date ? new Date(data.next_available_date).toLocaleDateString('ko-KR') : '알 수 없음';
                         setNicknameError(`30일에 2회까지만 변경 가능합니다. 다음 변경 가능일: ${nextDate}`);
                         return;
                       }
-                    } else {
-                      const errorData = await response.text();
-                      console.log('Error response:', errorData);
                     }
                   } catch (error) {
                     console.error('닉네임 변경 상태 확인 실패:', error);
@@ -480,7 +466,6 @@ export default function ProfileSection() {
                   }
                   
                   // 변경 가능하면 수정 모드 활성화
-                  console.log('수정 모드 활성화');
                   setIsEditing(true);
                   setEditField('nickname');
                   setNicknameError('');
