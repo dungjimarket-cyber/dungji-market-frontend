@@ -14,7 +14,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Save, Phone, Upload, FileText, Trash2, LogOut } from 'lucide-react';
+import { ArrowLeft, Loader2, Phone, Upload, FileText, Trash2, LogOut } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { getRegions } from '@/lib/api/regionService';
@@ -47,8 +47,6 @@ export default function SellerSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
-  const [nicknameChangeCount, setNicknameChangeCount] = useState(0);
-  const [lastNicknameChangeDate, setLastNicknameChangeDate] = useState<Date | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [limitModalData, setLimitModalData] = useState({ remainingChanges: 2, nextAvailableDate: null, canChange: true });
   const [formData, setFormData] = useState({
@@ -460,10 +458,8 @@ export default function SellerSettings() {
   };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // 닉네임 수정 중인 경우 중복체크 확인
+  // 개별 필드 저장 함수들
+  const saveNickname = async () => {
     if (isEditingNickname && formData.nickname !== profile?.nickname && !nicknameAvailable) {
       toast({
         variant: 'destructive',
@@ -474,194 +470,260 @@ export default function SellerSettings() {
     }
     
     setSaving(true);
-
     try {
-      // API 호출을 위한 데이터 준비
-      const businessNumber = `${formData.businessNumber1}-${formData.businessNumber2}-${formData.businessNumber3}`;
+      const result = await updateSellerProfile({
+        nickname: formData.nickname
+      });
       
-      // 전화번호에서 하이픈 제거 (백엔드는 하이픈 없이 저장)
+      if (result) {
+        setIsEditingNickname(false);
+        toast({
+          title: '저장 완료',
+          description: '닉네임이 변경되었습니다.'
+        });
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
+      }
+    } catch (error) {
+      console.error('닉네임 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '닉네임 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const savePhone = async () => {
+    setSaving(true);
+    try {
       const cleanPhone = formData.phone.replace(/-/g, '');
+      const result = await updateSellerProfile({
+        phone: cleanPhone
+      });
       
-      const updateData: any = {
-        nickname: formData.nickname,
-        business_number: businessNumber,
-        representative_name: formData.representativeName, // 대표자명 추가
-        is_remote_sales: formData.isRemoteSales
-      };
-      
-      // 이메일 추가
-      if (formData.email) {
-        updateData.email = formData.email;
+      if (result) {
+        toast({
+          title: '저장 완료',
+          description: '전화번호가 변경되었습니다.'
+        });
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
       }
-      
-      
-      // 전화번호가 변경된 경우에만 포함 (기존 전화번호와 비교)
-      const originalPhone = profile?.phone?.replace(/-/g, '');
-      if (cleanPhone !== originalPhone && cleanPhone) {
-        updateData.phone = cleanPhone;
-      }
+    } catch (error) {
+      console.error('전화번호 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '전화번호 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
-      // 주소 정보 처리 - 일반회원과 동일한 방식으로 처리
-      if (formData.addressProvince && formData.addressCity) {
-        try {
-          // 모든 지역 데이터를 한번에 가져오기 위해 limit 설정
-          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          const regionsData = await regionsResponse.json();
-          
-          // 페이지네이션 응답에서 results 필드 사용
-          const regionsArray = regionsData?.results || regionsData;
-          
-          if (!regionsArray || !Array.isArray(regionsArray)) {
-            console.error('❌ 지역 데이터가 배열이 아닙니다:', regionsData);
-            throw new Error('지역 데이터 형식이 올바르지 않습니다');
-          }
-          
-          // 시/군/구 레벨에서 일치하는 지역 찾기
-          let cityRegion;
-          
-          if (formData.addressProvince === '세종특별자치시') {
-            // 세종시는 특별한 처리 필요
-            cityRegion = regionsArray?.find((r: any) => 
-              r.level === 1 && 
-              r.name === '세종특별자치시' &&
-              r.full_name === '세종특별자치시'
-            );
-          } else {
-            // 일반적인 시/도의 경우
-            cityRegion = regionsArray?.find((r: any) => 
-              (r.level === 1 || r.level === 2) && 
-              r.name === formData.addressCity && 
-              r.full_name.includes(formData.addressProvince)
-            );
-          }
-          
-          if (cityRegion) {
-            // 백엔드는 code를 primary key로 사용하므로 code를 전송
-            updateData.address_region_id = cityRegion.code;
-          } else {
-            toast({
-              variant: 'destructive',
-              title: '오류',
-              description: '선택한 지역을 찾을 수 없습니다.'
-            });
-            setSaving(false);
-            return;
-          }
-        } catch (err: any) {
-          console.error('지역 정보 가져오기 실패:', err);
+  const saveEmail = async () => {
+    setSaving(true);
+    try {
+      const result = await updateSellerProfile({
+        email: formData.email
+      });
+      
+      if (result) {
+        toast({
+          title: '저장 완료',
+          description: '이메일이 변경되었습니다.'
+        });
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
+      }
+    } catch (error) {
+      console.error('이메일 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '이메일 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveRepresentativeName = async () => {
+    setSaving(true);
+    try {
+      const result = await updateSellerProfile({
+        representative_name: formData.representativeName
+      });
+      
+      if (result) {
+        toast({
+          title: '저장 완료',
+          description: '대표자명이 변경되었습니다.'
+        });
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
+      }
+    } catch (error) {
+      console.error('대표자명 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '대표자명 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveBusinessNumber = async () => {
+    setSaving(true);
+    try {
+      const businessNumber = `${formData.businessNumber1}-${formData.businessNumber2}-${formData.businessNumber3}`;
+      const result = await updateSellerProfile({
+        business_number: businessNumber
+      });
+      
+      if (result) {
+        toast({
+          title: '저장 완료',
+          description: '사업자등록번호가 변경되었습니다.'
+        });
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
+      }
+    } catch (error) {
+      console.error('사업자등록번호 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '사업자등록번호 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveAddress = async () => {
+    if (!formData.addressProvince || !formData.addressCity) {
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '시/도와 시/군/구를 모두 선택해주세요.'
+      });
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      const regionsData = await regionsResponse.json();
+      const regionsArray = regionsData?.results || regionsData;
+      
+      let cityRegion;
+      if (formData.addressProvince === '세종특별자치시') {
+        cityRegion = regionsArray?.find((r: any) => 
+          r.level === 1 && 
+          r.name === '세종특별자치시' &&
+          r.full_name === '세종특별자치시'
+        );
+      } else {
+        cityRegion = regionsArray?.find((r: any) => 
+          (r.level === 1 || r.level === 2) && 
+          r.name === formData.addressCity && 
+          r.full_name.includes(formData.addressProvince)
+        );
+      }
+      
+      if (cityRegion) {
+        const result = await updateSellerProfile({
+          address_region_id: cityRegion.code,
+          address: formData.addressDetail
+        });
+        
+        if (result) {
           toast({
-            variant: 'destructive',
-            title: '오류',
-            description: '지역 정보를 가져오는 중 오류가 발생했습니다.'
+            title: '저장 완료',
+            description: '주소가 변경되었습니다.'
           });
-          setSaving(false);
-          return;
+          const updatedData = await getSellerProfile();
+          setProfile(updatedData);
         }
+      } else {
+        throw new Error('선택한 지역을 찾을 수 없습니다.');
       }
+    } catch (error) {
+      console.error('주소 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '주소 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
-      // API 호출
-      let updateSuccess = false;
-      
-      // 파일이 있는 경우 또는 비대면 판매 옵션이 켜진 경우 또는 삭제 요청이 있는 경우 FormData로 전송
-      if (formData.businessRegFile || formData.isRemoteSales || formData.deleteCertification) {
+  const saveRemoteSales = async () => {
+    setSaving(true);
+    try {
+      // 파일 업로드가 필요한 경우
+      if (formData.businessRegFile || formData.deleteCertification) {
         const formDataWithFile = new FormData();
+        formDataWithFile.append('is_remote_sales', String(formData.isRemoteSales));
         
-        // 각 필드를 FormData에 추가
-        formDataWithFile.append('nickname', updateData.nickname);
-        formDataWithFile.append('business_number', updateData.business_number);
-        formDataWithFile.append('is_remote_sales', String(updateData.is_remote_sales));
-        
-        if (updateData.phone) {
-          formDataWithFile.append('phone', updateData.phone);
-        }
-        
-        if (updateData.email) {
-          formDataWithFile.append('email', updateData.email);
-        }
-        
-        if (updateData.representative_name) {
-          formDataWithFile.append('representative_name', updateData.representative_name);
-        }
-        
-        if (updateData.address_region_id) {
-          formDataWithFile.append('address_region_id', updateData.address_region_id);
-        }
-        
-        // 파일이 있는 경우 추가
         if (formData.businessRegFile) {
           formDataWithFile.append('remote_sales_certification', formData.businessRegFile);
         }
         
-        // 삭제 요청이 있는 경우 추가
         if (formData.deleteCertification) {
           formDataWithFile.append('delete_remote_sales_certification', 'true');
         }
         
-        // multipart/form-data로 전송
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
-            // Content-Type을 설정하지 않음 - FormData가 자동으로 설정
           },
           body: formDataWithFile
         });
         
         if (response.ok) {
-          updateSuccess = true;
+          toast({
+            title: '저장 완료',
+            description: '비대면 판매 설정이 변경되었습니다.'
+          });
+          setTimeout(() => window.location.reload(), 500);
         } else {
-          const errorText = await response.text();
-          console.error('프로필 업데이트 실패:', errorText);
-          throw new Error('프로필 업데이트 실패');
+          throw new Error('업데이트 실패');
         }
       } else {
-        // 파일이 없는 경우 JSON으로 전송
-        const result = await updateSellerProfile(updateData);
-        updateSuccess = !!result;
-      }
-      
-      if (updateSuccess) {
-        // 닉네임이 변경된 경우 변경 횟수 업데이트
-        if (isEditingNickname && formData.nickname !== profile?.nickname) {
-          const now = new Date();
-          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          
-          if (!lastNicknameChangeDate || lastNicknameChangeDate < thirtyDaysAgo) {
-            // 30일이 지났으면 카운트 리셋
-            setNicknameChangeCount(1);
-            setLastNicknameChangeDate(now);
-          } else {
-            // 30일 이내면 카운트 증가
-            setNicknameChangeCount(prev => prev + 1);
-          }
-          
-          setIsEditingNickname(false);
-        }
-        
-        toast({
-          title: '저장 완료',
-          description: '판매자 정보가 성공적으로 저장되었습니다.'
+        // 파일 업로드가 없는 경우
+        const result = await updateSellerProfile({
+          is_remote_sales: formData.isRemoteSales
         });
         
-        // 페이지를 새로고침하여 변경사항 반영
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-        
-        // 프로필 정보 새로고침
-        const updatedData = await getSellerProfile();
-        setProfile(updatedData);
+        if (result) {
+          toast({
+            title: '저장 완료',
+            description: '비대면 판매 설정이 변경되었습니다.'
+          });
+          const updatedData = await getSellerProfile();
+          setProfile(updatedData);
+        }
       }
     } catch (error) {
-      console.error('프로필 저장 오류:', error);
+      console.error('비대면 판매 설정 저장 오류:', error);
       toast({
         variant: 'destructive',
         title: '저장 실패',
-        description: '프로필 정보를 저장하는 중 오류가 발생했습니다.'
+        description: '비대면 판매 설정 저장 중 오류가 발생했습니다.'
       });
     } finally {
       setSaving(false);
@@ -696,7 +758,7 @@ export default function SellerSettings() {
               <CardDescription>
               </CardDescription>
             </CardHeader>
-            <form onSubmit={handleSubmit}>
+            <div>
               <CardContent className="space-y-4">
                 {/* 아이디 표시 (수정 불가) */}
                 <div className="space-y-2">
@@ -801,6 +863,15 @@ export default function SellerSettings() {
                         >
                           취소
                         </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={saveNickname}
+                          disabled={saving || !nicknameAvailable}
+                        >
+                          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                          저장
+                        </Button>
                       </div>
                       {nicknameError && (
                         <p className="text-sm text-red-500 mt-1">{nicknameError}</p>
@@ -867,14 +938,26 @@ export default function SellerSettings() {
                   <Label htmlFor="email">
                     이메일
                   </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveEmail}
+                      disabled={saving || !formData.email}
+                    >
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      저장
+                    </Button>
+                  </div>
                   <p className="text-xs text-gray-500">비밀번호 찾기 및 중요 안내사항 수신에 필요합니다</p>
                 </div>
 
@@ -882,43 +965,71 @@ export default function SellerSettings() {
                   <Label htmlFor="businessAddress">
                     사업장주소/영업활동지역 <span className="text-red-500">*</span>
                   </Label>
-                  <RegionDropdown
-                    selectedProvince={formData.addressProvince}
-                    selectedCity={formData.addressCity}
-                    onSelect={(province, city) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        addressProvince: province,
-                        addressCity: city
-                      }));
-                    }}
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <RegionDropdown
+                      selectedProvince={formData.addressProvince}
+                      selectedCity={formData.addressCity}
+                      onSelect={(province, city) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          addressProvince: province,
+                          addressCity: city
+                        }));
+                      }}
+                      required
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveAddress}
+                      disabled={saving || !formData.addressProvince || !formData.addressCity}
+                    >
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      저장
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="representativeName">
-                    사업자등록증상 대표자명 <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="representativeName"
-                    name="representativeName"
-                    value={formData.representativeName}
-                    onChange={handleChange}
-                    placeholder="사업자등록증상 대표자명을 입력하세요"
-                    required={!formData.representativeName}
-                  />
-                  {!formData.representativeName ? (
-                    <p className="text-xs text-red-500">* 사업자등록증에 명시된 대표자명을 정확히 입력해주세요</p>
-                  ) : (
-                    <p className="text-xs text-gray-500">사업자등록증에 명시된 대표자명</p>
-                  )}
-                </div>
+                {/* 사업자 정보 섹션 - 대표자명과 사업자등록번호를 그룹화 */}
+                <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                  <h3 className="text-sm font-semibold">사업자 정보</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="representativeName">
+                      사업자등록증상 대표자명 <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="representativeName"
+                        name="representativeName"
+                        value={formData.representativeName}
+                        onChange={handleChange}
+                        placeholder="사업자등록증상 대표자명을 입력하세요"
+                        required={!formData.representativeName}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={saveRepresentativeName}
+                        disabled={saving || !formData.representativeName}
+                      >
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        저장
+                      </Button>
+                    </div>
+                    {!formData.representativeName ? (
+                      <p className="text-xs text-red-500">* 사업자등록증에 명시된 대표자명을 정확히 입력해주세요</p>
+                    ) : (
+                      <p className="text-xs text-gray-500">사업자등록증에 명시된 대표자명</p>
+                    )}
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="businessNumber1">
-                    사업자등록번호 <span className="text-red-500">*</span>
-                  </Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessNumber1">
+                      사업자등록번호 <span className="text-red-500">*</span>
+                    </Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <div className="flex items-center gap-2 flex-1">
                       <Input
@@ -981,6 +1092,18 @@ export default function SellerSettings() {
                   {isBusinessNumberVerified && (
                     <p className="text-xs text-gray-400">*사업자등록번호를 변경하시려면, 고객센터를 통해 문의 부탁드립니다.</p>
                   )}
+                  <div className="flex justify-end mt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveBusinessNumber}
+                      disabled={saving || !formData.businessNumber1 || !formData.businessNumber2 || !formData.businessNumber3}
+                    >
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      사업자등록번호 저장
+                    </Button>
+                  </div>
+                  </div>
                 </div>
 
 
@@ -1128,24 +1251,30 @@ export default function SellerSettings() {
                       )}
                     </div>
                   )}
+                  <div className="flex justify-end mt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveRemoteSales}
+                      disabled={saving}
+                    >
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      비대면 판매 설정 저장
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button type="submit" disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      저장 중...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      저장하기
-                    </>
-                  )}
+              <CardFooter className="flex justify-start">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => router.push('/mypage/seller')}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  뒤로가기
                 </Button>
               </CardFooter>
-            </form>
+            </div>
           </Card>
 
           {/* 추천인 코드 입력 카드 */}
