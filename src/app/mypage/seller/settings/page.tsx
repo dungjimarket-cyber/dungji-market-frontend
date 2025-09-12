@@ -36,6 +36,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
+import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
 
 export default function SellerSettings() {
   const router = useRouter();
@@ -47,6 +48,8 @@ export default function SellerSettings() {
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameChangeCount, setNicknameChangeCount] = useState(0);
   const [lastNicknameChangeDate, setLastNicknameChangeDate] = useState<Date | null>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitModalData, setLimitModalData] = useState({ remainingChanges: 2, nextAvailableDate: null, canChange: true });
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
@@ -699,48 +702,33 @@ export default function SellerSettings() {
                         variant="ghost"
                         size="sm"
                         onClick={async () => {
-                          console.log('[판매자] 닉네임 수정 버튼 클릭됨');
-                          console.log('[판매자] API URL:', process.env.NEXT_PUBLIC_API_URL);
-                          console.log('[판매자] Access Token:', accessToken ? 'exists' : 'missing');
-                          
                           // 닉네임 변경 가능 여부 먼저 확인
                           try {
-                            const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`;
-                            console.log('[판매자] Making request to:', apiUrl);
-                            
-                            const response = await fetch(apiUrl, {
+                            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
                               headers: {
                                 'Authorization': `Bearer ${accessToken}`
                               }
                             });
                             
-                            console.log('[판매자] Response status:', response.status);
-                            console.log('[판매자] Response headers:', [...response.headers.entries()]);
-                            
                             if (response.ok) {
                               const data = await response.json();
-                              console.log('[판매자] Response data:', data);
-                              if (!data.can_change) {
-                                const nextDate = data.next_available_date ? new Date(data.next_available_date).toLocaleDateString('ko-KR') : '알 수 없음';
-                                toast({
-                                  variant: 'destructive',
-                                  title: '변경 제한',
-                                  description: `30일에 2회까지만 변경 가능합니다. 다음 변경 가능일: ${nextDate}`
-                                });
-                                return;
-                              }
-                            } else {
-                              const errorData = await response.text();
-                              console.log('[판매자] Error response:', errorData);
+                              
+                              // 모달 데이터 설정
+                              setLimitModalData({
+                                remainingChanges: data.remaining_changes || 0,
+                                nextAvailableDate: data.next_available_date,
+                                canChange: data.can_change
+                              });
+                              
+                              // 모달 표시
+                              setShowLimitModal(true);
                             }
                           } catch (error) {
                             console.error('[판매자] 닉네임 변경 상태 확인 실패:', error);
-                            // 에러가 발생해도 수정은 진행 (백엔드에서 최종 검증)
+                            // 에러 발생시에도 일단 모달 표시
+                            setLimitModalData({ remainingChanges: 0, nextAvailableDate: null, canChange: false });
+                            setShowLimitModal(true);
                           }
-                          
-                          // 변경 가능하면 수정 모드 활성화
-                          console.log('[판매자] 수정 모드 활성화');
-                          setIsEditingNickname(true);
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800"
                       >
@@ -756,7 +744,6 @@ export default function SellerSettings() {
                         disabled
                         className="bg-gray-50"
                       />
-                      <p className="text-xs text-gray-500 mt-1">30일에 2회 변경 가능합니다</p>
                     </div>
                   ) : (
                     <>
@@ -1208,6 +1195,21 @@ export default function SellerSettings() {
               로그아웃
             </Button>
           </div>
+
+          {/* 닉네임 제한 모달 */}
+          <NicknameLimitModal
+            isOpen={showLimitModal}
+            onClose={() => {
+              setShowLimitModal(false);
+              // 변경 가능한 경우 수정 모드 활성화
+              if (limitModalData.canChange) {
+                setIsEditingNickname(true);
+              }
+            }}
+            remainingChanges={limitModalData.remainingChanges}
+            nextAvailableDate={limitModalData.nextAvailableDate}
+            canChange={limitModalData.canChange}
+          />
 
           {/* 추천인 등록 성공 모달 */}
           <Dialog open={showReferralSuccessModal} onOpenChange={setShowReferralSuccessModal}>
