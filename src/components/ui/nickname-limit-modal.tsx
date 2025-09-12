@@ -3,13 +3,12 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Calendar, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
 
 interface NicknameLimitModalProps {
   isOpen: boolean;
@@ -41,88 +40,54 @@ export default function NicknameLimitModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-sm flex items-center gap-2">
             {canChange ? (
-              <RotateCcw className="h-6 w-6 text-blue-600" />
+              <>
+                <RotateCcw className="h-4 w-4 text-blue-600" />
+                닉네임 변경
+              </>
             ) : (
-              <AlertTriangle className="h-6 w-6 text-orange-600" />
+              <>
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                변경 제한
+              </>
             )}
-          </div>
-          <DialogTitle className="text-lg">
-            {canChange ? '닉네임 변경 안내' : '변경 제한 안내'}
           </DialogTitle>
-          <DialogDescription className="text-gray-600">
-            {canChange 
-              ? '닉네임 변경 규칙을 확인해주세요'
-              : '현재 닉네임 변경이 제한되어 있습니다'
-            }
-          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* 규칙 안내 */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
-              <RotateCcw className="h-4 w-4" />
-              변경 규칙
-            </h4>
-            <p className="text-sm text-blue-700">
-              닉네임은 <strong>30일 동안 최대 2회</strong>까지 변경 가능합니다.
-            </p>
+        <div className="space-y-3 py-2">
+          {/* 간단한 규칙 안내 */}
+          <div className="text-sm text-gray-600">
+            30일 동안 최대 2회까지 변경 가능
           </div>
 
           {/* 현재 상태 */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-3">현재 상태</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">남은 변경 횟수</span>
-                <span className={`font-medium ${canChange ? 'text-green-600' : 'text-red-600'}`}>
-                  {remainingChanges}회
-                </span>
-              </div>
-              
-              {!canChange && nextAvailableDate && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    다음 변경 가능일
-                  </span>
-                  <span className="font-medium text-gray-900 text-sm">
-                    {formatDate(nextAvailableDate)}
-                  </span>
-                </div>
-              )}
-            </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-600">남은 횟수</span>
+            <span className={`font-medium ${canChange ? 'text-green-600' : 'text-red-600'}`}>
+              {remainingChanges}회
+            </span>
           </div>
-
-          {/* 추가 안내 */}
-          {!canChange && (
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <p className="text-sm text-orange-700">
-                💡 변경 제한은 보안과 서비스 품질 유지를 위한 정책입니다.
-              </p>
+          
+          {!canChange && nextAvailableDate && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600">다음 가능일</span>
+              <span className="font-medium">
+                {formatDate(nextAvailableDate)}
+              </span>
             </div>
           )}
         </div>
 
-        <DialogFooter className="flex gap-2">
-          {canChange && (
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-              className="flex-1"
-            >
-              취소
-            </Button>
-          )}
+        <DialogFooter>
           <Button 
             onClick={onClose} 
-            className={canChange ? "flex-1" : "w-full"}
+            size="sm"
+            className="w-full"
           >
-            {canChange ? '계속 진행' : '확인'}
+            {canChange ? '확인' : '닫기'}
           </Button>
         </DialogFooter>
       </DialogContent>
