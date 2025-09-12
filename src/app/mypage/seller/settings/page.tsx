@@ -963,19 +963,19 @@ export default function SellerSettings() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="이메일 주소를 입력하세요 (예: example@email.com)"
-                      disabled={!!user?.email}
-                      className={`flex-1 ${user?.email ? 'bg-gray-50' : ''}`}
+                      disabled={!!profile?.email}
+                      className={`flex-1 ${profile?.email ? 'bg-gray-50' : ''}`}
                     />
                     <Button
                       type="button"
                       size="sm"
                       onClick={saveEmail}
                       disabled={saving || !formData.email}
-                      variant={user?.email ? 'outline' : 'default'}
-                      className={user?.email ? 'text-gray-600' : ''}
+                      variant={profile?.email ? 'outline' : 'default'}
+                      className={profile?.email ? 'text-gray-600' : ''}
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      {user?.email ? '수정' : '저장'}
+                      {profile?.email ? '수정' : '저장'}
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500">비밀번호 찾기 및 중요 안내사항 수신에 필요합니다</p>
@@ -997,7 +997,7 @@ export default function SellerSettings() {
                         }));
                       }}
                       required
-                      disabled={!!user?.address_region}
+                      disabled={!!profile?.addressRegion}
                       className="flex-1"
                     />
                     <Button
@@ -1005,11 +1005,11 @@ export default function SellerSettings() {
                       size="sm"
                       onClick={saveAddress}
                       disabled={saving || !formData.addressProvince || !formData.addressCity}
-                      variant={user?.address_region ? 'outline' : 'default'}
-                      className={user?.address_region ? 'text-gray-600' : ''}
+                      variant={profile?.addressRegion ? 'outline' : 'default'}
+                      className={profile?.addressRegion ? 'text-gray-600' : ''}
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      {user?.address_region ? '수정' : '저장'}
+                      {profile?.addressRegion ? '수정' : '저장'}
                     </Button>
                   </div>
                 </div>
@@ -1030,19 +1030,19 @@ export default function SellerSettings() {
                         onChange={handleChange}
                         placeholder="사업자등록증상 대표자명을 입력하세요"
                         required={!formData.representativeName}
-                        disabled={!!user?.representative_name}
-                        className={`flex-1 ${user?.representative_name ? 'bg-gray-50' : ''}`}
+                        disabled={!!profile?.representativeName}
+                        className={`flex-1 ${profile?.representativeName ? 'bg-gray-50' : ''}`}
                       />
                       <Button
                         type="button"
                         size="sm"
                         onClick={saveRepresentativeName}
                         disabled={saving || !formData.representativeName}
-                        variant={user?.representative_name ? 'outline' : 'default'}
-                        className={user?.representative_name ? 'text-gray-600' : ''}
+                        variant={profile?.representativeName ? 'outline' : 'default'}
+                        className={profile?.representativeName ? 'text-gray-600' : ''}
                       >
                         {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        {user?.representative_name ? '수정' : '저장'}
+                        {profile?.representativeName ? '수정' : '저장'}
                       </Button>
                     </div>
                     {!formData.representativeName ? (
