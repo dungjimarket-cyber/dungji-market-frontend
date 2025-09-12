@@ -504,15 +504,16 @@ export default function SellerSettings() {
       // 주소 정보 처리 - 일반회원과 동일한 방식으로 처리
       if (formData.addressProvince && formData.addressCity) {
         try {
-          console.log('🔍 지역 정보 가져오기 시작...');
-          console.log('🔍 accessToken 존재 여부:', !!accessToken);
-          // 모든 지역 데이터 가져오기 - regionService 사용으로 인증 헤더 자동 포함
-          const regionsData = await getRegions();
-          console.log('✅ 지역 데이터 가져오기 성공, 타입:', typeof regionsData);
-          console.log('✅ 지역 데이터 내용:', regionsData);
+          // 모든 지역 데이터를 한번에 가져오기 위해 limit 설정
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          const regionsData = await regionsResponse.json();
           
-          // 배열인지 확인하고, 아니면 results 필드 확인
-          const regionsArray = Array.isArray(regionsData) ? regionsData : (regionsData as any)?.results;
+          // 페이지네이션 응답에서 results 필드 사용
+          const regionsArray = regionsData?.results || regionsData;
           
           if (!regionsArray || !Array.isArray(regionsArray)) {
             console.error('❌ 지역 데이터가 배열이 아닙니다:', regionsData);
@@ -551,9 +552,7 @@ export default function SellerSettings() {
             return;
           }
         } catch (err: any) {
-          console.error('❌ 지역 정보 가져오기 실패:', err);
-          console.error('❌ 에러 응답:', err.response?.data);
-          console.error('❌ 에러 상태:', err.response?.status);
+          console.error('지역 정보 가져오기 실패:', err);
           toast({
             variant: 'destructive',
             title: '오류',

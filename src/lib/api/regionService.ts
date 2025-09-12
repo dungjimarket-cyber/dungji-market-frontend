@@ -20,7 +20,6 @@ const getAxiosAuthHeaders = async () => {
       ? { Authorization: headers.find(([key]) => key.toLowerCase() === 'authorization')?.[1] }
       : { Authorization: headers.Authorization || '' };
   
-  console.log('🔑 regionService - 인증 헤더:', authHeader);
   return authHeader;
 };
 
