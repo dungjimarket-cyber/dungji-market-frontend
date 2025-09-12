@@ -1262,7 +1262,7 @@ export default function SellerSettings() {
                               setSaving(true);
                               
                               // 비대면 인증 취소 API 호출
-                              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/profile/update/`, {
+                              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
                                 method: 'PUT',
                                 headers: {
                                   'Content-Type': 'application/json',
