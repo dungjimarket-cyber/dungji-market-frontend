@@ -1242,18 +1242,25 @@ export default function SellerSettings() {
                 </div>
 
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
-                    <Switch
-                      id="remoteSales"
-                      checked={formData.isRemoteSales}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, isRemoteSales: checked }))
-                      }
-                    />
+                {/* 비대면 판매 인증 섹션 - 승인된 경우 완료 메시지만 표시 */}
+                {(remoteSalesStatus?.status === 'approved' || profile?.remoteSalesVerified || profile?.remoteSalesStatus === 'approved') ? (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm font-medium text-green-800">✅ 비대면 판매 인증 완료</p>
+                    <p className="text-xs text-green-700 mt-1">전국 배송이 가능한 비대면 판매 인증이 완료되었습니다.</p>
                   </div>
-                  {formData.isRemoteSales && (
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="remoteSales">비대면 판매가능 영업소 인증</Label>
+                      <Switch
+                        id="remoteSales"
+                        checked={formData.isRemoteSales}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ ...prev, isRemoteSales: checked }))
+                        }
+                      />
+                    </div>
+                    {formData.isRemoteSales && (
                     <div className="mt-3 p-4 border rounded-lg bg-gray-50">
                       <Label htmlFor="businessRegFile" className="text-sm font-medium">인증서 업로드</Label>
                       
@@ -1399,6 +1406,7 @@ export default function SellerSettings() {
                     </Button>
                   </div>
                 </div>
+                )}
               </CardContent>
             </div>
           </Card>
