@@ -403,7 +403,7 @@ export default function PurchaseActivityTab() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="offers" className="text-xs sm:text-sm">
-            제안내역 ({offers.filter(offer => offer.status !== 'cancelled' && offer.phone.status !== 'trading').length})
+            제안내역 ({offers.filter(offer => offer.status !== 'cancelled' && offer.phone.status !== 'trading' && offer.phone.status !== 'sold').length})
           </TabsTrigger>
           <TabsTrigger value="trading" className="text-xs sm:text-sm">
             거래중 ({tradingItems.length})
@@ -420,12 +420,12 @@ export default function PurchaseActivityTab() {
         <TabsContent value="offers" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : offers.filter(offer => offer.phone.status !== 'trading' && offer.status !== 'cancelled').length === 0 ? (
+          ) : offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled').length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               제안한 상품이 없습니다
             </div>
           ) : (
-            offers.filter(offer => offer.phone.status !== 'trading' && offer.status !== 'cancelled').map((offer) => (
+            offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled').map((offer) => (
               <Card key={offer.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <Link 
