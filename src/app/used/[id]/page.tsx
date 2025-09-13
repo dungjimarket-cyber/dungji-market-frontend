@@ -382,14 +382,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         setOfferMessage('');
         setSelectedMessages([]);
 
-        // 서버에서 실제 카운트를 가져오기 전에 임시로 UI 업데이트
-        // 수정도 카운트 차감되어야 함 (사용자 요구사항)
-        setOfferCount(prev => prev + 1);
-        setRemainingOffers(prev => Math.max(0, prev - 1));
-
         // 내 제안 정보와 카운트 다시 불러오기 (서버의 실제 값으로 업데이트)
-        fetchMyOffer();
-        fetchOfferCount();
+        await fetchMyOffer();
+        await fetchOfferCount();
       } else {
         const error = await response.json();
         if (error.message?.includes('5회')) {
@@ -962,7 +957,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                       setMyOffer(null);
                                       // 취소해도 5회 카운팅은 원복하지 않음
                                       // setRemainingOffers(prev => Math.min(5, prev + 1));
-                                      fetchOfferCount(); // 서버에서 실제 카운트 다시 조회
+                                      await fetchOfferCount(); // 서버에서 실제 카운트 다시 조회
                                       toast({
                                         title: '제안 취소',
                                         description: '가격 제안이 취소되었습니다.',
