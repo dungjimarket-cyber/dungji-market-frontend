@@ -1353,8 +1353,8 @@ export default function SellerSettings() {
                         </div>
                       )}
                       
-                      {/* 기존 인증서가 있는 경우 */}
-                      {formData.existingCertification && !formData.deleteCertification ? (
+                      {/* 기존 인증서가 있고 인증 상태가 있는 경우만 표시 */}
+                      {formData.existingCertification && !formData.deleteCertification && remoteSalesStatus?.status && remoteSalesStatus.status !== 'none' ? (
                         <div className="mt-2 p-3 bg-white rounded border">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">

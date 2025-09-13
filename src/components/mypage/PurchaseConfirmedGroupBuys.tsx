@@ -289,8 +289,8 @@ export default function PurchaseConfirmedGroupBuys() {
                       </Button>
                       <Button 
                         size="sm" 
-                        variant="destructive"
-                        className="flex-1 sm:flex-initial"
+                        variant="outline"
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
                         onClick={() => handleNoShowReport(groupBuy.id)}
                         disabled={!groupBuy.id}
                       >
