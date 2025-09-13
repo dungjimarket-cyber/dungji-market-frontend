@@ -37,6 +37,20 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
   const { isProfileComplete: hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
+
+  // 가격 포맷팅 헬퍼 함수
+  const formatPrice = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers) return '';
+    // 숫자를 원화 형식으로 변환
+    return parseInt(numbers).toLocaleString('ko-KR');
+  };
+
+  // 가격 언포맷팅 헬퍼 함수
+  const unformatPrice = (value: string) => {
+    return value.replace(/[^\d]/g, '');
+  };
   
   const [phone, setPhone] = useState<UsedPhone | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1202,13 +1216,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Input
                   type="text"
                   placeholder="금액을 입력해주세요"
-                  value={offerAmount ? parseInt(offerAmount).toLocaleString('ko-KR') : ''}
+                  value={formatPrice(offerAmount)}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d]/g, '');
-                    const numValue = parseInt(value) || 0;
+                    const unformatted = unformatPrice(e.target.value);
+                    const numValue = parseInt(unformatted) || 0;
                     // 즉시구매가 이상 입력 방지
                     if (numValue <= phone.price) {
-                      setOfferAmount(value);
+                      setOfferAmount(unformatted);
                     }
                   }}
                   className="pr-12 h-12 text-lg font-semibold"
