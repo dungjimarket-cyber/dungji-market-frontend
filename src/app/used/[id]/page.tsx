@@ -26,6 +26,7 @@ import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { executeTransactionAction } from '@/lib/utils/transactionHelper';
 
 export default async function UsedPhoneDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -329,25 +330,40 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     // 수정인지 신규 제안인지 확인
     const isModification = myOffer && myOffer.status === 'pending';
 
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/offer/`
-        : `${baseUrl}/api/used/phones/${phoneId}/offer/`;
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          amount,
-          message: offerMessage,
-        }),
-      });
+    await executeTransactionAction(
+      async () => {
+        const token = localStorage.getItem('accessToken');
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const apiUrl = baseUrl.includes('api.dungjimarket.com')
+          ? `${baseUrl}/used/phones/${phoneId}/offer/`
+          : `${baseUrl}/api/used/phones/${phoneId}/offer/`;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount,
+            message: offerMessage,
+          }),
+        });
 
-      if (response.ok) {
+        if (!response.ok) {
+          const errorData = await response.json();
+          if (errorData.message?.includes('5회')) {
+            throw {
+              response: {
+                data: {
+                  code: 'max_offers_reached',
+                  message: '해당 상품에 최대 5회까지만 제안 가능합니다.'
+                }
+              }
+            };
+          }
+          throw { response: { data: errorData } };
+        }
+
         const data = await response.json();
 
         // 즉시구매 여부 확인
@@ -363,51 +379,42 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             console.log('판매자 연락처:', data.seller_contact);
           }
 
-          // 페이지 새로고침 또는 상태 업데이트
+          // 페이지 새로고침
           setTimeout(() => {
             window.location.reload();
           }, 2000);
-        } else {
-          toast({
-            title: isModification ? '제안 수정 완료' : '제안 완료',
-            description: isModification
-              ? '가격 제안이 수정되었습니다.'
-              : '판매자에게 가격 제안이 전달되었습니다.',
-          });
         }
 
-        setShowOfferModal(false);
-        setShowConfirmModal(false);
-        setOfferAmount('');
-        setDisplayAmount('');
-        setOfferMessage('');
-        setSelectedMessages([]);
+        return data;
+      },
+      {
+        successMessage: isModification
+          ? '가격 제안이 수정되었습니다.'
+          : '판매자에게 가격 제안이 전달되었습니다.',
+        onSuccess: async () => {
+          setShowOfferModal(false);
+          setShowConfirmModal(false);
+          setOfferAmount('');
+          setDisplayAmount('');
+          setOfferMessage('');
+          setSelectedMessages([]);
 
-        // 내 제안 정보와 카운트 다시 불러오기 (서버의 실제 값으로 업데이트)
-        await fetchMyOffer();
-        await fetchOfferCount();
-      } else {
-        const error = await response.json();
-        if (error.message?.includes('5회')) {
-          toast({
-            title: '제안 횟수 초과',
-            description: '해당 상품에 최대 5회까지만 제안 가능합니다.',
-            variant: 'destructive',
-          });
-        } else {
-          throw new Error(error.message || '제안 실패');
-        }
+          // 내 제안 정보와 카운트 다시 불러오기
+          await fetchMyOffer();
+          await fetchOfferCount();
+          await fetchPhoneDetail();
+        },
+        onTabChange: (tab) => {
+          if (tab === 'list') {
+            // 상품이 삭제된 경우 목록으로
+            router.push('/used');
+          } else if (tab === 'refresh') {
+            // 상품이 수정된 경우 새로고침
+            window.location.reload();
+          }
+        },
       }
-    } catch (error) {
-      console.error('Failed to submit offer:', error);
-      toast({
-        title: '제안 실패',
-        description: error instanceof Error ? error.message : '가격 제안 중 오류가 발생했습니다.',
-        variant: 'destructive',
-      });
-    } finally {
-      setShowConfirmModal(false);
-    }
+    );
   };
 
   // 공유하기

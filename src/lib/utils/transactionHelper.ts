@@ -13,6 +13,10 @@ export const TRANSACTION_ERROR_CODES = {
   OFFER_ALREADY_ACCEPTED: 'offer_already_accepted',
   PHONE_ALREADY_TRADING: 'phone_already_trading',
   PHONE_ALREADY_SOLD: 'phone_already_sold',
+  PHONE_NOT_FOUND: 'phone_not_found',
+  PHONE_DELETED: 'phone_deleted',
+  PHONE_MODIFIED: 'phone_modified',
+  PHONE_PRICE_CHANGED: 'phone_price_changed',
   TRANSACTION_ALREADY_COMPLETED: 'transaction_already_completed',
   TRANSACTION_ALREADY_CANCELLED: 'transaction_already_cancelled',
   BUYER_ALREADY_COMPLETED: 'buyer_already_completed',
@@ -57,6 +61,24 @@ export function parseTransactionError(error: any): TransactionError {
         message: '이미 판매완료된 상품입니다.',
         shouldRefresh: true,
         redirectTab: 'sold',
+      };
+
+    case TRANSACTION_ERROR_CODES.PHONE_NOT_FOUND:
+    case TRANSACTION_ERROR_CODES.PHONE_DELETED:
+      return {
+        code: errorCode,
+        message: '상품이 삭제되었습니다. 목록으로 돌아갑니다.',
+        shouldRefresh: true,
+        redirectTab: 'list',
+      };
+
+    case TRANSACTION_ERROR_CODES.PHONE_MODIFIED:
+    case TRANSACTION_ERROR_CODES.PHONE_PRICE_CHANGED:
+      return {
+        code: errorCode,
+        message: '상품 정보가 변경되었습니다. 다시 확인 후 제안해주세요.',
+        shouldRefresh: true,
+        redirectTab: 'refresh',
       };
 
     case TRANSACTION_ERROR_CODES.TRANSACTION_ALREADY_COMPLETED:
