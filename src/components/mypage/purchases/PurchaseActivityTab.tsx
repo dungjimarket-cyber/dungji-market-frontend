@@ -350,26 +350,17 @@ export default function PurchaseActivityTab() {
 
   // 후기 작성 모달 열기
   const openReviewModal = async (item: TradingItem) => {
-    try {
-      const transactionData = await buyerAPI.getTransactionInfo(item.phone.id);
-      setReviewTarget({
-        transactionId: transactionData.id,
-        sellerName: transactionData.seller.nickname,
-        phoneInfo: {
-          brand: item.phone.brand,
-          model: item.phone.model,
-          price: item.offered_price,
-        },
-      });
-      setShowReviewModal(true);
-    } catch (error) {
-      console.error('Failed to get transaction info:', error);
-      toast({
-        title: '오류',
-        description: '거래 정보를 불러올 수 없습니다.',
-        variant: 'destructive',
-      });
-    }
+    // 거래 정보는 이미 item에 있으므로 직접 사용
+    setReviewTarget({
+      transactionId: item.id, // TradingItem의 id가 transaction id
+      sellerName: item.phone.seller.nickname,
+      phoneInfo: {
+        brand: item.phone.brand,
+        model: item.phone.model,
+        price: item.offered_price,
+      },
+    });
+    setShowReviewModal(true);
   };
 
   // 후기 작성 완료 후 콜백
@@ -466,7 +457,7 @@ export default function PurchaseActivityTab() {
             제안내역 ({offers.filter(offer => offer.status !== 'cancelled' && offer.phone.status !== 'trading' && offer.phone.status !== 'sold').length})
           </TabsTrigger>
           <TabsTrigger value="trading" className="text-xs sm:text-sm">
-            거래중 ({tradingItems.length})
+            거래중 ({tradingItems.filter(item => item.phone.status === 'trading').length})
           </TabsTrigger>
           <TabsTrigger value="completed" className="text-xs sm:text-sm">
             거래완료 ({tradingItems.filter(item => item.phone.status === 'sold').length})
@@ -585,12 +576,12 @@ export default function PurchaseActivityTab() {
         <TabsContent value="trading" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : tradingItems.length === 0 ? (
+          ) : tradingItems.filter(item => item.phone.status === 'trading').length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               거래중인 상품이 없습니다
             </div>
           ) : (
-            tradingItems.map((item) => (
+            tradingItems.filter(item => item.phone.status === 'trading').map((item) => (
               <Card key={item.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
