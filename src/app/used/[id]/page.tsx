@@ -204,6 +204,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       if (response.ok) {
         const data = await response.json();
         setOfferCount(data.count || 0);
+        setRemainingOffers(Math.max(0, 5 - (data.count || 0)));
       }
     } catch (error) {
       console.error('Failed to fetch offer count:', error);
@@ -371,8 +372,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         setOfferCount(prev => prev + 1);
         setRemainingOffers(prev => Math.max(0, prev - 1));
 
-        // 내 제안 정보 다시 불러오기
+        // 내 제안 정보와 카운트 다시 불러오기
         fetchMyOffer();
+        fetchOfferCount();
       } else {
         const error = await response.json();
         if (error.message?.includes('5회')) {
@@ -887,7 +889,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               }
 
                               if (myOffer && myOffer.status === 'pending') {
-                                // 수정 제안
+                                // 수정 제안 - 기존 금액과 메시지 설정
+                                setOfferAmount(myOffer.amount.toString());
+                                if (myOffer.message) {
+                                  setOfferMessage(myOffer.message);
+                                }
                                 setShowOfferModal(true);
                                 toast({
                                   title: '수정 제안',
@@ -1552,6 +1558,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Button
                   onClick={() => {
                     if (myOffer && myOffer.status === 'pending') {
+                      // 수정 제안 - 기존 금액과 메시지 설정
+                      setOfferAmount(myOffer.amount.toString());
+                      if (myOffer.message) {
+                        setOfferMessage(myOffer.message);
+                      }
                       setShowOfferModal(true);
                       toast({
                         title: '수정 제안',
