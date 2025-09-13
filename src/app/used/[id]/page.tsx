@@ -55,7 +55,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [phone, setPhone] = useState<UsedPhone | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState<boolean | null>(null); // null로 초기화하여 로딩 상태 표시
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [displayAmount, setDisplayAmount] = useState('');
@@ -63,7 +63,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [offerCount, setOfferCount] = useState(0);
+  const [offerCount, setOfferCount] = useState<number | null>(null); // null로 초기화하여 로딩 상태 표시
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showGradeInfo, setShowGradeInfo] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
@@ -73,7 +73,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [loadingOffers, setLoadingOffers] = useState(false);
   const [myOffer, setMyOffer] = useState<any>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
-  const [remainingOffers, setRemainingOffers] = useState(5);
+  const [remainingOffers, setRemainingOffers] = useState<number | null>(null); // null로 초기화하여 로딩 상태 표시
   const [showTradeCompleteModal, setShowTradeCompleteModal] = useState(false);
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
@@ -252,10 +252,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       });
 
       if (response.ok) {
-        setIsFavorite(!isFavorite);
+        const newFavoriteState = !isFavorite;
+        setIsFavorite(newFavoriteState);
         toast({
-          title: isFavorite ? '찜 해제' : '찜 완료',
-          description: isFavorite ? '찜 목록에서 제거되었습니다.' : '찜 목록에 추가되었습니다.',
+          title: newFavoriteState ? '찜 완료' : '찜 해제',
+          description: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
         });
       }
     } catch (error) {
@@ -300,7 +301,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       return;
     }
 
-    if (offerCount >= 5) {
+    if (offerCount !== null && offerCount >= 5) {
       toast({
         title: '제안 횟수 초과',
         description: '해당 상품에 최대 5회까지만 제안 가능합니다.',
@@ -519,7 +520,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <Share2 className="w-5 h-5" />
             </button>
             <button onClick={handleFavorite}>
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart className={`w-5 h-5 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
             </button>
           </div>
         </div>
@@ -771,8 +772,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     onClick={handleFavorite}
                     className="flex items-center justify-center gap-2 h-12"
                   >
-                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                    {isFavorite ? '찜 해제' : '찜하기'}
+                    <Heart className={`w-4 h-4 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
+                    {isFavorite === true ? '찜 해제' : '찜하기'}
                   </Button>
                   <Button
                     variant="outline"
@@ -920,7 +921,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-dungji-primary hover:bg-dungji-primary-dark'
                             } text-white`}
-                            disabled={phone.status !== 'active' || (remainingOffers <= 0 && !myOffer)}
+                            disabled={phone.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
                           >
                             <DollarSign className="w-5 h-5 mr-2" />
                             {phone.status === 'trading'
@@ -1015,9 +1016,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         {(myOffer || offerCount > 0) && (
                           <div className="mt-2 text-center">
                             <p className="text-sm text-gray-600">
-                              남은 제안 횟수: <span className="font-semibold text-dungji-primary">{remainingOffers}/5회</span>
+                              남은 제안 횟수: <span className="font-semibold text-dungji-primary">{remainingOffers !== null ? `${remainingOffers}/5회` : '로딩중...'}</span>
                             </p>
-                            {remainingOffers === 0 && (
+                            {remainingOffers !== null && remainingOffers === 0 && (
                               <p className="text-xs text-red-500 mt-1">
                                 제안 횟수를 모두 사용하셨습니다
                               </p>
@@ -1210,12 +1211,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 남은 제안 횟수
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-dungji-primary">{remainingOffers}</span>
+                <span className="text-2xl font-bold text-dungji-primary">{remainingOffers !== null ? remainingOffers : '...'}</span>
                 <span className="text-sm text-gray-600">/ 5회</span>
               </div>
             </div>
             
-            {remainingOffers === 0 && (
+            {remainingOffers !== null && remainingOffers === 0 && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
@@ -1391,7 +1392,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setOfferMessage(combinedMessage);
                   handleOfferConfirm();
                 }}
-                disabled={!offerAmount || remainingOffers === 0}
+                disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0)}
                 className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
               >
                 제안하기
