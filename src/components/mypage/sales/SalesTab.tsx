@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ interface SalesItem {
 }
 
 export default function SalesTab() {
+  const router = useRouter();
   const [filter, setFilter] = useState<'all' | 'active' | 'trading' | 'sold'>('all');
   
   // 임시 데이터
@@ -194,9 +196,9 @@ export default function SalesTab() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {item.status === 'active' && (
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/used/${item.id}/edit`)}>
                               <Edit className="w-4 h-4 mr-2" />
-                              수정
+                              상품 수정
                             </DropdownMenuItem>
                           )}
                           {(item.status === 'active' || item.status === 'trading') && (
