@@ -443,14 +443,14 @@ export default function SalesActivityTab() {
             )}
           </TabsContent>
 
-          {/* 받은 제안 탭 */}
+          {/* 받은 제안 탭 - offer_count가 0보다 크고 거래중이 아닌 상품만 표시 */}
           <TabsContent value="offers" className="space-y-3">
-            {listings.filter(item => item.offer_count > 0 && item.status === 'active').length === 0 ? (
+            {listings.filter(item => item.offer_count > 0 && item.status !== 'trading' && item.status !== 'sold').length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 받은 제안이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.offer_count > 0 && item.status === 'active').map((item) => (
+              listings.filter(item => item.offer_count > 0 && item.status !== 'trading' && item.status !== 'sold').map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">

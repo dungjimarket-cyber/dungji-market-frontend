@@ -282,5 +282,17 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 
+## 핵심 작업 원칙 (시간이 돈이다)
+1. **임시방편 금지** - 근본적인 해결책만 제시
+2. **반복 실수 방지**:
+   - API URL에 /api 중복 추가 ❌ (NEXT_PUBLIC_API_URL에 이미 포함)
+   - DB 문제를 수동 명령어로 해결 ❌ → 코드로 자동 해결 ✅
+   - 문제 원인 파악 전 해결책 제시 ❌ → 원인 분석 후 한 번에 해결 ✅
+3. **패턴 인식**:
+   - 404 오류 → URL 경로 또는 ViewSet 위치 문제
+   - 상태 불일치 → 모델 로직 또는 상태 전환 문제
+   - 카운트 오류 → Serializer에서 실시간 계산으로 해결
+4. **첫 번째 해결책 = 최종 해결책** (여러 번 수정 금지)
+
       
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
