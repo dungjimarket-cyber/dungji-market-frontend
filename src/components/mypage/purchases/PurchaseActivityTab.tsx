@@ -403,7 +403,7 @@ export default function PurchaseActivityTab() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="offers" className="text-xs sm:text-sm">
-            제안내역 ({offers.filter(offer => offer.status !== 'accepted' || offer.phone?.status !== 'trading').length})
+            제안내역 ({offers.filter(offer => offer.status === 'pending').length})
           </TabsTrigger>
           <TabsTrigger value="trading" className="text-xs sm:text-sm">
             거래중 ({tradingItems.length})
