@@ -52,7 +52,22 @@ export default function TradeCompleteModal({
       onClose();
     } catch (error: any) {
       console.error('거래 완료 실패:', error);
-      toast.error(error.response?.data?.error || '거래 완료 처리 중 오류가 발생했습니다.');
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
+
+      let errorMessage = '거래 완료 처리 중 오류가 발생했습니다.';
+
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.status === 400) {
+        errorMessage = '거래중인 상품만 완료 처리할 수 있습니다.';
+      } else if (error.response?.status === 403) {
+        errorMessage = '거래 완료 권한이 없습니다.';
+      } else if (error.response?.status === 404) {
+        errorMessage = '거래 정보를 찾을 수 없습니다.';
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

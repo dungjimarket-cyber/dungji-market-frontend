@@ -78,7 +78,7 @@ export default function TradeCancelModal({
     try {
       const token = localStorage.getItem('accessToken');
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/used-phones/phones/${phoneId}/cancel-trade/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/cancel-trade/`,
         {
           reason,
           custom_reason: reason === 'other' ? customReason : undefined,
