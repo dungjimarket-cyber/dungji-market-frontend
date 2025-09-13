@@ -409,7 +409,7 @@ export default function PurchaseActivityTab() {
             거래중 ({tradingItems.length})
           </TabsTrigger>
           <TabsTrigger value="completed" className="text-xs sm:text-sm">
-            구매완료 (0)
+            거래완료 ({tradingItems.filter(item => item.phone.status === 'sold').length})
           </TabsTrigger>
           <TabsTrigger value="favorites" className="text-xs sm:text-sm">
             찜 ({favorites.length})
@@ -575,19 +575,20 @@ export default function PurchaseActivityTab() {
                           <User className="w-3.5 h-3.5" />
                           판매자 정보
                         </Button>
-                        {item.phone.seller_completed && !item.phone.buyer_completed && (
-                          <Button 
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => {
-                              if (confirm('구매를 완료하시겠습니까?')) {
-                                handleCompleteTransaction(item.phone.id);
-                              }
-                            }}
-                          >
-                            구매 완료
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // 후기 작성 기능
+                            toast({
+                              title: '후기 작성',
+                              description: '후기 작성 기능이 곧 제공됩니다.',
+                            });
+                          }}
+                          className="text-xs"
+                        >
+                          후기 작성
+                        </Button>
                       </div>
                       {/* 판매자가 완료하지 않은 경우에만 취소 버튼 표시 */}
                       {!item.phone.seller_completed && (
@@ -609,10 +610,71 @@ export default function PurchaseActivityTab() {
         </TabsContent>
 
         {/* 구매완료 탭 */}
+        {/* 거래완료 탭 */}
         <TabsContent value="completed" className="space-y-3">
-          <div className="text-center py-8 text-gray-500">
-            구매완료된 상품이 없습니다
-          </div>
+          {loading ? (
+            <div className="text-center py-8">로딩중...</div>
+          ) : tradingItems.filter(item => item.phone.status === 'sold').length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              거래완료된 상품이 없습니다
+            </div>
+          ) : (
+            tradingItems
+              .filter(item => item.phone.status === 'sold')
+              .map((item) => (
+                <Card key={item.id} className="p-3 sm:p-4">
+                  <div className="flex gap-3 sm:gap-4">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <Image
+                        src={item.phone.images[0]?.image_url || '/placeholder.png'}
+                        alt={item.phone.title}
+                        width={80}
+                        height={80}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <h4 className="font-medium text-sm truncate">
+                            {item.phone.brand} {item.phone.model}
+                          </h4>
+                          <p className="text-base font-semibold text-green-600">
+                            {item.offered_price.toLocaleString()}원
+                          </p>
+                        </div>
+                        <Badge variant="secondary">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          거래완료
+                        </Badge>
+                      </div>
+
+                      <p className="text-xs text-gray-600 mb-2">
+                        판매자: {item.phone.seller.nickname}
+                      </p>
+
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // 후기 작성 기능
+                            toast({
+                              title: '후기 작성',
+                              description: '후기 작성 기능이 곧 제공됩니다.',
+                            });
+                          }}
+                          className="text-xs"
+                        >
+                          후기 작성
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))
+          )}
         </TabsContent>
 
         {/* 찜 목록 탭 */}

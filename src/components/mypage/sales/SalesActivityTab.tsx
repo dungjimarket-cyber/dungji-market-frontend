@@ -610,10 +610,26 @@ export default function SalesActivityTab() {
                       <p className="text-base font-semibold">
                         {item.price.toLocaleString()}원
                       </p>
-                      <Badge variant="secondary" className="mt-2">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        거래완료
-                      </Badge>
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge variant="secondary">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          거래완료
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // 후기 작성 기능
+                            toast({
+                              title: '후기 작성',
+                              description: '후기 작성 기능이 곧 제공됩니다.',
+                            });
+                          }}
+                          className="text-xs"
+                        >
+                          후기 작성
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
