@@ -218,8 +218,8 @@ export default function SalesActivityTab() {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/seller-complete/`
-        : `${baseUrl}/api/used/phones/${phoneId}/seller-complete/`;
+        ? `${baseUrl}/used/phones/${phoneId}/complete-trade/`
+        : `${baseUrl}/api/used/phones/${phoneId}/complete-trade/`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
