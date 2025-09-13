@@ -382,11 +382,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         setOfferMessage('');
         setSelectedMessages([]);
 
-        // 신규 제안이든 수정이든 모두 카운트 증가 및 남은 횟수 차감
+        // 서버에서 실제 카운트를 가져오기 전에 임시로 UI 업데이트
+        // 수정도 카운트 차감되어야 함 (사용자 요구사항)
         setOfferCount(prev => prev + 1);
         setRemainingOffers(prev => Math.max(0, prev - 1));
 
-        // 내 제안 정보와 카운트 다시 불러오기
+        // 내 제안 정보와 카운트 다시 불러오기 (서버의 실제 값으로 업데이트)
         fetchMyOffer();
         fetchOfferCount();
       } else {
