@@ -1222,23 +1222,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Input
                   type="text"
                   placeholder="금액을 입력해주세요"
-                  value={offerAmount ? Number(offerAmount).toLocaleString('ko-KR') : ''}
+                  value={formatPrice(offerAmount)}
                   onChange={(e) => {
-                    // 입력값에서 숫자만 추출
-                    const inputValue = e.target.value;
-                    const numbersOnly = inputValue.replace(/[^\d]/g, '');
-
-                    if (numbersOnly === '') {
-                      setOfferAmount('');
+                    const unformatted = unformatPrice(e.target.value);
+                    // 최대 금액 제한 (즉시구매가까지)
+                    if (parseInt(unformatted) > phone.price) {
                       return;
                     }
-
-                    const numValue = parseInt(numbersOnly) || 0;
-
-                    // 즉시구매가 이상 입력 방지
-                    if (numValue <= phone.price) {
-                      setOfferAmount(numbersOnly);
-                    }
+                    setOfferAmount(unformatted);
                   }}
                   className="pr-12 h-12 text-lg font-semibold"
                   inputMode="numeric"
