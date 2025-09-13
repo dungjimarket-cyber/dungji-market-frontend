@@ -680,7 +680,7 @@ export default function SellerSettings() {
     
     // 신청/재신청인 경우 즉시 pending 상태로 UI 업데이트
     if (formData.businessRegFile && !isEditingRemoteFile) {
-      setRemoteSalesStatus(prev => ({
+      setRemoteSalesStatus((prev: any) => ({
         ...prev,
         status: 'pending'
       }));
