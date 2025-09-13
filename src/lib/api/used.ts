@@ -50,8 +50,8 @@ export const sellerAPI = {
     return response.data;
   },
 
-  // 제안 응답 (수락/거절)
-  respondToOffer: async (offerId: number, action: 'accept' | 'reject', message?: string) => {
+  // 제안 응답 (수락만 가능)
+  respondToOffer: async (offerId: number, action: 'accept', message?: string) => {
     const response = await api.post(`/used/offers/${offerId}/respond/`, {
       action,
       message,

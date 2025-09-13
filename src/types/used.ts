@@ -10,9 +10,9 @@ export type PhoneBrand = 'samsung' | 'apple' | 'lg' | 'xiaomi' | 'other';
 export type PhoneSeries = 'Galaxy S' | 'Galaxy Z' | 'Galaxy A' | 'iPhone' | 'V' | 'Redmi' | string;
 export type StorageSize = 64 | 128 | 256 | 512 | 1024;
 export type ConditionGrade = 'S' | 'A' | 'B' | 'C';
-export type BatteryStatus = 'excellent' | 'good' | 'fair' | 'poor' | 'unknown';
+export type BatteryStatus = 'excellent' | 'good' | 'fair' | 'poor' | 'defective';
 export type PurchasePeriod = '1' | '3' | '6' | '12' | 'over';
-export type PhoneStatus = 'active' | 'trading' | 'reserved' | 'sold' | 'deleted';
+export type PhoneStatus = 'active' | 'trading' | 'reserved' | 'sold' | 'completed' | 'deleted';
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'expired';
 export type TransactionStatus = 'in_progress' | 'completed' | 'cancelled' | 'disputed';
 export type ReportReason = 'spam' | 'fraud' | 'inappropriate' | 'duplicate' | 'price_manipulation' | 'other';
@@ -76,8 +76,12 @@ export interface UsedPhone {
   images?: PhoneImage[];
   offers?: UsedOffer[];
   seller?: UserBasicInfo;
+  buyer?: UserBasicInfo; // 거래중/완료 상태일 때 구매자 정보
   is_favorite?: boolean; // 현재 사용자가 찜했는지 여부
   is_modified?: boolean; // 견적 후 수정됨 여부
+  seller_reviewed?: boolean; // 판매자가 후기를 작성했는지
+  buyer_reviewed?: boolean; // 구매자가 후기를 작성했는지
+  transaction_id?: number; // 거래 ID (거래중/완료 상태일 때)
   
   // 타임스탬프
   created_at: string;
@@ -230,17 +234,18 @@ export interface UsedNotification {
  */
 export interface UserBasicInfo {
   id: number;
-  name: string;
+  name?: string;
   username?: string;
+  nickname?: string; // 닉네임 추가
   email?: string;
   phone?: string;
   profileImage?: string;
   sido?: string;
   sigungu?: string;
-  
+
   // 거래 통계 (선택적)
   tradeStats?: UserTradeStats;
-  
+
   // 거래 횟수
   sell_count?: number;
   buy_count?: number;
@@ -437,11 +442,19 @@ export const CONDITION_GRADES = {
 } as const;
 
 export const BATTERY_STATUS_LABELS = {
-  'excellent': '90% 이상',
-  'good': '80~89%',
-  'fair': '70~79%',
-  'poor': '70% 미만',
-  'unknown': '확인불가'
+  'excellent': '최상',
+  'good': '좋음',
+  'fair': '보통',
+  'poor': '나쁨',
+  'defective': '불량'
+} as const;
+
+export const BATTERY_STATUS_DESCRIPTIONS = {
+  'excellent': '새제품 또는 새제품 수준 • 하루 종일 충전 걱정 없음',
+  'good': '하루 사용 시 충전 없이 가능 • 아침부터 저녁까지 일반 사용 OK',
+  'fair': '가끔 충전 필요, 발열 시 급속 감소 • 오후에 한 번은 충전해야 함',
+  'poor': '충전 자주 필요, 교체 고려 상태 • 반나절도 버티기 어려움',
+  'defective': '간헐적으로 꺼짐, 교체 필요 • 갑자기 전원이 꺼지거나 불안정'
 } as const;
 
 export const PURCHASE_PERIOD_LABELS = {

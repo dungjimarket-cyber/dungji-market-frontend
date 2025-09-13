@@ -172,7 +172,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         </div>
 
         {/* 배터리 상태 */}
-        {phone.battery_status && phone.battery_status !== 'unknown' && (
+        {phone.battery_status && (
           <div className="mt-1 text-xs text-gray-600">
             배터리 {BATTERY_STATUS_LABELS[phone.battery_status]}
           </div>

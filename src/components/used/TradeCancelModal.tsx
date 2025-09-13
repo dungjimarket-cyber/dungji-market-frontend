@@ -1,0 +1,225 @@
+'use client';
+
+import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { CANCELLATION_REASON_LABELS, CancellationReason } from '@/types/usedTransaction';
+
+interface TradeCancelModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  phoneId: number;
+  phoneModel: string;
+  isSeller: boolean;
+  sellerConfirmed: boolean;
+  onCancel?: () => void;
+}
+
+export default function TradeCancelModal({
+  isOpen,
+  onClose,
+  phoneId,
+  phoneModel,
+  isSeller,
+  sellerConfirmed,
+  onCancel,
+}: TradeCancelModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [reason, setReason] = useState<CancellationReason>('other');
+  const [customReason, setCustomReason] = useState('');
+  const [returnToSale, setReturnToSale] = useState(true);
+
+  // 판매자가 판매완료 확인한 후에는 취소 불가
+  if (sellerConfirmed) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>거래 취소 불가</DialogTitle>
+            <DialogDescription>{phoneModel}</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+              <p className="text-sm text-red-800">
+                판매자가 판매완료를 확인한 후에는 거래를 취소할 수 없습니다.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={onClose}>확인</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  const handleCancel = async () => {
+    if (reason === 'other' && !customReason.trim()) {
+      toast.error('기타 사유를 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/used-phones/phones/${phoneId}/cancel-trade/`,
+        {
+          reason,
+          custom_reason: reason === 'other' ? customReason : undefined,
+          return_to_sale: isSeller ? returnToSale : undefined,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      toast.success(response.data.message);
+      onCancel?.();
+      onClose();
+    } catch (error: any) {
+      console.error('거래 취소 실패:', error);
+      toast.error(error.response?.data?.error || '거래 취소 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 역할별 취소 사유 옵션
+  const getCancellationReasons = (): CancellationReason[] => {
+    if (isSeller) {
+      return [
+        'product_sold',
+        'buyer_no_response',
+        'buyer_no_show',
+        'payment_issue',
+        'buyer_unreasonable',
+        'buyer_cancel_request',
+        'personal_reason',
+        'schedule_conflict',
+        'location_issue',
+        'other'
+      ];
+    } else {
+      return [
+        'change_mind',
+        'found_better',
+        'seller_no_response',
+        'condition_mismatch',
+        'price_disagreement',
+        'seller_cancel_request',
+        'schedule_conflict',
+        'location_issue',
+        'other'
+      ];
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>거래 취소</DialogTitle>
+          <DialogDescription>{phoneModel}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {/* 경고 메시지 */}
+          <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+            <p className="text-sm text-amber-800">
+              거래를 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </p>
+          </div>
+
+          {/* 취소 사유 선택 */}
+          <div className="space-y-3">
+            <Label>취소 사유를 선택해주세요</Label>
+            <RadioGroup value={reason} onValueChange={(value) => setReason(value as CancellationReason)}>
+              {getCancellationReasons().map((r) => (
+                <div key={r} className="flex items-center space-x-2">
+                  <RadioGroupItem value={r} id={r} />
+                  <Label htmlFor={r} className="font-normal cursor-pointer">
+                    {CANCELLATION_REASON_LABELS[r]}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+
+          {/* 기타 사유 입력 */}
+          {reason === 'other' && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-reason">상세 사유</Label>
+              <Textarea
+                id="custom-reason"
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
+                placeholder="취소 사유를 자세히 입력해주세요"
+                rows={3}
+              />
+            </div>
+          )}
+
+          {/* 판매자의 경우 재판매 여부 선택 */}
+          {isSeller && (
+            <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+              <Checkbox
+                id="return-to-sale"
+                checked={returnToSale}
+                onCheckedChange={(checked) => setReturnToSale(checked as boolean)}
+              />
+              <Label
+                htmlFor="return-to-sale"
+                className="text-sm font-normal cursor-pointer"
+              >
+                상품을 다시 판매중 상태로 전환
+              </Label>
+            </div>
+          )}
+
+          {/* 안내 메시지 */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              {isSeller
+                ? returnToSale
+                  ? '거래가 취소되고 상품이 다시 판매중 상태로 변경됩니다.'
+                  : '거래가 취소되고 상품이 삭제됩니다.'
+                : '거래가 취소되고 상품이 다시 판매중 상태로 변경됩니다.'}
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            취소
+          </Button>
+          <Button
+            onClick={handleCancel}
+            disabled={isLoading || (reason === 'other' && !customReason.trim())}
+            variant="destructive"
+          >
+            {isLoading ? '처리중...' : '거래 취소'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

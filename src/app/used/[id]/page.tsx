@@ -8,11 +8,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  Heart, MapPin, Eye, Clock, Shield, MessageCircle, 
+import {
+  Heart, MapPin, Eye, Clock, Shield, MessageCircle,
   ChevronLeft, ChevronRight, Share2, AlertTriangle,
-  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign, Info, ZoomIn
+  Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign, Info, ZoomIn,
+  CheckCircle2, MessageSquarePlus
 } from 'lucide-react';
+import TradeCompleteModal from '@/components/used/TradeCompleteModal';
+import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -55,6 +58,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [myOffer, setMyOffer] = useState<any>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
   const [remainingOffers, setRemainingOffers] = useState(5);
+  const [showTradeCompleteModal, setShowTradeCompleteModal] = useState(false);
+  const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -751,47 +757,96 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
                 {/* 본인이 등록한 상품인 경우 */}
                 {user?.id === phone.seller?.id ? (
-                  phone.accept_offers && (
-                    <Button
-                      onClick={async () => {
-                        setLoadingOffers(true);
-                        try {
-                          const token = localStorage.getItem('accessToken');
-                          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-                          const apiUrl = baseUrl.includes('api.dungjimarket.com')
-                            ? `${baseUrl}/used/phones/${phoneId}/offers/`
-                            : `${baseUrl}/api/used/phones/${phoneId}/offers/`;
-                          const response = await fetch(apiUrl, {
-                            headers: {
-                              'Authorization': `Bearer ${token}`
+                  <>
+                    {/* 거래중 상태일 때 거래완료 버튼 표시 */}
+                    {phone.status === 'trading' && (
+                      <Button
+                        onClick={() => setShowTradeCompleteModal(true)}
+                        className="w-full h-14 text-lg font-semibold bg-green-500 hover:bg-green-600 text-white mb-3"
+                      >
+                        <CheckCircle2 className="w-5 h-5 mr-2" />
+                        거래완료
+                      </Button>
+                    )}
+
+                    {/* 거래완료 상태일 때 후기 작성 버튼 표시 */}
+                    {phone.status === 'completed' && !phone.seller_reviewed && (
+                      <Button
+                        onClick={() => {
+                          setReviewTarget('buyer');
+                          setShowTradeReviewModal(true);
+                        }}
+                        className="w-full h-14 text-lg font-semibold bg-purple-500 hover:bg-purple-600 text-white mb-3"
+                      >
+                        <MessageSquarePlus className="w-5 h-5 mr-2" />
+                        후기 작성하기
+                      </Button>
+                    )}
+
+                    {/* 판매중일 때만 제안 보기 버튼 표시 */}
+                    {phone.status === 'active' && phone.accept_offers && (
+                      <Button
+                        onClick={async () => {
+                          setLoadingOffers(true);
+                          try {
+                            const token = localStorage.getItem('accessToken');
+                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+                            const apiUrl = baseUrl.includes('api.dungjimarket.com')
+                              ? `${baseUrl}/used/phones/${phoneId}/offers/`
+                              : `${baseUrl}/api/used/phones/${phoneId}/offers/`;
+                            const response = await fetch(apiUrl, {
+                              headers: {
+                                'Authorization': `Bearer ${token}`
+                              }
+                            });
+                            if (response.ok) {
+                              const data = await response.json();
+                              setOffers(data);
+                              setShowOffersModal(true);
                             }
-                          });
-                          if (response.ok) {
-                            const data = await response.json();
-                            setOffers(data);
-                            setShowOffersModal(true);
+                          } catch (error) {
+                            console.error('Failed to fetch offers:', error);
+                            toast({
+                              title: '오류',
+                              description: '제안 목록을 불러올 수 없습니다.',
+                              variant: 'destructive'
+                            });
+                          } finally {
+                            setLoadingOffers(false);
                           }
-                        } catch (error) {
-                          console.error('Failed to fetch offers:', error);
-                          toast({
-                            title: '오류',
-                            description: '제안 목록을 불러올 수 없습니다.',
-                            variant: 'destructive'
-                          });
-                        } finally {
-                          setLoadingOffers(false);
-                        }
-                      }}
-                      className="w-full h-14 text-lg font-semibold bg-dungji-secondary hover:bg-dungji-secondary-dark"
-                      disabled={loadingOffers}
-                    >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      받은 제안 보기 {phone.offer_count > 0 && `(${phone.offer_count})`}
-                    </Button>
-                  )
+                        }}
+                        className="w-full h-14 text-lg font-semibold bg-dungji-secondary hover:bg-dungji-secondary-dark"
+                        disabled={loadingOffers}
+                      >
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        받은 제안 보기 {phone.offer_count > 0 && `(${phone.offer_count})`}
+                      </Button>
+                    )}
+                  </>
                 ) : (
                   /* 다른 사람의 상품인 경우 */
                   <>
+                    {/* 거래완료 상태일 때 구매자도 후기 작성 가능 */}
+                    {phone.status === 'completed' && phone.buyer?.id === user?.id && !phone.buyer_reviewed && (
+                      <Button
+                        onClick={() => {
+                          setReviewTarget('seller');
+                          setShowTradeReviewModal(true);
+                        }}
+                        className="w-full h-14 text-lg font-semibold bg-purple-500 hover:bg-purple-600 text-white mb-3"
+                      >
+                        <MessageSquarePlus className="w-5 h-5 mr-2" />
+                        후기 작성하기
+                      </Button>
+                    )}
+
+                    {/* 거래가 완료된 경우 안내 메시지 */}
+                    {phone.status === 'completed' && phone.buyer?.id !== user?.id && (
+                      <div className="p-4 bg-gray-100 rounded-lg mb-3">
+                        <p className="text-center text-gray-600 font-medium">거래가 종료되었습니다</p>
+                      </div>
+                    )}
+
                     {phone.accept_offers ? (
                       <>
                         <div className="space-y-2">
@@ -807,7 +862,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 router.push('/login');
                                 return;
                               }
-                              
+
                               // 프로필 체크
                               if (!hasUsedPhoneProfile) {
                                 toast({
@@ -817,7 +872,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 });
                                 return;
                               }
-                              
+
                               if (myOffer && myOffer.status === 'pending') {
                                 // 수정 제안
                                 setShowOfferModal(true);
@@ -831,19 +886,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               }
                             }}
                             className={`w-full h-14 text-lg font-semibold ${
-                              phone.status === 'trading' || phone.status === 'sold' 
-                                ? 'bg-gray-400 cursor-not-allowed' 
+                              phone.status !== 'active'
+                                ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-dungji-primary hover:bg-dungji-primary-dark'
                             } text-white`}
-                            disabled={remainingOffers <= 0 && !myOffer || phone.status === 'trading' || phone.status === 'sold'}
+                            disabled={phone.status !== 'active' || (remainingOffers <= 0 && !myOffer)}
                           >
                             <DollarSign className="w-5 h-5 mr-2" />
-                            {phone.status === 'trading' 
-                              ? '거래중인 상품입니다' 
-                              : phone.status === 'sold' 
+                            {phone.status === 'trading'
+                              ? '거래중인 상품입니다'
+                              : phone.status === 'sold'
                               ? '판매완료된 상품입니다'
-                              : myOffer && myOffer.status === 'pending' 
-                              ? '제안 수정하기' 
+                              : phone.status === 'completed'
+                              ? '거래가 종료되었습니다'
+                              : myOffer && myOffer.status === 'pending'
+                              ? '제안 수정하기'
                               : '가격 제안하기'}
                           </Button>
                           
@@ -892,7 +949,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                             <div className="flex items-center gap-2 text-orange-700">
                               <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                              <span className="text-sm font-medium">현재 다른 구매자와 거래가 진행중입니다</span>
+                              <span className="text-sm font-medium">
+                                {phone.buyer?.id === user?.id
+                                  ? '판매자와 거래가 진행중입니다'
+                                  : '현재 다른 구매자와 거래가 진행중입니다'
+                                }
+                              </span>
                             </div>
                           </div>
                         )}
@@ -1357,9 +1419,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 {parseInt(offerAmount).toLocaleString()}원
               </p>
               <p className="text-sm text-gray-600">
-                {parseInt(offerAmount) === phone.price 
-                  ? '즉시구매가로 구매하시겠습니까?' 
+                {parseInt(offerAmount) === phone.price
+                  ? '즉시구매가로 구매하시겠습니까?'
                   : '이 금액으로 제안하시겠습니까?'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                가격은 천원 단위로 입력 가능합니다
               </p>
               {offerMessage && (
                 <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700 text-left">
@@ -1403,10 +1468,30 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       )}
 
       {/* 모바일 하단 버튼 (고정 제거) */}
-      {phone && phone.status === 'active' && (
+      {phone && (
         <div className="lg:hidden bg-white border-t p-4 mt-6">
           <div className="flex gap-3 max-w-screen-sm mx-auto">
             {user?.id === phone.seller?.id ? (
+              phone.status === 'trading' ? (
+                <Button
+                  onClick={() => setShowTradeCompleteModal(true)}
+                  className="w-full h-12 text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
+                >
+                  <CheckCircle2 className="w-5 h-5 mr-2" />
+                  거래완료
+                </Button>
+              ) : phone.status === 'completed' && !phone.seller_reviewed ? (
+                <Button
+                  onClick={() => {
+                    setReviewTarget('buyer');
+                    setShowTradeReviewModal(true);
+                  }}
+                  className="w-full h-12 text-base font-semibold bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  <MessageSquarePlus className="w-5 h-5 mr-2" />
+                  후기 작성하기
+                </Button>
+              ) : phone.status === 'active' ? (
               <>
                 <Button
                   variant="outline"
@@ -1423,8 +1508,31 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   삭제하기
                 </Button>
               </>
+              ) : (
+                <div className="w-full p-3 bg-gray-100 rounded-lg">
+                  <p className="text-center text-sm text-gray-600">
+                    {phone.status === 'sold' ? '판매완료' : '거래완료'}
+                  </p>
+                </div>
+              )
             ) : (
-              phone.accept_offers ? (
+              /* 구매자 입장 */
+              phone.status === 'completed' && phone.buyer?.id === user?.id && !phone.buyer_reviewed ? (
+                <Button
+                  onClick={() => {
+                    setReviewTarget('seller');
+                    setShowTradeReviewModal(true);
+                  }}
+                  className="w-full h-12 text-base font-semibold bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  <MessageSquarePlus className="w-5 h-5 mr-2" />
+                  후기 작성하기
+                </Button>
+              ) : phone.status === 'trading' && phone.buyer?.id === user?.id ? (
+                <div className="w-full p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-center text-sm text-orange-700 font-medium">거래 진행중</p>
+                </div>
+              ) : phone.status === 'active' && phone.accept_offers ? (
                 <Button
                   onClick={() => {
                     if (myOffer && myOffer.status === 'pending') {
@@ -1442,18 +1550,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 >
                   {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
                 </Button>
-              ) : (
+              ) : phone.status === 'active' ? (
                 <Button
                   onClick={() => {
                     if (phone.seller?.email) {
                       window.location.href = `mailto:${phone.seller.email}?subject=${encodeURIComponent(`[둥지마켓] ${phone.model} 문의`)}&body=${encodeURIComponent(`안녕하세요,\n\n${phone.model} 상품에 대해 문의드립니다.\n\n`)}`;
                     }
                   }}
-                  disabled={phone.status !== 'active'}
                   className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90"
                 >
                   판매자 연락하기
                 </Button>
+              ) : (
+                <div className="w-full p-3 bg-gray-100 rounded-lg">
+                  <p className="text-center text-sm text-gray-600">
+                    {phone.status === 'completed' ? '거래가 종료되었습니다' : '판매완료'}
+                  </p>
+                </div>
               )
             )}
           </div>
@@ -1507,6 +1620,49 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             )}
           </div>
         </div>
+      )}
+
+      {/* 거래완료 모달 */}
+      {showTradeCompleteModal && (
+        <TradeCompleteModal
+          isOpen={showTradeCompleteModal}
+          onClose={() => setShowTradeCompleteModal(false)}
+          phoneId={parseInt(phoneId)}
+          phoneModel={phone.model}
+          isSeller={user?.id === phone.seller?.id}
+          onComplete={() => {
+            fetchPhoneDetail();
+            setShowTradeCompleteModal(false);
+            toast({
+              title: '거래완료',
+              description: '거래가 완료되었습니다. 후기를 작성해주세요!',
+            });
+          }}
+        />
+      )}
+
+      {/* 후기 작성 모달 */}
+      {showTradeReviewModal && reviewTarget && phone && (
+        <TradeReviewModal
+          isOpen={showTradeReviewModal}
+          onClose={() => {
+            setShowTradeReviewModal(false);
+            setReviewTarget(null);
+          }}
+          transactionId={phone.transaction_id || 0} // 트랜잭션 ID가 필요함
+          isSeller={reviewTarget === 'buyer'} // 판매자가 구매자를 평가하는 경우
+          partnerName={reviewTarget === 'buyer' ? (phone.buyer?.nickname || '구매자') : (phone.seller?.username || phone.seller?.nickname || '판매자')}
+          phoneModel={phone.model}
+          onReviewComplete={() => {
+            fetchPhoneDetail();
+            setShowTradeReviewModal(false);
+            setReviewTarget(null);
+            toast({
+              title: '후기 작성 완료',
+              description: '거래 후기가 등록되었습니다.',
+            });
+          }}
+        />
       )}
 
       {/* 상태 등급 안내 모달 */}

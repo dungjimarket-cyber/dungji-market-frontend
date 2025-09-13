@@ -45,7 +45,7 @@ interface ReceivedOffer {
   };
   offered_price: number;
   message?: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'cancelled';
   created_at: string;
 }
 
@@ -141,21 +141,23 @@ export default function SalesActivityTab() {
     }
   };
 
-  // 제안 응답
-  const handleOfferResponse = async (offerId: number, action: 'accept' | 'reject') => {
+  // 제안 응답 (수락만 가능)
+  const handleOfferResponse = async (offerId: number, action: 'accept') => {
     try {
       await sellerAPI.respondToOffer(offerId, action);
       toast({
-        title: action === 'accept' ? '제안 수락' : '제안 거절',
-        description: action === 'accept' ? '제안을 수락했습니다.' : '제안을 거절했습니다.',
+        title: '제안 수락',
+        description: '제안을 수락했습니다. 거래가 시작됩니다.',
       });
       if (selectedPhone) {
         fetchReceivedOffers(selectedPhone.id);
+        // 목록 새로고침
+        fetchAllListings();
       }
     } catch (error) {
       toast({
         title: '오류',
-        description: '제안 응답에 실패했습니다.',
+        description: '제안 수락에 실패했습니다.',
         variant: 'destructive',
       });
     }

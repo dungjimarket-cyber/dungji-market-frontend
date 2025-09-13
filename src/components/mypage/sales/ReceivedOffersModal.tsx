@@ -24,7 +24,7 @@ interface ReceivedOffer {
   };
   offered_price: number;
   message?: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'cancelled';
   created_at: string;
 }
 
@@ -42,7 +42,7 @@ interface ReceivedOffersModalProps {
   onClose: () => void;
   phone: Phone;
   offers: ReceivedOffer[];
-  onRespond: (offerId: number, action: 'accept' | 'reject') => void;
+  onRespond: (offerId: number, action: 'accept') => void;
   onProceedTrade?: (offerId: number) => void;
 }
 
@@ -65,11 +65,11 @@ export default function ReceivedOffersModal({
             수락됨
           </Badge>
         );
-      case 'rejected':
+      case 'cancelled':
         return (
-          <Badge variant="destructive">
+          <Badge variant="secondary">
             <XCircle className="w-3 h-3 mr-1" />
-            거절됨
+            취소됨
           </Badge>
         );
       default:
@@ -186,23 +186,13 @@ export default function ReceivedOffersModal({
                 </div>
 
                 {offer.status === 'pending' && (
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => onRespond(offer.id, 'accept')}
-                    >
-                      수락
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => onRespond(offer.id, 'reject')}
-                    >
-                      거절
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => onRespond(offer.id, 'accept')}
+                  >
+                    수락하기
+                  </Button>
                 )}
                 
                 {offer.status === 'accepted' && (

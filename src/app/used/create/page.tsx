@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import UsedPhoneProfileCheckModal from '@/components/common/UsedPhoneProfileCheckModal';
-import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
+import { PHONE_BRANDS, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS } from '@/types/used';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { searchRegionsByName, type Region } from '@/lib/api/regionService';
@@ -67,7 +67,7 @@ export default function CreateUsedPhonePage() {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [checkingLimit, setCheckingLimit] = useState(true);
+  const [checkingLimit, setCheckingLimit] = useState(false);
   const [activeCount, setActiveCount] = useState(0);
   const [canRegister, setCanRegister] = useState(true);
   const [penaltyEnd, setPenaltyEnd] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export default function CreateUsedPhonePage() {
     // 숫자만 추출
     const numbers = value.replace(/[^\d]/g, '');
     if (!numbers) return '';
-    
+
     // 숫자를 원화 형식으로 변환
     return parseInt(numbers).toLocaleString('ko-KR');
   };
@@ -108,6 +108,13 @@ export default function CreateUsedPhonePage() {
   // 가격 언포맷팅 헬퍼 함수
   const unformatPrice = (value: string) => {
     return value.replace(/[^\d]/g, '');
+  };
+
+  // 천원 단위로 맞추기
+  const roundToThousand = (value: string) => {
+    const num = parseInt(value);
+    if (isNaN(num)) return '0';
+    return Math.round(num / 1000) * 1000;
   };
 
   // 페이지 진입 시 프로필 체크 및 등록 제한 체크
@@ -120,34 +127,45 @@ export default function CreateUsedPhonePage() {
 
   // 등록 가능 여부 체크 (활성 상품 5개 제한 및 패널티)
   const checkRegistrationLimit = async () => {
+    // 토큰이 없으면 체크하지 않음
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setCheckingLimit(false);
+      return;
+    }
+
     try {
       setCheckingLimit(true);
-      const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/check-limit/`
         : `${baseUrl}/api/used/phones/check-limit/`;
-      
+
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
-      if (!response.ok) throw new Error('Failed to check limit');
-      
+
+      if (!response.ok) {
+        console.warn('Check limit API failed:', response.status);
+        // API 실패 시에도 등록은 가능하도록 설정
+        setCanRegister(true);
+        return;
+      }
+
       const data = await response.json();
-      
+
       setActiveCount(data.active_count || 0);
-      setCanRegister(data.can_register || false);
+      setCanRegister(data.can_register !== false); // undefined도 true로 처리
       setPenaltyEnd(data.penalty_end || null);
-      
+
       if (!data.can_register) {
         if (data.penalty_end) {
           const penaltyTime = new Date(data.penalty_end);
           const now = new Date();
           const hoursLeft = Math.ceil((penaltyTime.getTime() - now.getTime()) / (1000 * 60 * 60));
-          
+
           toast({
             title: '등록 제한',
             description: `패널티 적용 중입니다. ${hoursLeft}시간 후 등록 가능합니다.`,
@@ -161,7 +179,7 @@ export default function CreateUsedPhonePage() {
           });
         }
       }
-      
+
     } catch (error) {
       console.error('Failed to check registration limit:', error);
       // 에러 시에도 등록 페이지는 볼 수 있도록 함
@@ -175,7 +193,30 @@ export default function CreateUsedPhonePage() {
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-    
+
+    // 파일 유효성 검사
+    for (const file of files) {
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: '지원하지 않는 파일 형식',
+          description: '이미지 파일만 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // 파일 크기 체크 (3MB)
+      if (file.size > 3 * 1024 * 1024) {
+        toast({
+          title: '이미지 크기 초과',
+          description: `${file.name} 파일이 3MB를 초과합니다.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     if (replaceIndex !== undefined) {
       // 특정 슬롯에 이미지 교체/추가
       const newImage: ImagePreview = {
@@ -184,11 +225,15 @@ export default function CreateUsedPhonePage() {
         isMain: replaceIndex === 0,
         isEmpty: false
       };
-      
+
       setImages(prev => {
         const updated = [...prev];
-        // 해당 위치에 이미지가 이미 있는지 확인
+        // 해당 위치에 이미지가 이미  있는지 확인
         if (replaceIndex < updated.length) {
+          // 기존 이미지 URL 정리
+          if (updated[replaceIndex] && updated[replaceIndex].url) {
+            URL.revokeObjectURL(updated[replaceIndex].url);
+          }
           updated[replaceIndex] = newImage;
         } else {
           // 새 위치에 추가 (빈 슬롯 채우기)
@@ -247,6 +292,10 @@ export default function CreateUsedPhonePage() {
   const handleImageRemove = useCallback((index: number) => {
     setImages(prev => {
       const updated = [...prev];
+      // 기존 이미지 URL 정리
+      if (updated[index] && updated[index].url) {
+        URL.revokeObjectURL(updated[index].url);
+      }
       // 이미지를 삭제하고 빈 슬롯으로 변경
       updated[index] = {
         file: null,
@@ -407,6 +456,16 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
+    // 천원 단위 검증
+    if (parseInt(formData.price) % 1000 !== 0) {
+      toast({
+        title: '가격 입력 오류',
+        description: '가격은 천원 단위로 입력해주세요.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // 최대 금액 검증 (990만원)
     if (parseInt(formData.price) > 9900000) {
       toast({
@@ -421,6 +480,16 @@ export default function CreateUsedPhonePage() {
       toast({
         title: '최소 제안가를 입력해주세요',
         description: '최소 제안 가격을 입력해야 합니다.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 천원 단위 검증
+    if (parseInt(formData.min_offer_price) % 1000 !== 0) {
+      toast({
+        title: '가격 입력 오류',
+        description: '가격은 천원 단위로 입력해주세요.',
         variant: 'destructive',
       });
       return;
@@ -507,14 +576,42 @@ export default function CreateUsedPhonePage() {
       // FormData 생성
       const uploadData = new FormData();
       
-      // 이미지 추가 (빈 슬롯 제외)
-      const actualImages = images.filter(img => img && !img.isEmpty && img.file);
+      // 이미지 추가 (빈 슬롯 제외, 파일 검증)
+      const actualImages = images.filter(img => img && !img.isEmpty && img.file instanceof File);
+
+      if (actualImages.length === 0) {
+        toast({
+          title: '이미지를 추가해주세요',
+          description: '최소 1장 이상의 상품 이미지가 필요합니다.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // 대표 이미지 찾기 (첫 번째 이미지가 기본 대표)
+      let mainImageIndex = 0;
+      const mainImageFound = actualImages.findIndex(img => img.isMain);
+      if (mainImageFound !== -1) {
+        mainImageIndex = mainImageFound;
+      }
+
+      // 이미지 파일과 메타데이터 전송
       actualImages.forEach((img, index) => {
-        uploadData.append('images', img.file!);  // ! operator since we filtered for img.file
-        if (img.isMain) {
-          uploadData.append('mainImageIndex', index.toString());
+        // 파일 크기 체크 (3MB 제한)
+        if (img.file!.size > 3 * 1024 * 1024) {
+          toast({
+            title: '이미지 크기 초과',
+            description: `${index + 1}번째 이미지가 3MB를 초과합니다.`,
+            variant: 'destructive',
+          });
+          throw new Error(`Image ${index + 1} size exceeds 3MB`);
         }
+
+        uploadData.append('images', img.file!);
       });
+
+      // 대표 이미지 인덱스 한 번만 전송
+      uploadData.append('mainImageIndex', mainImageIndex.toString());
 
       // 폼 데이터 추가 (region 필드 제외, 타입별 처리)
       Object.entries(formData).forEach(([key, value]) => {
@@ -723,25 +820,25 @@ export default function CreateUsedPhonePage() {
         {/* 활성 상품 개수 표시 */}
         {!checkingLimit && activeCount > 0 && (
           <div className={`border rounded-lg p-4 mb-6 ${
-            activeCount >= 5 ? 'bg-amber-50 border-amber-200' : 'bg-dungji-secondary border-dungji-primary-200'
+            activeCount >= 5 ? 'bg-amber-50 border-amber-200' : 'bg-orange-50 border-orange-200'
           }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  activeCount >= 5 ? 'bg-amber-100' : 'bg-dungji-secondary-light'
+                  activeCount >= 5 ? 'bg-amber-100' : 'bg-orange-100'
                 }`}>
                   <span className={`text-sm font-semibold ${
-                    activeCount >= 5 ? 'text-amber-700' : 'text-dungji-primary-700'
+                    activeCount >= 5 ? 'text-amber-700' : 'text-orange-700'
                   }`}>{activeCount}</span>
                 </div>
                 <div>
                   <p className={`text-sm font-medium ${
-                    activeCount >= 5 ? 'text-amber-900' : 'text-dungji-primary-900'
+                    activeCount >= 5 ? 'text-amber-900' : 'text-orange-900'
                   }`}>
                     활성 상품 {activeCount}/5개
                   </p>
                   <p className={`text-xs ${
-                    activeCount >= 5 ? 'text-amber-700' : 'text-dungji-primary-700'
+                    activeCount >= 5 ? 'text-amber-700' : 'text-orange-700'
                   }`}>
                     {activeCount >= 5 ? '상품 등록 제한에 도달했습니다' : '최대 5개까지 동시 판매 가능'}
                   </p>
@@ -861,11 +958,15 @@ export default function CreateUsedPhonePage() {
                             accept="image/*"
                             multiple={isNextSlot && !isFirstSlot}
                             onChange={(e) => {
-                              if (isFirstSlot && (!images[0] || images[0].isEmpty)) {
-                                // 첫 번째 슬롯이 비어있으면 교체
+                              if (isFirstSlot) {
+                                // 첫 번째 슬롯은 항상 인덱스 0으로 업로드
                                 handleImageUpload(e, 0);
+                              } else if (index === 1 && (!images[1] || images[1].isEmpty)) {
+                                // 두 번째 슬롯이 비어있으면 인덱스 1로 업로드
+                                handleImageUpload(e, 1);
                               } else {
-                                handleImageUpload(e);
+                                // 그 외의 경우 일반 업로드
+                                handleImageUpload(e, index);
                               }
                             }}
                             className="hidden"
@@ -1031,8 +1132,19 @@ export default function CreateUsedPhonePage() {
                     }
                     handleInputChange('price', unformatted);
                   }}
+                  onBlur={(e) => {
+                    // 포커스 아웃 시 천원 단위로 자동 조정
+                    const unformatted = unformatPrice(e.target.value);
+                    if (unformatted) {
+                      const rounded = roundToThousand(unformatted);
+                      handleInputChange('price', rounded.toString());
+                    }
+                  }}
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  가격은 천원 단위로 입력 가능합니다
+                </p>
                 <p className="text-xs text-gray-500 mt-1">
                   구매자가 이 금액으로 구매 시 즉시 거래 진행
                 </p>
@@ -1068,10 +1180,18 @@ export default function CreateUsedPhonePage() {
                     }
                     handleInputChange('min_offer_price', unformatted);
                   }}
+                  onBlur={(e) => {
+                    // 포커스 아웃 시 천원 단위로 자동 조정
+                    const unformatted = unformatPrice(e.target.value);
+                    if (unformatted) {
+                      const rounded = roundToThousand(unformatted);
+                      handleInputChange('min_offer_price', rounded.toString());
+                    }
+                  }}
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  즉시 판매가보다 낮게 입력해주세요
+                  가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
                 </p>
               </div>
             </div>
@@ -1125,8 +1245,8 @@ export default function CreateUsedPhonePage() {
               {/* 배터리 상태 */}
               <div>
                 <Label htmlFor="battery_status">배터리 상태 <span className="text-red-500">*</span></Label>
-                <Select 
-                  value={formData.battery_status} 
+                <Select
+                  value={formData.battery_status}
                   onValueChange={(value) => handleInputChange('battery_status', value)}
                 >
                   <SelectTrigger>
@@ -1140,10 +1260,25 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  iPhone: 설정 → 배터리 → 배터리 성능 상태<br/>
-                  Android: 설정 → 디바이스 케어 → 배터리
-                </p>
+                {formData.battery_status && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">{BATTERY_STATUS_LABELS[formData.battery_status as keyof typeof BATTERY_STATUS_LABELS]}:</span>{' '}
+                      {BATTERY_STATUS_DESCRIPTIONS[formData.battery_status as keyof typeof BATTERY_STATUS_DESCRIPTIONS]}
+                    </p>
+                  </div>
+                )}
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-500">
+                    <span className="font-medium">확인 방법:</span>
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    • iPhone: 설정 → 배터리 → 배터리 성능 상태
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    • Android: 설정 → 디바이스 케어 → 배터리
+                  </p>
+                </div>
               </div>
             </div>
 

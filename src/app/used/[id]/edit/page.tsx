@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
+import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS } from '@/types/used';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 
 // 수정 가능/불가능 필드 정의
@@ -191,6 +191,13 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     return parseInt(numbers).toLocaleString();
   };
 
+  // 천원 단위로 맞추기
+  const roundToThousand = (value: string) => {
+    const num = parseInt(value);
+    if (isNaN(num)) return '0';
+    return Math.round(num / 1000) * 1000;
+  };
+
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'price' | 'min_offer_price') => {
     if (!isFieldEditable(field)) {
       toast({
@@ -200,9 +207,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       });
       return;
     }
-    
+
     const value = e.target.value.replace(/[^\d]/g, '');
-    
+
     // 최대 금액 제한 (990만원)
     if (parseInt(value) > 9900000) {
       toast({
@@ -212,7 +219,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       });
       return;
     }
-    
+
     // 최소 제안가가 즉시 판매가보다 높을 때 경고
     if (field === 'min_offer_price' && formData.price && parseInt(value) >= parseInt(formData.price)) {
       toast({
@@ -222,9 +229,18 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       });
       return;
     }
-    
+
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsModified(true);
+  };
+
+  const handlePriceBlur = (field: 'price' | 'min_offer_price') => {
+    // 포커스 아웃 시 천원 단위로 자동 조정
+    const value = formData[field];
+    if (value) {
+      const rounded = roundToThousand(value);
+      setFormData(prev => ({ ...prev, [field]: rounded.toString() }));
+    }
   };
 
   // 이미지 처리
@@ -540,7 +556,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
               <div>
                 <Label className="flex items-center gap-1">
-                  배터리 성능 <span className="text-red-500">*</span>
+                  배터리 상태 <span className="text-red-500">*</span>
                   {!isFieldEditable('battery_status') && <Lock className="w-3 h-3 text-gray-400" />}
                 </Label>
                 <select
@@ -556,6 +572,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
+                {formData.battery_status && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">{BATTERY_STATUS_LABELS[formData.battery_status as keyof typeof BATTERY_STATUS_LABELS]}:</span>{' '}
+                      {BATTERY_STATUS_DESCRIPTIONS[formData.battery_status as keyof typeof BATTERY_STATUS_DESCRIPTIONS]}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

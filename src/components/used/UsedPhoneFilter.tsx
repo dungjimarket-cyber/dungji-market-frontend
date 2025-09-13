@@ -6,7 +6,7 @@
 'use client';
 
 import React, { memo, useCallback, useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, X, Filter, Sparkles } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Filter, Sparkles, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,7 @@ interface FilterOptions {
   storage?: number;
   acceptOffers?: boolean;
   sortBy?: string;
+  region?: string;
 }
 
 interface UsedPhoneFilterProps {
@@ -52,9 +53,39 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({});
   const [searchInput, setSearchInput] = useState('');
+  const [regions, setRegions] = useState<any[]>([]);
+  const [selectedSido, setSelectedSido] = useState<string>('');
+  const [sigunguList, setSigunguList] = useState<any[]>([]);
   
   // 검색어 디바운싱 (300ms)
   const debouncedSearch = useDebounce(searchInput, 300);
+
+  // 지역 데이터 로드
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/regions/`);
+        const data = await response.json();
+        setRegions(data);
+      } catch (error) {
+        console.error('Failed to fetch regions:', error);
+      }
+    };
+    fetchRegions();
+  }, []);
+
+  // 시/도 선택 시 시/군/구 목록 업데이트
+  useEffect(() => {
+    if (selectedSido && regions.length > 0) {
+      const sido = regions.find(r => r.level === 0 && r.name === selectedSido);
+      if (sido) {
+        const subRegions = regions.filter(r => r.parent_id === sido.pk);
+        setSigunguList(subRegions);
+      }
+    } else {
+      setSigunguList([]);
+    }
+  }, [selectedSido, regions]);
 
   // 검색어 변경 시
   useEffect(() => {
@@ -169,6 +200,51 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               />
             </div>
 
+            {/* 지역 필터 */}
+            <Select
+              value={filters.region || 'all'}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  updateFilter('region', undefined);
+                  setSelectedSido('');
+                } else if (value.includes(' ')) {
+                  // 시/군/구 선택
+                  updateFilter('region', value);
+                } else {
+                  // 시/도만 선택
+                  setSelectedSido(value);
+                  updateFilter('region', value);
+                }
+              }}
+            >
+              <SelectTrigger className="w-40">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  <SelectValue placeholder="지역" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체 지역</SelectItem>
+                {regions.filter(r => r.level === 0).map(region => (
+                  <SelectItem key={region.pk} value={region.name}>
+                    {region.name}
+                  </SelectItem>
+                ))}
+                {selectedSido && sigunguList.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 border-t">
+                      {selectedSido} 하위 지역
+                    </div>
+                    {sigunguList.map(sigungu => (
+                      <SelectItem key={sigungu.pk} value={`${selectedSido} ${sigungu.name}`}>
+                        {sigungu.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
+              </SelectContent>
+            </Select>
+
             {/* 브랜드 필터 */}
             <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
               <SelectTrigger className="w-32">
@@ -254,6 +330,34 @@ const FilterContent = memo(function FilterContent({
   handlePriceChange,
   resetFilters
 }: any) {
+  const [regions, setRegions] = useState<any[]>([]);
+  const [selectedSido, setSelectedSido] = useState<string>('');
+  const [sigunguList, setSigunguList] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/regions/`);
+        const data = await response.json();
+        setRegions(data);
+      } catch (error) {
+        console.error('Failed to fetch regions:', error);
+      }
+    };
+    fetchRegions();
+  }, []);
+
+  useEffect(() => {
+    if (selectedSido && regions.length > 0) {
+      const sido = regions.find(r => r.level === 0 && r.name === selectedSido);
+      if (sido) {
+        const subRegions = regions.filter(r => r.parent_id === sido.pk);
+        setSigunguList(subRegions);
+      }
+    } else {
+      setSigunguList([]);
+    }
+  }, [selectedSido, regions]);
   const priceRange = [
     (filters.minPrice || 0) / 10000,
     (filters.maxPrice || 3000000) / 10000
@@ -261,6 +365,52 @@ const FilterContent = memo(function FilterContent({
 
   return (
     <div className="mt-6 space-y-6">
+      {/* 지역 */}
+      <div>
+        <Label className="flex items-center gap-1">
+          <MapPin className="w-3 h-3" />
+          거래 지역
+        </Label>
+        <Select
+          value={filters.region || 'all'}
+          onValueChange={(value) => {
+            if (value === 'all') {
+              updateFilter('region', undefined);
+              setSelectedSido('');
+            } else if (value.includes(' ')) {
+              updateFilter('region', value);
+            } else {
+              setSelectedSido(value);
+              updateFilter('region', value);
+            }
+          }}
+        >
+          <SelectTrigger className="mt-2">
+            <SelectValue placeholder="전체 지역" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 지역</SelectItem>
+            {regions.filter(r => r.level === 0).map(region => (
+              <SelectItem key={region.pk} value={region.name}>
+                {region.name}
+              </SelectItem>
+            ))}
+            {selectedSido && sigunguList.length > 0 && (
+              <>
+                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 border-t">
+                  {selectedSido} 하위 지역
+                </div>
+                {sigunguList.map(sigungu => (
+                  <SelectItem key={sigungu.pk} value={`${selectedSido} ${sigungu.name}`}>
+                    {sigungu.name}
+                  </SelectItem>
+                ))}
+              </>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* 브랜드 */}
       <div>
         <Label>브랜드</Label>
