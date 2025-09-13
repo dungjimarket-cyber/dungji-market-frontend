@@ -26,7 +26,6 @@ import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { formatCurrency as formatCurrencyUtil } from '@/lib/utils';
 
 export default async function UsedPhoneDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -1203,7 +1202,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Input
                   type="text"
                   placeholder="금액을 입력해주세요"
-                  value={formatCurrencyUtil(offerAmount)}
+                  value={offerAmount ? parseInt(offerAmount).toLocaleString('ko-KR') : ''}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^\d]/g, '');
                     const numValue = parseInt(value) || 0;
