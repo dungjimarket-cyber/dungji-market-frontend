@@ -680,9 +680,16 @@ export default function SellerSettings() {
     
     // 신청/재신청인 경우 즉시 pending 상태로 UI 업데이트
     if (formData.businessRegFile && !isEditingRemoteFile) {
-      setRemoteSalesStatus((prev: any) => ({
+      setRemoteSalesStatus({
+        status: 'pending',
+        message: '비대면 판매 인증 심사 중입니다.',
+        created_at: new Date().toISOString()
+      });
+      
+      // 기존 인증서 정보도 업데이트
+      setFormData(prev => ({
         ...prev,
-        status: 'pending'
+        existingCertification: URL.createObjectURL(formData.businessRegFile!)
       }));
     }
     
