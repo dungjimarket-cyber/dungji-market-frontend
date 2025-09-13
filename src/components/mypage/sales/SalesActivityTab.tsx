@@ -18,6 +18,7 @@ import {
 import { sellerAPI } from '@/lib/api/used';
 import { useToast } from '@/hooks/use-toast';
 import ReceivedOffersModal from './ReceivedOffersModal';
+import ReviewModal from '@/components/used/ReviewModal';
 
 interface SalesItem {
   id: number;
@@ -79,6 +80,12 @@ export default function SalesActivityTab() {
   const [cancellationReason, setCancellationReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [returnToSale, setReturnToSale] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{
+    transactionId: number;
+    buyerName: string;
+    phoneInfo: SalesItem;
+  } | null>(null);
 
   // 전체 목록 가져오기 (캐싱용)
   const fetchAllListings = async () => {
@@ -357,6 +364,34 @@ export default function SalesActivityTab() {
     }
   };
 
+  // 후기 작성 모달 열기
+  const openReviewModal = async (item: SalesItem) => {
+    try {
+      const transactionData = await sellerAPI.getTransactionInfo(item.id);
+      setReviewTarget({
+        transactionId: transactionData.id,
+        buyerName: transactionData.buyer.nickname,
+        phoneInfo: item,
+      });
+      setShowReviewModal(true);
+    } catch (error) {
+      console.error('Failed to get transaction info:', error);
+      toast({
+        title: '오류',
+        description: '거래 정보를 불러올 수 없습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // 후기 작성 완료 후 콜백
+  const handleReviewSuccess = () => {
+    setShowReviewModal(false);
+    setReviewTarget(null);
+    // 필요시 목록 새로고침
+    fetchAllListings();
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg p-4">
@@ -618,13 +653,7 @@ export default function SalesActivityTab() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            // 후기 작성 기능
-                            toast({
-                              title: '후기 작성',
-                              description: '후기 작성 기능이 곧 제공됩니다.',
-                            });
-                          }}
+                          onClick={() => openReviewModal(item)}
                           className="text-xs"
                         >
                           후기 작성
@@ -881,6 +910,25 @@ export default function SalesActivityTab() {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* 후기 작성 모달 */}
+      {showReviewModal && reviewTarget && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => {
+            setShowReviewModal(false);
+            setReviewTarget(null);
+          }}
+          transactionId={reviewTarget.transactionId}
+          revieweeName={reviewTarget.buyerName}
+          productInfo={{
+            brand: reviewTarget.phoneInfo.brand,
+            model: reviewTarget.phoneInfo.model,
+            price: reviewTarget.phoneInfo.price,
+          }}
+          onSuccess={handleReviewSuccess}
+        />
       )}
     </>
   );

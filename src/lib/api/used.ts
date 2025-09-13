@@ -76,6 +76,12 @@ export const sellerAPI = {
     const response = await api.get(`/used/phones/${phoneId}/buyer-info/`);
     return response.data;
   },
+
+  // 거래 정보 조회 (후기 작성용)
+  getTransactionInfo: async (phoneId: number) => {
+    const response = await api.get(`/used/phones/${phoneId}/transaction-info/`);
+    return response.data;
+  },
 };
 
 // 구매 관련 API
@@ -134,6 +140,12 @@ export const buyerAPI = {
     const response = await api.get(`/used/phones/${phoneId}/seller-info/`);
     return response.data;
   },
+
+  // 거래 정보 조회 (후기 작성용)
+  getTransactionInfo: async (phoneId: number) => {
+    const response = await api.get(`/used/phones/${phoneId}/transaction-info/`);
+    return response.data;
+  },
 };
 
 // 프로필 관련 API
@@ -171,21 +183,37 @@ export const profileAPI = {
 
 // 거래 후기 API
 export const reviewAPI = {
-  // 받은 후기 조회
-  getReceivedReviews: async () => {
-    const response = await api.get('/mypage/reviews/received/');
-    return response.data;
-  },
-
-  // 작성 대기 후기 조회
-  getPendingReviews: async () => {
-    const response = await api.get('/mypage/reviews/pending/');
-    return response.data;
-  },
-
   // 후기 작성
-  createReview: async (data: any) => {
-    const response = await api.post('/mypage/reviews/', data);
+  createReview: async (transactionId: number, data: {
+    rating: number;
+    comment: string;
+    is_punctual?: boolean;
+    is_friendly?: boolean;
+    is_honest?: boolean;
+    is_fast_response?: boolean;
+  }) => {
+    const response = await api.post('/used/reviews/', {
+      transaction: transactionId,
+      ...data,
+    });
+    return response.data;
+  },
+
+  // 내 후기 목록 조회
+  getMyReviews: async () => {
+    const response = await api.get('/used/reviews/');
+    return response.data;
+  },
+
+  // 사용자 평가 통계 조회
+  getUserStats: async () => {
+    const response = await api.get('/used/reviews/user-stats/');
+    return response.data;
+  },
+
+  // 특정 사용자의 평점 정보 조회
+  getUserRating: async (userId: number) => {
+    const response = await api.get(`/used/users/${userId}/rating/`);
     return response.data;
   },
 };

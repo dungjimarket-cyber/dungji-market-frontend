@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { buyerAPI } from '@/lib/api/used';
 import { useToast } from '@/hooks/use-toast';
+import ReviewModal from '@/components/used/ReviewModal';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -98,6 +99,16 @@ export default function PurchaseActivityTab() {
   const [cancellingItem, setCancellingItem] = useState<TradingItem | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [customReason, setCustomReason] = useState('');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{
+    transactionId: number;
+    sellerName: string;
+    phoneInfo: {
+      brand: string;
+      model: string;
+      price: number;
+    };
+  } | null>(null);
 
   // 내 제안 목록 조회
   const fetchMyOffers = async () => {
@@ -345,6 +356,38 @@ export default function PurchaseActivityTab() {
     }
   };
 
+  // 후기 작성 모달 열기
+  const openReviewModal = async (item: TradingItem) => {
+    try {
+      const transactionData = await buyerAPI.getTransactionInfo(item.phone.id);
+      setReviewTarget({
+        transactionId: transactionData.id,
+        sellerName: transactionData.seller.nickname,
+        phoneInfo: {
+          brand: item.phone.brand,
+          model: item.phone.model,
+          price: item.offered_price,
+        },
+      });
+      setShowReviewModal(true);
+    } catch (error) {
+      console.error('Failed to get transaction info:', error);
+      toast({
+        title: '오류',
+        description: '거래 정보를 불러올 수 없습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // 후기 작성 완료 후 콜백
+  const handleReviewSuccess = () => {
+    setShowReviewModal(false);
+    setReviewTarget(null);
+    // 필요시 목록 새로고침
+    fetchTradingItems();
+  };
+
   // 처음 로드시 모든 데이터 가져오기
   useEffect(() => {
     fetchMyOffers();
@@ -566,28 +609,14 @@ export default function PurchaseActivityTab() {
                     
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           className="flex items-center gap-1"
                           onClick={() => fetchSellerInfo(item.phone.id)}
                         >
                           <User className="w-3.5 h-3.5" />
                           판매자 정보
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            // 후기 작성 기능
-                            toast({
-                              title: '후기 작성',
-                              description: '후기 작성 기능이 곧 제공됩니다.',
-                            });
-                          }}
-                          className="text-xs"
-                        >
-                          후기 작성
                         </Button>
                       </div>
                       {/* 판매자가 완료하지 않은 경우에만 취소 버튼 표시 */}
@@ -658,13 +687,7 @@ export default function PurchaseActivityTab() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            // 후기 작성 기능
-                            toast({
-                              title: '후기 작성',
-                              description: '후기 작성 기능이 곧 제공됩니다.',
-                            });
-                          }}
+                          onClick={() => openReviewModal(item)}
                           className="text-xs"
                         >
                           후기 작성
@@ -948,6 +971,21 @@ export default function PurchaseActivityTab() {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* 후기 작성 모달 */}
+      {showReviewModal && reviewTarget && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => {
+            setShowReviewModal(false);
+            setReviewTarget(null);
+          }}
+          transactionId={reviewTarget.transactionId}
+          revieweeName={reviewTarget.sellerName}
+          productInfo={reviewTarget.phoneInfo}
+          onSuccess={handleReviewSuccess}
+        />
       )}
     </div>
   );
