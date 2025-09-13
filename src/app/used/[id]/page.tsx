@@ -26,6 +26,7 @@ import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/utils';
 
 export default async function UsedPhoneDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -247,12 +248,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
   };
 
-  // 가격 포맷팅
-  const formatCurrency = (value: string) => {
-    const numbers = value.replace(/[^\d]/g, '');
-    if (!numbers) return '';
-    return parseInt(numbers).toLocaleString();
-  };
+  // 가격 포맷팅 (로컬 함수 제거 - utils에서 import한 것 사용)
 
 
   // 가격 제안 확인
@@ -923,7 +919,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                     
                                     if (response.status === 200 || response.status === 204) {
                                       setMyOffer(null);
-                                      setRemainingOffers(prev => Math.min(5, prev + 1));
+                                      // 취소해도 5회 카운팅은 원복하지 않음
+                                      // setRemainingOffers(prev => Math.min(5, prev + 1));
+                                      fetchOfferCount(); // 서버에서 실제 카운트 다시 조회
                                       toast({
                                         title: '제안 취소',
                                         description: '가격 제안이 취소되었습니다.',
@@ -1199,7 +1197,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Input
                   type="text"
                   placeholder="금액을 입력해주세요"
-                  value={formatCurrency(offerAmount)}
+                  value={formatCurrencyUtil(offerAmount)}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^\d]/g, '');
                     const numValue = parseInt(value) || 0;
