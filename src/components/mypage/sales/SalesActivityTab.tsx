@@ -205,11 +205,16 @@ export default function SalesActivityTab() {
 
   // 실시간 상태 동기화 폴링 (거래중 탭에서만)
   useEffect(() => {
-    if (activeTab === 'trading' || activeTab === 'offers') {
-      // 거래중이거나 제안 탭일 때 폴링 시작
+    if (activeTab === 'trading') {
+      // 거래중 탭에서만 폴링 (30초 간격, 유휴시 자동 증가)
       pollingManager.start(() => {
         fetchAllListings();
-      }, 10000); // 10초마다 새로고침
+      }, 30000);
+    } else if (activeTab === 'offers') {
+      // 제안 탭에서는 더 긴 간격 (1분)
+      pollingManager.start(() => {
+        fetchAllListings();
+      }, 60000);
     } else {
       // 다른 탭에서는 폴링 중지
       pollingManager.stop();

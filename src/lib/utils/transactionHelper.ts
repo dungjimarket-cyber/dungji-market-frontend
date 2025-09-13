@@ -198,16 +198,72 @@ export async function executeTransactionAction(
 export class TransactionPollingManager {
   private intervalId: NodeJS.Timeout | null = null;
   private isPolling = false;
+  private lastFetchTime = 0;
+  private minInterval = 30000; // 최소 30초 간격
+  private maxInterval = 120000; // 최대 2분 간격
+  private currentInterval = 30000;
+  private idleTime = 0;
+  private idleCheckInterval: NodeJS.Timeout | null = null;
 
-  start(callback: () => void, interval: number = 5000) {
+  start(callback: () => void, interval: number = 30000) {
     if (this.isPolling) return;
 
     this.isPolling = true;
+    this.currentInterval = Math.max(this.minInterval, interval);
+
+    // 초기 실행
+    this.executeCallback(callback);
+
+    // 주기적 실행
     this.intervalId = setInterval(() => {
+      // 브라우저가 활성 상태이고, 최소 간격이 지났을 때만 실행
       if (document.visibilityState === 'visible') {
-        callback();
+        const now = Date.now();
+        if (now - this.lastFetchTime >= this.currentInterval) {
+          this.executeCallback(callback);
+        }
       }
-    }, interval);
+    }, this.currentInterval);
+
+    // 유휴 시간 체크 (사용자 활동 감지)
+    this.startIdleCheck(callback);
+  }
+
+  private executeCallback(callback: () => void) {
+    this.lastFetchTime = Date.now();
+    callback();
+  }
+
+  private startIdleCheck(callback: () => void) {
+    let lastActivity = Date.now();
+
+    const resetIdleTime = () => {
+      lastActivity = Date.now();
+      this.idleTime = 0;
+
+      // 활동 감지시 간격을 짧게
+      if (this.currentInterval > this.minInterval) {
+        this.currentInterval = this.minInterval;
+        this.restart(callback, this.currentInterval);
+      }
+    };
+
+    // 사용자 활동 감지
+    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+      document.addEventListener(event, resetIdleTime, { passive: true });
+    });
+
+    // 유휴 시간 체크 (10초마다)
+    this.idleCheckInterval = setInterval(() => {
+      const now = Date.now();
+      this.idleTime = now - lastActivity;
+
+      // 1분 이상 유휴시 간격을 늘림
+      if (this.idleTime > 60000 && this.currentInterval < this.maxInterval) {
+        this.currentInterval = Math.min(this.currentInterval * 2, this.maxInterval);
+        this.restart(callback, this.currentInterval);
+      }
+    }, 10000);
   }
 
   stop() {
@@ -215,10 +271,19 @@ export class TransactionPollingManager {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+    if (this.idleCheckInterval) {
+      clearInterval(this.idleCheckInterval);
+      this.idleCheckInterval = null;
+    }
     this.isPolling = false;
+
+    // 이벤트 리스너 제거
+    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+      document.removeEventListener(event, () => {});
+    });
   }
 
-  restart(callback: () => void, interval: number = 5000) {
+  restart(callback: () => void, interval: number = 30000) {
     this.stop();
     this.start(callback, interval);
   }
