@@ -29,7 +29,7 @@ interface OfferItem {
   };
   offered_price: number;
   message?: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
   created_at: string;
 }
 
@@ -58,7 +58,7 @@ interface TradingItem {
     model: string;
     price: number;
     images: { image_url: string; is_main: boolean }[];
-    status: 'trading' | 'sold';
+    status: 'trading' | 'sold' | 'active';
     seller_completed: boolean;
     buyer_completed: boolean;
     seller: {
@@ -70,7 +70,7 @@ interface TradingItem {
     };
   };
   offered_price: number;
-  status: 'accepted';
+  status: 'accepted' | 'cancelled';
   created_at: string;
 }
 
@@ -403,10 +403,10 @@ export default function PurchaseActivityTab() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="offers" className="text-xs sm:text-sm">
-            제안내역 ({offers.filter(offer => offer.status === 'pending').length})
+            제안내역 ({offers.filter(offer => offer.status !== 'cancelled' && offer.phone.status !== 'trading').length})
           </TabsTrigger>
           <TabsTrigger value="trading" className="text-xs sm:text-sm">
-            거래중 ({tradingItems.length})
+            거래중 ({tradingItems.filter(item => item.phone.status === 'trading' && item.status === 'accepted').length})
           </TabsTrigger>
           <TabsTrigger value="completed" className="text-xs sm:text-sm">
             구매완료 (0)
@@ -420,12 +420,12 @@ export default function PurchaseActivityTab() {
         <TabsContent value="offers" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : offers.filter(offer => offer.phone.status !== 'trading').length === 0 ? (
+          ) : offers.filter(offer => offer.phone.status !== 'trading' && offer.status !== 'cancelled').length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               제안한 상품이 없습니다
             </div>
           ) : (
-            offers.filter(offer => offer.phone.status !== 'trading').map((offer) => (
+            offers.filter(offer => offer.phone.status !== 'trading' && offer.status !== 'cancelled').map((offer) => (
               <Card key={offer.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <Link 
@@ -525,12 +525,14 @@ export default function PurchaseActivityTab() {
         <TabsContent value="trading" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : tradingItems.length === 0 ? (
+          ) : tradingItems.filter(item => item.phone.status === 'trading' && item.status === 'accepted').length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               거래중인 상품이 없습니다
             </div>
           ) : (
-            tradingItems.map((item) => (
+            tradingItems
+              .filter(item => item.phone.status === 'trading' && item.status === 'accepted')
+              .map((item) => (
               <Card key={item.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
