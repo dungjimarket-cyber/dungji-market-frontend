@@ -18,7 +18,7 @@ interface SalesItem {
   title: string;
   price: number;
   image: string;
-  status: 'active' | 'reserved' | 'sold';
+  status: 'active' | 'trading' | 'sold' | 'deleted';
   views: number;
   favorites: number;
   offers: number;
@@ -26,7 +26,7 @@ interface SalesItem {
 }
 
 export default function SalesTab() {
-  const [filter, setFilter] = useState<'all' | 'active' | 'reserved' | 'sold'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'trading' | 'sold'>('all');
   
   // 임시 데이터
   const [salesItems] = useState<SalesItem[]>([
@@ -46,7 +46,7 @@ export default function SalesTab() {
       title: 'Galaxy S23 Ultra 512GB',
       price: 950000,
       image: '/placeholder.png',
-      status: 'reserved',
+      status: 'trading',
       views: 89,
       favorites: 5,
       offers: 2,
@@ -73,8 +73,8 @@ export default function SalesTab() {
     switch (status) {
       case 'active':
         return <Badge className="bg-blue-500 text-white">판매중</Badge>;
-      case 'reserved':
-        return <Badge className="bg-orange-500 text-white">예약중</Badge>;
+      case 'trading':
+        return <Badge className="bg-orange-500 text-white">거래중</Badge>;
       case 'sold':
         return <Badge variant="secondary">판매완료</Badge>;
       default:
@@ -103,11 +103,11 @@ export default function SalesTab() {
             판매중 ({salesItems.filter(i => i.status === 'active').length})
           </Button>
           <Button
-            variant={filter === 'reserved' ? 'default' : 'outline'}
+            variant={filter === 'trading' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setFilter('reserved')}
+            onClick={() => setFilter('trading')}
           >
-            예약중 ({salesItems.filter(i => i.status === 'reserved').length})
+            거래중 ({salesItems.filter(i => i.status === 'trading').length})
           </Button>
           <Button
             variant={filter === 'sold' ? 'default' : 'outline'}
@@ -175,7 +175,7 @@ export default function SalesTab() {
                           </Button>
                         </>
                       )}
-                      {item.status === 'reserved' && (
+                      {item.status === 'trading' && (
                         <Button size="sm" variant="outline">
                           거래 완료
                         </Button>
@@ -193,14 +193,18 @@ export default function SalesTab() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="w-4 h-4 mr-2" />
-                            수정
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            삭제
-                          </DropdownMenuItem>
+                          {item.status === 'active' && (
+                            <DropdownMenuItem>
+                              <Edit className="w-4 h-4 mr-2" />
+                              수정
+                            </DropdownMenuItem>
+                          )}
+                          {(item.status === 'active' || item.status === 'trading') && (
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              삭제
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

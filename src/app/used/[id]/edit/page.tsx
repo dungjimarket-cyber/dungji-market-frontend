@@ -138,7 +138,15 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       
       // 지역 설정
       if (data.regions && data.regions.length > 0) {
-        setSelectedRegions(data.regions);
+        // regions 데이터를 MultiRegionDropdown 형식에 맞게 변환
+        const formattedRegions = data.regions.map((region: any) => ({
+          id: region.id,
+          province: region.full_name?.split(' ')[0] || region.name?.split(' ')[0] || '',
+          city: region.full_name?.split(' ')[1] || region.name?.split(' ')[1] || '',
+          full_name: region.full_name || region.name,
+          name: region.name
+        }));
+        setSelectedRegions(formattedRegions);
       }
       
     } catch (error) {
@@ -255,12 +263,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     }
     
     const files = Array.from(e.target.files || []);
-    const remainingSlots = 10 - images.length;
-    
+    const remainingSlots = 5 - images.length;
+
     if (files.length > remainingSlots) {
       toast({
         title: '이미지 제한',
-        description: `최대 10장까지만 등록 가능합니다. (${remainingSlots}장 추가 가능)`,
+        description: `최대 5장까지만 등록 가능합니다. (${remainingSlots}장 추가 가능)`,
         variant: 'destructive',
       });
       return;
@@ -439,13 +447,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               </button>
               <h1 className="text-lg font-semibold">중고폰 수정</h1>
             </div>
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting || !isModified}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              {submitting ? '수정 중...' : '수정 완료'}
-            </Button>
           </div>
         </div>
       </div>
@@ -613,14 +614,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               </div>
             ))}
             
-            {images.length < 10 && isFieldEditable('images') && (
+            {images.length < 5 && isFieldEditable('images') && (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
               >
                 <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-xs text-gray-600">{images.length}/10</span>
+                <span className="text-xs text-gray-600">{images.length}/5</span>
               </button>
             )}
           </div>
@@ -787,8 +788,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               {isFieldEditable('regions') ? (
                 <MultiRegionDropdown
                   selectedRegions={selectedRegions.map(r => ({
-                    province: r.sido || r.province || '',
-                    city: r.sigungu || r.city || ''
+                    province: r.province || r.sido || '',
+                    city: r.city || r.sigungu || ''
                   }))}
                   onSelectionChange={(regions) => {
                     setSelectedRegions(regions.map((r: any) => ({
@@ -839,6 +840,30 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
             </div>
           </div>
         </div>
+
+        {/* 하단 버튼 영역 */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
+          <div className="container mx-auto max-w-3xl flex gap-3">
+            <Button
+              type="button"
+              onClick={() => router.back()}
+              variant="outline"
+              className="flex-1 h-12"
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || !isModified}
+              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              {submitting ? '수정 중...' : '수정 완료'}
+            </Button>
+          </div>
+        </div>
+
+        {/* 하단 여백 */}
+        <div className="h-20"></div>
       </form>
     </div>
   );
