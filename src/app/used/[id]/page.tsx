@@ -42,9 +42,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const formatPrice = (value: string) => {
     // 숫자만 추출
     const numbers = value.replace(/[^\d]/g, '');
-    if (!numbers) return '';
+    if (!numbers || numbers === '0') return '';
     // 숫자를 원화 형식으로 변환
-    return parseInt(numbers).toLocaleString('ko-KR');
+    return Number(numbers).toLocaleString('ko-KR');
   };
 
   // 가격 언포맷팅 헬퍼 함수
@@ -1222,13 +1222,22 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Input
                   type="text"
                   placeholder="금액을 입력해주세요"
-                  value={formatPrice(offerAmount)}
+                  value={offerAmount ? Number(offerAmount).toLocaleString('ko-KR') : ''}
                   onChange={(e) => {
-                    const unformatted = unformatPrice(e.target.value);
-                    const numValue = parseInt(unformatted) || 0;
+                    // 입력값에서 숫자만 추출
+                    const inputValue = e.target.value;
+                    const numbersOnly = inputValue.replace(/[^\d]/g, '');
+
+                    if (numbersOnly === '') {
+                      setOfferAmount('');
+                      return;
+                    }
+
+                    const numValue = parseInt(numbersOnly) || 0;
+
                     // 즉시구매가 이상 입력 방지
                     if (numValue <= phone.price) {
-                      setOfferAmount(unformatted);
+                      setOfferAmount(numbersOnly);
                     }
                   }}
                   className="pr-12 h-12 text-lg font-semibold"
