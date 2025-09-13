@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
@@ -790,20 +791,17 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           setLoadingOffers(true);
                           try {
                             const token = localStorage.getItem('accessToken');
-                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-                            const apiUrl = baseUrl.includes('api.dungjimarket.com')
-                              ? `${baseUrl}/used/phones/${phoneId}/offers/`
-                              : `${baseUrl}/api/used/phones/${phoneId}/offers/`;
-                            const response = await fetch(apiUrl, {
-                              headers: {
-                                'Authorization': `Bearer ${token}`
+                            // API URL 수정: /phones/{id}/offers/ 엔드포인트 사용
+                            const response = await axios.get(
+                              `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/offers/`,
+                              {
+                                headers: {
+                                  'Authorization': `Bearer ${token}`
+                                }
                               }
-                            });
-                            if (response.ok) {
-                              const data = await response.json();
-                              setOffers(data);
-                              setShowOffersModal(true);
-                            }
+                            );
+                            setOffers(response.data);
+                            setShowOffersModal(true);
                           } catch (error) {
                             console.error('Failed to fetch offers:', error);
                             toast({
@@ -912,19 +910,18 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 if (confirm('제안을 취소하시겠습니까?')) {
                                   try {
                                     const token = localStorage.getItem('accessToken');
-                                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-                                    const apiUrl = baseUrl.includes('api.dungjimarket.com')
-                                      ? `${baseUrl}/used/phones/${phoneId}/offers/${myOffer.id}/cancel/`
-                                      : `${baseUrl}/api/used/phones/${phoneId}/offers/${myOffer.id}/cancel/`;
-                                    
-                                    const response = await fetch(apiUrl, {
-                                      method: 'POST',
-                                      headers: {
-                                        'Authorization': `Bearer ${token}`
+
+                                    const response = await axios.post(
+                                      `${process.env.NEXT_PUBLIC_API_URL}/used/offers/${myOffer.id}/cancel/`,
+                                      {},
+                                      {
+                                        headers: {
+                                          'Authorization': `Bearer ${token}`
+                                        }
                                       }
-                                    });
+                                    );
                                     
-                                    if (response.ok) {
+                                    if (response.status === 200 || response.status === 204) {
                                       setMyOffer(null);
                                       setRemainingOffers(prev => Math.min(5, prev + 1));
                                       toast({
