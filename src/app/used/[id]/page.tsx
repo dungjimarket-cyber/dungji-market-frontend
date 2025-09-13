@@ -1603,7 +1603,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       setShowOfferModal(true);
                     }
                   }}
-                  disabled={phone.status !== 'active' || (remainingOffers <= 0 && !myOffer)}
+                  disabled={phone.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
                   className="w-full h-12 text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
