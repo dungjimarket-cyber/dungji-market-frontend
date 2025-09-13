@@ -677,6 +677,15 @@ export default function SellerSettings() {
 
   const saveRemoteSales = async () => {
     setSaving(true);
+    
+    // 신청/재신청인 경우 즉시 pending 상태로 UI 업데이트
+    if (formData.businessRegFile && !isEditingRemoteFile) {
+      setRemoteSalesStatus(prev => ({
+        ...prev,
+        status: 'pending'
+      }));
+    }
+    
     try {
       // 파일 업로드가 필요한 경우
       if (formData.businessRegFile || formData.deleteCertification) {
@@ -759,6 +768,22 @@ export default function SellerSettings() {
       }
     } catch (error) {
       console.error('비대면 판매 설정 저장 오류:', error);
+      
+      // 에러 발생 시 상태 다시 조회하여 원래 상태로 복원
+      try {
+        const statusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/remote-sales-status/`, {
+          headers: {
+            'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
+          }
+        });
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          setRemoteSalesStatus(statusData);
+        }
+      } catch (err) {
+        console.error('상태 복원 오류:', err);
+      }
+      
       toast({
         variant: 'destructive',
         title: '저장 실패',
