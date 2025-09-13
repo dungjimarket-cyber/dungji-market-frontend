@@ -534,37 +534,35 @@ export default function SalesActivityTab() {
                         </div>
                       </div>
                       
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="flex items-center gap-1"
-                            onClick={() => fetchBuyerInfo(item.id)}
-                            disabled={loadingBuyerInfo}
-                          >
-                            <User className="w-3.5 h-3.5" />
-                            구매자 정보
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => {
-                              if (confirm('판매를 완료하시겠습니까?')) {
-                                handleCompleteTransaction(item.id);
-                              }
-                            }}
-                          >
-                            판매 완료
-                          </Button>
-                        </div>
-                        <Button 
-                          size="sm" 
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          size="sm"
                           variant="outline"
-                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          className="flex items-center gap-1"
+                          onClick={() => fetchBuyerInfo(item.id)}
+                          disabled={loadingBuyerInfo}
+                        >
+                          <User className="w-3.5 h-3.5" />
+                          구매자 정보
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            if (confirm('판매를 완료하시겠습니까?')) {
+                              handleCompleteTransaction(item.id);
+                            }
+                          }}
+                        >
+                          판매 완료
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50 px-2 py-1 h-7 text-xs"
                           onClick={() => openCancelModal(item)}
                         >
-                          거래 취소
+                          취소
                         </Button>
                       </div>
                     </div>
