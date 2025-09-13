@@ -151,11 +151,16 @@ export default function SalesActivityTab() {
         title: '제안 수락',
         description: '제안을 수락했습니다. 거래가 시작됩니다.',
       });
-      if (selectedPhone) {
-        fetchReceivedOffers(selectedPhone.id);
-        // 목록 새로고침
-        fetchAllListings();
-      }
+
+      // 모달 닫기
+      setShowOffersModal(false);
+      setSelectedPhone(null);
+
+      // 목록 새로고침
+      await fetchAllListings();
+
+      // 거래중 탭으로 이동
+      setActiveTab('trading');
     } catch (error) {
       toast({
         title: '오류',
