@@ -1013,7 +1013,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         )}
                         
                         {/* 제안 횟수 표시 */}
-                        {(myOffer || offerCount > 0) && (
+                        {(myOffer || (offerCount !== null && offerCount > 0)) && (
                           <div className="mt-2 text-center">
                             <p className="text-sm text-gray-600">
                               남은 제안 횟수: <span className="font-semibold text-dungji-primary">{remainingOffers !== null ? `${remainingOffers}/5회` : '로딩중...'}</span>
@@ -1223,9 +1223,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   <div>
                     <p className="text-sm font-medium text-red-900">
                       제안 횟수를 모두 사용했습니다
-                    </p>
-                    <p className="text-xs text-red-700 mt-1">
-                      기존 제안을 취소하면 다시 제안할 수 있습니다
                     </p>
                   </div>
                 </div>
