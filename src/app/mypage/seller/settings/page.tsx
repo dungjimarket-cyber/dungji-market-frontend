@@ -681,7 +681,11 @@ export default function SellerSettings() {
       // 파일 업로드가 필요한 경우
       if (formData.businessRegFile || formData.deleteCertification) {
         const formDataWithFile = new FormData();
-        formDataWithFile.append('is_remote_sales', String(formData.isRemoteSales));
+        
+        // 파일 변경 모드가 아닐 때만 is_remote_sales 추가
+        if (!isEditingRemoteFile) {
+          formDataWithFile.append('is_remote_sales', 'true');
+        }
         
         if (formData.businessRegFile) {
           formDataWithFile.append('remote_sales_certification', formData.businessRegFile);
@@ -702,11 +706,36 @@ export default function SellerSettings() {
         if (response.ok) {
           toast({
             title: '저장 완료',
-            description: '비대면 판매 설정이 변경되었습니다.'
+            description: isEditingRemoteFile ? '인증서가 변경되었습니다.' : '비대면 판매 설정이 변경되었습니다.'
           });
-          setTimeout(() => window.location.reload(), 500);
+          
+          // 프로필 데이터 새로고침
+          const updatedData = await getSellerProfile();
+          setProfile(updatedData);
+          
+          // 비대면 인증 상태 새로고침
+          try {
+            const statusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seller/remote-sales-status/`, {
+              headers: {
+                'Authorization': `Bearer ${await tokenUtils.getAccessToken()}`
+              }
+            });
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
+              setRemoteSalesStatus(statusData);
+            }
+          } catch (err) {
+            console.error('비대면 인증 상태 새로고침 오류:', err);
+          }
+          
+          // 파일 변경 모드 종료
+          if (isEditingRemoteFile) {
+            setIsEditingRemoteFile(false);
+            setFormData(prev => ({ ...prev, businessRegFile: null }));
+          }
         } else {
-          throw new Error('업데이트 실패');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || '업데이트 실패');
         }
       } else {
         // 파일 업로드가 없는 경우

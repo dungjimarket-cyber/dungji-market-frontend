@@ -290,12 +290,12 @@ export default function PurchaseConfirmedGroupBuys() {
                       <Button 
                         size="sm" 
                         variant="destructive"
-                        className="flex-1"
+                        className="flex-1 sm:flex-initial"
                         onClick={() => handleNoShowReport(groupBuy.id)}
                         disabled={!groupBuy.id}
                       >
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        노쇼 신고하기
+                        <AlertTriangle className="h-4 w-4 mr-1" />
+                        노쇼신고
                       </Button>
                     </div>
                   ) : (
