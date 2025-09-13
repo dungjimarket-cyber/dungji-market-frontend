@@ -1209,6 +1209,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     }
                   }}
                   className="pr-12 h-12 text-lg font-semibold"
+                  inputMode="numeric"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium">원</span>
               </div>

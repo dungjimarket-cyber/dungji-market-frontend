@@ -36,12 +36,14 @@ export function formatPrice(price: number | undefined): string {
 
 /**
  * 통화를 포맷팅하는 함수
- * @param amount 포맷팅할 금액
+ * @param amount 포맷팅할 금액 (문자열도 가능)
  * @returns 포맷팅된 통화 문자열 (예: 123,456원)
  */
-export function formatCurrency(amount: number | undefined): string {
-  if (amount === undefined || amount === null) return '0원';
-  return `${formatNumberWithCommas(amount)}원`;
+export function formatCurrency(amount: number | string | undefined): string {
+  if (amount === undefined || amount === null || amount === '') return '';
+  const numAmount = typeof amount === 'string' ? parseInt(amount.replace(/[^\d]/g, '')) || 0 : amount;
+  if (numAmount === 0) return '';
+  return formatNumberWithCommas(numAmount);
 }
 
 /**
