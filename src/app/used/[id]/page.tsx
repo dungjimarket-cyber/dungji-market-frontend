@@ -995,7 +995,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         )}
                         
                         {/* 내가 제안한 금액 표시 */}
-                        {myOffer && (
+                        {myOffer && myOffer.status !== 'cancelled' && (
                           <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex items-center justify-between">
                               <div>
