@@ -1260,24 +1260,14 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {formData.battery_status && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600">
-                      <span className="font-medium">{BATTERY_STATUS_LABELS[formData.battery_status as keyof typeof BATTERY_STATUS_LABELS]}:</span>{' '}
-                      {BATTERY_STATUS_DESCRIPTIONS[formData.battery_status as keyof typeof BATTERY_STATUS_DESCRIPTIONS]}
-                    </p>
-                  </div>
-                )}
                 <div className="mt-2 space-y-1">
-                  <p className="text-xs text-gray-500">
-                    <span className="font-medium">확인 방법:</span>
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    • iPhone: 설정 → 배터리 → 배터리 성능 상태
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    • Android: 설정 → 디바이스 케어 → 배터리
-                  </p>
+                  <div className="text-xs text-gray-500 space-y-0.5">
+                    <div><span className="font-medium text-green-600">🟢 최상:</span> 새제품 또는 새제품 수준 • 하루 종일 충전 걱정 없음</div>
+                    <div><span className="font-medium text-blue-600">🔵 좋음:</span> 하루 사용 시 충전 없이 가능 • 아침부터 저녁까지 일반 사용 OK</div>
+                    <div><span className="font-medium text-yellow-600">🟡 보통:</span> 가끔 충전 필요, 발열 시 급속 감소 • 오후에 한 번은 충전해야 함</div>
+                    <div><span className="font-medium text-red-600">🔴 나쁨:</span> 충전 자주 필요, 교체 고려 상태 • 반나절도 버티기 어려움</div>
+                    <div><span className="font-medium text-gray-600">⚫ 불량:</span> 간헐적으로 꺼짐, 교체 필요 • 갑자기 전원이 꺼지거나 불안정</div>
+                  </div>
                 </div>
               </div>
             </div>
