@@ -19,6 +19,7 @@ import { sellerAPI } from '@/lib/api/used';
 import { useToast } from '@/hooks/use-toast';
 import ReceivedOffersModal from './ReceivedOffersModal';
 import ReviewModal from '@/components/used/ReviewModal';
+import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
 
 interface SalesItem {
   id: number;
@@ -86,6 +87,7 @@ export default function SalesActivityTab() {
     buyerName: string;
     phoneInfo: SalesItem;
   } | null>(null);
+  const [pollingManager] = useState(() => new TransactionPollingManager());
 
   // 전체 목록 가져오기 (캐싱용)
   const fetchAllListings = async () => {
@@ -152,29 +154,18 @@ export default function SalesActivityTab() {
 
   // 제안 응답 (수락만 가능)
   const handleOfferResponse = async (offerId: number, action: 'accept') => {
-    try {
-      await sellerAPI.respondToOffer(offerId, action);
-      toast({
-        title: '제안 수락',
-        description: '제안을 수락했습니다. 거래가 시작됩니다.',
-      });
-
-      // 모달 닫기
-      setShowOffersModal(false);
-      setSelectedPhone(null);
-
-      // 목록 새로고침
-      await fetchAllListings();
-
-      // 거래중 탭으로 이동
-      setActiveTab('trading');
-    } catch (error) {
-      toast({
-        title: '오류',
-        description: '제안 수락에 실패했습니다.',
-        variant: 'destructive',
-      });
-    }
+    await executeTransactionAction(
+      () => sellerAPI.respondToOffer(offerId, action),
+      {
+        successMessage: '제안을 수락했습니다. 거래가 시작됩니다.',
+        onSuccess: () => {
+          setShowOffersModal(false);
+          setSelectedPhone(null);
+        },
+        onRefresh: fetchAllListings,
+        onTabChange: setActiveTab,
+      }
+    );
   };
 
   // 거래 진행 (수락된 제안을 거래중으로 전환)
@@ -212,6 +203,24 @@ export default function SalesActivityTab() {
     }
   }, [activeTab]);
 
+  // 실시간 상태 동기화 폴링 (거래중 탭에서만)
+  useEffect(() => {
+    if (activeTab === 'trading' || activeTab === 'offers') {
+      // 거래중이거나 제안 탭일 때 폴링 시작
+      pollingManager.start(() => {
+        fetchAllListings();
+      }, 10000); // 10초마다 새로고침
+    } else {
+      // 다른 탭에서는 폴링 중지
+      pollingManager.stop();
+    }
+
+    // 컴포넌트 언마운트 시 폴링 중지
+    return () => {
+      pollingManager.stop();
+    };
+  }, [activeTab]);
+
   const getStatusBadge = (status: string) => {
     const badges = {
       active: <Badge variant="default">판매중</Badge>,
@@ -228,40 +237,34 @@ export default function SalesActivityTab() {
 
   // 판매 완료 처리
   const handleCompleteTransaction = async (phoneId: number) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/complete-trade/`
-        : `${baseUrl}/api/used/phones/${phoneId}/complete-trade/`;
+    await executeTransactionAction(
+      async () => {
+        const token = localStorage.getItem('accessToken');
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const apiUrl = baseUrl.includes('api.dungjimarket.com')
+          ? `${baseUrl}/used/phones/${phoneId}/complete-trade/`
+          : `${baseUrl}/api/used/phones/${phoneId}/complete-trade/`;
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        toast({
-          title: '거래 완료',
-          description: '거래가 완료되었습니다.',
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
-        // 목록 새로고침
-        fetchAllListings();
-        setActiveTab('sold');
-      } else {
-        throw new Error('거래 완료 처리 실패');
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw { response: { data: errorData } };
+        }
+        return response;
+      },
+      {
+        successMessage: '거래가 완료되었습니다.',
+        onRefresh: fetchAllListings,
+        onTabChange: setActiveTab,
       }
-    } catch (error) {
-      console.error('Failed to complete transaction:', error);
-      toast({
-        title: '오류',
-        description: '거래 완료 처리 중 문제가 발생했습니다.',
-        variant: 'destructive',
-      });
-    }
+    );
   };
 
   // 거래 취소 모달 열기
@@ -276,7 +279,7 @@ export default function SalesActivityTab() {
   // 거래 취소 처리
   const handleCancelTransaction = async () => {
     if (!cancellingItem) return;
-    
+
     if (!cancellationReason) {
       toast({
         title: '오류',
@@ -297,45 +300,41 @@ export default function SalesActivityTab() {
 
     const phoneId = cancellingItem.id;
 
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = `${baseUrl}/used/phones/${phoneId}/cancel-trade/`;
+    await executeTransactionAction(
+      async () => {
+        const token = localStorage.getItem('accessToken');
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const apiUrl = `${baseUrl}/used/phones/${phoneId}/cancel-trade/`;
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: cancellationReason,
-          custom_reason: cancellationReason === 'other' ? customReason : null,
-          return_to_sale: returnToSale
-        })
-      });
-
-      if (response.ok) {
-        toast({
-          title: '거래 취소',
-          description: returnToSale ? '거래가 취소되고 상품이 판매중으로 변경되었습니다.' : '거래가 취소되었습니다.',
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reason: cancellationReason,
+            custom_reason: cancellationReason === 'other' ? customReason : null,
+            return_to_sale: returnToSale
+          })
         });
-        setShowCancelModal(false);
-        setCancellingItem(null);
-        // 목록 새로고침
-        fetchAllListings();
-        setActiveTab(returnToSale ? 'active' : 'sold');
-      } else {
-        throw new Error('거래 취소 처리 실패');
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw { response: { data: errorData } };
+        }
+        return response;
+      },
+      {
+        successMessage: returnToSale ? '거래가 취소되고 상품이 판매중으로 변경되었습니다.' : '거래가 취소되었습니다.',
+        onSuccess: () => {
+          setShowCancelModal(false);
+          setCancellingItem(null);
+        },
+        onRefresh: fetchAllListings,
+        onTabChange: setActiveTab,
       }
-    } catch (error) {
-      console.error('Failed to cancel transaction:', error);
-      toast({
-        title: '오류',
-        description: '거래 취소 처리 중 문제가 발생했습니다.',
-        variant: 'destructive',
-      });
-    }
+    );
   };
   
   const getTotalOfferCount = () => {

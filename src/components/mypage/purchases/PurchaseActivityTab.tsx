@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { buyerAPI } from '@/lib/api/used';
 import { useToast } from '@/hooks/use-toast';
 import ReviewModal from '@/components/used/ReviewModal';
+import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -109,6 +110,7 @@ export default function PurchaseActivityTab() {
       price: number;
     };
   } | null>(null);
+  const [pollingManager] = useState(() => new TransactionPollingManager());
 
   // 내 제안 목록 조회
   const fetchMyOffers = async () => {
@@ -204,20 +206,14 @@ export default function PurchaseActivityTab() {
 
   // 제안 취소
   const handleCancelOffer = async (offerId: number) => {
-    try {
-      await buyerAPI.cancelOffer(offerId);
-      toast({
-        title: '제안 취소',
-        description: '제안이 취소되었습니다.',
-      });
-      fetchMyOffers();
-    } catch (error) {
-      toast({
-        title: '오류',
-        description: '제안 취소에 실패했습니다.',
-        variant: 'destructive',
-      });
-    }
+    await executeTransactionAction(
+      () => buyerAPI.cancelOffer(offerId),
+      {
+        successMessage: '제안이 취소되었습니다.',
+        onRefresh: fetchMyOffers,
+        onTabChange: setActiveTab,
+      }
+    );
   };
 
   // 찜 해제
@@ -257,31 +253,34 @@ export default function PurchaseActivityTab() {
   // 거래 취소 모달 열기
   // 구매 완료 처리
   const handleCompleteTransaction = async (phoneId: number) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/buyer-complete/`
-        : `${baseUrl}/api/used/phones/${phoneId}/buyer-complete/`;
+    await executeTransactionAction(
+      async () => {
+        const token = localStorage.getItem('accessToken');
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const apiUrl = baseUrl.includes('api.dungjimarket.com')
+          ? `${baseUrl}/used/phones/${phoneId}/buyer-complete/`
+          : `${baseUrl}/api/used/phones/${phoneId}/buyer-complete/`;
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw { response: { data: errorData } };
         }
-      });
-
-      if (!response.ok) {
-        throw new Error('구매 완료 처리 실패');
+        return response;
+      },
+      {
+        successMessage: '구매가 완료되었습니다.',
+        onRefresh: fetchTradingItems,
+        onTabChange: setActiveTab,
       }
-
-      alert('구매가 완료되었습니다.');
-      fetchTradingItems(); // 목록 새로고침
-    } catch (error) {
-      console.error('구매 완료 처리 실패:', error);
-      alert('구매 완료 처리 중 오류가 발생했습니다.');
-    }
+    );
   };
 
   const openCancelModal = (item: TradingItem) => {
@@ -294,7 +293,7 @@ export default function PurchaseActivityTab() {
   // 거래 취소 처리
   const handleCancelTransaction = async () => {
     if (!cancellingItem) return;
-    
+
     if (!cancellationReason) {
       toast({
         title: '오류',
@@ -313,47 +312,40 @@ export default function PurchaseActivityTab() {
       return;
     }
 
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = `${baseUrl}/used/phones/${cancellingItem.phone.id}/cancel-trade/`;
+    await executeTransactionAction(
+      async () => {
+        const token = localStorage.getItem('accessToken');
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const apiUrl = `${baseUrl}/used/phones/${cancellingItem.phone.id}/cancel-trade/`;
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            reason: cancellationReason,
+            custom_reason: cancellationReason === 'other' ? customReason : null,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw { response: { data: errorData } };
+        }
+        return response;
+      },
+      {
+        successMessage: '거래가 취소되었습니다.',
+        onSuccess: () => {
+          setShowCancelModal(false);
+          setCancellingItem(null);
         },
-        body: JSON.stringify({
-          reason: cancellationReason,
-          custom_reason: cancellationReason === 'other' ? customReason : null,
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: '거래 취소',
-          description: '거래가 취소되었습니다.',
-        });
-        setShowCancelModal(false);
-        setCancellingItem(null);
-        fetchTradingItems();
-      } else {
-        const data = await response.json();
-        toast({
-          title: '오류',
-          description: data.error || '거래 취소 처리에 실패했습니다.',
-          variant: 'destructive',
-        });
+        onRefresh: fetchTradingItems,
+        onTabChange: setActiveTab,
       }
-    } catch (error) {
-      console.error('Failed to cancel transaction:', error);
-      toast({
-        title: '오류',
-        description: '거래 취소 처리에 실패했습니다.',
-        variant: 'destructive',
-      });
-    }
+    );
   };
 
   // 후기 작성 모달 열기
@@ -401,9 +393,33 @@ export default function PurchaseActivityTab() {
       fetchMyOffers();
     } else if (activeTab === 'trading') {
       fetchTradingItems();
+    } else if (activeTab === 'completed') {
+      fetchTradingItems();
     } else if (activeTab === 'favorites') {
       fetchFavorites();
     }
+  }, [activeTab]);
+
+  // 실시간 상태 동기화 폴링
+  useEffect(() => {
+    if (activeTab === 'trading' || activeTab === 'offers') {
+      // 거래중이거나 제안 탭일 때 폴링 시작
+      pollingManager.start(() => {
+        if (activeTab === 'offers') {
+          fetchMyOffers();
+        } else if (activeTab === 'trading') {
+          fetchTradingItems();
+        }
+      }, 10000); // 10초마다 새로고침
+    } else {
+      // 다른 탭에서는 폴링 중지
+      pollingManager.stop();
+    }
+
+    // 컴포넌트 언마운트 시 폴링 중지
+    return () => {
+      pollingManager.stop();
+    };
   }, [activeTab]);
 
   const getOfferStatusBadge = (status: string) => {
