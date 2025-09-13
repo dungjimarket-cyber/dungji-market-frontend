@@ -22,9 +22,12 @@ export default function UserRatingBadge({
     const fetchStats = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/?user_id=${userId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/used/users/${userId}/rating/`
         );
-        setStats(response.data);
+        setStats({
+          avg_rating: response.data.average_rating,
+          total_reviews: response.data.total_reviews
+        });
       } catch (error) {
         console.error('Failed to fetch user stats:', error);
       } finally {
