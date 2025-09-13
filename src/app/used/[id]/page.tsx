@@ -298,6 +298,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
 
     const amount = parseInt(offerAmount);
+    // 수정인지 신규 제안인지 확인
+    const isModification = myOffer && myOffer.status === 'pending';
 
     try {
       const token = localStorage.getItem('accessToken');
@@ -307,7 +309,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         : `${baseUrl}/api/used/phones/${phoneId}/offer/`;
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
@@ -319,39 +321,43 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // 즉시구매 여부 확인
         if (data.type === 'instant_purchase') {
           toast({
             title: '즉시구매 완료!',
             description: '거래가 시작되었습니다. 판매자 연락처를 확인해주세요.',
           });
-          
+
           // 판매자 연락처 표시 모달 또는 알림
           if (data.seller_contact) {
             // 연락처 정보를 표시하거나 저장
             console.log('판매자 연락처:', data.seller_contact);
           }
-          
+
           // 페이지 새로고침 또는 상태 업데이트
           setTimeout(() => {
             window.location.reload();
           }, 2000);
         } else {
           toast({
-            title: '제안 완료',
-            description: '판매자에게 가격 제안이 전달되었습니다.',
+            title: isModification ? '제안 수정 완료' : '제안 완료',
+            description: isModification
+              ? '가격 제안이 수정되었습니다.'
+              : '판매자에게 가격 제안이 전달되었습니다.',
           });
         }
-        
+
         setShowOfferModal(false);
         setShowConfirmModal(false);
         setOfferAmount('');
         setOfferMessage('');
         setSelectedMessages([]);
+
+        // 신규 제안이든 수정이든 모두 카운트 증가 및 남은 횟수 차감
         setOfferCount(prev => prev + 1);
-        // 실시간 제안 횟수 차감 카운팅
         setRemainingOffers(prev => Math.max(0, prev - 1));
+
         // 내 제안 정보 다시 불러오기
         fetchMyOffer();
       } else {
