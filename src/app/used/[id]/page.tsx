@@ -58,6 +58,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
+  const [displayAmount, setDisplayAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -267,8 +268,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
   // 가격 제안 확인
   const handleOfferConfirm = () => {
-    const amount = parseInt(offerAmount);
-    
+    let amount = parseInt(offerAmount);
+
     if (!amount || amount < (phone?.min_offer_price || 0)) {
       toast({
         title: '제안 금액 확인',
@@ -276,6 +277,18 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         variant: 'destructive',
       });
       return;
+    }
+
+    // 천원 단위로 반올림 (1원 단위 입력 시 자동 반올림)
+    const roundedAmount = Math.round(amount / 1000) * 1000;
+    if (roundedAmount !== amount) {
+      amount = roundedAmount;
+      setOfferAmount(amount.toString());
+      setDisplayAmount(amount.toLocaleString('ko-KR'));
+      toast({
+        title: '금액 자동 조정',
+        description: `천원 단위로 조정되었습니다: ${amount.toLocaleString()}원`,
+      });
     }
 
     if (amount > 9900000) {
@@ -365,6 +378,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         setShowOfferModal(false);
         setShowConfirmModal(false);
         setOfferAmount('');
+        setDisplayAmount('');
         setOfferMessage('');
         setSelectedMessages([]);
 
@@ -891,6 +905,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               if (myOffer && myOffer.status === 'pending') {
                                 // 수정 제안 - 기존 금액과 메시지 설정
                                 setOfferAmount(myOffer.amount.toString());
+                                setDisplayAmount(myOffer.amount.toLocaleString('ko-KR'));
                                 if (myOffer.message) {
                                   setOfferMessage(myOffer.message);
                                 }
@@ -1158,7 +1173,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <p className="text-sm text-gray-500 mt-1">판매자에게 희망 가격을 제안해보세요</p>
               </div>
               <button
-                onClick={() => setShowOfferModal(false)}
+                onClick={() => {
+                  setShowOfferModal(false);
+                  setOfferAmount('');
+                  setDisplayAmount('');
+                  setOfferMessage('');
+                  setSelectedMessages([]);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -1222,14 +1243,25 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Input
                   type="text"
                   placeholder="금액을 입력해주세요"
-                  value={formatPrice(offerAmount)}
+                  value={displayAmount}
                   onChange={(e) => {
-                    const unformatted = unformatPrice(e.target.value);
-                    // 최대 금액 제한 (즉시구매가까지)
-                    if (parseInt(unformatted) > phone.price) {
+                    const inputValue = e.target.value;
+                    const numbersOnly = inputValue.replace(/[^\d]/g, '');
+
+                    if (numbersOnly === '') {
+                      setOfferAmount('');
+                      setDisplayAmount('');
                       return;
                     }
-                    setOfferAmount(unformatted);
+
+                    const numValue = parseInt(numbersOnly);
+                    // 최대 금액 제한 (즉시구매가까지)
+                    if (numValue > phone.price) {
+                      return;
+                    }
+
+                    setOfferAmount(numbersOnly);
+                    setDisplayAmount(numValue.toLocaleString('ko-KR'));
                   }}
                   className="pr-12 h-12 text-lg font-semibold"
                   inputMode="numeric"
@@ -1242,7 +1274,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </p>
                 <button
                   type="button"
-                  onClick={() => setOfferAmount(phone.price.toString())}
+                  onClick={() => {
+                    setOfferAmount(phone.price.toString());
+                    setDisplayAmount(phone.price.toLocaleString('ko-KR'));
+                  }}
                   className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                 >
                   즉시구매가 입력
@@ -1346,6 +1381,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 onClick={() => {
                   setShowOfferModal(false);
                   setOfferAmount('');
+                  setDisplayAmount('');
                   setSelectedMessages([]);
                 }}
                 className="flex-1 h-12"
@@ -1560,6 +1596,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     if (myOffer && myOffer.status === 'pending') {
                       // 수정 제안 - 기존 금액과 메시지 설정
                       setOfferAmount(myOffer.amount.toString());
+                      setDisplayAmount(myOffer.amount.toLocaleString('ko-KR'));
                       if (myOffer.message) {
                         setOfferMessage(myOffer.message);
                       }
