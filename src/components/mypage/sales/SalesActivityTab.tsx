@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, DollarSign, Clock, CheckCircle, Phone, Mail, MapPin, Info, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +62,7 @@ interface BuyerInfo {
 }
 
 export default function SalesActivityTab() {
+  const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('active');
   const [listings, setListings] = useState<SalesItem[]>([]);
@@ -432,8 +434,12 @@ export default function SalesActivityTab() {
                         >
                           제안 확인
                         </Button>
-                        <Button size="sm" variant="outline">
-                          수정
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => router.push(`/used/${item.id}/edit`)}
+                        >
+                          상품 수정
                         </Button>
                       </div>
                     </div>
