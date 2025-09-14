@@ -819,8 +819,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       <Button
                         onClick={() => {
                           console.log('판매자 후기 버튼 클릭');
+                          console.log('phone 전체 객체:', phone);
                           console.log('phone.transaction_id:', phone.transaction_id);
                           console.log('phone.buyer:', phone.buyer);
+                          console.log('phone.model_name:', phone.model_name);
                           console.log('reviewCompleted:', reviewCompleted);
                           if (!reviewCompleted) {
                             setReviewTarget('buyer');
@@ -1625,7 +1627,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           isOpen={showTradeCompleteModal}
           onClose={() => setShowTradeCompleteModal(false)}
           phoneId={parseInt(phoneId)}
-          phoneModel={phone.model}
+          phoneModel={phone.model_name || phone.model || ''}
           isSeller={user?.id === phone.seller?.id}
           onComplete={() => {
             fetchPhoneDetail();
@@ -1648,8 +1650,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           }}
           transactionId={phone.transaction_id || 0} // 트랜잭션 ID가 필요함
           isSeller={reviewTarget === 'buyer'} // 판매자가 구매자를 평가하는 경우
-          partnerName={reviewTarget === 'buyer' ? (phone.buyer?.nickname || '구매자') : (phone.seller?.username || phone.seller?.nickname || '판매자')}
-          phoneModel={phone.model}
+          partnerName={reviewTarget === 'buyer' ? (phone.buyer?.nickname || phone.buyer?.username || '구매자') : (phone.seller?.nickname || phone.seller?.username || '판매자')}
+          phoneModel={phone.model_name || phone.model || ''}
           onReviewComplete={() => {
             setReviewCompleted(true);  // 후기 작성 완료 상태 업데이트
             fetchPhoneDetail();
