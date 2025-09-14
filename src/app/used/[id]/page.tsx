@@ -801,7 +801,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     )}
 
                     {/* 거래완료 상태일 때 후기 작성 버튼 표시 */}
-                    {phone.status === 'completed' && phone.seller?.id === user?.id && !phone.seller_reviewed && (
+                    {phone.status === 'sold' && phone.seller?.id === user?.id && !phone.seller_reviewed && (
                       <Button
                         onClick={() => {
                           setReviewTarget('buyer');
@@ -855,7 +855,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   /* 다른 사람의 상품인 경우 */
                   <>
                     {/* 거래완료 상태일 때 구매자도 후기 작성 가능 */}
-                    {phone.status === 'completed' && phone.buyer?.id === user?.id && !phone.buyer_reviewed && (
+                    {phone.status === 'sold' && phone.buyer?.id === user?.id && !phone.buyer_reviewed && (
                       <Button
                         onClick={() => {
                           setReviewTarget('seller');
@@ -869,7 +869,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     )}
 
                     {/* 거래가 완료된 경우 안내 메시지 */}
-                    {phone.status === 'completed' && phone.buyer?.id !== user?.id && (
+                    {phone.status === 'sold' && phone.buyer?.id !== user?.id && (
                       <div className="p-4 bg-gray-100 rounded-lg mb-3">
                         <p className="text-center text-gray-600 font-medium">거래가 종료되었습니다</p>
                       </div>
@@ -930,8 +930,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               ? '거래중인 상품입니다'
                               : phone.status === 'sold'
                               ? '판매완료된 상품입니다'
-                              : phone.status === 'completed'
-                              ? '거래가 종료되었습니다'
                               : myOffer && myOffer.status === 'pending'
                               ? '제안 수정하기'
                               : '가격 제안하기'}
