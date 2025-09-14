@@ -136,9 +136,17 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
       if (response.ok) {
         const data = await response.json();
-        if (data && data.offered_price) {
-          setMyOffer(data);
+        console.log('My offer data:', data); // 디버깅용 로그
+        if (data && data.offer && data.offer.offered_price) {
+          setMyOffer(data.offer);
           // 사용자의 총 제안 횟수 가져오기
+          if (data.user_offer_count) {
+            setOfferCount(data.user_offer_count);
+            setRemainingOffers(Math.max(0, 5 - data.user_offer_count));
+          }
+        } else if (data && data.offered_price) {
+          // 백엔드 응답 구조가 다를 수 있음
+          setMyOffer(data);
           if (data.user_offer_count) {
             setOfferCount(data.user_offer_count);
             setRemainingOffers(Math.max(0, 5 - data.user_offer_count));
