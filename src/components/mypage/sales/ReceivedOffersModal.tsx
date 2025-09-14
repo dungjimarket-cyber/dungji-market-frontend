@@ -82,11 +82,6 @@ export default function ReceivedOffersModal({
     }
   };
 
-  const calculateDiscount = (originalPrice: number, offeredPrice: number) => {
-    const discount = ((originalPrice - offeredPrice) / originalPrice) * 100;
-    return discount.toFixed(1);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -156,9 +151,6 @@ export default function ReceivedOffersModal({
                     <div className="text-right">
                       <p className="font-semibold text-lg text-dungji-primary">
                         {offer.offered_price.toLocaleString()}원
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {calculateDiscount(phone.price, offer.offered_price)}% 할인
                       </p>
                     </div>
                   </div>

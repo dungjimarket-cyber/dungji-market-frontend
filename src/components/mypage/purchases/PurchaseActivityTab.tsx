@@ -451,11 +451,6 @@ export default function PurchaseActivityTab() {
     }
   };
 
-  const calculateDiscount = (originalPrice: number, offeredPrice: number) => {
-    const discount = ((originalPrice - offeredPrice) / originalPrice) * 100;
-    return discount.toFixed(1);
-  };
-
   return (
     <div className="bg-white rounded-lg p-4">
       <h3 className="font-semibold text-lg mb-4">구매 활동</h3>
@@ -528,9 +523,6 @@ export default function PurchaseActivityTab() {
                         <span className="text-gray-600">제안가</span>
                         <span className="font-semibold text-dungji-primary">
                           {offer.offered_price.toLocaleString()}원
-                          <span className="text-xs text-gray-500 ml-1">
-                            (-{calculateDiscount(offer.phone.price, offer.offered_price)}%)
-                          </span>
                         </span>
                       </div>
                     </div>
