@@ -32,6 +32,7 @@ export interface UsedPhone {
   brand: PhoneBrand;
   series?: string;
   model: string;
+  model_name?: string; // 백엔드에서 오는 필드명
   storage?: StorageSize;
   color?: string;
   
