@@ -78,6 +78,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showTradeCompleteModal, setShowTradeCompleteModal] = useState(false);
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
+  const [reviewCompleted, setReviewCompleted] = useState(false);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -801,16 +802,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     )}
 
                     {/* 거래완료 상태일 때 후기 작성 버튼 표시 */}
-                    {phone.status === 'sold' && phone.seller?.id === user?.id && !phone.seller_reviewed && (
+                    {phone.status === 'sold' && phone.seller?.id === user?.id && (
                       <Button
                         onClick={() => {
-                          setReviewTarget('buyer');
-                          setShowTradeReviewModal(true);
+                          if (!reviewCompleted) {
+                            setReviewTarget('buyer');
+                            setShowTradeReviewModal(true);
+                          }
                         }}
-                        className="w-full h-14 text-lg font-semibold bg-purple-500 hover:bg-purple-600 text-white mb-3"
+                        disabled={reviewCompleted}
+                        className={`w-full h-14 text-lg font-semibold mb-3 ${
+                          reviewCompleted
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-purple-500 hover:bg-purple-600 text-white'
+                        }`}
                       >
-                        <MessageSquarePlus className="w-5 h-5 mr-2" />
-                        후기 작성하기
+                        {reviewCompleted ? (
+                          <>
+                            <Check className="w-5 h-5 mr-2" />
+                            후기 작성 완료
+                          </>
+                        ) : (
+                          <>
+                            <MessageSquarePlus className="w-5 h-5 mr-2" />
+                            후기 작성하기
+                          </>
+                        )}
                       </Button>
                     )}
 
@@ -855,16 +872,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   /* 다른 사람의 상품인 경우 */
                   <>
                     {/* 거래완료 상태일 때 구매자도 후기 작성 가능 */}
-                    {phone.status === 'sold' && phone.buyer?.id === user?.id && !phone.buyer_reviewed && (
+                    {phone.status === 'sold' && phone.buyer?.id === user?.id && (
                       <Button
                         onClick={() => {
-                          setReviewTarget('seller');
-                          setShowTradeReviewModal(true);
+                          if (!reviewCompleted) {
+                            setReviewTarget('seller');
+                            setShowTradeReviewModal(true);
+                          }
                         }}
-                        className="w-full h-14 text-lg font-semibold bg-purple-500 hover:bg-purple-600 text-white mb-3"
+                        disabled={reviewCompleted}
+                        className={`w-full h-14 text-lg font-semibold mb-3 ${
+                          reviewCompleted
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-purple-500 hover:bg-purple-600 text-white'
+                        }`}
                       >
-                        <MessageSquarePlus className="w-5 h-5 mr-2" />
-                        후기 작성하기
+                        {reviewCompleted ? (
+                          <>
+                            <Check className="w-5 h-5 mr-2" />
+                            후기 작성 완료
+                          </>
+                        ) : (
+                          <>
+                            <MessageSquarePlus className="w-5 h-5 mr-2" />
+                            후기 작성하기
+                          </>
+                        )}
                       </Button>
                     )}
 
@@ -1598,6 +1631,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           partnerName={reviewTarget === 'buyer' ? (phone.buyer?.nickname || '구매자') : (phone.seller?.username || phone.seller?.nickname || '판매자')}
           phoneModel={phone.model}
           onReviewComplete={() => {
+            setReviewCompleted(true);  // 후기 작성 완료 상태 업데이트
             fetchPhoneDetail();
             setShowTradeReviewModal(false);
             setReviewTarget(null);
