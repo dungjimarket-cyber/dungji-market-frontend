@@ -63,6 +63,7 @@ export default function TradeReviewModal({
 
   const handleSubmit = async () => {
     console.log('Review submit - transactionId:', transactionId);
+    console.log('Review submit - typeof transactionId:', typeof transactionId);
 
     if (!transactionId || transactionId === 0) {
       toast.error('거래 정보를 찾을 수 없습니다. 새로고침 후 다시 시도해주세요.');
@@ -79,14 +80,19 @@ export default function TradeReviewModal({
         tagData[tag.id] = selectedTags.includes(tag.id);
       });
 
+      const requestData = {
+        transaction: transactionId,
+        rating,
+        comment: comment.trim() || undefined,
+        ...tagData,
+      };
+
+      console.log('Review POST request data:', requestData);
+      console.log('Review POST URL:', `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`);
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`,
-        {
-          transaction: transactionId,
-          rating,
-          comment: comment.trim() || undefined,
-          ...tagData,
-        },
+        requestData,
         {
           headers: {
             'Authorization': `Bearer ${token}`
