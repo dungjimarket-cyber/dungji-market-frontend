@@ -403,11 +403,9 @@ export default function SalesActivityTab() {
     console.log('Using transactionId:', transactionId);
 
     // 거래 정보는 이미 item에 있으므로 직접 사용
-    // 판매자 입장에서는 구매자 정보를 표시
-    const buyerInfo = await sellerAPI.getBuyerInfo(item.id);
     setReviewTarget({
       transactionId: transactionId, // transaction_id 우선 사용
-      buyerName: buyerInfo.nickname || 'Unknown',
+      buyerName: 'Buyer', // 판매자는 구매자 정보가 필요하지만 일단 기본값 사용
       phoneInfo: item,
     });
     setShowReviewModal(true);
