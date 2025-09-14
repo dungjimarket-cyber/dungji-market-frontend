@@ -64,7 +64,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/regions/`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
         const data = await response.json();
         setRegions(data);
       } catch (error) {
@@ -337,7 +337,7 @@ const FilterContent = memo(function FilterContent({
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/regions/`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
         const data = await response.json();
         setRegions(data);
       } catch (error) {
