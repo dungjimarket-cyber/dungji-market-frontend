@@ -192,6 +192,11 @@ export const reviewAPI = {
     is_honest?: boolean;
     is_fast_response?: boolean;
   }) => {
+    console.log('createReview called with transactionId:', transactionId);
+    console.log('createReview data:', data);
+    console.log('API baseURL:', api.defaults.baseURL);
+    console.log('Full URL will be:', `${api.defaults.baseURL}/used/reviews/`);
+
     const response = await api.post('/used/reviews/', {
       transaction: transactionId,
       ...data,
