@@ -104,9 +104,9 @@ export interface UsedPhoneOffer {
   id: number;
   phone: number;
   buyer: Seller;
-  amount: number;
+  offered_price: number;
   message?: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  status: 'pending' | 'accepted' | 'cancelled';
   seller_message?: string;
   created_at: string;
   updated_at: string;

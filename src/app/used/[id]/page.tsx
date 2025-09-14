@@ -136,7 +136,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
       if (response.ok) {
         const data = await response.json();
-        if (data && data.amount) {
+        if (data && data.offered_price) {
           setMyOffer(data);
           // 사용자의 총 제안 횟수 가져오기
           if (data.user_offer_count) {
@@ -903,8 +903,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
                               if (myOffer && myOffer.status === 'pending') {
                                 // 수정 제안 - 기존 금액과 메시지 설정
-                                setOfferAmount(myOffer.amount.toString());
-                                setDisplayAmount(myOffer.amount.toLocaleString('ko-KR'));
+                                setOfferAmount(myOffer.offered_price.toString());
+                                setDisplayAmount(myOffer.offered_price.toLocaleString('ko-KR'));
                                 if (myOffer.message) {
                                   setOfferMessage(myOffer.message);
                                 }
@@ -1034,7 +1034,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   내가 제안한 금액
                                 </p>
                                 <p className="text-2xl font-bold text-gray-900">
-                                  {myOffer.amount.toLocaleString()}원
+                                  {myOffer.offered_price.toLocaleString()}원
                                 </p>
                                 {myOffer.message && (
                                   <p className="text-xs text-gray-600 mt-2 italic">
@@ -1588,8 +1588,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   onClick={() => {
                     if (myOffer && myOffer.status === 'pending') {
                       // 수정 제안 - 기존 금액과 메시지 설정
-                      setOfferAmount(myOffer.amount.toString());
-                      setDisplayAmount(myOffer.amount.toLocaleString('ko-KR'));
+                      setOfferAmount(myOffer.offered_price.toString());
+                      setDisplayAmount(myOffer.offered_price.toLocaleString('ko-KR'));
                       if (myOffer.message) {
                         setOfferMessage(myOffer.message);
                       }
@@ -1829,7 +1829,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </div>
                         <div className="flex items-baseline gap-2 mb-2">
                           <span className="text-2xl font-bold text-blue-600">
-                            {offer.amount.toLocaleString()}원
+                            {offer.offered_price.toLocaleString()}원
                           </span>
                         </div>
                         {offer.message && (
@@ -1843,7 +1843,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           size="sm"
                           onClick={() => {
                             // 수락 처리
-                            if (confirm(`${offer.amount.toLocaleString()}원에 판매하시겠습니까?`)) {
+                            if (confirm(`${offer.offered_price.toLocaleString()}원에 판매하시겠습니까?`)) {
                               // API 호출 로직
                             }
                           }}
