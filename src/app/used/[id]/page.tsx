@@ -1653,12 +1653,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       )}
 
       {/* 후기 작성 모달 */}
-      {console.log('모달 렌더링 조건 체크:', {
-        showTradeReviewModal,
-        reviewTarget,
-        phoneExists: !!phone,
-        allConditionsMet: showTradeReviewModal && reviewTarget && phone
-      })}
+      {(() => {
+        console.log('모달 렌더링 조건 체크:', {
+          showTradeReviewModal,
+          reviewTarget,
+          phoneExists: !!phone,
+          allConditionsMet: showTradeReviewModal && reviewTarget && phone
+        });
+        return null;
+      })()}
       {showTradeReviewModal && reviewTarget && phone && (
         <TradeReviewModal
           isOpen={showTradeReviewModal}
