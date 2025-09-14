@@ -266,8 +266,16 @@ export default function SalesActivityTab() {
       },
       {
         successMessage: '거래가 완료되었습니다.',
-        onRefresh: fetchAllListings,
-        onTabChange: setActiveTab,
+        onRefresh: async () => {
+          await fetchAllListings();
+          fetchListings('sold'); // 판매완료 탭 데이터 갱신
+        },
+        onTabChange: (tab: string) => {
+          setActiveTab(tab);
+          if (tab === 'sold') {
+            setTimeout(() => fetchListings('sold'), 100);
+          }
+        },
       }
     );
   };
@@ -336,8 +344,18 @@ export default function SalesActivityTab() {
           setShowCancelModal(false);
           setCancellingItem(null);
         },
-        onRefresh: fetchAllListings,
-        onTabChange: setActiveTab,
+        onRefresh: async () => {
+          await fetchAllListings();
+          if (returnToSale) {
+            fetchListings('active'); // 판매중 탭 데이터 갱신
+          }
+        },
+        onTabChange: (tab: string) => {
+          if (returnToSale) {
+            setActiveTab('active'); // 판매중 탭으로 이동
+            setTimeout(() => fetchListings('active'), 100);
+          }
+        },
       }
     );
   };
