@@ -221,32 +221,35 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
       if (response.ok) {
         const data = await response.json();
-        console.log('Loaded products:', data.length, data);
-        console.log('Phone products:', data.filter((p: Product) => p.category_name === '휴대폰'));
-        
+        // 페이징 응답인 경우 results 배열 추출, 아니면 data 그대로 사용
+        const products = Array.isArray(data) ? data : (data.results || []);
+
+        console.log('Loaded products:', products.length, products);
+        console.log('Phone products:', products.filter((p: Product) => p.category_name === '휴대폰'));
+
         // 인터넷/인터넷+TV 상품 상세 분석
-        const internetProducts = data.filter((p: Product) => 
+        const internetProducts = products.filter((p: Product) =>
           p.category_detail_type === 'internet' || p.category?.detail_type === 'internet'
         );
-        const internetTvProducts = data.filter((p: Product) => 
+        const internetTvProducts = products.filter((p: Product) =>
           p.category_detail_type === 'internet_tv' || p.category?.detail_type === 'internet_tv'
         );
-        
+
         console.log('Internet products:', internetProducts.length, internetProducts.map((p: Product) => ({
           name: p.name,
           category_detail_type: p.category_detail_type,
           category: p.category,
           extra_data: p.extra_data
         })));
-        
+
         console.log('Internet+TV products:', internetTvProducts.length, internetTvProducts.map((p: Product) => ({
           name: p.name,
           category_detail_type: p.category_detail_type,
           category: p.category,
           extra_data: p.extra_data
         })));
-        
-        setProducts(data);
+
+        setProducts(products);
       }
     } catch (error) {
       console.error('상품 목록 로드 실패:', error);
