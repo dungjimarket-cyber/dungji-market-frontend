@@ -403,9 +403,12 @@ export default function SalesActivityTab() {
     console.log('Using transactionId:', transactionId);
 
     // 거래 정보는 이미 item에 있으므로 직접 사용
+    // item에 buyer 정보가 있으면 사용, 없으면 기본값
+    const buyerName = (item as any).buyer?.nickname || (item as any).buyer_nickname || '구매자';
+
     setReviewTarget({
       transactionId: transactionId, // transaction_id 우선 사용
-      buyerName: 'Buyer', // 판매자는 구매자 정보가 필요하지만 일단 기본값 사용
+      buyerName: buyerName,
       phoneInfo: item,
     });
     setShowReviewModal(true);
