@@ -344,7 +344,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            amount,
+            offered_price: amount,
             message: offerMessage,
           }),
         });
