@@ -820,12 +820,24 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         onClick={() => {
                           console.log('판매자 후기 버튼 클릭');
                           console.log('phone 전체 객체:', phone);
+                          console.log('phone이 있나?:', !!phone);
+                          console.log('showTradeReviewModal 설정 전:', showTradeReviewModal);
+                          console.log('reviewTarget 설정 전:', reviewTarget);
+
+                          if (!phone) {
+                            console.error('phone 객체가 없어서 모달을 열 수 없습니다!');
+                            return;
+                          }
+
                           console.log('phone.transaction_id:', phone.transaction_id);
                           console.log('phone.buyer:', phone.buyer);
                           console.log('phone.model_name:', phone.model_name);
                           console.log('reviewCompleted:', reviewCompleted);
+
                           if (!reviewCompleted) {
+                            console.log('reviewTarget을 buyer로 설정');
                             setReviewTarget('buyer');
+                            console.log('showTradeReviewModal을 true로 설정');
                             setShowTradeReviewModal(true);
                           }
                         }}
@@ -1641,6 +1653,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       )}
 
       {/* 후기 작성 모달 */}
+      {console.log('모달 렌더링 조건 체크:', {
+        showTradeReviewModal,
+        reviewTarget,
+        phoneExists: !!phone,
+        allConditionsMet: showTradeReviewModal && reviewTarget && phone
+      })}
       {showTradeReviewModal && reviewTarget && phone && (
         <TradeReviewModal
           isOpen={showTradeReviewModal}
