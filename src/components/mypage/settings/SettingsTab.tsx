@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Mail, MessageSquare, Shield, Smartphone, User, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bell, Mail, MessageSquare, Shield, Smartphone, User, LogOut, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 export default function SettingsTab() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState({
     priceOffer: true,
     offerResponse: true,
@@ -162,21 +164,36 @@ export default function SettingsTab() {
       </Card>
 
       <Card className="p-4">
+        <h3 className="font-semibold mb-4">활동 내역</h3>
+
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2"
+            onClick={() => router.push('/mypage/used-reports')}
+          >
+            <AlertTriangle className="w-4 h-4" />
+            신고 내역
+          </Button>
+        </div>
+      </Card>
+
+      <Card className="p-4">
         <h3 className="font-semibold mb-4">기타</h3>
-        
+
         <div className="space-y-3">
           <Button variant="outline" className="w-full justify-start">
             이용약관
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             개인정보 처리방침
           </Button>
-          
+
           <Button variant="outline" className="w-full justify-start">
             고객센터
           </Button>
-          
+
           <Separator />
           
           <Button 
