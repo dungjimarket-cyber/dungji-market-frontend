@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
+import { ArrowLeft, Share2, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
@@ -150,7 +150,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingGroupBuy, setDeletingGroupBuy] = useState(false);
   const [hasReceivedContact, setHasReceivedContact] = useState(false);
-  const [isWished, setIsWished] = useState(false);
   const [showFinalSelectionModal, setShowFinalSelectionModal] = useState(false);
   const [myParticipationFinalDecision, setMyParticipationFinalDecision] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
   const [showFinalSelectionDialog, setShowFinalSelectionDialog] = useState(false);
@@ -443,7 +442,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       checkParticipationStatus();
-      checkWishStatus();
       if (isSeller) {
         fetchBidTokenInfo();
       }
@@ -567,78 +565,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
   };
 
-  const checkWishStatus = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlists/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const wished = data.some((w: any) => w.groupbuy === groupBuy.id);
-        setIsWished(wished);
-      }
-    } catch (error) {
-      console.error('찜 상태 확인 오류:', error);
-    }
-  };
-
-  const handleWishToggle = async () => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
-    try {
-      if (isWished) {
-        // 찜 삭제
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlists/${groupBuy.id}/`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          }
-        });
-
-        if (response.ok) {
-          setIsWished(false);
-          toast({
-            title: '찜 삭제 완료',
-            description: '찜 목록에서 삭제되었습니다.',
-          });
-        }
-      } else {
-        // 찜 추가
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlists/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            groupbuy: groupBuy.id
-          })
-        });
-
-        if (response.ok) {
-          setIsWished(true);
-          toast({
-            title: '찜 추가 완료',
-            description: '찜 목록에 추가되었습니다.',
-          });
-        }
-      }
-    } catch (error) {
-      console.error('찜 토글 오류:', error);
-      toast({
-        title: '오류 발생',
-        description: '찜 처리 중 오류가 발생했습니다.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const fetchTopBids = async () => {
     try {
