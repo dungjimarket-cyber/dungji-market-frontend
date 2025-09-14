@@ -280,8 +280,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         return true; // 'all' 선택 시 모든 휴대폰 상품
       } else if (mainTab === 'internet') {
         // category_detail_type 필드를 직접 체크 (API가 category를 ID로 반환하는 경우)
-        const isInternet = product.category_detail_type === 'internet' || 
-                          product.category?.detail_type === 'internet';
+        const isInternet = product.category_detail_type === 'internet' ||
+                          product.category?.detail_type === 'internet' ||
+                          product.category_name === '인터넷';
         if (!isInternet) return false;
         
         // 서브 탭 필터링 (인터넷) - carrier 정보 확인
@@ -321,8 +322,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         return true;
       } else if (mainTab === 'internet_tv') {
         // category_detail_type 필드를 직접 체크 (API가 category를 ID로 반환하는 경우)
-        const isInternetTV = product.category_detail_type === 'internet_tv' || 
-                            product.category?.detail_type === 'internet_tv';
+        const isInternetTV = product.category_detail_type === 'internet_tv' ||
+                            product.category?.detail_type === 'internet_tv' ||
+                            product.category_name === '인터넷+TV';
         if (!isInternetTV) return false;
         
         // 서브 탭 필터링 (인터넷+TV) - carrier 정보 확인
