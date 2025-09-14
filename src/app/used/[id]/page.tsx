@@ -802,7 +802,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     )}
 
                     {/* 거래완료 상태일 때 후기 작성 버튼 표시 */}
-                    {phone.status === 'sold' && phone.seller?.id === user?.id && (
+                    {phone.status === 'sold' && phone.seller?.id === user?.id && phone.transaction_id && (
                       <Button
                         onClick={() => {
                           if (!reviewCompleted) {
@@ -872,7 +872,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   /* 다른 사람의 상품인 경우 */
                   <>
                     {/* 거래완료 상태일 때 구매자도 후기 작성 가능 */}
-                    {phone.status === 'sold' && phone.buyer?.id === user?.id && (
+                    {phone.status === 'sold' && phone.buyer?.id === user?.id && phone.transaction_id && (
                       <Button
                         onClick={() => {
                           if (!reviewCompleted) {

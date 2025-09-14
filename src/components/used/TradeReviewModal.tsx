@@ -62,6 +62,7 @@ export default function TradeReviewModal({
   };
 
   const handleSubmit = async () => {
+    console.log('Review submit - transactionId:', transactionId);
     setIsLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
