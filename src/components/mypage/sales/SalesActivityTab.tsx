@@ -393,22 +393,24 @@ export default function SalesActivityTab() {
 
   // 후기 작성 모달 열기
   const openReviewModal = async (item: SalesItem) => {
-    try {
-      const transactionData = await sellerAPI.getTransactionInfo(item.id);
-      setReviewTarget({
-        transactionId: transactionData.id,
-        buyerName: transactionData.buyer.nickname,
-        phoneInfo: item,
-      });
-      setShowReviewModal(true);
-    } catch (error) {
-      console.error('Failed to get transaction info:', error);
-      toast({
-        title: '오류',
-        description: '거래 정보를 불러올 수 없습니다.',
-        variant: 'destructive',
-      });
-    }
+    console.log('openReviewModal - item:', item);
+    console.log('openReviewModal - item.id:', item.id);
+    console.log('openReviewModal - item.transaction_id:', (item as any).transaction_id);
+    console.log('openReviewModal - typeof item.id:', typeof item.id);
+
+    // transaction_id가 있으면 사용, 없으면 item.id 사용
+    const transactionId = (item as any).transaction_id || item.id;
+    console.log('Using transactionId:', transactionId);
+
+    // 거래 정보는 이미 item에 있으므로 직접 사용
+    // 판매자 입장에서는 구매자 정보를 표시
+    const buyerInfo = await sellerAPI.getBuyerInfo(item.id);
+    setReviewTarget({
+      transactionId: transactionId, // transaction_id 우선 사용
+      buyerName: buyerInfo.nickname || 'Unknown',
+      phoneInfo: item,
+    });
+    setShowReviewModal(true);
   };
 
   // 후기 작성 완료 후 콜백
