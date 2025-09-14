@@ -77,6 +77,7 @@ export interface UsedPhone {
   offers?: UsedOffer[];
   seller?: UserBasicInfo;
   buyer?: UserBasicInfo; // 거래중/완료 상태일 때 구매자 정보
+  buyer_id?: number; // 거래중일 때 구매자 ID
   is_favorite?: boolean; // 현재 사용자가 찜했는지 여부
   is_modified?: boolean; // 견적 후 수정됨 여부
   seller_reviewed?: boolean; // 판매자가 후기를 작성했는지
