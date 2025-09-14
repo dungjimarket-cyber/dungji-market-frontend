@@ -88,10 +88,11 @@ export default function TradeReviewModal({
       };
 
       console.log('Review POST request data:', requestData);
-      console.log('Review POST URL:', `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`);
+      console.log('Review POST URL:', `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/simple/`);
 
+      // 새로운 간단한 API 사용
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/simple/`,
         requestData,
         {
           headers: {

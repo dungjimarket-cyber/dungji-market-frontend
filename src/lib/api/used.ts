@@ -195,9 +195,10 @@ export const reviewAPI = {
     console.log('createReview called with transactionId:', transactionId);
     console.log('createReview data:', data);
     console.log('API baseURL:', api.defaults.baseURL);
-    console.log('Full URL will be:', `${api.defaults.baseURL}/used/reviews/`);
+    console.log('Full URL will be:', `${api.defaults.baseURL}/used/reviews/simple/`);
 
-    const response = await api.post('/used/reviews/', {
+    // 새로운 간단한 API 사용
+    const response = await api.post('/used/reviews/simple/', {
       transaction: transactionId,
       ...data,
     });
