@@ -30,6 +30,16 @@ export function parseTransactionError(error: any): TransactionError {
   const errorCode = error.response?.data?.code || error.response?.data?.error_code;
   const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
 
+  // 에러 메시지로도 체크
+  if (errorMessage && errorMessage.includes('거래가 이미 취소되었습니다')) {
+    return {
+      code: 'transaction_already_cancelled',
+      message: errorMessage,
+      shouldRefresh: true,
+      redirectTab: 'active',
+    };
+  }
+
   switch (errorCode) {
     case TRANSACTION_ERROR_CODES.OFFER_ALREADY_CANCELLED:
       return {
