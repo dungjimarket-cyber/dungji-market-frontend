@@ -350,6 +350,10 @@ export default function PurchaseActivityTab() {
 
   // 후기 작성 모달 열기
   const openReviewModal = async (item: TradingItem) => {
+    console.log('openReviewModal - item:', item);
+    console.log('openReviewModal - item.id:', item.id);
+    console.log('openReviewModal - typeof item.id:', typeof item.id);
+
     // 거래 정보는 이미 item에 있으므로 직접 사용
     setReviewTarget({
       transactionId: item.id, // TradingItem의 id가 transaction id
