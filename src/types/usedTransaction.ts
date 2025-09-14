@@ -9,7 +9,7 @@
 /**
  * 거래 상태
  */
-export type TransactionStatus = 'reserved' | 'completed' | 'cancelled';
+export type TransactionStatus = 'trading' | 'completed' | 'cancelled';
 
 /**
  * 거래 기록

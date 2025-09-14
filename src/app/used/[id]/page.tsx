@@ -604,11 +604,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
 
               {/* 상태 뱃지 */}
-              {phone.status === 'reserved' && (
-                <div className="absolute top-4 left-4 bg-yellow-500 text-white px-3 py-1 rounded font-medium">
-                  예약중
-                </div>
-              )}
               {phone.status === 'sold' && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <span className="text-white text-2xl font-bold">판매완료</span>

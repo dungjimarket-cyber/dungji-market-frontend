@@ -79,10 +79,13 @@ export interface UsedPhone {
   sigungu?: string;
   
   // 상태 및 통계
-  status: 'active' | 'reserved' | 'sold' | 'deleted';
+  status: 'active' | 'trading' | 'sold' | 'deleted';
   view_count: number;
   favorite_count: number;
   offer_count: number;
+
+  // 거래 정보
+  buyer_id?: number;
   
   // 이미지
   images?: UsedPhoneImage[];

@@ -12,7 +12,7 @@ export type StorageSize = 64 | 128 | 256 | 512 | 1024;
 export type ConditionGrade = 'S' | 'A' | 'B' | 'C';
 export type BatteryStatus = 'excellent' | 'good' | 'fair' | 'poor' | 'defective';
 export type PurchasePeriod = '1' | '3' | '6' | '12' | 'over';
-export type PhoneStatus = 'active' | 'trading' | 'reserved' | 'sold' | 'completed' | 'deleted';
+export type PhoneStatus = 'active' | 'trading' | 'sold' | 'completed' | 'deleted';
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'expired';
 export type TransactionStatus = 'in_progress' | 'completed' | 'cancelled' | 'disputed';
 export type ReportReason = 'spam' | 'fraud' | 'inappropriate' | 'duplicate' | 'price_manipulation' | 'other';
@@ -86,7 +86,7 @@ export interface UsedPhone {
   // 타임스탬프
   created_at: string;
   updated_at: string;
-  reserved_at?: string;
+  trading_at?: string;
   sold_at?: string;
   deleted_at?: string;
 }

@@ -26,7 +26,7 @@ export interface UserProfile {
 
 export interface TradeStats {
   selling: number;
-  reserved: number;
+  trading: number;
   sold: number;
   offering: number;
   buying: number;
@@ -57,7 +57,7 @@ const initialState: MyPageState = {
   profile: null,
   stats: {
     selling: 0,
-    reserved: 0,
+    trading: 0,
     sold: 0,
     offering: 0,
     buying: 0,
@@ -171,7 +171,7 @@ export const useMyPageStore = create<MyPageStore>()(
           set({ 
             stats: {
               selling: 3,
-              reserved: 1,
+              trading: 1,
               sold: 5,
               offering: 2,
               buying: 1,
