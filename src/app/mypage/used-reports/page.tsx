@@ -245,7 +245,7 @@ export default function UsedReportsPage() {
           <TabsTrigger value="rejected">
             거부됨 ({getStatusCount('rejected')})
           </TabsTrigger>
-        </Tabs>
+        </TabsList>
 
         <TabsContent value={statusFilter}>
           <Card>
