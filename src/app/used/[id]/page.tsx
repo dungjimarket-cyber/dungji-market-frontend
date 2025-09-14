@@ -169,6 +169,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       if (!response.ok) throw new Error('Failed to fetch');
       
       const data = await response.json();
+      console.log('Phone API response:', data);
+      console.log('Buyer from API:', data.buyer);
+      console.log('Transaction ID from API:', data.transaction_id);
+      console.log('Seller from API:', data.seller);
       setPhone(data);
       setIsFavorite(data.is_favorite || false);
       
@@ -801,10 +805,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       </Button>
                     )}
 
-                    {/* 거래완료 상태일 때 후기 작성 버튼 표시 */}
+                    {/* 거래완료 상태일 때 후기 작성 버튼 표시 (판매자) */}
+                    {console.log('판매자 버튼 조건 체크:', {
+                      status: phone.status,
+                      isSeller: phone.seller?.id === user?.id,
+                      sellerId: phone.seller?.id,
+                      userId: user?.id,
+                      transactionId: phone.transaction_id,
+                      buyer: phone.buyer,
+                      allConditions: phone.status === 'sold' && phone.seller?.id === user?.id && phone.transaction_id
+                    })}
                     {phone.status === 'sold' && phone.seller?.id === user?.id && phone.transaction_id && (
                       <Button
                         onClick={() => {
+                          console.log('판매자 후기 버튼 클릭');
+                          console.log('phone.transaction_id:', phone.transaction_id);
+                          console.log('phone.buyer:', phone.buyer);
+                          console.log('reviewCompleted:', reviewCompleted);
                           if (!reviewCompleted) {
                             setReviewTarget('buyer');
                             setShowTradeReviewModal(true);
@@ -875,6 +892,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     {phone.status === 'sold' && phone.buyer?.id === user?.id && phone.transaction_id && (
                       <Button
                         onClick={() => {
+                          console.log('구매자 후기 버튼 클릭');
+                          console.log('phone.transaction_id:', phone.transaction_id);
+                          console.log('reviewCompleted:', reviewCompleted);
                           if (!reviewCompleted) {
                             setReviewTarget('seller');
                             setShowTradeReviewModal(true);

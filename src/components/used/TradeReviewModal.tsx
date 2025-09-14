@@ -63,6 +63,12 @@ export default function TradeReviewModal({
 
   const handleSubmit = async () => {
     console.log('Review submit - transactionId:', transactionId);
+
+    if (!transactionId || transactionId === 0) {
+      toast.error('거래 정보를 찾을 수 없습니다. 새로고침 후 다시 시도해주세요.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
