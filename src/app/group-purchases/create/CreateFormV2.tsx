@@ -218,7 +218,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
+      // 모든 상품을 가져오기 위해 페이지 크기를 크게 설정
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/?page_size=100`);
       if (response.ok) {
         const data = await response.json();
         // 페이징 응답인 경우 results 배열 추출, 아니면 data 그대로 사용
