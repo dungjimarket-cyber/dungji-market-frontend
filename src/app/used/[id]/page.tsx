@@ -370,7 +370,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         if (data.type === 'instant_purchase') {
           toast({
             title: '즉시구매 완료!',
-            description: '거래가 시작되었습니다. 판매자 연락처를 확인해주세요.',
+            description: '거래가 시작되었습니다. 거래중 탭으로 이동합니다.',
           });
 
           // 판매자 연락처 표시 모달 또는 알림
@@ -379,9 +379,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             console.log('판매자 연락처:', data.seller_contact);
           }
 
-          // 페이지 새로고침
+          // 2초 후 마이페이지 거래중 탭으로 이동
           setTimeout(() => {
-            window.location.reload();
+            router.push('/used/mypage?tab=trading');
           }, 2000);
         }
 
@@ -983,22 +983,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             </Button>
                           )}
                         </div>
-                        
-                        {/* 상태별 안내 메시지 */}
-                        {phone.status === 'trading' && (
+
+                        {/* 거래중 상태 메시지 - 구매자 본인일 때만 */}
+                        {phone.status === 'trading' && phone.buyer_id === user?.id && (
                           <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                             <div className="flex items-center gap-2 text-orange-700">
-                              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                               <span className="text-sm font-medium">
-                                {phone.buyer?.id === user?.id
-                                  ? '판매자와 거래가 진행중입니다'
-                                  : '현재 다른 구매자와 거래가 진행중입니다'
-                                }
+                                판매자와 거래가 진행중입니다
                               </span>
                             </div>
                           </div>
                         )}
-                        
+
                         {phone.status === 'sold' && phone.final_price && (
                           <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                             <div className="flex items-center gap-2 text-gray-700">
