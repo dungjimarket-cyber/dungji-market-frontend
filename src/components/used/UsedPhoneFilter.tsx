@@ -66,16 +66,9 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
         const data = await response.json();
-        // 배열인지 확인
-        if (Array.isArray(data)) {
-          setRegions(data);
-        } else {
-          console.error('Regions data is not an array:', data);
-          setRegions([]);
-        }
+        setRegions(data);
       } catch (error) {
         console.error('Failed to fetch regions:', error);
-        setRegions([]);
       }
     };
     fetchRegions();

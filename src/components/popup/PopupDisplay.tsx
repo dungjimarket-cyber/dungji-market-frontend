@@ -408,13 +408,6 @@ export function PopupManager() {
     try {
       const activePopups = await getActivePopups();
 
-      // activePopups가 배열인지 확인
-      if (!Array.isArray(activePopups)) {
-        console.error('activePopups is not an array:', activePopups);
-        setPopups([]);
-        return;
-      }
-
       // 쿠키에서 숨김 처리된 팝업 필터링
       const filteredPopups = activePopups.filter(popup => {
         const todayHidden = getCookie(`popup_hidden_today_${popup.id}`);
@@ -430,7 +423,6 @@ export function PopupManager() {
       setPopups(filteredPopups);
     } catch (error) {
       console.error('팝업 로드 실패:', error);
-      setPopups([]);
     }
   };
 
