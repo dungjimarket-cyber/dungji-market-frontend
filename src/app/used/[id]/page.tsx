@@ -1247,7 +1247,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 남은 제안 횟수
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-dungji-primary">{remainingOffers !== null ? remainingOffers : '...'}</span>
+                <span className="text-2xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
                 <span className="text-sm text-gray-600">/ 5회</span>
               </div>
             </div>
