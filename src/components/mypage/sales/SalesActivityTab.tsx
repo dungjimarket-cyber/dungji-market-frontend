@@ -248,6 +248,8 @@ export default function SalesActivityTab() {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
         const apiUrl = `${baseUrl}/used/phones/${phoneId}/complete-trade/`;
 
+        console.log('Calling complete-trade API:', apiUrl);
+
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -257,7 +259,18 @@ export default function SalesActivityTab() {
           body: JSON.stringify({}) // 빈 body 추가
         });
 
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+
         if (!response.ok) {
+          // HTML 응답인 경우 텍스트로 읽기
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('text/html')) {
+            const htmlText = await response.text();
+            console.error('Received HTML instead of JSON:', htmlText.substring(0, 200));
+            throw { response: { data: { error: 'Server returned HTML instead of JSON' } } };
+          }
+
           const errorData = await response.json();
           throw { response: { data: errorData } };
         }
@@ -269,6 +282,9 @@ export default function SalesActivityTab() {
             const data = await response.json();
             return data;
           }
+          // HTML이 왔을 경우 텍스트로 읽어서 확인
+          const text = await response.text();
+          console.error('Unexpected response:', text.substring(0, 200));
           return { success: true };
         } catch (e) {
           console.error('Failed to parse response:', e);
