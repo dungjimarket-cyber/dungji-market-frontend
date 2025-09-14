@@ -38,6 +38,9 @@ export default function ReviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    console.log('ReviewModal handleSubmit - transactionId:', transactionId);
+    console.log('ReviewModal handleSubmit - typeof transactionId:', typeof transactionId);
+
     try {
       setIsSubmitting(true);
 
