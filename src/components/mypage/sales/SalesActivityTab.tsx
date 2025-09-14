@@ -253,7 +253,8 @@ export default function SalesActivityTab() {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({}) // 빈 body 추가
         });
 
         if (!response.ok) {
@@ -261,9 +262,18 @@ export default function SalesActivityTab() {
           throw { response: { data: errorData } };
         }
 
-        // 응답을 JSON으로 파싱하여 반환
-        const data = await response.json();
-        return data;
+        // 응답 처리 시 try-catch 추가
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            return data;
+          }
+          return { success: true };
+        } catch (e) {
+          console.error('Failed to parse response:', e);
+          return { success: true };
+        }
       },
       {
         successMessage: '거래가 완료되었습니다.',
