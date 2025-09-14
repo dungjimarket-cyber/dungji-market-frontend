@@ -246,9 +246,7 @@ export default function SalesActivityTab() {
       async () => {
         const token = localStorage.getItem('accessToken');
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-        const apiUrl = baseUrl.includes('api.dungjimarket.com')
-          ? `${baseUrl}/used/phones/${phoneId}/complete-trade/`
-          : `${baseUrl}/api/used/phones/${phoneId}/complete-trade/`;
+        const apiUrl = `${baseUrl}/used/phones/${phoneId}/complete-trade/`;
 
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -262,7 +260,10 @@ export default function SalesActivityTab() {
           const errorData = await response.json();
           throw { response: { data: errorData } };
         }
-        return response;
+
+        // 응답을 JSON으로 파싱하여 반환
+        const data = await response.json();
+        return data;
       },
       {
         successMessage: '거래가 완료되었습니다.',
@@ -335,7 +336,10 @@ export default function SalesActivityTab() {
           const errorData = await response.json();
           throw { response: { data: errorData } };
         }
-        return response;
+
+        // 응답을 JSON으로 파싱하여 반환
+        const data = await response.json();
+        return data;
       },
       {
         successMessage: returnToSale ? '거래가 취소되고 상품이 판매중으로 변경되었습니다.' : '거래가 취소되었습니다.',
