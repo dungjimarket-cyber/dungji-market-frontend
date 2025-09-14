@@ -352,11 +352,16 @@ export default function PurchaseActivityTab() {
   const openReviewModal = async (item: TradingItem) => {
     console.log('openReviewModal - item:', item);
     console.log('openReviewModal - item.id:', item.id);
+    console.log('openReviewModal - item.transaction_id:', (item as any).transaction_id);
     console.log('openReviewModal - typeof item.id:', typeof item.id);
+
+    // transaction_id가 있으면 사용, 없으면 item.id 사용
+    const transactionId = (item as any).transaction_id || item.id;
+    console.log('Using transactionId:', transactionId);
 
     // 거래 정보는 이미 item에 있으므로 직접 사용
     setReviewTarget({
-      transactionId: item.id, // TradingItem의 id가 transaction id
+      transactionId: transactionId, // transaction_id 우선 사용
       sellerName: item.phone.seller.nickname,
       phoneInfo: {
         brand: item.phone.brand,
