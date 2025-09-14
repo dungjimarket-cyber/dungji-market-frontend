@@ -161,6 +161,16 @@ export async function executeTransactionAction(
       options.onSuccess();
     }
 
+    // 성공 시에도 onRefresh 실행
+    if (options.onRefresh) {
+      options.onRefresh();
+    }
+
+    // 성공 시에도 onTabChange 실행 (탭 전환이 필요한 경우)
+    if (options.onTabChange) {
+      // onTabChange는 탭 이름을 받아야 하므로 SalesActivityTab에서 처리
+    }
+
     return result;
   } catch (error) {
     const transactionError = parseTransactionError(error);
