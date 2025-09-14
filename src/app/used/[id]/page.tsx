@@ -197,22 +197,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   // 사용자의 제안 횟수 조회
   const fetchOfferCount = async () => {
     if (!isAuthenticated) return;
-    
+
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/${phoneId}/offer_count/`
         : `${baseUrl}/api/used/phones/${phoneId}/offer_count/`;
-      
+
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
+        console.log('Offer count data:', data); // 디버깅용
         setOfferCount(data.count || 0);
         setRemainingOffers(Math.max(0, 5 - (data.count || 0)));
       }
@@ -1526,117 +1527,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       )}
 
-      {/* 모바일 하단 버튼 (고정 제거) */}
-      {phone && (
-        <div className="lg:hidden bg-white border-t p-4 mt-6">
-          <div className="flex gap-3 max-w-screen-sm mx-auto">
-            {user?.id === phone.seller?.id ? (
-              phone.status === 'trading' ? (
-                <Button
-                  onClick={() => setShowTradeCompleteModal(true)}
-                  className="w-full h-12 text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
-                >
-                  <CheckCircle2 className="w-5 h-5 mr-2" />
-                  거래완료
-                </Button>
-              ) : phone.status === 'completed' && !phone.seller_reviewed ? (
-                <Button
-                  onClick={() => {
-                    setReviewTarget('buyer');
-                    setShowTradeReviewModal(true);
-                  }}
-                  className="w-full h-12 text-base font-semibold bg-purple-500 hover:bg-purple-600 text-white"
-                >
-                  <MessageSquarePlus className="w-5 h-5 mr-2" />
-                  후기 작성하기
-                </Button>
-              ) : phone.status === 'active' ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(`/used/${phoneId}/edit`)}
-                  className="flex-1"
-                >
-                  수정하기
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowDeleteModal(true)}
-                  className="flex-1"
-                >
-                  삭제하기
-                </Button>
-              </>
-              ) : (
-                <div className="w-full p-3 bg-gray-100 rounded-lg">
-                  <p className="text-center text-sm text-gray-600">
-                    {phone.status === 'sold' ? '판매완료' : '거래완료'}
-                  </p>
-                </div>
-              )
-            ) : (
-              /* 구매자 입장 */
-              phone.status === 'completed' && phone.buyer?.id === user?.id && !phone.buyer_reviewed ? (
-                <Button
-                  onClick={() => {
-                    setReviewTarget('seller');
-                    setShowTradeReviewModal(true);
-                  }}
-                  className="w-full h-12 text-base font-semibold bg-purple-500 hover:bg-purple-600 text-white"
-                >
-                  <MessageSquarePlus className="w-5 h-5 mr-2" />
-                  후기 작성하기
-                </Button>
-              ) : phone.status === 'trading' && phone.buyer?.id === user?.id ? (
-                <div className="w-full p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                  <p className="text-center text-sm text-orange-700 font-medium">거래 진행중</p>
-                </div>
-              ) : phone.status === 'active' && phone.accept_offers ? (
-                <Button
-                  onClick={() => {
-                    if (myOffer && myOffer.status === 'pending') {
-                      // 수정 제안 - 기존 금액과 메시지 설정
-                      setOfferAmount(myOffer.offered_price.toString());
-                      setDisplayAmount(myOffer.offered_price.toLocaleString('ko-KR'));
-                      if (myOffer.message) {
-                        setOfferMessage(myOffer.message);
-                      }
-                      setShowOfferModal(true);
-                      toast({
-                        title: '수정 제안',
-                        description: '기존 제안을 수정합니다.',
-                      });
-                    } else {
-                      setShowOfferModal(true);
-                    }
-                  }}
-                  disabled={phone.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
-                  className="w-full h-12 text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}
-                </Button>
-              ) : phone.status === 'active' ? (
-                <Button
-                  onClick={() => {
-                    if (phone.seller?.email) {
-                      window.location.href = `mailto:${phone.seller.email}?subject=${encodeURIComponent(`[둥지마켓] ${phone.model} 문의`)}&body=${encodeURIComponent(`안녕하세요,\n\n${phone.model} 상품에 대해 문의드립니다.\n\n`)}`;
-                    }
-                  }}
-                  className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90"
-                >
-                  판매자 연락하기
-                </Button>
-              ) : (
-                <div className="w-full p-3 bg-gray-100 rounded-lg">
-                  <p className="text-center text-sm text-gray-600">
-                    {phone.status === 'completed' ? '거래가 종료되었습니다' : '판매완료'}
-                  </p>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      )}
 
       {/* 이미지 라이트박스 */}
       {showImageLightbox && phone.images && (
