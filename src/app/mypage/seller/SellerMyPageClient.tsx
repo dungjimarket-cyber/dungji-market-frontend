@@ -45,6 +45,60 @@ export default function SellerMyPageClient() {
   // 아코디언 열림 상태 관리
   const [accordionValue, setAccordionValue] = useState<string | undefined>();
 
+  // 카운트 새로고침 함수
+  const refreshCounts = async () => {
+    if (!isAuthenticated || !accessToken) return;
+
+    try {
+      const responses = await Promise.allSettled([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_pending_decision/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_trading/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_completed/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_cancelled/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+      ]);
+
+      const [waitingBuyer, pendingSeller, trading, completed, cancelled] = responses;
+
+      const newCounts = { ...counts };
+
+      if (waitingBuyer.status === 'fulfilled' && waitingBuyer.value.ok) {
+        const data = await waitingBuyer.value.json();
+        newCounts.waitingBuyer = data.length;
+      }
+      if (pendingSeller.status === 'fulfilled' && pendingSeller.value.ok) {
+        const data = await pendingSeller.value.json();
+        newCounts.pendingSeller = data.length;
+      }
+      if (trading.status === 'fulfilled' && trading.value.ok) {
+        const data = await trading.value.json();
+        newCounts.trading = data.length;
+      }
+      if (completed.status === 'fulfilled' && completed.value.ok) {
+        const data = await completed.value.json();
+        newCounts.completed = data.length;
+      }
+      if (cancelled.status === 'fulfilled' && cancelled.value.ok) {
+        const data = await cancelled.value.json();
+        newCounts.cancelled = data.length;
+      }
+
+      setCounts(newCounts);
+    } catch (error) {
+      console.error('카운트 새로고침 오류:', error);
+    }
+  };
+
   // 각 카테고리별 데이터 개수 가져오기
   useEffect(() => {
     const fetchCounts = async () => {
@@ -264,7 +318,7 @@ export default function SellerMyPageClient() {
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <TradingGroupBuys />
+              <TradingGroupBuys onComplete={refreshCounts} />
             </AccordionContent>
           </AccordionItem>
           

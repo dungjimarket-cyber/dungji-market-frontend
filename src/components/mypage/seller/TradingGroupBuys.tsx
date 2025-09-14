@@ -11,11 +11,15 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
 
+interface TradingGroupBuysProps {
+  onComplete?: () => void;
+}
+
 /**
  * 거래중 컴포넌트
  * 구매확정과 판매확정이 모두 완료되어 실제 거래가 진행중인 공구
  */
-export default function TradingGroupBuys() {
+export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) {
   const { accessToken } = useAuth();
   const router = useRouter();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
@@ -94,6 +98,10 @@ export default function TradingGroupBuys() {
         toast.success('판매가 완료되었습니다.');
         // 목록 새로고침
         setGroupBuys(prev => prev.filter(gb => gb.id !== groupBuyId));
+        // 부모 컴포넌트의 카운트 새로고침
+        if (onComplete) {
+          onComplete();
+        }
       } else {
         const error = await response.json();
         toast.error(error.error || '판매 완료 처리에 실패했습니다.');
