@@ -801,7 +801,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     )}
 
                     {/* 거래완료 상태일 때 후기 작성 버튼 표시 */}
-                    {phone.status === 'completed' && !phone.seller_reviewed && (
+                    {phone.status === 'completed' && phone.seller?.id === user?.id && !phone.seller_reviewed && (
                       <Button
                         onClick={() => {
                           setReviewTarget('buyer');
