@@ -248,9 +248,6 @@ export default function SalesActivityTab() {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
         const apiUrl = `${baseUrl}/used/phones/${phoneId}/complete-trade/`;
 
-        console.log('Complete trade URL:', apiUrl);
-        console.log('Token exists:', !!token);
-
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -259,25 +256,6 @@ export default function SalesActivityTab() {
           },
           body: JSON.stringify({})
         });
-
-        console.log('Response status:', response.status);
-        const contentType = response.headers.get('content-type');
-        console.log('Content-Type:', contentType);
-
-        // HTML 응답 처리
-        if (contentType && contentType.includes('text/html')) {
-          const text = await response.text();
-          console.error('Received HTML:', text.substring(0, 500));
-
-          // 404 페이지나 로그인 페이지일 가능성
-          if (text.includes('404') || text.includes('Not Found')) {
-            throw { response: { data: { error: 'API endpoint not found (404)' } } };
-          } else if (text.includes('login') || text.includes('signin')) {
-            throw { response: { data: { error: 'Authentication required' } } };
-          }
-
-          throw { response: { data: { error: 'Server returned HTML instead of JSON' } } };
-        }
 
         if (!response.ok) {
           const errorData = await response.json();
