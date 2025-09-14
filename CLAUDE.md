@@ -293,6 +293,12 @@ NEVER proactively create documentation files (*.md) or README files. Only create
    - 상태 불일치 → 모델 로직 또는 상태 전환 문제
    - 카운트 오류 → Serializer에서 실시간 계산으로 해결
 4. **첫 번째 해결책 = 최종 해결책** (여러 번 수정 금지)
+5. **기존 코드 수정 원칙**:
+   - 새 기능 추가 시 기존 작동 코드는 절대 수정 금지
+   - 특히 Serializer 필드명은 모델과 정확히 일치해야 함
+   - 필드 추가만 하고, 기존 필드는 건드리지 않기
+   - 수정 전 항상 원본 상태 확인 필수
+   - ListSerializer와 DetailSerializer 필드명 일관성 유지
 
       
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.

@@ -19,7 +19,7 @@ import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
@@ -35,7 +35,6 @@ export default async function UsedPhoneDetailPage({ params }: { params: Promise<
 
 function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const router = useRouter();
-  const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
   const { isProfileComplete: hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
 
@@ -181,10 +180,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
     } catch (error) {
       console.error('Failed to fetch phone:', error);
-      toast({
-        title: '오류',
-        description: '상품 정보를 불러오는데 실패했습니다.',
-        variant: 'destructive',
+      toast.error('상품 정보를 불러오는데 실패했습니다.', {
+        duration: 3000,
       });
     } finally {
       setLoading(false);
@@ -234,10 +231,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   // 찜하기
   const handleFavorite = async () => {
     if (!isAuthenticated) {
-      toast({
-        title: '로그인 필요',
-        description: '찜하기는 로그인 후 이용 가능합니다.',
-        variant: 'destructive',
+      toast.error('찜하기는 로그인 후 이용 가능합니다.', {
+        duration: 3000,
       });
       router.push('/login');
       return;
@@ -260,9 +255,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       if (response.ok) {
         const newFavoriteState = !isFavorite;
         setIsFavorite(newFavoriteState);
-        toast({
-          title: newFavoriteState ? '찜 완료' : '찜 해제',
-          description: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+        toast.success(newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.', {
+          duration: 2000,
         });
       }
     } catch (error) {
@@ -278,10 +272,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     let amount = parseInt(offerAmount);
 
     if (!amount || amount < (phone?.min_offer_price || 0)) {
-      toast({
-        title: '제안 금액 확인',
-        description: `최소 제안 금액은 ${phone?.min_offer_price?.toLocaleString()}원입니다.`,
-        variant: 'destructive',
+      toast.error(`최소 제안 금액은 ${phone?.min_offer_price?.toLocaleString()}원입니다.`, {
+        duration: 3000,
       });
       return;
     }
@@ -292,26 +284,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       amount = roundedAmount;
       setOfferAmount(amount.toString());
       setDisplayAmount(amount.toLocaleString('ko-KR'));
-      toast({
-        title: '금액 자동 조정',
-        description: `천원 단위로 조정되었습니다: ${amount.toLocaleString()}원`,
+      toast.info(`천원 단위로 조정되었습니다: ${amount.toLocaleString()}원`, {
+        duration: 2000,
       });
     }
 
     if (amount > 9900000) {
-      toast({
-        title: '제안 금액 초과',
-        description: '최대 제안 가능 금액은 990만원입니다.',
-        variant: 'destructive',
+      toast.error('최대 제안 가능 금액은 990만원입니다.', {
+        duration: 3000,
       });
       return;
     }
 
     if (offerCount !== null && offerCount >= 5) {
-      toast({
-        title: '제안 횟수 초과',
-        description: '해당 상품에 최대 5회까지만 제안 가능합니다.',
-        variant: 'destructive',
+      toast.error('해당 상품에 최대 5회까지만 제안 가능합니다.', {
+        duration: 3000,
       });
       return;
     }
@@ -322,10 +309,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   // 가격 제안
   const handleSubmitOffer = async () => {
     if (!isAuthenticated) {
-      toast({
-        title: '로그인 필요',
-        description: '가격 제안은 로그인 후 이용 가능합니다.',
-        variant: 'destructive',
+      toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
+        duration: 3000,
       });
       router.push('/login');
       return;
@@ -373,9 +358,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
         // 즉시구매 여부 확인
         if (data.type === 'instant_purchase') {
-          toast({
-            title: '즉시구매 완료!',
-            description: '거래가 시작되었습니다. 거래중 탭으로 이동합니다.',
+          toast.success('즉시구매 완료! 거래가 시작되었습니다.', {
+            duration: 3000,
           });
 
           // 판매자 연락처 표시 모달 또는 알림
@@ -433,9 +417,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     } else {
       // 클립보드에 복사
       navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: '링크 복사',
-        description: '링크가 클립보드에 복사되었습니다.',
+      toast.success('링크가 클립보드에 복사되었습니다.', {
+        duration: 2000,
       });
     }
   };
@@ -465,10 +448,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         
         // 견적 제안이 있는 경우 패널티 경고
         if (errorData.has_offers) {
-          toast({
-            title: '삭제 제한',
-            description: errorData.message || '제안된 견적이 있어 6시간 패널티가 적용됩니다.',
-            variant: 'destructive',
+          toast.error(errorData.message || '제안된 견적이 있어 6시간 패널티가 적용됩니다.', {
+            duration: 4000,
           });
           // 사용자가 확인 후에도 삭제하길 원할 수 있으므로 모달은 열어둠
           setDeleting(false);
@@ -480,11 +461,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
       const result = await response.json();
       
-      toast({
-        title: '삭제 완료',
-        description: result.penalty_applied 
-          ? '상품이 삭제되었습니다. 견적 제안이 있어 6시간 후 재등록 가능합니다.'
-          : '상품이 삭제되었습니다.',
+      toast.success(result.penalty_applied
+        ? '상품이 삭제되었습니다. 견적 제안이 있어 6시간 후 재등록 가능합니다.'
+        : '상품이 삭제되었습니다.', {
+        duration: 4000,
       });
       
       setShowDeleteModal(false);
@@ -492,10 +472,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
     } catch (error) {
       console.error('Failed to delete phone:', error);
-      toast({
-        title: '삭제 실패',
-        description: '상품 삭제 중 오류가 발생했습니다.',
-        variant: 'destructive',
+      toast.error('상품 삭제 중 오류가 발생했습니다.', {
+        duration: 3000,
       });
     } finally {
       setDeleting(false);
@@ -882,10 +860,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             setShowOffersModal(true);
                           } catch (error) {
                             console.error('Failed to fetch offers:', error);
-                            toast({
-                              title: '오류',
-                              description: '제안 목록을 불러올 수 없습니다.',
-                              variant: 'destructive'
+                            toast.error('제안 목록을 불러올 수 없습니다.', {
+                              duration: 3000,
                             });
                           } finally {
                             setLoadingOffers(false);
@@ -949,10 +925,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             onClick={() => {
                               // 로그인 체크
                               if (!isAuthenticated) {
-                                toast({
-                                  title: '로그인 필요',
-                                  description: '가격 제안은 로그인 후 이용 가능합니다.',
-                                  variant: 'destructive',
+                                toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
+                                  duration: 3000,
                                 });
                                 router.push('/login');
                                 return;
@@ -960,10 +934,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
                               // 프로필 체크
                               if (!hasUsedPhoneProfile) {
-                                toast({
-                                  title: '프로필 등록 필요',
-                                  description: '중고폰 거래를 위해 프로필 등록이 필요합니다.',
-                                  variant: 'destructive',
+                                toast.error('중고폰 거래를 위해 프로필 등록이 필요합니다.', {
+                                  duration: 3000,
                                 });
                                 return;
                               }
@@ -976,9 +948,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   setOfferMessage(myOffer.message);
                                 }
                                 setShowOfferModal(true);
-                                toast({
-                                  title: '수정 제안',
-                                  description: '기존 제안을 수정합니다.',
+                                toast.info('기존 제안을 수정합니다.', {
+                                  duration: 2000,
                                 });
                               } else {
                                 // 신규 제안
@@ -1026,9 +997,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                       // 취소해도 5회 카운팅은 원복하지 않음
                                       // setRemainingOffers(prev => Math.min(5, prev + 1));
                                       await fetchOfferCount(); // 서버에서 실제 카운트 다시 조회
-                                      toast({
-                                        title: '제안 취소',
-                                        description: '가격 제안이 취소되었습니다.',
+                                      toast.success('가격 제안이 취소되었습니다.', {
+                                        duration: 2000,
                                       });
                                     }
                                   } catch (error) {
@@ -1225,8 +1195,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-6 max-h-[85vh] sm:max-h-[90vh] flex flex-col shadow-2xl">
             {/* 헤더 */}
             <div className="flex items-center justify-between mb-4 pb-4 border-b">
               <div>
@@ -1247,8 +1217,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
             </div>
             
-            {/* 제품 정보 미리보기 */}
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+            {/* 스크롤 가능한 컨텐츠 영역 */}
+            <div className="flex-1 overflow-y-auto mb-4">
+              {/* 제품 정보 미리보기 */}
+              <div className="bg-gray-50 rounded-lg p-3 mb-4">
               <div className="flex items-center gap-3">
                 {phone.images?.[0] && (
                   <Image
@@ -1416,10 +1388,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   </details>
                 ))}
               </div>
-            </div>
+              </div>
 
-            {/* 제안 안내사항 */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              {/* 제안 안내사항 */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <Info className="w-4 h-4 text-amber-600 mt-0.5" />
                 <div className="text-xs text-amber-800">
@@ -1430,10 +1402,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   </ul>
                 </div>
               </div>
+              </div>
             </div>
 
-            {/* 버튼 */}
-            <div className="flex gap-3">
+            {/* 버튼 - 항상 하단에 고정 */}
+            <div className="flex gap-3 pt-4 border-t mt-auto">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -1644,9 +1617,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           onComplete={() => {
             fetchPhoneDetail();
             setShowTradeCompleteModal(false);
-            toast({
-              title: '거래완료',
-              description: '거래가 완료되었습니다. 후기를 작성해주세요!',
+            toast.success('거래가 완료되었습니다. 후기를 작성해주세요!', {
+              duration: 3000,
             });
           }}
         />
@@ -1678,9 +1650,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             fetchPhoneDetail();
             setShowTradeReviewModal(false);
             setReviewTarget(null);
-            toast({
-              title: '후기 작성 완료',
-              description: '거래 후기가 등록되었습니다.',
+            toast.success('거래 후기가 등록되었습니다.', {
+              duration: 2000,
             });
           }}
         />
