@@ -980,7 +980,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </div>
 
                         {/* 거래중 상태 메시지 - 구매자 본인일 때만 */}
-                        {phone.status === 'trading' && phone.buyer_id === user?.user_id && (
+                        {phone.status === 'trading' && phone.buyer_id === user?.id && (
                           <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                             <div className="flex items-center gap-2 text-orange-700">
                               <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
