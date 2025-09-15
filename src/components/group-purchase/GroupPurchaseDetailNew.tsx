@@ -2672,7 +2672,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div>• 견적 제안 시 견적 이용권 1개가 소모됩니다</div>
                 <div>• 최소 견적 단위는 1,000원이며, 신중하게 제안해주세요</div>
                 <div>• 견적 철회 및 수정은 공구 마감 이전에만 가능합니다</div>
-                <div>• 경쟁력 있는 견적일수록 선택될 확률이 높아집니다</div>
+                <div>• 경쟁력 있는 견적일수록 선정될 가능성이 높습니다</div>
                 <div>• 공구 기간 동안 참여 인원은 변동될 수 있습니다</div>
               </div>
             </div>
