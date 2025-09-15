@@ -1462,7 +1462,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
                     </div>
                     <div className="text-sm text-gray-500">
-                      • 자세한 내용은 통신사 앱 또는 고객센터를 통해 확인하세요.
+                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
                     </div>
                   </>
                 ) : (
@@ -1474,7 +1474,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
                     </div>
                     <div className="text-sm text-gray-500">
-                      • 자세한 내용은 통신사 홈페이지 또는 고객센터를 통해 확인하세요.
+                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
                     </div>
                   </>
                 )}
@@ -1690,7 +1690,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
                   <div className="text-left leading-relaxed">
-                    <p className="break-keep">자세한 내용은 해당 통신사 어플 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                    <p className="break-keep">자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</p>
                   </div>
                 </div>
               </div>
@@ -1727,7 +1727,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
                   <div className="text-left leading-relaxed">
-                    <p className="break-keep">자세한 내용은 해당 통신사 홈페이지 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                    <p className="break-keep">자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</p>
                   </div>
                 </div>
               </div>
