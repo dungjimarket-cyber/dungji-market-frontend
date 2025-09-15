@@ -186,9 +186,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     return Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
   });
   
-  // 마감 임박 조건: 3시간 미만 또는 잔여 인원 3명 이하
-  const isUrgent = (currentTimeLeft < 3 * 60 * 60 * 1000 && currentTimeLeft > 0) || 
-                  (remainingSlots <= 3 && remainingSlots > 0);
+  // 마감 임박 조건: 3시간 미만
+  const isUrgent = currentTimeLeft < 3 * 60 * 60 * 1000 && currentTimeLeft > 0;
   
   const formatTimeLeft = (ms: number) => {
     if (ms <= 0) return '마감완료';
