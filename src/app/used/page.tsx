@@ -261,34 +261,34 @@ export default function UsedPhonesPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
-              중고폰 직거래 마켓
+              쉽고 재밌고 편안한 중고거래
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              안전거래 보장 · 수수료 0% · 당일거래 가능
+              우리 동네에서 만나요 · 편하게 거래해요
             </p>
             
             {/* 특징 아이콘 */}
             <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-2xl mx-auto mb-8">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
-                  <Shield className="w-6 h-6" />
+                  <Smartphone className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">안전거래</p>
-                <p className="text-xs text-gray-500 mt-1">둥지페이 보호</p>
+                <p className="text-sm font-medium text-gray-700">동네 거래</p>
+                <p className="text-xs text-gray-500 mt-1">가까운 곳에서</p>
               </div>
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
-                  <TrendingUp className="w-6 h-6" />
+                  <Shield className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">가격협상</p>
-                <p className="text-xs text-gray-500 mt-1">원하는 가격 제안</p>
+                <p className="text-sm font-medium text-gray-700">안심 거래</p>
+                <p className="text-xs text-gray-500 mt-1">믿을 수 있는</p>
               </div>
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
                   <Zap className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">빠른거래</p>
-                <p className="text-xs text-gray-500 mt-1">당일 직거래 가능</p>
+                <p className="text-sm font-medium text-gray-700">빠른 거래</p>
+                <p className="text-xs text-gray-500 mt-1">오늘 바로</p>
               </div>
             </div>
 
