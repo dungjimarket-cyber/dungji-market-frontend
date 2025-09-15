@@ -2055,20 +2055,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       {/* 메인 컨텐츠 래퍼 끝 */}
 
       {/* 하단 구분선 */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-8">
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-12">
         <hr className="border-gray-200" />
       </div>
 
       {/* 하단 영역 - 최고지원금 및 중요안내사항 (위아래 2줄 배치) */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-8 space-y-6">
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 py-12 space-y-8">
         {/* 첫번째 줄: 최고 지원금 */}
         <div className="px-4 lg:px-0">
             {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
               // 최종선택 상태일 때 낙찰 정보 표시
-              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 border border-orange-200 shadow-md">
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-8 border border-orange-200 shadow-md">
                 <div className="text-center">
                   {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller) && (
-                    <div className="mb-4">
+                    <div className="mb-6">
                       <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
                         <span className="inline-block">🎉</span>
                         <span className="inline-block mx-1">
@@ -2078,8 +2078,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       </p>
                     </div>
                   )}
-                  
-                  <div className="flex items-center justify-center gap-2 mb-4">
+
+                  <div className="flex items-center justify-center gap-2 mb-6">
                     <Crown className="h-6 w-6 text-orange-500" />
                     <p className="text-xl font-bold text-gray-800">
                       최종 지원금
@@ -2089,7 +2089,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
                       <>
                         <span>{
-                          groupBuyData.winning_bid_amount?.toLocaleString() || 
+                          groupBuyData.winning_bid_amount?.toLocaleString() ||
                           (groupBuyData.bid_ranking?.[0]?.amount ? groupBuyData.bid_ranking?.[0]?.amount?.toLocaleString() : '0')
                         }원</span>
                       </>
@@ -2101,9 +2101,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             ) : (
               // 진행중인 상태일 때 기존 표시
-              <div className="bg-yellow-50 rounded-lg p-4">
+              <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
+                  <p className="text-sm text-gray-600 mb-3">현재 최고 지원금</p>
                   <p className="text-3xl font-bold text-orange-500">
                     {(highestBidAmount ?? 0) > 0 ? (
                       <span>{maskAmount(highestBidAmount!)}원</span>
@@ -2118,19 +2118,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
         {/* 두번째 줄: 중요 안내사항 */}
         <div className="px-4 lg:px-0">
-            {(groupBuy.product_details?.category_name === '휴대폰' || 
-              groupBuy.product_details?.category_name === '인터넷' || 
+            {(groupBuy.product_details?.category_name === '휴대폰' ||
+              groupBuy.product_details?.category_name === '인터넷' ||
               groupBuy.product_details?.category_name === '인터넷+TV') && (
-              <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
+              <div className="p-6 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-1">
                     <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-amber-800 mb-2">⚠️ 중요 안내사항</h3>
-                    <div className="space-y-2 text-sm text-amber-700">
+                    <h3 className="font-bold text-amber-800 mb-3 text-lg">⚠️ 중요 안내사항</h3>
+                    <div className="space-y-3 text-sm text-amber-700">
                       {groupBuy.product_details?.category_name === '휴대폰' ? (
                         <>
                           <p className="break-keep">• 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.</p>
@@ -2153,42 +2153,44 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       
       {/* 판매자 입찰 정보 - 낙찰 실패 시 안내 메시지 강화 */}
       {isSeller && myBidInfo && groupBuyData.status !== 'recruiting' && (
-        <div className={`mx-4 mt-4 p-4 rounded-lg border ${
-          myBidInfo.status === 'won' 
-            ? 'bg-green-50 border-green-200' 
-            : 'bg-yellow-50 border-yellow-200'
-        }`}>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className={`font-medium flex items-center ${
-              myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
-            }`}>
-              <Gavel className="w-5 h-5 mr-2" />
-              견적제안 내역
-            </h3>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">
-              <span className="font-medium">내 순위:</span> 
-              <span className={myBidInfo.rank === 1 ? "text-lg font-bold text-green-600 mx-1" : ""}>{myBidInfo.rank}위</span>
-              {myBidInfo.rank !== 1 && " "}/ 전체 {myBidInfo.total_bidders}명
-              {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
-                <span className="text-yellow-600 font-bold ml-2">축하합니다!</span>
+        <div className="lg:max-w-7xl lg:mx-auto px-4 lg:px-6 mt-8 mb-8">
+          <div className={`p-6 rounded-lg border ${
+            myBidInfo.status === 'won'
+              ? 'bg-green-50 border-green-200'
+              : 'bg-yellow-50 border-yellow-200'
+          }`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`font-medium flex items-center ${
+                myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
+              }`}>
+                <Gavel className="w-5 h-5 mr-2" />
+                견적제안 내역
+              </h3>
+            </div>
+            <div className="space-y-3">
+              <div className="text-sm">
+                <span className="font-medium">내 순위:</span>
+                <span className={myBidInfo.rank === 1 ? "text-lg font-bold text-green-600 mx-1" : ""}>{myBidInfo.rank}위</span>
+                {myBidInfo.rank !== 1 && " "}/ 전체 {myBidInfo.total_bidders}명
+                {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
+                  <span className="text-yellow-600 font-bold ml-2">축하합니다!</span>
+                )}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
+              </div>
+              {/* 선정된 경우 메시지 숨김, 미선정은 표시 */}
+              {myBidInfo.status === 'won' ? (
+                null  // 선정된 경우 백엔드 메시지 숨김
+              ) : (
+                <div className="mt-4 p-4 bg-yellow-100 rounded-md">
+                  <p className="text-yellow-800">{myBidInfo.message}</p>
+                  <p className="text-sm text-yellow-700 mt-2">
+                    기회는 항상 열려있습니다! 💪
+                  </p>
+                </div>
               )}
             </div>
-            <div className="text-sm">
-              <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
-            </div>
-            {/* 선정된 경우 메시지 숨김, 미선정은 표시 */}
-            {myBidInfo.status === 'won' ? (
-              null  // 선정된 경우 백엔드 메시지 숨김
-            ) : (
-              <div className="mt-3 p-3 bg-yellow-100 rounded-md">
-                <p className="text-yellow-800">{myBidInfo.message}</p>
-                <p className="text-sm text-yellow-700 mt-2">
-                  기회는 항상 열려있습니다! 💪
-                </p>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -2239,7 +2241,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       )} */}
 
       {/* 하단 버튼 영역 - 모바일에서만 표시 */}
-      <div className="lg:hidden px-4 py-6">
+      <div className="lg:hidden px-4 py-8">
         {/* 일반회원 버튼 구성 */}
         {!isSeller && isParticipant ? (
           // 참여한 일반회원
