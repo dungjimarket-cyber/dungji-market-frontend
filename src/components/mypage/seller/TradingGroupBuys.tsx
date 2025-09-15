@@ -10,6 +10,16 @@ import { Loader2, Package, Phone, AlertTriangle, CheckCircle, FileText } from 'l
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TradingGroupBuysProps {
   onComplete?: () => void;
@@ -27,6 +37,8 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [noShowReports, setNoShowReports] = useState<{[key: number]: boolean}>({});
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [selectedCompleteId, setSelectedCompleteId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTrading = async () => {
@@ -79,12 +91,12 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
     fetchTrading();
   }, [accessToken]);
 
-  const handleCompleteSale = async (groupBuyId: number) => {
-    if (!confirm('판매를 완료하시겠습니까?')) return;
+  const handleCompleteSale = async () => {
+    if (!selectedCompleteId) return;
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/complete_sale/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedCompleteId}/complete_sale/`,
         {
           method: 'POST',
           headers: {
@@ -95,19 +107,22 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
       );
 
       if (response.ok) {
-        toast.success('판매가 완료되었습니다.');
+        toast.success('거래가 종료되었습니다.');
         // 목록 새로고침
-        setGroupBuys(prev => prev.filter(gb => gb.id !== groupBuyId));
+        setGroupBuys(prev => prev.filter(gb => gb.id !== selectedCompleteId));
         // 부모 컴포넌트의 카운트 새로고침
         if (onComplete) {
           onComplete();
         }
       } else {
         const error = await response.json();
-        toast.error(error.error || '판매 완료 처리에 실패했습니다.');
+        toast.error(error.error || '거래 종료 처리에 실패했습니다.');
       }
     } catch (error) {
-      toast.error('판매 완료 처리 중 오류가 발생했습니다.');
+      toast.error('거래 종료 처리 중 오류가 발생했습니다.');
+    } finally {
+      setShowCompleteDialog(false);
+      setSelectedCompleteId(null);
     }
   };
 
@@ -225,7 +240,10 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
                     <Button
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none md:w-auto md:px-4"
-                      onClick={() => handleCompleteSale(groupBuy.id)}
+                      onClick={() => {
+                        setSelectedCompleteId(groupBuy.id);
+                        setShowCompleteDialog(true);
+                      }}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
                       거래종료
@@ -251,6 +269,26 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
           isSeller={true}
         />
       )}
+
+      {/* 거래종료 확인 다이얼로그 */}
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>거래 종료 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              거래를 종료하시겠습니까? 종료 후에는 취소할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedCompleteId(null)}>
+              아니오
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCompleteSale}>
+              네
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
