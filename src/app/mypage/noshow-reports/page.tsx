@@ -137,7 +137,7 @@ function NoShowReportsContent() {
       const result = await response.json();
       
       // 성공 토스트 표시
-      toast.success(result.message || '노쇼 신고가 취소되었습니다. 공구가 판매완료로 처리되었습니다.');
+      toast.success(result.message || '노쇼 신고가 취소되었습니다. 거래종료로 처리되었습니다.');
       
       // 목록 새로고침
       fetchReports();
