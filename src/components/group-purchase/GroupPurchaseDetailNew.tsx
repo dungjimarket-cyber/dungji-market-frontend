@@ -2723,16 +2723,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         )}
         
         {/* 가이드라인 링크 */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-4 mb-2">
           <a href="https://doongji-market-1vi5n3i.gamma.site/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline hover:text-blue-800">
             📋 이용 가이드 확인하기
           </a>
-          <p className="text-xs text-gray-500 mt-2">
-            • 공구 참여 전 가이드라인을 꼭 확인해주세요
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            • 견적 제안 진행 중에는 중도 포기가 제한되니 신중한 참여 부탁드립니다
-          </p>
+          <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+            <div>• 공구 참여 전 가이드라인을 꼭 확인해주세요</div>
+            <div>• 견적 제안 진행 중에는 중도 포기가 제한되니 신중한 참여 부탁드립니다</div>
+          </div>
         </div>
       </div>
 
