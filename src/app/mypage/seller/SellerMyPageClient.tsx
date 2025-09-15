@@ -240,13 +240,13 @@ export default function SellerMyPageClient() {
         >
           {/* 1. 구매자 최종선택 대기중 */}
           <AccordionItem value="waiting-buyer">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">구매자 최종선택 대기중</span>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">구매자 최종선택 대기중</span>
                 </div>
-                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                <div className="flex items-center gap-2">
                   {counts.waitingBuyer > 0 ? (
                     <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-yellow-500 text-white text-sm font-semibold rounded-full">
                       {counts.waitingBuyer}
@@ -266,14 +266,14 @@ export default function SellerMyPageClient() {
           </AccordionItem>
           
           {/* 2. 판매확정/포기 선택하기 */}
-          <AccordionItem value="pending-decision" className="border-orange-200">
-            <AccordionTrigger className="hover:no-underline bg-orange-50">
+          <AccordionItem value="pending-decision">
+            <AccordionTrigger className="py-2 bg-orange-50 px-2 rounded-lg hover:bg-orange-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
-                  <span className="font-medium text-orange-700 text-sm sm:text-base">판매확정/포기 선택하기</span>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-orange-700">판매확정/포기 선택하기</span>
                 </div>
-                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                <div className="flex items-center gap-2">
                   {counts.pendingSeller > 0 ? (
                     <>
                       <span className="text-xs sm:text-sm text-orange-600 font-medium">선택 대기중</span>
@@ -297,13 +297,13 @@ export default function SellerMyPageClient() {
           
           {/* 3. 거래중 */}
           <AccordionItem value="trading">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">거래중</span>
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">거래중</span>
                 </div>
-                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                <div className="flex items-center gap-2">
                   {counts.trading > 0 ? (
                     <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-green-500 text-white text-sm font-semibold rounded-full">
                       {counts.trading}
@@ -324,13 +324,13 @@ export default function SellerMyPageClient() {
           
           {/* 4. 판매완료 */}
           <AccordionItem value="completed">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">판매완료</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">판매완료</span>
                 </div>
-                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                <div className="flex items-center gap-2">
                   <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
                     {counts.completed}
                   </span>
@@ -345,13 +345,13 @@ export default function SellerMyPageClient() {
           
           {/* 5. 취소된 공구 */}
           <AccordionItem value="cancelled">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">취소된 공구</span>
+                <div className="flex items-center gap-2">
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">취소된 공구</span>
                 </div>
-                <div className="flex items-center gap-2 mr-1 sm:mr-2">
+                <div className="flex items-center gap-2">
                   <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
                     {counts.cancelled}
                   </span>

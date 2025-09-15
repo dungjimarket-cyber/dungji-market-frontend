@@ -322,7 +322,7 @@ export default function MyPageClient() {
           <Accordion type="single" collapsible className="w-full">
             {/* 참여중인 공구 */}
             <AccordionItem value="participating">
-              <AccordionTrigger className="py-3 bg-gray-50 px-3 rounded-lg hover:bg-gray-100 group transition-all">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <Package className="w-4 h-4 mr-2 text-blue-500" />
@@ -349,7 +349,7 @@ export default function MyPageClient() {
 
             {/* 구매확정/포기 선택하기 */}
             <AccordionItem value="pending">
-              <AccordionTrigger className="py-3 bg-gray-50 px-3 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <ShoppingBag className="w-4 h-4 mr-2 text-amber-500" />
@@ -376,7 +376,7 @@ export default function MyPageClient() {
 
             {/* 판매자 최종선택 대기중 */}
             <AccordionItem value="waiting-seller">
-              <AccordionTrigger className="py-3 bg-gray-50 px-3 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-2 text-dungji-primary" />
@@ -403,7 +403,7 @@ export default function MyPageClient() {
 
             {/* 거래중 */}
             <AccordionItem value="purchase-confirmed">
-              <AccordionTrigger className="py-3 bg-gray-50 px-3 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
@@ -430,7 +430,7 @@ export default function MyPageClient() {
 
             {/* 구매 완료 */}
             <AccordionItem value="purchase-completed">
-              <AccordionTrigger className="py-3 bg-gray-50 px-3 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <CheckCircle2 className="w-4 h-4 mr-2 text-gray-500" />
@@ -451,7 +451,7 @@ export default function MyPageClient() {
 
             {/* 취소된 공구 */}
             <AccordionItem value="cancelled">
-              <AccordionTrigger className="py-3 bg-gray-50 px-3 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <XCircle className="w-4 h-4 mr-2 text-red-500" />
