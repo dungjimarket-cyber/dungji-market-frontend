@@ -85,12 +85,8 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
 
       if (response.ok) {
         toast.success('거래가 종료되었습니다.');
-        // 목록 새로고침
-        setGroupBuys(prev => prev.filter(gb => gb.id !== selectedCompleteId));
-        // 부모 컴포넌트의 카운트 새로고침
-        if (onComplete) {
-          onComplete();
-        }
+        // 전체 페이지 새로고침으로 모든 카운트 동기화
+        window.location.reload();
       } else {
         const error = await response.json();
         toast.error(error.error || '거래 종료 처리에 실패했습니다.');

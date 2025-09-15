@@ -179,11 +179,9 @@ export default function CreatedGroupBuys() {
         description: '공구가 성공적으로 삭제되었습니다.',
         variant: 'default',
       });
-      
-      // 목록에서 삭제된 공구 제거
-      setGroupBuys(groupBuys.filter((groupBuy) => groupBuy.id !== selectedGroupBuy.id));
-      setDeleteModalOpen(false);
-      setSelectedGroupBuy(null);
+
+      // 전체 페이지 새로고침으로 모든 카운트 동기화
+      window.location.reload();
     } catch (err) {
       console.error('공구 삭제 오류:', err);
       toast({

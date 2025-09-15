@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, MessageSquare, CheckCircle } from 'lucide-react';
+import { Loader2, MessageSquare, CheckCircle, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -130,68 +130,71 @@ export default function CompletedGroupBuys() {
 
   return (
     <div className="space-y-4">
-      {groupBuys.map((groupBuy) => (
-        <Card key={groupBuy.id} className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-4">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <CardTitle className="text-lg mb-2">{groupBuy.product_details.name}</CardTitle>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>참여인원 {groupBuy.current_participants}/{groupBuy.max_participants}명</span>
-                  <span>•</span>
-                  <span>
-                    {groupBuy.completed_at
-                      ? formatDistanceToNow(new Date(groupBuy.completed_at), { addSuffix: true, locale: ko })
-                      : formatDistanceToNow(new Date(groupBuy.end_time), { addSuffix: true, locale: ko })
-                    } 종료
-                  </span>
+      {groupBuys.map((groupBuy) => {
+        const productImage = groupBuy.product_info?.image_url || groupBuy.product_details?.image_url || groupBuy.product?.image_url || '/placeholder-product.jpg';
+        const productName = groupBuy.product_info?.name || groupBuy.product_details?.name || groupBuy.product?.name || '상품';
+        const completedDate = groupBuy.completed_at || groupBuy.end_time;
+
+        return (
+          <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex gap-4">
+                {/* 상품 이미지 */}
+                <div className="relative w-24 h-24 flex-shrink-0">
+                  <img
+                    src={productImage}
+                    alt={productName}
+                    className="w-full h-full object-cover rounded-md"
+                  />
                 </div>
-              </div>
-              {(groupBuy.product_info?.image_url || groupBuy.product_details?.image_url || groupBuy.product?.image_url) && (
-                <img
-                  src={groupBuy.product_info?.image_url || groupBuy.product_details?.image_url || groupBuy.product?.image_url}
-                  alt={groupBuy.product_info?.name || groupBuy.product_details?.name || groupBuy.product?.name}
-                  className="w-20 h-20 object-cover rounded-md ml-4"
-                />
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-end items-center">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleViewDetail(groupBuy.id)}
-                >
-                  공구보기
-                </Button>
-                {(() => {
-                  if (groupBuy.has_review) {
-                    return (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+
+                {/* 공구 정보 */}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg mb-1">
+                    {productName}
+                  </h3>
+
+                  <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 flex-wrap">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                      종료일: {formatDistanceToNow(new Date(completedDate), { addSuffix: true, locale: ko })}
+                    </span>
+                    <span className="whitespace-nowrap">
+                      참여인원 {groupBuy.current_participants}/{groupBuy.max_participants}명
+                    </span>
+                  </div>
+
+                  {/* 액션 버튼들 */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetail(groupBuy.id)}
+                    >
+                      공구보기
+                    </Button>
+                    {groupBuy.has_review ? (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 px-3 py-1">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         후기작성 완료
                       </Badge>
-                    );
-                  }
-                  
-                  return (
-                    <Button
-                      size="sm"
-                      onClick={() => handleWriteReview(groupBuy.id, groupBuy.product_details.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      후기작성
-                    </Button>
-                  );
-                })()}
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleWriteReview(groupBuy.id, groupBuy.product_details.id)}
+                        className="flex items-center gap-1"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        후기작성
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
