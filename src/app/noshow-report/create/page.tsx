@@ -27,6 +27,7 @@ function NoShowReportContent() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
   const [selectedBuyerIds, setSelectedBuyerIds] = useState<string[]>([]);
+  const [sellerId, setSellerId] = useState<string>(''); // 판매자 ID 추가
   const [authChecked, setAuthChecked] = useState(false);
   const [existingReport, setExistingReport] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -103,11 +104,43 @@ function NoShowReportContent() {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setGroupbuyInfo(data);
         console.log('Group buy info fetched:', data);
+
+        // 구매자인 경우 판매자 ID 저장
+        const isBuyer = user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type);
+        if (isBuyer) {
+          // selected_bid에서 판매자 정보 찾기
+          if (data.selected_bid) {
+            const sellerIdFromBid = data.selected_bid.seller?.id || data.selected_bid.seller_id || data.selected_bid.seller;
+            if (sellerIdFromBid) {
+              setSellerId(String(sellerIdFromBid));
+              console.log('Seller ID from selected_bid:', sellerIdFromBid);
+            }
+          }
+          // 또는 winning_bid에서 찾기
+          else if (data.winning_bid) {
+            const sellerIdFromWinning = data.winning_bid.seller?.id || data.winning_bid.seller_id || data.winning_bid.seller;
+            if (sellerIdFromWinning) {
+              setSellerId(String(sellerIdFromWinning));
+              console.log('Seller ID from winning_bid:', sellerIdFromWinning);
+            }
+          }
+          // 또는 bids에서 selected=true인 것 찾기
+          else if (data.bids && Array.isArray(data.bids)) {
+            const selectedBid = data.bids.find((bid: any) => bid.is_selected || bid.selected);
+            if (selectedBid) {
+              const sellerIdFromBids = selectedBid.seller?.id || selectedBid.seller_id || selectedBid.seller;
+              if (sellerIdFromBids) {
+                setSellerId(String(sellerIdFromBids));
+                console.log('Seller ID from bids:', sellerIdFromBids);
+              }
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('공구 정보 조회 실패:', error);
@@ -428,42 +461,48 @@ function NoShowReportContent() {
       let reportedUserId;
       let reportType: 'buyer_noshow' | 'seller_noshow';
       
-      if (user?.role === 'buyer') {
+      if (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && user?.user_type !== '판매')) {
         // 구매자가 신고 → 판매자 노쇼
         reportType = 'seller_noshow';
-        
-        // 공구 정보에서 선택된 입찰 정보 확인
-        const bidsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/bids/`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-        
-        if (bidsResponse.ok) {
-          const bidsData = await bidsResponse.json();
-          console.log('Bids data:', bidsData);
-          
-          // accepted 또는 selected 상태의 입찰 찾기
-          const acceptedBid = bidsData.find((bid: any) => 
-            bid.status === 'accepted' || bid.status === 'selected' || bid.is_selected
-          );
-          
-          console.log('Accepted bid:', acceptedBid);
-          
-          if (acceptedBid) {
-            reportedUserId = acceptedBid.seller?.id || acceptedBid.seller_id || acceptedBid.seller;
-            console.log('Reported user ID:', reportedUserId);
+
+        // 이미 저장된 sellerId 사용
+        if (sellerId) {
+          reportedUserId = sellerId;
+          console.log('Using saved seller ID:', reportedUserId);
+        } else {
+          // fallback: 공구 정보에서 선택된 입찰 정보 확인
+          const bidsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/bids/`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+
+          if (bidsResponse.ok) {
+            const bidsData = await bidsResponse.json();
+            console.log('Bids data:', bidsData);
+
+            // accepted 또는 selected 상태의 입찰 찾기
+            const acceptedBid = bidsData.find((bid: any) =>
+              bid.status === 'accepted' || bid.status === 'selected' || bid.is_selected
+            );
+
+            console.log('Accepted bid:', acceptedBid);
+
+            if (acceptedBid) {
+              reportedUserId = acceptedBid.seller?.id || acceptedBid.seller_id || acceptedBid.seller;
+              console.log('Reported user ID from bids:', reportedUserId);
+            } else {
+              console.error('No accepted bid found');
+              toast.error('선택된 판매자를 찾을 수 없습니다.');
+              setLoading(false);
+              return;
+            }
           } else {
-            console.error('No accepted bid found');
-            toast.error('선택된 판매자를 찾을 수 없습니다.');
+            console.error('Failed to fetch bids:', bidsResponse.status);
+            toast.error('판매자 정보를 가져올 수 없습니다.');
             setLoading(false);
             return;
           }
-        } else {
-          console.error('Failed to fetch bids:', bidsResponse.status);
-          toast.error('판매자 정보를 가져올 수 없습니다.');
-          setLoading(false);
-          return;
         }
       } else if (user?.role === 'seller' || user?.user_type === '판매') {
         // 판매자가 신고 → 구매자 노쇼
