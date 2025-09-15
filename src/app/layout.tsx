@@ -117,7 +117,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
       </head>
-      <body className={`${inter.className} min-h-screen relative`}>
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
         {/* Google AdSense Script */}
         <Script
           async
@@ -125,7 +125,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        
+
         {/* Google Ads Conversion Tracking */}
         <Script
           async
@@ -149,7 +149,7 @@ export default function RootLayout({
           <Toaster />
           <RoleUpdateNotice />
           <DesktopNavbar />
-          <main className="flex-1 pb-20 md:pb-0">
+          <main className="flex-grow pb-20 md:pb-0">
             {children}
           </main>
           <MobileNavbar />
