@@ -187,7 +187,7 @@ export default function PurchaseConfirmedGroupBuys() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {groupBuys.map((groupBuy) => (
-        <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
+        <Card key={groupBuy.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
               <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
@@ -250,24 +250,24 @@ export default function PurchaseConfirmedGroupBuys() {
                 {/* 액션 버튼 */}
                 <div className="mt-3">
                   {/* 첫 번째 줄: 연락처 확인 및 공구보기 */}
-                  <div className="flex gap-2 mb-2">
+                  <div className="flex gap-2 mb-2 md:justify-start">
                     {/* 거래중 상태에서는 판매자 정보 확인 가능 */}
                     {(groupBuy.status === 'in_progress' || (groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed)) && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="flex-1"
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 md:flex-none md:w-auto md:px-3"
                         onClick={() => {
                           setSelectedGroupBuyId(groupBuy.id);
                           setIsContactModalOpen(true);
                         }}
                       >
                         <Phone className="w-3 h-3 mr-1" />
-                        판매자 정보 확인하기
+                        판매자정보확인
                       </Button>
                     )}
-                    <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
-                      <Button size="sm" variant="outline" className="w-full">
+                    <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1 md:flex-none">
+                      <Button size="sm" variant="outline" className="w-full md:w-auto md:px-4">
                         공구보기
                       </Button>
                     </Link>
@@ -275,10 +275,10 @@ export default function PurchaseConfirmedGroupBuys() {
                   
                   {/* 두 번째 줄: 구매완료/노쇼신고 또는 후기작성 */}
                   {groupBuy.shipping_status !== 'delivered' ? (
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
+                    <div className="flex gap-2 md:justify-start">
+                      <Button
+                        size="sm"
+                        className="flex-1 md:flex-none md:w-auto md:px-4"
                         onClick={() => {
                           setSelectedCompleteId(groupBuy.id);
                           setShowCompleteDialog(true);
@@ -287,10 +287,10 @@ export default function PurchaseConfirmedGroupBuys() {
                         <CheckCircle className="w-3 h-3 mr-1" />
                         구매완료
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
-                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 md:flex-none md:w-auto md:px-4"
                         onClick={() => handleNoShowReport(groupBuy.id)}
                         disabled={!groupBuy.id}
                       >

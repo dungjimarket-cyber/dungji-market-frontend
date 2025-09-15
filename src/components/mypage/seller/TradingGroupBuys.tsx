@@ -131,7 +131,7 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
     <>
       <div className="space-y-4">
         {groupBuys.map((groupBuy) => (
-          <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow border-green-200">
+          <Card key={groupBuy.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* 상품 이미지 */}
@@ -168,34 +168,34 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
                   </div>
 
                   {/* 액션 버튼들 - 모바일에서 그리드로 배치 */}
-                  <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
+                  <div className="grid grid-cols-2 md:flex md:flex-row gap-2 md:justify-start">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 sm:flex-initial"
+                      className="flex-1 md:flex-none md:w-auto md:px-4"
                       onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
                     >
                       공구보기
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 sm:flex-initial"
+                      className="flex-1 md:flex-none md:w-auto md:px-3"
                       onClick={() => {
                         setSelectedGroupBuyId(groupBuy.id);
                         setIsContactModalOpen(true);
                       }}
                     >
                       <Phone className="h-4 w-4 mr-1" />
-                      구매자 정보보기
+                      구매자정보확인
                     </Button>
                     
                     {noShowReports[groupBuy.id] ? (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-blue-600 border-blue-300 hover:bg-blue-50 flex-1 sm:flex-initial"
+                        className="text-blue-600 border-blue-300 hover:bg-blue-50 flex-1 md:flex-none md:w-auto md:px-3"
                         onClick={() => router.push('/mypage/noshow-reports')}
                       >
                         <FileText className="h-4 w-4 mr-1" />
@@ -205,7 +205,7 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 md:flex-none md:w-auto md:px-3"
                         onClick={() => {
                           if (!groupBuy.id) {
                             console.error('groupBuy.id is missing:', groupBuy);
@@ -224,7 +224,7 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
                     
                     <Button
                       size="sm"
-                      className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
+                      className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none md:w-auto md:px-4"
                       onClick={() => handleCompleteSale(groupBuy.id)}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
