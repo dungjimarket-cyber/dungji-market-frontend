@@ -2135,16 +2135,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             ) : (
               // 진행중인 상태일 때 기존 표시
-              <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 shadow-lg">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-3">현재 최고 지원금</p>
-                  <p className="text-3xl font-bold text-dungji-primary">
-                    {(highestBidAmount ?? 0) > 0 ? (
-                      <span>{maskAmount(highestBidAmount!)}원</span>
-                    ) : (
-                      <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
-                    )}
-                  </p>
+                  <p className="text-sm text-white/90 mb-3 font-medium">현재 최고 지원금</p>
+                  <div className="bg-white rounded-lg py-4 px-6 inline-block shadow-md">
+                    <p className="text-3xl font-bold text-blue-600">
+                      {(highestBidAmount ?? 0) > 0 ? (
+                        <span>{maskAmount(highestBidAmount!)}원</span>
+                      ) : (
+                        <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
