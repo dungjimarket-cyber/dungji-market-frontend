@@ -18,6 +18,7 @@ function NoShowReportContent() {
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
   const groupbuyId = searchParams.get('groupbuy') || searchParams.get('groupbuyId') || searchParams.get('groupbuy_id');
+  const sellerIdFromUrl = searchParams.get('seller_id');  // URL에서 seller_id 받기
   
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
@@ -54,31 +55,37 @@ function NoShowReportContent() {
     const checkAuthAndFetch = async () => {
       // 클라이언트 사이드에서만 실행
       if (typeof window === 'undefined') return;
-      
+
       // 1초 대기하여 인증 상태가 완전히 로드되도록 함
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // 토큰 직접 체크
-      const token = accessToken || 
-                   localStorage.getItem('accessToken') || 
+      const token = accessToken ||
+                   localStorage.getItem('accessToken') ||
                    sessionStorage.getItem('accessToken');
-      
+
       if (!token) {
         console.log('No token found, redirecting to login');
         router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search));
         return;
       }
-      
+
       setAuthChecked(true);
-      
+
+      // URL에서 seller_id가 있으면 설정
+      if (sellerIdFromUrl) {
+        setSellerId(sellerIdFromUrl);
+        console.log('Seller ID from URL:', sellerIdFromUrl);
+      }
+
       if (groupbuyId) {
         fetchGroupbuyInfo();
         checkExistingReport();
       }
     };
-    
+
     checkAuthAndFetch();
-  }, [groupbuyId, user, accessToken]);
+  }, [groupbuyId, user, accessToken, sellerIdFromUrl]);
 
   // 판매자일 때 참여자 목록 가져오기 위한 별도 useEffect
   useEffect(() => {

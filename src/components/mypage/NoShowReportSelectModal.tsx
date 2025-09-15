@@ -22,6 +22,7 @@ interface RecentGroupBuy {
   days_ago: number;
   participant_count?: number;
   seller_name?: string;
+  seller_id?: number;  // seller_id 추가
 }
 
 interface NoShowReportSelectModalProps {
@@ -37,8 +38,13 @@ export function NoShowReportSelectModal({
 }: NoShowReportSelectModalProps) {
   const router = useRouter();
 
-  const handleSelectGroupBuy = (groupBuyId: number) => {
-    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
+  const handleSelectGroupBuy = (groupBuy: RecentGroupBuy) => {
+    // 구매자인 경우 seller_id도 함께 전달
+    let url = `/noshow-report/create?groupbuy_id=${groupBuy.id}`;
+    if (groupBuy.seller_id) {
+      url += `&seller_id=${groupBuy.seller_id}`;
+    }
+    router.push(url);
     onClose();
   };
 
@@ -57,7 +63,7 @@ export function NoShowReportSelectModal({
             <Card
               key={groupBuy.id}
               className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleSelectGroupBuy(groupBuy.id)}
+              onClick={() => handleSelectGroupBuy(groupBuy)}
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
@@ -93,7 +99,7 @@ export function NoShowReportSelectModal({
                     variant="outline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSelectGroupBuy(groupBuy.id);
+                      handleSelectGroupBuy(groupBuy);
                     }}
                   >
                     이 거래 신고하기
