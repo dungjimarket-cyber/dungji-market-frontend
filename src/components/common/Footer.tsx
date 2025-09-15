@@ -12,12 +12,11 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t mt-12 py-6 bg-gray-50 min-h-[300px] mb-16 md:mb-0">
+    <footer className="border-t mt-12 py-6 bg-gray-50 mb-16 md:mb-0">
       <div className="container mx-auto px-4 pb-8 md:pb-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Company Info */}
           <div>
-            <h3 className="font-bold text-gray-700 mb-3">둥지마켓</h3>
             <p className="text-sm text-gray-600 mb-1">상호: 둥지마켓</p>
             <p className="text-sm text-gray-600 mb-1">대표자명: 김성민</p>
             <p className="text-sm text-gray-600 mb-1">사업자등록번호: 275-23-02159</p>
