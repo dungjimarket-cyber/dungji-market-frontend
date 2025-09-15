@@ -1318,16 +1318,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         </div>
         
-        {/* 공구 주최자 - 공구 지역 바로 아래로 이동 */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex items-center gap-1">
-            <span className="text-sm">👑</span>
-            <span className="text-gray-500 text-xs">방장</span>
+        {/* 참여 상태 표시 - 본인이 참여중인 경우에만 */}
+        {isParticipant && (
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-1">
+              <span className="text-sm">✨</span>
+              <span className="text-red-500 text-sm font-medium">참여중</span>
+            </div>
           </div>
-          <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
-        </div>
-        
-        {/* 지역 및 방장 하단 약한 구분선 */}
+        )}
+
+        {/* 구분선 */}
         <div className="border-b border-gray-100 mb-4"></div>
         
         {/* 가격 - 인터넷/인터넷+TV 카테고리가 아닌 경우에만 표시 */}

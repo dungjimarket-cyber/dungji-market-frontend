@@ -82,6 +82,8 @@ interface GroupBuy {
   created_at?: string;
   creator_name?: string;
   host_username?: string;
+  creator_id?: number; // 생성자 ID 추가
+  creator?: { id: number; username: string }; // 생성자 객체
   product_info?: any; // 상품 정보 (custom_values 포함)
   product_details: {
     id: number;
@@ -569,18 +571,18 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
       {/* 하단 정보 */}
       <div className="p-4 space-y-3 bg-gray-50">
-        {/* 작성자 정보 및 참여 현황 */}
+        {/* 참여 현황 */}
         <div className="space-y-2">
-          {/* 첫번째 줄: 방장 및 참여 인원 */}
+          {/* 첫번째 줄: 참여 상태 및 참여 인원 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-sm">👑</span>
-                <span className="text-gray-500 text-xs">방장</span>
-              </div>
-              <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
-                {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
-              </p>
+              {/* 본인이 참여중인 경우에만 표시 */}
+              {isParticipant && (
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">✨</span>
+                  <span className="text-red-500 text-xs font-medium">참여중</span>
+                </div>
+              )}
             </div>
             
             <p className="text-lg font-bold text-gray-900">

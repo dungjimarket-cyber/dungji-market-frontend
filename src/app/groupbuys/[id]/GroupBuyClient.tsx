@@ -627,24 +627,15 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 {formatGroupBuyTitle(groupBuy, false)}
               </CardTitle>
               
-              {/* 방장(생성자) 정보 표시 */}
-              <div className="flex items-center mt-1 mb-1 gap-2">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm">👑</span>
-                  <span className="text-gray-500 text-xs">방장</span>
+              {/* 참여중 표시 - 본인이 참여중인 경우에만 */}
+              {participationStatus?.is_participating && (
+                <div className="flex items-center mt-1 mb-1 gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">✨</span>
+                    <span className="text-red-500 text-xs font-medium">참여중</span>
+                  </div>
                 </div>
-                <span className="text-sm font-medium">
-                  {groupBuyState?.creator_name || '익명'}
-                </span>
-                
-                {/* 참여중 표시 배지 */}
-                {participationStatus?.is_participating && (
-                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                    참여중
-                  </span>
-                )}
-              </div>
+              )}
               
               {/* 통신사, 가입유형 정보 - 공구 목록 스타일로 */}
               {/* 휴대폰 상품 정보 */}

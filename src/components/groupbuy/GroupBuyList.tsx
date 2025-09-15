@@ -256,14 +256,10 @@ export default function GroupBuyList({ type = 'all', limit }: GroupBuyListProps)
                       </div>
                     </div>
                     
-                    {/* 방장 이름 표시 */}
+                    {/* 하단 구분선 공간 */}
                     <div className="flex justify-between items-center pt-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-0.5">
-                          <span className="text-xs">👑</span>
-                          <p className="text-xs text-gray-500">방장</p>
-                        </div>
-                        <p className="text-xs font-medium truncate max-w-[100px]">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</p>
+                        {/* 방장 정보 제거 - 필요시 다른 정보 추가 가능 */}
                       </div>
                     </div>
                     
