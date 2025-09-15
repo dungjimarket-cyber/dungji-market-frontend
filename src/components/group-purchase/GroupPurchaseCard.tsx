@@ -83,7 +83,6 @@ interface GroupBuy {
   creator_name?: string;
   host_username?: string;
   creator_id?: number; // 생성자 ID 추가
-  creator?: { id: number; username: string }; // 생성자 객체
   product_info?: any; // 상품 정보 (custom_values 포함)
   product_details: {
     id: number;
