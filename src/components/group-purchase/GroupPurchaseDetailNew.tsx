@@ -2135,10 +2135,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             ) : (
               // 진행중인 상태일 때 기존 표시
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 shadow-lg">
+              <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
                 <div className="text-center">
-                  <p className="text-sm text-white/90 mb-3 font-medium">현재 최고 지원금</p>
-                  <div className="bg-white rounded-lg py-4 px-6 inline-block shadow-md">
+                  <p className="text-sm text-blue-800 mb-3 font-medium">현재 최고 지원금</p>
+                  <div className="bg-white rounded-lg py-4 px-6 inline-block shadow-md border border-blue-100">
                     <p className="text-3xl font-bold text-blue-600">
                       {(highestBidAmount ?? 0) > 0 ? (
                         <span>{maskAmount(highestBidAmount!)}원</span>
