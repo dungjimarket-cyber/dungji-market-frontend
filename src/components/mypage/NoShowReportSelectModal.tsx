@@ -91,6 +91,11 @@ export function NoShowReportSelectModal({
                         거래종료: {new Date(groupBuy.completed_at).toLocaleDateString('ko-KR')}
                       </span>
                     </div>
+                    {groupBuy.seller_name && (
+                      <div className="text-sm text-gray-500 mt-1">
+                        판매자: {groupBuy.seller_name}
+                      </div>
+                    )}
                   </div>
 
                   {/* 선택 버튼 */}

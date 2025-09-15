@@ -282,6 +282,28 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 
+## 🚨 필드 접근 오류 방지 원칙
+**문제**: 백엔드에서 존재하지 않는 필드 접근 시 AttributeError로 500 오류 발생 (5시간 디버깅)
+
+**해결 방법**:
+1. **필드 추가 전 DB 모델 확인 필수**
+   - `api/models.py`에서 User, GroupBuy 등 모델의 실제 필드 확인
+   - 프론트엔드에 있는 필드가 백엔드에도 있다고 가정하지 말 것
+
+2. **프론트엔드와 백엔드 필드명 차이 주의**
+   - 프론트: `user?.user_type` (optional chaining으로 안전)
+   - 백엔드: `user.user_type` (직접 접근 시 필드 없으면 에러)
+
+3. **디버깅 시 즉시 확인**
+   - 500 오류 발생 시 상세 오류 메시지 반환하도록 수정
+   - `AttributeError: 'Model' object has no attribute 'field'` 형태 오류는 DB 모델 확인
+
+**예시 - User 모델 필드**:
+- ✅ 존재: `role` (buyer/seller)
+- ❌ 없음: `user_type`
+
+**교훈**: "혹시 모르니까" 방어 코드가 오히려 문제 일으킬 수 있음. 실제 DB 스키마 확인이 최우선!
+
 ## 핵심 작업 원칙 (시간이 돈이다)
 1. **임시방편 금지** - 근본적인 해결책만 제시
 2. **반복 실수 방지**:
