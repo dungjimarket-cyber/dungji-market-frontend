@@ -428,13 +428,13 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 구매 완료 */}
+            {/* 거래종료 */}
             <AccordionItem value="purchase-completed">
               <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <CheckCircle2 className="w-4 h-4 mr-2 text-gray-500" />
-                    <span className="text-sm font-medium">구매 완료</span>
+                    <span className="text-sm font-medium">거래종료</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">

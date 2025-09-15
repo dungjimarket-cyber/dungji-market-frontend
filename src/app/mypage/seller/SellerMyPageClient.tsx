@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare } from 'lucide-react';
 
 /**
  * 판매자 마이페이지 클라이언트 컴포넌트
@@ -322,13 +322,13 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 4. 판매완료 */}
+          {/* 4. 거래종료 */}
           <AccordionItem value="completed">
             <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                  <span className="text-sm font-medium">판매완료</span>
+                  <span className="text-sm font-medium">거래종료</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
@@ -365,8 +365,16 @@ export default function SellerMyPageClient() {
           </AccordionItem>
         </Accordion>
 
-        {/* 노쇼 신고 내역 버튼 */}
-        <div className="mt-6 flex justify-end">
+        {/* 노쇼 관련 버튼들 */}
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            onClick={() => router.push('/mypage/noshow-objections')}
+            className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group"
+          >
+            <MessageSquare className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+            <span>이의제기 내역</span>
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+          </button>
           <button
             onClick={() => router.push('/mypage/noshow-reports')}
             className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"

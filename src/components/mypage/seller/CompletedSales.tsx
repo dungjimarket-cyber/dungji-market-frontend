@@ -95,10 +95,6 @@ export default function CompletedSales() {
                     <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                     참여자 {groupBuy.confirmed_buyers || 0}명
                   </span>
-                  <span className="flex items-center gap-1 text-purple-600 whitespace-nowrap">
-                    <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                    판매완료
-                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">

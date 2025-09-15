@@ -157,11 +157,7 @@ export default function CompletedGroupBuys() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-center">
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                구매완료
-              </Badge>
+            <div className="flex justify-end items-center">
               <div className="flex gap-2">
                 <Button
                   variant="outline"

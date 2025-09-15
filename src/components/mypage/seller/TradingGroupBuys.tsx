@@ -228,7 +228,7 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
                       onClick={() => handleCompleteSale(groupBuy.id)}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      판매완료
+                      거래종료
                     </Button>
                   </div>
                 </div>

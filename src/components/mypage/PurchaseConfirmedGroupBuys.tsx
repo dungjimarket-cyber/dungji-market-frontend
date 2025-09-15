@@ -285,7 +285,7 @@ export default function PurchaseConfirmedGroupBuys() {
                         }}
                       >
                         <CheckCircle className="w-3 h-3 mr-1" />
-                        구매완료
+                        거래종료
                       </Button>
                       <Button
                         size="sm"
@@ -327,13 +327,13 @@ export default function PurchaseConfirmedGroupBuys() {
         />
       )}
       
-      {/* 구매완료 확인 다이얼로그 */}
+      {/* 거래종료 확인 다이얼로그 */}
       <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>구매 완료 확인</AlertDialogTitle>
+            <AlertDialogTitle>거래 종료 확인</AlertDialogTitle>
             <AlertDialogDescription>
-              판매자와의 거래를 원만하게 종료하셨나요?
+              거래를 종료하시겠습니까? 종료 후 후기 작성이나 노쇼 신고가 가능합니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
