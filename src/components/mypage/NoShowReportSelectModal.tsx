@@ -12,8 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Package } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 interface RecentGroupBuy {
   id: number;
@@ -84,10 +82,7 @@ export function NoShowReportSelectModal({
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Calendar className="w-4 h-4" />
                       <span>
-                        거래종료: {formatDistanceToNow(new Date(groupBuy.completed_at), {
-                          addSuffix: true,
-                          locale: ko
-                        })}
+                        거래종료: {new Date(groupBuy.completed_at).toLocaleDateString('ko-KR')}
                       </span>
                     </div>
                   </div>

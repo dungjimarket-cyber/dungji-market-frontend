@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, MessageSquare, CheckCircle, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 interface CompletedGroupBuy {
   id: number;
@@ -157,7 +155,7 @@ export default function CompletedGroupBuys() {
                   <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 flex-wrap">
                     <span className="flex items-center gap-1 whitespace-nowrap">
                       <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                      종료일: {formatDistanceToNow(new Date(completedDate), { addSuffix: true, locale: ko })}
+                      종료일: {new Date(completedDate).toLocaleDateString('ko-KR')}
                     </span>
                     <span className="whitespace-nowrap">
                       참여인원 {groupBuy.current_participants}/{groupBuy.max_participants}명

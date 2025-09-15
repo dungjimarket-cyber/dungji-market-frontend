@@ -7,8 +7,6 @@ import { GroupBuy } from '@/types/groupbuy';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle2, Calendar, Users } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import Image from 'next/image';
 
 /**
@@ -91,7 +89,7 @@ export default function CompletedSales() {
                 <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2 flex-wrap">
                   <span className="flex items-center gap-1 whitespace-nowrap">
                     <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                    종료일: {formatDistanceToNow(new Date(groupBuy.completed_at || groupBuy.end_time), { addSuffix: true, locale: ko })}
+                    종료일: {new Date(groupBuy.completed_at || groupBuy.end_time).toLocaleDateString('ko-KR')}
                   </span>
                   <span className="flex items-center gap-1 whitespace-nowrap">
                     <Users className="h-3 w-3 sm:h-4 sm:w-4" />
