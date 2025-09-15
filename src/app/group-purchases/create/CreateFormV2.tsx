@@ -772,7 +772,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       <Card>
         <CardHeader>
           <CardTitle>{mode === 'edit' ? '공구 수정' : '공구 등록'}</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             세상에 없던 견적 받기 시작
           </CardDescription>
         </CardHeader>
