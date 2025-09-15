@@ -137,19 +137,6 @@ export default function PurchaseConfirmedGroupBuys() {
     }
   };
 
-  const handleNoShowReport = (groupBuyId: number) => {
-    if (!groupBuyId) {
-      console.error('groupBuyId is missing:', groupBuyId);
-      toast({
-        title: '오류',
-        description: '공구 정보를 찾을 수 없습니다.',
-        variant: 'destructive'
-      });
-      return;
-    }
-    console.log('Navigating to no-show report with groupBuyId:', groupBuyId);
-    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-  };
 
   if (isLoading || loading) return <p className="text-gray-500">로딩 중...</p>;
   
@@ -273,7 +260,7 @@ export default function PurchaseConfirmedGroupBuys() {
                     </Link>
                   </div>
                   
-                  {/* 두 번째 줄: 구매완료/노쇼신고 또는 후기작성 */}
+                  {/* 두 번째 줄: 거래종료 버튼만 표시 */}
                   {groupBuy.shipping_status !== 'delivered' ? (
                     <div className="flex gap-2 md:justify-start">
                       <Button
@@ -286,16 +273,6 @@ export default function PurchaseConfirmedGroupBuys() {
                       >
                         <CheckCircle className="w-3 h-3 mr-1" />
                         거래종료
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 md:flex-none md:w-auto md:px-4"
-                        onClick={() => handleNoShowReport(groupBuy.id)}
-                        disabled={!groupBuy.id}
-                      >
-                        <AlertTriangle className="h-4 w-4 mr-1" />
-                        노쇼신고
                       </Button>
                     </div>
                   ) : (

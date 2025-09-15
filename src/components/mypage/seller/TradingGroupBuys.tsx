@@ -36,7 +36,6 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
   const [loading, setLoading] = useState(true);
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [noShowReports, setNoShowReports] = useState<{[key: number]: boolean}>({});
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [selectedCompleteId, setSelectedCompleteId] = useState<number | null>(null);
 
@@ -58,28 +57,6 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
         if (response.ok) {
           const data = await response.json();
           setGroupBuys(Array.isArray(data) ? data : (data.results || []));
-          
-          // 각 공구에 대한 노쇼 신고 여부 확인
-          const reportStatus: {[key: number]: boolean} = {};
-          for (const gb of data) {
-            try {
-              const reportResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/?groupbuy_id=${gb.id}&type=made`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                  }
-                }
-              );
-              if (reportResponse.ok) {
-                const reports = await reportResponse.json();
-                reportStatus[gb.id] = reports.length > 0;
-              }
-            } catch (error) {
-              console.error(`노쇼 신고 확인 오류 (공구 ${gb.id}):`, error);
-            }
-          }
-          setNoShowReports(reportStatus);
         }
       } catch (error) {
         console.error('거래중 공구 조회 오류:', error);
@@ -205,38 +182,7 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
                       <Phone className="h-4 w-4 mr-1" />
                       구매자정보확인
                     </Button>
-                    
-                    {noShowReports[groupBuy.id] ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-blue-600 border-blue-300 hover:bg-blue-50 flex-1 md:flex-none md:w-auto md:px-3"
-                        onClick={() => router.push('/mypage/noshow-reports')}
-                      >
-                        <FileText className="h-4 w-4 mr-1" />
-                        신고완료
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 md:flex-none md:w-auto md:px-3"
-                        onClick={() => {
-                          if (!groupBuy.id) {
-                            console.error('groupBuy.id is missing:', groupBuy);
-                            toast.error('공구 정보를 찾을 수 없습니다.');
-                            return;
-                          }
-                          console.log('Navigating to no-show report with groupBuy.id:', groupBuy.id);
-                          router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
-                        }}
-                        disabled={!groupBuy.id}
-                      >
-                        <AlertTriangle className="h-4 w-4 mr-1" />
-                        노쇼신고
-                      </Button>
-                    )}
-                    
+
                     <Button
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none md:w-auto md:px-4"
