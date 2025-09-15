@@ -1368,7 +1368,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             />
           )}
         </div>
-        
+
         {/* 통신사별 요금제 확인 링크 - 인터넷/인터넷+TV 카테고리 */}
         {(groupBuy.product_details?.category_name === '인터넷' ||
           groupBuy.product_details?.category_name === '인터넷+TV') && (
@@ -1446,6 +1446,44 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
+        {/* 중요 안내사항 및 약정기간 안내 */}
+        <div className="mb-6">
+            {(groupBuy.product_details?.category_name === '휴대폰' ||
+              groupBuy.product_details?.category_name === '인터넷' ||
+              groupBuy.product_details?.category_name === '인터넷+TV') && (
+              <div className="space-y-2">
+                <div className="text-sm text-gray-500">
+                  ⚠️ 중요 안내사항
+                </div>
+                {groupBuy.product_details?.category_name === '휴대폰' ? (
+                  <>
+                    <div className="text-sm text-gray-500">
+                      • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 자세한 내용은 통신사 앱 또는 고객센터를 통해 확인하세요.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm text-gray-500">
+                      • 기존 서비스의 위약금은 본인 부담입니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 자세한 내용은 통신사 홈페이지 또는 고객센터를 통해 확인하세요.
+                    </div>
+                  </>
+                )}
+                <div className="text-sm text-gray-500 mt-4">
+                  • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
+                </div>
+              </div>
+            )}
+        </div>
+
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
           공구 등록일: {new Date(groupBuy.start_time).toLocaleString('ko-KR', { 
@@ -1455,10 +1493,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             hour: '2-digit',
             minute: '2-digit'
           })}
-        </div>
-        <div className="text-sm text-gray-500 mb-6">
-          {/* 인터넷 상품인 경우 36개월, 나머지는 24개월 */}
-          • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
         </div>
 
         {/* 최종선택 타이머 - 공구 상태 정보 섹션으로 통합 이동 */}
@@ -1583,7 +1617,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="bg-yellow-50 rounded-lg p-4 mb-6">
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
-              <p className="text-3xl font-bold text-orange-500">
+              <p className="text-3xl font-bold text-dungji-primary">
                 {(highestBidAmount ?? 0) > 0 ? (
                   <span>{maskAmount(highestBidAmount!)}원</span>
                 ) : (
@@ -2059,9 +2093,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <hr className="border-gray-200" />
       </div>
 
-      {/* 하단 영역 - 최고지원금 및 중요안내사항 (위아래 2줄 배치) */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 py-12 space-y-8">
-        {/* 첫번째 줄: 최고 지원금 */}
+      {/* 하단 영역 - 최고지원금 */}
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 py-12">
+        {/* 최고 지원금 */}
         <div className="px-4 lg:px-0">
             {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
               // 최종선택 상태일 때 낙찰 정보 표시
@@ -2085,7 +2119,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       최종 지원금
                     </p>
                   </div>
-                  <p className="text-3xl sm:text-4xl font-bold text-orange-600 mb-1">
+                  <p className="text-3xl sm:text-4xl font-bold text-dungji-primary mb-1">
                     {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
                       <>
                         <span>{
@@ -2104,7 +2138,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-3">현재 최고 지원금</p>
-                  <p className="text-3xl font-bold text-orange-500">
+                  <p className="text-3xl font-bold text-dungji-primary">
                     {(highestBidAmount ?? 0) > 0 ? (
                       <span>{maskAmount(highestBidAmount!)}원</span>
                     ) : (
@@ -2116,40 +2150,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
         </div>
 
-        {/* 두번째 줄: 중요 안내사항 */}
-        <div className="px-4 lg:px-0">
-            {(groupBuy.product_details?.category_name === '휴대폰' ||
-              groupBuy.product_details?.category_name === '인터넷' ||
-              groupBuy.product_details?.category_name === '인터넷+TV') && (
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500">
-                  ⚠️ 중요 안내사항
-                </div>
-                {groupBuy.product_details?.category_name === '휴대폰' ? (
-                  <>
-                    <div className="text-sm text-gray-500">
-                      • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      • 자세한 내용은 통신사 앱 또는 고객센터를 통해 확인하세요.
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-sm text-gray-500">
-                      • 기존 서비스의 위약금은 본인 부담입니다.
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      • 자세한 내용은 통신사 홈페이지 또는 고객센터를 통해 확인하세요.
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-        </div>
       </div>
       
       {/* 판매자 입찰 정보 - 낙찰 실패 시 안내 메시지 강화 */}
