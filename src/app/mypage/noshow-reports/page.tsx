@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,9 +57,10 @@ interface NoShowReport {
   cancellation_reason?: string;
 }
 
-export default function NoShowReportsPage() {
+function NoShowReportsContent() {
   const { user, accessToken } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [reports, setReports] = useState<NoShowReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'made' | 'received'>('made');
@@ -72,6 +73,14 @@ export default function NoShowReportsPage() {
     content: '',
     evidence_files: [] as File[],
   });
+
+  // URL 파라미터에서 탭 초기값 설정
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'received' || tab === 'made') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // RequireAuth에서 이미 인증을 확인했으므로 accessToken이 있으면 바로 실행
@@ -643,5 +652,17 @@ export default function NoShowReportsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function NoShowReportsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">로딩 중...</div>
+      </div>
+    }>
+      <NoShowReportsContent />
+    </Suspense>
   );
 }

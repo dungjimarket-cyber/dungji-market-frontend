@@ -29,7 +29,7 @@ function CreateObjectionContent() {
   useEffect(() => {
     if (!reportId) {
       toast.error('잘못된 접근입니다.');
-      router.push('/mypage/noshow-reports');
+      router.push('/mypage/noshow-reports?tab=received');
       return;
     }
 
@@ -61,7 +61,7 @@ function CreateObjectionContent() {
         }
       } else {
         toast.error('이의제기 가능 여부 확인에 실패했습니다.');
-        router.push('/mypage/noshow-reports');
+        router.push('/mypage/noshow-reports?tab=received');
       }
 
       // 신고 정보 조회
@@ -84,7 +84,7 @@ function CreateObjectionContent() {
     } catch (error) {
       console.error('이의제기 가능 여부 확인 오류:', error);
       toast.error('오류가 발생했습니다.');
-      router.push('/mypage/noshow-reports');
+      router.push('/mypage/noshow-reports?tab=received');
     } finally {
       setChecking(false);
     }
@@ -181,7 +181,7 @@ function CreateObjectionContent() {
           
           <Button
             className="mt-4"
-            onClick={() => router.push('/mypage/noshow-reports')}
+            onClick={() => router.push('/mypage/noshow-reports?tab=received')}
           >
             돌아가기
           </Button>
@@ -281,7 +281,7 @@ function CreateObjectionContent() {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => router.push('/mypage/noshow-reports')}
+                  onClick={() => router.push('/mypage/noshow-reports?tab=received')}
                   disabled={loading}
                 >
                   취소
