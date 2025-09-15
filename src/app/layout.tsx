@@ -149,7 +149,7 @@ export default function RootLayout({
           <Toaster />
           <RoleUpdateNotice />
           <DesktopNavbar />
-          <main className="flex-1 pb-20 md:pb-0 min-h-[calc(100vh-400px)]">
+          <main className="flex-1 pb-20 md:pb-0">
             {children}
           </main>
           <MobileNavbar />
