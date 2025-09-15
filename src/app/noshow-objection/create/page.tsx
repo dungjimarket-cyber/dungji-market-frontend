@@ -75,7 +75,8 @@ function CreateObjectionContent() {
       );
 
       if (reportResponse.ok) {
-        const reports = await reportResponse.json();
+        const data = await reportResponse.json();
+        const reports = Array.isArray(data) ? data : data.results || [];
         const report = reports.find((r: any) => r.id === parseInt(reportId!));
         if (report) {
           setReportInfo(report);
