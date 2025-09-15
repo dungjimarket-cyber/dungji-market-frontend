@@ -87,12 +87,12 @@ export function ServiceInfoCards({
 
   // PC에서 detail variant일 때 더 큰 카드 크기
   const cardClass = variant === 'detail'
-    ? "min-w-[120px] md:min-w-[150px] max-w-[180px] md:max-w-[200px] flex-1"
+    ? "flex-1 min-w-0 md:min-w-[150px] max-w-none md:max-w-[200px]"
     : "min-w-[75px] md:min-w-[65px] md:max-w-[70px] flex-shrink-0";
 
-  // 리스트용: 모바일은 wrap 허용, PC는 한 줄
+  // detail variant: 모바일은 한 줄, PC는 여백 확보
   const containerClass = variant === 'detail'
-    ? "flex gap-3 flex-wrap max-w-3xl"
+    ? "flex gap-2 md:gap-3 flex-nowrap md:flex-wrap max-w-none md:max-w-3xl"
     : "flex gap-1.5 md:gap-1 flex-wrap md:flex-nowrap";
 
   return (
