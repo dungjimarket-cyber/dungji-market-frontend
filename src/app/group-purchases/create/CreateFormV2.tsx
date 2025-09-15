@@ -773,7 +773,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         <CardHeader>
           <CardTitle>{mode === 'edit' ? '공구 수정' : '공구 등록'}</CardTitle>
           <CardDescription>
-            통신상품 공동구매를 등록하여 더 나은 조건을 만들어보세요
+            세상에 없던 견적 받기 시작
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1264,7 +1264,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   <div className="text-sky-800">
                     <h4 className="font-medium mb-2">가까운 판매자를 만나보세요</h4>
                     <p className="text-sm text-sky-700">
-                      원하는 지역 최대3곳을 선택하면, 해당 지역 판매자가 견적을 제안해 드립니다.
+                      원하는 지역 3곳을 선택하면, 해당 지역 판매자가 견적을 제안해 드립니다.
                     </p>
                   </div>
                 </div>
@@ -1301,7 +1301,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
               {/* 시간 설정 */}
               <div className="space-y-4" id="time-section">
-                <h3 className="text-lg font-medium">시간 설정 (최소 6시간 - 최대 48시간) <span className="text-red-500">*</span></h3>
+                <h3 className="text-lg font-medium">시간 설정 (6시간 - 48시간) <span className="text-red-500">*</span></h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">마감 시간</span>
