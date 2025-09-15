@@ -81,6 +81,38 @@ export function useUsedPhoneProfileCheck(): UsedPhoneProfileCheckResult {
     }
   }, [user]);
 
+  // 페이지가 포커스를 받을 때 프로필 다시 체크 (마이페이지에서 돌아왔을 때)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        // 프로필 정보 다시 체크
+        const missing = checkMissingFieldsForUsedPhone(user);
+        setMissingFields(missing);
+        setIsProfileComplete(missing.length === 0);
+        console.log('[ProfileCheck] 페이지 포커스 - 프로필 재확인:', { missing, isComplete: missing.length === 0 });
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    // visibility change 이벤트도 추가 (모바일 브라우저 대응)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        const missing = checkMissingFieldsForUsedPhone(user);
+        setMissingFields(missing);
+        setIsProfileComplete(missing.length === 0);
+        console.log('[ProfileCheck] Visibility 변경 - 프로필 재확인:', { missing, isComplete: missing.length === 0 });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
+
   return {
     isCheckingProfile,
     isProfileComplete,
