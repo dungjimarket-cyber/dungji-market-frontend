@@ -1273,6 +1273,11 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               {/* 참여 인원 */}
               <div className="space-y-4" id="participants-section">
                 <h3 className="text-lg font-medium">참여 인원</h3>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    💡 인원이 채워지지 않아도 공구모집과 견적받기가 동시에 진행됩니다 (혼자서도 가능)
+                  </p>
+                </div>
                 <FormField
                   control={form.control}
                   name="max_participants"
