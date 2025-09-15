@@ -2242,7 +2242,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       )} */}
 
       {/* 하단 버튼 영역 - 모바일에서만 표시 */}
-      <div className="lg:hidden px-4 py-8">
+      <div className="lg:hidden px-4 py-2">
         {/* 일반회원 버튼 구성 */}
         {!isSeller && isParticipant ? (
           // 참여한 일반회원
