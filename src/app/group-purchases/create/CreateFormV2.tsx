@@ -1264,7 +1264,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   <div className="text-sky-800">
                     <h4 className="font-medium mb-2">가까운 판매자를 만나보세요</h4>
                     <p className="text-sm text-sky-700">
-                      원하는 지역 3곳을 선택하면, 해당 지역 판매자가 견적을 제안해 드립니다.
+                      원하는 지역 3곳을 선택하면,<br />
+                      해당 지역 판매자가 견적을 제안해 드립니다.
                     </p>
                   </div>
                 </div>
