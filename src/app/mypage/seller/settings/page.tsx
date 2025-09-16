@@ -979,6 +979,9 @@ export default function SellerSettings() {
                       {nicknameAvailable && !nicknameError && formData.nickname && (
                         <p className="text-sm text-green-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
                       )}
+                      {formData.nickname && formData.nickname.length === 15 && !nicknameError && (
+                        <p className="text-sm text-blue-600 mt-1">최대 15자까지 입력 가능합니다.</p>
+                      )}
                     </>
                   )}
                 </div>

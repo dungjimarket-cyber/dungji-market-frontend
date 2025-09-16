@@ -625,6 +625,11 @@ export default function ProfileSection() {
                       <p className="text-sm text-green-700">✓ 사용 가능한 닉네임입니다</p>
                     </div>
                   )}
+                  {nickname && nickname.length === 15 && !nicknameError && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-700">최대 15자까지 입력 가능합니다.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
