@@ -226,22 +226,36 @@ export default function NoShowObjections() {
                 <p className="text-sm mt-1 whitespace-pre-wrap">{objection.content}</p>
               </div>
 
-              {objection.attachments && objection.attachments.length > 0 && (
+              {/* 증빙 파일들 표시 */}
+              {(objection.evidence_image_1 || objection.evidence_image_2 || objection.evidence_image_3) && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">첨부파일</p>
-                  <div className="flex flex-wrap gap-2">
-                    {objection.attachments.map((url, index) => (
-                      <a
-                        key={index}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                      >
-                        <FileText className="w-3 h-3" />
-                        파일 {index + 1}
-                      </a>
-                    ))}
+                  <p className="text-sm font-medium text-gray-700 mb-2">증빙 자료</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[objection.evidence_image_1, objection.evidence_image_2, objection.evidence_image_3].map((file, index) => {
+                      if (!file) return null;
+                      const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
+
+                      return (
+                        <div key={index} className="border rounded-lg overflow-hidden">
+                          {isImage ? (
+                            <a href={file} target="_blank" rel="noopener noreferrer" className="block">
+                              <img
+                                src={file}
+                                alt={`증빙 자료 ${index + 1}`}
+                                className="w-full h-24 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                              />
+                              <p className="text-xs text-center py-1 bg-gray-50">클릭하여 확대</p>
+                            </a>
+                          ) : (
+                            <a href={file} target="_blank" rel="noopener noreferrer"
+                              className="flex flex-col items-center justify-center h-24 hover:bg-gray-50 transition-colors">
+                              <FileText className="w-8 h-8 text-gray-400" />
+                              <p className="text-xs text-gray-600 mt-1">파일 {index + 1}</p>
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
