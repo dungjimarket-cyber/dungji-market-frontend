@@ -313,7 +313,7 @@ export default function BidTokensPage() {
       verifyPayment(orderId);
     } else if (paymentStatus === 'failed') {
       // 상세 오류 메시지 표시
-      const decodedErrorMsg = errorMsg ? decodeURIComponent(errorMsg) : message || '결제가 실패했습니다.';
+      const decodedErrorMsg = errorMsg || message || '결제가 실패했습니다.';
 
       console.log('결제 실패 상세:', {
         errorCode,
