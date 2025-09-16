@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Clock, CheckCircle, XCircle, MessageSquare, FileText, Edit } from 'lucide-react';
+import { AlertCircle, Clock, CheckCircle, XCircle, MessageSquare, FileText, Edit, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -46,10 +46,10 @@ export default function NoShowObjections() {
   const [editingObjection, setEditingObjection] = useState<NoShowObjection | null>(null);
   const [editFormData, setEditFormData] = useState<{
     content: string;
-    evidence_files: File[];
+    evidence_files: (File | null)[];
   }>({
     content: '',
-    evidence_files: [],
+    evidence_files: [null, null, null],
   });
 
   useEffect(() => {
@@ -121,15 +121,23 @@ export default function NoShowObjections() {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const fileArray = Array.from(files).slice(0, 3);
-      setEditFormData(prev => ({
-        ...prev,
-        evidence_files: fileArray
-      }));
+  const handleFileChange = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditFormData(prev => {
+        const newFiles = [...prev.evidence_files];
+        newFiles[index] = file;
+        return { ...prev, evidence_files: newFiles };
+      });
     }
+  };
+
+  const removeFile = (index: number) => {
+    setEditFormData(prev => {
+      const newFiles = [...prev.evidence_files];
+      newFiles[index] = null;
+      return { ...prev, evidence_files: newFiles };
+    });
   };
 
   const openEditDialog = (objection: NoShowObjection) => {
@@ -142,7 +150,7 @@ export default function NoShowObjections() {
     setEditingObjection(objection);
     setEditFormData({
       content: objection.content,
-      evidence_files: [],
+      evidence_files: [null, null, null],
     });
     setEditDialogOpen(true);
   };
@@ -155,7 +163,9 @@ export default function NoShowObjections() {
 
     // 새 파일들 추가
     editFormData.evidence_files.forEach((file, index) => {
-      formData.append(`evidence_image_${index + 1}`, file);
+      if (file) {
+        formData.append(`evidence_image_${index + 1}`, file);
+      }
     });
 
     try {
@@ -175,7 +185,7 @@ export default function NoShowObjections() {
         fetchObjections();
         setEditDialogOpen(false);
         setEditingObjection(null);
-        setEditFormData({ content: '', evidence_files: [] });
+        setEditFormData({ content: '', evidence_files: [null, null, null] });
       } else {
         const error = await response.json();
         toast.error(error.error || '수정에 실패했습니다.');
@@ -362,19 +372,41 @@ export default function NoShowObjections() {
                   </div>
                 )}
 
-                <Input
-                  id="edit-files"
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf"
-                  onChange={handleFileChange}
-                  className="mt-1"
-                />
-                {editFormData.evidence_files.length > 0 && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    새로 선택된 파일: {editFormData.evidence_files.map(f => f.name).join(', ')}
+                {/* 새 파일 선택 - 개별 슬롯 */}
+                <div className="mt-3">
+                  <p className="text-sm text-gray-600 mb-2">새 파일 선택:</p>
+                  <div className="space-y-2">
+                    {[0, 1, 2].map((index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 w-16">파일 {index + 1}:</span>
+                        {editFormData.evidence_files[index] ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm text-gray-700">{editFormData.evidence_files[index]!.name}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeFile(index)}
+                              className="h-6 px-2"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <label className="flex-1">
+                            <Input
+                              type="file"
+                              accept="image/*,.pdf"
+                              onChange={handleFileChange(index)}
+                              className="text-sm"
+                            />
+                          </label>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
+                  <p className="text-xs text-gray-500 mt-2">※ JPG, PNG, PDF 파일만 업로드 가능합니다.</p>
+                </div>
               </div>
             </div>
           )}
@@ -383,7 +415,7 @@ export default function NoShowObjections() {
             <Button variant="outline" onClick={() => {
               setEditDialogOpen(false);
               setEditingObjection(null);
-              setEditFormData({ content: '', evidence_files: [] });
+              setEditFormData({ content: '', evidence_files: [null, null, null] });
             }}>
               취소
             </Button>
