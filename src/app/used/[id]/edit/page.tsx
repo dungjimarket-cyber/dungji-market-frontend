@@ -372,7 +372,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       // 지역 정보
       if (isFieldEditable('regions')) {
         selectedRegions.forEach((region, index) => {
-          submitData.append(`regions[${index}]`, region.id.toString());
+          if (region?.id) {
+            submitData.append(`regions[${index}]`, region.id.toString());
+          }
         });
       }
       
