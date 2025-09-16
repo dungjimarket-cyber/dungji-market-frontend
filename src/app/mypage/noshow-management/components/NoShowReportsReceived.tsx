@@ -194,8 +194,8 @@ export default function NoShowReportsReceived() {
                   } text-xs px-3 py-1.5`}
                   onClick={() => {
                     if (report.has_objection) {
-                      // 이의제기 완료 건은 이의제기 탭으로 이동
-                      router.push('/mypage/noshow-management?tab=objections');
+                      // 이의제기 완료 건은 이의제기 탭으로 이동 (페이지 새로고침으로 확실한 전환)
+                      window.location.href = '/mypage/noshow-management?tab=objections';
                     } else {
                       // 이의제기 미진행 건은 작성 페이지로 이동
                       router.push(`/noshow-objection/create?report_id=${report.id}`);
