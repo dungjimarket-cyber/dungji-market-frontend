@@ -698,40 +698,32 @@ function NoShowReportContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              뒤로가기
-            </Button>
-          </div>
-          {groupbuyInfo && (
-            <p className="text-sm text-gray-600 mt-2">
-              공구: {groupbuyInfo.title}
-            </p>
-          )}
-          {isEditMode && existingReport && (
-            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800 font-medium">
-                ⚠️ 이미 신고한 내역이 있습니다.
-              </p>
-              <p className="text-xs text-gray-600 mt-1">
-                신고 날짜: {new Date(existingReport.created_at).toLocaleDateString()}
-              </p>
-            </div>
-          )}
-        </CardHeader>
-        <CardContent>
+    <div className="container mx-auto px-4 py-4 max-w-2xl min-h-screen flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">
+          {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
+        </h1>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          뒤로가기
+        </Button>
+      </div>
+
+      {groupbuyInfo && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-700">
+            <strong>공구:</strong> {groupbuyInfo.title}
+          </p>
+        </div>
+      )}
+
+      <Card className="flex-1 mb-4">
+        <CardContent className="p-4">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 판매자 정보 표시 (구매자가 신고 시) */}
             {(user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && user?.user_type !== '판매')) && groupbuyInfo && (
@@ -844,35 +836,14 @@ function NoShowReportContent() {
               </div>
             )}
 
-            {/* 신고 사유 입력 안내 */}
+            {/* 신고 사유 입력 */}
             <div className="space-y-2">
-              <Label htmlFor="content">📝 신고 사유 (필수)</Label>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
-                <p className="text-sm text-gray-700 mb-2">
-                  {user?.role === 'buyer' ? 
-                    '판매자의 거래 거부 사유를 구체적으로 작성해주세요.' :
-                    '구매자의 거래 거부 사유를 구체적으로 작성해주세요.'}
-                </p>
-                <p className="text-xs text-gray-600">
-                  예시:
-                </p>
-                <ul className="text-xs text-gray-600 list-disc list-inside ml-2">
-                  <li>약속 시간에 나타나지 않음</li>
-                  <li>연락이 두절됨</li>
-                  <li>약속된 가격으로 {user?.role === 'buyer' ? '판매' : '구매'} 거부</li>
-                  <li>상품이 준비되지 않았다고 거래 취소</li>
-                  <li>기타 부당한 거래 거부</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* 신고 내용 */}
-            <div className="space-y-2">
+              <Label htmlFor="content">신고 사유 (필수)</Label>
               <Textarea
                 id="content"
                 placeholder="신고 사유를 자세히 설명해주세요. (최소 20자 이상)
 예: 약속 시간, 장소, 연락 시도 내용 등"
-                rows={6}
+                rows={4}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="resize-none"

@@ -192,33 +192,20 @@ function CreateObjectionContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">노쇼 신고 이의제기</h1>
+    <div className="container mx-auto px-4 py-4 max-w-2xl min-h-screen flex flex-col">
+      <h1 className="text-xl font-bold mb-4">노쇼 신고 이의제기</h1>
 
-        {reportInfo && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">신고 정보</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <p><strong>공구:</strong> {reportInfo.groupbuy_title}</p>
-                <p><strong>신고 유형:</strong> {reportInfo.report_type === 'buyer_noshow' ? '구매자 노쇼' : '판매자 노쇼'}</p>
-                <p><strong>처리 상태:</strong> {
-                  reportInfo.status === 'pending' ? '처리중' :
-                  reportInfo.status === 'completed' ? '처리완료' : '보류'
-                }</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {reportInfo && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="space-y-1 text-sm">
+            <p><strong>공구:</strong> {reportInfo.groupbuy_title}</p>
+            <p><strong>신고 유형:</strong> {reportInfo.report_type === 'buyer_noshow' ? '구매자 노쇼' : '판매자 노쇼'}</p>
+          </div>
+        </div>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>이의제기 작성</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card className="flex-1 mb-4">
+        <CardContent className="p-4">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="content">이의제기 내용 *</Label>
@@ -227,7 +214,7 @@ function CreateObjectionContent() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="이의제기 사유를 상세히 작성해주세요..."
-                  rows={6}
+                  rows={4}
                   className="mt-1"
                 />
               </div>
@@ -272,12 +259,9 @@ function CreateObjectionContent() {
                 </p>
               </div>
 
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  이의제기는 1회만 가능합니다. 신중하게 작성해주세요.
-                </AlertDescription>
-              </Alert>
+              <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
+                ℹ️ 이의제기는 1회만 가능합니다. 신중하게 작성해주세요.
+              </div>
 
               <div className="flex gap-2">
                 <Button
