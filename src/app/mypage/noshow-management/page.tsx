@@ -121,6 +121,19 @@ export default function NoShowManagementPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* 노쇼신고하기 버튼 - 상단 배치 */}
+          <div className="flex justify-center mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNoShowReport}
+              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+            >
+              <AlertTriangle className="w-3 h-3" />
+              노쇼신고하기
+            </Button>
+          </div>
+
           {/* 탭 구조 */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
@@ -150,19 +163,6 @@ export default function NoShowManagementPage() {
               <NoShowObjections />
             </TabsContent>
           </Tabs>
-
-          {/* 노쇼신고하기 버튼 - 하단 배치 */}
-          <div className="flex justify-center mt-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNoShowReport}
-              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
-            >
-              <AlertTriangle className="w-3 h-3" />
-              신고하기
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
