@@ -353,17 +353,37 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       
       const submitData = new FormData();
 
-      // 수정 가능한 필드만 전송 - 빈 문자열도 전송하여 백엔드에서 처리하도록 함
-      if (isFieldEditable('model')) submitData.append('model', formData.model || '');
-      if (isFieldEditable('storage')) submitData.append('storage', formData.storage || '');
-      if (isFieldEditable('color')) submitData.append('color', formData.color || '');
-      if (isFieldEditable('condition_grade')) submitData.append('condition_grade', formData.condition_grade || '');
-      if (isFieldEditable('battery_status')) submitData.append('battery_status', formData.battery_status || '');
-      if (isFieldEditable('price')) submitData.append('price', formData.price || '');
-      if (isFieldEditable('min_offer_price')) submitData.append('min_offer_price', formData.min_offer_price || '');
-      if (isFieldEditable('condition_description')) submitData.append('condition_description', formData.condition_description || '');
-      if (isFieldEditable('description')) submitData.append('description', formData.description || '');
-      if (isFieldEditable('meeting_place')) submitData.append('meeting_place', formData.meeting_place || '');
+      // 수정 가능한 필드만 전송 - 값이 있을 때만 전송
+      if (isFieldEditable('model') && formData.model) {
+        submitData.append('model', formData.model);
+      }
+      if (isFieldEditable('storage') && formData.storage) {
+        submitData.append('storage', formData.storage);
+      }
+      if (isFieldEditable('color') && formData.color) {
+        submitData.append('color', formData.color);
+      }
+      if (isFieldEditable('condition_grade') && formData.condition_grade) {
+        submitData.append('condition_grade', formData.condition_grade);
+      }
+      if (isFieldEditable('battery_status') && formData.battery_status) {
+        submitData.append('battery_status', formData.battery_status);
+      }
+      if (isFieldEditable('price') && formData.price) {
+        submitData.append('price', formData.price);
+      }
+      if (isFieldEditable('min_offer_price') && formData.min_offer_price) {
+        submitData.append('min_offer_price', formData.min_offer_price);
+      }
+      if (isFieldEditable('condition_description') && formData.condition_description) {
+        submitData.append('condition_description', formData.condition_description);
+      }
+      if (isFieldEditable('description') && formData.description) {
+        submitData.append('description', formData.description);
+      }
+      if (isFieldEditable('meeting_place') && formData.meeting_place) {
+        submitData.append('meeting_place', formData.meeting_place);
+      }
 
       if (isFieldEditable('has_box')) submitData.append('has_box', (formData.has_box || false).toString());
       if (isFieldEditable('has_charger')) submitData.append('has_charger', (formData.has_charger || false).toString());
