@@ -184,27 +184,23 @@ export default function NoShowReportsReceived() {
               )}
 
               <div className="flex justify-end pt-2 border-t">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className={`flex items-center gap-1 ${
-                    report.has_objection
-                      ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
-                      : 'text-blue-600 border-blue-300 hover:bg-blue-50'
-                  } text-xs px-3 py-1.5`}
-                  onClick={() => {
-                    if (report.has_objection) {
-                      // 이의제기 완료 건은 이의제기 탭으로 이동 (페이지 새로고침으로 확실한 전환)
-                      window.location.href = '/mypage/noshow-management?tab=objections';
-                    } else {
-                      // 이의제기 미진행 건은 작성 페이지로 이동
+                {report.has_objection ? (
+                  <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100">
+                    이의제기 완료
+                  </Badge>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
+                    onClick={() => {
                       router.push(`/noshow-objection/create?report_id=${report.id}`);
-                    }
-                  }}
-                >
-                  <MessageSquare className="w-3 h-3" />
-                  {report.has_objection ? '이의제기 완료' : '이의제기'}
-                </Button>
+                    }}
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    이의제기
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
