@@ -8,6 +8,7 @@ import { AlertTriangle, FileText, MessageSquare, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { NoShowReportSelectModal } from '@/components/mypage/NoShowReportSelectModal';
+import { NoReportableTransactionsModal } from '@/components/mypage/NoReportableTransactionsModal';
 import { toast } from 'sonner';
 
 // 각 탭 컴포넌트들을 임포트 (나중에 생성)
@@ -32,6 +33,7 @@ export default function NoShowManagementPage() {
   const { isAuthenticated, accessToken, user } = useAuth();
   const [activeTab, setActiveTab] = useState('made');
   const [showNoShowModal, setShowNoShowModal] = useState(false);
+  const [showNoTransactionsModal, setShowNoTransactionsModal] = useState(false);
   const [recentGroupBuys, setRecentGroupBuys] = useState<RecentGroupBuy[]>([]);
 
   // 노쇼신고하기 버튼 클릭 핸들러 (기존 MyPageClient 로직 재사용)
@@ -56,7 +58,7 @@ export default function NoShowManagementPage() {
         const data = await response.json();
 
         if (data.length === 0) {
-          toast.error('15일 이내 신고 가능한 거래가 없습니다.');
+          setShowNoTransactionsModal(true);
         } else if (data.length === 1) {
           // 1건만 있으면 바로 신고 페이지로 이동
           let url = `/noshow-report/create?groupbuy_id=${data[0].id}`;
@@ -159,6 +161,12 @@ export default function NoShowManagementPage() {
         isOpen={showNoShowModal}
         onClose={() => setShowNoShowModal(false)}
         groupBuys={recentGroupBuys}
+      />
+
+      {/* 신고 가능한 거래 없음 모달 */}
+      <NoReportableTransactionsModal
+        isOpen={showNoTransactionsModal}
+        onClose={() => setShowNoTransactionsModal(false)}
       />
     </div>
   );

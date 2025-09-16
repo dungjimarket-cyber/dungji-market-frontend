@@ -738,16 +738,22 @@ function NoShowReportContent() {
                     <User className="w-5 h-5 text-gray-500" />
                     <div>
                       <p className="font-medium">
-                        {groupbuyInfo.selected_bid?.seller?.nickname ||
+                        {groupbuyInfo.selected_bid?.seller_nickname ||
+                         groupbuyInfo.selected_bid?.seller?.nickname ||
+                         groupbuyInfo.selected_bid?.seller_name ||
                          groupbuyInfo.selected_bid?.seller?.username ||
+                         groupbuyInfo.winning_bid?.seller_nickname ||
                          groupbuyInfo.winning_bid?.seller?.nickname ||
+                         groupbuyInfo.winning_bid?.seller_name ||
                          groupbuyInfo.winning_bid?.seller?.username ||
                          '판매자'}
                       </p>
-                      {(groupbuyInfo.selected_bid?.seller?.phone || groupbuyInfo.winning_bid?.seller?.phone) && (
+                      {(groupbuyInfo.selected_bid?.seller_phone || groupbuyInfo.selected_bid?.seller?.phone ||
+                        groupbuyInfo.winning_bid?.seller_phone || groupbuyInfo.winning_bid?.seller?.phone) && (
                         <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                           <Phone className="w-3 h-3" />
-                          {groupbuyInfo.selected_bid?.seller?.phone || groupbuyInfo.winning_bid?.seller?.phone}
+                          {groupbuyInfo.selected_bid?.seller_phone || groupbuyInfo.selected_bid?.seller?.phone ||
+                           groupbuyInfo.winning_bid?.seller_phone || groupbuyInfo.winning_bid?.seller?.phone}
                         </p>
                       )}
                     </div>
