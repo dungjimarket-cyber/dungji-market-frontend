@@ -560,32 +560,26 @@ function NoShowReportsContent() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>노쇼 신고 수정</DialogTitle>
-            <DialogDescription>
-              신고 내용을 수정할 수 있습니다. 수정은 1회만 가능합니다.
-            </DialogDescription>
           </DialogHeader>
-          
+
           {editingReport && (
-            <div className="space-y-4">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
-                  <strong>주의:</strong> 수정은 1회만 가능합니다. 신중하게 작성해주세요.
-                </p>
-                {editingReport.edit_count && editingReport.edit_count > 0 && (
-                  <p className="text-sm text-red-600 mt-1">
+            <div className="space-y-3">
+              {editingReport.edit_count && editingReport.edit_count > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                  <p className="text-sm text-red-600">
                     이미 {editingReport.edit_count}회 수정하셨습니다.
                   </p>
-                )}
-              </div>
+                </div>
+              )}
 
               <div>
-                <Label htmlFor="edit-content">신고 내용</Label>
+                <Label htmlFor="edit-content">신고 내용 *</Label>
                 <Textarea
                   id="edit-content"
                   value={editFormData.content}
                   onChange={(e) => setEditFormData(prev => ({ ...prev, content: e.target.value }))}
                   placeholder="노쇼 신고 사유를 상세히 작성해주세요..."
-                  rows={8}
+                  rows={4}
                   className="mt-1"
                 />
               </div>
@@ -611,13 +605,10 @@ function NoShowReportsContent() {
                   </p>
                 )}
               </div>
-              
-              <Alert className="bg-amber-50 border-amber-200">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-800">
-                  <strong>주의:</strong> 수정은 1회만 가능합니다. 신중하게 작성해주세요.
-                </AlertDescription>
-              </Alert>
+
+              <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
+                ℹ️ 수정은 1회만 가능합니다. 신중하게 작성해주세요.
+              </div>
 
               {editingReport.last_edited_at && (
                 <div className="text-sm text-gray-500">
