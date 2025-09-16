@@ -501,11 +501,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
       const result = await response.json();
 
-      toast.success(result.penalty_applied
-        ? '상품이 삭제되었습니다. 견적 제안이 있어 6시간 후 재등록 가능합니다.'
-        : '상품이 삭제되었습니다.', {
-        duration: 4000,
-      });
+      if (result.penalty_applied && result.penalty_end) {
+        const endTime = new Date(result.penalty_end);
+        const timeStr = endTime.toLocaleTimeString('ko-KR', {
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true
+        });
+        toast.success(`삭제 완료. ${timeStr}부터 등록 가능`, {
+          duration: 5000,
+        });
+      } else {
+        toast.success('상품이 삭제되었습니다.', {
+          duration: 3000,
+        });
+      }
 
       setShowDeleteModal(false);
       router.push('/used');
@@ -1565,41 +1575,34 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       {/* 삭제 확인 모달 */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Trash2 className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">상품 삭제</h3>
-                <p className="text-sm text-gray-600">정말로 이 상품을 삭제하시겠습니까?</p>
-              </div>
-            </div>
+          <div className="bg-white rounded-lg max-w-sm w-full p-5">
+            <h3 className="text-lg font-semibold mb-3">상품 삭제</h3>
 
             {phone.offer_count > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                <div className="flex gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-amber-900">⚠️ 제안된 견적이 {phone.offer_count}개 있습니다</p>
-                    <p className="text-sm text-amber-700 mt-1">
-                      상품 삭제 시 <strong className="text-red-600">6시간 동안</strong> 새로운 상품을 등록할 수 없습니다.
-                    </p>
-                    <p className="text-xs text-amber-600 mt-1">
-                      제안을 보낸 구매자들에게 삭제 알림이 전송됩니다.
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-amber-50 border border-amber-200 rounded p-3 mb-3 text-sm">
+                <p className="font-medium text-amber-900 mb-1">
+                  ⚠️ 제안 {phone.offer_count}개 있음
+                </p>
+                <p className="text-amber-700">
+                  6시간 패널티 (
+                  {(() => {
+                    const endTime = new Date();
+                    endTime.setHours(endTime.getHours() + 6);
+                    return endTime.toLocaleTimeString('ko-KR', {
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      hour12: true
+                    });
+                  })()}
+                  까지)
+                </p>
               </div>
             )}
 
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                • 삭제된 상품은 복구할 수 없습니다<br/>
-                • 관련된 모든 견적 제안이 취소됩니다<br/>
-                {phone.offer_count > 0 && <span className="text-red-600 font-medium">• 6시간 패널티가 적용됩니다</span>}
-              </p>
-            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              삭제 후 복구 불가능합니다.
+              {phone.offer_count > 0 && ' 모든 제안이 취소됩니다.'}
+            </p>
 
             <div className="flex gap-3">
               <Button

@@ -162,19 +162,26 @@ export default function CreateUsedPhonePage() {
 
       if (!data.can_register) {
         if (data.penalty_end) {
-          const penaltyTime = new Date(data.penalty_end);
+          const endTime = new Date(data.penalty_end);
           const now = new Date();
-          const hoursLeft = Math.ceil((penaltyTime.getTime() - now.getTime()) / (1000 * 60 * 60));
+          const diff = endTime.getTime() - now.getTime();
+          const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
+          const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const timeStr = endTime.toLocaleTimeString('ko-KR', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+          });
 
           toast({
-            title: '등록 제한',
-            description: `패널티 적용 중입니다. ${hoursLeft}시간 후 등록 가능합니다.`,
+            title: '6시간 패널티 적용 중',
+            description: `${timeStr}부터 가능 (${hoursLeft}시간 ${minutesLeft}분 남음)`,
             variant: 'destructive',
           });
         } else if (data.active_count >= 5) {
           toast({
-            title: '등록 제한',
-            description: '활성 상품이 5개에 도달했습니다. 기존 상품을 삭제하거나 판매 완료 후 등록 가능합니다.',
+            title: '등록 제한 (5개 초과)',
+            description: `판매 중 ${data.active_count}개. 기존 상품 삭제 필요`,
             variant: 'destructive',
           });
         }
@@ -363,21 +370,23 @@ export default function CreateUsedPhonePage() {
         
         if (!limitData.can_register) {
           if (limitData.penalty_end) {
-            const penaltyTime = new Date(limitData.penalty_end);
-            const now = new Date();
-            const hoursLeft = Math.ceil((penaltyTime.getTime() - now.getTime()) / (1000 * 60 * 60));
-            
+            const endTime = new Date(limitData.penalty_end);
+            const timeStr = endTime.toLocaleTimeString('ko-KR', {
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: true
+            });
+
             toast({
-              title: '등록 제한',
-              description: `패널티 적용 중입니다. ${hoursLeft}시간 후 등록 가능합니다.`,
+              title: '6시간 패널티 적용 중',
+              description: `${timeStr}부터 등록 가능`,
               variant: 'destructive',
             });
           } else if (limitData.active_count >= 5) {
             toast({
-              title: '동시 판매 제한',
-              description: `현재 판매 중인 상품이 ${limitData.active_count}개입니다. 최대 5개까지만 동시 판매 가능합니다. 기존 상품을 삭제하거나 판매 완료 후 등록해주세요.`,
+              title: '등록 제한 (5개 초과)',
+              description: `판매 중 ${limitData.active_count}개. 기존 상품 삭제 필요`,
               variant: 'destructive',
-              duration: 5000,
             });
           }
           return;
