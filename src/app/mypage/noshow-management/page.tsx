@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle, FileText, MessageSquare, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { NoShowReportSelectModal } from '@/components/mypage/NoShowReportSelectModal';
 import { NoReportableTransactionsModal } from '@/components/mypage/NoReportableTransactionsModal';
@@ -28,8 +28,9 @@ interface RecentGroupBuy {
   seller_id?: number;
 }
 
-export default function NoShowManagementPage() {
+function NoShowManagementContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, accessToken, user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('made');
   const [showNoShowModal, setShowNoShowModal] = useState(false);
@@ -82,6 +83,14 @@ export default function NoShowManagementPage() {
       toast.error('오류가 발생했습니다.');
     }
   };
+
+  useEffect(() => {
+    // URL 파라미터에서 탭 읽기
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['made', 'received', 'objections'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // 로딩이 완료되고 인증되지 않은 경우에만 로그인 페이지로 이동
@@ -179,5 +188,17 @@ export default function NoShowManagementPage() {
         onClose={() => setShowNoTransactionsModal(false)}
       />
     </div>
+  );
+}
+
+export default function NoShowManagementPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">로딩 중...</div>
+      </div>
+    }>
+      <NoShowManagementContent />
+    </Suspense>
   );
 }

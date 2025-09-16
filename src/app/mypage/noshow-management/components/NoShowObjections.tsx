@@ -414,9 +414,9 @@ export default function NoShowObjections() {
             }}>
               취소
             </Button>
-            <Button onClick={() => {
+            <Button onClick={async () => {
               if (window.confirm('이의제기를 수정하시겠습니까?\n주의: 수정은 1회만 가능합니다.')) {
-                handleEditSubmit();
+                await handleEditSubmit();
               }
             }} disabled={!editFormData.content.trim()}>
               수정 완료
