@@ -69,7 +69,7 @@ export default function NoShowReportsReceived() {
       case 'completed':
       case 'confirmed':
         return (
-          <Badge variant="destructive" className="inline-flex whitespace-nowrap">
+          <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0 inline-flex whitespace-nowrap">
             <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
             <span>처리완료</span>
           </Badge>

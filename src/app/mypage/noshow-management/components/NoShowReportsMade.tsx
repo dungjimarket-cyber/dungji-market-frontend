@@ -225,20 +225,38 @@ export default function NoShowReportsMade() {
 
   const getStatusBadge = (status: string, isCancelled?: boolean) => {
     if (isCancelled) {
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
-        <XCircle className="w-3 h-3 mr-1" />취소됨
-      </Badge>;
+      return (
+        <Badge className="bg-red-50 text-red-700 border border-red-300 inline-flex whitespace-nowrap">
+          <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+          <span>취소됨</span>
+        </Badge>
+      );
     }
 
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />처리중</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
+            <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>처리중</span>
+          </Badge>
+        );
       case 'completed':
       case 'confirmed':
-        return <Badge variant="destructive"><CheckCircle className="w-3 h-3 mr-1" />처리완료</Badge>;
+        return (
+          <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0 inline-flex whitespace-nowrap">
+            <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>처리완료</span>
+          </Badge>
+        );
       case 'on_hold':
       case 'rejected':
-        return <Badge variant="outline"><XCircle className="w-3 h-3 mr-1" />보류중</Badge>;
+        return (
+          <Badge variant="outline" className="inline-flex whitespace-nowrap">
+            <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>보류중</span>
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
