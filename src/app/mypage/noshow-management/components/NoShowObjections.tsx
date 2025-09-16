@@ -68,9 +68,19 @@ export default function NoShowObjections() {
           </Badge>
         );
       case 'accepted':
-        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />승인됨</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
+            <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>승인됨</span>
+          </Badge>
+        );
       case 'rejected':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />반려됨</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
+            <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>반려됨</span>
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }

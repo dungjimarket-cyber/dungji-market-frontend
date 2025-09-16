@@ -226,7 +226,7 @@ export default function NoShowReportsMade() {
   const getStatusBadge = (status: string, isCancelled?: boolean) => {
     if (isCancelled) {
       return (
-        <Badge className="bg-red-50 text-red-700 border border-red-300 inline-flex whitespace-nowrap">
+        <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
           <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
           <span>취소됨</span>
         </Badge>
@@ -244,7 +244,7 @@ export default function NoShowReportsMade() {
       case 'completed':
       case 'confirmed':
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0 inline-flex whitespace-nowrap">
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
             <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
             <span>처리완료</span>
           </Badge>
@@ -252,7 +252,7 @@ export default function NoShowReportsMade() {
       case 'on_hold':
       case 'rejected':
         return (
-          <Badge variant="outline" className="inline-flex whitespace-nowrap">
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
             <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
             <span>보류중</span>
           </Badge>
