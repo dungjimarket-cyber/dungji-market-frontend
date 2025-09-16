@@ -78,6 +78,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
   const [reviewCompleted, setReviewCompleted] = useState(false);
+  const [checkingOffers, setCheckingOffers] = useState(false);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -406,6 +407,31 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     );
   };
 
+  // 실시간 제안 체크 함수
+  const checkLatestOffers = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/phones/${phoneId}/offer_count/`
+        : `${baseUrl}/api/used/phones/${phoneId}/offer_count/`;
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.count || 0;
+      }
+    } catch (error) {
+      console.error('Failed to check offers:', error);
+    }
+    return 0;
+  };
+
   // 공유하기
   const handleShare = () => {
     if (navigator.share) {
@@ -423,29 +449,43 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
   };
 
-  // 삭제 처리
+  // 삭제 처리 - 실시간 제안 체크 추가
   const handleDelete = async () => {
     if (!phone) return;
-    
+
     setDeleting(true);
-    
+
     try {
+      // 삭제 전 최신 제안 상태 확인
+      const latestOfferCount = await checkLatestOffers();
+
+      // 이전에 제안이 없었는데 새로 생긴 경우
+      if (phone.offer_count === 0 && latestOfferCount > 0) {
+        setDeleting(false);
+        toast.error('방금 새로운 제안이 도착했습니다. 제안이 있는 상품은 삭제 시 6시간 패널티가 적용됩니다.', {
+          duration: 5000,
+        });
+        // 상품 정보 새로고침
+        await fetchPhoneDetail();
+        return;
+      }
+
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/${phoneId}/`
         : `${baseUrl}/api/used/phones/${phoneId}/`;
-      
+
       const response = await fetch(apiUrl, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        
+
         // 견적 제안이 있는 경우 패널티 경고
         if (errorData.has_offers) {
           toast.error(errorData.message || '제안된 견적이 있어 6시간 패널티가 적용됩니다.', {
@@ -455,21 +495,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           setDeleting(false);
           return;
         }
-        
+
         throw new Error(errorData.message || '삭제 실패');
       }
-      
+
       const result = await response.json();
-      
+
       toast.success(result.penalty_applied
         ? '상품이 삭제되었습니다. 견적 제안이 있어 6시간 후 재등록 가능합니다.'
         : '상품이 삭제되었습니다.', {
         duration: 4000,
       });
-      
+
       setShowDeleteModal(false);
       router.push('/used');
-      
+
     } catch (error) {
       console.error('Failed to delete phone:', error);
       toast.error('상품 삭제 중 오류가 발생했습니다.', {
@@ -874,6 +914,51 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         받은 제안 보기 {phone.offer_count > 0 && `(${phone.offer_count})`}
                       </Button>
                     )}
+
+                    {/* 수정/삭제 버튼 - 판매중일 때만 표시 */}
+                    {phone.status === 'active' && (
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <Button
+                          onClick={async () => {
+                            setCheckingOffers(true);
+                            try {
+                              // 수정 전 최신 제안 상태 확인
+                              const latestOfferCount = await checkLatestOffers();
+
+                              // 이전에 제안이 없었는데 새로 생긴 경우
+                              if (phone.offer_count === 0 && latestOfferCount > 0) {
+                                toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
+                                  duration: 3000,
+                                });
+                                // 상품 정보 새로고침
+                                await fetchPhoneDetail();
+                              }
+
+                              router.push(`/used/${phoneId}/edit`);
+                            } catch (error) {
+                              console.error('Failed to check offers:', error);
+                              router.push(`/used/${phoneId}/edit`);
+                            } finally {
+                              setCheckingOffers(false);
+                            }
+                          }}
+                          variant="outline"
+                          className="flex items-center justify-center gap-2"
+                          disabled={checkingOffers}
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          {checkingOffers ? '확인중...' : '수정하기'}
+                        </Button>
+                        <Button
+                          onClick={() => setShowDeleteModal(true)}
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          삭제하기
+                        </Button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   /* 다른 사람의 상품인 경우 */
@@ -1117,7 +1202,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-sm text-gray-500">닉네임</span>
-                    <p className="font-semibold text-lg">{phone.seller?.username || phone.seller?.name || '알 수 없음'}</p>
+                    <p className="font-semibold text-lg">{phone.seller?.nickname || phone.seller?.username || phone.seller?.name || '알 수 없음'}</p>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
@@ -1449,26 +1534,29 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <p className="text-sm text-gray-600">정말로 이 상품을 삭제하시겠습니까?</p>
               </div>
             </div>
-            
+
             {phone.offer_count > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
                 <div className="flex gap-2">
                   <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-amber-900">제안된 견적이 있습니다</p>
+                    <p className="text-sm font-medium text-amber-900">⚠️ 제안된 견적이 {phone.offer_count}개 있습니다</p>
                     <p className="text-sm text-amber-700 mt-1">
-                      상품 삭제 시 6시간 동안 새로운 상품을 등록할 수 없습니다.
+                      상품 삭제 시 <strong className="text-red-600">6시간 동안</strong> 새로운 상품을 등록할 수 없습니다.
+                    </p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      제안을 보낸 구매자들에게 삭제 알림이 전송됩니다.
                     </p>
                   </div>
                 </div>
               </div>
             )}
-            
+
             <div className="mb-4">
               <p className="text-sm text-gray-600">
                 • 삭제된 상품은 복구할 수 없습니다<br/>
                 • 관련된 모든 견적 제안이 취소됩니다<br/>
-                {phone.offer_count > 0 && '• 6시간 패널티가 적용됩니다'}
+                {phone.offer_count > 0 && <span className="text-red-600 font-medium">• 6시간 패널티가 적용됩니다</span>}
               </p>
             </div>
 
@@ -1484,9 +1572,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <Button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                className={`flex-1 ${phone.offer_count > 0 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
               >
-                {deleting ? '삭제 중...' : '삭제하기'}
+                {deleting ? '삭제 중...' : phone.offer_count > 0 ? '패널티 감수하고 삭제' : '삭제하기'}
               </Button>
             </div>
           </div>
