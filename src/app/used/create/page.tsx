@@ -613,26 +613,26 @@ export default function CreateUsedPhonePage() {
       // 대표 이미지 인덱스 한 번만 전송
       uploadData.append('mainImageIndex', mainImageIndex.toString());
 
-      // 폼 데이터 추가 (region 필드 제외, 타입별 처리)
-      Object.entries(formData).forEach(([key, value]) => {
-        if (key !== 'region') {
-          // boolean 값은 항상 전송 (false도 전송해야 함)
-          if (typeof value === 'boolean') {
-            uploadData.append(key, value.toString());
-          } 
-          // 숫자 필드 처리 (빈 문자열이 아닌 경우만)
-          else if ((key === 'price' || key === 'min_offer_price' || key === 'storage') && value !== '') {
-            // 숫자로 변환 가능한 경우만 전송
-            const numValue = parseInt(value.toString());
-            if (!isNaN(numValue)) {
-              uploadData.append(key, numValue.toString());
-            }
-          }
-          // 나머지 필드 (빈 문자열이 아닌 경우만 전송)
-          else if (value !== '' && value !== undefined && value !== null) {
-            uploadData.append(key, value.toString());
-          }
+      // 폼 데이터 추가 - 명확한 필드별 처리
+      // boolean 필드 - 항상 전송 (false 값도 중요함)
+      ['body_only', 'has_box', 'has_charger', 'has_earphones', 'accept_offers'].forEach(key => {
+        const value = formData[key as keyof typeof formData];
+        uploadData.append(key, value.toString());
+      });
+
+      // 숫자 필드 - 값이 있는 경우만 전송
+      ['price', 'min_offer_price', 'storage'].forEach(key => {
+        const value = formData[key as keyof typeof formData];
+        if (value !== '' && value !== null && value !== undefined) {
+          uploadData.append(key, value.toString());
         }
+      });
+
+      // 텍스트 필드 - 빈 문자열도 전송 (백엔드에서 처리)
+      ['brand', 'model', 'color', 'condition_grade', 'battery_status',
+       'condition_description', 'description', 'meeting_place'].forEach(key => {
+        const value = formData[key as keyof typeof formData];
+        uploadData.append(key, value ? value.toString() : '');
       });
 
       // 지역 정보 추가
