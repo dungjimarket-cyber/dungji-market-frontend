@@ -57,7 +57,7 @@ function CreateObjectionContent() {
         
         if (!data.eligible && data.existing_objection) {
           // 이미 이의제기가 있으면 상세 페이지로 이동
-          router.push('/mypage/noshow-objections');
+          router.push('/mypage/noshow-management?tab=objections');
         }
       } else {
         toast.error('이의제기 가능 여부 확인에 실패했습니다.');
@@ -148,7 +148,7 @@ function CreateObjectionContent() {
 
       if (response.ok) {
         toast.success('이의제기가 접수되었습니다.');
-        router.push('/mypage/noshow-objections');
+        router.push('/mypage/noshow-management?tab=objections');
       } else {
         const error = await response.json();
         toast.error(error.detail || error.error || '이의제기 제출에 실패했습니다.');
