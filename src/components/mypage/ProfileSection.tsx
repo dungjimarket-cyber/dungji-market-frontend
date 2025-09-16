@@ -419,17 +419,6 @@ export default function ProfileSection() {
   if (isLoading) return null;
   return (
     <div className="bg-white p-6 rounded-lg shadow mb-6">
-      <div className="flex items-center justify-end mb-6">
-        <Button 
-          type="button" 
-          variant="outline"
-          size="sm"
-          onClick={() => router.push('/mypage')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          뒤로가기
-        </Button>
-      </div>
       
       {/* 판매회원인 경우 이용권 관리 링크 표시 */}
       {role === 'seller' && (
