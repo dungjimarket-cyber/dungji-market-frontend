@@ -397,7 +397,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (hasOffers) {
         submitData.append('is_modified', 'true');
       }
-      
+
+      // 디버깅용 FormData 내용 출력
+      console.log('=== FormData 전송 내용 ===');
+      for (let [key, value] of submitData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+      console.log('========================');
+
       const response = await fetch(apiUrl, {
         method: 'PATCH',
         headers: {
@@ -408,7 +415,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update');
+        console.error('Update error details:', errorData);
+        throw new Error(errorData.message || errorData.detail || JSON.stringify(errorData) || 'Failed to update');
       }
       
       toast({
