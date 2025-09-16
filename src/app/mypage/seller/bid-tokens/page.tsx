@@ -313,7 +313,7 @@ export default function BidTokensPage() {
       verifyPayment(orderId);
     } else if (paymentStatus === 'failed') {
       // 깨진 메시지는 무시하고 기본 메시지 표시
-      const errorMessage = '결제에 실패하였습니다.';
+      const errorMessage = '결제에 실패했습니다.';
 
       // localStorage 정리
       if (typeof window !== 'undefined') {
