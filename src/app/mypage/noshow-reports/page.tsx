@@ -564,14 +564,6 @@ function NoShowReportsContent() {
 
           {editingReport && (
             <div className="space-y-3">
-              {editingReport.edit_count && editingReport.edit_count > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
-                  <p className="text-sm text-red-600">
-                    이미 {editingReport.edit_count}회 수정하셨습니다.
-                  </p>
-                </div>
-              )}
-
               <div>
                 <Label htmlFor="edit-content">신고 내용 *</Label>
                 <Textarea
