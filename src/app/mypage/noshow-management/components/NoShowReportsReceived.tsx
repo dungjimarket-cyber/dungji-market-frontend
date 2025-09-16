@@ -185,9 +185,15 @@ export default function NoShowReportsReceived() {
 
               <div className="flex justify-end pt-2 border-t">
                 {report.has_objection ? (
-                  <Badge className="bg-gray-100 text-gray-600 hover:bg-gray-100">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center gap-1 text-gray-500 border-gray-300 bg-gray-50 cursor-not-allowed text-xs px-3 py-1.5"
+                    disabled
+                  >
+                    <MessageSquare className="w-3 h-3" />
                     이의제기 완료
-                  </Badge>
+                  </Button>
                 ) : (
                   <Button
                     size="sm"
