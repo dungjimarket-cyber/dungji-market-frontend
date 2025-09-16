@@ -476,14 +476,15 @@ export default function MyPageClient() {
           </Accordion>
 
           {/* 노쇼 관리 통합 버튼 */}
-          <div className="mt-6">
+          <div className="mt-6 flex justify-end">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => router.push('/mypage/noshow-management')}
-              className="w-full flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
             >
-              <AlertTriangle className="w-4 h-4" />
-              노쇼 신고 관리
+              <AlertTriangle className="w-3 h-3" />
+              노쇼관리
             </Button>
           </div>
         </div>
