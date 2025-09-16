@@ -370,10 +370,10 @@ export default function NoShowObjections() {
                 {/* 새 파일 선택 - 개별 슬롯 */}
                 <div className="mt-3">
                   <p className="text-sm text-gray-600 mb-2">새 파일 선택:</p>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[0, 1, 2].map((index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500 w-16">파일 {index + 1}:</span>
+                      <div key={index} className="flex flex-col gap-1">
+                        <span className="text-xs text-gray-500">파일 {index + 1}</span>
                         {editFormData.evidence_files[index] ? (
                           <div className="flex items-center gap-2 flex-1">
                             <span className="text-sm text-gray-700">{editFormData.evidence_files[index]!.name}</span>
