@@ -329,6 +329,11 @@ export default function CreateUsedPhonePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 이미 처리 중이면 중복 실행 방지
+    if (loading) {
+      return;
+    }
+
     if (!isAuthenticated) {
       toast({
         title: '로그인 필요',
@@ -753,7 +758,7 @@ export default function CreateUsedPhonePage() {
         description: '상품이 성공적으로 등록되었습니다.',
       });
 
-      // 상세 페이지로 이동
+      // 상세 페이지로 이동 (loading 상태 유지하여 버튼 비활성화 유지)
       router.push(`/used/${data.id}`);
       
     } catch (error) {
@@ -807,7 +812,8 @@ export default function CreateUsedPhonePage() {
         description: errorMessage,
         variant: 'destructive',
       });
-    } finally {
+
+      // 오류 발생 시에만 loading 해제
       setLoading(false);
     }
   };

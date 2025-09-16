@@ -300,7 +300,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   // 폼 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // 이미 처리 중이면 중복 실행 방지
+    if (submitting) {
+      return;
+    }
+
     if (!isModified) {
       toast({
         title: '변경사항 없음',
@@ -443,9 +448,10 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         title: '수정 완료',
         description: hasOffers ? '상품이 수정되었습니다. (수정됨 표시)' : '상품이 수정되었습니다.',
       });
-      
+
+      // 상세 페이지로 이동 (submitting 상태 유지하여 버튼 비활성화 유지)
       router.push(`/used/${phoneId}`);
-      
+
     } catch (error) {
       console.error('Failed to update phone:', error);
       toast({
@@ -453,7 +459,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         description: '상품 수정 중 오류가 발생했습니다.',
         variant: 'destructive',
       });
-    } finally {
+
+      // 오류 발생 시에만 submitting 해제
       setSubmitting(false);
     }
   };
