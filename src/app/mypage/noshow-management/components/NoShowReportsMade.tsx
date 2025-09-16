@@ -459,6 +459,42 @@ export default function NoShowReportsMade() {
 
               <div>
                 <Label htmlFor="edit-files">증빙 자료 (최대 3개)</Label>
+
+                {/* 기존 첨부 파일 미리보기 */}
+                {(editingReport.evidence_image || editingReport.evidence_image_2 || editingReport.evidence_image_3) && (
+                  <div className="mt-2 mb-3">
+                    <p className="text-sm text-gray-600 mb-2">기존 첨부 파일:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[editingReport.evidence_image, editingReport.evidence_image_2, editingReport.evidence_image_3].map((file, index) => {
+                        if (!file) return null;
+                        const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
+
+                        return (
+                          <div key={index} className="border rounded-lg overflow-hidden bg-gray-50">
+                            {isImage ? (
+                              <a href={file} target="_blank" rel="noopener noreferrer" className="block">
+                                <img
+                                  src={file}
+                                  alt={`기존 증빙 자료 ${index + 1}`}
+                                  className="w-full h-20 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                                />
+                                <p className="text-xs text-center py-1 bg-gray-100">파일 {index + 1}</p>
+                              </a>
+                            ) : (
+                              <a href={file} target="_blank" rel="noopener noreferrer"
+                                className="flex flex-col items-center justify-center h-20 hover:bg-gray-100 transition-colors">
+                                <FileText className="w-6 h-6 text-gray-400" />
+                                <p className="text-xs text-gray-600 mt-1">파일 {index + 1}</p>
+                              </a>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">※ 새 파일을 업로드하면 기존 파일이 대체됩니다.</p>
+                  </div>
+                )}
+
                 <Input
                   id="edit-files"
                   type="file"
@@ -469,7 +505,7 @@ export default function NoShowReportsMade() {
                 />
                 {editFormData.evidence_files.length > 0 && (
                   <div className="mt-2 text-sm text-gray-600">
-                    선택된 파일: {editFormData.evidence_files.map(f => f.name).join(', ')}
+                    새로 선택된 파일: {editFormData.evidence_files.map(f => f.name).join(', ')}
                   </div>
                 )}
               </div>
