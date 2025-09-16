@@ -58,9 +58,12 @@ export default function BidTokensPage() {
   const loadUserPayments = async () => {
     try {
       const response = await refundService.getUserPayments();
-      setUserPayments(response.payments);
+      // response가 배열인지 확인하고, payments 속성이 있으면 사용
+      const payments = Array.isArray(response) ? response : (response?.payments || []);
+      setUserPayments(Array.isArray(payments) ? payments : []);
     } catch (error) {
       console.error('결제 내역 로드 실패:', error);
+      setUserPayments([]);
     }
   };
 
@@ -68,10 +71,11 @@ export default function BidTokensPage() {
   const loadRefundRequests = async () => {
     try {
       const requests = await refundService.getRefundRequests();
-      setRefundRequests(requests);
+      setRefundRequests(Array.isArray(requests) ? requests : []);
       console.log('환불 요청 목록 로드 완료:', requests);
     } catch (error) {
       console.error('환불 요청 목록 로드 실패:', error);
+      setRefundRequests([]);
     }
   };
 
@@ -377,27 +381,38 @@ export default function BidTokensPage() {
 
   // 결제 정보와 UserPayment 매칭
   const findUserPayment = (purchase: BidTokenPurchase): UserPayment | undefined => {
+    // userPayments가 배열인지 확인
+    if (!Array.isArray(userPayments)) {
+      console.warn('userPayments is not an array:', userPayments);
+      return undefined;
+    }
+
     return userPayments.find(payment => {
       // 가격이 일치하는 결제를 찾기
       const amountMatch = payment.amount === purchase.total_price;
-      
+
       // 상품 타입 매칭
-      const productMatch = purchase.token_type === 'single' 
-        ? payment.product_name.includes('견적') 
+      const productMatch = purchase.token_type === 'single'
+        ? payment.product_name.includes('견적')
         : payment.product_name.includes('무제한') || payment.product_name.includes('구독');
-      
+
       // 결제일이 비슷한 시기인지 확인 (같은 날짜)
       const purchaseDate = new Date(purchase.purchase_date).toDateString();
       const paymentDate = new Date(payment.created_at).toDateString();
       const dateMatch = purchaseDate === paymentDate;
-      
+
       return amountMatch && productMatch && dateMatch;
     });
   };
 
   // 해당 결제의 환불 요청 찾기
   const findRefundRequest = (payment: UserPayment): RefundRequest | undefined => {
-    return refundRequests.find(request => 
+    // refundRequests가 배열인지 확인
+    if (!Array.isArray(refundRequests)) {
+      return undefined;
+    }
+
+    return refundRequests.find(request =>
       request.payment_info.order_id === payment.order_id
     );
   };
