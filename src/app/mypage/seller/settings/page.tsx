@@ -810,14 +810,15 @@ export default function SellerSettings() {
   }
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto">
+    <div className="container py-8 max-w-4xl mx-auto px-4">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">내 정보 설정</h1>
+        <h1 className="text-2xl font-bold ml-2">내 정보 설정</h1>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => router.push('/mypage/seller')}
+          className="mr-2"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           뒤로가기
@@ -825,10 +826,8 @@ export default function SellerSettings() {
       </div>
 
           <Card>
-            <CardHeader className="pb-3">
-            </CardHeader>
             <div>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-4">
                 {/* 아이디 표시 (수정 불가) */}
                 <div className="space-y-2">
                   <Label>아이디</Label>
