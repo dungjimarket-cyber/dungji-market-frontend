@@ -30,7 +30,7 @@ interface RecentGroupBuy {
 
 export default function NoShowManagementPage() {
   const router = useRouter();
-  const { isAuthenticated, accessToken, user } = useAuth();
+  const { isAuthenticated, accessToken, user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('made');
   const [showNoShowModal, setShowNoShowModal] = useState(false);
   const [showNoTransactionsModal, setShowNoTransactionsModal] = useState(false);
@@ -84,10 +84,20 @@ export default function NoShowManagementPage() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // 로딩이 완료되고 인증되지 않은 경우에만 로그인 페이지로 이동
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
+
+  // 로딩 중일 때 로딩 표시
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">로딩 중...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
@@ -95,24 +105,21 @@ export default function NoShowManagementPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/mypage')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">노쇼 신고 관리</h1>
-        </div>
-      </div>
-
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>노쇼 관리</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>노쇼 신고 관리</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/mypage')}
+                className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                뒤로가기
+              </Button>
+            </div>
             {/* 노쇼신고하기 버튼 */}
             <Button
               variant="outline"
