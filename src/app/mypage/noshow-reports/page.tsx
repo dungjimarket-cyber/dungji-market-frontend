@@ -445,7 +445,7 @@ function NoShowReportsContent() {
 
                         <div className="flex justify-between items-center pt-2 border-t">
                           <div className="flex items-center gap-2">
-                            {report.edit_count && report.edit_count > 0 && (
+                            {report.edit_count > 0 && (
                               <Badge variant="secondary" className="text-xs">
                                 수정완료
                               </Badge>

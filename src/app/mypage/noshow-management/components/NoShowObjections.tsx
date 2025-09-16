@@ -285,7 +285,7 @@ export default function NoShowObjections() {
               )}
 
               {/* 수정 버튼 - pending 상태이고 수정 횟수가 0인 경우만 표시 */}
-              {objection.status === 'pending' && (!objection.edit_count || objection.edit_count < 1) ? (
+              {objection.status === 'pending' && (!objection.edit_count || objection.edit_count < 1) && (
                 <div className="flex justify-end pt-2 border-t">
                   <Button
                     size="sm"
@@ -297,7 +297,7 @@ export default function NoShowObjections() {
                     수정하기
                   </Button>
                 </div>
-              ) : null}
+              )}
             </div>
           </CardContent>
         </Card>
