@@ -1618,7 +1618,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="bg-yellow-50 rounded-lg p-4 mb-6">
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
-              <p className="text-3xl font-bold text-dungji-primary">
+              <p className="text-3xl font-bold text-black">
                 {(highestBidAmount ?? 0) > 0 ? (
                   <span>{maskAmount(highestBidAmount!)}원</span>
                 ) : (
@@ -1744,27 +1744,27 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="mt-6 lg:mt-0 px-4 lg:px-0">
             <div className="bg-white lg:rounded-lg lg:p-6">
               {/* 참여인원 카드 */}
-              <div className="bg-gray-50 lg:bg-white rounded-lg p-4 mb-3">
-                <p className="text-gray-500 text-sm mb-2 text-center">참여인원</p>
-                <p className="text-2xl font-bold text-center">
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-3 mb-2">
+                <p className="text-gray-500 text-xs mb-1 text-center">참여인원</p>
+                <p className="text-xl font-bold text-center">
                   {currentParticipants}/{groupBuy.max_participants}
-                  <span className="text-sm text-gray-500 ml-1">명</span>
+                  <span className="text-xs text-gray-500 ml-1">명</span>
                 </p>
                 {/* 참여 진행률 바 */}
-                <div className="mt-3">
-                  <Progress 
+                <div className="mt-2">
+                  <Progress
                     value={(currentParticipants / groupBuy.max_participants) * 100}
-                    className="h-2"
+                    className="h-1.5"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">
+                <p className="text-xs text-gray-500 mt-1 text-center">
                   {remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}
                 </p>
               </div>
 
 
               {/* 시간 정보 카드 */}
-              <div className="bg-gray-50 lg:bg-white rounded-lg p-4">
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-3">
             {/* 상태별 타이머 표시 */}
             {groupBuyData.status === 'recruiting' && (
               <>
@@ -2090,12 +2090,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       {/* 메인 컨텐츠 래퍼 끝 */}
 
       {/* 하단 구분선 */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-12">
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-6">
         <hr className="border-gray-200" />
       </div>
 
       {/* 하단 영역 - 최고지원금 */}
-      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 py-12">
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 py-6">
         {/* 최고 지원금 */}
         <div className="px-4 lg:px-0">
             {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
