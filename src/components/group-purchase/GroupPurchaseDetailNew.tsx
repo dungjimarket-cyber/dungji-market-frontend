@@ -1745,7 +1745,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             <div className="bg-white lg:rounded-lg lg:p-6">
               {/* 참여인원 카드 */}
               <div className="bg-gray-50 lg:bg-white rounded-lg p-3 mb-2">
-                <p className="text-gray-500 text-xs mb-1 text-center">참여인원</p>
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-gray-500 text-xs">참여인원</p>
+                  <p className="text-xs text-gray-500">
+                    {remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}
+                  </p>
+                </div>
                 <p className="text-xl font-bold text-center">
                   {currentParticipants}/{groupBuy.max_participants}
                   <span className="text-xs text-gray-500 ml-1">명</span>
@@ -1757,9 +1762,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     className="h-1.5"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1 text-center">
-                  {remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}
-                </p>
               </div>
 
 

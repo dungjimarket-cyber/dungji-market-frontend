@@ -13,10 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Star, Clock, CheckCircle, AlertCircle, Info } from 'lucide-react';
-import bidTokenService, { 
-  BidTokenResponse, 
-  BidTokenPurchase, 
+import bidTokenService, {
+  BidTokenResponse,
+  BidTokenPurchase,
   PurchaseBidTokenRequest,
   PendingPayment
 } from '@/lib/bid-token-service';
@@ -43,6 +52,12 @@ export default function BidTokensPage() {
   const [selectedPayment, setSelectedPayment] = useState<UserPayment | null>(null);
   const [userPayments, setUserPayments] = useState<UserPayment[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
+
+  // 결제 오류 모달 state
+  const [paymentError, setPaymentError] = useState<{show: boolean; message: string}>({
+    show: false,
+    message: ''
+  });
 
   // 입금 대기 중인 결제 내역 로드
   const loadPendingPayments = async () => {
@@ -305,12 +320,12 @@ export default function BidTokensPage() {
         errorMsg: decodedErrorMsg
       });
 
-      toast({
-        title: '결제 실패',
-        description: decodedErrorMsg,
-        variant: 'destructive',
-        duration: 7000, // 오류 메시지를 읽을 수 있도록 더 길게 표시
+      // 모달로 오류 표시
+      setPaymentError({
+        show: true,
+        message: decodedErrorMsg
       });
+
       // URL 파라미터 제거
       window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
     } else if (paymentStatus === 'cancelled') {
@@ -971,6 +986,29 @@ export default function BidTokensPage() {
         } : null}
         onRefundRequested={handleRefundRequested}
       />
+
+      {/* 결제 오류 모달 */}
+      <AlertDialog open={paymentError.show} onOpenChange={(open) => !open && setPaymentError({show: false, message: ''})}>
+        <AlertDialogContent className="max-w-xs">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              결제 실패
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              {paymentError.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => setPaymentError({show: false, message: ''})}
+              className="w-full"
+            >
+              확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </RequireAuth>
   );
