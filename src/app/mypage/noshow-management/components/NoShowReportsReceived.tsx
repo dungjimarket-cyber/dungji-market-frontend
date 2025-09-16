@@ -18,6 +18,7 @@ interface NoShowReport {
   admin_comment?: string;
   created_at: string;
   processed_at?: string;
+  has_objection?: boolean;
 }
 
 export default function NoShowReportsReceived() {
@@ -34,20 +35,48 @@ export default function NoShowReportsReceived() {
 
   const fetchReports = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/?type=received`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
+      // 신고 내역과 이의제기 내역을 동시에 조회
+      const [reportsResponse, objectionsResponse] = await Promise.all([
+        fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/?type=received`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
           }
-        }
-      );
+        ),
+        fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/noshow-objections/`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }
+        )
+      ]);
 
-      if (response.ok) {
-        const data = await response.json();
-        setReports(Array.isArray(data) ? data : data.results || []);
+      if (reportsResponse.ok) {
+        const reportsData = await reportsResponse.json();
+        const reportsList = Array.isArray(reportsData) ? reportsData : reportsData.results || [];
+
+        // 이의제기 데이터 처리
+        if (objectionsResponse.ok) {
+          const objectionsData = await objectionsResponse.json();
+          const objectionsList = Array.isArray(objectionsData) ? objectionsData : objectionsData.results || [];
+
+          // report_id로 이의제기 존재 여부 매핑
+          const reportsWithObjection = reportsList.map(report => ({
+            ...report,
+            has_objection: objectionsList.some(obj => obj.report_id === report.id || obj.noshow_report === report.id)
+          }));
+
+          setReports(reportsWithObjection);
+        } else {
+          // 이의제기 조회 실패 시 신고 내역만 표시
+          setReports(reportsList);
+        }
       } else {
-        console.error('Failed to fetch reports:', response.status);
+        console.error('Failed to fetch reports:', reportsResponse.status);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -158,11 +187,23 @@ export default function NoShowReportsReceived() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
-                  onClick={() => router.push(`/noshow-objection/create?report_id=${report.id}`)}
+                  className={`flex items-center gap-1 ${
+                    report.has_objection
+                      ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
+                      : 'text-blue-600 border-blue-300 hover:bg-blue-50'
+                  } text-xs px-3 py-1.5`}
+                  onClick={() => {
+                    if (report.has_objection) {
+                      // 이의제기 완료 건은 이의제기 탭으로 이동
+                      router.push('/mypage/noshow-management?tab=objections');
+                    } else {
+                      // 이의제기 미진행 건은 작성 페이지로 이동
+                      router.push(`/noshow-objection/create?report_id=${report.id}`);
+                    }
+                  }}
                 >
                   <MessageSquare className="w-3 h-3" />
-                  이의제기
+                  {report.has_objection ? '이의제기 완료' : '이의제기'}
                 </Button>
               </div>
             </div>
