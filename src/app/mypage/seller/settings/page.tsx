@@ -904,52 +904,78 @@ export default function SellerSettings() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex gap-2 items-start">
-                        <div className="relative flex-1">
-                          <Input
-                            id="nickname"
-                            name="nickname"
-                            value={formData.nickname}
-                            onChange={handleChange}
-                            placeholder="닉네임 또는 상호명 (2-15자)"
-                            maxLength={15}
-                            required
-                            className={`text-lg font-medium ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
-                          />
-                          {checkingNickname && (
-                            <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
-                          )}
+                      <div className="flex flex-col gap-3">
+                        {/* 입력 필드와 중복체크 버튼 */}
+                        <div className="flex gap-2 items-start">
+                          <div className="relative flex-1">
+                            <Input
+                              id="nickname"
+                              name="nickname"
+                              value={formData.nickname}
+                              onChange={(e) => {
+                                handleChange(e);
+                                // 실시간 유효성 검사
+                                const value = e.target.value;
+                                if (value && value.length < 2) {
+                                  setNicknameError('닉네임은 2자 이상이어야 합니다.');
+                                } else if (value && value.length > 15) {
+                                  setNicknameError('닉네임은 15자 이하여야 합니다.');
+                                } else if (value && value.includes(' ')) {
+                                  setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+                                } else if (value && !/^[가-힣a-zA-Z0-9]+$/.test(value)) {
+                                  setNicknameError('한글, 영문, 숫자만 사용 가능합니다.');
+                                } else {
+                                  setNicknameError('');
+                                }
+                                setNicknameAvailable(false);
+                              }}
+                              placeholder="닉네임 또는 상호명 (2-15자)"
+                              maxLength={15}
+                              required
+                              className={`text-lg font-medium ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
+                            />
+                            {checkingNickname && (
+                              <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={checkNicknameDuplicate}
+                            disabled={checkingNickname || !formData.nickname || !!nicknameError}
+                            className="whitespace-nowrap"
+                          >
+                            중복체크
+                          </Button>
                         </div>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={checkNicknameDuplicate}
-                          disabled={checkingNickname || !formData.nickname}
-                        >
-                          중복체크
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setIsEditingNickname(false);
-                            setFormData(prev => ({ ...prev, nickname: profile?.nickname || '' }));
-                            setNicknameError('');
-                            setNicknameAvailable(false);
-                          }}
-                        >
-                          취소
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={saveNickname}
-                          disabled={saving || !nicknameAvailable}
-                        >
-                          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                          저장
-                        </Button>
+
+                        {/* 취소 및 저장 버튼 */}
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setIsEditingNickname(false);
+                              setFormData(prev => ({ ...prev, nickname: profile?.nickname || '' }));
+                              setNicknameError('');
+                              setNicknameAvailable(false);
+                            }}
+                            className="flex-1"
+                          >
+                            취소
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={saveNickname}
+                            disabled={saving || !nicknameAvailable}
+                            className="flex-1"
+                          >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            저장
+                          </Button>
+                        </div>
                       </div>
                       {nicknameError && (
                         <p className="text-sm text-red-500 mt-1">{nicknameError}</p>

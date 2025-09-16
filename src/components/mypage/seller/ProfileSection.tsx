@@ -59,19 +59,9 @@ export default function ProfileSection() {
       
       {/* 프로필 카드 */}
       <Card className="mb-6">
-        <CardContent className="p-4 sm:p-6 relative">
-          {/* 모바일: 정보수정 버튼을 오른쪽 상단에 배치 */}
-          <div className="absolute top-4 right-4 sm:hidden">
-            <Link href="/mypage/seller/settings">
-              <Button variant="outline" size="sm" className="flex items-center">
-                <Settings className="h-4 w-4 mr-1" />
-                정보수정
-              </Button>
-            </Link>
-          </div>
-
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col gap-3 w-full sm:w-auto pr-16 sm:pr-0">
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
               {/* 첫 번째 줄: 닉네임 */}
               <div className="text-left">
                 <div className="flex items-center gap-2">
@@ -106,16 +96,6 @@ export default function ProfileSection() {
                   </Badge>
                 )}
               </div>
-            </div>
-
-            {/* PC: 정보수정 버튼을 오른쪽에 배치 */}
-            <div className="hidden sm:flex items-center gap-2">
-              <Link href="/mypage/seller/settings">
-                <Button variant="outline" size="sm" className="flex items-center">
-                  <Settings className="h-4 w-4 mr-1" />
-                  정보수정
-                </Button>
-              </Link>
             </div>
           </div>
         </CardContent>
