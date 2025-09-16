@@ -1793,7 +1793,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     className="h-2"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
               </>
             )}
             
