@@ -116,6 +116,8 @@ function NoShowReportContent() {
         const data = await response.json();
         setGroupbuyInfo(data);
         console.log('Group buy info fetched:', data);
+        console.log('selected_bid:', data.selected_bid);
+        console.log('winning_bid:', data.winning_bid);
 
         // 구매자인 경우 판매자 ID 저장
         const isBuyer = user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type);
