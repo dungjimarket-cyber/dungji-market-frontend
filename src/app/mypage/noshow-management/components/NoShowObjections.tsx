@@ -61,7 +61,12 @@ export default function NoShowObjections() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />검토중</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
+            <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>검토중</span>
+          </Badge>
+        );
       case 'accepted':
         return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />승인됨</Badge>;
       case 'rejected':

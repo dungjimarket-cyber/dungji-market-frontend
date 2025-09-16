@@ -115,11 +115,13 @@ export default function NoShowManagementPage() {
             <CardTitle>노쇼 관리</CardTitle>
             {/* 노쇼신고하기 버튼 */}
             <Button
+              variant="outline"
+              size="sm"
               onClick={handleNoShowReport}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
             >
-              <AlertTriangle className="w-4 h-4 mr-2" />
-              노쇼신고하기
+              <AlertTriangle className="w-3 h-3" />
+              신고하기
             </Button>
           </div>
         </CardHeader>
