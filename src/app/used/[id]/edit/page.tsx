@@ -365,9 +365,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (isFieldEditable('description')) submitData.append('description', formData.description || '');
       if (isFieldEditable('meeting_place')) submitData.append('meeting_place', formData.meeting_place || '');
 
-      if (isFieldEditable('has_box')) submitData.append('has_box', formData.has_box.toString());
-      if (isFieldEditable('has_charger')) submitData.append('has_charger', formData.has_charger.toString());
-      if (isFieldEditable('has_earphones')) submitData.append('has_earphones', formData.has_earphones.toString());
+      if (isFieldEditable('has_box')) submitData.append('has_box', (formData.has_box || false).toString());
+      if (isFieldEditable('has_charger')) submitData.append('has_charger', (formData.has_charger || false).toString());
+      if (isFieldEditable('has_earphones')) submitData.append('has_earphones', (formData.has_earphones || false).toString());
       
       // 지역 정보
       if (isFieldEditable('regions')) {
