@@ -60,13 +60,28 @@ export default function NoShowReportsReceived() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />처리중</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex whitespace-nowrap">
+            <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>처리중</span>
+          </Badge>
+        );
       case 'completed':
       case 'confirmed':
-        return <Badge variant="destructive"><CheckCircle className="w-3 h-3 mr-1" />처리완료</Badge>;
+        return (
+          <Badge variant="destructive" className="inline-flex whitespace-nowrap">
+            <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>처리완료</span>
+          </Badge>
+        );
       case 'on_hold':
       case 'rejected':
-        return <Badge variant="outline"><XCircle className="w-3 h-3 mr-1" />보류중</Badge>;
+        return (
+          <Badge variant="outline" className="inline-flex whitespace-nowrap">
+            <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            <span>보류중</span>
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
@@ -143,10 +158,10 @@ export default function NoShowReportsReceived() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                  className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
                   onClick={() => router.push(`/noshow-objection/create?report_id=${report.id}`)}
                 >
-                  <MessageSquare className="w-3 h-3 mr-1" />
+                  <MessageSquare className="w-3 h-3" />
                   이의제기
                 </Button>
               </div>
