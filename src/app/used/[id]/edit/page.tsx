@@ -829,6 +829,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                       full_name: `${r.province} ${r.city}`.trim(),
                       name: r.city || r.province
                     })));
+                    setIsModified(true);
                   }}
                   maxSelections={3}
                 />
