@@ -457,13 +457,16 @@ export default function BidTokensPage() {
 
   return (
     <RequireAuth>
-      <div className="container py-8 max-w-4xl mx-auto">
+      <div className="container py-8 max-w-4xl mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">견적 이용권 현황</h1>
-          <Button variant="outline" onClick={() => router.back()}>
-            돌아가기
-        </Button>
-      </div>
+          <button
+            onClick={() => router.back()}
+            className="text-gray-600 hover:text-gray-800 text-sm flex items-center gap-1"
+          >
+            ← 뒤로가기
+          </button>
+        </div>
 
       <div className="grid md:grid-cols-5 gap-6">
         <div className="md:col-span-2">
