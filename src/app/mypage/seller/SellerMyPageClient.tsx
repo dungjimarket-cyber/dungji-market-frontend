@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/accordion';
 import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { NoShowReportSelectModal } from '@/components/mypage/NoShowReportSelectModal';
 import { toast } from 'sonner';
 
 /**
@@ -45,9 +44,6 @@ export default function SellerMyPageClient() {
     cancelled: 0
   });
 
-  // 노쇼신고 관련 state
-  const [showNoShowModal, setShowNoShowModal] = useState(false);
-  const [recentGroupBuys, setRecentGroupBuys] = useState([]);
   
   // 아코디언 열림 상태 관리
   const [accordionValue, setAccordionValue] = useState<string | undefined>();
@@ -205,45 +201,6 @@ export default function SellerMyPageClient() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // 노쇼신고하기 버튼 클릭 핸들러
-  const handleNoShowReport = async () => {
-    if (!accessToken) {
-      toast.error('로그인이 필요합니다.');
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/recent_completed/?limit=3`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data.length === 0) {
-          toast.error('15일 이내 신고 가능한 거래가 없습니다.');
-        } else if (data.length === 1) {
-          // 1건만 있으면 바로 신고 페이지로 이동
-          router.push(`/noshow-report/create?groupbuy_id=${data[0].id}`);
-        } else {
-          // 2-3건이면 선택 모달 표시
-          setRecentGroupBuys(data);
-          setShowNoShowModal(true);
-        }
-      } else {
-        toast.error('거래 목록을 불러오는데 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('노쇼신고 거래 조회 오류:', error);
-      toast.error('오류가 발생했습니다.');
-    }
-  };
 
   if (isLoading || pageLoading) {
     return (
@@ -412,46 +369,20 @@ export default function SellerMyPageClient() {
           </AccordionItem>
         </Accordion>
 
-        {/* 노쇼 관련 버튼들 */}
-        <div className="mt-6 flex justify-between">
-          {/* 노쇼신고하기 버튼 (왼쪽) */}
+        {/* 노쇼 관리 통합 버튼 */}
+        <div className="mt-6 flex justify-end">
           <Button
             variant="outline"
-            onClick={handleNoShowReport}
-            className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+            size="sm"
+            onClick={() => router.push('/mypage/noshow-management')}
+            className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
           >
-            <AlertTriangle className="w-4 h-4" />
-            노쇼신고하기
+            <AlertTriangle className="w-3 h-3" />
+            노쇼관리
           </Button>
-
-          {/* 기존 버튼들 (오른쪽) */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => router.push('/mypage/noshow-objections')}
-              className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group"
-            >
-              <MessageSquare className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
-              <span>이의제기 내역</span>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-            </button>
-            <button
-              onClick={() => router.push('/mypage/noshow-reports')}
-              className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-orange-600 transition-colors group"
-            >
-              <AlertCircle className="w-4 h-4 text-orange-500 group-hover:text-orange-600" />
-              <span>노쇼 신고 내역</span>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* 노쇼신고 거래 선택 모달 */}
-      <NoShowReportSelectModal
-        isOpen={showNoShowModal}
-        onClose={() => setShowNoShowModal(false)}
-        groupBuys={recentGroupBuys}
-      />
 
     </div>
   );
