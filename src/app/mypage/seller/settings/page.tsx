@@ -927,7 +927,7 @@ export default function SellerSettings() {
                               placeholder="닉네임 또는 상호명 (2-15자)"
                               maxLength={15}
                               required
-                              className={`font-medium ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
+                              className={`font-medium ${nicknameError ? 'border-blue-500' : nicknameAvailable ? 'border-green-500' : ''}`}
                             />
                             {checkingNickname && (
                               <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
@@ -973,10 +973,10 @@ export default function SellerSettings() {
                         </div>
                       </div>
                       {nicknameError && (
-                        <p className="text-sm text-red-500 mt-1">{nicknameError}</p>
+                        <p className="text-sm text-blue-600 mt-1">{nicknameError}</p>
                       )}
                       {nicknameAvailable && !nicknameError && formData.nickname && (
-                        <p className="text-sm text-green-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
+                        <p className="text-sm text-blue-600 mt-1">✓ 사용 가능한 닉네임입니다</p>
                       )}
                       {formData.nickname && formData.nickname.length === 15 && !nicknameError && (
                         <p className="text-sm text-blue-600 mt-1">최대 15자까지 입력 가능합니다.</p>

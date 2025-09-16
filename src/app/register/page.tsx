@@ -1354,8 +1354,8 @@ function RegisterPageContent() {
                       </button>
                     </div>
                     {nicknameChecked && (
-                      <div className={`mt-2 p-2 rounded-md ${nicknameAvailable ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                        <p className={`text-sm flex items-center gap-2 ${nicknameAvailable ? 'text-green-700' : 'text-red-700'}`}>
+                      <div className={`mt-2 p-2 rounded-md ${nicknameAvailable ? 'bg-blue-50 border border-blue-200' : 'bg-red-50 border border-red-200'}`}>
+                        <p className={`text-sm flex items-center gap-2 ${nicknameAvailable ? 'text-blue-700' : 'text-red-700'}`}>
                           {nicknameAvailable ? (
                             <>
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

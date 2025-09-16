@@ -528,7 +528,7 @@ export default function ProfileSection() {
                         setNicknameError('한글, 영문, 숫자만 사용 가능합니다.');
                       }
                     }}
-                    className={`w-full p-3 border rounded-md ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : 'border-gray-300'}`}
+                    className={`w-full p-3 border rounded-md ${nicknameError ? 'border-blue-500' : nicknameAvailable ? 'border-green-500' : 'border-gray-300'}`}
                     placeholder="닉네임 (2-15자, 한글/영문/숫자만)"
                     maxLength={15}
                   />
@@ -616,13 +616,13 @@ export default function ProfileSection() {
                   
                   {/* 상태 메시지 */}
                   {nicknameError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                      <p className="text-sm text-red-700">{nicknameError}</p>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-700">{nicknameError}</p>
                     </div>
                   )}
                   {nicknameAvailable && !nicknameError && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                      <p className="text-sm text-green-700">✓ 사용 가능한 닉네임입니다</p>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-700">✓ 사용 가능한 닉네임입니다</p>
                     </div>
                   )}
                   {nickname && nickname.length === 15 && !nicknameError && (
