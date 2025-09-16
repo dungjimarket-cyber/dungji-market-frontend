@@ -508,10 +508,22 @@ export default function ProfileSection() {
                     type="text"
                     value={nickname}
                     onChange={(e) => {
-                      setNickname(e.target.value);
+                      const value = e.target.value;
+                      setNickname(value);
                       setNicknameError('');
                       setNicknameChecked(false);
                       setNicknameAvailable(false);
+
+                      // 실시간 유효성 검사
+                      if (value && value.length < 2) {
+                        setNicknameError('닉네임은 2자 이상이어야 합니다.');
+                      } else if (value && value.length > 15) {
+                        setNicknameError('닉네임은 15자 이하여야 합니다.');
+                      } else if (value && value.includes(' ')) {
+                        setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+                      } else if (value && !/^[가-힣a-zA-Z0-9]+$/.test(value)) {
+                        setNicknameError('한글, 영문, 숫자만 사용 가능합니다.');
+                      }
                     }}
                     className={`w-full p-3 border rounded-md ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : 'border-gray-300'}`}
                     placeholder="닉네임 (2-15자, 한글/영문/숫자만)"
