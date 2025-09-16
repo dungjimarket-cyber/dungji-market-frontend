@@ -811,28 +811,21 @@ export default function SellerSettings() {
 
   return (
     <div className="container py-8 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">판매자 설정</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">내 정보 설정</h1>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/mypage/seller')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          뒤로가기
+        </Button>
       </div>
 
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>프로필 정보</CardTitle>
-                  <CardDescription>
-                  </CardDescription>
-                </div>
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push('/mypage/seller')}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  뒤로가기
-                </Button>
-              </div>
+            <CardHeader className="pb-3">
             </CardHeader>
             <div>
               <CardContent className="space-y-4">
