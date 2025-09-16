@@ -583,11 +583,12 @@ export default function BidTokensPage() {
                                 <p className="text-sm font-semibold">
                                   {purchase.total_price.toLocaleString()}원
                                 </p>
-                                {(() => {
+                                {/* 환불 기능 임시 비활성화 */}
+                                {/* {(() => {
                                   const userPayment = findUserPayment(purchase);
                                   if (userPayment) {
                                     const refundRequest = findRefundRequest(userPayment);
-                                    
+
                                     // 환불 요청이 있는 경우 상태에 따라 다르게 표시
                                     if (refundRequest) {
                                       switch (refundRequest.status) {
@@ -643,7 +644,7 @@ export default function BidTokensPage() {
                                     }
                                   }
                                   return null;
-                                })()}
+                                })()} */}
                               </div>
                             </div>
                           </CardContent>
