@@ -974,7 +974,7 @@ export default function BidTokensPage() {
                 onClick={handlePurchase}
                 disabled={purchasing}
               >
-                {purchasing ? '처리 중...' : '구매하기 (카드/계좌이체/무통장입금)'}
+                {purchasing ? '처리 중...' : '구매하기'}
               </Button>
             </CardFooter>
           </Card>
