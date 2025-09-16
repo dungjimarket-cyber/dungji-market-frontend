@@ -276,6 +276,33 @@ src/components/used/
 - **진행중**: 메시지 시스템, 거래 완료 프로세스
 - **예정**: 평가 시스템, 검색 고도화, 알림 기능
 
+## 💳 결제 시스템 (이니시스)
+
+### 결제 방식별 처리 현황
+
+#### ✅ 자동 처리 (완전 자동화)
+- **카드 결제**: 즉시 완료 → 견적이용권 자동 지급
+- **실시간 계좌이체**: 즉시 완료 → 견적이용권 자동 지급
+
+#### ⚠️ 수동 처리 필요 (무통장입금)
+**현재 상황:**
+1. 고객이 무통장입금 선택 → 가상계좌 발급 (`waiting_deposit` 상태)
+2. 고객이 은행에 입금
+3. **관리자가 수동으로 처리해야 함:**
+   - Django Admin → 결제 목록 → 입금 대기 필터
+   - 해당 결제 선택 → "선택된 결제를 완료 처리" 액션 실행
+   - ⚠️ **문제: 현재 견적이용권이 자동 지급되지 않음**
+
+**필요한 개선사항:**
+1. **단기 해결**: Django Admin의 `mark_as_completed` 액션에 견적이용권 지급 로직 추가
+2. **장기 해결**: 웹훅 URL 연결 (`/api/payments/inicis/webhook/`)하여 완전 자동화
+   - `api/urls.py`에 웹훅 라우팅 추가 필요
+   - 이니시스 관리자 페이지에서 웹훅 URL 설정 필요
+
+### 결제 오류 처리
+- 결제 실패 시 상세 오류 메시지 표시 (카드 한도, 잔액 부족 등)
+- `INICIS_ERROR_MESSAGES`에 한국어 오류 메시지 매핑 완료
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
