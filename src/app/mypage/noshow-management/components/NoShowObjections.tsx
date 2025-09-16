@@ -305,23 +305,16 @@ export default function NoShowObjections() {
 
       {/* 수정 모달 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[70vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>이의제기 수정</DialogTitle>
             <DialogDescription>
-              이의제기 내용을 수정할 수 있습니다. 수정은 1회만 가능합니다.
+              수정은 1회만 가능합니다. 신중한 작성 부탁드립니다.
             </DialogDescription>
           </DialogHeader>
 
           {editingObjection && (
             <div className="space-y-4">
-              <Alert className="bg-yellow-50 border-yellow-200">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                <p className="text-sm text-yellow-800">
-                  <strong>주의:</strong> 수정은 1회만 가능합니다. 신중하게 작성해주세요.
-                </p>
-              </Alert>
-
               <div>
                 <Label htmlFor="edit-content">이의제기 내용</Label>
                 <Textarea
@@ -329,7 +322,7 @@ export default function NoShowObjections() {
                   value={editFormData.content}
                   onChange={(e) => setEditFormData(prev => ({ ...prev, content: e.target.value }))}
                   placeholder="이의제기 사유를 상세히 작성해주세요..."
-                  rows={8}
+                  rows={4}
                   className="mt-1"
                 />
               </div>

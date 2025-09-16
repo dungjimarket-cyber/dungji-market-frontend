@@ -410,11 +410,11 @@ export default function NoShowObjectionsPage() {
 
       {/* 수정 다이얼로그 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[70vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>이의제기 수정</DialogTitle>
             <DialogDescription>
-              이의제기는 1회만 수정 가능합니다.
+              수정은 1회만 가능합니다. 신중한 작성 부탁드립니다.
             </DialogDescription>
           </DialogHeader>
           
@@ -426,7 +426,7 @@ export default function NoShowObjectionsPage() {
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                rows={6}
+                rows={4}
                 placeholder="이의제기 내용을 입력하세요..."
               />
             </div>
@@ -481,7 +481,7 @@ export default function NoShowObjectionsPage() {
 
       {/* 취소 다이얼로그 */}
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-lg max-h-[80vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="mx-4 sm:mx-0 sm:max-w-lg max-h-[70vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>이의제기 취소</DialogTitle>
             <DialogDescription>

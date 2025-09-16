@@ -557,7 +557,7 @@ function NoShowReportsContent() {
 
       {/* 신고 수정 다이얼로그 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[70vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>노쇼 신고 수정</DialogTitle>
             <DialogDescription>
