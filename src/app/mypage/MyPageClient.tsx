@@ -254,39 +254,25 @@ export default function MyPageClient() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 헤더 영역 - 모바일에서 버튼 위치 조정 */}
-      <div className="flex items-center justify-between mb-8">
+      {/* 헤더 영역 */}
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">마이페이지</h1>
-        {/* 모바일에서만 보이는 내 정보 설정 버튼 */}
         <Button
           variant="outline"
           size="sm"
           onClick={() => router.push('/mypage/settings')}
-          className="flex items-center md:hidden"
+          className="flex items-center"
         >
           <Settings className="w-4 h-4 mr-1" />
           내 정보 설정
         </Button>
       </div>
-      
+
             {user ? (
         <div className="space-y-6">
           {/* 사용자 정보 카드 */}
-          <Card className="relative">
-            {/* 데스크톱에서만 우측 상단에 버튼 표시 */}
-            <div className="absolute top-4 right-4 hidden md:block">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push('/mypage/settings')}
-                className="flex items-center"
-              >
-                <Settings className="w-4 h-4 mr-1" />
-                내 정보 설정
-              </Button>
-            </div>
-            
-            <CardContent className="py-8 md:py-6">
+          <Card>
+            <CardContent className="py-6">
               <div className="flex gap-6 items-center">
                 {/* 둥지마켓 메인 이미지 */}
                 <div className="flex-shrink-0">
