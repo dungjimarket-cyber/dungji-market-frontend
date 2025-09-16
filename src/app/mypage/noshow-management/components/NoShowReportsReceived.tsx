@@ -65,9 +65,9 @@ export default function NoShowReportsReceived() {
           const objectionsList = Array.isArray(objectionsData) ? objectionsData : objectionsData.results || [];
 
           // report_id로 이의제기 존재 여부 매핑
-          const reportsWithObjection = reportsList.map(report => ({
+          const reportsWithObjection = reportsList.map((report: any) => ({
             ...report,
-            has_objection: objectionsList.some(obj => obj.report_id === report.id || obj.noshow_report === report.id)
+            has_objection: objectionsList.some((obj: any) => obj.report_id === report.id || obj.noshow_report === report.id)
           }));
 
           setReports(reportsWithObjection);
