@@ -699,20 +699,22 @@ function NoShowReportContent() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-6">
-        <Link href="/mypage">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            마이페이지로 돌아가기
-          </Button>
-        </Link>
-      </div>
-      
       <Card>
         <CardHeader>
-          <CardTitle>
-            {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              뒤로가기
+            </Button>
+          </div>
           {groupbuyInfo && (
             <p className="text-sm text-gray-600 mt-2">
               공구: {groupbuyInfo.title}
