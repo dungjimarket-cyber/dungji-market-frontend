@@ -524,6 +524,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 className={errors.model ? 'border-red-500' : ''}
               />
               {errors.model && <p className="text-xs text-red-500 mt-1">{errors.model}</p>}
+              <p className="text-xs text-gray-500 mt-1">{formData.model.length}/50자</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -564,6 +565,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   placeholder="예: 블랙 티타늄"
                   disabled={!isFieldEditable('color')}
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.color.length}/30자</p>
               </div>
             </div>
 
@@ -586,6 +588,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
+                <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                  <div><span className="font-medium">S급:</span> 사용감 거의 없음, 미세 기스 이하</div>
+                  <div><span className="font-medium">A급:</span> 생활기스 있으나 깨끗한 상태</div>
+                  <div><span className="font-medium">B급:</span> 사용감 있음, 모서리 찍힘 등</div>
+                  <div><span className="font-medium">C급:</span> 사용감 많음, 기능 정상</div>
+                </div>
               </div>
 
               <div>
@@ -606,14 +614,15 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
-                {formData.battery_status && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600">
-                      <span className="font-medium">{BATTERY_STATUS_LABELS[formData.battery_status as keyof typeof BATTERY_STATUS_LABELS]}:</span>{' '}
-                      {BATTERY_STATUS_DESCRIPTIONS[formData.battery_status as keyof typeof BATTERY_STATUS_DESCRIPTIONS]}
-                    </p>
+                <div className="mt-2 space-y-1">
+                  <div className="text-xs text-gray-500 space-y-0.5">
+                    <div><span className="font-medium text-green-600">🟢 최상:</span> 새제품 또는 새제품 수준 • 하루 종일 충전 걱정 없음</div>
+                    <div><span className="font-medium text-blue-600">🔵 좋음:</span> 하루 사용 시 충전 없이 가능 • 아침부터 저녁까지 일반 사용 OK</div>
+                    <div><span className="font-medium text-yellow-600">🟡 보통:</span> 가끔 충전 필요, 발열 시 급속 감소 • 오후에 한 번은 충전해야 함</div>
+                    <div><span className="font-medium text-red-600">🔴 나쁨:</span> 충전 자주 필요, 교체 고려 상태 • 반나절도 버티기 어려움</div>
+                    <div><span className="font-medium text-gray-600">⚫ 불량:</span> 간헐적으로 꺼짐, 교체 필요 • 갑자기 전원이 꺼지거나 불안정</div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -690,6 +699,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   type="text"
                   value={formatCurrency(formData.price)}
                   onChange={(e) => handlePriceChange(e, 'price')}
+                  onBlur={() => handlePriceBlur('price')}
                   placeholder="0"
                   disabled={!isFieldEditable('price')}
                   className={`pr-12 ${errors.price ? 'border-red-500' : ''}`}
@@ -697,6 +707,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
               </div>
               {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
+              <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다</p>
+              <p className="text-xs text-gray-500">구매자가 이 금액으로 구매 시 즉시 거래 진행</p>
             </div>
 
             <div>
@@ -709,6 +721,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   type="text"
                   value={formatCurrency(formData.min_offer_price)}
                   onChange={(e) => handlePriceChange(e, 'min_offer_price')}
+                  onBlur={() => handlePriceBlur('min_offer_price')}
                   placeholder="0"
                   disabled={!isFieldEditable('min_offer_price')}
                   className={`pr-12 ${errors.min_offer_price ? 'border-red-500' : ''}`}
@@ -716,8 +729,23 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
               </div>
               {errors.min_offer_price && <p className="text-xs text-red-500 mt-1">{errors.min_offer_price}</p>}
-              <p className="text-xs text-gray-500 mt-1">구매자가 제안할 수 있는 최소 금액입니다.</p>
+              <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)</p>
+              <p className="text-xs text-gray-500">구매자가 제안할 수 있는 최소 금액입니다</p>
             </div>
+
+            {/* 가격 정보 표시 */}
+            {formData.price && formData.min_offer_price && (
+              <div className="bg-gray-50 p-3 rounded-lg mt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">즉시 판매가:</span>
+                  <span className="font-medium">{parseInt(formData.price).toLocaleString('ko-KR')}원</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-gray-600">최소 제안가:</span>
+                  <span className="font-medium">{parseInt(formData.min_offer_price).toLocaleString('ko-KR')}원</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
