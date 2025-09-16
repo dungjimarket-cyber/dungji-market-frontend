@@ -410,7 +410,9 @@ export default function NoShowObjectionsPage() {
 
       {/* 수정 다이얼로그 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[70vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent
+          style={{ maxHeight: '70vh', overflowY: 'auto' }}
+          className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>이의제기 수정</DialogTitle>
             <DialogDescription>
@@ -481,7 +483,9 @@ export default function NoShowObjectionsPage() {
 
       {/* 취소 다이얼로그 */}
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-lg max-h-[70vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent
+          style={{ maxHeight: '70vh', overflowY: 'auto' }}
+          className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>이의제기 취소</DialogTitle>
             <DialogDescription>
