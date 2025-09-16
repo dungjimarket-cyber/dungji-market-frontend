@@ -108,27 +108,15 @@ export default function NoShowManagementPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle>노쇼 신고 관리</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push('/mypage')}
-                className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                뒤로가기
-              </Button>
-            </div>
-            {/* 노쇼신고하기 버튼 */}
+            <CardTitle>노쇼 신고 관리</CardTitle>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={handleNoShowReport}
-              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+              onClick={() => router.push('/mypage')}
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
             >
-              <AlertTriangle className="w-3 h-3" />
-              신고하기
+              <ArrowLeft className="h-4 w-4" />
+              뒤로가기
             </Button>
           </div>
         </CardHeader>
@@ -162,6 +150,19 @@ export default function NoShowManagementPage() {
               <NoShowObjections />
             </TabsContent>
           </Tabs>
+
+          {/* 노쇼신고하기 버튼 - 하단 배치 */}
+          <div className="flex justify-center mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNoShowReport}
+              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+            >
+              <AlertTriangle className="w-3 h-3" />
+              신고하기
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
