@@ -312,24 +312,16 @@ export default function BidTokensPage() {
       // 기존 결제 검증 로직 유지
       verifyPayment(orderId);
     } else if (paymentStatus === 'failed') {
-      // localStorage에서 에러 메시지 가져오기
-      let errorMessage = '결제가 실패했습니다.';
+      // 깨진 메시지는 무시하고 기본 메시지 표시
+      const errorMessage = '결제에 실패하였습니다.';
 
+      // localStorage 정리
       if (typeof window !== 'undefined') {
-        const storedMessage = localStorage.getItem('payment_error_message');
-        if (storedMessage) {
-          errorMessage = storedMessage;
-          localStorage.removeItem('payment_error_message');
-        } else if (errorMsg) {
-          errorMessage = errorMsg;
-        } else if (message) {
-          errorMessage = message;
-        }
+        localStorage.removeItem('payment_error_message');
       }
 
-      console.log('결제 실패 상세:', {
-        errorCode,
-        errorMsg: errorMessage
+      console.log('결제 실패:', {
+        errorCode
       });
 
       // 모달로 오류 표시
