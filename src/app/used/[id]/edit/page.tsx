@@ -417,11 +417,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           .map(img => img.id);
         submitData.append('existing_images', JSON.stringify(existingImageIds));
       }
-      
-      // 수정됨 플래그 추가
-      if (hasOffers) {
-        submitData.append('is_modified', 'true');
-      }
 
       // 디버깅용 FormData 내용 출력
       console.log('=== FormData 전송 내용 ===');
