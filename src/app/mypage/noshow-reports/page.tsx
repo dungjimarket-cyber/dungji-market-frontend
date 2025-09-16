@@ -557,9 +557,12 @@ function NoShowReportsContent() {
 
       {/* 신고 수정 다이얼로그 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>노쇼 신고 수정</DialogTitle>
+            <DialogDescription>
+              수정은 1회만 가능합니다. 신중한 작성 부탁드립니다.
+            </DialogDescription>
           </DialogHeader>
 
           {editingReport && (
@@ -596,10 +599,6 @@ function NoShowReportsContent() {
                     기존 파일이 있습니다. 새 파일을 업로드하면 기존 파일이 교체됩니다.
                   </p>
                 )}
-              </div>
-
-              <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-                ℹ️ 수정은 1회만 가능합니다. 신중하게 작성해주세요.
               </div>
 
               {editingReport.last_edited_at && (

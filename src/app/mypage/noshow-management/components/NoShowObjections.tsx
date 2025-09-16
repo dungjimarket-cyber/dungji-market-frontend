@@ -305,7 +305,7 @@ export default function NoShowObjections() {
 
       {/* 수정 모달 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="mx-4 sm:mx-0 sm:max-w-2xl max-h-[80vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>이의제기 수정</DialogTitle>
             <DialogDescription>
