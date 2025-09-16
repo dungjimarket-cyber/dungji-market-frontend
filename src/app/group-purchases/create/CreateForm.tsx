@@ -359,7 +359,7 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const generateTitle = () => {
     const productName = selectedProduct?.name || '공동구매';
     const regionText = selectedRegion?.name ? `[${selectedRegion.name}]` : '';
-    return `${regionText} ${productName} 공동구매`;
+    return `${regionText} ${productName}`;
   };
   
   const form = useForm<FormData>({
