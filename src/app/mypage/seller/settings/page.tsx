@@ -896,7 +896,7 @@ export default function SellerSettings() {
                       <Input
                         value={formData.nickname}
                         disabled
-                        className="bg-gray-50 text-lg font-medium"
+                        className="bg-gray-50 font-medium"
                       />
                       {!formData.nickname && (
                         <p className="text-xs text-red-500 mt-1">* 판매자 닉네임(상호명)은 필수 입력 항목입니다</p>
@@ -932,7 +932,7 @@ export default function SellerSettings() {
                               placeholder="닉네임 또는 상호명 (2-15자)"
                               maxLength={15}
                               required
-                              className={`text-lg font-medium ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
+                              className={`font-medium ${nicknameError ? 'border-red-500' : nicknameAvailable ? 'border-green-500' : ''}`}
                             />
                             {checkingNickname && (
                               <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />

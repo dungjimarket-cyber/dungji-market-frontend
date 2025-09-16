@@ -73,7 +73,7 @@ export default function ProfileSection() {
                     className="object-contain"
                   />
                   <span className="text-sm text-gray-500 font-medium">닉네임</span>
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                     {sellerProfile?.nickname || user.nickname || user.username}
                   </h2>
                 </div>
@@ -106,10 +106,10 @@ export default function ProfileSection() {
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="w-full sm:w-auto">
-              <h3 className="text-lg sm:text-xl font-semibold mb-1">남은 견적이용권</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-1">남은 견적이용권</h3>
               <div className="flex items-center gap-2 mb-1">
-                <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-                <p className="text-2xl sm:text-3xl font-bold">
+                <Ticket className="h-4 w-4 text-blue-500" />
+                <p className="text-xl sm:text-2xl font-bold">
                   {bidTokens?.unlimited_subscription
                     ? '무제한'
                     : `${bidTokens?.single_tokens || 0}개`}

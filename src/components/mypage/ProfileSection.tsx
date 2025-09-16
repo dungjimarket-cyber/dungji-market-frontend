@@ -451,7 +451,7 @@ export default function ProfileSection() {
           {user?.sns_type !== 'kakao' && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
-              <span className="font-medium text-lg">{user?.username || '아이디 정보 없음'}</span>
+              <span className="font-medium">{user?.username || '아이디 정보 없음'}</span>
             </div>
           )}
           
@@ -626,7 +626,7 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-3 bg-gray-50 rounded-md">
-                <span className={`font-medium ${nickname && nickname.length >= 10 ? 'text-base' : 'text-lg'} break-all`}>
+                <span className="font-medium break-all">
                   {nickname || '닉네임 정보 없음'}
                 </span>
               </div>

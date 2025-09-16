@@ -256,7 +256,7 @@ export default function MyPageClient() {
     <div className="container mx-auto px-4 py-8">
       {/* 헤더 영역 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">마이페이지</h1>
+        <h1 className="text-2xl font-bold">마이페이지</h1>
         <Button
           variant="outline"
           size="sm"
@@ -279,8 +279,8 @@ export default function MyPageClient() {
                   <Image
                     src="/logos/dunji_logo.jpg"
                     alt="둥지마켓"
-                    width={80}
-                    height={80}
+                    width={60}
+                    height={60}
                     className="rounded-lg object-contain"
                   />
                 </div>
