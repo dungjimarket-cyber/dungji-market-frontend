@@ -913,13 +913,16 @@ export default function SellerSettings() {
                               name="nickname"
                               value={formData.nickname}
                               onChange={(e) => {
+                                const value = e.target.value;
+                                // 15자 초과시 입력 자체를 막음
+                                if (value.length > 15) {
+                                  return;
+                                }
+
                                 handleChange(e);
                                 // 실시간 유효성 검사
-                                const value = e.target.value;
                                 if (value && value.length < 2) {
                                   setNicknameError('닉네임은 2자 이상이어야 합니다.');
-                                } else if (value && value.length > 15) {
-                                  setNicknameError('닉네임은 15자 이하여야 합니다.');
                                 } else if (value && value.includes(' ')) {
                                   setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
                                 } else if (value && !/^[가-힣a-zA-Z0-9]+$/.test(value)) {
