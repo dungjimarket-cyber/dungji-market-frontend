@@ -542,9 +542,17 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       {/* 모바일 헤더 */}
       <div className="lg:hidden sticky top-0 z-50 bg-white border-b">
         <div className="flex items-center justify-between p-4">
-          <button onClick={() => router.back()}>
-            <ChevronLeft className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => router.back()}>
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={() => router.push('/used')}
+              className="text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              목록
+            </button>
+          </div>
           <div className="flex items-center gap-2">
             <button onClick={handleShare}>
               <Share2 className="w-5 h-5" />
@@ -552,6 +560,39 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             <button onClick={handleFavorite}>
               <Heart className={`w-5 h-5 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* PC 헤더 */}
+      <div className="hidden lg:block bg-white border-b sticky top-0 z-50">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/used')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span className="font-medium">목록으로</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="text-sm">공유</span>
+              </button>
+              <button
+                onClick={handleFavorite}
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Heart className={`w-4 h-4 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
+                <span className="text-sm">찜하기</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
