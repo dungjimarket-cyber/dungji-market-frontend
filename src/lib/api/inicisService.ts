@@ -14,6 +14,53 @@ interface InicisPaymentParams {
   closeUrl?: string;
 }
 
+// 이니시스 결제 오류 코드 매핑
+export const INICIS_ERROR_MESSAGES: Record<string, string> = {
+  '0000': '결제가 성공적으로 완료되었습니다.',
+  // 카드 관련 오류
+  '1001': '카드 한도를 초과하였습니다. 다른 카드를 이용해주세요.',
+  '1002': '잔액이 부족합니다. 계좌 잔액을 확인해주세요.',
+  '1003': '정지된 카드입니다. 카드사에 문의해주세요.',
+  '1004': '카드 유효기간이 만료되었습니다.',
+  '1005': '비밀번호가 일치하지 않습니다. 다시 확인해주세요.',
+  '1006': '등록되지 않은 카드입니다. 카드사에 문의해주세요.',
+  '1007': '거래가 정지된 카드입니다. 카드사에 문의해주세요.',
+  '1008': '분실 또는 도난 카드입니다.',
+  '1009': '한도초과(일일/월 한도)',
+  '1010': 'CVC 오류입니다. 카드 뒷면 3자리 숫자를 확인해주세요.',
+  // 계좌이체 관련
+  '2001': '계좌이체 실패. 은행 시스템 점검중이거나 한도초과입니다.',
+  '2002': '계좌번호가 올바르지 않습니다.',
+  '2003': '예금주명이 일치하지 않습니다.',
+  // 휴대폰 결제
+  '3001': '휴대폰 결제 한도를 초과했습니다.',
+  '3002': '휴대폰 결제가 차단된 번호입니다.',
+  '3003': '휴대폰 본인인증에 실패했습니다.',
+  // 시스템 관련
+  '4001': '거래 시간이 초과되었습니다. 다시 시도해주세요.',
+  '4002': '중복된 거래입니다.',
+  '5001': '통신 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+  // 취소/거절
+  '6001': '사용자가 결제를 취소했습니다.',
+  '6002': '결제가 거절되었습니다. 카드사에 문의해주세요.',
+  // 기타
+  '9999': '결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+  'default': '결제 처리 중 문제가 발생했습니다.'
+};
+
+// 오류 코드로부터 사용자 친화적 메시지 가져오기
+export function getInicisErrorMessage(resultCode: string | null, resultMsg?: string | null): string {
+  if (!resultCode) return resultMsg || INICIS_ERROR_MESSAGES['default'];
+
+  // 오류 코드에 해당하는 메시지가 있으면 사용
+  if (INICIS_ERROR_MESSAGES[resultCode]) {
+    return INICIS_ERROR_MESSAGES[resultCode];
+  }
+
+  // 없으면 원본 메시지 또는 기본 메시지 사용
+  return resultMsg || INICIS_ERROR_MESSAGES['default'];
+}
+
 class InicisService {
   private readonly MID = 'dungjima14'; // 실제 상점 아이디
   private readonly MOBILE_HASHKEY = 'D1EEF4CE7B4D9B1795BBFD255D35FE24'; // 모바일 hashkey

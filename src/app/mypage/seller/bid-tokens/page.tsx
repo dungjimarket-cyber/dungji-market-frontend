@@ -268,7 +268,9 @@ export default function BidTokensPage() {
     const paymentCompleted = params.get('payment_completed');
     const orderId = params.get('orderId');
     const message = params.get('msg');
-    
+    const errorCode = params.get('errorCode');
+    const errorMsg = params.get('errorMsg');
+
     // payment_completed=true인 경우 성공적으로 완료된 것으로 간주하고 데이터 새로고침
     if (paymentCompleted === 'true') {
       console.log('결제 완료됨 - 견적이용권 데이터 새로고침');
@@ -277,7 +279,7 @@ export default function BidTokensPage() {
         description: '견적이용권이 성공적으로 지급되었습니다.',
         duration: 5000,
       });
-      
+
       // 견적이용권 데이터 즉시 새로고침
       setTimeout(async () => {
         try {
@@ -288,17 +290,26 @@ export default function BidTokensPage() {
           console.error('견적이용권 새로고침 실패:', error);
         }
       }, 500); // 500ms 후 새로고침하여 백엔드 처리 완료 대기
-      
+
       // URL 파라미터 제거
       window.history.replaceState({}, '', '/mypage/seller/bid-tokens');
     } else if (paymentStatus === 'success' && orderId) {
       // 기존 결제 검증 로직 유지
       verifyPayment(orderId);
     } else if (paymentStatus === 'failed') {
+      // 상세 오류 메시지 표시
+      const decodedErrorMsg = errorMsg ? decodeURIComponent(errorMsg) : message || '결제가 실패했습니다.';
+
+      console.log('결제 실패 상세:', {
+        errorCode,
+        errorMsg: decodedErrorMsg
+      });
+
       toast({
         title: '결제 실패',
-        description: message || '결제가 실패했습니다.',
+        description: decodedErrorMsg,
         variant: 'destructive',
+        duration: 7000, // 오류 메시지를 읽을 수 있도록 더 길게 표시
       });
       // URL 파라미터 제거
       window.history.replaceState({}, '', '/mypage/seller/bid-tokens');

@@ -3,7 +3,9 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { getInicisErrorMessage } from '@/lib/api/inicisService';
+import { Button } from '@/components/ui/button';
 
 function InicisProcessContent() {
   const router = useRouter();
@@ -150,13 +152,25 @@ function InicisProcessContent() {
             throw new Error(errorData.error || `결제 검증 실패 (${verifyResponse.status})`);
           }
         } else {
-          // 결제 실패
+          // 결제 실패 - 상세 오류 메시지 표시
           setStatus('failed');
-          setMessage(resultMsg || '결제에 실패했습니다.');
-          
+          const errorMessage = getInicisErrorMessage(resultCode, resultMsg);
+          setMessage(errorMessage);
+
+          console.log('결제 실패:', {
+            resultCode,
+            resultMsg,
+            errorMessage
+          });
+
           setTimeout(() => {
-            router.push('/mypage/seller/bid-tokens?payment=failed');
-          }, 3000);
+            const errorParams = new URLSearchParams({
+              payment: 'failed',
+              errorCode: resultCode || 'unknown',
+              errorMsg: encodeURIComponent(errorMessage)
+            });
+            router.push(`/mypage/seller/bid-tokens?${errorParams.toString()}`);
+          }, 5000); // 오류 메시지를 읽을 시간을 위해 5초로 연장
         }
       } catch (error) {
         console.error('결제 결과 처리 오류:', error);
@@ -220,9 +234,20 @@ function InicisProcessContent() {
           </div>
 
           {status !== 'processing' && (
-            <div className="text-sm text-gray-500">
-              3초 후 자동으로 이동합니다...
-            </div>
+            <>
+              <div className="text-sm text-gray-500">
+                {status === 'failed' ? '5초' : '3초'} 후 자동으로 이동합니다...
+              </div>
+              {status === 'failed' && (
+                <Button
+                  onClick={() => router.push('/mypage/seller/bid-tokens')}
+                  variant="outline"
+                  className="mt-2"
+                >
+                  다시 시도하기
+                </Button>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
