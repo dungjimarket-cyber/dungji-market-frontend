@@ -401,12 +401,24 @@ export default function NoShowReportsMade() {
                     {report.status === 'pending' && (
                       <>
                         {(!report.edit_count || report.edit_count < 1) && (
-                          <Button size="sm" variant="outline" onClick={() => openEditDialog(report)}>
-                            <Edit className="w-3 h-3 mr-1" />수정
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditDialog(report)}
+                            className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
+                          >
+                            <Edit className="w-3 h-3" />
+                            수정
                           </Button>
                         )}
-                        <Button size="sm" variant="destructive" onClick={() => openCancelDialog(report)}>
-                          <Trash2 className="w-3 h-3 mr-1" />신고 취소
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openCancelDialog(report)}
+                          className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          신고 취소
                         </Button>
                       </>
                     )}
