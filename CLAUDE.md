@@ -282,6 +282,41 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 
+## 🎨 UI/UX 디자인 원칙
+
+### 텍스트 및 레이아웃
+- **줄바꿈 방지**: Badge, Button 등의 컴포넌트에서 `whitespace-nowrap` 사용으로 텍스트 줄바꿈 방지
+- **컴팩트한 디자인**:
+  - 작은 버튼: `size="sm"` + `text-xs` + `px-3 py-1.5`
+  - 작은 아이콘: `w-3 h-3` 사용
+  - 텍스트 최소화: "노쇼신고하기" → "신고하기"
+
+### 색상 구성
+- **과하지 않은 색상 사용**:
+  - 경고/위험: `text-red-600 border-red-300 hover:bg-red-50` (빨간색 테두리 + 연한 호버)
+  - 대기/검토중: `bg-gray-100 text-gray-700` (연한 회색 배경)
+  - 성공/승인: 기본 Badge variant 사용
+  - 실패/반려: destructive variant 사용
+
+### 버튼 스타일 가이드
+```tsx
+// 작은 아웃라인 버튼 (권장)
+<Button
+  variant="outline"
+  size="sm"
+  className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+>
+  <Icon className="w-3 h-3" />
+  텍스트
+</Button>
+
+// Badge 줄바꿈 방지
+<Badge className="bg-gray-100 text-gray-700 inline-flex whitespace-nowrap">
+  <Icon className="w-3 h-3 mr-1 flex-shrink-0" />
+  <span>텍스트</span>
+</Badge>
+```
+
 ## 🚨 필드 접근 오류 방지 원칙
 **문제**: 백엔드에서 존재하지 않는 필드 접근 시 AttributeError로 500 오류 발생 (5시간 디버깅)
 
