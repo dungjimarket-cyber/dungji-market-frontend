@@ -37,6 +37,8 @@ interface NoShowReport {
   reporter_name: string;
   reported_user: number;
   reported_user_name: string;
+  reported_user_nickname?: string;
+  reported_user_phone?: string;
   groupbuy: number;
   groupbuy_title: string;
   report_type: 'buyer_noshow' | 'seller_noshow';
@@ -303,7 +305,8 @@ export default function NoShowReportsMade() {
                 <div>
                   <CardTitle className="text-lg">{report.groupbuy_title}</CardTitle>
                   <p className="text-sm text-gray-600 mt-1">
-                    신고 대상: {report.reported_user_name}
+                    신고 대상: {report.reported_user_nickname || report.reported_user_name}
+                    {report.reported_user_phone && ` (${report.reported_user_phone})`}
                   </p>
                   <div className="text-xs text-gray-500 mt-2 space-y-1">
                     <p>신고일: {formatDate(report.created_at)}</p>
