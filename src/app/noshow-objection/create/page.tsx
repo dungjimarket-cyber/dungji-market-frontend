@@ -292,7 +292,6 @@ function CreateObjectionContent() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
