@@ -35,15 +35,27 @@ function InicisCompleteContent() {
             }, 3000);
           } else if (paymentStatus === 'cancel' || paymentStatus === 'fail') {
             setStatus('failed');
-            setMessage(paymentMessage ? decodeURIComponent(paymentMessage) : '결제가 취소되었습니다.');
-            
+            const errorMessage = paymentMessage ? decodeURIComponent(paymentMessage) : '결제가 취소되었습니다.';
+            setMessage(errorMessage);
+
+            // localStorage에 에러 메시지 저장
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('payment_error_message', errorMessage);
+            }
+
             setTimeout(() => {
               router.push('/mypage/seller/bid-tokens?payment=failed');
             }, 3000);
           } else if (paymentStatus === 'error') {
             setStatus('failed');
-            setMessage(paymentMessage ? decodeURIComponent(paymentMessage) : '결제 처리 중 오류가 발생했습니다.');
-            
+            const errorMessage = paymentMessage ? decodeURIComponent(paymentMessage) : '결제 처리 중 오류가 발생했습니다.';
+            setMessage(errorMessage);
+
+            // localStorage에 에러 메시지 저장
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('payment_error_message', errorMessage);
+            }
+
             setTimeout(() => {
               router.push('/mypage/seller/bid-tokens?payment=error');
             }, 3000);
@@ -122,8 +134,14 @@ function InicisCompleteContent() {
         } else {
           // 결제 실패
           setStatus('failed');
-          setMessage(resultMsg || '결제에 실패했습니다.');
-          
+          const errorMessage = resultMsg || '결제에 실패했습니다.';
+          setMessage(errorMessage);
+
+          // localStorage에 에러 메시지 저장
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('payment_error_message', errorMessage);
+          }
+
           setTimeout(() => {
             router.push('/mypage/seller/bid-tokens?payment=failed');
           }, 3000);

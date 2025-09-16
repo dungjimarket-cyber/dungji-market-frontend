@@ -164,10 +164,14 @@ function InicisProcessContent() {
           });
 
           setTimeout(() => {
+            // localStorage에 에러 메시지 저장
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('payment_error_message', errorMessage);
+            }
+
             const errorParams = new URLSearchParams({
               payment: 'failed',
-              errorCode: resultCode || 'unknown',
-              errorMsg: errorMessage
+              errorCode: resultCode || 'unknown'
             });
             router.push(`/mypage/seller/bid-tokens?${errorParams.toString()}`);
           }, 5000); // 오류 메시지를 읽을 시간을 위해 5초로 연장
