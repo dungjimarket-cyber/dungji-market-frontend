@@ -7,6 +7,38 @@ Dungji Market (둥지마켓) is a Next.js-based group purchasing platform for te
 
 **PWA Ready**: The application is now configured as a Progressive Web App (PWA) and ready for deployment to iOS App Store and Google Play Store.
 
+## ⚠️ CRITICAL: 코드 분리 규칙
+
+### 🚫 절대 수정 금지 규칙
+**중고거래 기능 작업 시 공구(Group Purchase) 관련 코드는 절대 수정하지 마세요!**
+
+1. **공구 전용 파일들 (수정 금지)**:
+   - `src/app/mypage/MyPageClient.tsx` - 공구 마이페이지
+   - `src/components/group-purchase/*` - 공구 관련 컴포넌트
+   - `src/app/group-purchases/*` - 공구 페이지들
+   - `src/app/seller-dashboard/*` - 판매자 대시보드
+   - 기타 공구 관련 모든 파일
+
+2. **중고거래 전용 파일들**:
+   - `src/components/used/*` - 중고거래 컴포넌트
+   - `src/app/used/*` - 중고거래 페이지들
+   - `src/components/mypage/profile/ProfileSection.tsx` - 중고거래 프로필
+   - `src/components/mypage/sales/*` - 판매 내역
+   - `src/components/mypage/purchases/*` - 구매 내역
+   - `src/components/mypage/favorites/*` - 찜 목록
+
+3. **작업 원칙**:
+   - ❌ 공구 코드 수정 시도 시 → **즉시 중단하고 사용자에게 확인 요청**
+   - ✅ 중고거래 코드만 수정
+   - ⚠️ 공통 파일 수정 필요 시 → **반드시 사용자에게 먼저 확인**
+
+4. **공통 파일 수정 시 주의**:
+   - `src/contexts/AuthContext.tsx` - 양쪽에서 사용, 수정 시 영향 확인 필수
+   - `src/lib/api/*` - API 서비스 파일들
+   - 타입 정의 파일들
+
+**위반 시**: 공구 기능이 깨져서 큰 문제가 발생할 수 있습니다!
+
 ## Development Commands
 
 ### Core Commands
