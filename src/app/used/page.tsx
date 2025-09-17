@@ -264,12 +264,12 @@ export default function UsedPhonesPage() {
 
       {/* 히어로 섹션 */}
       <section className="bg-gray-50 border-b py-8 lg:py-12">
-        <div className="container mx-auto px-4">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               쉽고 재밌고 편안한 중고거래
             </h1>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-base lg:text-lg text-gray-600 mb-8">
               우리 동네에서 만나요 · 편하게 거래해요
             </p>
             
@@ -299,27 +299,29 @@ export default function UsedPhonesPage() {
             </div>
 
             {/* CTA 버튼 */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                size="lg"
-                onClick={handleCreateClick}
-                className="px-8"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                내 폰 판매하기
-              </Button>
-              {isAuthenticated && (
-                <Link href="/used/mypage">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="px-8"
-                  >
-                    <User className="w-5 h-5 mr-2" />
-                    마이페이지
-                  </Button>
-                </Link>
-              )}
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  onClick={handleCreateClick}
+                  className="px-8"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  내 폰 판매하기
+                </Button>
+                {isAuthenticated && (
+                  <Link href="/used/mypage">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="px-8"
+                    >
+                      <User className="w-5 h-5 mr-2" />
+                      마이페이지
+                    </Button>
+                  </Link>
+                )}
+              </div>
               <p className="text-sm text-gray-500">
                 최대 5개까지 동시 등록 가능
               </p>
@@ -331,7 +333,7 @@ export default function UsedPhonesPage() {
       {/* 프로필 미완성 안내 */}
       {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
         <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="container mx-auto px-4 py-3">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
@@ -364,7 +366,7 @@ export default function UsedPhonesPage() {
       />
 
       {/* 상품 리스트 */}
-      <section className="container mx-auto px-4 py-6">
+      <section className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* 상품 그리드 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {phones.map((phone, index) => (
