@@ -15,7 +15,7 @@ import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
 import { UsedPhone } from '@/types/used';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfileCheck } from '@/hooks/useProfileCheck';
+import { useUsedProfileCheck } from '@/hooks/useUsedProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import RegistrationLimitModal from '@/components/used/RegistrationLimitModal';
 import NoticeSection from '@/components/home/NoticeSection';
@@ -42,7 +42,7 @@ export default function UsedPhonesPage() {
     checkProfile,
     showProfileModal,
     setShowProfileModal,
-  } = useProfileCheck();
+  } = useUsedProfileCheck();
   
   const [phones, setPhones] = useState<UsedPhone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -342,10 +342,10 @@ export default function UsedPhonesPage() {
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800">
-                    프로필을 완성하고 판매를 시작하세요
+                    중고거래를 위한 필수 정보를 입력해주세요
                   </p>
                   <p className="text-xs text-yellow-600">
-                    {missingFields.join(', ')} 정보만 입력하면 바로 판매 가능합니다
+                    {missingFields.join(', ')} 정보만 입력하면 바로 거래 가능합니다
                   </p>
                 </div>
               </div>
