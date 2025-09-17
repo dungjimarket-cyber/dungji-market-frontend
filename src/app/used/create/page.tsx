@@ -1083,7 +1083,12 @@ export default function CreateUsedPhonePage() {
                     type="number"
                     placeholder="저장공간을 입력하세요 (GB)"
                     value={formData.storage}
-                    onChange={(e) => handleInputChange('storage', e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 10) {
+                        handleInputChange('storage', e.target.value);
+                      }
+                    }}
+                    maxLength={10}
                     className="mt-2"
                   />
                 )}
@@ -1397,16 +1402,16 @@ export default function CreateUsedPhonePage() {
                 placeholder="예: 강남역 10번 출구 선호, 평일 저녁만 가능, 주말 오전 가능 등"
                 value={formData.meeting_place}
                 onChange={(e) => {
-                  if (e.target.value.length <= 500) {
+                  if (e.target.value.length <= 200) {
                     handleInputChange('meeting_place', e.target.value);
                   }
                 }}
                 rows={3}
-                maxLength={500}
+                maxLength={200}
               />
               <div className="flex justify-between items-center">
                 <p className="text-xs text-gray-500">구체적인 거래 장소나 시간대를 입력해주세요</p>
-                <p className="text-xs text-gray-500">{formData.meeting_place.length}/500자</p>
+                <p className="text-xs text-gray-500">{formData.meeting_place.length}/200자</p>
               </div>
             </div>
 

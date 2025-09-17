@@ -532,10 +532,15 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               <Input
                 name="model"
                 value={formData.model}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  if (e.target.value.length <= 50) {
+                    handleInputChange(e);
+                  }
+                }}
                 placeholder="예: iPhone 15 Pro Max"
                 disabled={!isFieldEditable('model')}
                 className={errors.model ? 'border-red-500' : ''}
+                maxLength={50}
               />
               {errors.model && <p className="text-xs text-red-500 mt-1">{errors.model}</p>}
               <p className="text-xs text-gray-500 mt-1">{formData.model.length}/50자</p>
@@ -549,8 +554,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 </Label>
                 <select
                   name="storage"
-                  value={formData.storage}
-                  onChange={handleInputChange}
+                  value={formData.storage === '64' || formData.storage === '128' || formData.storage === '256' || formData.storage === '512' || formData.storage === '1024' ? formData.storage : 'custom'}
+                  onChange={(e) => {
+                    if (e.target.value === 'custom') {
+                      setFormData(prev => ({ ...prev, storage: '' }));
+                    } else {
+                      setFormData(prev => ({ ...prev, storage: e.target.value }));
+                    }
+                  }}
                   disabled={!isFieldEditable('storage')}
                   className={`w-full px-3 py-2 border rounded-md ${
                     errors.storage ? 'border-red-500' : 'border-gray-300'
@@ -562,8 +573,25 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   <option value="256">256GB</option>
                   <option value="512">512GB</option>
                   <option value="1024">1TB</option>
-                  <option value="other">직접 입력</option>
+                  <option value="custom">직접 입력</option>
                 </select>
+                {/* 직접 입력 필드 */}
+                {(formData.storage !== '64' && formData.storage !== '128' && formData.storage !== '256' && formData.storage !== '512' && formData.storage !== '1024' && formData.storage !== '') && (
+                  <Input
+                    type="number"
+                    name="storage"
+                    value={formData.storage}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 10) {
+                        setFormData(prev => ({ ...prev, storage: e.target.value }));
+                      }
+                    }}
+                    placeholder="저장공간을 입력하세요 (GB)"
+                    disabled={!isFieldEditable('storage')}
+                    maxLength={10}
+                    className="mt-2"
+                  />
+                )}
                 {errors.storage && <p className="text-xs text-red-500 mt-1">{errors.storage}</p>}
               </div>
 
@@ -575,9 +603,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 <Input
                   name="color"
                   value={formData.color}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 30) {
+                      handleInputChange(e);
+                    }
+                  }}
                   placeholder="예: 블랙 티타늄"
                   disabled={!isFieldEditable('color')}
+                  maxLength={30}
                 />
                 <p className="text-xs text-gray-500 mt-1">{formData.color.length}/30자</p>
               </div>
@@ -902,16 +935,16 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 name="meeting_place"
                 value={formData.meeting_place}
                 onChange={(e) => {
-                  if (e.target.value.length <= 500) {
+                  if (e.target.value.length <= 200) {
                     handleInputChange(e);
                   }
                 }}
                 placeholder="거래 시 요청사항이나 선호하는 거래 방식을 입력해주세요.&#10;예: 직거래 선호, 택배 가능, 특정 지하철역 등"
                 rows={3}
-                maxLength={500}
+                maxLength={200}
               />
               <div className="flex justify-end">
-                <p className="text-xs text-gray-500">{formData.meeting_place.length}/500자</p>
+                <p className="text-xs text-gray-500">{formData.meeting_place.length}/200자</p>
               </div>
             </div>
           </div>
