@@ -93,6 +93,8 @@ export default function PurchaseActivityTab() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [tradingItems, setTradingItems] = useState<TradingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [expandedMessage, setExpandedMessage] = useState<number | null>(null);
   const [showSellerInfoModal, setShowSellerInfoModal] = useState(false);
   const [selectedSellerInfo, setSelectedSellerInfo] = useState<SellerInfo | null>(null);

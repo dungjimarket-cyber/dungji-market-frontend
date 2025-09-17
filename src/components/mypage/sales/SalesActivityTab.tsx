@@ -71,6 +71,8 @@ export default function SalesActivityTab() {
   const [allListings, setAllListings] = useState<SalesItem[]>([]); // 전체 목록 캐시
   const [receivedOffers, setReceivedOffers] = useState<ReceivedOffer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [selectedPhone, setSelectedPhone] = useState<SalesItem | null>(null);
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showBuyerInfoModal, setShowBuyerInfoModal] = useState(false);
@@ -187,6 +189,16 @@ export default function SalesActivityTab() {
       });
     }
   };
+
+  // 페이지 변경 시 스크롤 위치 초기화
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  // 탭 변경 시 페이지 초기화
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   // 상태별 데이터 필터링
   useEffect(() => {
@@ -422,6 +434,105 @@ export default function SalesActivityTab() {
     fetchAllListings();
   };
 
+  // 페이징 처리된 데이터 계산
+  const getPaginatedItems = (items: SalesItem[]) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return items.slice(startIndex, endIndex);
+  };
+
+  // 총 페이지 수 계산
+  const getTotalPages = (items: SalesItem[]) => {
+    return Math.ceil(items.length / itemsPerPage);
+  };
+
+  // 페이지네이션 컴포넌트
+  const Pagination = ({ items }: { items: SalesItem[] }) => {
+    const totalPages = getTotalPages(items);
+
+    if (totalPages <= 1) return null;
+
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      const maxVisible = 5; // 최대 표시 페이지 수
+
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      return pageNumbers;
+    };
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+        >
+          이전
+        </Button>
+
+        {currentPage > 3 && totalPages > 5 && (
+          <>
+            <Button
+              size="sm"
+              variant={currentPage === 1 ? "default" : "outline"}
+              onClick={() => setCurrentPage(1)}
+              className="w-8 h-8 p-0"
+            >
+              1
+            </Button>
+            {currentPage > 4 && <span className="px-1">...</span>}
+          </>
+        )}
+
+        {getPageNumbers().map((num) => (
+          <Button
+            key={num}
+            size="sm"
+            variant={currentPage === num ? "default" : "outline"}
+            onClick={() => setCurrentPage(num)}
+            className="w-8 h-8 p-0"
+          >
+            {num}
+          </Button>
+        ))}
+
+        {currentPage < totalPages - 2 && totalPages > 5 && (
+          <>
+            {currentPage < totalPages - 3 && <span className="px-1">...</span>}
+            <Button
+              size="sm"
+              variant={currentPage === totalPages ? "default" : "outline"}
+              onClick={() => setCurrentPage(totalPages)}
+              className="w-8 h-8 p-0"
+            >
+              {totalPages}
+            </Button>
+          </>
+        )}
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+        >
+          다음
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg p-4">
@@ -452,70 +563,73 @@ export default function SalesActivityTab() {
                 판매중인 상품이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.status === 'active').map((item) => (
-                <Card key={item.id} className="p-3 sm:p-4">
-                  <div className="flex gap-3 sm:gap-4">
-                    <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                      <Image
-                        src={item.images[0]?.image_url || '/placeholder.png'}
-                        alt={item.title}
-                        width={80}
-                        height={80}
-                        className="object-cover w-full h-full"
-                      />
-                    </Link>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <Link href={`/used/${item.id}`} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
-                          <h4 className="font-medium text-sm truncate">
-                            {item.brand} {item.model}
-                          </h4>
-                          <p className="text-base sm:text-lg font-semibold">
-                            {item.price.toLocaleString()}원
-                          </p>
-                        </Link>
-                        {getStatusBadge(item.status)}
-                      </div>
-                      
-                      <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 mt-2">
-                        <span className="flex items-center gap-0.5">
-                          <Eye className="w-3 h-3" />
-                          {item.view_count}
-                        </span>
-                        <span className="flex items-center gap-0.5">
-                          <Heart className="w-3 h-3" />
-                          {item.favorite_count}
-                        </span>
-                        <span className="flex items-center gap-0.5">
-                          <MessageCircle className="w-3 h-3" />
-                          {item.offer_count}
-                        </span>
-                      </div>
+              <>
+                {getPaginatedItems(listings.filter(item => item.status === 'active')).map((item) => (
+                  <Card key={item.id} className="p-3 sm:p-4">
+                    <div className="flex gap-3 sm:gap-4">
+                      <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                        <Image
+                          src={item.images[0]?.image_url || '/placeholder.png'}
+                          alt={item.title}
+                          width={80}
+                          height={80}
+                          className="object-cover w-full h-full"
+                        />
+                      </Link>
 
-                      <div className="flex items-center gap-2 mt-3">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedPhone(item);
-                            fetchReceivedOffers(item.id);
-                          }}
-                        >
-                          제안 확인
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => router.push(`/used/${item.id}/edit`)}
-                        >
-                          상품 수정
-                        </Button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <Link href={`/used/${item.id}`} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
+                            <h4 className="font-medium text-sm truncate">
+                              {item.brand} {item.model}
+                            </h4>
+                            <p className="text-base sm:text-lg font-semibold">
+                              {item.price.toLocaleString()}원
+                            </p>
+                          </Link>
+                          {getStatusBadge(item.status)}
+                        </div>
+
+                        <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 mt-2">
+                          <span className="flex items-center gap-0.5">
+                            <Eye className="w-3 h-3" />
+                            {item.view_count}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <Heart className="w-3 h-3" />
+                            {item.favorite_count}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <MessageCircle className="w-3 h-3" />
+                            {item.offer_count}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedPhone(item);
+                              fetchReceivedOffers(item.id);
+                            }}
+                          >
+                            제안 확인
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => router.push(`/used/${item.id}/edit`)}
+                          >
+                            상품 수정
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))
+                  </Card>
+                ))}
+                <Pagination items={listings.filter(item => item.status === 'active')} />
+              </>
             )}
           </TabsContent>
 
