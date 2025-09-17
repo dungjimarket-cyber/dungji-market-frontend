@@ -778,10 +778,13 @@ function GroupPurchasesPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <MainHeader title="공구 둘러보기" />
+      {/* PC에서 상단 영역 너비 제한 */}
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
+        <MainHeader title="공구 둘러보기" />
 
-      {/* 공구·견적 페이지 공지사항 */}
-      <NoticeSection pageType="groupbuy" compact={true} />
+        {/* 공구·견적 페이지 공지사항 */}
+        <NoticeSection pageType="groupbuy" compact={true} />
+      </div>
 
       <div className="pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">

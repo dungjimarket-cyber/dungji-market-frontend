@@ -126,7 +126,7 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
       {/* 상단 고정 바 (텍스트 공지) */}
       {textNotices.length > 0 && isTopBarVisible && (
         <div className="bg-blue-50 border-b border-blue-200">
-          <div className="container mx-auto px-4">
+          <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between py-2">
               <Link 
                 href="/notices" 
@@ -156,7 +156,7 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
 
       {/* 배너 섹션 - compact 모드에서는 간소화 */}
       {bannerNotices.length > 0 && (
-        <div className={`container mx-auto px-4 ${compact ? 'py-3' : 'py-6'}`}>
+        <div className={`max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 ${compact ? 'py-3' : 'py-6'}`}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-blue-600" />
