@@ -25,9 +25,18 @@ export interface UserProfile {
 }
 
 export interface TradeStats {
-  sellNotifications: number;  // 판매 관련 알림 수
-  buyNotifications: number;   // 구매 관련 알림 수
-  favorites: number;          // 찜한 상품 수
+  // 판매 활동
+  selling: number;    // 판매중
+  trading: number;    // 거래중 (판매)
+  sold: number;       // 판매완료
+
+  // 구매 활동
+  offering: number;   // 제안중
+  buying: number;     // 거래중 (구매)
+  purchased: number;  // 구매완료
+
+  // 찜
+  favorites: number;  // 찜한 상품 수
 }
 
 interface MyPageState {
@@ -53,8 +62,12 @@ type MyPageStore = MyPageState & MyPageActions;
 const initialState: MyPageState = {
   profile: null,
   stats: {
-    sellNotifications: 0,
-    buyNotifications: 0,
+    selling: 0,
+    trading: 0,
+    sold: 0,
+    offering: 0,
+    buying: 0,
+    purchased: 0,
     favorites: 0,
   },
   activeTab: 'sales',
@@ -161,23 +174,29 @@ export const useMyPageStore = create<MyPageStore>()(
           const { sellerAPI, buyerAPI } = await import('@/lib/api/used');
 
           // 병렬로 데이터 가져오기
-          const [sellOffers, buyOffers, favorites] = await Promise.all([
-            sellerAPI.getReceivedOffers().catch(() => []),
+          const [myListings, sentOffers, favorites] = await Promise.all([
+            sellerAPI.getMyListings().catch(() => []),
             buyerAPI.getMySentOffers().catch(() => []),
             buyerAPI.getFavorites().catch(() => ({ items: [] }))
           ]);
 
-          // 판매 알림 카운트 (읽지 않은 제안들)
-          const sellNotifications = Array.isArray(sellOffers) ? sellOffers.length : 0;
+          // 판매 활동 통계
+          const sellingCount = Array.isArray(myListings)
+            ? myListings.filter((item: any) => item.status === 'active').length : 0;
+          const tradingCount = Array.isArray(myListings)
+            ? myListings.filter((item: any) => item.status === 'trading').length : 0;
+          const soldCount = Array.isArray(myListings)
+            ? myListings.filter((item: any) => item.status === 'sold').length : 0;
 
-          // 구매 알림 카운트 (수락된 제안들)
-          const buyNotifications = Array.isArray(buyOffers)
-            ? buyOffers.filter((offer: any) =>
-                offer.status === 'accepted' ||
-                offer.status === 'trading' ||
-                offer.status === 'completed'
-              ).length
-            : 0;
+          // 구매 활동 통계
+          const offeringCount = Array.isArray(sentOffers)
+            ? sentOffers.filter((offer: any) => offer.status === 'pending').length : 0;
+          const buyingCount = Array.isArray(sentOffers)
+            ? sentOffers.filter((offer: any) =>
+                offer.status === 'accepted' || offer.status === 'trading'
+              ).length : 0;
+          const purchasedCount = Array.isArray(sentOffers)
+            ? sentOffers.filter((offer: any) => offer.status === 'completed').length : 0;
 
           // 찜 카운트
           const favoritesCount = favorites.items ? favorites.items.length :
@@ -185,8 +204,12 @@ export const useMyPageStore = create<MyPageStore>()(
 
           set({
             stats: {
-              sellNotifications,
-              buyNotifications,
+              selling: sellingCount,
+              trading: tradingCount,
+              sold: soldCount,
+              offering: offeringCount,
+              buying: buyingCount,
+              purchased: purchasedCount,
               favorites: favoritesCount
             }
           });
@@ -195,8 +218,12 @@ export const useMyPageStore = create<MyPageStore>()(
           // 오류 발생 시에도 기본값 설정
           set({
             stats: {
-              sellNotifications: 0,
-              buyNotifications: 0,
+              selling: 0,
+              trading: 0,
+              sold: 0,
+              offering: 0,
+              buying: 0,
+              purchased: 0,
               favorites: 0
             }
           });

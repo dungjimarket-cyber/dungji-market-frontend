@@ -3,20 +3,16 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Camera, Shield, Star, MapPin, Clock, Edit2, Bell } from 'lucide-react';
+import { Camera, Shield, Star, MapPin, Edit2, Package, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useMyPageStore } from '@/stores/myPageStore';
-import UsedNotificationDropdown from '@/components/mypage/UsedNotificationDropdown';
 import { sellerAPI, buyerAPI } from '@/lib/api/used';
 
 export default function ProfileSection() {
   const { profile, stats, uploadProfileImage, setActiveTab, fetchStats } = useMyPageStore();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [showSellNotifications, setShowSellNotifications] = useState(false);
-  const [showBuyNotifications, setShowBuyNotifications] = useState(false);
 
   // 통계 데이터 가져오기 및 폴링
   useEffect(() => {
@@ -170,51 +166,50 @@ export default function ProfileSection() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div
-          className="relative text-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-          onClick={() => {
-            setShowSellNotifications(!showSellNotifications);
-            setShowBuyNotifications(false);
-          }}
-        >
-          <div className="text-2xl font-bold text-blue-600">{stats.sellNotifications || 0}</div>
-          <div className="text-sm text-gray-600">판매알림</div>
-          {showSellNotifications && (
-            <UsedNotificationDropdown
-              type="sell"
-              isOpen={showSellNotifications}
-              onClose={() => setShowSellNotifications(false)}
-              className="absolute top-full left-0 mt-2 z-50"
-            />
-          )}
+      {/* 판매 활동 통계 */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Package className="w-5 h-5 text-blue-600" />
+          <h3 className="font-semibold text-gray-800">판매 활동</h3>
         </div>
-        <div
-          className="relative text-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-          onClick={() => {
-            setShowBuyNotifications(!showBuyNotifications);
-            setShowSellNotifications(false);
-          }}
-        >
-          <div className="text-2xl font-bold text-green-600">{stats.buyNotifications || 0}</div>
-          <div className="text-sm text-gray-600">구매알림</div>
-          {showBuyNotifications && (
-            <UsedNotificationDropdown
-              type="buy"
-              isOpen={showBuyNotifications}
-              onClose={() => setShowBuyNotifications(false)}
-              className="absolute top-full left-0 mt-2 z-50"
-            />
-          )}
-        </div>
-        <div
-          className="text-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-          onClick={() => setActiveTab('favorites')}
-        >
-          <div className="text-2xl font-bold text-orange-600">{stats.favorites || 0}</div>
-          <div className="text-sm text-gray-600">찜</div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-3 bg-blue-50 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">{stats.selling || 0}</div>
+            <div className="text-xs text-gray-600">판매중</div>
+          </div>
+          <div className="text-center p-3 bg-orange-50 rounded-lg">
+            <div className="text-2xl font-bold text-orange-600">{stats.trading || 0}</div>
+            <div className="text-xs text-gray-600">거래중</div>
+          </div>
+          <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{stats.sold || 0}</div>
+            <div className="text-xs text-gray-600">판매완료</div>
+          </div>
         </div>
       </div>
+
+      {/* 구매 활동 통계 */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <ShoppingCart className="w-5 h-5 text-purple-600" />
+          <h3 className="font-semibold text-gray-800">구매 활동</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-3 bg-purple-50 rounded-lg">
+            <div className="text-2xl font-bold text-purple-600">{stats.offering || 0}</div>
+            <div className="text-xs text-gray-600">제안중</div>
+          </div>
+          <div className="text-center p-3 bg-indigo-50 rounded-lg">
+            <div className="text-2xl font-bold text-indigo-600">{stats.buying || 0}</div>
+            <div className="text-xs text-gray-600">거래중</div>
+          </div>
+          <div className="text-center p-3 bg-teal-50 rounded-lg">
+            <div className="text-2xl font-bold text-teal-600">{stats.purchased || 0}</div>
+            <div className="text-xs text-gray-600">구매완료</div>
+          </div>
+        </div>
+      </div>
+
 
     </div>
   );
