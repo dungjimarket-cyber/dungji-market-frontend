@@ -3,9 +3,9 @@
   "short_name": "둥지마켓",
   "description": "통신 및 인터넷 서비스 공동구매 플랫폼",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
+  "theme_color": "#27AE60",
   "orientation": "portrait",
   "scope": "/",
   "lang": "ko",
@@ -58,29 +58,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "메인 페이지 - 공동구매 목록"
-    },
-    {
-      "src": "/screenshots/mobile-2.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "공동구매 상세 페이지"
-    },
-    {
-      "src": "/screenshots/desktop-1.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "데스크톱 메인 페이지"
     }
   ],
   "shortcuts": [
