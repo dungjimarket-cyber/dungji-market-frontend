@@ -1289,12 +1289,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               )}
               
-              {/* 거래 요청사항 */}
+              {/* 거래시 요청사항 */}
               {phone.meeting_place && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 max-w-full overflow-hidden">
                   <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
                     <Info className="w-4 h-4" />
-                    판매자 요청사항
+                    거래시 요청사항
                   </p>
                   <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{phone.meeting_place}</p>
                 </div>

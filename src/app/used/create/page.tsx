@@ -568,7 +568,7 @@ export default function CreateUsedPhonePage() {
 
     if (!formData.meeting_place) {
       toast({
-        title: '거래 요청사항을 입력해주세요',
+        title: '거래시 요청사항을 입력해주세요',
         description: '거래 장소나 시간대 등의 요청사항을 입력해야 합니다.',
         variant: 'destructive',
       });
@@ -1389,9 +1389,9 @@ export default function CreateUsedPhonePage() {
               />
             </div>
             
-            {/* 거래 요청사항 */}
+            {/* 거래시 요청사항 */}
             <div className="space-y-2">
-              <Label htmlFor="meeting_place">거래 요청사항 <span className="text-red-500">*</span></Label>
+              <Label htmlFor="meeting_place">거래시 요청사항 <span className="text-red-500">*</span></Label>
               <Textarea
                 id="meeting_place"
                 placeholder="예: 강남역 10번 출구 선호, 평일 저녁만 가능, 주말 오전 가능 등"

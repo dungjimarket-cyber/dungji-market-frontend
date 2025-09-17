@@ -507,7 +507,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               <div>
                 <p className="text-sm font-medium text-amber-900">수정 제한 안내</p>
                 <p className="text-sm text-amber-700 mt-1">
-                  견적이 제안된 상품입니다. 즉시 판매가와 거래 요청사항만 수정 가능합니다.
+                  견적이 제안된 상품입니다. 즉시 판매가와 거래시 요청사항만 수정 가능합니다.
                 </p>
                 <p className="text-xs text-amber-600 mt-1">
                   수정 시 구매자에게 "수정됨" 표시가 나타납니다.
@@ -891,7 +891,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                거래 요청사항
+                거래시 요청사항
                 {isFieldEditable('meeting_place') && (
                   <span className="text-xs text-green-600 font-normal">
                     수정 가능
