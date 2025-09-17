@@ -452,13 +452,25 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (isFieldEditable('has_charger')) submitData.append('has_charger', (formData.has_charger || false).toString());
       if (isFieldEditable('has_earphones')) submitData.append('has_earphones', (formData.has_earphones || false).toString());
       
-      // 지역 정보
-      if (isFieldEditable('regions')) {
-        selectedRegions.forEach((region, index) => {
-          if (region?.id) {
-            submitData.append(`regions[${index}]`, region.id.toString());
+      // 지역 정보 - 등록 페이지와 동일한 형식으로
+      if (isFieldEditable('regions') && selectedRegions.length > 0) {
+        // regions 필드 - 다중 지역
+        selectedRegions.forEach((region) => {
+          const regionString = region.full_name || `${region.province || ''} ${region.city || ''}`.trim();
+          if (regionString) {
+            submitData.append('regions', regionString);
           }
         });
+
+        // region 필드 - 단일 지역 코드 (필수)
+        const primaryRegion = selectedRegions[0];
+        if (primaryRegion?.id) {
+          // ID가 있으면 그대로 사용
+          submitData.append('region', primaryRegion.id.toString());
+        } else {
+          // ID가 없으면 기본값
+          submitData.append('region', '11');  // 서울특별시 코드
+        }
       }
       
       // 새로운 이미지만 전송
