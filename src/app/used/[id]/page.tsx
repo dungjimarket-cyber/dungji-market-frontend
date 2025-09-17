@@ -1503,12 +1503,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 선택된 메시지 표시 - 컴팩트 */}
               {selectedMessages.length > 0 && (
-                <div className="mb-1.5 p-2 bg-dungji-secondary rounded border border-dungji-primary-200">
-                  <p className="text-xs text-dungji-primary-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
+                <div className="mb-1.5 p-2 bg-gray-50 rounded border border-gray-200">
+                  <p className="text-xs text-gray-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
                   <div className="space-y-0.5">
                     {selectedMessages.map((msg, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-xs text-dungji-primary-900">• {msg}</span>
+                        <span className="text-xs text-gray-800">• {msg}</span>
                         <button
                           type="button"
                           onClick={() => {
@@ -1544,7 +1544,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           disabled={selectedMessages.length >= 5}
                           className={`block w-full text-left text-xs py-1 px-1.5 rounded hover:bg-gray-100 transition-colors ${
                             selectedMessages.includes(msg)
-                              ? 'bg-dungji-secondary-light text-dungji-primary-700'
+                              ? 'bg-gray-100 text-gray-800 font-medium'
                               : 'text-gray-700'
                           } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
