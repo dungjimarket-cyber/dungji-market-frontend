@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import RegistrationLimitModal from '@/components/used/RegistrationLimitModal';
+import NoticeSection from '@/components/home/NoticeSection';
 
 // 스켈레톤 로더 컴포넌트
 const SkeletonCard = () => (
@@ -256,6 +257,9 @@ export default function UsedPhonesPage() {
 
   return (
     <>
+      {/* 중고거래 페이지 공지사항 */}
+      <NoticeSection pageType="used" compact={true} />
+
       {/* 히어로 섹션 */}
       <section className="bg-gray-50 border-b py-8 lg:py-12">
         <div className="container mx-auto px-4">

@@ -76,11 +76,13 @@ export const getPopups = async (isActive?: boolean): Promise<Popup[]> => {
 };
 
 /**
- * 활성 팝업 목록 조회 (메인 페이지용)
+ * 활성 팝업 목록 조회 (페이지별)
  */
-export const getActivePopups = async (): Promise<Popup[]> => {
+export const getActivePopups = async (pageType: string = 'main'): Promise<Popup[]> => {
   try {
-    const response = await axios.get(`${API_URL}/popups/active_popups/`);
+    const response = await axios.get(`${API_URL}/popups/active_popups/`, {
+      params: { page_type: pageType }
+    });
     return response.data;
   } catch (error) {
     console.error('활성 팝업 조회 실패:', error);

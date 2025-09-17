@@ -25,7 +25,12 @@ interface Notice {
   main_display_order: number;
 }
 
-export default function NoticeSection() {
+interface NoticeSectionProps {
+  pageType?: 'main' | 'groupbuy' | 'used';
+  compact?: boolean;  // 간소화된 버전 여부
+}
+
+export default function NoticeSection({ pageType = 'main', compact = false }: NoticeSectionProps) {
   const [bannerNotices, setBannerNotices] = useState<Notice[]>([]);
   const [textNotices, setTextNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,21 +54,26 @@ export default function NoticeSection() {
 
   const fetchMainNotices = async () => {
     try {
-      console.log('Fetching main notices from:', `${process.env.NEXT_PUBLIC_API_URL}/notices/main/`);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notices/main/`);
-      
+      // pageType에 따라 다른 엔드포인트 호출
+      const endpoint = pageType === 'groupbuy' ? 'groupbuy' :
+                       pageType === 'used' ? 'used' :
+                       'main';
+
+      console.log(`Fetching ${pageType} notices from:`, `${process.env.NEXT_PUBLIC_API_URL}/notices/${endpoint}/`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notices/${endpoint}/`);
+
       if (response.ok) {
         const data = await response.json();
-        console.log('Main notices response:', data);
-        
+        console.log(`${pageType} notices response:`, data);
+
         // 배너, 텍스트 공지 분류
         setBannerNotices(data.banners || []);
         setTextNotices(data.texts || []);
-        
+
         // 첫 번째 텍스트 공지에 대한 숨김 상태 확인
         if (data.texts && data.texts.length > 0) {
           const firstText = data.texts[0];
-          const hiddenUntil = localStorage.getItem(`notice_hidden_${firstText.id}`);
+          const hiddenUntil = localStorage.getItem(`notice_hidden_${pageType}_${firstText.id}`);
           if (hiddenUntil && new Date(hiddenUntil) > new Date()) {
             setIsTopBarVisible(false);
           }
@@ -83,7 +93,7 @@ export default function NoticeSection() {
       // 24시간 동안 숨기기
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      localStorage.setItem(`notice_hidden_${textNotices[0].id}`, tomorrow.toISOString());
+      localStorage.setItem(`notice_hidden_${pageType}_${textNotices[0].id}`, tomorrow.toISOString());
       setIsTopBarVisible(false);
     }
   };
@@ -144,16 +154,20 @@ export default function NoticeSection() {
         </div>
       )}
 
-      {/* 배너 섹션 */}
+      {/* 배너 섹션 - compact 모드에서는 간소화 */}
       {bannerNotices.length > 0 && (
-        <div className="container mx-auto px-4 py-6">
+        <div className={`container mx-auto px-4 ${compact ? 'py-3' : 'py-6'}`}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold">공지사항</h2>
+              <h2 className={`${compact ? 'text-base' : 'text-lg'} font-semibold`}>
+                {pageType === 'groupbuy' ? '공구·견적 공지사항' :
+                 pageType === 'used' ? '중고거래 공지사항' :
+                 '공지사항'}
+              </h2>
             </div>
-            <Link 
-              href="/notices" 
+            <Link
+              href="/notices"
               className="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1"
             >
               전체보기

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Megaphone, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
@@ -17,12 +18,16 @@ interface Notice {
   published_at: string;
   view_count: number;
   is_new: boolean;
+  show_in_main?: boolean;
+  show_in_groupbuy?: boolean;
+  show_in_used?: boolean;
 }
 
 export default function NoticesPage() {
-  const [notices, setNotices] = useState<Notice[]>([]);
+  const [allNotices, setAllNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedNotices, setExpandedNotices] = useState<Set<number>>(new Set());
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     fetchNotices();
@@ -31,12 +36,12 @@ export default function NoticesPage() {
   const fetchNotices = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notices/`);
-      
+
       if (response.ok) {
         const data = await response.json();
         // 페이징 응답 형식과 배열 형식 모두 지원
         const noticeItems = Array.isArray(data) ? data : (data.results || []);
-        setNotices(noticeItems);
+        setAllNotices(noticeItems);
       }
     } catch (error) {
       console.error('공지사항 조회 실패:', error);
@@ -44,6 +49,21 @@ export default function NoticesPage() {
       setLoading(false);
     }
   };
+
+  // 탭에 따라 필터링된 공지사항
+  const getFilteredNotices = () => {
+    switch (activeTab) {
+      case 'groupbuy':
+        return allNotices.filter(notice => notice.show_in_groupbuy);
+      case 'used':
+        return allNotices.filter(notice => notice.show_in_used);
+      case 'all':
+      default:
+        return allNotices;
+    }
+  };
+
+  const notices = getFilteredNotices();
 
   const toggleExpand = (noticeId: number) => {
     setExpandedNotices(prev => {
@@ -84,98 +104,113 @@ export default function NoticesPage() {
         <p className="text-gray-600">둥지마켓의 새로운 소식과 중요한 안내사항을 확인하세요.</p>
       </div>
 
-      {loading ? (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
+      {/* 탭 네비게이션 */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="all">전체</TabsTrigger>
+          <TabsTrigger value="groupbuy">공구·견적</TabsTrigger>
+          <TabsTrigger value="used">중고거래</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-0">
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="py-8">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : notices.length === 0 ? (
+            <Card>
               <CardContent className="py-8">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
+                <p className="text-center text-gray-500">
+                  {activeTab === 'groupbuy' ? '공구·견적 공지사항이 없습니다.' :
+                   activeTab === 'used' ? '중고거래 공지사항이 없습니다.' :
+                   '공지사항이 없습니다.'}
+                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : notices.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-center text-gray-500">공지사항이 없습니다.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {notices.map((notice) => {
-            const isExpanded = expandedNotices.has(notice.id);
-            
-            return (
-              <Card 
-                key={notice.id}
-                className={notice.is_pinned ? 'border-blue-200 bg-blue-50/30' : ''}
-              >
-                <CardHeader 
-                  className="cursor-pointer"
-                  onClick={() => toggleExpand(notice.id)}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {notice.is_pinned && (
-                          <Badge className="bg-blue-500 text-white">상단고정</Badge>
-                        )}
-                        {notice.is_new && (
-                          <Badge className="bg-green-500 text-white">NEW</Badge>
-                        )}
-                        {getCategoryBadge(notice.category)}
+          ) : (
+            <div className="space-y-4">
+              {notices.map((notice) => {
+                const isExpanded = expandedNotices.has(notice.id);
+
+                return (
+                  <Card
+                    key={notice.id}
+                    className={notice.is_pinned ? 'border-blue-200 bg-blue-50/30' : ''}
+                  >
+                    <CardHeader
+                      className="cursor-pointer"
+                      onClick={() => toggleExpand(notice.id)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {notice.is_pinned && (
+                              <Badge className="bg-blue-500 text-white">상단고정</Badge>
+                            )}
+                            {notice.is_new && (
+                              <Badge className="bg-green-500 text-white">NEW</Badge>
+                            )}
+                            {getCategoryBadge(notice.category)}
+                          </div>
+                          <CardTitle className="text-lg">
+                            {notice.title}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                            <Calendar className="w-4 h-4" />
+                            <span>{notice.published_at ? new Date(notice.published_at).toLocaleDateString('ko-KR') : new Date(notice.created_at).toLocaleDateString('ko-KR')}</span>
+                            {notice.view_count > 0 && (
+                              <span className="ml-2">조회 {notice.view_count}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          {isExpanded ? (
+                            <ChevronUp className="w-5 h-5 text-gray-400" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-gray-400" />
+                          )}
+                        </div>
                       </div>
-                      <CardTitle className="text-lg">
-                        {notice.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                        <Calendar className="w-4 h-4" />
-                        <span>{notice.published_at ? new Date(notice.published_at).toLocaleDateString('ko-KR') : new Date(notice.created_at).toLocaleDateString('ko-KR')}</span>
-                        {notice.view_count > 0 && (
-                          <span className="ml-2">조회 {notice.view_count}</span>
+                    </CardHeader>
+                    {isExpanded && notice.content && (
+                      <CardContent>
+                        {notice.content.includes('<') ? (
+                          <div
+                            className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:shadow-md prose-hr:border-gray-300 prose-table:border-collapse prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-th:bg-gray-50"
+                            dangerouslySetInnerHTML={{
+                              __html: DOMPurify.sanitize(notice.content, {
+                                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                                             'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'hr', 'table', 'thead',
+                                             'tbody', 'tr', 'th', 'td', 'caption', 'span', 'div', 'pre', 'code'],
+                                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'class', 'style',
+                                              'target', 'rel', 'colspan', 'rowspan'],
+                                ALLOW_DATA_ATTR: false
+                              })
+                            }}
+                          />
+                        ) : (
+                          <p className="whitespace-pre-wrap text-gray-700">
+                            {notice.content}
+                          </p>
                         )}
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      {isExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-gray-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                {isExpanded && notice.content && (
-                  <CardContent>
-                    {notice.content.includes('<') ? (
-                      <div 
-                        className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:shadow-md prose-hr:border-gray-300 prose-table:border-collapse prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-th:bg-gray-50"
-                        dangerouslySetInnerHTML={{ 
-                          __html: DOMPurify.sanitize(notice.content, {
-                            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-                                         'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'hr', 'table', 'thead', 
-                                         'tbody', 'tr', 'th', 'td', 'caption', 'span', 'div', 'pre', 'code'],
-                            ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'class', 'style', 
-                                          'target', 'rel', 'colspan', 'rowspan'],
-                            ALLOW_DATA_ATTR: false
-                          })
-                        }}
-                      />
-                    ) : (
-                      <p className="whitespace-pre-wrap text-gray-700">
-                        {notice.content}
-                      </p>
+                      </CardContent>
                     )}
-                  </CardContent>
-                )}
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { getSellerBids } from '@/lib/api/bidService';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
+import NoticeSection from '@/components/home/NoticeSection';
 
 interface GroupBuy {
   id: number;
@@ -778,7 +779,10 @@ function GroupPurchasesPageContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <MainHeader title="공구 둘러보기" />
-      
+
+      {/* 공구·견적 페이지 공지사항 */}
+      <NoticeSection pageType="groupbuy" compact={true} />
+
       <div className="pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* 통합 검색바 */}

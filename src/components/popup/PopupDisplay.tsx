@@ -396,17 +396,38 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
   );
 }
 
-export function PopupManager() {
+interface PopupManagerProps {
+  pageType?: string;
+}
+
+export function PopupManager({ pageType = 'main' }: PopupManagerProps) {
   const [popups, setPopups] = useState<Popup[]>([]);
   const [currentPopupIndex, setCurrentPopupIndex] = useState(0);
 
   useEffect(() => {
     loadPopups();
-  }, []);
+  }, [pageType]);
 
   const loadPopups = async () => {
     try {
-      const activePopups = await getActivePopups();
+      // 현재 경로에 따라 pageType 자동 결정
+      let currentPageType = pageType;
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        if (path.includes('/group-purchases')) {
+          currentPageType = 'groupbuy_list';
+        } else if (path.includes('/groupbuys/')) {
+          currentPageType = 'groupbuy_detail';
+        } else if (path === '/used') {
+          currentPageType = 'used_list';
+        } else if (path.includes('/used/')) {
+          currentPageType = 'used_detail';
+        } else if (path.includes('/mypage')) {
+          currentPageType = 'mypage';
+        }
+      }
+
+      const activePopups = await getActivePopups(currentPageType);
 
       // 쿠키에서 숨김 처리된 팝업 필터링
       const filteredPopups = activePopups.filter(popup => {
