@@ -1437,9 +1437,8 @@ export default function CreateUsedPhonePage() {
         </form>
 
         {/* 하단 고정 버튼 영역 - 모바일 최적화 */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50"
-             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="p-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-[100]">
+          <div className="p-4 pb-6">
             <div className="container mx-auto max-w-3xl flex gap-3">
               <Button
                 type="button"

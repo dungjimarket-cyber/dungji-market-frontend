@@ -904,9 +904,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         </div>
 
         {/* 하단 버튼 영역 - 모바일 최적화 */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50"
-             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="p-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-[100]">
+          <div className="p-4 pb-6">
             <div className="container mx-auto max-w-3xl flex gap-3">
               <Button
                 type="button"
@@ -927,8 +926,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           </div>
         </div>
 
-        {/* 하단 여백 - safe area 고려 */}
-        <div className="h-24 pb-safe"></div>
+        {/* 하단 여백 */}
+        <div className="h-32"></div>
       </form>
     </div>
   );
