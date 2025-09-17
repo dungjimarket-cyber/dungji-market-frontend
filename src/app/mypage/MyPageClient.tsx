@@ -18,9 +18,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
@@ -295,6 +296,19 @@ export default function MyPageClient() {
                     <p className="font-medium">
                       {user.address_region?.full_name || '설정 필요'}
                     </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {user.phone_verified ? (
+                      <Badge variant="secondary" className="text-xs gap-1">
+                        <Shield className="w-3 h-3 text-green-600" />
+                        휴대폰 인증
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs gap-1 border-gray-300">
+                        <X className="w-3 h-3 text-gray-500" />
+                        휴대폰 미인증
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>

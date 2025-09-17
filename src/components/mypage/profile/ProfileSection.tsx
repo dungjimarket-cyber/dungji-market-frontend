@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function ProfileSection() {
   const { profile, uploadProfileImage } = useMyPageStore();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +40,7 @@ export default function ProfileSection() {
     return (completed / fields.length) * 100;
   };
 
-  if (!profile) return null;
+  if (!user) return null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -47,10 +48,10 @@ export default function ProfileSection() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100">
-              {profile.profileImage ? (
+              {user.profile_image ? (
                 <Image
-                  src={profile.profileImage}
-                  alt={profile.nickname}
+                  src={user.profile_image}
+                  alt={user.nickname || user.username || '사용자'}
                   width={80}
                   height={80}
                   className="object-cover"
@@ -74,41 +75,28 @@ export default function ProfileSection() {
 
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-xl font-semibold">{profile.nickname}</h2>
-              <Badge className={`${getUserLevelColor(profile.userLevel)} text-white`}>
-                {profile.userLevel.toUpperCase()}
-              </Badge>
+              <h2 className="text-xl font-semibold">
+                {user.nickname || user.username || '닉네임 설정 필요'}
+              </h2>
             </div>
-            
+
             <div className="flex items-center gap-3 text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <span>{profile.averageRating.toFixed(1)}</span>
-                <span className="text-gray-400">({profile.totalReviews})</span>
-              </div>
-              <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
-                <span>{profile.tradeRegion}</span>
+                <span>{user.address_region?.full_name || '지역 설정 필요'}</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 mt-2">
-              {profile.phoneVerified && (
+              {user.phone_verified ? (
                 <Badge variant="secondary" className="text-xs gap-1">
-                  <Shield className="w-3 h-3" />
+                  <Shield className="w-3 h-3 text-green-600" />
                   휴대폰 인증
                 </Badge>
-              )}
-              {profile.emailVerified && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Shield className="w-3 h-3" />
-                  이메일 인증
-                </Badge>
-              )}
-              {profile.identityVerified && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Shield className="w-3 h-3" />
-                  본인 인증
+              ) : (
+                <Badge variant="outline" className="text-xs gap-1 border-gray-300">
+                  <X className="w-3 h-3 text-gray-500" />
+                  휴대폰 미인증
                 </Badge>
               )}
             </div>
