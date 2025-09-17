@@ -1331,13 +1331,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-6 max-h-[85vh] sm:max-h-[90vh] flex flex-col shadow-2xl">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between mb-4 pb-4 border-b">
+        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-2 sm:p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-4 sm:p-6 max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl">
+            {/* 헤더 - 컴팩트 버전 */}
+            <div className="flex items-center justify-between mb-3 pb-3 border-b">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">가격 제안하기</h3>
-                <p className="text-sm text-gray-500 mt-1">판매자에게 희망 가격을 제안해보세요</p>
+                <h3 className="text-lg font-bold text-gray-900">가격 제안하기</h3>
+                <p className="text-xs text-gray-500 mt-0.5">판매자에게 희망 가격을 제안해보세요</p>
               </div>
               <button
                 onClick={() => {
@@ -1353,43 +1353,43 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
             </div>
             
-            {/* 스크롤 가능한 컨텐츠 영역 */}
-            <div className="flex-1 overflow-y-auto mb-4">
-              {/* 제품 정보 미리보기 */}
-              <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <div className="flex items-center gap-3">
+            {/* 스크롤 가능한 컨텐츠 영역 - 컴팩트 */}
+            <div className="flex-1 overflow-y-auto mb-3">
+              {/* 제품 정보 미리보기 - 컴팩트 */}
+              <div className="bg-gray-50 rounded-lg p-2.5 mb-3">
+              <div className="flex items-center gap-2.5">
                 {phone.images?.[0] && (
                   <Image
                     src={phone.images[0].imageUrl}
                     alt={phone.model}
-                    width={60}
-                    height={60}
+                    width={50}
+                    height={50}
                     className="rounded-lg object-cover"
                   />
                 )}
                 <div className="flex-1">
                   <p className="font-semibold text-sm">{phone.model}</p>
                   <p className="text-xs text-gray-600">{phone.storage}GB | {phone.color}</p>
-                  <p className="text-sm font-bold text-dungji-primary mt-1">
+                  <p className="text-sm font-bold text-dungji-primary mt-0.5">
                     즉시 구매가: {phone.price?.toLocaleString()}원
                   </p>
                 </div>
               </div>
             </div>
             
-            {/* 제안 횟수 표시 */}
-            <div className="flex items-center justify-between mb-4 p-3 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
+            {/* 제안 횟수 표시 - 컴팩트 */}
+            <div className="flex items-center justify-between mb-3 p-2.5 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
               <span className="text-sm font-medium text-gray-700">
                 남은 제안 횟수
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
                 <span className="text-sm text-gray-600">/ 5회</span>
               </div>
             </div>
             
             {remainingOffers !== null && remainingOffers === 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 mb-3">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
                   <div>
@@ -1401,8 +1401,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             )}
             
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2 text-gray-900">
+            <div className="mb-3">
+              <label className="block text-sm font-semibold mb-1.5 text-gray-900">
                 제안 금액 <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -1429,12 +1429,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     setOfferAmount(numbersOnly);
                     setDisplayAmount(numValue.toLocaleString('ko-KR'));
                   }}
-                  className="pr-12 h-12 text-lg font-semibold"
+                  className="pr-12 h-11 text-base font-semibold"
                   inputMode="numeric"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium">원</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-sm">원</span>
               </div>
-              <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center justify-between mt-1.5">
                 <p className="text-xs text-gray-500">
                   최소: {phone.min_offer_price?.toLocaleString()}원 | 최대: {phone.price.toLocaleString()}원
                 </p>
@@ -1451,10 +1451,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             </div>
 
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium">
-                  메시지 선택 
+                  메시지 선택
                   <span className="text-xs text-gray-500 ml-1">
                     (선택사항, 최대 5개)
                   </span>
@@ -1470,11 +1470,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 )}
               </div>
               
-              {/* 선택된 메시지 표시 */}
+              {/* 선택된 메시지 표시 - 컴팩트 */}
               {selectedMessages.length > 0 && (
-                <div className="mb-2 p-2 bg-dungji-secondary rounded border border-dungji-primary-200">
+                <div className="mb-1.5 p-2 bg-dungji-secondary rounded border border-dungji-primary-200">
                   <p className="text-xs text-dungji-primary-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {selectedMessages.map((msg, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <span className="text-xs text-dungji-primary-900">• {msg}</span>
@@ -1494,13 +1494,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
 
               {/* 컴팩트한 템플릿 선택 영역 */}
-              <div className="border rounded-lg p-2 max-h-48 overflow-y-auto">
+              <div className="border rounded-lg p-1.5 max-h-40 overflow-y-auto">
                 {Object.entries(messageTemplates).map(([category, messages]) => (
-                  <details key={category} className="mb-2 last:mb-0">
-                    <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-1">
+                  <details key={category} className="mb-1.5 last:mb-0">
+                    <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
                       {category}
                     </summary>
-                    <div className="mt-1 pl-3 space-y-1">
+                    <div className="mt-0.5 pl-2 space-y-0.5">
                       {messages.map((msg) => (
                         <button
                           key={msg}
@@ -1511,7 +1511,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             }
                           }}
                           disabled={selectedMessages.length >= 5}
-                          className={`block w-full text-left text-xs py-1 px-2 rounded hover:bg-gray-100 transition-colors ${
+                          className={`block w-full text-left text-xs py-1 px-1.5 rounded hover:bg-gray-100 transition-colors ${
                             selectedMessages.includes(msg)
                               ? 'bg-dungji-secondary-light text-dungji-primary-700'
                               : 'text-gray-700'
@@ -1526,13 +1526,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
               </div>
 
-              {/* 제안 안내사항 */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              {/* 제안 안내사항 - 컴팩트 */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
               <div className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-amber-600 mt-0.5" />
+                <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5" />
                 <div className="text-xs text-amber-800">
-                  <p className="font-semibold mb-1">제안 안내사항</p>
-                  <ul className="space-y-0.5 text-amber-700">
+                  <p className="font-semibold mb-0.5">제안 안내사항</p>
+                  <ul className="space-y-0 text-amber-700">
                     <li>• 가격 제안은 신중하게 부탁드립니다</li>
                     <li>• 판매자가 제안을 수락하면 연락처가 공개됩니다</li>
                   </ul>
@@ -1541,8 +1541,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             </div>
 
-            {/* 버튼 - 항상 하단에 고정 */}
-            <div className="flex gap-3 pt-4 border-t mt-auto">
+            {/* 버튼 - 컴팩트하고 항상 하단에 고정 */}
+            <div className="flex gap-2.5 pt-3 border-t mt-auto bg-white">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -1551,7 +1551,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setDisplayAmount('');
                   setSelectedMessages([]);
                 }}
-                className="flex-1 h-12"
+                className="flex-1 h-11 text-sm"
               >
                 취소
               </Button>
@@ -1563,7 +1563,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   handleOfferConfirm();
                 }}
                 disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0)}
-                className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
+                className="flex-1 h-11 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm"
               >
                 제안하기
               </Button>
