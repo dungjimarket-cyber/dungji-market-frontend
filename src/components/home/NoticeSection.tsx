@@ -70,12 +70,14 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
         setBannerNotices(data.banners || []);
         setTextNotices(data.texts || []);
 
-        // 첫 번째 텍스트 공지에 대한 숨김 상태 확인
+        // 상단 고정된 공지에 대한 숨김 상태 확인
         if (data.texts && data.texts.length > 0) {
-          const firstText = data.texts[0];
-          const hiddenUntil = localStorage.getItem(`notice_hidden_${pageType}_${firstText.id}`);
-          if (hiddenUntil && new Date(hiddenUntil) > new Date()) {
-            setIsTopBarVisible(false);
+          const pinnedText = data.texts.find((notice: Notice) => notice.is_pinned);
+          if (pinnedText) {
+            const hiddenUntil = localStorage.getItem(`notice_hidden_${pageType}_${pinnedText.id}`);
+            if (hiddenUntil && new Date(hiddenUntil) > new Date()) {
+              setIsTopBarVisible(false);
+            }
           }
         }
       } else {
@@ -89,11 +91,12 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
   };
 
   const handleTopBarClose = () => {
-    if (textNotices.length > 0) {
+    const pinnedNotice = textNotices.find(notice => notice.is_pinned);
+    if (pinnedNotice) {
       // 24시간 동안 숨기기
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      localStorage.setItem(`notice_hidden_${pageType}_${textNotices[0].id}`, tomorrow.toISOString());
+      localStorage.setItem(`notice_hidden_${pageType}_${pinnedNotice.id}`, tomorrow.toISOString());
       setIsTopBarVisible(false);
     }
   };
@@ -121,24 +124,27 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
     return null;
   }
 
+  // 상단 고정된 공지사항만 찾기
+  const pinnedNotice = textNotices.find(notice => notice.is_pinned);
+
   return (
     <>
-      {/* 상단 고정 바 (텍스트 공지) */}
-      {textNotices.length > 0 && isTopBarVisible && (
+      {/* 상단 고정 바 (상단 고정된 텍스트 공지만) */}
+      {pinnedNotice && isTopBarVisible && (
         <div className="bg-blue-50 border-b border-blue-200">
           <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between py-2">
-              <Link 
-                href="/notices" 
+              <Link
+                href="/notices"
                 className="flex items-center gap-2 flex-1 text-sm hover:text-blue-600 transition-colors"
               >
                 <Megaphone className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className="font-medium text-blue-900 truncate">
-                  {textNotices[0].title}
+                  {pinnedNotice.title}
                 </span>
-                {textNotices[0].summary && (
+                {pinnedNotice.summary && (
                   <span className="text-gray-600 hidden sm:inline truncate">
-                    - {textNotices[0].summary}
+                    - {pinnedNotice.summary}
                   </span>
                 )}
               </Link>
