@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Megaphone, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Megaphone, Calendar, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 interface Notice {
@@ -28,10 +29,19 @@ export default function NoticesPage() {
   const [loading, setLoading] = useState(true);
   const [expandedNotices, setExpandedNotices] = useState<Set<number>>(new Set());
   const [activeTab, setActiveTab] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchNotices();
   }, []);
+
+  useEffect(() => {
+    // 탭 변경 시 페이지를 1로 리셋
+    setCurrentPage(1);
+    // 열린 공지사항 초기화
+    setExpandedNotices(new Set());
+  }, [activeTab]);
 
   const fetchNotices = async () => {
     try {
@@ -63,7 +73,13 @@ export default function NoticesPage() {
     }
   };
 
-  const notices = getFilteredNotices();
+  const filteredNotices = getFilteredNotices();
+
+  // 페이징 처리
+  const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const notices = filteredNotices.slice(startIndex, endIndex);
 
   const toggleExpand = (noticeId: number) => {
     setExpandedNotices(prev => {
@@ -79,16 +95,16 @@ export default function NoticesPage() {
 
   const getCategoryBadge = (category: string) => {
     const categoryMap: Record<string, { label: string; className: string }> = {
-      general: { label: '일반공지', className: 'bg-gray-100 text-gray-700' },
+      general: { label: '일반', className: 'bg-gray-100 text-gray-700' },
       event: { label: '이벤트', className: 'bg-purple-100 text-purple-700' },
       update: { label: '업데이트', className: 'bg-blue-100 text-blue-700' },
-      maintenance: { label: '점검안내', className: 'bg-yellow-100 text-yellow-700' },
-      important: { label: '중요공지', className: 'bg-orange-100 text-orange-700' }
+      maintenance: { label: '점검', className: 'bg-yellow-100 text-yellow-700' },
+      important: { label: '중요', className: 'bg-orange-100 text-orange-700' }
     };
-    
+
     const config = categoryMap[category] || categoryMap.general;
     return (
-      <Badge className={config.className}>
+      <Badge className={`${config.className} text-xs px-2 py-0.5`}>
         {config.label}
       </Badge>
     );
@@ -137,46 +153,42 @@ export default function NoticesPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {notices.map((notice) => {
                 const isExpanded = expandedNotices.has(notice.id);
 
                 return (
                   <Card
                     key={notice.id}
-                    className={notice.is_pinned ? 'border-blue-200 bg-blue-50/30' : ''}
+                    className={`hover:bg-gray-50 transition-colors ${notice.is_pinned ? 'border-l-4 border-l-blue-500' : ''}`}
                   >
                     <CardHeader
-                      className="cursor-pointer"
+                      className="cursor-pointer py-3 px-4"
                       onClick={() => toggleExpand(notice.id)}
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            {notice.is_pinned && (
-                              <Badge className="bg-blue-500 text-white">상단고정</Badge>
-                            )}
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
                             {notice.is_new && (
-                              <Badge className="bg-green-500 text-white">NEW</Badge>
+                              <Badge className="bg-green-500 text-white text-xs px-2 py-0.5">NEW</Badge>
                             )}
                             {getCategoryBadge(notice.category)}
-                          </div>
-                          <CardTitle className="text-lg">
-                            {notice.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                            <Calendar className="w-4 h-4" />
-                            <span>{notice.published_at ? new Date(notice.published_at).toLocaleDateString('ko-KR') : new Date(notice.created_at).toLocaleDateString('ko-KR')}</span>
+                            <span className="text-xs text-gray-500">
+                              {notice.published_at ? new Date(notice.published_at).toLocaleDateString('ko-KR') : new Date(notice.created_at).toLocaleDateString('ko-KR')}
+                            </span>
                             {notice.view_count > 0 && (
-                              <span className="ml-2">조회 {notice.view_count}</span>
+                              <span className="text-xs text-gray-500">조회 {notice.view_count}</span>
                             )}
                           </div>
+                          <h3 className="text-base font-medium text-gray-900 truncate pr-2">
+                            {notice.title}
+                          </h3>
                         </div>
-                        <div className="ml-4">
+                        <div className="ml-2 flex-shrink-0">
                           {isExpanded ? (
-                            <ChevronUp className="w-5 h-5 text-gray-400" />
+                            <ChevronUp className="w-4 h-4 text-gray-400" />
                           ) : (
-                            <ChevronDown className="w-5 h-5 text-gray-400" />
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
                           )}
                         </div>
                       </div>
@@ -207,6 +219,58 @@ export default function NoticesPage() {
                   </Card>
                 );
               })}
+            </div>
+          )}
+
+          {/* 페이징 */}
+          {!loading && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <Button
+                      key={i}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className="h-8 w-8 p-0 text-sm"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
           )}
         </TabsContent>
