@@ -39,7 +39,7 @@ export default function ProfileSection() {
           className="gap-1.5 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           <Edit2 className="w-4 h-4" />
-          프로필 수정
+          내정보 설정
         </Button>
       </div>
     </div>
