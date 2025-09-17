@@ -1331,8 +1331,20 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-2 sm:p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-4 sm:p-6 max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl">
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+          style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'}}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowOfferModal(false);
+              setOfferAmount('');
+              setDisplayAmount('');
+              setOfferMessage('');
+              setSelectedMessages([]);
+            }
+          }}
+        >
+          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 flex flex-col shadow-2xl overflow-hidden" style={{maxHeight: 'min(80vh, calc(100vh - 8rem))'}}>
             {/* 헤더 - 컴팩트 버전 */}
             <div className="flex items-center justify-between mb-3 pb-3 border-b">
               <div>
@@ -1353,8 +1365,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
             </div>
             
-            {/* 스크롤 가능한 컨텐츠 영역 - 컴팩트 */}
-            <div className="flex-1 overflow-y-auto mb-3">
+            {/* 스크롤 가능한 컨텐츠 영역 - 최적화된 구조 */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 px-1">
+              <div className="pb-4">
               {/* 제품 정보 미리보기 - 컴팩트 */}
               <div className="bg-gray-50 rounded-lg p-2.5 mb-3">
               <div className="flex items-center gap-2.5">
@@ -1539,10 +1552,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               </div>
               </div>
+              </div>
             </div>
 
-            {/* 버튼 - 컴팩트하고 항상 하단에 고정 */}
-            <div className="flex gap-2.5 pt-3 border-t mt-auto bg-white">
+            {/* 버튼 - 확실한 하단 고정 */}
+            <div className="flex gap-2.5 pt-3 border-t bg-white shrink-0">
               <Button
                 variant="outline"
                 onClick={() => {
