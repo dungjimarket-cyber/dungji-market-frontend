@@ -727,15 +727,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             
             {/* 제품상태 및 설명 - 이미지 하단으로 이동 */}
             {phone.condition_description && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg max-w-full overflow-hidden">
                 <h3 className="text-sm font-semibold text-gray-700 mb-2">제품상태 및 설명</h3>
-                <p className="text-gray-800 whitespace-pre-wrap break-words">{phone.condition_description}</p>
+                <p className="text-gray-800 whitespace-pre-wrap break-all">{phone.condition_description}</p>
               </div>
             )}
           </div>
 
           {/* 정보 섹션 */}
-          <div className="w-full overflow-hidden">
+          <div className="w-full overflow-x-hidden">
             {/* 기본 정보 */}
             <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
               <div className="flex items-start justify-between mb-2">
@@ -1291,12 +1291,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 거래 요청사항 */}
               {phone.meeting_place && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 max-w-full overflow-hidden">
                   <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
                     <Info className="w-4 h-4" />
                     판매자 요청사항
                   </p>
-                  <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{phone.meeting_place}</p>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{phone.meeting_place}</p>
                 </div>
               )}
             </div>
