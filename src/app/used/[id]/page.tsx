@@ -734,7 +734,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             )}
 
             {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 하단 중앙 배치 */}
-            {isOwner && phone.status === 'active' && (
+            {phone.seller?.id === user?.id && phone.status === 'active' && (
               <div className="hidden lg:block mt-6 pt-6 border-t">
                 <div className="flex justify-center gap-3">
                   <Button
@@ -1972,7 +1972,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       )}
 
       {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 우측 하단 고정 */}
-      {isOwner && phone && phone.status === 'active' && (
+      {phone && phone.seller?.id === user?.id && phone.status === 'active' && (
         <div className="lg:hidden fixed bottom-20 right-4 z-40 flex flex-col gap-2">
           <Button
             onClick={async () => {
