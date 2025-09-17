@@ -8,9 +8,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  ArrowLeft, Plus, X, Camera, AlertCircle, MapPin, 
-  DollarSign, Package, Smartphone, Info, Lock
+import {
+  ArrowLeft, Plus, X, Camera, AlertCircle, MapPin,
+  DollarSign, Package, Smartphone, Info, Lock, Upload, Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,12 +36,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   const { toast } = useToast();
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const multiFileInputRef = useRef<HTMLInputElement>(null);
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [phone, setPhone] = useState<UsedPhone | null>(null);
   const [hasOffers, setHasOffers] = useState(false);
   const [isModified, setIsModified] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   // 폼 데이터
   const [formData, setFormData] = useState({
@@ -267,7 +269,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   };
 
   // 이미지 처리
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement> | File[]) => {
     if (!isFieldEditable('images')) {
       toast({
         title: '수정 불가',
@@ -276,8 +278,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       });
       return;
     }
-    
-    const files = Array.from(e.target.files || []);
+
+    const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
     const remainingSlots = 10 - images.length;
 
     if (files.length > remainingSlots) {
@@ -293,7 +295,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       file,
       preview: URL.createObjectURL(file)
     }));
-    
+
     setImages(prev => [...prev, ...newImages]);
     setIsModified(true);
   };
@@ -307,9 +309,55 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       });
       return;
     }
-    
+
     setImages(prev => prev.filter((_, i) => i !== index));
     setIsModified(true);
+  };
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (!isFieldEditable('images')) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
+      file.type.startsWith('image/')
+    );
+
+    if (droppedFiles.length > 0) {
+      handleImageChange(droppedFiles);
+    }
+  };
+
+  // 전체 업로드 버튼 클릭
+  const handleUploadButtonClick = () => {
+    multiFileInputRef.current?.click();
   };
 
   // 폼 제출
@@ -708,44 +756,76 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
         {/* 이미지 */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            상품 이미지 <span className="text-red-500">*</span>
-            {!isFieldEditable('images') && <Lock className="w-3 h-3 text-gray-400" />}
-          </h2>
-          
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-            {images.map((image, index) => (
-              <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                <Image
-                  src={image.preview}
-                  alt={`상품 이미지 ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-                {isFieldEditable('images') && (
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-            
-            {images.length < 10 && isFieldEditable('images') && (
-              <button
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              상품 이미지 <span className="text-red-500">*</span>
+              {!isFieldEditable('images') && <Lock className="w-3 h-3 text-gray-400" />}
+            </h2>
+            {isFieldEditable('images') && images.length < 10 && (
+              <Button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
+                onClick={handleUploadButtonClick}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
               >
-                <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-xs text-gray-600">{images.length}/5</span>
-              </button>
+                <Upload className="w-4 h-4" />
+                사진 추가
+              </Button>
             )}
           </div>
-          
+
+          <div
+            className={`relative ${isDragging ? 'border-2 border-dashed border-blue-500 bg-blue-50' : ''} rounded-lg`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            {isDragging && (
+              <div className="absolute inset-0 bg-blue-50 bg-opacity-90 flex items-center justify-center rounded-lg z-10">
+                <div className="text-center">
+                  <ImageIcon className="w-12 h-12 text-blue-500 mx-auto mb-2" />
+                  <p className="text-blue-600 font-medium">이미지를 여기에 놓으세요</p>
+                  <p className="text-sm text-blue-500">최대 10장까지 업로드 가능</p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+              {images.map((image, index) => (
+                <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  <Image
+                    src={image.preview}
+                    alt={`상품 이미지 ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  {isFieldEditable('images') && (
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {images.length < 10 && isFieldEditable('images') && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-xs text-gray-600">{images.length}/10</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           <input
             ref={fileInputRef}
             type="file"
@@ -754,7 +834,16 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
             onChange={handleImageChange}
             className="hidden"
           />
-          
+
+          <input
+            ref={multiFileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            className="hidden"
+          />
+
           {errors.images && <p className="text-xs text-red-500 mt-2">{errors.images}</p>}
         </div>
 

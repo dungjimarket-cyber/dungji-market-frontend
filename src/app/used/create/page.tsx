@@ -5,9 +5,9 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Plus, AlertCircle, Check, Info } from 'lucide-react';
+import { Camera, X, Plus, AlertCircle, Check, Info, Upload, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,6 +67,8 @@ export default function CreateUsedPhonePage() {
   
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [checkingLimit, setCheckingLimit] = useState(false);
   const [activeCount, setActiveCount] = useState(0);
@@ -198,8 +200,8 @@ export default function CreateUsedPhonePage() {
   };
 
   // 이미지 업로드 핸들러
-  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
-    const files = Array.from(e.target.files || []);
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], replaceIndex?: number) => {
+    const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     // 파일 유효성 검사
@@ -321,6 +323,43 @@ export default function CreateUsedPhonePage() {
       ...img,
       isMain: i === index,
     })));
+  }, []);
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(file =>
+      file.type.startsWith('image/')
+    );
+
+    if (droppedFiles.length > 0) {
+      handleImageUpload(droppedFiles);
+    }
+  }, [handleImageUpload]);
+
+  // 전체 업로드 버튼 클릭
+  const handleUploadButtonClick = useCallback(() => {
+    fileInputRef.current?.click();
   }, []);
 
   // 폼 입력 핸들러
@@ -884,11 +923,53 @@ export default function CreateUsedPhonePage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 이미지 업로드 */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <Label className="text-lg font-semibold mb-4 block">
-              상품 이미지 <span className="text-red-500">*</span>
-            </Label>
-            
+          <div
+            className={`relative bg-white rounded-lg p-6 shadow-sm transition-all ${
+              isDragging ? 'ring-2 ring-dungji-primary ring-opacity-50 bg-blue-50' : ''
+            }`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-lg font-semibold">
+                상품 이미지 <span className="text-red-500">*</span>
+              </Label>
+
+              {/* 전체 업로드 버튼 */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleUploadButtonClick}
+                className="gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                사진 추가
+              </Button>
+
+              {/* 숨겨진 파일 인풋 */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => handleImageUpload(e)}
+              />
+            </div>
+
+            {/* 드래그 앤 드롭 안내 */}
+            {isDragging && (
+              <div className="absolute inset-0 bg-blue-50 bg-opacity-90 flex items-center justify-center rounded-lg z-10">
+                <div className="text-center">
+                  <ImageIcon className="w-12 h-12 text-dungji-primary mx-auto mb-2" />
+                  <p className="text-dungji-primary font-semibold">여기에 이미지를 놓으세요</p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
               {/* 이미지 미리보기 슬롯 */}
               {[...Array(10)].map((_, index) => {
@@ -990,7 +1071,7 @@ export default function CreateUsedPhonePage() {
                           <input
                             type="file"
                             accept="image/*"
-                            multiple={isNextSlot && !isFirstSlot}
+                            multiple
                             onChange={(e) => {
                               if (isFirstSlot) {
                                 // 첫 번째 슬롯은 항상 인덱스 0으로 업로드
