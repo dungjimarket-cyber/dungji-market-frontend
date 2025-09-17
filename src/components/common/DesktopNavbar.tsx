@@ -70,7 +70,7 @@ export default function DesktopNavbar() {
 
   return (
     <nav className="hidden md:block bg-white shadow-lg">
-      <div className="container mx-auto px-4">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <Image src="/logos/dunji_logo.jpg" alt="둥지마켓" width={40} height={40} className="rounded-lg" />
