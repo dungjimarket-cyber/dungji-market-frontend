@@ -30,6 +30,7 @@ import dynamic from 'next/dynamic';
 import { searchRegionsByName, type Region } from '@/lib/api/regionService';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { errorLogger } from '@/lib/errorLogger';
+import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 
 // 모바일 디버그 패널 (클라이언트 사이드에서만 로드)
 const MobileDebugPanel = dynamic(
@@ -260,10 +261,10 @@ export default function CreateUsedPhonePage() {
       // 새 이미지 추가 (다음 빈 슬롯에)
       const actualImageCount = images.filter(img => img && !img.isEmpty).length;
       
-      if (actualImageCount + files.length > 5) {
+      if (actualImageCount + files.length > 10) {
         toast({
           title: '이미지 개수 초과',
-          description: '최대 5장까지 업로드 가능합니다.',
+          description: '최대 10장까지 업로드 가능합니다.',
           variant: 'destructive',
         });
         return;
@@ -280,7 +281,7 @@ export default function CreateUsedPhonePage() {
         const updated = [...prev];
         // 빈 슬롯 채우기
         let addedCount = 0;
-        for (let i = 0; i < 5 && addedCount < newImages.length; i++) {
+        for (let i = 0; i < 10 && addedCount < newImages.length; i++) {
           if (!updated[i] || updated[i].isEmpty) {
             updated[i] = newImages[addedCount];
             addedCount++;
@@ -290,7 +291,7 @@ export default function CreateUsedPhonePage() {
         if (addedCount < newImages.length) {
           updated.push(...newImages.slice(addedCount));
         }
-        return updated.slice(0, 5); // 최대 5개로 제한
+        return updated.slice(0, 10); // 최대 10개로 제한
       });
     }
   }, [images, toast]);
@@ -609,20 +610,38 @@ export default function CreateUsedPhonePage() {
         mainImageIndex = mainImageFound;
       }
 
-      // 이미지 파일과 메타데이터 전송
-      actualImages.forEach((img, index) => {
-        // 파일 크기 체크 (3MB 제한)
-        if (img.file!.size > 3 * 1024 * 1024) {
-          toast({
-            title: '이미지 크기 초과',
-            description: `${index + 1}번째 이미지가 3MB를 초과합니다.`,
-            variant: 'destructive',
-          });
-          throw new Error(`Image ${index + 1} size exceeds 3MB`);
-        }
-
-        uploadData.append('images', img.file!);
+      // 이미지 압축 및 전송
+      toast({
+        title: '이미지 처리 중...',
+        description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.',
       });
+
+      for (let i = 0; i < actualImages.length; i++) {
+        const img = actualImages[i];
+
+        try {
+          // 이미지 압축 (85% 품질, 최대 1200x1200)
+          const compressedBlob = await compressImageInBrowser(img.file!, {
+            maxWidth: 1200,
+            maxHeight: 1200,
+            quality: 0.85,
+            format: 'webp'
+          });
+
+          // Blob을 File로 변환
+          const compressedFile = new File(
+            [compressedBlob],
+            `image_${i}.webp`,
+            { type: 'image/webp' }
+          );
+
+          uploadData.append('images', compressedFile);
+        } catch (error) {
+          console.error(`Failed to compress image ${i + 1}:`, error);
+          // 압축 실패 시 원본 사용
+          uploadData.append('images', img.file!);
+        }
+      }
 
       // 대표 이미지 인덱스 한 번만 전송
       uploadData.append('mainImageIndex', mainImageIndex.toString());
@@ -872,7 +891,7 @@ export default function CreateUsedPhonePage() {
             
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
               {/* 이미지 미리보기 슬롯 */}
-              {[...Array(5)].map((_, index) => {
+              {[...Array(10)].map((_, index) => {
                 const image = images[index];
                 
                 if (image && !image.isEmpty) {
@@ -991,7 +1010,7 @@ export default function CreateUsedPhonePage() {
                       ) : (
                         <div className="text-gray-300">
                           <Camera className="w-6 h-6 mb-1" />
-                          <span className="text-xs">{index + 1}/5</span>
+                          <span className="text-xs">{index + 1}/10</span>
                         </div>
                       )}
                     </label>
@@ -1002,7 +1021,7 @@ export default function CreateUsedPhonePage() {
 
             <p className="text-sm text-gray-500 mt-4">
               * <span className="font-semibold">첫 번째 슬롯(대표)에 반드시 이미지를 등록해주세요.</span>
-              * 최대 5장까지 등록 가능합니다. (각 3MB 이하)
+              * 최대 10장까지 등록 가능합니다. (자동 압축 처리)
               * 전면, 후면, 측면, 모서리 사진을 포함하면 신뢰도가 높아집니다.
               * 흠집이나 파손 부위는 선명하게 촬영해주세요.
               * 이미지를 클릭하면 크게 볼 수 있습니다.

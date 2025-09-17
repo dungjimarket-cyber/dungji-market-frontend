@@ -699,11 +699,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
             </div>
 
-            {/* 썸네일 - 최대 5개까지 모두 표시 */}
+            {/* 썸네일 - 최대 10개까지 모두 표시 */}
             {phone.images && phone.images.length > 1 && (
               <div className="mt-4">
                 <div className="grid grid-cols-5 gap-2">
-                  {phone.images.slice(0, 5).map((img, index) => (
+                  {phone.images.slice(0, 10).map((img, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}

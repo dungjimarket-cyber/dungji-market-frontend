@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS } from '@/types/used';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
+import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
@@ -277,12 +278,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     }
     
     const files = Array.from(e.target.files || []);
-    const remainingSlots = 5 - images.length;
+    const remainingSlots = 10 - images.length;
 
     if (files.length > remainingSlots) {
       toast({
         title: '이미지 제한',
-        description: `최대 5장까지만 등록 가능합니다. (${remainingSlots}장 추가 가능)`,
+        description: `최대 10장까지만 등록 가능합니다. (${remainingSlots}장 추가 가능)`,
         variant: 'destructive',
       });
       return;
@@ -419,12 +420,42 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       
       // 새로운 이미지만 전송
       if (isFieldEditable('images')) {
-        images.forEach((image, index) => {
+        // 이미지 압축 처리
+        const newImages = images.filter(img => img.file);
+        if (newImages.length > 0) {
+          toast({
+            title: '이미지 처리 중...',
+            description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.',
+          });
+        }
+
+        for (const image of images) {
           if (image.file) {
-            submitData.append('new_images', image.file);
+            try {
+              // 이미지 압축 (85% 품질, 최대 1200x1200)
+              const compressedBlob = await compressImageInBrowser(image.file, {
+                maxWidth: 1200,
+                maxHeight: 1200,
+                quality: 0.85,
+                format: 'webp'
+              });
+
+              // Blob을 File로 변환
+              const compressedFile = new File(
+                [compressedBlob],
+                `image_${Date.now()}.webp`,
+                { type: 'image/webp' }
+              );
+
+              submitData.append('new_images', compressedFile);
+            } catch (error) {
+              console.error('Failed to compress image:', error);
+              // 압축 실패 시 원본 사용
+              submitData.append('new_images', image.file);
+            }
           }
-        });
-        
+        }
+
         // 기존 이미지 ID 전송 (삭제되지 않은 것들)
         const existingImageIds = images
           .filter(img => img.id)
@@ -703,7 +734,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               </div>
             ))}
             
-            {images.length < 5 && isFieldEditable('images') && (
+            {images.length < 10 && isFieldEditable('images') && (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}

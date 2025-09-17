@@ -476,7 +476,7 @@ export const ACCESSORIES_OPTIONS = [
   { value: 'manual', label: '설명서' }
 ] as const;
 
-export const MAX_IMAGES = 5;
+export const MAX_IMAGES = 10;
 export const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 export const DAILY_POST_LIMIT = 10;
 export const OFFER_EXPIRY_DAYS = 30;
