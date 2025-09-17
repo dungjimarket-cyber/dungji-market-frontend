@@ -228,35 +228,53 @@ export default function CreateUsedPhonePage() {
     }
 
     if (replaceIndex !== undefined) {
-      // 특정 슬롯에 이미지 교체/추가
-      const newImage: ImagePreview = {
-        file: files[0],
-        url: URL.createObjectURL(files[0]),
-        isMain: replaceIndex === 0,
+      // 특정 슬롯 클릭 시에도 여러 파일 모두 추가
+      const actualImageCount = images.filter(img => img && !img.isEmpty).length;
+
+      if (actualImageCount + files.length > 10) {
+        toast({
+          title: '이미지 개수 초과',
+          description: '최대 10장까지 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const newImages = files.map((file, index) => ({
+        file,
+        url: URL.createObjectURL(file),
+        isMain: replaceIndex === 0 && index === 0, // 첫 번째 슬롯의 첫 번째 이미지만 대표
         isEmpty: false
-      };
+      }));
 
       setImages(prev => {
         const updated = [...prev];
-        // 해당 위치에 이미지가 이미  있는지 확인
-        if (replaceIndex < updated.length) {
+        let currentIndex = replaceIndex;
+
+        // replaceIndex부터 시작해서 빈 슬롯에 순서대로 채우기
+        for (const newImage of newImages) {
+          // 현재 위치에 이미지가 있으면 다음 빈 슬롯 찾기
+          while (currentIndex < 10 && updated[currentIndex] && !updated[currentIndex].isEmpty) {
+            currentIndex++;
+          }
+
+          if (currentIndex >= 10) break; // 10장 초과 방지
+
           // 기존 이미지 URL 정리
-          if (updated[replaceIndex] && updated[replaceIndex].url) {
-            URL.revokeObjectURL(updated[replaceIndex].url);
+          if (updated[currentIndex] && updated[currentIndex].url) {
+            URL.revokeObjectURL(updated[currentIndex].url);
           }
-          updated[replaceIndex] = newImage;
-        } else {
-          // 새 위치에 추가 (빈 슬롯 채우기)
-          while (updated.length < replaceIndex) {
-            updated.push({
-              file: null,
-              url: '',
-              isMain: false,
-              isEmpty: true
-            });
+
+          // 빈 슬롯이 없으면 추가
+          if (currentIndex >= updated.length) {
+            updated.push(newImage);
+          } else {
+            updated[currentIndex] = newImage;
           }
-          updated.push(newImage);
+
+          currentIndex++;
         }
+
         return updated;
       });
     } else {
