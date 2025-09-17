@@ -259,17 +259,13 @@ export default function UsedPhonesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 공지사항 - 전체 너비 배경 */}
-      <div className="bg-white border-b">
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-          <NoticeSection pageType="used" compact={true} />
-        </div>
-      </div>
+      {/* 공지사항 - 전체 너비 */}
+      <NoticeSection pageType="used" compact={true} />
 
-      {/* 히어로 섹션 - 전체 너비 배경 */}
-      <section className="bg-gradient-to-b from-gray-50 to-white border-b">
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto py-6 lg:py-8 px-4">
-          <div className="max-w-4xl mx-auto text-center">
+      {/* 히어로 섹션 - 본문과 동일한 너비 */}
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
+        <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8 px-4">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               중고폰 직거래 서비스가 오픈했습니다
             </h1>
@@ -331,8 +327,8 @@ export default function UsedPhonesPage() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* 프로필 미완성 안내 */}
       {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (

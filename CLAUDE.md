@@ -335,6 +335,28 @@ src/components/used/
 - 결제 실패 시 상세 오류 메시지 표시 (카드 한도, 잔액 부족 등)
 - `INICIS_ERROR_MESSAGES`에 한국어 오류 메시지 매핑 완료
 
+## Git 커밋/푸시 방법
+
+### Frontend 변경사항 커밋/푸시
+```bash
+# 1. frontend 디렉토리로 이동
+cd dungji-market-frontend
+
+# 2. 변경사항 스테이징 및 커밋
+git add -A
+git commit -m "커밋 메시지"
+
+# 3. main 브랜치로 푸시
+git push origin main
+
+# 4. 상위 디렉토리로 돌아가서 submodule 업데이트
+cd ..
+git add dungji-market-frontend
+git commit -m "update: sync frontend submodule for [변경내용]"
+```
+
+**주의**: 메인 저장소는 현재 remote 설정 문제로 푸시가 안되므로, frontend 서브모듈만 푸시하면 됨.
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
