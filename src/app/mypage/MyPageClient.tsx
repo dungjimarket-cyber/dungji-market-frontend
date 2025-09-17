@@ -297,19 +297,6 @@ export default function MyPageClient() {
                       {user.address_region?.full_name || '설정 필요'}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {user.phone_verified ? (
-                      <Badge variant="secondary" className="text-xs gap-1">
-                        <Shield className="w-3 h-3 text-green-600" />
-                        휴대폰 인증
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs gap-1 border-gray-300">
-                        <X className="w-3 h-3 text-gray-500" />
-                        휴대폰 미인증
-                      </Badge>
-                    )}
-                  </div>
                 </div>
               </div>
             </CardContent>
