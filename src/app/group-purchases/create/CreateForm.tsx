@@ -1603,7 +1603,7 @@ const onSubmit = async (values: FormData) => {
                             <FormControl>
                               <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
-                                  <SelectValue placeholder="요금제 선택" />
+                                  <SelectValue placeholder="희망요금제 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="5G_standard">5만원대</SelectItem>

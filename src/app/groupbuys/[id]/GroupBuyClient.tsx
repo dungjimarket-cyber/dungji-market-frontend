@@ -583,7 +583,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700 hover:bg-blue-100 transition-colors"
               >
-                <span>SK브로드밴드 요금제</span>
+                <span>SK브로드밴드 희망요금제</span>
                 <span className="ml-2">→</span>
               </a>
               <p className="text-sm text-gray-700 mt-3">{groupBuyState?.product_details?.telecom_detail?.contract_info || '2년 약정 기본 상품입니다'}</p>
@@ -823,7 +823,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
            groupBuy.product_details?.category_name !== '인터넷+TV' && (
             <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-green-700">요금제</span>
+                <span className="text-xs font-medium text-green-700">희망요금제</span>
                 <span className="text-base font-bold text-green-900">
                   {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
                 </span>

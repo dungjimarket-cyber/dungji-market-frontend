@@ -933,7 +933,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                         <FormLabel>요금제 <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder="요금제 선택" />
+                            <SelectValue placeholder="희망요금제 선택" />
                           </SelectTrigger>
                           <SelectContent className="max-h-[250px] overflow-y-auto">
                             <SelectItem value="5G_standard">5만원대</SelectItem>
