@@ -105,7 +105,7 @@ export default function FavoritesTab() {
                 {phone.images && phone.images.length > 0 ? (
                   <Image
                     src={typeof phone.images[0] === 'string' ? phone.images[0] : phone.images[0].imageUrl}
-                    alt={phone.title || '상품 이미지'}
+                    alt={phone.model || '상품 이미지'}
                     fill
                     className="object-cover"
                   />
@@ -121,7 +121,7 @@ export default function FavoritesTab() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-2">
                     <h4 className="font-medium text-gray-900 line-clamp-1">
-                      {phone.title}
+                      {phone.brand} {phone.model}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1">
                       {phone.model} • {phone.storage}GB
