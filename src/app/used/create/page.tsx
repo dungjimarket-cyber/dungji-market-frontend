@@ -1432,26 +1432,35 @@ export default function CreateUsedPhonePage() {
             </p>
           </div>
 
-          {/* 등록 버튼 */}
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={loading}
-              className="flex-1"
-            >
-              취소
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading || checkingLimit}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-dungji-primary hover:from-blue-700 hover:to-dungji-primary-dark"
-            >
-              {loading ? '등록 중...' : checkingLimit ? '확인 중...' : '등록하기'}
-            </Button>
-          </div>
+          {/* 하단 여백 - 버튼 영역 공간 확보 */}
+          <div className="h-24"></div>
         </form>
+
+        {/* 하단 고정 버튼 영역 - 모바일 최적화 */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50"
+             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="p-4">
+            <div className="container mx-auto max-w-3xl flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={loading}
+                className="flex-1 h-12 text-base font-medium"
+              >
+                취소
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading || checkingLimit}
+                className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-dungji-primary hover:from-blue-700 hover:to-dungji-primary-dark text-base font-medium disabled:opacity-50"
+              >
+                {loading ? '등록 중...' : checkingLimit ? '확인 중...' : '등록하기'}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 중고폰용 프로필 체크 모달 */}
