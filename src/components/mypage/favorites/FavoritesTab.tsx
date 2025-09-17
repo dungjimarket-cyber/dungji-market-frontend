@@ -104,7 +104,7 @@ export default function FavoritesTab() {
               <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                 {phone.images && phone.images.length > 0 ? (
                   <Image
-                    src={phone.images[0].image || phone.images[0]}
+                    src={typeof phone.images[0] === 'string' ? phone.images[0] : phone.images[0].imageUrl}
                     alt={phone.title || '상품 이미지'}
                     fill
                     className="object-cover"
