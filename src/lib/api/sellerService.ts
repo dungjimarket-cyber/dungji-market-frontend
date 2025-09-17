@@ -25,7 +25,6 @@ const getAxiosAuthHeaders = async () => {
       ? Object.fromEntries(headers)
       : headers;
   
-  console.log('인증 헤더:', authHeader);
   return authHeader;
 };
 
@@ -130,11 +129,13 @@ export const updateSellerProfile = async (data: {
   nickname?: string;
   description?: string;
   phone?: string;
+  email?: string;
   address?: string;
   address_detail?: string;
   address_region_id?: string;
   business_number?: string;
   business_reg_number?: string;
+  representative_name?: string;  // 대표자명 필드 추가
   is_remote_sales?: boolean;
   is_remote_sales_enabled?: boolean;
   notification_enabled?: boolean;
@@ -142,14 +143,37 @@ export const updateSellerProfile = async (data: {
 }): Promise<SellerProfile> => {
   try {
     const headers = await getAxiosAuthHeaders();
-    // API 호출 전에 데이터 매핑
-    const apiData = {
-      ...data,
-      username: data.nickname || data.name,
-      business_reg_number: data.business_reg_number || data.business_number,
-      is_remote_sales_enabled: data.is_remote_sales_enabled || data.is_remote_sales,
-      address_detail: data.address_detail || data.address
-    };
+    // API 호출 전에 데이터 매핑 - backend expects specific field names
+    const apiData: any = {};
+    
+    // Map fields according to backend expectations
+    if (data.nickname !== undefined) apiData.nickname = data.nickname;
+    if (data.name !== undefined) apiData.name = data.name;
+    if (data.description !== undefined) apiData.description = data.description;
+    if (data.phone !== undefined) apiData.phone = data.phone;
+    if (data.email !== undefined) apiData.email = data.email;
+    if (data.representative_name !== undefined) apiData.representative_name = data.representative_name;
+    if (data.profile_image !== undefined) apiData.profile_image = data.profile_image;
+    if (data.address_region_id !== undefined) apiData.address_region_id = data.address_region_id;
+    if (data.notification_enabled !== undefined) apiData.notification_enabled = data.notification_enabled;
+    
+    // Backend expects 'business_number', not 'business_reg_number'
+    if (data.business_number !== undefined || data.business_reg_number !== undefined) {
+      apiData.business_number = data.business_number || data.business_reg_number;
+    }
+    
+    // Backend expects 'is_remote_sales', not 'is_remote_sales_enabled'
+    if (data.is_remote_sales !== undefined || data.is_remote_sales_enabled !== undefined) {
+      apiData.is_remote_sales = data.is_remote_sales || data.is_remote_sales_enabled;
+    }
+    
+    // Backend expects 'address' which it maps to 'address_detail'
+    if (data.address !== undefined || data.address_detail !== undefined) {
+      apiData.address = data.address || data.address_detail;
+    }
+    
+    console.log('판매자 프로필 업데이트 요청 데이터:', apiData);
+    
     const response = await axios.patch(`${API_URL}/users/me/seller-profile/`, apiData, { headers });
     return response.data;
   } catch (error: any) {

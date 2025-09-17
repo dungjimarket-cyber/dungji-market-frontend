@@ -33,7 +33,7 @@ export function SimplifiedGroupBuyButton({
     if (userRole === 'buyer') {
       // 모집중
       if (status === 'recruiting') {
-        return isParticipant ? '참여 완료' : '공구 참여하기';
+        return isParticipant ? '참여 완료' : '같이 견적받기';
       }
       
       // 종료 후 모든 진행 단계 → "진행상황 확인"
@@ -86,51 +86,51 @@ export function SimplifiedGroupBuyButton({
   const getStatusBadge = () => {
     if (userRole === 'buyer') {
       if (status === 'recruiting' && isParticipant) {
-        return { text: '참여중', variant: 'default' as const, color: 'bg-green-500' };
+        return { text: '참여중', variant: 'default' as const, color: 'bg-dungji-primary' };
       }
       if (status === 'final_selection_buyers') {
         return { 
           text: remainingTime ? `구매확정 대기 (${remainingTime})` : '구매확정 대기', 
           variant: 'secondary' as const,
-          color: 'bg-blue-500'
+          color: 'bg-dungji-secondary'
         };
       }
       if (status === 'final_selection_seller') {
-        return { text: '판매자 선택중', variant: 'secondary' as const, color: 'bg-yellow-500' };
+        return { text: '판매자 선택중', variant: 'secondary' as const, color: 'bg-amber-500' };
       }
       if (status === 'in_progress') {
-        return { text: '거래중', variant: 'default' as const, color: 'bg-green-500' };
+        return { text: '거래중', variant: 'default' as const, color: 'bg-dungji-primary' };
       }
       if (status === 'completed') {
         return { text: '완료', variant: 'outline' as const, color: 'bg-gray-700' };
       }
       if (status === 'cancelled') {
-        return { text: '취소', variant: 'destructive' as const, color: 'bg-red-500' };
+        return { text: '취소', variant: 'destructive' as const, color: 'bg-dungji-danger' };
       }
     }
     
     if (userRole === 'seller') {
       if (status === 'recruiting' && hasBid) {
-        return { text: '✅견적제안완료', variant: 'default' as const, color: 'bg-green-500' };
+        return { text: '✅견적제안완료', variant: 'default' as const, color: 'bg-dungji-primary' };
       }
       if (status === 'final_selection_buyers') {
-        return { text: '구매자 선택 대기', variant: 'secondary' as const, color: 'bg-blue-500' };
+        return { text: '구매자 선택 대기', variant: 'secondary' as const, color: 'bg-dungji-secondary' };
       }
       if (status === 'final_selection_seller') {
         return { 
           text: remainingTime ? `판매확정 대기 (${remainingTime})` : '판매확정 대기', 
           variant: 'secondary' as const,
-          color: 'bg-yellow-500'
+          color: 'bg-amber-500'
         };
       }
       if (status === 'in_progress') {
-        return { text: '거래중', variant: 'default' as const, color: 'bg-green-500' };
+        return { text: '거래중', variant: 'default' as const, color: 'bg-dungji-primary' };
       }
       if (status === 'completed') {
         return { text: '완료', variant: 'outline' as const, color: 'bg-gray-700' };
       }
       if (status === 'cancelled') {
-        return { text: '취소', variant: 'destructive' as const, color: 'bg-red-500' };
+        return { text: '취소', variant: 'destructive' as const, color: 'bg-dungji-danger' };
       }
     }
     
@@ -145,16 +145,16 @@ export function SimplifiedGroupBuyButton({
     
     if (status === 'recruiting') {
       if (userRole === 'buyer' && isParticipant) {
-        return 'bg-blue-600 hover:bg-blue-700';
+        return 'bg-dungji-secondary hover:bg-dungji-secondary-dark';
       }
       if (userRole === 'seller' && hasBid) {
-        return 'bg-indigo-600 hover:bg-indigo-700';
+        return 'bg-dungji-primary-dark hover:bg-dungji-primary-darker';
       }
-      return 'bg-purple-600 hover:bg-purple-700';
+      return 'bg-dungji-primary hover:bg-dungji-primary-dark';
     }
     
     // 진행상황 확인 버튼
-    return 'bg-orange-600 hover:bg-orange-700';
+    return 'bg-dungji-secondary-dark hover:bg-dungji-secondary-darker';
   };
   
   const statusBadge = getStatusBadge();

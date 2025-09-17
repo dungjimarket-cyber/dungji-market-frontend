@@ -32,6 +32,10 @@ interface ReviewFormProps {
   onCancel?: () => void;
   /** 공구 생성자 ID */
   creatorId?: number;
+  /** 상품명 */
+  productName?: string;
+  /** 선택된 판매자 닉네임 */
+  sellerNickname?: string;
 }
 
 /**
@@ -60,6 +64,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onComplete,
   onCancel,
   creatorId,
+  productName,
+  sellerNickname,
 }) => {
   const { isAuthenticated, accessToken, user } = useAuth();
   const router = useRouter();
@@ -88,15 +94,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       return;
     }
     
-    if (!content.trim()) {
-      toast.error('후기 내용을 입력해주세요.');
-      return;
-    }
-    
-    if (content.trim().length < 10) {
-      toast.error('후기 내용은 최소 10자 이상 작성해주세요.');
-      return;
-    }
+    // 텍스트는 선택 입력 - 별점만 필수
     
     setIsSubmitting(true);
     
@@ -104,7 +102,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       const reviewData = {
         groupbuy: groupbuyId,
         rating,
-        content: content.trim(),
+        content: content.trim() || '',
         is_purchased: isPurchased,
       };
       
@@ -112,7 +110,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         // 후기 수정
         await updateReview(reviewId, {
           rating,
-          content: content.trim(),
+          content: content.trim() || '',
           is_purchased: isPurchased,
         }, accessToken);
         
@@ -188,6 +186,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <h3 className="text-lg font-medium mb-2">
           {isEditMode ? '후기 수정하기' : '후기 작성하기'}
         </h3>
+        
+        {/* 상품명 및 판매자 정보 표시 */}
+        {(productName || sellerNickname) && (
+          <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+            {productName && (
+              <p className="text-sm text-gray-700 font-medium mb-1">{productName}</p>
+            )}
+            {sellerNickname && (
+              <p className="text-xs text-gray-600">담당 판매자: {sellerNickname}</p>
+            )}
+          </div>
+        )}
+        
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">별점:</span>
           <StarRating
@@ -201,20 +212,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       
       <div>
         <Textarea
-          placeholder="후기 내용을 입력해주세요. (최소 10자 이상)"
-          minLength={10}
-          maxLength={500}
+          placeholder="후기 내용을 입력해주세요."
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={4}
           className="resize-none"
         />
-        <p className="text-xs text-gray-500 mt-1 text-right">
-          {content.length}/500자
-        </p>
       </div>
       
-      <div className="flex items-center space-x-2">
+      {/* 구매 확인 체크박스 - 임시 주석처리 */}
+      {/* <div className="flex items-center space-x-2">
         <Checkbox
           id="isPurchased"
           checked={isPurchased}
@@ -223,7 +230,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <Label htmlFor="isPurchased" className="text-sm">
           이 상품을 실제로 구매/사용했습니다.
         </Label>
-      </div>
+      </div> */}
       
       <div className="flex justify-end space-x-2">
         {onCancel && (
@@ -238,7 +245,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         )}
         <Button
           type="submit"
-          disabled={isSubmitting || !content.trim() || rating < 1}
+          disabled={isSubmitting || rating < 1}
         >
           {isSubmitting 
             ? '저장 중...' 

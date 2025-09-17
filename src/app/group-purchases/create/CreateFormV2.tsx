@@ -221,32 +221,35 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
       if (response.ok) {
         const data = await response.json();
-        console.log('Loaded products:', data.length, data);
-        console.log('Phone products:', data.filter((p: Product) => p.category_name === '휴대폰'));
-        
+        // 페이징 응답인 경우 results 배열 추출, 아니면 data 그대로 사용
+        const products = Array.isArray(data) ? data : (data.results || []);
+
+        console.log('Loaded products:', products.length, products);
+        console.log('Phone products:', products.filter((p: Product) => p.category_name === '휴대폰'));
+
         // 인터넷/인터넷+TV 상품 상세 분석
-        const internetProducts = data.filter((p: Product) => 
+        const internetProducts = products.filter((p: Product) =>
           p.category_detail_type === 'internet' || p.category?.detail_type === 'internet'
         );
-        const internetTvProducts = data.filter((p: Product) => 
+        const internetTvProducts = products.filter((p: Product) =>
           p.category_detail_type === 'internet_tv' || p.category?.detail_type === 'internet_tv'
         );
-        
+
         console.log('Internet products:', internetProducts.length, internetProducts.map((p: Product) => ({
           name: p.name,
           category_detail_type: p.category_detail_type,
           category: p.category,
           extra_data: p.extra_data
         })));
-        
+
         console.log('Internet+TV products:', internetTvProducts.length, internetTvProducts.map((p: Product) => ({
           name: p.name,
           category_detail_type: p.category_detail_type,
           category: p.category,
           extra_data: p.extra_data
         })));
-        
-        setProducts(data);
+
+        setProducts(products);
       }
     } catch (error) {
       console.error('상품 목록 로드 실패:', error);
@@ -277,8 +280,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         return true; // 'all' 선택 시 모든 휴대폰 상품
       } else if (mainTab === 'internet') {
         // category_detail_type 필드를 직접 체크 (API가 category를 ID로 반환하는 경우)
-        const isInternet = product.category_detail_type === 'internet' || 
-                          product.category?.detail_type === 'internet';
+        const isInternet = product.category_detail_type === 'internet' ||
+                          product.category?.detail_type === 'internet' ||
+                          product.category_name === '인터넷';
         if (!isInternet) return false;
         
         // 서브 탭 필터링 (인터넷) - carrier 정보 확인
@@ -318,8 +322,9 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         return true;
       } else if (mainTab === 'internet_tv') {
         // category_detail_type 필드를 직접 체크 (API가 category를 ID로 반환하는 경우)
-        const isInternetTV = product.category_detail_type === 'internet_tv' || 
-                            product.category?.detail_type === 'internet_tv';
+        const isInternetTV = product.category_detail_type === 'internet_tv' ||
+                            product.category?.detail_type === 'internet_tv' ||
+                            product.category_name === '인터넷+TV';
         if (!isInternetTV) return false;
         
         // 서브 탭 필터링 (인터넷+TV) - carrier 정보 확인
@@ -554,9 +559,19 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         }
       }
 
-      // 종료 시간 계산
+      // 종료 시간 계산 (KST 기준)
       const endTime = new Date();
       endTime.setHours(endTime.getHours() + sliderHours);
+      
+      // KST 형식으로 변환 (YYYY-MM-DDTHH:mm:ss 형식)
+      // toISOString()은 UTC로 변환하므로 사용하지 않음
+      const year = endTime.getFullYear();
+      const month = String(endTime.getMonth() + 1).padStart(2, '0');
+      const day = String(endTime.getDate()).padStart(2, '0');
+      const hours = String(endTime.getHours()).padStart(2, '0');
+      const minutes = String(endTime.getMinutes()).padStart(2, '0');
+      const seconds = String(endTime.getSeconds()).padStart(2, '0');
+      const endTimeKST = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
       // 상품 상세 정보 구성 (기존 폼과 동일한 구조)
       let productDetails = {};
@@ -621,7 +636,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         description: values.description || '',
         min_participants: 1, // 항상 1로 고정
         max_participants: parseInt(values.max_participants?.toString() || '10'),
-        end_time: endTime.toISOString(),
+        end_time: endTimeKST,
         regions: selectedRegions.map(region => ({
           province: region.province,
           city: region.city
@@ -757,8 +772,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       <Card>
         <CardHeader>
           <CardTitle>{mode === 'edit' ? '공구 수정' : '공구 등록'}</CardTitle>
-          <CardDescription>
-            통신상품 공동구매를 등록하여 더 나은 조건을 만들어보세요
+          <CardDescription className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            세상에 없던 견적 받기 시작
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -918,7 +933,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                         <FormLabel>요금제 <span className="text-red-500">*</span></FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder="요금제 선택" />
+                            <SelectValue placeholder="희망요금제 선택" />
                           </SelectTrigger>
                           <SelectContent className="max-h-[250px] overflow-y-auto">
                             <SelectItem value="5G_standard">5만원대</SelectItem>
@@ -941,20 +956,26 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <a href="https://www.tworld.co.kr/web/product/plan/list" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
-                        • SK : 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        • SK : 요금제 확인하기
+                        <img src="/logos/skt.png" alt="SKT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a href="https://product.kt.com/wDic/index.do?CateCode=6002" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
-                        • KT : 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        • KT : 요금제 확인하기
+                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a href="https://www.lguplus.com/mobile/plan/mplan/plan-all" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
-                        • LG U+ : 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        • LG U+ : 요금제 확인하기
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                        →
                       </a>
                     </div>
                   </div>
@@ -1069,20 +1090,26 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                       <a href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-green-600 hover:text-green-800 hover:underline">
-                        • SK : 인터넷 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
+                        • SK : 인터넷 요금제 확인하기
+                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-2.5 w-auto" />
+                        →
                       </a>
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-green-600 hover:text-green-800 hover:underline">
-                        • KT : 인터넷 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
+                        • KT : 인터넷 요금제 확인하기
+                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-green-600 hover:text-green-800 hover:underline">
-                        • LG U+ : 인터넷 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
+                        • LG U+ : 인터넷 요금제 확인하기
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                        →
                       </a>
                     </div>
                   </div>
@@ -1191,26 +1218,32 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   </div>
                   
                   {/* 인터넷+TV 요금제 알아보기 링크 */}
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <p className="text-sm font-medium text-purple-900 mb-2">📺 통신사별 인터넷+TV 요금제 알아보기</p>
+                  <div className="bg-dungji-primary-50 p-4 rounded-lg border border-dungji-primary-200">
+                    <p className="text-sm font-medium text-dungji-primary-900 mb-2">📺 통신사별 인터넷+TV 요금제 알아보기</p>
                     <div className="flex flex-col gap-2">
                       <a href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-purple-600 hover:text-purple-800 hover:underline">
-                        • SK : 인터넷+TV 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
+                        • SK : 인터넷+TV 요금제 확인하기
+                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-2.5 w-auto" />
+                        →
                       </a>
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-purple-600 hover:text-purple-800 hover:underline">
-                        • KT : 인터넷+TV 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
+                        • KT : 인터넷+TV 요금제 확인하기
+                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="text-sm text-purple-600 hover:text-purple-800 hover:underline">
-                        • LG U+ : 인터넷+TV 요금제 확인하기 →
+                         className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
+                        • LG U+ : 인터넷+TV 요금제 확인하기
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                        →
                       </a>
                     </div>
                   </div>
@@ -1231,7 +1264,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                   <div className="text-sky-800">
                     <h4 className="font-medium mb-2">가까운 판매자를 만나보세요</h4>
                     <p className="text-sm text-sky-700">
-                      원하는 지역 최대3곳을 선택하면, 해당 지역 판매자가 견적을 제안해 드립니다.
+                      원하는 지역 3곳을 선택하시면,<br />
+                      해당 지역 판매자가 견적을 제안해 드립니다.
                     </p>
                   </div>
                 </div>
@@ -1240,6 +1274,13 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               {/* 참여 인원 */}
               <div className="space-y-4" id="participants-section">
                 <h3 className="text-lg font-medium">참여 인원</h3>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    💡 인원이 채워지지 않아도<br />
+                    공구모집과 견적받기가 동시에 진행됩니다<br />
+                    (혼자서도 가능)
+                  </p>
+                </div>
                 <FormField
                   control={form.control}
                   name="max_participants"
@@ -1263,7 +1304,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
 
               {/* 시간 설정 */}
               <div className="space-y-4" id="time-section">
-                <h3 className="text-lg font-medium">시간 설정 (최소 6시간 - 최대 48시간) <span className="text-red-500">*</span></h3>
+                <h3 className="text-lg font-medium">시간 설정 (6시간 - 48시간) <span className="text-red-500">*</span></h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">마감 시간</span>
@@ -1283,7 +1324,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
               </div>
 
               {/* 제출 버튼 */}
-              <Button type="submit" className="group relative w-full flex justify-center py-5 px-6 border border-transparent text-xl font-bold rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl" disabled={isSubmitting}>
+              <Button type="submit" className="group relative w-full flex justify-center py-5 px-6 border border-transparent text-xl font-bold rounded-md text-white bg-dungji-primary hover:bg-dungji-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dungji-primary transition-all duration-200 shadow-lg hover:shadow-xl" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-3 h-7 w-7 animate-spin" />

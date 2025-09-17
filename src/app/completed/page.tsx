@@ -64,7 +64,7 @@ function CompletedPageContent() {
       }
       
       const data = await response.json();
-      setGroupBuys(data);
+      setGroupBuys(Array.isArray(data) ? data : (data.results || []));
     } catch (err) {
       console.error('완료된 공구 목록 로딩 실패:', err);
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');

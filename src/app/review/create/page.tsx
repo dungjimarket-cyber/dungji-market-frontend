@@ -27,6 +27,21 @@ function ReviewCreateContent() {
           if (response.ok) {
             const data = await response.json();
             setGroupBuyData(data);
+            
+            // winning_bid API 호출 시도
+            try {
+              const winningBidResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/winning_bid/`);
+              if (winningBidResponse.ok) {
+                const winningBidData = await winningBidResponse.json();
+                // winning_bid 정보를 groupBuyData에 추가
+                setGroupBuyData((prev: any) => ({
+                  ...prev,
+                  winning_bid: winningBidData
+                }));
+              }
+            } catch (error) {
+              console.log('Winning bid API 호출 실패:', error);
+            }
           }
           
           // 기존 후기 확인
@@ -112,6 +127,8 @@ function ReviewCreateContent() {
             initialContent={existingReview?.content || ''}
             initialIsPurchased={existingReview?.is_purchased || false}
             creatorId={groupBuyData?.creator?.id || groupBuyData?.creator}
+            productName={groupBuyData?.product_details?.name || groupBuyData?.title}
+            sellerNickname={groupBuyData?.winning_bid?.seller?.nickname || groupBuyData?.winning_bid?.seller?.username || groupBuyData?.selected_seller?.nickname}
           />
         </CardContent>
       </Card>

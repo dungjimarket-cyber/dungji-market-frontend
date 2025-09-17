@@ -9,7 +9,7 @@ export default function InicisClosePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 2초 후 입찰권 페이지로 리다이렉트
+    // 2초 후 이용권 페이지로 리다이렉트
     const timer = setTimeout(() => {
       router.push('/mypage/seller/bid-tokens?payment=cancelled');
     }, 2000);

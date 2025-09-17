@@ -13,6 +13,7 @@ import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import { useToast } from '@/components/ui/use-toast';
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
 import { verifyBusinessNumberForRegistration, type BusinessVerificationRegistrationResult } from '@/lib/api/businessVerification';
+import { trackSignupConversion } from '@/lib/gtag';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -278,8 +279,8 @@ function RegisterPageContent() {
       return;
     }
 
-    // 닉네임 길이 체크 (2-10자)
-    if (formData.nickname.length < 2 || formData.nickname.length > 10) {
+    // 닉네임 길이 체크 (2-15자, 당근마켓 기준)
+    if (formData.nickname.length < 2 || formData.nickname.length > 15) {
       setNicknameChecked(true);
       setNicknameAvailable(false);
       return;
@@ -287,6 +288,14 @@ function RegisterPageContent() {
 
     // 공백 체크
     if (formData.nickname.includes(' ')) {
+      setNicknameChecked(true);
+      setNicknameAvailable(false);
+      return;
+    }
+    
+    // 특수문자 및 이모티콘 체크 (당근마켓 기준: 한글, 영문, 숫자만 허용)
+    const nicknameRegex = /^[가-힣a-zA-Z0-9]+$/;
+    if (!nicknameRegex.test(formData.nickname)) {
       setNicknameChecked(true);
       setNicknameAvailable(false);
       return;
@@ -779,7 +788,10 @@ function RegisterPageContent() {
         throw new Error(errorData.error || errorData.detail || '회원가입에 실패했습니다.');
       }
 
-      await response.json();
+      const userData = await response.json();
+      
+      // Google Ads 전환 이벤트 트리거
+      trackSignupConversion(userData.id || formData.username);
       
       // 회원가입 성공 후 처리
       if (signupType === 'email') {
@@ -852,7 +864,7 @@ function RegisterPageContent() {
                     <span className="text-xl">💼</span>
                     <div className="flex-1">
                       <span className="font-semibold text-green-600 text-sm">판매회원</span>
-                      <span className="text-gray-600 text-xs ml-1">견적 제안하고 판매 기회 얻기</span>
+                      <span className="text-gray-600 text-xs ml-1">견적 제안, 판매 활동</span>
                     </div>
                   </div>
                 </div>
@@ -1328,9 +1340,10 @@ function RegisterPageContent() {
                         type="text"
                         required
                         className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder={formData.role === 'seller' ? '상호명을 입력하세요' : '닉네임을 입력하세요'}
+                        placeholder={formData.role === 'seller' ? '상호명 (2-15자)' : '닉네임 (2-15자)'}
                         value={formData.nickname}
                         onChange={handleChange}
+                        maxLength={15}
                       />
                       <button
                         type="button"
@@ -1341,8 +1354,8 @@ function RegisterPageContent() {
                       </button>
                     </div>
                     {nicknameChecked && (
-                      <div className={`mt-2 p-2 rounded-md ${nicknameAvailable ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                        <p className={`text-sm flex items-center gap-2 ${nicknameAvailable ? 'text-green-700' : 'text-red-700'}`}>
+                      <div className={`mt-2 p-2 rounded-md ${nicknameAvailable ? 'bg-blue-50 border border-blue-200' : 'bg-red-50 border border-red-200'}`}>
+                        <p className={`text-sm flex items-center gap-2 ${nicknameAvailable ? 'text-blue-700' : 'text-red-700'}`}>
                           {nicknameAvailable ? (
                             <>
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -1356,10 +1369,12 @@ function RegisterPageContent() {
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                               </svg>
                               <span className="font-medium">
-                                {formData.nickname.length < 2 || formData.nickname.length > 10 
-                                  ? '닉네임은 2자 이상 10자 이하로 입력해주세요.'
+                                {formData.nickname.length < 2 || formData.nickname.length > 15 
+                                  ? '닉네임은 2자 이상 15자 이하로 입력해주세요.'
                                   : formData.nickname.includes(' ')
                                   ? '닉네임에 공백을 포함할 수 없습니다.'
+                                  : !(/^[가-힣a-zA-Z0-9]+$/.test(formData.nickname))
+                                  ? '닉네임은 한글, 영문, 숫자만 사용 가능합니다.'
                                   : '이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.'}
                               </span>
                             </>

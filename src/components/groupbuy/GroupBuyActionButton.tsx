@@ -6,6 +6,7 @@ import JoinGroupBuyModal from './JoinGroupBuyModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { useRouter } from 'next/navigation';
 
 interface GroupBuyActionButtonProps {
@@ -41,6 +42,7 @@ export default function GroupBuyActionButton({
 }: GroupBuyActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   
@@ -75,21 +77,41 @@ export default function GroupBuyActionButton({
 
   const handleClick = async () => {
     console.log('[GroupBuyActionButton] 버튼 클릭, user:', user);
+    console.log('[GroupBuyActionButton] isAuthenticated:', isAuthenticated);
     
-    // 먼저 프로필 체크 수행 (모든 회원 대상)
-    if (user) {
-      console.log('[GroupBuyActionButton] 프로필 체크 시작');
-      const isProfileComplete = await checkProfile();
-      console.log('[GroupBuyActionButton] 프로필 체크 결과:', isProfileComplete);
-      console.log('[GroupBuyActionButton] missingFields:', missingFields);
-      
-      if (!isProfileComplete) {
-        console.log('[GroupBuyActionButton] 프로필 미완성, 모달 표시 시도');
-        console.log('[GroupBuyActionButton] showProfileModal 이전 값:', showProfileModal);
-        setShowProfileModal(true);
-        console.log('[GroupBuyActionButton] setShowProfileModal(true) 호출됨');
-        return;
-      }
+    // 비로그인 사용자는 로그인 페이지로 이동
+    if (!isAuthenticated) {
+      console.log('[GroupBuyActionButton] 비로그인 사용자, 로그인 페이지로 이동');
+      router.push(`/login?callbackUrl=/groupbuys/${groupBuy.id}`);
+      return;
+    }
+    
+    // 먼저 패널티 체크 수행
+    console.log('🔴 GroupBuyActionButton - Penalty check');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 PenaltyInfo (camelCase):', user?.penaltyInfo);
+    console.log('🔴 Is active (snake):', user?.penalty_info?.is_active);
+    console.log('🔴 Is active (camel):', user?.penaltyInfo?.isActive);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
+    }
+    
+    // 프로필 체크 수행 (모든 회원 대상)
+    console.log('[GroupBuyActionButton] 프로필 체크 시작');
+    const isProfileComplete = await checkProfile();
+    console.log('[GroupBuyActionButton] 프로필 체크 결과:', isProfileComplete);
+    console.log('[GroupBuyActionButton] missingFields:', missingFields);
+    
+    if (!isProfileComplete) {
+      console.log('[GroupBuyActionButton] 프로필 미완성, 모달 표시 시도');
+      console.log('[GroupBuyActionButton] showProfileModal 이전 값:', showProfileModal);
+      setShowProfileModal(true);
+      console.log('[GroupBuyActionButton] setShowProfileModal(true) 호출됨');
+      return;
     }
     
     // 판매회원은 상세 페이지에서 입찰 처리하도록 이벤트 발생
@@ -132,7 +154,7 @@ export default function GroupBuyActionButton({
       return '판매회원 없음';
     }
     
-    return '공구 참여하기';
+    return '같이 견적받기';
   };
 
   // 버튼 비활성화 조건
@@ -155,12 +177,26 @@ export default function GroupBuyActionButton({
         {getButtonText()}
       </Button>
 
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole={isSeller ? 'seller' : 'buyer'}
+      />
+
       {/* 프로필 체크 모달 */}
       <ProfileCheckModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         missingFields={missingFields}
-        onUpdateProfile={clearCache}
+        onUpdateProfile={() => {
+          setShowProfileModal(false);
+          clearCache();
+          // 판매회원과 일반회원 구분하여 라우팅
+          const userIsSeller = user?.role === 'seller' || user?.user_type === '판매';
+          router.push(userIsSeller ? '/mypage/seller/settings' : '/mypage/settings');
+        }}
       />
 
       {/* 공구 참여 모달 */}

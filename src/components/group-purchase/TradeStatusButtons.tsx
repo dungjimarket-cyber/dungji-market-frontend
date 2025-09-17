@@ -104,22 +104,6 @@ export function TradeStatusButtons({
               판매자 정보보기
             </Button>
             <Button
-              onClick={() => {
-                if (!groupBuyId) {
-                  console.error('TradeStatusButtons (buyer): groupBuyId is missing:', groupBuyId);
-                  return;
-                }
-                console.log('TradeStatusButtons (buyer): Navigating to no-show report with groupBuyId:', groupBuyId);
-                router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-              }}
-              variant="outline"
-              className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
-              disabled={!groupBuyId}
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              노쇼신고
-            </Button>
-            <Button
               onClick={onComplete}
               className="w-full py-3 bg-green-600 hover:bg-green-700"
             >
@@ -226,22 +210,6 @@ export function TradeStatusButtons({
             >
               <Phone className="h-4 w-4 mr-2" />
               구매자 정보보기
-            </Button>
-            <Button
-              onClick={() => {
-                if (!groupBuyId) {
-                  console.error('TradeStatusButtons (seller): groupBuyId is missing:', groupBuyId);
-                  return;
-                }
-                console.log('TradeStatusButtons (seller): Navigating to no-show report with groupBuyId:', groupBuyId);
-                router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-              }}
-              variant="outline"
-              className="w-full py-3 text-orange-600 border-orange-500 hover:bg-orange-50"
-              disabled={!groupBuyId}
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              노쇼신고
             </Button>
             <Button
               onClick={onComplete}

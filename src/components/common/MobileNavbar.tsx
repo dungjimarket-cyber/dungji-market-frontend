@@ -8,6 +8,7 @@ import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaSt
 import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 /**
  * 모바일용 하단 네비게이션 바 컴포넌트
@@ -17,6 +18,7 @@ export default function MobileNavbar() {
   const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 프로필 체크 Hook 사용
   const { 
@@ -34,6 +36,18 @@ export default function MobileNavbar() {
     // 로그인 확인
     if (!isAuthenticated) {
       router.push('/login?callbackUrl=/group-purchases/create');
+      return;
+    }
+    
+    // 패널티 체크
+    console.log('🔴 MobileNavbar - 공구 등록하기 클릭');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
       return;
     }
     
@@ -138,6 +152,14 @@ export default function MobileNavbar() {
         )}
       </div>
       
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole="buyer"
+      />
+      
       {/* 프로필 체크 모달 */}
       <ProfileCheckModal
         isOpen={showProfileModal}
@@ -150,9 +172,19 @@ export default function MobileNavbar() {
         onUpdateProfile={() => {
           // 프로필 업데이트 페이지로 이동
           clearCache();
-          const redirectPath = user?.role === 'seller' 
-            ? '/mypage/seller/settings' 
-            : '/mypage/settings';
+          
+          // 사용자 역할 확인
+          const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+          const redirectPath = isSeller ? '/mypage/seller/settings' : '/mypage/settings';
+          
+          console.log('[MobileNavbar] 프로필 업데이트 이동:', {
+            user_role: user?.role,
+            user_type: user?.user_type,
+            isSeller,
+            redirectPath
+          });
+          
+          setShowProfileModal(false);  // 모달 닫기
           router.push(redirectPath);
         }}
       />

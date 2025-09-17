@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { parseKSTDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,7 +46,7 @@ export function FinalSelectionTimer({
   useEffect(() => {
     const checkExpired = () => {
       const now = new Date().getTime();
-      const end = new Date(endTime).getTime();
+      const end = parseKSTDate(endTime).getTime();
       setIsExpired(now > end);
     };
     

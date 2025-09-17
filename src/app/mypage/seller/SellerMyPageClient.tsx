@@ -4,19 +4,21 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import ProfileSection from '@/components/mypage/seller/ProfileSection';
-import BidHistory from '@/components/mypage/seller/BidHistory';
 import WaitingBuyerSelection from '@/components/mypage/seller/WaitingBuyerSelection';
 import PendingSellerDecision from '@/components/mypage/seller/PendingSellerDecision';
 import TradingGroupBuys from '@/components/mypage/seller/TradingGroupBuys';
 import CompletedSales from '@/components/mypage/seller/CompletedSales';
 import CancelledGroupBuys from '@/components/mypage/seller/CancelledGroupBuys';
+import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 /**
  * 판매자 마이페이지 클라이언트 컴포넌트
@@ -34,15 +36,71 @@ export default function SellerMyPageClient() {
   const [pageLoading, setPageLoading] = useState(true);
   
   // 각 섹션의 데이터 카운트 상태 관리
-  const [bidHistoryCount, setBidHistoryCount] = useState(0);
-  const [waitingBuyerCount, setWaitingBuyerCount] = useState(0);
-  const [pendingSellerCount, setPendingSellerCount] = useState(0);
-  const [tradingCount, setTradingCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [cancelledCount, setCancelledCount] = useState(0);
+  const [counts, setCounts] = useState({
+    waitingBuyer: 0,
+    pendingSeller: 0,
+    trading: 0,
+    completed: 0,
+    cancelled: 0
+  });
+
   
   // 아코디언 열림 상태 관리
   const [accordionValue, setAccordionValue] = useState<string | undefined>();
+
+  // 카운트 새로고침 함수
+  const refreshCounts = async () => {
+    if (!isAuthenticated || !accessToken) return;
+
+    try {
+      const responses = await Promise.allSettled([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_pending_decision/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_trading/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_completed/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_cancelled/`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+      ]);
+
+      const [waitingBuyer, pendingSeller, trading, completed, cancelled] = responses;
+
+      const newCounts = { ...counts };
+
+      if (waitingBuyer.status === 'fulfilled' && waitingBuyer.value.ok) {
+        const data = await waitingBuyer.value.json();
+        newCounts.waitingBuyer = data.length;
+      }
+      if (pendingSeller.status === 'fulfilled' && pendingSeller.value.ok) {
+        const data = await pendingSeller.value.json();
+        newCounts.pendingSeller = data.length;
+      }
+      if (trading.status === 'fulfilled' && trading.value.ok) {
+        const data = await trading.value.json();
+        newCounts.trading = data.length;
+      }
+      if (completed.status === 'fulfilled' && completed.value.ok) {
+        const data = await completed.value.json();
+        newCounts.completed = data.length;
+      }
+      if (cancelled.status === 'fulfilled' && cancelled.value.ok) {
+        const data = await cancelled.value.json();
+        newCounts.cancelled = data.length;
+      }
+
+      setCounts(newCounts);
+    } catch (error) {
+      console.error('카운트 새로고침 오류:', error);
+    }
+  };
 
   // 각 카테고리별 데이터 개수 가져오기
   useEffect(() => {
@@ -50,33 +108,7 @@ export default function SellerMyPageClient() {
       if (!isAuthenticated || !accessToken) return;
       
       try {
-        // 견적내역 개수
-        const fetchBidHistory = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_bids/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setBidHistoryCount(data.length);
-          }
-        };
-        
-        // 구매자 최종선택 대기중 개수
-        const fetchWaitingBuyer = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setWaitingBuyerCount(data.length);
-          }
-        };
-        
-        // 판매확정/포기 선택하기 개수
+        // 중요한 항목(판매확정/포기)만 먼저 로드
         const fetchPendingSeller = async () => {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_pending_decision/`, {
             headers: {
@@ -85,58 +117,54 @@ export default function SellerMyPageClient() {
           });
           if (response.ok) {
             const data = await response.json();
-            setPendingSellerCount(data.length);
+            setCounts(prev => ({ ...prev, pendingSeller: data.length }));
+            return data.length;
+          }
+          return 0;
+        };
+        
+        // 먼저 중요한 데이터 로드
+        const pendingCount = await fetchPendingSeller();
+        setPageLoading(false); // 중요한 데이터 로드 후 즉시 페이지 표시
+        
+        // 나머지는 비동기로 로드 (페이지 표시를 막지 않음)
+        const loadRemainingCounts = async () => {
+          const responses = await Promise.allSettled([
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_waiting_buyer/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_trading/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_completed/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_cancelled/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            })
+          ]);
+          
+          const [waitingBuyer, trading, completed, cancelled] = responses;
+          
+          if (waitingBuyer.status === 'fulfilled' && waitingBuyer.value.ok) {
+            const data = await waitingBuyer.value.json();
+            setCounts(prev => ({ ...prev, waitingBuyer: data.length }));
+          }
+          if (trading.status === 'fulfilled' && trading.value.ok) {
+            const data = await trading.value.json();
+            setCounts(prev => ({ ...prev, trading: data.length }));
+          }
+          if (completed.status === 'fulfilled' && completed.value.ok) {
+            const data = await completed.value.json();
+            setCounts(prev => ({ ...prev, completed: data.length }));
+          }
+          if (cancelled.status === 'fulfilled' && cancelled.value.ok) {
+            const data = await cancelled.value.json();
+            setCounts(prev => ({ ...prev, cancelled: data.length }));
           }
         };
         
-        // 거래중 개수
-        const fetchTrading = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_trading/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setTradingCount(data.length);
-          }
-        };
-        
-        // 판매완료 개수
-        const fetchCompleted = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_completed/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setCompletedCount(data.length);
-          }
-        };
-        
-        // 취소된 공구 개수
-        const fetchCancelled = async () => {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/seller_cancelled/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setCancelledCount(data.length);
-          }
-        };
-        
-        // 모든 API 호출을 병렬로 실행
-        await Promise.all([
-          fetchBidHistory(),
-          fetchWaitingBuyer(),
-          fetchPendingSeller(),
-          fetchTrading(),
-          fetchCompleted(),
-          fetchCancelled()
-        ]);
+        loadRemainingCounts();
       } catch (error) {
         console.error('판매자 마이페이지 데이터 로딩 오류:', error);
       } finally {
@@ -173,6 +201,7 @@ export default function SellerMyPageClient() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+
   if (isLoading || pageLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -184,14 +213,39 @@ export default function SellerMyPageClient() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">판매자 마이페이지</h1>
-      
+      {/* 헤더 영역 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">판매자 마이페이지</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/mypage/seller/settings')}
+          className="flex items-center"
+        >
+          <Settings className="w-4 h-4 mr-1" />
+          내 정보 설정
+        </Button>
+      </div>
+
       {/* 프로필 섹션 */}
       <ProfileSection />
+      
+      {/* 패널티 알림 표시 */}
+      <PenaltyAlert penaltyInfo={user?.penalty_info || user?.penaltyInfo} userRole="seller" />
       
       {/* 판매 활동 섹션 */}
       <div className="mt-8 space-y-4">
         <h2 className="text-xl font-semibold mb-4">판매 활동</h2>
+        
+        {/* 견적내역보기 버튼 - 판매활동 바로 아래로 이동 */}
+        <button
+          onClick={() => router.push('/mypage/seller/bids')}
+          className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group mb-4"
+        >
+          <Gavel className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+          <span>견적내역 전체보기</span>
+          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+        </button>
         
         <Accordion 
           type="single" 
@@ -200,35 +254,24 @@ export default function SellerMyPageClient() {
           value={accordionValue}
           onValueChange={setAccordionValue}
         >
-          {/* 1. 견적제안 내역 */}
-          <AccordionItem value="bid-history">
-            <AccordionTrigger className="hover:no-underline">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Gavel className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">견적제안 내역</span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {bidHistoryCount}건</span>
-                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                </div>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent>
-              <BidHistory />
-            </AccordionContent>
-          </AccordionItem>
-          
-          {/* 2. 구매자 최종선택 대기중 */}
+          {/* 1. 구매자 최종선택 대기중 */}
           <AccordionItem value="waiting-buyer">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">구매자 최종선택 대기중</span>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">구매자 최종선택 대기중</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {waitingBuyerCount}건</span>
+                <div className="flex items-center gap-2">
+                  {counts.waitingBuyer > 0 ? (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-yellow-500 text-white text-sm font-semibold rounded-full">
+                      {counts.waitingBuyer}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                      {counts.waitingBuyer}
+                    </span>
+                  )}
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -238,18 +281,27 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 3. 판매확정/포기 선택하기 */}
-          <AccordionItem value="pending-decision" className="border-orange-200">
-            <AccordionTrigger className="hover:no-underline bg-orange-50">
+          {/* 2. 판매확정/포기 선택하기 */}
+          <AccordionItem value="pending-decision">
+            <AccordionTrigger className="py-2 bg-orange-50 px-2 rounded-lg hover:bg-orange-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
-                  <span className="font-medium text-orange-700 text-sm sm:text-base">판매확정/포기 선택하기</span>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-orange-700">판매확정/포기 선택하기</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-orange-600 font-semibold">
-                    {pendingSellerCount}건 선택 대기중
-                  </span>
+                <div className="flex items-center gap-2">
+                  {counts.pendingSeller > 0 ? (
+                    <>
+                      <span className="text-xs sm:text-sm text-orange-600 font-medium">선택 대기중</span>
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-orange-500 text-white text-sm font-semibold rounded-full animate-pulse">
+                        {counts.pendingSeller}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                      {counts.pendingSeller}
+                    </span>
+                  )}
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
                 </div>
               </div>
@@ -259,35 +311,45 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 4. 거래중 */}
+          {/* 3. 거래중 */}
           <AccordionItem value="trading">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">거래중</span>
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">거래중</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {tradingCount}건</span>
+                <div className="flex items-center gap-2">
+                  {counts.trading > 0 ? (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-green-500 text-white text-sm font-semibold rounded-full">
+                      {counts.trading}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                      {counts.trading}
+                    </span>
+                  )}
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <TradingGroupBuys />
+              <TradingGroupBuys onComplete={refreshCounts} />
             </AccordionContent>
           </AccordionItem>
           
-          {/* 5. 판매완료 */}
+          {/* 4. 거래종료 */}
           <AccordionItem value="completed">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">판매완료</span>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">거래종료</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {completedCount}건</span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                    {counts.completed}
+                  </span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -297,16 +359,18 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
           
-          {/* 6. 취소된 공구 */}
+          {/* 5. 취소된 공구 */}
           <AccordionItem value="cancelled">
-            <AccordionTrigger className="hover:no-underline">
+            <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
-                  <span className="font-medium text-sm sm:text-base">취소된 공구</span>
+                <div className="flex items-center gap-2">
+                  <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">취소된 공구</span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                  <span className="text-xs sm:text-sm text-gray-500">총 {cancelledCount}건</span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                    {counts.cancelled}
+                  </span>
                   <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </div>
               </div>
@@ -316,7 +380,22 @@ export default function SellerMyPageClient() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+
+        {/* 노쇼 관리 통합 버튼 */}
+        <div className="mt-6 flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/mypage/noshow-management')}
+            className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+          >
+            <AlertTriangle className="w-3 h-3" />
+            노쇼관리
+          </Button>
+        </div>
       </div>
+
+
     </div>
   );
 }

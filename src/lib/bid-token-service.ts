@@ -158,12 +158,16 @@ const bidTokenService = {
    */
   async getPendingPayments(): Promise<PendingPayment[]> {
     try {
-      const data = await tokenUtils.fetchWithAuth<PendingPayment[]>(
+      const response = await tokenUtils.fetchWithAuth<{
+        success: boolean;
+        pending_payments: PendingPayment[];
+        count: number;
+      }>(
         `${API_URL}/payments/pending/`,
         { method: 'GET' }
       );
       
-      return data;
+      return response.pending_payments || [];
     } catch (error) {
       console.error('Error fetching pending payments:', error);
       throw error;

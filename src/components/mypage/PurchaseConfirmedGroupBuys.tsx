@@ -87,7 +87,7 @@ export default function PurchaseConfirmedGroupBuys() {
         }
 
         const data = await response.json();
-        setGroupBuys(data);
+        setGroupBuys(Array.isArray(data) ? data : (data.results || []));
       } catch (err) {
         console.error('구매 확정된 공구 목록 조회 오류:', err);
         setGroupBuys([]);
@@ -137,19 +137,6 @@ export default function PurchaseConfirmedGroupBuys() {
     }
   };
 
-  const handleNoShowReport = (groupBuyId: number) => {
-    if (!groupBuyId) {
-      console.error('groupBuyId is missing:', groupBuyId);
-      toast({
-        title: '오류',
-        description: '공구 정보를 찾을 수 없습니다.',
-        variant: 'destructive'
-      });
-      return;
-    }
-    console.log('Navigating to no-show report with groupBuyId:', groupBuyId);
-    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-  };
 
   if (isLoading || loading) return <p className="text-gray-500">로딩 중...</p>;
   
@@ -187,7 +174,7 @@ export default function PurchaseConfirmedGroupBuys() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {groupBuys.map((groupBuy) => (
-        <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow">
+        <Card key={groupBuy.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
               <CardTitle className="text-lg">{groupBuy.title}</CardTitle>
@@ -250,52 +237,42 @@ export default function PurchaseConfirmedGroupBuys() {
                 {/* 액션 버튼 */}
                 <div className="mt-3">
                   {/* 첫 번째 줄: 연락처 확인 및 공구보기 */}
-                  <div className="flex gap-2 mb-2">
+                  <div className="flex gap-2 mb-2 md:justify-start">
                     {/* 거래중 상태에서는 판매자 정보 확인 가능 */}
                     {(groupBuy.status === 'in_progress' || (groupBuy.seller_confirmed && groupBuy.all_buyers_confirmed)) && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="flex-1"
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 md:flex-none md:w-auto md:px-3"
                         onClick={() => {
                           setSelectedGroupBuyId(groupBuy.id);
                           setIsContactModalOpen(true);
                         }}
                       >
                         <Phone className="w-3 h-3 mr-1" />
-                        판매자 정보 확인하기
+                        판매자정보확인
                       </Button>
                     )}
-                    <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1">
-                      <Button size="sm" variant="outline" className="w-full">
+                    <Link href={`/groupbuys/${groupBuy.id}`} className="flex-1 md:flex-none">
+                      <Button size="sm" variant="outline" className="w-full md:w-auto md:px-4">
                         공구보기
                       </Button>
                     </Link>
                   </div>
                   
-                  {/* 두 번째 줄: 구매완료/노쇼신고 또는 후기작성 */}
+                  {/* 두 번째 줄: 거래종료 버튼만 표시 */}
                   {groupBuy.shipping_status !== 'delivered' ? (
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
+                    <div className="flex gap-2 md:justify-start">
+                      <Button
+                        size="sm"
+                        className="flex-1 md:flex-none md:w-auto md:px-4"
                         onClick={() => {
                           setSelectedCompleteId(groupBuy.id);
                           setShowCompleteDialog(true);
                         }}
                       >
                         <CheckCircle className="w-3 h-3 mr-1" />
-                        구매완료
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        className="flex-1"
-                        onClick={() => handleNoShowReport(groupBuy.id)}
-                        disabled={!groupBuy.id}
-                      >
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        노쇼 신고하기
+                        거래종료
                       </Button>
                     </div>
                   ) : (
@@ -327,13 +304,13 @@ export default function PurchaseConfirmedGroupBuys() {
         />
       )}
       
-      {/* 구매완료 확인 다이얼로그 */}
+      {/* 거래종료 확인 다이얼로그 */}
       <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>구매 완료 확인</AlertDialogTitle>
+            <AlertDialogTitle>거래 종료 확인</AlertDialogTitle>
             <AlertDialogDescription>
-              판매자와의 거래를 원만하게 종료하셨나요?
+              거래를 종료하시겠습니까? 종료 후 후기 작성이나 노쇼 신고가 가능합니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+*.test.*
+__tests__
+.jest
+
+# Development
+.git
+.github
+.vscode
+*.log
+*.md
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+.DS_Store
+*.pem
+.idea
+*.iml
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation
+docs
+README.md
+CLAUDE.md
+PWA_DEPLOYMENT_GUIDE.md
+
+# Source files (Vercel only needs built files)
+src/**/*.test.tsx
+src/**/*.test.ts
+src/__tests__
+
+# Sharp binaries (too large for Vercel)
+node_modules/sharp

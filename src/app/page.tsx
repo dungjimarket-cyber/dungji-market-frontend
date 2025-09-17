@@ -13,6 +13,8 @@ import { getSellerBids } from '@/lib/api/bidService';
 import dynamic from 'next/dynamic';
 import { SearchBar } from '@/components/search/SearchBar';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
+import NoticeSection from '@/components/home/NoticeSection';
+import { PopupManager } from '@/components/popup/PopupDisplay';
 
 const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
@@ -145,9 +147,17 @@ function HomeContent() {
           const popularData = await popularResponse.json();
           const newData = await newResponse.json();
           
+          // 페이징 응답 형식과 배열 형식 모두 지원
+          const popularItems = Array.isArray(popularData) 
+            ? popularData 
+            : (popularData.results || []);
+          const newItems = Array.isArray(newData) 
+            ? newData 
+            : (newData.results || []);
+          
           // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
-          setPopularGroupBuys(popularData.slice(0, 2));
-          setNewGroupBuys(newData.slice(0, 2));
+          setPopularGroupBuys(popularItems.slice(0, 2));
+          setNewGroupBuys(newItems.slice(0, 2));
         }
       } catch (error) {
         console.error('공구 데이터 로딩 실패:', error);
@@ -169,14 +179,20 @@ function HomeContent() {
 
   return (
     <>
+      {/* 팝업 매니저 */}
+      <PopupManager />
+      
+      {/* 공지사항 섹션 - 최상단 */}
+      <NoticeSection />
+      
       {/* 모바일 환경에서만 표시되는 헤더 */}
       <div className="md:hidden">
         <MobileHeader />
       </div>
       
-      <div className="container mx-auto px-4 py-2 md:py-6 pb-28 md:pb-8 max-w-full">
+      <div className="container mx-auto px-4 py-1 md:py-6 pb-16 sm:pb-20 md:pb-6 max-w-full">
       {/* 배너 캐러셀을 맨 위로 이동 - PC에서 간격 더 줄임 */}
-      <section className="mb-4 md:mb-6">
+      <section className="mb-2 md:mb-6">
         <BannerCarousel />
       </section>
 
@@ -185,7 +201,7 @@ function HomeContent() {
         <SearchBar 
           className="max-w-2xl mx-auto"
           placeholder="통합검색 (상품명, 지역, 통신사 등)"
-          showMyRegionButton={true}
+          showMyRegionButton={false}
         />
       </section>
       
@@ -194,7 +210,7 @@ function HomeContent() {
           {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
           <RoleButton 
             href="/group-purchases/create"
-            className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
+            className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 w-full sm:w-auto"
             disableForRoles={['seller']}            
           >
             <span className="text-xs sm:text-base">공구 등록하기</span>
@@ -202,14 +218,14 @@ function HomeContent() {
           
           <Link 
             href="/group-purchases"
-            className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto"
+            className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">공구 둘러보기</span>
           </Link>
           
           <Link 
             href="/events"
-            className="btn-animated btn-accent whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto"
+            className="btn-animated bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이벤트</span>
           </Link>
@@ -218,7 +234,7 @@ function HomeContent() {
             href="https://doongji-market-1vi5n3i.gamma.site/"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-animated btn-purple whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white"
+            className="btn-animated btn-soft whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이용가이드</span>
           </a>
@@ -316,7 +332,7 @@ export default function Home() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dungji-primary mx-auto"></div>
           <p className="mt-4 text-gray-600">로딩 중...</p>
         </div>
       </div>

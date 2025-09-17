@@ -14,6 +14,53 @@ interface InicisPaymentParams {
   closeUrl?: string;
 }
 
+// 이니시스 결제 오류 코드 매핑
+export const INICIS_ERROR_MESSAGES: Record<string, string> = {
+  '0000': '결제가 성공적으로 완료되었습니다.',
+  // 카드 관련 오류
+  '1001': '카드 한도를 초과하였습니다. 다른 카드를 이용해주세요.',
+  '1002': '잔액이 부족합니다. 계좌 잔액을 확인해주세요.',
+  '1003': '정지된 카드입니다. 카드사에 문의해주세요.',
+  '1004': '카드 유효기간이 만료되었습니다.',
+  '1005': '비밀번호가 일치하지 않습니다. 다시 확인해주세요.',
+  '1006': '등록되지 않은 카드입니다. 카드사에 문의해주세요.',
+  '1007': '거래가 정지된 카드입니다. 카드사에 문의해주세요.',
+  '1008': '분실 또는 도난 카드입니다.',
+  '1009': '한도초과(일일/월 한도)',
+  '1010': 'CVC 오류입니다. 카드 뒷면 3자리 숫자를 확인해주세요.',
+  // 계좌이체 관련
+  '2001': '계좌이체 실패. 은행 시스템 점검중이거나 한도초과입니다.',
+  '2002': '계좌번호가 올바르지 않습니다.',
+  '2003': '예금주명이 일치하지 않습니다.',
+  // 휴대폰 결제
+  '3001': '휴대폰 결제 한도를 초과했습니다.',
+  '3002': '휴대폰 결제가 차단된 번호입니다.',
+  '3003': '휴대폰 본인인증에 실패했습니다.',
+  // 시스템 관련
+  '4001': '거래 시간이 초과되었습니다. 다시 시도해주세요.',
+  '4002': '중복된 거래입니다.',
+  '5001': '통신 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+  // 취소/거절
+  '6001': '사용자가 결제를 취소했습니다.',
+  '6002': '결제가 거절되었습니다. 카드사에 문의해주세요.',
+  // 기타
+  '9999': '결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+  'default': '결제 처리 중 문제가 발생했습니다.'
+};
+
+// 오류 코드로부터 사용자 친화적 메시지 가져오기
+export function getInicisErrorMessage(resultCode: string | null, resultMsg?: string | null): string {
+  if (!resultCode) return resultMsg || INICIS_ERROR_MESSAGES['default'];
+
+  // 오류 코드에 해당하는 메시지가 있으면 사용
+  if (INICIS_ERROR_MESSAGES[resultCode]) {
+    return INICIS_ERROR_MESSAGES[resultCode];
+  }
+
+  // 없으면 원본 메시지 또는 기본 메시지 사용
+  return resultMsg || INICIS_ERROR_MESSAGES['default'];
+}
+
 class InicisService {
   private readonly MID = 'dungjima14'; // 실제 상점 아이디
   private readonly MOBILE_HASHKEY = 'D1EEF4CE7B4D9B1795BBFD255D35FE24'; // 모바일 hashkey
@@ -46,7 +93,40 @@ class InicisService {
       console.log('결제 파라미터:', { orderId, amount: params.amount, productName: params.productName });
       
       if (isMobile) {
-        // 모바일 전용 결제 방식
+        // 모바일도 결제 준비 API 호출
+        console.log('모바일 결제 준비 요청 시작');
+        
+        const prepareData = {
+          orderId,
+          amount: params.amount,
+          productName: params.productName,
+          buyerName: params.buyerName,
+          buyerTel: params.buyerTel,
+          buyerEmail: params.buyerEmail,
+        };
+        
+        console.log('백엔드 prepare 요청:', prepareData);
+        
+        const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/prepare/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+          },
+          body: JSON.stringify(prepareData),
+        });
+
+        console.log('prepare 응답 상태:', prepareResponse.status);
+
+        if (!prepareResponse.ok) {
+          const errorText = await prepareResponse.text();
+          console.error('prepare 실패:', errorText);
+          throw new Error(`결제 준비에 실패했습니다: ${prepareResponse.status}`);
+        }
+
+        const prepareResponseData = await prepareResponse.json();
+        console.log('prepare 응답 데이터:', prepareResponseData);
+        
         console.log('모바일 결제 진행');
         await this.submitMobilePaymentForm(orderId, params);
       } else {
@@ -99,8 +179,11 @@ class InicisService {
    * 모바일 전용 결제 폼 전송
    */
   private async submitMobilePaymentForm(orderId: string, params: InicisPaymentParams) {
-    // 모바일 결제는 해시키 생성이 필요
-    const mobileHash = await this.generateMobileHash(orderId, params.amount);
+    // 타임스탬프 생성 (TimeInMillis Long형)
+    const timestamp = String(Date.now());
+    
+    // 모바일 결제는 해시키 생성이 필요하지만 일단 생략 (선택사항)
+    const mobileHash = null; // await this.generateMobileHash(orderId, params.amount, timestamp);
     
     // DOM에 직접 폼을 생성하고 제출
     const form = document.createElement('form');
@@ -118,23 +201,23 @@ class InicisService {
       form.appendChild(input);
     };
     
-    // 모바일 결제 파라미터 설정
-    addField('P_INI_PAYMENT', 'CARD'); // 결제수단 (CARD, VBANK, MOBILE 등)
-    addField('P_MID', this.MID); // 상점 ID
-    addField('P_OID', orderId); // 주문번호
-    addField('P_AMT', String(params.amount)); // 금액
-    addField('P_GOODS', params.productName); // 상품명
-    addField('P_UNAME', params.buyerName); // 구매자명
-    addField('P_MOBILE', params.buyerTel); // 구매자 전화번호
-    addField('P_EMAIL', params.buyerEmail); // 구매자 이메일
-    addField('P_NEXT_URL', `${window.location.origin}/api/payments/inicis/return/`); // 결과 리턴 URL
-    addField('P_CHARSET', 'utf8'); // 인코딩
-    addField('P_RESERVED', 'below1000=Y&vbank_receipt=Y&centerCd=Y'); // 추가 옵션
+    // 모바일 결제 파라미터 설정 (이니시스 공식 스펙)
+    addField('P_INI_PAYMENT', 'CARD'); // 결제수단 (카드결제 우선, 무통장입금은 결제창에서 선택)
+    addField('P_MID', this.MID); // 상점 ID (필수)
+    addField('P_OID', orderId); // 주문번호 (필수, Unique값)
+    addField('P_AMT', String(params.amount)); // 결제금액 (필수, 숫자만, 콤마 사용불가)
+    addField('P_GOODS', params.productName); // 상품명 (필수)
+    addField('P_UNAME', params.buyerName); // 구매자명 (필수)
+    addField('P_NEXT_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 결과수신 URL (필수) - POST 요청 처리용
+    addField('P_NOTI_URL', `${window.location.origin}/api/payment/inicis/mobile-return`); // 가상계좌입금통보 URL
+    addField('P_HPP_METHOD', '2'); // 휴대폰결제 상품유형 [1:컨텐츠, 2:실물]
+    addField('P_RESERVED', 'centerCd=Y'); // IDC센터코드 수신 사용옵션 (필수)
     addField('P_NOTI', orderId); // 가맹점 임의 데이터
-    addField('P_HPP_METHOD', '1'); // 휴대폰 결제 허용
-    addField('P_VBANK_DT', '7'); // 가상계좌 입금기한 (7일)
+    
+    // 타임스탬프와 해시 추가 (선택사항, 권장)
+    addField('P_TIMESTAMP', timestamp); // 타임스탬프
     if (mobileHash) {
-      addField('P_HASH', mobileHash); // 모바일 해시키
+      addField('P_CHKFAKE', mobileHash); // BASE64_ENCODE(SHA512(P_AMT + P_OID + P_TIMESTAMP + HashKey))
     }
     
     // 폼을 body에 추가하고 제출
@@ -272,8 +355,8 @@ class InicisService {
     <input type="hidden" name="buyeremail" value="${params.buyerEmail}">
     
     <!-- 리턴 URL -->
-    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payments/inicis/return/">
-    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payments/inicis/close/">
+    <input type="hidden" name="returnUrl" value="${window.location.origin}/api/payment/inicis/complete">
+    <input type="hidden" name="closeUrl" value="${window.location.origin}/api/payment/inicis/close">
     
     <!-- 추가 옵션 -->
     <input type="hidden" name="acceptmethod" value="HPP(1):va_receipt:below1000:centerCd(Y)">
@@ -314,9 +397,9 @@ class InicisService {
 </html>
     `;
     
-    // PC용 팝업 창 열기
+    // PC용 팝업 창 열기 (크기 조정: 850x700)
     console.log('팝업 창 열기 시도...');
-    const payWindow = window.open('', 'inicis_payment', 'width=720,height=630,scrollbars=yes,resizable=yes');
+    const payWindow = window.open('', 'inicis_payment', 'width=850,height=700,scrollbars=yes,resizable=yes');
     console.log('팝업 창 객체:', payWindow);
     
     if (payWindow) {
@@ -334,7 +417,7 @@ class InicisService {
   /**
    * 모바일 해시키 생성 (백엔드에서 처리)
    */
-  private async generateMobileHash(orderId: string, amount: number): Promise<string | null> {
+  private async generateMobileHash(orderId: string, amount: number, timestamp: string): Promise<string | null> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/mobile-hash/`, {
         method: 'POST',
@@ -345,6 +428,7 @@ class InicisService {
         body: JSON.stringify({
           orderId,
           amount,
+          timestamp,
         }),
       });
 
@@ -362,27 +446,37 @@ class InicisService {
   /**
    * 결제 결과 확인
    */
-  async verifyPayment(orderId: string, authUrl: string, authToken: string, authResultCode: string) {
+  async verifyPayment(orderId: string, authUrl: string, authToken: string, authResultCode: string, allParams?: any) {
     try {
+      const requestData = {
+        orderId,
+        authUrl,
+        authToken,
+        authResultCode,
+        ...(allParams && { allParams }) // allParams가 있으면 포함
+      };
+
+      console.log('결제 검증 요청 데이터:', requestData);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/verify/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
         },
-        body: JSON.stringify({
-          orderId,
-          authUrl,
-          authToken,
-          authResultCode,
-        }),
+        body: JSON.stringify(requestData),
       });
 
+      console.log('결제 검증 응답 상태:', response.status);
+      
       if (!response.ok) {
         throw new Error('결제 검증에 실패했습니다.');
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('결제 검증 성공 결과:', result);
+      
+      return result;
     } catch (error) {
       console.error('결제 검증 실패:', error);
       throw error;
@@ -437,6 +531,53 @@ class InicisService {
       return await response.json();
     } catch (error) {
       console.error('가상계좌 입금 확인 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 결제 취소/환불 (관리자용)
+   * @param tid 취소할 거래번호
+   * @param reason 취소 사유
+   * @param refundType 환불 타입 ('full' | 'partial')
+   * @param partialAmount 부분환불 금액 (부분환불시 필요)
+   * @param refundAccount 환불 계좌정보 (가상계좌 결제시 필요)
+   */
+  async requestRefund(params: {
+    tid: string;
+    reason: string;
+    refundType?: 'full' | 'partial';
+    partialAmount?: number;
+    refundAccount?: {
+      accountNumber: string;
+      bankCode: string;
+      accountHolder: string;
+    };
+  }) {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/inicis/refund/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('dungji_auth_token')}`,
+        },
+        body: JSON.stringify({
+          tid: params.tid,
+          reason: params.reason,
+          refund_type: params.refundType || 'full',
+          partial_amount: params.partialAmount,
+          refund_account: params.refundAccount,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '환불 처리에 실패했습니다.');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('환불 처리 실패:', error);
       throw error;
     }
   }

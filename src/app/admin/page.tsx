@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { GroupBuyConsentManager } from '@/components/admin/GroupBuyConsentManager';
 import WinnerSelection from '@/components/admin/WinnerSelection';
 import { ProductRegistrationForm } from '@/components/admin/ProductRegistrationForm';
+import RefundManagement from '@/components/admin/RefundManagement';
 
 // Helper function to convert seller category code to label
 function getSellerCategoryLabel(category: string) {
@@ -729,7 +730,15 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">관리자 대시보드</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">관리자 대시보드</h1>
+        <Button 
+          onClick={() => router.push('/admin/noshow')}
+          variant="outline"
+        >
+          노쇼 신고 관리
+        </Button>
+      </div>
       
       {/* 통계 카드들 */}
       {statistics && (
@@ -787,6 +796,7 @@ export default function AdminPage() {
       <Tabs defaultValue="verifications" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="verifications">사업자 인증</TabsTrigger>
+          <TabsTrigger value="refunds">환불 관리</TabsTrigger>
           <TabsTrigger value="group-purchases">공동구매 관리</TabsTrigger>
           <TabsTrigger value="winner-selection">낙찰자 선정</TabsTrigger>
           <TabsTrigger value="sellers">셀러 관리</TabsTrigger>
@@ -893,6 +903,11 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        {/* 환불 관리 탭 */}
+        <TabsContent value="refunds">
+          <RefundManagement />
         </TabsContent>
         
         {/* 공동구매 관리 탭 */}

@@ -1,0 +1,298 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Star, User, Calendar, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import axios from 'axios';
+import TradeReviewModal from './TradeReviewModal';
+
+interface MyTradeReviewsProps {
+  userId?: number;
+}
+
+export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [pendingReviews, setPendingReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      // 내가 받은 평가 통계
+      const statsRes = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setStats(statsRes.data);
+
+      // 내가 받은 리뷰 목록
+      const reviewsRes = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setReviews(reviewsRes.data);
+
+      // 평가 대기중인 거래
+      const transactionsRes = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      // 완료된 거래 중 내가 리뷰를 작성하지 않은 거래
+      const completed = transactionsRes.data.filter((t: any) =>
+        t.status === 'completed' && !reviews.some((r: any) => r.transaction === t.id)
+      );
+      setPendingReviews(completed);
+
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReviewClick = (transaction: any) => {
+    setSelectedTransaction(transaction);
+    setShowReviewModal(true);
+  };
+
+  if (loading) {
+    return <div className="animate-pulse h-64 bg-gray-100 rounded-lg" />;
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* 평점 요약 */}
+      {stats && stats.total_reviews > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">거래 평가</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="flex items-center gap-0.5 justify-center">
+                  <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                  <span className="text-2xl font-bold">
+                    {stats.avg_rating ? parseFloat(stats.avg_rating).toFixed(1) : '0.0'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {stats.total_reviews}개 평가
+                </p>
+              </div>
+
+              <div className="flex-1">
+                <div className="space-y-1">
+                  {[5, 4, 3, 2, 1].map((rating) => {
+                    const count = stats[`${['five', 'four', 'three', 'two', 'one'][5-rating]}_star`] || 0;
+                    const percentage = stats.total_reviews > 0
+                      ? (count / stats.total_reviews) * 100
+                      : 0;
+
+                    return (
+                      <div key={rating} className="flex items-center gap-1">
+                        <span className="text-xs w-2">{rating}</span>
+                        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-400"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500 w-6">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 평가 항목 */}
+            {stats.total_reviews > 0 && (
+              <div className="mt-3 pt-3 border-t">
+                <div className="flex flex-wrap gap-1">
+                  {stats.is_punctual_count > 0 && (
+                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
+                      시간약속 {stats.is_punctual_count}
+                    </Badge>
+                  )}
+                  {stats.is_friendly_count > 0 && (
+                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
+                      친절 {stats.is_friendly_count}
+                    </Badge>
+                  )}
+                  {stats.is_honest_count > 0 && (
+                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
+                      정직 {stats.is_honest_count}
+                    </Badge>
+                  )}
+                  {stats.is_fast_response_count > 0 && (
+                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
+                      빠른응답 {stats.is_fast_response_count}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 평가 대기 */}
+      {pendingReviews.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">평가 대기중</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            {pendingReviews.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50"
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{transaction.phone_model}</p>
+                  <p className="text-xs text-gray-500">
+                    {transaction.seller === userId
+                      ? transaction.buyer_username
+                      : transaction.seller_username}님과 거래
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => handleReviewClick(transaction)}
+                >
+                  평가
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 받은 평가 목록 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">받은 평가</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {reviews.length > 0 ? (
+            <div className="space-y-2">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b last:border-b-0 pb-2 last:pb-0">
+                  <div className="flex items-start gap-2">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-gray-500" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-sm font-medium">
+                          {review.reviewer_username}
+                        </span>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-2.5 w-2.5 ${
+                                i < review.rating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-xs text-gray-700 mb-1">
+                          {review.comment}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1">
+                        {review.is_punctual && (
+                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                            시간약속
+                          </Badge>
+                        )}
+                        {review.is_friendly && (
+                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                            친절
+                          </Badge>
+                        )}
+                        {review.is_honest && (
+                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                            정직
+                          </Badge>
+                        )}
+                        {review.is_fast_response && (
+                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                            빠른응답
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatDistanceToNow(new Date(review.created_at), {
+                          addSuffix: true,
+                          locale: ko
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 py-8">
+              아직 받은 평가가 없습니다
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 리뷰 작성 모달 */}
+      {showReviewModal && selectedTransaction && (
+        <TradeReviewModal
+          isOpen={showReviewModal}
+          onClose={() => {
+            setShowReviewModal(false);
+            setSelectedTransaction(null);
+          }}
+          transactionId={selectedTransaction.id}
+          isSeller={selectedTransaction.seller === userId}
+          partnerName={
+            selectedTransaction.seller === userId
+              ? selectedTransaction.buyer_username
+              : selectedTransaction.seller_username
+          }
+          phoneModel={selectedTransaction.phone_model}
+          onReviewComplete={() => {
+            fetchData();
+          }}
+        />
+      )}
+    </div>
+  );
+}

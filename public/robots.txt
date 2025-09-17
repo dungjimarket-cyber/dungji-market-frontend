@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /mypage/
+Disallow: /_next/
+Disallow: /login
+Disallow: /register
+
+Sitemap: https://www.dungjimarket.com/sitemap.xml

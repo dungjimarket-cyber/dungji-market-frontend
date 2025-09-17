@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       
       const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.dungjimarket.com'}/payment/inicis/process?${queryParams.toString()}`;
       
-      // HTML 응답으로 리다이렉트
+      // HTML 응답으로 리다이렉트 (부모 창으로)
       const html = `
         <!DOCTYPE html>
         <html>
@@ -64,7 +64,14 @@ export async function POST(request: NextRequest) {
         </head>
         <body>
           <script>
-            window.location.href = '${redirectUrl}';
+            if (window.opener && !window.opener.closed) {
+              // 부모 창이 있으면 부모 창으로 리다이렉트
+              window.opener.location.href = '${redirectUrl}';
+              window.close();
+            } else {
+              // 부모 창이 없으면 현재 창에서 리다이렉트
+              window.location.href = '${redirectUrl}';
+            }
           </script>
         </body>
         </html>
@@ -93,7 +100,14 @@ export async function POST(request: NextRequest) {
         </head>
         <body>
           <script>
-            window.location.href = '${redirectUrl}';
+            if (window.opener && !window.opener.closed) {
+              // 부모 창이 있으면 부모 창으로 리다이렉트하고 팝업 닫기
+              window.opener.location.href = '${redirectUrl}';
+              window.close();
+            } else {
+              // 부모 창이 없으면 현재 창에서 리다이렉트
+              window.location.href = '${redirectUrl}';
+            }
           </script>
         </body>
         </html>

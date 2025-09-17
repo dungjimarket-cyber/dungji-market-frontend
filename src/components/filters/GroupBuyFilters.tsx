@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -18,13 +18,14 @@ interface FilterGroup {
 interface GroupBuyFiltersProps {
   onFiltersChange?: (filters: Record<string, string[]>) => void;
   category?: 'phone' | 'internet' | 'internet_tv';
+  currentRegion?: string;
 }
 
 /**
  * 공구 둘러보기 필터 컴포넌트
  * 버튼 토글 형태의 필터를 제공
  */
-export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBuyFiltersProps) {
+export function GroupBuyFilters({ onFiltersChange, category = 'phone', currentRegion }: GroupBuyFiltersProps) {
   // 필터 그룹 정의
   const filterGroups: Record<string, FilterGroup[]> = {
     phone: [
@@ -145,6 +146,19 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
   // 현재 카테고리의 필터 그룹
   const currentFilterGroups = filterGroups[category] || filterGroups.phone;
 
+  // 카테고리를 추적하기 위한 ref
+  const prevCategoryRef = useRef<string>(category);
+  
+  // 카테고리가 변경될 때만 필터 초기화 (지역 변경은 필터 유지)
+  useEffect(() => {
+    if (category !== prevCategoryRef.current) {
+      console.log('카테고리 변경 감지, 필터 초기화:', prevCategoryRef.current, '->', category);
+      setSelectedFilters({});
+      onFiltersChange?.({});
+      prevCategoryRef.current = category;
+    }
+  }, [category]);
+
   /**
    * 필터 옵션 토글
    */
@@ -198,11 +212,11 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
   }, [category]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {currentFilterGroups.map((group) => (
-        <div key={group.id} className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700">{group.label}</h3>
-          <div className="flex flex-wrap gap-2">
+        <div key={group.id} className="flex items-start gap-2 sm:gap-3">
+          <h3 className="text-sm font-medium text-gray-700 min-w-[60px] sm:min-w-[80px] pt-1">{group.label}</h3>
+          <div className="flex flex-wrap gap-2 flex-1">
             {group.options.map((option) => {
               const isSelected = isFilterSelected(group.id, option.value);
               
@@ -215,7 +229,7 @@ export function GroupBuyFilters({ onFiltersChange, category = 'phone' }: GroupBu
                   className={cn(
                     "h-8 px-3 font-normal transition-all",
                     isSelected
-                      ? "bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:border-purple-700"
+                      ? "bg-dungji-primary text-white border-dungji-primary hover:bg-dungji-primary-dark hover:border-dungji-primary-dark"
                       : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                   )}
                 >

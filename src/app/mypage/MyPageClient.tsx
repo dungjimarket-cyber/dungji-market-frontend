@@ -11,16 +11,18 @@ import WaitingSellerDecisionGroupBuys from '@/components/mypage/WaitingSellerDec
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import CancelledGroupBuys from '@/components/mypage/CancelledGroupBuys';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
+import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 /**
  * 마이페이지 클라이언트 컴포넌트
@@ -34,7 +36,7 @@ export default function MyPageClient() {
   const [isSeller, setIsSeller] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
-  
+
   // 각 섹션의 데이터 카운트 상태 관리
   const [participatingCount, setParticipatingCount] = useState(0);
   const [pendingSelectionCount, setPendingSelectionCount] = useState(0);
@@ -42,6 +44,7 @@ export default function MyPageClient() {
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
   const [completedGroupBuysCount, setCompletedGroupBuysCount] = useState(0);
   const [cancelledGroupBuysCount, setCancelledGroupBuysCount] = useState(0);
+
 
   // 참여중인 공구 개수 가져오기
   useEffect(() => {
@@ -239,6 +242,7 @@ export default function MyPageClient() {
     checkSellerRole();
   }, [isAuthenticated, user, router, redirecting]);
 
+
   if (isLoading || pageLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -250,47 +254,33 @@ export default function MyPageClient() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 헤더 영역 - 모바일에서 버튼 위치 조정 */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">마이페이지</h1>
-        {/* 모바일에서만 보이는 내 정보 설정 버튼 */}
+      {/* 헤더 영역 */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">마이페이지</h1>
         <Button
           variant="outline"
           size="sm"
           onClick={() => router.push('/mypage/settings')}
-          className="flex items-center md:hidden"
+          className="flex items-center"
         >
           <Settings className="w-4 h-4 mr-1" />
           내 정보 설정
         </Button>
       </div>
-      
+
             {user ? (
         <div className="space-y-6">
           {/* 사용자 정보 카드 */}
-          <Card className="relative">
-            {/* 데스크톱에서만 우측 상단에 버튼 표시 */}
-            <div className="absolute top-4 right-4 hidden md:block">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push('/mypage/settings')}
-                className="flex items-center"
-              >
-                <Settings className="w-4 h-4 mr-1" />
-                내 정보 설정
-              </Button>
-            </div>
-            
-            <CardContent className="py-8 md:py-6">
+          <Card>
+            <CardContent className="py-6">
               <div className="flex gap-6 items-center">
                 {/* 둥지마켓 메인 이미지 */}
                 <div className="flex-shrink-0">
                   <Image
                     src="/logos/dunji_logo.jpg"
                     alt="둥지마켓"
-                    width={80}
-                    height={80}
+                    width={60}
+                    height={60}
                     className="rounded-lg object-contain"
                   />
                 </div>
@@ -311,6 +301,9 @@ export default function MyPageClient() {
             </CardContent>
           </Card>
           
+          {/* 패널티 알림 표시 */}
+          <PenaltyAlert penaltyInfo={user?.penalty_info || user?.penaltyInfo} userRole="buyer" />
+          
           {/* 동의 알림 표시 */}
           <ConsentNotification />
           
@@ -318,14 +311,22 @@ export default function MyPageClient() {
           <Accordion type="single" collapsible className="w-full">
             {/* 참여중인 공구 */}
             <AccordionItem value="participating">
-              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <Package className="w-5 h-5 mr-2 text-blue-500" />
-                    <span className="font-medium">참여중인 공구</span>
+                    <Package className="w-4 h-4 mr-2 text-blue-500" />
+                    <span className="text-sm font-medium">참여중인 공구</span>
                   </div>
-                  <div className="flex items-center text-blue-600">
-                    <span className="mr-1 text-sm">{participatingCount}</span>
+                  <div className="flex items-center gap-2">
+                    {participatingCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-blue-500 text-white text-sm font-semibold rounded-full">
+                        {participatingCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {participatingCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-blue-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -337,14 +338,22 @@ export default function MyPageClient() {
 
             {/* 구매확정/포기 선택하기 */}
             <AccordionItem value="pending">
-              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <ShoppingBag className="w-5 h-5 mr-2 text-amber-500" />
-                    <span className="font-medium">구매확정/포기 선택하기</span>
+                    <ShoppingBag className="w-4 h-4 mr-2 text-amber-500" />
+                    <span className="text-sm font-medium">구매확정/포기 선택하기</span>
                   </div>
-                  <div className="flex items-center text-amber-600">
-                    <span className="mr-1 text-sm">{pendingSelectionCount}</span>
+                  <div className="flex items-center gap-2">
+                    {pendingSelectionCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-amber-500 text-white text-sm font-semibold rounded-full">
+                        {pendingSelectionCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {pendingSelectionCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-amber-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -356,15 +365,23 @@ export default function MyPageClient() {
 
             {/* 판매자 최종선택 대기중 */}
             <AccordionItem value="waiting-seller">
-              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <Clock className="w-5 h-5 mr-2 text-purple-500" />
-                    <span className="font-medium">판매자 최종선택 대기중</span>
+                    <Clock className="w-4 h-4 mr-2 text-dungji-primary" />
+                    <span className="text-sm font-medium">판매자 최종선택 대기중</span>
                   </div>
-                  <div className="flex items-center text-purple-600">
-                    <span className="mr-1 text-sm">{waitingSellerCount}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  <div className="flex items-center gap-2">
+                    {waitingSellerCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-dungji-primary text-white text-sm font-semibold rounded-full">
+                        {waitingSellerCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {waitingSellerCount}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-dungji-primary transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
               </AccordionTrigger>
@@ -375,14 +392,22 @@ export default function MyPageClient() {
 
             {/* 거래중 */}
             <AccordionItem value="purchase-confirmed">
-              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <CheckCircle2 className="w-5 h-5 mr-2 text-green-500" />
-                    <span className="font-medium">거래중</span>
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                    <span className="text-sm font-medium">거래중</span>
                   </div>
-                  <div className="flex items-center text-green-600">
-                    <span className="mr-1 text-sm">{purchaseInProgressCount}</span>
+                  <div className="flex items-center gap-2">
+                    {purchaseInProgressCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-green-500 text-white text-sm font-semibold rounded-full">
+                        {purchaseInProgressCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {purchaseInProgressCount}
+                      </span>
+                    )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-green-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -392,16 +417,18 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 구매 완료 */}
+            {/* 거래종료 */}
             <AccordionItem value="purchase-completed">
-              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <CheckCircle2 className="w-5 h-5 mr-2 text-gray-500" />
-                    <span className="font-medium">구매 완료</span>
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="text-sm font-medium">거래종료</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <span className="mr-1 text-sm">{completedGroupBuysCount}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                      {completedGroupBuysCount}
+                    </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -413,14 +440,16 @@ export default function MyPageClient() {
 
             {/* 취소된 공구 */}
             <AccordionItem value="cancelled">
-              <AccordionTrigger className="py-4 bg-gray-50 px-4 rounded-lg hover:bg-gray-100 group transition-all mt-3">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
-                    <XCircle className="w-5 h-5 mr-2 text-red-500" />
-                    <span className="font-medium">취소된 공구</span>
+                    <XCircle className="w-4 h-4 mr-2 text-red-500" />
+                    <span className="text-sm font-medium">취소된 공구</span>
                   </div>
-                  <div className="flex items-center text-red-600">
-                    <span className="mr-1 text-sm">{cancelledGroupBuysCount}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                      {cancelledGroupBuysCount}
+                    </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-red-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
                 </div>
@@ -431,12 +460,27 @@ export default function MyPageClient() {
             </AccordionItem>
 
           </Accordion>
+
+          {/* 노쇼 관리 통합 버튼 */}
+          <div className="mt-6 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/mypage/noshow-management')}
+              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+            >
+              <AlertTriangle className="w-3 h-3" />
+              노쇼관리
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="flex justify-center items-center h-[50vh]">
           <Loader2 className="h-12 w-12 animate-spin text-gray-300" />
         </div>
       )}
+
+
     </div>
   );
 }

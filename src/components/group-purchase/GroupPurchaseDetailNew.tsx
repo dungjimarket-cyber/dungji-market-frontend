@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { ArrowLeft, Share2, Heart, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
+import { ArrowLeft, Share2, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import JoinGroupBuyModal from '@/components/groupbuy/JoinGroupBuyModal';
 import BidHistoryModal from '@/components/groupbuy/BidHistoryModal';
 import BidConfirmModal from '@/components/groupbuy/BidConfirmModal';
@@ -109,9 +110,10 @@ interface GroupBuy {
   region?: string;
   region_name?: string;
   regions?: Array<{
-    id: number;
+    id?: number;
+    code?: string;
     name: string;
-    parent?: string;
+    full_name?: string;
   }>;
 }
 
@@ -137,7 +139,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   
   const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [isParticipant, setIsParticipant] = useState(false);
+  const [isParticipant, setIsParticipant] = useState<boolean | undefined>(undefined);
+  const [isParticipantLoading, setIsParticipantLoading] = useState(true);
   const [hasBid, setHasBid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
@@ -148,7 +151,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingGroupBuy, setDeletingGroupBuy] = useState(false);
   const [hasReceivedContact, setHasReceivedContact] = useState(false);
-  const [isWished, setIsWished] = useState(false);
   const [showFinalSelectionModal, setShowFinalSelectionModal] = useState(false);
   const [myParticipationFinalDecision, setMyParticipationFinalDecision] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
   const [showFinalSelectionDialog, setShowFinalSelectionDialog] = useState(false);
@@ -194,6 +196,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   
   // 구매자 확정률 모달 상태
   const [showBuyerConfirmationModal, setShowBuyerConfirmationModal] = useState(false);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   const [buyerConfirmationData, setBuyerConfirmationData] = useState<{
     total_participants: number;
     confirmed_count: number;
@@ -244,12 +247,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         
         if (response.ok) {
           const data = await response.json();
-          console.log('인증된 사용자로 가져온 공구 데이터:', {
-            winning_bid_amount: data.winning_bid_amount,
-            bid_ranking: data.bid_ranking,
-            my_bid_info: data.my_bid_info,
-            status: data.status
-          });
           setGroupBuyData(data);
           
           // 내 입찰 정보 설정
@@ -295,39 +292,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
   const isSeller = user?.role === 'seller';
   
-  // 노쇼 신고 버튼 표시 조건 디버깅
-  useEffect(() => {
-    console.log('노쇼 신고 버튼 표시 조건 체크:');
-    console.log('- groupBuyData.status:', groupBuyData.status);
-    console.log('- isInProgress:', isInProgress);
-    console.log('- isSellerFinalSelection:', isSellerFinalSelection);
-    console.log('- isSeller:', isSeller);
-    console.log('- isParticipant:', isParticipant);
-    console.log('- myParticipationFinalDecision:', myParticipationFinalDecision);
-    console.log('- myBidFinalDecision:', myBidFinalDecision);
-    console.log('구매자 노쇼 신고 버튼 표시 조건:');
-    console.log('  - !isSeller && isParticipant:', !isSeller && isParticipant);
-    console.log('  - (isInProgress || isSellerFinalSelection):', (isInProgress || isSellerFinalSelection));
-    console.log('  - myParticipationFinalDecision === "confirmed":', myParticipationFinalDecision === 'confirmed');
-    console.log('  => 최종 표시 여부:', !isSeller && isParticipant && (isInProgress || isSellerFinalSelection) && myParticipationFinalDecision === 'confirmed');
-  }, [groupBuyData.status, isInProgress, isSellerFinalSelection, isSeller, isParticipant, myParticipationFinalDecision, myBidFinalDecision]);
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
   const isInternetCategory = groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV';
   const isSupportBidType = isTelecom || isInternetCategory;
   
-  // 디버깅 로그
-  console.log('공구 상태 체크:', {
-    status: groupBuyData.status,
-    actualStatus,
-    isBuyerFinalSelection,
-    isSellerFinalSelection,
-    isInProgress,
-    isCompleted,
-    myParticipationFinalDecision,
-    myBidFinalDecision,
-    isParticipant,
-    hasWinningBid
-  });
   
   // 판매자가 낙찰된 입찰을 가지고 있는지 확인
   const checkWinningBidStatus = useCallback(async () => {
@@ -475,7 +443,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       checkParticipationStatus();
-      checkWishStatus();
       if (isSeller) {
         fetchBidTokenInfo();
       }
@@ -518,6 +485,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   const checkParticipationStatus = async () => {
+    setIsParticipantLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/participations/`, {
         headers: {
@@ -525,19 +493,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         const participation = data.find((p: any) => p.groupbuy === groupBuy.id);
         setIsParticipant(!!participation);
-        
+
         // 최종선택 상태 설정
         if (participation && participation.final_decision) {
           setMyParticipationFinalDecision(participation.final_decision);
         }
+      } else {
+        setIsParticipant(false);
       }
     } catch (error) {
       console.error('참여 상태 확인 오류:', error);
+      setIsParticipant(false);
+    } finally {
+      setIsParticipantLoading(false);
     }
   };
 
@@ -599,78 +572,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     }
   };
 
-  const checkWishStatus = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlists/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const wished = data.some((w: any) => w.groupbuy === groupBuy.id);
-        setIsWished(wished);
-      }
-    } catch (error) {
-      console.error('찜 상태 확인 오류:', error);
-    }
-  };
-
-  const handleWishToggle = async () => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
-    try {
-      if (isWished) {
-        // 찜 삭제
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlists/${groupBuy.id}/`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          }
-        });
-
-        if (response.ok) {
-          setIsWished(false);
-          toast({
-            title: '찜 삭제 완료',
-            description: '찜 목록에서 삭제되었습니다.',
-          });
-        }
-      } else {
-        // 찜 추가
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlists/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            groupbuy: groupBuy.id
-          })
-        });
-
-        if (response.ok) {
-          setIsWished(true);
-          toast({
-            title: '찜 추가 완료',
-            description: '찜 목록에 추가되었습니다.',
-          });
-        }
-      }
-    } catch (error) {
-      console.error('찜 토글 오류:', error);
-      toast({
-        title: '오류 발생',
-        description: '찜 처리 중 오류가 발생했습니다.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const fetchTopBids = async () => {
     try {
@@ -825,7 +726,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   const handleBidClick = async () => {
-    // 프로필 체크 먼저 수행
+    // 패널티 체크 먼저 수행
+    console.log('🔴 GroupPurchaseDetailNew - Bid Penalty check');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
+    }
+
+    // 프로필 체크 수행
     console.log('[GroupPurchaseDetailNew] 견적 제안하기 버튼 클릭, 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
     console.log('[GroupPurchaseDetailNew] 프로필 체크 결과:', isProfileComplete);
@@ -895,8 +808,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     // 반올림된 금액이 원래 금액과 다르면 알림
     if (roundedAmount !== numAmount) {
       toast({
-        title: '견적 금액 조정',
-        description: `견적 금액이 ${roundedAmount.toLocaleString()}원으로 수정됩니다.`,
+        title: '견적 금액 자동 조정',
+        description: `견적 금액이 ${roundedAmount.toLocaleString()}원으로 조정됩니다.`,
       });
       setBidAmount(roundedAmount);
     }
@@ -916,6 +829,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
   const handleBidConfirm = async () => {
     setShowBidConfirmModal(false);
+    
+    // 확인 버튼 누르는 시점에 타이머 재확인
+    const now = new Date();
+    const endTime = new Date(groupBuy.end_time);
+    
+    if (now > endTime) {
+      toast({
+        title: '공구가 마감되었습니다',
+        description: '마감된 공구에는 견적을 제안할 수 없습니다.',
+        variant: 'destructive',
+      });
+      // 3초 후 목록으로 이동
+      setTimeout(() => {
+        router.push('/group-purchases');
+      }, 3000);
+      return;
+    }
+    
     setIsBidding(true);
     
     try {
@@ -1010,8 +941,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       return;
     }
 
+    // 패널티 체크 먼저 수행
+    console.log('🔴 GroupPurchaseDetailNew - Penalty check');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
+    }
+
     // 프로필 체크 수행
-    console.log('[GroupPurchaseDetailNew] 공구 참여하기 버튼 클릭, 프로필 체크 시작');
+    console.log('[GroupPurchaseDetailNew] 같이 견적받기 버튼 클릭, 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
     console.log('[GroupPurchaseDetailNew] 프로필 체크 결과:', isProfileComplete);
     
@@ -1199,7 +1142,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         onClick={handleJoinClick}
         className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
       >
-        공구 참여하기
+        같이 견적받기
       </Button>
     );
   };
@@ -1298,11 +1241,29 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   // 남은 자리 계산
   const remainingSlots = groupBuy.max_participants - currentParticipants;
 
+  // 종료된 공구인지 확인
+  const isEndedGroupBuy = [
+    'final_selection_buyers',
+    'final_selection_seller',
+    'in_progress',
+    'completed',
+    'cancelled'
+  ].includes(groupBuyData.status);
+
+  // 권한 체크가 필요한 상태에서 로딩 중일 때 로딩 표시
+  if (isEndedGroupBuy && isAuthenticated && isParticipantLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
   return (
     <EndedGroupBuyAccessControl
       status={groupBuyData.status}
       isAuthenticated={!!user}
-      isParticipant={isParticipant || hasBid}
+      isParticipant={isParticipant === true || hasBid}
       hasWinningBid={hasWinningBid}
     >
       <div className="min-h-screen bg-white">
@@ -1340,8 +1301,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       </div>
 
-      {/* 상품 정보 */}
-      <div className="px-4 py-6">
+      {/* 메인 컨텐츠 래퍼 - PC에서 좌우 분할 */}
+      <div className="lg:flex lg:gap-8 lg:max-w-7xl lg:mx-auto lg:px-6">
+        {/* 왼쪽 영역 - 상품 정보 (PC: 50%, 모바일: 100%) */}
+        <div className="lg:w-[50%] lg:border-r lg:border-gray-200 lg:pr-8">
+          {/* 상품 정보 */}
+          <div className="px-4 lg:px-0 py-6">
         <h2 className="text-2xl font-bold mb-3">
           {groupBuy.product_details?.name || '상품명 없음'}
         </h2>
@@ -1367,7 +1332,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   .replace('특별자치도', '');
                 
                 return (
-                  <span key={region.id} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  <span key={region.id || region.code || region.name} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                     {displayName}
                   </span>
                 );
@@ -1378,7 +1343,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         </div>
         
-        {/* 지역 하단 약한 구분선 */}
+        {/* 참여 상태 표시 - 본인이 참여중인 경우에만 */}
+        {isParticipant && (
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-1">
+              <span className="text-sm">✨</span>
+              <span className="text-red-500 text-sm font-medium">참여중</span>
+            </div>
+          </div>
+        )}
+
+        {/* 구분선 */}
         <div className="border-b border-gray-100 mb-4"></div>
         
         {/* 가격 - 인터넷/인터넷+TV 카테고리가 아닌 경우에만 표시 */}
@@ -1390,7 +1365,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
-        {/* 통신사, 가입유형, 요금제/속도 정보 - 새로운 카드 디자인 */}
+        {/* 통신사, 가입유형, 희망요금제/속도 정보 - 새로운 카드 디자인 */}
         <div className="mb-4">
           {/* 휴대폰 상품 정보 */}
           {groupBuy.product_info?.category_detail_type === 'telecom' && groupBuy.telecom_detail && (
@@ -1419,7 +1394,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             />
           )}
         </div>
-        
+
         {/* 통신사별 요금제 확인 링크 - 인터넷/인터넷+TV 카테고리 */}
         {(groupBuy.product_details?.category_name === '인터넷' ||
           groupBuy.product_details?.category_name === '인터넷+TV') && (
@@ -1497,6 +1472,44 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
+        {/* 중요 안내사항 및 약정기간 안내 */}
+        <div className="mb-6">
+            {(groupBuy.product_details?.category_name === '휴대폰' ||
+              groupBuy.product_details?.category_name === '인터넷' ||
+              groupBuy.product_details?.category_name === '인터넷+TV') && (
+              <div className="space-y-2">
+                <div className="text-sm text-gray-500">
+                  ⚠️ 중요 안내사항
+                </div>
+                {groupBuy.product_details?.category_name === '휴대폰' ? (
+                  <>
+                    <div className="text-sm text-gray-500">
+                      • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm text-gray-500">
+                      • 기존 서비스의 위약금은 본인 부담입니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
+                    </div>
+                  </>
+                )}
+                <div className="text-sm text-gray-500 mt-4">
+                  • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
+                </div>
+              </div>
+            )}
+        </div>
+
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
           공구 등록일: {new Date(groupBuy.start_time).toLocaleString('ko-KR', { 
@@ -1506,10 +1519,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             hour: '2-digit',
             minute: '2-digit'
           })}
-        </div>
-        <div className="text-sm text-gray-500 mb-6">
-          {/* 인터넷 상품인 경우 36개월, 나머지는 24개월 */}
-          • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
         </div>
 
         {/* 최종선택 타이머 - 공구 상태 정보 섹션으로 통합 이동 */}
@@ -1540,8 +1549,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </div>
         )}
 
-        {/* 최고 지원금/최종 낙찰 지원금 박스 */}
-        {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
+          </div>
+
+        {/* 최고 지원금/최종 낙찰 지원금 박스 - 하단으로 이동됨 */}
+        {false && (isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
           // 최종선택 상태일 때 낙찰 정보 표시
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 mb-6 border border-orange-200 shadow-md">
             <div className="text-center">
@@ -1571,7 +1582,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <>
                     <span>{
                       groupBuyData.winning_bid_amount?.toLocaleString() || 
-                      (groupBuyData.bid_ranking && groupBuyData.bid_ranking[0]?.amount ? groupBuyData.bid_ranking[0].amount.toLocaleString() : '0')
+                      (groupBuyData.bid_ranking?.[0]?.amount ? groupBuyData.bid_ranking?.[0]?.amount?.toLocaleString() : '0')
                     }원</span>
                   </>
                 ) : (
@@ -1632,9 +1643,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <div className="bg-yellow-50 rounded-lg p-4 mb-6">
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-1">현재 최고 지원금</p>
-              <p className="text-3xl font-bold text-orange-500">
-                {highestBidAmount && highestBidAmount > 0 ? (
-                  <span>{maskAmount(highestBidAmount)}원</span>
+              <p className="text-3xl font-bold text-black">
+                {(highestBidAmount ?? 0) > 0 ? (
+                  <span>{maskAmount(highestBidAmount!)}원</span>
                 ) : (
                   <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
                 )}
@@ -1680,18 +1691,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               )}
             </div>
           </div>
-        )}
+        ))}
 
-        {/* 안내 메시지 */}
-        {/* <div className="text-sm text-gray-500 text-center mb-8">
-          <p>*카드 제휴할인이나 증정품을 제외한 순수 지원금입니다.</p>
-          <p className="mt-1">(공시지원금+추가지원금)</p>
-          <p className="mt-1">*앞자리를 제외한 견적 금액은 비공개 입니다.</p>
-        </div> */}
-      </div>
-
-      {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 */}
-      {(groupBuy.product_details?.category_name === 'telecom' || 
+          {/* 할부금 및 위약금 안내사항 - 통신 카테고리(휴대폰)일 때만 표시 - 하단으로 이동됨 */}
+          {false && ((groupBuy.product_details?.category_name === 'telecom' || 
         groupBuy.product_details?.category_name === '휴대폰') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
           <div className="flex items-start gap-3">
@@ -1712,17 +1715,17 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
                   <div className="text-left leading-relaxed">
-                    <p className="break-keep">자세한 내용은 해당 통신사 어플 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                    <p className="break-keep">자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
+          ))}
 
-      {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 */}
-      {(groupBuy.product_details?.category_name === '인터넷' || 
+          {/* 인터넷 관련 안내사항 - 인터넷 카테고리일 때만 표시 - 하단으로 이동됨 */}
+      {false && ((groupBuy.product_details?.category_name === '인터넷' || 
         groupBuy.product_details?.category_name === '인터넷+TV') && (
         <div className="mx-4 mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg shadow-sm">
           <div className="flex items-start gap-3">
@@ -1749,41 +1752,46 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div className="flex items-start gap-2">
                   <span className="text-amber-600 mt-0.5 flex-shrink-0">⚠️</span>
                   <div className="text-left leading-relaxed">
-                    <p className="break-keep">자세한 내용은 해당 통신사 홈페이지 또는 고객센터를 통해 확인 부탁드립니다.</p>
+                    <p className="break-keep">자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* 공구 정보 섹션 */}
-      <div className="border-t border-gray-200">
-        {/* 공구 주최자 */}
-        <div className="px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span className="text-sm">👑</span>
-              <span className="text-gray-500 text-xs">방장</span>
-            </div>
-            <span className="font-medium">{groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}</span>
-          </div>
-          <ChevronRight className="w-5 h-5 text-gray-400" />
+          ))}
         </div>
+        {/* 왼쪽 영역 끝 */}
+
+        {/* 오른쪽 영역 - 참여 정보 (PC: 50%, 모바일: 100%) */}
+        <div className="lg:w-[50%] lg:sticky lg:top-20 lg:h-fit">
+          {/* 모바일에서는 하단 고정, PC에서는 오른쪽 사이드바 */}
+          <div className="mt-6 lg:mt-0 px-4 lg:px-0">
+            <div className="bg-white lg:rounded-lg lg:p-6">
+              {/* 참여인원 카드 */}
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-3 mb-2">
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-gray-500 text-xs">참여인원</p>
+                  <p className="text-xs text-gray-500">
+                    {remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}
+                  </p>
+                </div>
+                <p className="text-xl font-bold text-center">
+                  {currentParticipants}/{groupBuy.max_participants}
+                  <span className="text-xs text-gray-500 ml-1">명</span>
+                </p>
+                {/* 참여 진행률 바 */}
+                <div className="mt-2">
+                  <Progress
+                    value={(currentParticipants / groupBuy.max_participants) * 100}
+                    className="h-1.5"
+                  />
+                </div>
+              </div>
 
 
-      </div>
-
-      {/* 공구 상태 정보 */}
-      <div className="mt-2 px-4 py-4 bg-gray-50">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg p-4 text-center">
-            <p className="text-gray-500 text-sm mb-1">참여인원</p>
-            <p className="text-2xl font-bold">{currentParticipants}/{groupBuy.max_participants}</p>
-            <p className="text-xs text-gray-500 mt-1">명</p>
-          </div>
-          <div className="bg-white rounded-lg p-4">
+              {/* 시간 정보 카드 */}
+              <div className="bg-gray-50 lg:bg-white rounded-lg p-3">
             {/* 상태별 타이머 표시 */}
             {groupBuyData.status === 'recruiting' && (
               <>
@@ -1810,7 +1818,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     className="h-2"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">{remainingSlots > 0 ? `${remainingSlots}자리 남음` : '마감'}</p>
               </>
             )}
             
@@ -1885,48 +1892,335 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 </p>
               </>
             )}
+              </div>
+              
+              {/* PC에서만 표시되는 버튼 및 견적 영역 */}
+              <div className="hidden lg:block mt-6 border-t pt-4 space-y-4">
+                {/* 일반회원 버튼 구성 */}
+                {!isSeller && isParticipant ? (
+                  // 참여한 일반회원
+                  <div className="space-y-3">
+                    {/* 참여중인 공구 */}
+                    {groupBuyData.status === 'recruiting' && (
+                      <>
+                        <Button
+                          onClick={handleShare}
+                          variant="outline"
+                          className="w-full py-3"
+                        >
+                          공동구매 초대하기
+                        </Button>
+                        {/* 공구 나가기 버튼 - 조건부 표시 */}
+                        {groupBuy.status === 'recruiting' && totalBids === 0 && (
+                          isCreator ? (
+                            // 생성자: 참여자가 본인만 있고 입찰이 없을 때만 삭제 가능
+                            currentParticipants <= 1 && (
+                              <Button
+                                onClick={() => setShowWithdrawDialog(true)}
+                                variant="outline"
+                                className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                              >
+                                공구 삭제
+                              </Button>
+                            )
+                          ) : (
+                            // 일반 참여자: 모집중이고 입찰이 없을 때만 나가기 가능
+                            <Button
+                              onClick={() => setShowWithdrawDialog(true)}
+                              variant="outline"
+                              className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              공구 나가기
+                            </Button>
+                          )
+                        )}
+                      </>
+                    )}
+
+                    {/* 구매확정/포기 선택하기 */}
+                    {isBuyerFinalSelection && !isFinalSelectionExpired && (
+                      <>
+                        {myParticipationFinalDecision === 'pending' ? (
+                          <>
+                            <Button
+                              onClick={() => handleFinalSelection('confirm')}
+                              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                            >
+                              구매확정
+                            </Button>
+                            <Button
+                              onClick={() => handleFinalSelection('cancel')}
+                              variant="outline"
+                              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                            >
+                              구매포기
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            disabled
+                            className="w-full py-4 text-base font-medium"
+                          >
+                            {myParticipationFinalDecision === 'confirmed' ? '✓ 구매확정' : '✓ 구매포기'}
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : isSeller && !isFinalSelection && 
+                 groupBuyData.status === 'recruiting' && 
+                 !isEnded ? (
+                  // 판매자용 인터페이스
+                  <div className="space-y-4">
+                    {/* 견적 제안 현황 */}
+                    {(topBids.length > 0 || myBidRank) && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <h4 className="text-sm font-medium mb-2">견적 제안 현황</h4>
+                        
+                        {myBidRank && hasBid && (
+                          <div className="mb-2 py-1 px-2 bg-blue-50 border border-blue-100 rounded">
+                            <span className="text-sm font-medium text-blue-700">
+                              내 견적 순위: 총 {myBidRank.total}개 중 {myBidRank.rank}위
+                            </span>
+                          </div>
+                        )}
+                        
+                        {topBids.length > 0 && (
+                          <>
+                            <div className="space-y-1">
+                              {topBids.map((bid: any, index: number) => {
+                                const isMyBid = (() => {
+                                  const sellerId = bid.seller_id 
+                                    ? (typeof bid.seller_id === 'string' ? parseInt(bid.seller_id) : bid.seller_id)
+                                    : (typeof bid.seller === 'object' && bid.seller?.id 
+                                      ? bid.seller.id 
+                                      : (typeof bid.seller === 'string' ? parseInt(bid.seller) : bid.seller));
+                                  const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id;
+                                  return sellerId === userId;
+                                })();
+                                return (
+                                  <div key={bid.id} className={`flex text-sm ${isMyBid ? 'font-bold' : ''}`}>
+                                    <span className={`${isMyBid ? 'text-blue-600' : ''} flex items-center gap-2`}>
+                                      <span>{bid.actualRank || (index + 1)}위</span>
+                                      <span className={`ml-2 ${isMyBid ? 'text-blue-600' : ''}`}>
+                                        {isMyBid
+                                          ? `${bid.amount.toLocaleString()}원`
+                                          : maskAmount(bid.amount) + '원'}
+                                      </span>
+                                      {isMyBid && (
+                                        <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold ml-2">
+                                          내순위
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <p className="text-sm font-semibold text-blue-800 mt-2 bg-blue-50 p-2 rounded border border-blue-200">❗ 앞자리를 제외한 견적금액은 비공개 처리됩니다.</p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* 견적 입력 폼 */}
+                    {groupBuyData.status === 'recruiting' && (
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center space-x-2">
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={typeof bidAmount === 'number' ? formatCurrency(bidAmount) : bidAmount}
+                            onChange={(e) => handleBidAmountChange(e)}
+                            className="w-full p-2 pl-3 pr-10 border border-gray-300 rounded-lg"
+                            placeholder={`${bidType === 'support' ? '지원금' : '가격'} 입력`}
+                            disabled={isEnded || isFinalSelection}
+                          />
+                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">원</span>
+                        </div>
+                        
+                        <button
+                          onClick={handleBidClick}
+                          disabled={isBidding || isEnded || isFinalSelection}
+                          className={`whitespace-nowrap py-2 px-4 rounded-lg font-medium ${
+                            isEnded || isFinalSelection
+                              ? 'bg-gray-200 text-gray-500'
+                              : isBidding
+                                ? 'bg-gray-400 text-white'
+                                : 'bg-orange-600 text-white hover:bg-orange-700'
+                          }`}
+                        >
+                          {isBidding ? (
+                            <span className="flex items-center">
+                              <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                              제안 중...
+                            </span>
+                          ) : hasBid && myBidAmount ? (
+                            '견적 수정'
+                          ) : (
+                            '견적 제안'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    )}
+                    
+                    {/* 견적 취소 버튼 */}
+                    {groupBuyData.status === 'recruiting' && hasBid && canCancelBid && !isEnded && !isFinalSelection && (
+                      <button
+                        onClick={() => setShowCancelBidDialog(true)}
+                        className="w-full py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"
+                      >
+                        견적 철회하기
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  // 비참여자 또는 비회원
+                  <>
+                    {(groupBuyData.status === 'completed' || groupBuyData.status === 'cancelled' || 
+                      groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ||
+                      groupBuyData.status === 'in_progress') ? (
+                      <div className="p-4 bg-gray-100 rounded-lg text-center">
+                        <p className="font-semibold text-gray-700">공구종료</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {groupBuyData.status === 'recruiting' && (
+                          <Button
+                            onClick={handleJoinClick}
+                            className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
+                          >
+                            같이 견적받기
+                          </Button>
+                        )}
+                        <Button
+                          onClick={handleShare}
+                          variant="outline"
+                          className="w-full py-3"
+                        >
+                          공동구매 초대하기
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+        {/* 오른쪽 영역 끝 */}
+      </div>
+      {/* 메인 컨텐츠 래퍼 끝 */}
+
+      {/* 하단 구분선 */}
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 mt-6">
+        <hr className="border-gray-200" />
+      </div>
+
+      {/* 하단 영역 - 최고지원금 */}
+      <div className="lg:max-w-7xl lg:mx-auto lg:px-6 py-6">
+        {/* 최고 지원금 */}
+        <div className="px-4 lg:px-0">
+            {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
+              // 최종선택 상태일 때 낙찰 정보 표시
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-8 border border-orange-200 shadow-md">
+                <div className="text-center">
+                  {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller) && (
+                    <div className="mb-6">
+                      <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
+                        <span className="inline-block">🎉</span>
+                        <span className="inline-block mx-1">
+                          {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '견적이 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
+                        </span>
+                        <span className="inline-block">🎉</span>
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-center gap-2 mb-6">
+                    <Crown className="h-6 w-6 text-orange-500" />
+                    <p className="text-xl font-bold text-gray-800">
+                      최종 지원금
+                    </p>
+                  </div>
+                  <p className="text-3xl sm:text-4xl font-bold text-dungji-primary mb-1">
+                    {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
+                      <>
+                        <span>{
+                          groupBuyData.winning_bid_amount?.toLocaleString() ||
+                          (groupBuyData.bid_ranking?.[0]?.amount ? groupBuyData.bid_ranking?.[0]?.amount?.toLocaleString() : '0')
+                        }원</span>
+                      </>
+                    ) : (
+                      <span>{groupBuyData.winning_bid_amount_masked || '***,***원'}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              // 진행중인 상태일 때 기존 표시
+              <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <div className="text-center">
+                  <p className="text-sm text-blue-800 mb-3 font-medium">현재 최고 지원금</p>
+                  <div className="bg-white rounded-lg py-4 px-6 inline-block shadow-md border border-blue-100">
+                    <p className="text-3xl font-bold text-blue-600">
+                      {(highestBidAmount ?? 0) > 0 ? (
+                        <span>{maskAmount(highestBidAmount!)}원</span>
+                      ) : (
+                        <span className="text-lg text-gray-600">견적 제안을 기다리고 있습니다😊</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+        </div>
+
       </div>
       
       {/* 판매자 입찰 정보 - 낙찰 실패 시 안내 메시지 강화 */}
       {isSeller && myBidInfo && groupBuyData.status !== 'recruiting' && (
-        <div className={`mx-4 mt-4 p-4 rounded-lg border ${
-          myBidInfo.status === 'won' 
-            ? 'bg-green-50 border-green-200' 
-            : 'bg-yellow-50 border-yellow-200'
-        }`}>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className={`font-medium flex items-center ${
-              myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
-            }`}>
-              <Gavel className="w-5 h-5 mr-2" />
-              견적제안 내역
-            </h3>
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm">
-              <span className="font-medium">내 순위:</span> 
-              <span className={myBidInfo.rank === 1 ? "text-lg font-bold text-green-600 mx-1" : ""}>{myBidInfo.rank}위</span>
-              {myBidInfo.rank !== 1 && " "}/ 전체 {myBidInfo.total_bidders}명
-              {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
-                <span className="text-yellow-600 font-bold ml-2">축하합니다!</span>
+        <div className="lg:max-w-7xl lg:mx-auto px-4 lg:px-6 mt-8 mb-8">
+          <div className={`p-6 rounded-lg border ${
+            myBidInfo.status === 'won'
+              ? 'bg-green-50 border-green-200'
+              : 'bg-yellow-50 border-yellow-200'
+          }`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`font-medium flex items-center ${
+                myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
+              }`}>
+                <Gavel className="w-5 h-5 mr-2" />
+                견적제안 내역
+              </h3>
+            </div>
+            <div className="space-y-3">
+              <div className="text-sm">
+                <span className="font-medium">내 순위:</span>
+                <span className={myBidInfo.rank === 1 ? "text-lg font-bold text-green-600 mx-1" : ""}>{myBidInfo.rank}위</span>
+                {myBidInfo.rank !== 1 && " "}/ 전체 {myBidInfo.total_bidders}명
+                {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
+                  <span className="text-yellow-600 font-bold ml-2">축하합니다!</span>
+                )}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
+              </div>
+              {/* 선정된 경우 메시지 숨김, 미선정은 표시 */}
+              {myBidInfo.status === 'won' ? (
+                null  // 선정된 경우 백엔드 메시지 숨김
+              ) : (
+                <div className="mt-4 p-4 bg-yellow-100 rounded-md">
+                  <p className="text-yellow-800">{myBidInfo.message}</p>
+                  <p className="text-sm text-yellow-700 mt-2">
+                    기회는 항상 열려있습니다! 💪
+                  </p>
+                </div>
               )}
             </div>
-            <div className="text-sm">
-              <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
-            </div>
-            {/* 선정된 경우 메시지 숨김, 미선정은 표시 */}
-            {myBidInfo.status === 'won' ? (
-              null  // 선정된 경우 백엔드 메시지 숨김
-            ) : (
-              <div className="mt-3 p-3 bg-yellow-100 rounded-md">
-                <p className="text-yellow-800">{myBidInfo.message}</p>
-                <p className="text-sm text-yellow-700 mt-2">
-                  기회는 항상 열려있습니다! 💪
-                </p>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -1976,8 +2270,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
       )} */}
 
-      {/* 버튼 영역 (고정되지 않음) */}
-      <div className="px-4 py-6">
+      {/* 하단 버튼 영역 - 모바일에서만 표시 */}
+      <div className="lg:hidden px-4 py-2">
         {/* 일반회원 버튼 구성 */}
         {!isSeller && isParticipant ? (
           // 참여한 일반회원
@@ -1992,13 +2286,30 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   공동구매 초대하기
                 </Button>
-                <Button
-                  onClick={() => setShowWithdrawDialog(true)}
-                  variant="outline"
-                  className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  공구 나가기
-                </Button>
+                {/* 공구 나가기 버튼 - 조건부 표시 */}
+                {groupBuy.status === 'recruiting' && totalBids === 0 && (
+                  isCreator ? (
+                    // 생성자: 참여자가 본인만 있고 입찰이 없을 때만 삭제 가능
+                    currentParticipants <= 1 && (
+                      <Button
+                        onClick={() => setShowWithdrawDialog(true)}
+                        variant="outline"
+                        className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        공구 삭제
+                      </Button>
+                    )
+                  ) : (
+                    // 일반 참여자: 모집중이고 입찰이 없을 때만 나가기 가능
+                    <Button
+                      onClick={() => setShowWithdrawDialog(true)}
+                      variant="outline"
+                      className="w-full py-3 text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      공구 나가기
+                    </Button>
+                  )
+                )}
               </>
             )}
 
@@ -2055,34 +2366,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   판매자정보보기
                 </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.log('Buyer no-show report button clicked');
-                    console.log('groupBuy object:', groupBuy);
-                    console.log('groupBuy.id:', groupBuy?.id);
-                    console.log('groupBuyData.id:', groupBuyData?.id);
-                    
-                    const groupBuyId = groupBuy?.id || groupBuyData?.id;
-                    
-                    if (!groupBuyId) {
-                      console.error('No groupBuy ID available for navigation');
-                      toast({
-                        title: '오류',
-                        description: '공구 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.',
-                        variant: 'destructive'
-                      });
-                      return;
-                    }
-                    
-                    console.log('Navigating to no-show report with ID:', groupBuyId);
-                    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-                  }}
-                  className="w-full py-3 text-red-600 border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer bg-white"
-                  style={{ opacity: 1, pointerEvents: 'auto' }}
-                >
-                  노쇼신고
-                </button>
               </>
             )}
 
@@ -2200,34 +2483,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   구매자정보보기
                 </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.log('Seller no-show report button clicked');
-                    console.log('groupBuy object:', groupBuy);
-                    console.log('groupBuy.id:', groupBuy?.id);
-                    console.log('groupBuyData.id:', groupBuyData?.id);
-                    
-                    const groupBuyId = groupBuy?.id || groupBuyData?.id;
-                    
-                    if (!groupBuyId) {
-                      console.error('No groupBuy ID available for navigation');
-                      toast({
-                        title: '오류',
-                        description: '공구 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.',
-                        variant: 'destructive'
-                      });
-                      return;
-                    }
-                    
-                    console.log('Navigating to no-show report with ID:', groupBuyId);
-                    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-                  }}
-                  className="w-full py-3 text-red-600 border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer bg-white"
-                  style={{ opacity: 1, pointerEvents: 'auto' }}
-                >
-                  노쇼신고하기
-                </button>
               </>
             )}
 
@@ -2390,7 +2645,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 <div>• 견적 제안 시 견적 이용권 1개가 소모됩니다</div>
                 <div>• 최소 견적 단위는 1,000원이며, 신중하게 제안해주세요</div>
                 <div>• 견적 철회 및 수정은 공구 마감 이전에만 가능합니다</div>
-                <div>• 경쟁력 있는 견적일수록 선택될 확률이 높아집니다</div>
+                <div>• 경쟁력 있는 견적일수록 선정될 가능성이 높습니다</div>
                 <div>• 공구 기간 동안 참여 인원은 변동될 수 있습니다</div>
               </div>
             </div>
@@ -2418,13 +2673,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             ) : (
               // 진행 중인 공구 - 참여 가능
               <div className="space-y-3">
-                {/* 공구 참여하기 버튼 */}
+                {/* 같이 견적받기 버튼 */}
                 {groupBuyData.status === 'recruiting' && (
                   <Button
                     onClick={handleJoinClick}
                     className="w-full py-4 text-base font-medium bg-blue-600 hover:bg-blue-700"
                   >
-                    공구 참여하기
+                    같이 견적받기
                   </Button>
                 )}
                 {/* 공유하기 버튼 */}
@@ -2441,16 +2696,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         )}
         
         {/* 가이드라인 링크 */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-4 mb-2">
           <a href="https://doongji-market-1vi5n3i.gamma.site/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline hover:text-blue-800">
             📋 이용 가이드 확인하기
           </a>
-          <p className="text-xs text-gray-500 mt-2">
-            • 공구 참여 전 가이드라인을 꼭 확인해주세요
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            • 견적 제안 진행 중에는 중도 포기가 제한되니 신중한 참여 부탁드립니다
-          </p>
+          <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+            <div>• 공구 참여 전 가이드라인을 꼭 확인해주세요</div>
+            <div>• 견적 제안 진행 중에는 중도 포기가 제한되니 신중한 참여 부탁드립니다</div>
+          </div>
         </div>
       </div>
 
@@ -2467,7 +2720,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>공구 나가기</AlertDialogTitle>
             <AlertDialogDescription>
-              {isCreator ? (
+              {totalBids > 0 ? (
+                <>
+                  견적이 제안된 공구는 나가기가 불가합니다.
+                  <br />
+                  이미 판매자가 견적을 제안한 상태입니다.
+                </>
+              ) : isCreator ? (
                 <>
                   정말로 이 공구를 삭제하시겠습니까?
                   <br />
@@ -2718,7 +2977,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         isOpen={showProfileModal}
         onClose={() => {
           setShowProfileModal(false);
-          // 나중에 할게요 클릭 시에만 뒤로가기
+          // 모달만 닫기 - 사용자가 나중에 다시 시도할 수 있도록
         }}
         missingFields={missingFields}
         onUpdateProfile={() => {
@@ -2726,10 +2985,18 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           clearCache();
           // 판매회원과 일반회원 구분하여 라우팅
           const isSeller = user?.role === 'seller' || user?.user_type === '판매';
-          router.push(isSeller ? '/mypage/seller/settings' : '/mypage?tab=settings');
+          router.push(isSeller ? '/mypage/seller/settings' : '/mypage/settings');
         }}
       />
-      </div>
+
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole={isSeller ? 'seller' : 'buyer'}
+      />
+    </div>
     </EndedGroupBuyAccessControl>
   );
 }

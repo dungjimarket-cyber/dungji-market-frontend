@@ -28,4 +28,28 @@ export interface AuthUser {
   gender?: string;
   first_name?: string;
   region?: string;
+  penalty_info?: {
+    is_active: boolean;
+    penalty_type?: string;
+    type?: string;
+    reason: string;
+    count: number;
+    start_date?: string;
+    end_date?: string;
+    remaining_hours?: number;
+    remaining_minutes?: number;
+    remaining_text?: string;
+  };
+  penaltyInfo?: {
+    isActive: boolean;
+    penaltyType?: string;
+    type?: string;
+    reason: string;
+    count: number;
+    startDate?: string;
+    endDate?: string;
+    remainingHours?: number;
+    remainingMinutes?: number;
+    remainingText?: string;
+  };
 }

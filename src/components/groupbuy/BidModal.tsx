@@ -22,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { tokenUtils } from '@/lib/tokenUtils';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 interface BidModalProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ export default function BidModal({
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingBidData, setPendingBidData] = useState<BidFormData | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 마감된 경우 모달 자체에서 방어
   if (isClosed) {
@@ -245,6 +247,12 @@ export default function BidModal({
       console.log('입찰 전송 데이터:', bidData);
       
       const result = await createBid(bidData);
+      
+      // 응답 데이터 확인
+      console.log('[BidModal] 입찰 응답 데이터:', result);
+      console.log('[BidModal] is_updated 값:', result.is_updated);
+      console.log('[BidModal] is_updated 타입:', typeof result.is_updated);
+      console.log('[BidModal] existingBid 값:', existingBid);
 
       // 견적이용권 정보 실시간 업데이트
       try {
@@ -254,11 +262,14 @@ export default function BidModal({
         console.error('견적이용권 정보 업데이트 오류:', error);
       }
 
+      // is_updated가 명시적으로 true인 경우만 수정으로 처리
+      const isUpdate = result.is_updated === true;
+      
       toast({
-        title: result.is_updated 
-          ? '견적이 성공적으로 수정되었습니다' 
-          : '견적이 성공적으로 등록되었습니다',
-        description: result.is_updated
+        title: isUpdate 
+          ? '견적이 수정되었습니다' 
+          : '견적이 제출되었습니다',
+        description: isUpdate
           ? '기존 견적 정보가 새로운 금액으로 업데이트되었습니다.'
           : '견적 내역은 마이페이지에서 확인할 수 있습니다.',
         variant: 'default'
@@ -633,6 +644,14 @@ export default function BidModal({
         </div>
       </DialogContent>
     </Dialog>
+    
+    {/* 패널티 모달 */}
+    <PenaltyModal
+      isOpen={showPenaltyModal}
+      onClose={() => setShowPenaltyModal(false)}
+      penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+      userRole="seller"
+    />
     </>
   );
 }

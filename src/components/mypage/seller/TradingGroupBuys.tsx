@@ -6,22 +6,38 @@ import { useAuth } from '@/hooks/useAuth';
 import { GroupBuy } from '@/types/groupbuy';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Package, Phone, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Loader2, Package, Phone, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { ContactInfoModal } from '@/components/final-selection/ContactInfoModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+interface TradingGroupBuysProps {
+  onComplete?: () => void;
+}
 
 /**
  * 거래중 컴포넌트
  * 구매확정과 판매확정이 모두 완료되어 실제 거래가 진행중인 공구
  */
-export default function TradingGroupBuys() {
+export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) {
   const { accessToken } = useAuth();
   const router = useRouter();
   const [groupBuys, setGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroupBuyId, setSelectedGroupBuyId] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [selectedCompleteId, setSelectedCompleteId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTrading = async () => {
@@ -40,7 +56,7 @@ export default function TradingGroupBuys() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
         }
       } catch (error) {
         console.error('거래중 공구 조회 오류:', error);
@@ -52,12 +68,12 @@ export default function TradingGroupBuys() {
     fetchTrading();
   }, [accessToken]);
 
-  const handleCompleteSale = async (groupBuyId: number) => {
-    if (!confirm('판매를 완료하시겠습니까?')) return;
+  const handleCompleteSale = async () => {
+    if (!selectedCompleteId) return;
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/complete_sale/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${selectedCompleteId}/complete_sale/`,
         {
           method: 'POST',
           headers: {
@@ -68,15 +84,18 @@ export default function TradingGroupBuys() {
       );
 
       if (response.ok) {
-        toast.success('판매가 완료되었습니다.');
-        // 목록 새로고침
-        setGroupBuys(prev => prev.filter(gb => gb.id !== groupBuyId));
+        toast.success('거래가 종료되었습니다.');
+        // 전체 페이지 새로고침으로 모든 카운트 동기화
+        window.location.reload();
       } else {
         const error = await response.json();
-        toast.error(error.error || '판매 완료 처리에 실패했습니다.');
+        toast.error(error.error || '거래 종료 처리에 실패했습니다.');
       }
     } catch (error) {
-      toast.error('판매 완료 처리 중 오류가 발생했습니다.');
+      toast.error('거래 종료 처리 중 오류가 발생했습니다.');
+    } finally {
+      setShowCompleteDialog(false);
+      setSelectedCompleteId(null);
     }
   };
 
@@ -100,7 +119,7 @@ export default function TradingGroupBuys() {
     <>
       <div className="space-y-4">
         {groupBuys.map((groupBuy) => (
-          <Card key={groupBuy.id} className="hover:shadow-lg transition-shadow border-green-200">
+          <Card key={groupBuy.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* 상품 이미지 */}
@@ -137,55 +156,39 @@ export default function TradingGroupBuys() {
                   </div>
 
                   {/* 액션 버튼들 - 모바일에서 그리드로 배치 */}
-                  <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
+                  <div className="grid grid-cols-2 md:flex md:flex-row gap-2 md:justify-start">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 sm:flex-initial"
+                      className="flex-1 md:flex-none md:w-auto md:px-4"
                       onClick={() => router.push(`/groupbuys/${groupBuy.id}`)}
                     >
                       공구보기
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 sm:flex-initial"
+                      className="flex-1 md:flex-none md:w-auto md:px-3"
                       onClick={() => {
                         setSelectedGroupBuyId(groupBuy.id);
                         setIsContactModalOpen(true);
                       }}
                     >
                       <Phone className="h-4 w-4 mr-1" />
-                      구매자 정보보기
+                      구매자정보확인
                     </Button>
-                    
+
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="text-orange-600 border-orange-300 hover:bg-orange-50 flex-1 sm:flex-initial"
+                      className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none md:w-auto md:px-4"
                       onClick={() => {
-                        if (!groupBuy.id) {
-                          console.error('groupBuy.id is missing:', groupBuy);
-                          toast.error('공구 정보를 찾을 수 없습니다.');
-                          return;
-                        }
-                        console.log('Navigating to no-show report with groupBuy.id:', groupBuy.id);
-                        router.push(`/noshow-report/create?groupbuy_id=${groupBuy.id}`);
+                        setSelectedCompleteId(groupBuy.id);
+                        setShowCompleteDialog(true);
                       }}
-                      disabled={!groupBuy.id}
-                    >
-                      <AlertTriangle className="h-4 w-4 mr-1" />
-                      노쇼신고
-                    </Button>
-                    
-                    <Button
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial"
-                      onClick={() => handleCompleteSale(groupBuy.id)}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      판매완료
+                      거래종료
                     </Button>
                   </div>
                 </div>
@@ -208,6 +211,26 @@ export default function TradingGroupBuys() {
           isSeller={true}
         />
       )}
+
+      {/* 거래종료 확인 다이얼로그 */}
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>거래 종료 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              거래를 종료하시겠습니까? 종료 후 노쇼 신고가 가능합니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedCompleteId(null)}>
+              아니오
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCompleteSale}>
+              네
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

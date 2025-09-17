@@ -37,6 +37,7 @@ npm test -- src/components/                            # Test all files in direc
 - **State Management**: Zustand for global state, React Hook Form for forms
 - **Authentication**: NextAuth.js with JWT tokens, supports Kakao/Google OAuth
 - **Backend Integration**: Axios for API calls, WebSocket for real-time features
+- **API Base URL**: `${process.env.NEXT_PUBLIC_API_URL}` = `https://api.dungjimarket.com/api`
 - **Testing**: Jest with React Testing Library
 - **Deployment**: Vercel with serverless functions
 - **PWA**: next-pwa with Service Worker and offline caching
@@ -73,10 +74,27 @@ The app uses a dual authentication system:
 4. Role-based access control for buyers (일반회원) and sellers (판매자)
 
 ### API Integration Pattern
-- Base API URL: Set via `NEXT_PUBLIC_API_URL` environment variable
+- **Base API URL**: `${process.env.NEXT_PUBLIC_API_URL}` = `https://api.dungjimarket.com/api`
+- **API URL Pattern**: `${NEXT_PUBLIC_API_URL}/auth/endpoint` → `https://api.dungjimarket.com/api/auth/endpoint`
+- **❗️ CRITICAL**: NEXT_PUBLIC_API_URL already includes `/api`, so NEVER add `/api` again!
 - Auth headers automatically attached via axios interceptors
 - Token refresh handled automatically on 401 responses
 - API services organized in `src/lib/api/` by feature
+
+#### ✅ Correct API URL Examples
+- Profile: `${NEXT_PUBLIC_API_URL}/auth/profile/`
+- Nickname Check: `${NEXT_PUBLIC_API_URL}/auth/check-nickname/`
+- Nickname Change Status: `${NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`
+- Regions: `${NEXT_PUBLIC_API_URL}/regions/`
+
+#### ❌ WRONG Examples (Never Use These!)
+- `${NEXT_PUBLIC_API_URL}/api/auth/endpoint` ← WRONG! Duplicate `/api`
+- `https://api.dungjimarket.com/auth/endpoint` ← WRONG! Hardcoded URL
+
+#### 📋 Before Adding New API Calls:
+1. Check existing API calls in the same file for pattern
+2. Use `${NEXT_PUBLIC_API_URL}/path` format
+3. Never add `/api` prefix to the path
 
 ### Key Features & Routes
 
@@ -215,11 +233,156 @@ GOOGLE_CLIENT_SECRET
 - **Next.js Rules**: Enforced for proper HTML link usage
 - Lint command: `npm run lint`
 
+## 중고폰 직거래 기능 (Used Phone Trading)
+
+### 개발 문서
+- **PRD**: `PRD_중고폰직거래.md` - 제품 요구사항 및 비즈니스 목표
+- **기능 명세서**: `기능개발명세서_중고폰직거래.md` - 상세 기술 구현 사양
+- **작업 관리**: `작업관리문서_중고폰직거래.md` - 진행 상황 및 이슈 트래킹
+
+### 주요 기능
+- **상품 관리**: 최대 5개 동시 등록, 다중 이미지 업로드
+- **거래 시스템**: 가격 제안, 즉시구매, 거래 상태 관리
+- **프로필 체크**: 중고폰 거래용 필수 정보 확인 (연락처, 활동지역)
+- **검색/필터**: 브랜드, 가격, 용량, 상태별 필터링
+
+### 핵심 컴포넌트
+```
+src/components/used/
+├── UsedPhoneCard.tsx         # 상품 카드
+├── UsedPhoneFilter.tsx        # 필터 UI  
+├── UsedPhoneGallery.tsx       # 이미지 갤러리
+├── PriceOfferModal.tsx        # 가격 제안 모달
+├── RegistrationLimitModal.tsx # 등록 제한 안내
+└── UsedPhoneForm.tsx          # 등록/수정 폼
+```
+
+### API 엔드포인트
+- `GET/POST /api/used/phones/` - 상품 목록/등록
+- `GET/PUT/DELETE /api/used/phones/{id}/` - 상품 상세/수정/삭제
+- `POST /api/used/phones/{id}/offer/` - 가격 제안
+- `GET /api/used/phones/{id}/my-offer/` - 내 제안 조회
+- `POST /api/used/phones/{id}/favorite/` - 찜하기
+- `GET /api/used/phones/check-limit/` - 등록 제한 체크
+
+### Custom Hooks
+- `useUsedPhoneProfileCheck()` - 중고폰 거래 프로필 체크
+- `useImageUpload()` - 다중 이미지 업로드 처리
+- `usePriceOffer()` - 가격 제안 관리
+
+### 개발 현황
+- **진행률**: 75% (Phase 1 완료, Phase 2 진행중)
+- **완료**: 기본 CRUD, 이미지 업로드, 가격 제안, 찜하기
+- **진행중**: 메시지 시스템, 거래 완료 프로세스
+- **예정**: 평가 시스템, 검색 고도화, 알림 기능
+
+## 💳 결제 시스템 (이니시스)
+
+### 결제 방식별 처리 현황
+
+#### ✅ 자동 처리 (완전 자동화)
+- **카드 결제**: 즉시 완료 → 견적이용권 자동 지급
+- **실시간 계좌이체**: 즉시 완료 → 견적이용권 자동 지급
+
+#### ⚠️ 수동 처리 필요 (무통장입금)
+**현재 상황:**
+1. 고객이 무통장입금 선택 → 가상계좌 발급 (`waiting_deposit` 상태)
+2. 고객이 은행에 입금
+3. **관리자가 수동으로 처리해야 함:**
+   - Django Admin → 결제 목록 → 입금 대기 필터
+   - 해당 결제 선택 → "선택된 결제를 완료 처리" 액션 실행
+   - ⚠️ **문제: 현재 견적이용권이 자동 지급되지 않음**
+
+**필요한 개선사항:**
+1. **단기 해결**: Django Admin의 `mark_as_completed` 액션에 견적이용권 지급 로직 추가
+2. **장기 해결**: 웹훅 URL 연결 (`/api/payments/inicis/webhook/`)하여 완전 자동화
+   - `api/urls.py`에 웹훅 라우팅 추가 필요
+   - 이니시스 관리자 페이지에서 웹훅 URL 설정 필요
+
+### 결제 오류 처리
+- 결제 실패 시 상세 오류 메시지 표시 (카드 한도, 잔액 부족 등)
+- `INICIS_ERROR_MESSAGES`에 한국어 오류 메시지 매핑 완료
+
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+## 🎨 UI/UX 디자인 원칙
+
+### 텍스트 및 레이아웃
+- **줄바꿈 방지**: Badge, Button 등의 컴포넌트에서 `whitespace-nowrap` 사용으로 텍스트 줄바꿈 방지
+- **컴팩트한 디자인**:
+  - 작은 버튼: `size="sm"` + `text-xs` + `px-3 py-1.5`
+  - 작은 아이콘: `w-3 h-3` 사용
+  - 텍스트 최소화: "노쇼신고하기" → "신고하기"
+
+### 색상 구성
+- **과하지 않은 색상 사용**:
+  - 경고/위험: `text-red-600 border-red-300 hover:bg-red-50` (빨간색 테두리 + 연한 호버)
+  - 대기/검토중: `bg-gray-100 text-gray-700` (연한 회색 배경)
+  - 성공/승인: 기본 Badge variant 사용
+  - 실패/반려: destructive variant 사용
+
+### 버튼 스타일 가이드
+```tsx
+// 작은 아웃라인 버튼 (권장)
+<Button
+  variant="outline"
+  size="sm"
+  className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+>
+  <Icon className="w-3 h-3" />
+  텍스트
+</Button>
+
+// Badge 줄바꿈 방지
+<Badge className="bg-gray-100 text-gray-700 inline-flex whitespace-nowrap">
+  <Icon className="w-3 h-3 mr-1 flex-shrink-0" />
+  <span>텍스트</span>
+</Badge>
+```
+
+## 🚨 필드 접근 오류 방지 원칙
+**문제**: 백엔드에서 존재하지 않는 필드 접근 시 AttributeError로 500 오류 발생 (5시간 디버깅)
+
+**해결 방법**:
+1. **필드 추가 전 DB 모델 확인 필수**
+   - `api/models.py`에서 User, GroupBuy 등 모델의 실제 필드 확인
+   - 프론트엔드에 있는 필드가 백엔드에도 있다고 가정하지 말 것
+
+2. **프론트엔드와 백엔드 필드명 차이 주의**
+   - 프론트: `user?.user_type` (optional chaining으로 안전)
+   - 백엔드: `user.user_type` (직접 접근 시 필드 없으면 에러)
+
+3. **디버깅 시 즉시 확인**
+   - 500 오류 발생 시 상세 오류 메시지 반환하도록 수정
+   - `AttributeError: 'Model' object has no attribute 'field'` 형태 오류는 DB 모델 확인
+
+**예시 - User 모델 필드**:
+- ✅ 존재: `role` (buyer/seller)
+- ❌ 없음: `user_type`
+
+**교훈**: "혹시 모르니까" 방어 코드가 오히려 문제 일으킬 수 있음. 실제 DB 스키마 확인이 최우선!
+
+## 핵심 작업 원칙 (시간이 돈이다)
+1. **임시방편 금지** - 근본적인 해결책만 제시
+2. **반복 실수 방지**:
+   - API URL에 /api 중복 추가 ❌ (NEXT_PUBLIC_API_URL에 이미 포함)
+   - DB 문제를 수동 명령어로 해결 ❌ → 코드로 자동 해결 ✅
+   - 문제 원인 파악 전 해결책 제시 ❌ → 원인 분석 후 한 번에 해결 ✅
+3. **패턴 인식**:
+   - 404 오류 → URL 경로 또는 ViewSet 위치 문제
+   - 상태 불일치 → 모델 로직 또는 상태 전환 문제
+   - 카운트 오류 → Serializer에서 실시간 계산으로 해결
+4. **첫 번째 해결책 = 최종 해결책** (여러 번 수정 금지)
+5. **기존 코드 수정 원칙**:
+   - 새 기능 추가 시 기존 작동 코드는 절대 수정 금지
+   - 특히 Serializer 필드명은 모델과 정확히 일치해야 함
+   - 필드 추가만 하고, 기존 필드는 건드리지 않기
+   - 수정 전 항상 원본 상태 확인 필수
+   - ListSerializer와 DetailSerializer 필드명 일관성 유지
 
       
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.

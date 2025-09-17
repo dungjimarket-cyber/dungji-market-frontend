@@ -11,6 +11,15 @@ interface GroupBuy {
   max_participants: number;
   start_time: string;
   end_time: string;
+  region_type?: string;
+  region?: string;
+  region_name?: string;
+  regions?: Array<{
+    id?: number;
+    code?: string;
+    name: string;
+    full_name?: string;
+  }>;
   product_details: {
     id: number;
     name: string;

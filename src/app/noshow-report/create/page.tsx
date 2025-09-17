@@ -18,24 +18,27 @@ function NoShowReportContent() {
   const router = useRouter();
   const { isAuthenticated, accessToken, user } = useAuth();
   const groupbuyId = searchParams.get('groupbuy') || searchParams.get('groupbuyId') || searchParams.get('groupbuy_id');
+  const sellerIdFromUrl = searchParams.get('seller_id');  // URL에서 seller_id 받기
   
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [groupbuyInfo, setGroupbuyInfo] = useState<any>(null);
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
-  const [filePreview, setFilePreview] = useState<string>('');
+  const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('');
   const [selectedBuyerIds, setSelectedBuyerIds] = useState<string[]>([]);
+  const [sellerId, setSellerId] = useState<string>(''); // 판매자 ID 추가
   const [authChecked, setAuthChecked] = useState(false);
   const [existingReport, setExistingReport] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   
   // 버튼 비활성화 조건 디버깅
+  const isSeller = user?.role === 'seller' || user?.user_type === '판매';
   const isButtonDisabled = loading || 
                           !content.trim() || 
                           content.trim().length < 20 ||
-                          (user?.role === 'seller' && selectedBuyerIds.length === 0);
+                          (isSeller && selectedBuyerIds.length === 0);
   
   useEffect(() => {
     console.log('노쇼 신고 제출 버튼 상태:');
@@ -52,36 +55,51 @@ function NoShowReportContent() {
     const checkAuthAndFetch = async () => {
       // 클라이언트 사이드에서만 실행
       if (typeof window === 'undefined') return;
-      
+
       // 1초 대기하여 인증 상태가 완전히 로드되도록 함
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // 토큰 직접 체크
-      const token = accessToken || 
-                   localStorage.getItem('accessToken') || 
+      const token = accessToken ||
+                   localStorage.getItem('accessToken') ||
                    sessionStorage.getItem('accessToken');
-      
+
       if (!token) {
         console.log('No token found, redirecting to login');
         router.push('/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search));
         return;
       }
-      
+
       setAuthChecked(true);
-      
+
+      // URL에서 seller_id가 있으면 설정
+      if (sellerIdFromUrl) {
+        setSellerId(sellerIdFromUrl);
+        console.log('Seller ID from URL:', sellerIdFromUrl);
+      }
+
       if (groupbuyId) {
         fetchGroupbuyInfo();
         checkExistingReport();
       }
     };
-    
+
     checkAuthAndFetch();
-  }, [groupbuyId, user, accessToken]);
+  }, [groupbuyId, user, accessToken, sellerIdFromUrl]);
 
   // 판매자일 때 참여자 목록 가져오기 위한 별도 useEffect
   useEffect(() => {
-    if (user?.role === 'seller' && groupbuyId && accessToken && authChecked) {
+    const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+    if (isSeller && groupbuyId && accessToken && authChecked) {
       console.log('Seller detected, fetching participants...');
+      console.log('User info:', { 
+        id: user?.id, 
+        role: user?.role, 
+        user_type: user?.user_type,
+        is_seller: isSeller
+      });
+      console.log('GroupBuy ID:', groupbuyId);
+      console.log('Access Token exists:', !!accessToken);
       fetchParticipants();
     }
   }, [user, groupbuyId, accessToken, authChecked]);
@@ -93,11 +111,45 @@ function NoShowReportContent() {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setGroupbuyInfo(data);
         console.log('Group buy info fetched:', data);
+        console.log('selected_bid:', data.selected_bid);
+        console.log('winning_bid:', data.winning_bid);
+
+        // 구매자인 경우 판매자 ID 저장
+        const isBuyer = user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type);
+        if (isBuyer) {
+          // selected_bid에서 판매자 정보 찾기
+          if (data.selected_bid) {
+            const sellerIdFromBid = data.selected_bid.seller?.id || data.selected_bid.seller_id || data.selected_bid.seller;
+            if (sellerIdFromBid) {
+              setSellerId(String(sellerIdFromBid));
+              console.log('Seller ID from selected_bid:', sellerIdFromBid);
+            }
+          }
+          // 또는 winning_bid에서 찾기
+          else if (data.winning_bid) {
+            const sellerIdFromWinning = data.winning_bid.seller?.id || data.winning_bid.seller_id || data.winning_bid.seller;
+            if (sellerIdFromWinning) {
+              setSellerId(String(sellerIdFromWinning));
+              console.log('Seller ID from winning_bid:', sellerIdFromWinning);
+            }
+          }
+          // 또는 bids에서 selected=true인 것 찾기
+          else if (data.bids && Array.isArray(data.bids)) {
+            const selectedBid = data.bids.find((bid: any) => bid.is_selected || bid.selected);
+            if (selectedBid) {
+              const sellerIdFromBids = selectedBid.seller?.id || selectedBid.seller_id || selectedBid.seller;
+              if (sellerIdFromBids) {
+                setSellerId(String(sellerIdFromBids));
+                console.log('Seller ID from bids:', sellerIdFromBids);
+              }
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('공구 정보 조회 실패:', error);
@@ -128,6 +180,15 @@ function NoShowReportContent() {
           setExistingReport(myReport);
           setContent(myReport.content || '');
           setIsEditMode(true);
+          
+          // 기존에 신고했던 구매자 ID 설정 (판매자가 수정하는 경우)
+          if ((user?.role === 'seller' || user?.user_type === '판매') && myReport.reported_user) {
+            // reported_user가 객체인 경우 id 추출, 아니면 그대로 사용
+            const reportedUserId = typeof myReport.reported_user === 'object' 
+              ? myReport.reported_user.id 
+              : myReport.reported_user;
+            setSelectedBuyerIds([reportedUserId.toString()]);
+          }
         }
       }
     } catch (error) {
@@ -137,17 +198,44 @@ function NoShowReportContent() {
 
   const fetchParticipants = async () => {
     console.log('fetchParticipants called with groupbuyId:', groupbuyId);
+    const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+    console.log('Is seller:', isSeller);
+    
     try {
-      // 먼저 일반 participants 엔드포인트 시도
-      console.log('Trying participants endpoint...');
-      let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-      console.log('Participants endpoint response status:', response.status);
+      let response;
       
-      // If that fails, try the participations endpoint
+      if (isSeller) {
+        // 판매자인 경우 buyers 엔드포인트 먼저 시도 (낙찰된 판매자)
+        console.log('Seller detected, trying buyers endpoint first...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/buyers/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        console.log('Buyers endpoint response status:', response.status);
+        
+        // buyers 엔드포인트가 실패하면 participants_detail 시도
+        if (!response.ok) {
+          console.log('Trying participants_detail endpoint...');
+          response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants_detail/`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          console.log('Participants detail endpoint response status:', response.status);
+        }
+      } else {
+        // 구매자인 경우 participants_detail 엔드포인트 시도
+        console.log('Buyer detected, trying participants_detail endpoint...');
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/participants_detail/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        console.log('Participants detail endpoint response status:', response.status);
+      }
+      
+      // 그래도 실패하면 participations 엔드포인트 시도
       if (!response.ok) {
         console.log('Trying alternative participations endpoint...');
         response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/participations/?groupbuy=${groupbuyId}`, {
@@ -158,29 +246,115 @@ function NoShowReportContent() {
         console.log('Participations endpoint response status:', response.status);
       }
       
-      // 마지막으로 confirmed_buyers 엔드포인트 시도
-      if (!response.ok) {
-        console.log('Trying confirmed_buyers endpoint...');
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/confirmed_buyers/`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-        console.log('Confirmed buyers endpoint response status:', response.status);
-      }
-      
       if (response.ok) {
         const data = await response.json();
         console.log('Raw participants data:', data);
-        // Handle both response formats
-        const participantsData = Array.isArray(data) ? data : (data.results || data);
-        setParticipants(participantsData);
-        console.log('Participants set successfully:', participantsData);
-        console.log('Number of participants:', participantsData.length);
+        console.log('Data structure:', {
+          isArray: Array.isArray(data),
+          hasParticipants: !!data.participants,
+          hasBuyers: !!data.buyers,
+          hasResults: !!data.results,
+          keys: Object.keys(data)
+        });
+        
+        // Handle different response formats
+        let participantsData = [];
+        if (Array.isArray(data)) {
+          participantsData = data;
+        } else if (data.buyers && Array.isArray(data.buyers)) {
+          // buyers endpoint returns {buyers: [...]}
+          participantsData = data.buyers;
+        } else if (data.participants && Array.isArray(data.participants)) {
+          // participants_detail returns {participants: [...]}
+          participantsData = data.participants;
+        } else if (data.results && Array.isArray(data.results)) {
+          // participations endpoint returns {results: [...]}
+          participantsData = data.results;
+        }
+        
+        // 데이터 구조 정규화: buyers 엔드포인트는 다른 구조를 가질 수 있음
+        const normalizedParticipants = participantsData.map((p: any) => {
+          // buyers 엔드포인트의 경우 이미 user 객체를 가지고 있음
+          if (p.user && typeof p.user === 'object') {
+            // phone 필드를 phone_number로도 복사 (일관성을 위해)
+            if (p.user.phone && !p.user.phone_number) {
+              p.user.phone_number = p.user.phone;
+            }
+            return p;
+          }
+          // 다른 엔드포인트의 경우 구조 변환
+          return {
+            id: p.id,
+            user: {
+              id: p.user_id || p.id,
+              username: p.username || p.user?.username,
+              nickname: p.nickname || p.user?.nickname,
+              email: p.email || p.user?.email,
+              phone: p.phone || p.user?.phone,
+              phone_number: p.phone_number || p.user?.phone_number || p.phone || p.user?.phone
+            },
+            final_decision: p.final_decision
+          };
+        }).filter((p: any) => {
+          // 판매자인 경우 구매확정(confirmed)된 참여자만 표시
+          const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+          if (isSeller) {
+            // final_decision이 'confirmed'인 경우만 포함
+            const isConfirmed = p.final_decision === 'confirmed';
+            if (!isConfirmed) {
+              console.log('Filtering out non-confirmed participant:', {
+                id: p.id,
+                user_id: p.user?.id,
+                final_decision: p.final_decision
+              });
+            }
+            return isConfirmed;
+          }
+          // 구매자인 경우 모든 참여자 표시
+          return true;
+        });
+        
+        setParticipants(normalizedParticipants);
+        console.log('Participants set successfully:', normalizedParticipants);
+        console.log('Number of participants:', normalizedParticipants.length);
+        
+        // 참여자 데이터 구조 확인
+        if (normalizedParticipants.length > 0) {
+          console.log('First participant structure:', normalizedParticipants[0]);
+          console.log('All participants with user info:');
+          normalizedParticipants.forEach((p: any, index: number) => {
+            console.log(`Participant ${index}:`, {
+              participation_id: p.id,
+              user_id: p.user?.id,
+              username: p.user?.username,
+              nickname: p.user?.nickname,
+              phone: p.user?.phone,
+              phone_number: p.user?.phone_number,
+              final_decision: p.final_decision
+            });
+          });
+        }
       } else {
-        console.error('Failed to fetch participants, all endpoints failed');
-        // 참여자 정보를 못 가져왔을 때 안내 메시지
-        toast.error('구매자 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+        console.error('Failed to fetch participants, status:', response.status);
+        
+        // 에러 응답 내용 확인
+        try {
+          const errorData = await response.text();
+          console.error('Error response:', errorData);
+          
+          // JSON 파싱 시도
+          try {
+            const errorJson = JSON.parse(errorData);
+            console.error('Error details:', errorJson);
+            toast.error(errorJson.error || '구매자 정보를 불러올 수 없습니다.');
+          } catch {
+            console.error('Error response is not JSON:', errorData);
+            toast.error('구매자 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+          }
+        } catch (e) {
+          console.error('Failed to read error response:', e);
+          toast.error('구매자 정보를 불러올 수 없습니다.');
+        }
       }
     } catch (error) {
       console.error('참여자 목록 조회 실패:', error);
@@ -189,39 +363,53 @@ function NoShowReportContent() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // 파일 크기 체크 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('파일 크기는 5MB 이하여야 합니다.');
+    // 최대 3개 파일 제한
+    if (evidenceFiles.length + files.length > 3) {
+      toast.error('증빙 파일은 최대 3개까지 업로드 가능합니다.');
       return;
     }
 
-    // 파일 타입 체크
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('JPG, PNG, PDF 파일만 업로드 가능합니다.');
-      return;
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (const file of files) {
+      // 파일 크기 체크 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name}: 파일 크기는 5MB 이하여야 합니다.`);
+        continue;
+      }
+
+      // 파일 타입 체크
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`${file.name}: JPG, PNG, PDF 파일만 업로드 가능합니다.`);
+        continue;
+      }
+
+      newFiles.push(file);
+
+      // 이미지 파일인 경우 미리보기 생성
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
-    setEvidenceFile(file);
-
-    // 이미지 파일인 경우 미리보기
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFilePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setFilePreview('');
-    }
+    setEvidenceFiles(prev => [...prev, ...newFiles]);
+    
+    // 입력 필드 초기화
+    e.target.value = '';
   };
 
-  const removeFile = () => {
-    setEvidenceFile(null);
-    setFilePreview('');
+  const removeFile = (index: number) => {
+    setEvidenceFiles(prev => prev.filter((_, i) => i !== index));
+    setFilePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleDelete = async () => {
@@ -282,44 +470,50 @@ function NoShowReportContent() {
       let reportedUserId;
       let reportType: 'buyer_noshow' | 'seller_noshow';
       
-      if (user?.role === 'buyer') {
+      if (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && user?.user_type !== '판매')) {
         // 구매자가 신고 → 판매자 노쇼
         reportType = 'seller_noshow';
-        
-        // 공구 정보에서 선택된 입찰 정보 확인
-        const bidsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/bids/`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-        
-        if (bidsResponse.ok) {
-          const bidsData = await bidsResponse.json();
-          console.log('Bids data:', bidsData);
-          
-          // accepted 또는 selected 상태의 입찰 찾기
-          const acceptedBid = bidsData.find((bid: any) => 
-            bid.status === 'accepted' || bid.status === 'selected' || bid.is_selected
-          );
-          
-          console.log('Accepted bid:', acceptedBid);
-          
-          if (acceptedBid) {
-            reportedUserId = acceptedBid.seller?.id || acceptedBid.seller_id || acceptedBid.seller;
-            console.log('Reported user ID:', reportedUserId);
+
+        // 이미 저장된 sellerId 사용
+        if (sellerId) {
+          reportedUserId = sellerId;
+          console.log('Using saved seller ID:', reportedUserId);
+        } else {
+          // fallback: 공구 정보에서 선택된 입찰 정보 확인
+          const bidsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupbuyId}/bids/`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+
+          if (bidsResponse.ok) {
+            const bidsData = await bidsResponse.json();
+            console.log('Bids data:', bidsData);
+
+            // accepted 또는 selected 상태의 입찰 찾기
+            const acceptedBid = bidsData.find((bid: any) =>
+              bid.status === 'accepted' || bid.status === 'selected' || bid.is_selected
+            );
+
+            console.log('Accepted bid:', acceptedBid);
+
+            if (acceptedBid) {
+              reportedUserId = acceptedBid.seller?.id || acceptedBid.seller_id || acceptedBid.seller;
+              console.log('Reported user ID from bids:', reportedUserId);
+            } else {
+              console.error('No accepted bid found');
+              toast.error('선택된 판매자를 찾을 수 없습니다.');
+              setLoading(false);
+              return;
+            }
           } else {
-            console.error('No accepted bid found');
-            toast.error('선택된 판매자를 찾을 수 없습니다.');
+            console.error('Failed to fetch bids:', bidsResponse.status);
+            toast.error('판매자 정보를 가져올 수 없습니다.');
             setLoading(false);
             return;
           }
-        } else {
-          console.error('Failed to fetch bids:', bidsResponse.status);
-          toast.error('판매자 정보를 가져올 수 없습니다.');
-          setLoading(false);
-          return;
         }
-      } else if (user?.role === 'seller') {
+      } else if (user?.role === 'seller' || user?.user_type === '판매') {
         // 판매자가 신고 → 구매자 노쇼
         reportType = 'buyer_noshow';
         if (selectedBuyerIds.length === 0) {
@@ -336,9 +530,10 @@ function NoShowReportContent() {
           formData.append('report_type', reportType);
           formData.append('content', content.trim());
           
-          if (evidenceFile) {
-            formData.append('evidence_image', evidenceFile);
-          }
+          // 여러 증빙 파일 추가
+          evidenceFiles.forEach((file, index) => {
+            formData.append(`evidence_image_${index + 1}`, file);
+          });
           
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/noshow-reports/`, {
             method: 'POST',
@@ -385,9 +580,10 @@ function NoShowReportContent() {
       formData.append('report_type', reportType);
       formData.append('content', content.trim());
       
-      if (evidenceFile) {
-        formData.append('evidence_image', evidenceFile);
-      }
+      // 여러 증빙 파일 추가
+      evidenceFiles.forEach((file, index) => {
+        formData.append(`evidence_image_${index + 1}`, file);
+      });
       
       // 디버깅을 위한 로그
       console.log('노쇼 신고 제출 데이터:', {
@@ -395,7 +591,7 @@ function NoShowReportContent() {
         groupbuy: groupbuyId,
         report_type: reportType,
         content_length: content.trim().length,
-        has_file: !!evidenceFile
+        files_count: evidenceFiles.length
       });
 
       // 노쇼 신고 제출 또는 수정
@@ -502,55 +698,91 @@ function NoShowReportContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-6">
-        <Link href="/mypage">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            마이페이지로 돌아가기
-          </Button>
-        </Link>
+    <div className="container mx-auto px-4 py-4 max-w-2xl min-h-screen flex flex-col">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">
+          {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
+        </h1>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          뒤로가기
+        </Button>
       </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isEditMode ? '노쇼 신고 수정' : '노쇼 신고하기'}
-          </CardTitle>
-          {groupbuyInfo && (
-            <p className="text-sm text-gray-600 mt-2">
-              공구: {groupbuyInfo.title}
-            </p>
-          )}
-          {isEditMode && existingReport && (
-            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800 font-medium">
-                ⚠️ 이미 신고한 내역이 있습니다.
-              </p>
-              <p className="text-xs text-gray-600 mt-1">
-                신고 날짜: {new Date(existingReport.created_at).toLocaleDateString()}
-              </p>
-            </div>
-          )}
-        </CardHeader>
-        <CardContent>
+
+      {groupbuyInfo && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-700">
+            <strong>공구:</strong> {groupbuyInfo.title}
+          </p>
+        </div>
+      )}
+
+      <Card className="flex-1 mb-4">
+        <CardContent className="p-4">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 판매자 정보 표시 (구매자가 신고 시) */}
+            {(user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && user?.user_type !== '판매')) && groupbuyInfo && (
+              <div className="space-y-2">
+                <Label>신고 대상 판매자</Label>
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="font-medium">
+                        {groupbuyInfo.selected_bid?.seller_nickname ||
+                         groupbuyInfo.selected_bid?.seller?.nickname ||
+                         groupbuyInfo.selected_bid?.seller_name ||
+                         groupbuyInfo.selected_bid?.seller?.username ||
+                         groupbuyInfo.winning_bid?.seller_nickname ||
+                         groupbuyInfo.winning_bid?.seller?.nickname ||
+                         groupbuyInfo.winning_bid?.seller_name ||
+                         groupbuyInfo.winning_bid?.seller?.username ||
+                         '판매자'}
+                      </p>
+                      {(groupbuyInfo.selected_bid?.seller_phone || groupbuyInfo.selected_bid?.seller?.phone ||
+                        groupbuyInfo.winning_bid?.seller_phone || groupbuyInfo.winning_bid?.seller?.phone) && (
+                        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                          <Phone className="w-3 h-3" />
+                          {groupbuyInfo.selected_bid?.seller_phone || groupbuyInfo.selected_bid?.seller?.phone ||
+                           groupbuyInfo.winning_bid?.seller_phone || groupbuyInfo.winning_bid?.seller?.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 구매자 선택 (판매자가 신고 시) */}
-            {user?.role === 'seller' && (
+            {(user?.role === 'seller' || user?.user_type === '판매') && (
               <div className="space-y-2">
                 <Label>노쇼한 구매자 선택 (필수)</Label>
                 {participants.length > 0 ? (
                   <>
                     <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
                       {participants.map((participant) => {
-                        const userId = participant.user?.id || participant.user_id || participant.id;
-                        const displayName = participant.user?.username || participant.user?.nickname || 
-                                          participant.username || participant.nickname || 
+                        // participant.id는 participation ID이므로 user.id를 사용해야 함
+                        const userId = participant.user?.id || participant.user_id;
+                        
+                        if (!userId) {
+                          console.warn('User ID not found for participant:', participant);
+                          return null;
+                        }
+                        
+                        const displayName = participant.user?.nickname || participant.user?.username || 
+                                          participant.nickname || participant.username || 
                                           `참여자 ${userId}`;
-                        const phoneNumber = participant.user?.phone_number || participant.phone_number || '연락처 없음';
+                        // buyers 엔드포인트는 'phone', participants_detail은 'phone_number' 사용
+                        const phoneNumber = participant.user?.phone || participant.user?.phone_number || 
+                                          participant.phone || participant.phone_number || '연락처 없음';
                         
                         return (
-                          <div key={userId} className="flex items-start space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
+                          <div key={userId} className="flex items-center space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
                             <Checkbox
                               id={`buyer-${userId}`}
                               checked={selectedBuyerIds.includes(userId.toString())}
@@ -561,18 +793,17 @@ function NoShowReportContent() {
                                   setSelectedBuyerIds(selectedBuyerIds.filter(id => id !== userId.toString()));
                                 }
                               }}
-                              className="mt-1"
                             />
                             <label 
                               htmlFor={`buyer-${userId}`} 
-                              className="flex-1 cursor-pointer"
+                              className="flex-1 cursor-pointer flex items-center justify-between"
                             >
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-3">
                                 <User className="w-4 h-4 text-gray-500" />
                                 <span className="font-medium text-sm">{displayName}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <Phone className="w-3 h-3" />
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Phone className="w-4 h-4" />
                                 <span>{phoneNumber}</span>
                               </div>
                             </label>
@@ -605,35 +836,14 @@ function NoShowReportContent() {
               </div>
             )}
 
-            {/* 신고 사유 입력 안내 */}
+            {/* 신고 사유 입력 */}
             <div className="space-y-2">
-              <Label htmlFor="content">📝 신고 사유 (필수)</Label>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
-                <p className="text-sm text-gray-700 mb-2">
-                  {user?.role === 'buyer' ? 
-                    '판매자의 거래 거부 사유를 구체적으로 작성해주세요.' :
-                    '구매자의 거래 거부 사유를 구체적으로 작성해주세요.'}
-                </p>
-                <p className="text-xs text-gray-600">
-                  예시:
-                </p>
-                <ul className="text-xs text-gray-600 list-disc list-inside ml-2">
-                  <li>약속 시간에 나타나지 않음</li>
-                  <li>연락이 두절됨</li>
-                  <li>약속된 가격으로 {user?.role === 'buyer' ? '판매' : '구매'} 거부</li>
-                  <li>상품이 준비되지 않았다고 거래 취소</li>
-                  <li>기타 부당한 거래 거부</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* 신고 내용 */}
-            <div className="space-y-2">
+              <Label htmlFor="content">신고 사유 (필수)</Label>
               <Textarea
                 id="content"
                 placeholder="신고 사유를 자세히 설명해주세요. (최소 20자 이상)
 예: 약속 시간, 장소, 연락 시도 내용 등"
-                rows={6}
+                rows={4}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="resize-none"
@@ -646,45 +856,71 @@ function NoShowReportContent() {
 
             {/* 파일 업로드 */}
             <div className="space-y-2">
-              <Label>증빙자료 첨부 (선택)</Label>
-              <div className="flex items-center gap-4">
-                <label htmlFor="evidence-file" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm">파일 선택</span>
-                  </div>
-                  <input
-                    id="evidence-file"
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,application/pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-                {evidenceFile && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">{evidenceFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={removeFile}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              {filePreview && (
-                <div className="mt-2">
-                  <img 
-                    src={filePreview} 
-                    alt="증빙자료 미리보기" 
-                    className="max-w-xs rounded-lg border"
-                  />
+              <Label>증빙자료 첨부 (선택, 최대 3개)</Label>
+              {evidenceFiles.length < 3 && (
+                <div className="flex items-center gap-4">
+                  <label htmlFor="evidence-file" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                      <Upload className="w-4 h-4" />
+                      <span className="text-sm">파일 추가 ({evidenceFiles.length}/3)</span>
+                    </div>
+                    <input
+                      id="evidence-file"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={handleFileChange}
+                      multiple
+                      className="hidden"
+                    />
+                  </label>
                 </div>
               )}
+              
+              {/* 업로드된 파일 목록 */}
+              {evidenceFiles.length > 0 && (
+                <div className="space-y-2">
+                  {evidenceFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">{file.name}</span>
+                        <span className="text-xs text-gray-400">({(file.size / 1024 / 1024).toFixed(2)}MB)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 이미지 미리보기 */}
+              {filePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {filePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={preview} 
+                        alt={`증빙자료 ${index + 1}`} 
+                        className="w-full h-24 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <p className="text-xs text-gray-500">
-                JPG, PNG, PDF 파일만 업로드 가능합니다. (최대 5MB)
+                JPG, PNG, PDF 파일만 업로드 가능합니다. (파일당 최대 5MB, 총 3개까지)
               </p>
             </div>
 
@@ -721,9 +957,17 @@ function NoShowReportContent() {
                 </Button>
               )}
               <Button 
-                type="submit" 
+                type="button" 
                 disabled={isButtonDisabled}
                 className="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (window.confirm(isEditMode ? 
+                    '신고 내용을 수정하시겠습니까?\n주의: 수정은 1회만 가능합니다.' : 
+                    '노쇼를 신고하시겠습니까?')) {
+                    handleSubmit(e as any);
+                  }
+                }}
               >
                 {loading ? (
                   isEditMode ? '수정 중...' : '신고 접수 중...'

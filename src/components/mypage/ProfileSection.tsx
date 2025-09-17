@@ -4,9 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, ArrowLeft } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
+import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
+import { Button } from '@/components/ui/button';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -80,6 +82,7 @@ export default function ProfileSection() {
   const user = authUser as unknown as ExtendedUser;
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
+  const [originalNickname, setOriginalNickname] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [addressRegion, setAddressRegion] = useState<any>(null);
   const [addressProvince, setAddressProvince] = useState('');
@@ -98,8 +101,13 @@ export default function ProfileSection() {
   const [firstName, setFirstName] = useState(''); // 실명
   const [isEditing, setIsEditing] = useState(false);
   const [editField, setEditField] = useState<'email' | 'nickname' | 'phone_number' | 'address' | 'business_number' | 'business_address' | 'remote_sales' | null>(null);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [error, setError] = useState('');
   const [nicknameError, setNicknameError] = useState('');
+  const [nicknameChecked, setNicknameChecked] = useState(false);
+  const [nicknameAvailable, setNicknameAvailable] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitModalData, setLimitModalData] = useState({ remainingChanges: 2, nextAvailableDate: null, canChange: true });
   const errorRef = useRef<HTMLDivElement>(null);
   const nicknameRef = useRef<HTMLDivElement>(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -116,6 +124,7 @@ export default function ProfileSection() {
       // nickname 필드 사용, 없으면 이메일 앞부분 사용 (username은 아이디이므로 닉네임으로 사용하지 않음)
       const displayNickname = user.nickname || (user.email ? user.email.split('@')[0] : '');
       setNickname(displayNickname);
+      setOriginalNickname(displayNickname);
       setPhoneNumber(user.phone_number || '');
       setAddressRegion(user.address_region || null);
             
@@ -165,15 +174,21 @@ export default function ProfileSection() {
     }
   }, [user?.user_type]);
   
-  // 지역 목록 가져오기
+  // 지역 목록 가져오기 - 현재 사용하지 않지만 향후 사용 가능성을 위해 유지
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-        if (response.ok) {
-          const data = await response.json();
-          setRegions(data);
-        }
+        const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+        if (!token) return;
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        const regionsArray = data?.results || data;
+        setRegions(regionsArray);
       } catch (error) {
         console.error('지역 정보 가져오기 오류:', error);
       }
@@ -213,7 +228,7 @@ export default function ProfileSection() {
       email?: string,
       nickname?: string,  // username이 아닌 nickname 필드 사용
       phone_number?: string,
-      address_region_id?: number | null,
+      address_region_id?: string | null,  // 지역 코드는 string 타입
       address_province?: string,
       address_city?: string,
       business_number?: string,
@@ -223,21 +238,9 @@ export default function ProfileSection() {
     if (editField === 'email') {
       updateData.email = email;
     } else if (editField === 'nickname') {
-      // 닉네임 변경
-      if (!nickname) {
-        setNicknameError('닉네임을 입력해주세요.');
-        return;
-      }
-
-      // 닉네임 길이 체크 (2-10자)
-      if (nickname.length < 2 || nickname.length > 10) {
-        setNicknameError('닉네임은 2자 이상 10자 이하로 입력해주세요.');
-        return;
-      }
-
-      // 공백 체크
-      if (nickname.includes(' ')) {
-        setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+      // 닉네임 중복체크가 완료되지 않은 경우
+      if (!nicknameChecked || !nicknameAvailable) {
+        setNicknameError('닉네임 중복체크를 해주세요.');
         return;
       }
       
@@ -252,9 +255,14 @@ export default function ProfileSection() {
       // 주소 업데이트 시 지역 코드를 찾아서 전송
       if (addressProvince && addressCity) {
         try {
-          // 모든 지역 데이터 가져오기
-          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-          const regionsData = await regionsResponse.json();
+          // 모든 지역 데이터 가져오기 - fetch 직접 사용하여 limit 파라미터 전달
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          const regionsJson = await regionsResponse.json();
+          const regionsData = regionsJson?.results || regionsJson;
           
           // 시/군/구 레벨에서 일치하는 지역 찾기
           // 세종특별자치시는 특수한 경우로 level 1이면서 시/도와 시/군/구가 동일
@@ -314,8 +322,18 @@ export default function ProfileSection() {
         if (response.status === 401) {
           throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
         }
+        if (response.status === 429) {
+          // 닉네임 변경 제한
+          const errorData = await response.json();
+          setNicknameError(errorData.message || '닉네임 변경 제한에 도달했습니다.');
+          return;
+        }
         const errorData = await response.json();
-        setError(errorData.error || '프로필 업데이트에 실패했습니다.');
+        if (editField === 'nickname') {
+          setNicknameError(errorData.error || '닉네임 업데이트에 실패했습니다.');
+        } else {
+          setError(errorData.error || '프로필 업데이트에 실패했습니다.');
+        }
         return;
       }
 
@@ -401,28 +419,18 @@ export default function ProfileSection() {
   if (isLoading) return null;
   return (
     <div className="bg-white p-6 rounded-lg shadow mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">사용자 정보</h2>
-        <div className="flex flex-col gap-4 mt-6">
-          {/* 판매회원인 경우 입찰권 관리 링크 표시 */}
-          {role === 'seller' && (
-            <button
-              onClick={() => router.push('/mypage/seller/bid-tokens')}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-            >
-              입찰권 관리
-            </button>
-          )}
-          
+      
+      {/* 판매회원인 경우 이용권 관리 링크 표시 */}
+      {role === 'seller' && (
+        <div className="flex justify-center mb-6">
           <button
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+            onClick={() => router.push('/mypage/seller/bid-tokens')}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
-            로그아웃
+            이용권 관리
           </button>
         </div>
-      </div>
+      )}
       
       <div className="flex flex-col gap-4">
         <div className="mb-6">
@@ -432,19 +440,48 @@ export default function ProfileSection() {
           {user?.sns_type !== 'kakao' && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">아이디</label>
-              <span className="font-medium text-lg">{user?.username || '아이디 정보 없음'}</span>
+              <span className="font-medium">{user?.username || '아이디 정보 없음'}</span>
             </div>
           )}
           
           {/* 닉네임 섹션 */}
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">닉네임</label>
               <button
-                onClick={() => {
-                  setIsEditing(true);
-                  setEditField('nickname');
-                  setNicknameError('');
+                onClick={async () => {
+                  // 닉네임 변경 가능 여부 먼저 확인
+                  try {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/nickname-change-status/`, {
+                      headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                      }
+                    });
+                    
+                    if (response.ok) {
+                      const data = await response.json();
+                      
+                      // 모달 데이터 설정
+                      setLimitModalData({
+                        remainingChanges: data.remaining_changes || 0,
+                        nextAvailableDate: data.next_available_date,
+                        canChange: data.can_change
+                      });
+                      
+                      // 모달 표시
+                      setShowLimitModal(true);
+                      
+                      // 변경 가능하면 모달 닫힌 후 수정 모드 활성화 준비
+                      if (data.can_change) {
+                        // 모달에서 "계속 진행" 클릭시 수정 모드 활성화됨
+                      }
+                    }
+                  } catch (error) {
+                    console.error('닉네임 변경 상태 확인 실패:', error);
+                    // 에러 발생시에도 일단 모달 표시
+                    setLimitModalData({ remainingChanges: 0, nextAvailableDate: null, canChange: false });
+                    setShowLimitModal(true);
+                  }
                 }}
                 className="text-xs text-blue-600 hover:text-blue-800"
               >
@@ -454,57 +491,148 @@ export default function ProfileSection() {
             
             {isEditing && editField === 'nickname' ? (
               <div ref={nicknameRef}>
-                <div className="flex items-center">
+                {/* 모바일 최적화된 입력 폼 */}
+                <div className="space-y-3">
                   <input
                     type="text"
                     value={nickname}
                     onChange={(e) => {
-                      setNickname(e.target.value);
+                      const value = e.target.value;
+                      // 15자 초과시 입력 자체를 막음
+                      if (value.length > 15) {
+                        return;
+                      }
+
+                      setNickname(value);
                       setNicknameError('');
+                      setNicknameChecked(false);
+                      setNicknameAvailable(false);
+
+                      // 실시간 유효성 검사
+                      if (value && value.length < 2) {
+                        setNicknameError('닉네임은 2자 이상이어야 합니다.');
+                      } else if (value && value.includes(' ')) {
+                        setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+                      } else if (value && !/^[가-힣a-zA-Z0-9]+$/.test(value)) {
+                        setNicknameError('한글, 영문, 숫자만 사용 가능합니다.');
+                      }
                     }}
-                    className={`flex-1 p-2 border rounded-md mr-2 ${nicknameError ? 'border-red-500' : ''}`}
-                    placeholder="닉네임을 입력하세요"
+                    className={`w-full p-3 border rounded-md ${nicknameError ? 'border-blue-500' : nicknameAvailable ? 'border-green-500' : 'border-gray-300'}`}
+                    placeholder="닉네임 (2-15자, 한글/영문/숫자만)"
+                    maxLength={15}
                   />
-                  <button
-                    onClick={() => handleProfileUpdate()}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                  >
-                    저장
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditField(null);
-                      // 원래 닉네임으로 되돌리기
-                      setNickname(user?.nickname || '');
-                      setNicknameError('');
-                    }}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm ml-2"
-                  >
-                    취소
-                  </button>
-                </div>
-                {nicknameError && (
-                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-700 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                      <span className="font-medium">{nicknameError}</span>
-                    </p>
+                  
+                  {/* 버튼들을 세로로 배치 (모바일 친화적) */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={async () => {
+                        // 닉네임 유효성 검사
+                        if (!nickname || nickname.length < 2 || nickname.length > 15) {
+                          setNicknameError('닉네임은 2자 이상 15자 이하로 입력해주세요.');
+                          return;
+                        }
+                        if (nickname.includes(' ')) {
+                          setNicknameError('닉네임에 공백을 포함할 수 없습니다.');
+                          return;
+                        }
+                        const nicknameRegex = /^[가-힣a-zA-Z0-9]+$/;
+                        if (!nicknameRegex.test(nickname)) {
+                          setNicknameError('닉네임은 한글, 영문, 숫자만 사용 가능합니다.');
+                          return;
+                        }
+                        
+                        // 기존 닉네임과 같으면 사용 가능
+                        if (nickname === originalNickname) {
+                          setNicknameChecked(true);
+                          setNicknameAvailable(true);
+                          return;
+                        }
+                        
+                        // 닉네임 중복 체크
+                        try {
+                          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-nickname/`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+                            },
+                            body: JSON.stringify({ nickname })
+                          });
+                          const data = await response.json();
+                          setNicknameChecked(true);
+                          setNicknameAvailable(data.available);
+                          if (!data.available) {
+                            setNicknameError('이미 사용 중인 닉네임입니다.');
+                          }
+                        } catch (err) {
+                          setNicknameError('닉네임 중복 확인 중 오류가 발생했습니다.');
+                        }
+                      }}
+                      className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
+                    >
+                      중복체크
+                    </button>
+                    
+                    <div className="flex gap-2 flex-1">
+                      <button
+                        onClick={() => {
+                          if (!nicknameChecked || !nicknameAvailable) {
+                            setNicknameError('닉네임 중복체크를 해주세요.');
+                            return;
+                          }
+                          handleProfileUpdate();
+                        }}
+                        className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm font-medium disabled:opacity-50"
+                        disabled={!nicknameChecked || !nicknameAvailable}
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditField(null);
+                          setNickname(originalNickname);
+                          setNicknameError('');
+                          setNicknameChecked(false);
+                          setNicknameAvailable(false);
+                        }}
+                        className="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm font-medium"
+                      >
+                        취소
+                      </button>
+                    </div>
                   </div>
-                )}
+                  
+                  {/* 상태 메시지 */}
+                  {nicknameError && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-700">{nicknameError}</p>
+                    </div>
+                  )}
+                  {nicknameAvailable && !nicknameError && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-700">✓ 사용 가능한 닉네임입니다</p>
+                    </div>
+                  )}
+                  {nickname && nickname.length === 15 && !nicknameError && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-700">최대 15자까지 입력 가능합니다.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
-              <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium">{nickname || '닉네임 정보 없음'}</span>
+              <div className="p-3 bg-gray-50 rounded-md">
+                <span className="font-medium break-all">
+                  {nickname || '닉네임 정보 없음'}
+                </span>
               </div>
             )}
           </div>
           
           {/* 이메일 섹션 */}
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">
                 이메일
                 {user?.sns_type && user?.sns_type !== 'email' && (
@@ -553,7 +681,7 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium">{email || '이메일 정보 없음'}</span>
+                <span className="font-medium text-lg">{email || '이메일 정보 없음'}</span>
               </div>
             )}
           </div>
@@ -565,7 +693,7 @@ export default function ProfileSection() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium">{firstName || '정보 없음'}</span>
+                  <span className="font-medium text-lg">{firstName || '정보 없음'}</span>
                 </div>
               </div>
             </>
@@ -573,7 +701,7 @@ export default function ProfileSection() {
           
           {/* 휴대폰 번호 섹션 */}
           <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">
                 휴대폰 번호
                 {authUser?.sns_type === 'kakao' && !phoneNumber && (
@@ -643,7 +771,7 @@ export default function ProfileSection() {
           
           {/* 주소 섹션 - 모든 회원 공통 */}
             <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-start mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   {role === 'seller' ? '사업장 주소/영업활동 지역' : '주요활동지역'}
                   {authUser?.sns_type === 'kakao' && (!addressProvince || !addressCity) && (
@@ -657,6 +785,7 @@ export default function ProfileSection() {
                 </label>
                 <button
                   onClick={() => {
+                    setIsEditingAddress(true);
                     setIsEditing(true);
                     setEditField('address');
                   }}
@@ -666,7 +795,7 @@ export default function ProfileSection() {
                 </button>
               </div>
               
-              {isEditing && editField === 'address' ? (
+              {isEditingAddress ? (
                 <div className="space-y-2">
                   <RegionDropdown
                     selectedProvince={addressProvince}
@@ -679,15 +808,33 @@ export default function ProfileSection() {
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleProfileUpdate()}
+                      onClick={async () => {
+                        // editField를 설정해야 handleProfileUpdate에서 주소 업데이트 로직이 실행됨
+                        setEditField('address');
+                        await handleProfileUpdate();
+                        setIsEditingAddress(false);
+                      }}
                       className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
                       저장
                     </button>
                     <button
                       onClick={() => {
+                        setIsEditingAddress(false);
                         setIsEditing(false);
                         setEditField(null);
+                        // Reset to saved values if available
+                        if (addressRegion) {
+                          const fullName = addressRegion.full_name || addressRegion.name || '';
+                          const parts = fullName.split(' ');
+                          if (fullName === '세종특별자치시') {
+                            setAddressProvince('세종특별자치시');
+                            setAddressCity('세종특별자치시');
+                          } else if (parts.length >= 2) {
+                            setAddressProvince(parts[0]);
+                            setAddressCity(parts[1]);
+                          }
+                        }
                       }}
                       className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
                     >
@@ -697,7 +844,7 @@ export default function ProfileSection() {
                 </div>
               ) : (
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <div className="font-medium">
+                  <div className="font-medium text-lg">
                     {addressProvince && addressCity ? `${addressProvince} ${addressCity}` : '지역 정보 없음'}
                   </div>
                 </div>
@@ -870,6 +1017,25 @@ export default function ProfileSection() {
           </div>
         )}
         
+        {/* 닉네임 제한 모달 */}
+        <NicknameLimitModal
+          isOpen={showLimitModal}
+          onClose={() => {
+            setShowLimitModal(false);
+            // 변경 가능한 경우 수정 모드 활성화
+            if (limitModalData.canChange) {
+              setIsEditing(true);
+              setEditField('nickname');
+              setNicknameError('');
+              setNicknameChecked(false);
+              setNicknameAvailable(false);
+            }
+          }}
+          remainingChanges={limitModalData.remainingChanges}
+          nextAvailableDate={limitModalData.nextAvailableDate}
+          canChange={limitModalData.canChange}
+        />
+        
         {/* 오류 메시지 */}
         {error && (
           <div ref={errorRef} className="bg-red-50 border border-red-300 text-red-700 p-3 rounded text-sm mt-2 flex items-center gap-2">
@@ -879,6 +1045,17 @@ export default function ProfileSection() {
             <span>{error}</span>
           </div>
         )}
+        
+        {/* 로그아웃 버튼을 왼쪽 하단에 배치 */}
+        <div className="mt-8">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors text-sm text-gray-600"
+          >
+            <LogOut className="h-4 w-4" />
+            로그아웃
+          </button>
+        </div>
       </div>
     </div>
   );

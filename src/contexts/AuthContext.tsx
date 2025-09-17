@@ -31,6 +31,8 @@ type User = {
   business_address?: string; // 사업장 주소
   is_business_verified?: boolean; // 사업자 인증 완료 여부
   representative_name?: string; // 사업자등록증상 대표자명
+  penalty_info?: any; // 패널티 정보 (snake_case)
+  penaltyInfo?: any; // 패널티 정보 (camelCase)
 };
 
 /**
@@ -246,7 +248,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const token = localStorage.getItem(key);
             if (token) {
               storedToken = token;
-              console.log(`토큰 발견: ${key}`);
               break;
             }
           }
@@ -286,7 +287,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(userData);
             } else {
               try {
-                console.log('백엔드에서 최신 프로필 정보 가져오기 시도...');
                 const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`;
                 const response = await fetch(apiUrl, {
                   method: 'GET',
@@ -297,8 +297,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (response.ok) {
                 const profileData = await response.json();
-                console.log('프로필 API 응답 데이터:', profileData);
-                console.log('sns_type 값:', profileData.sns_type);
                 logDebug('백엔드에서 프로필 정보 가져오기 성공', profileData);
                 
                 // 기존 로컬 데이터와 병합
@@ -315,8 +313,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     business_number: profileData.business_number, // 사업자등록번호 추가
                     business_address: profileData.business_address,
                     representative_name: profileData.representative_name, // 대표자명 추가
+                    penalty_info: profileData.penalty_info, // 패널티 정보 추가
+                    penaltyInfo: profileData.penalty_info // camelCase 버전도 추가 (동일한 데이터)
                   };
-                  console.log('병합된 사용자 데이터:', userData);
                   logDebug('사용자 정보 업데이트 완료', userData);
                 } else {
                   // 로컬 스토리지에 사용자 정보가 없는 경우
@@ -336,6 +335,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     business_number: profileData.business_number, // 사업자등록번호 추가
                     business_address: profileData.business_address,
                     representative_name: profileData.representative_name, // 대표자명 추가
+                    penalty_info: profileData.penalty_info, // 패널티 정보 추가
+                    penaltyInfo: profileData.penalty_info // camelCase 버전도 추가
                   };
                   logDebug('새 사용자 정보 생성', userData);
                 }
@@ -354,12 +355,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 
                 // 백엔드 요청 실패시 로컬 데이터만 사용
                 if (userData) {
-                  console.log('프로필 API 실패, 로컬 데이터 사용:', userData);
                   setUser(userData);
-                  console.log('로컬 스토리지에서 사용자 정보 복원 성공', userData.role || 'role 없음');
                 } else {
                   // 로컬 데이터도 없는 경우 토큰에서 추출
-                  console.log('사용자 정보 발견 실패, 토큰에서 정보 추출 시도...');
                   
                   const decoded = decodeJwtPayload(storedToken);
                   if (decoded) {
@@ -379,7 +377,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     localStorage.setItem('user', JSON.stringify(extractedUser));
                     localStorage.setItem('auth.user', JSON.stringify(extractedUser));
                     localStorage.setItem('userRole', userRole);
-                    console.log('토큰에서 사용자 정보 추출 성공:', userRole);
                   }
                 }
               }
@@ -657,11 +654,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 phone_number: profileData.phone_number,
                 region: profileData.region,
                 address_region: profileData.address_region,
+                business_number: profileData.business_number, // 사업자등록번호 추가
                 business_address: profileData.business_address,
                 representative_name: profileData.representative_name, // 대표자명 추가
                 sns_type: profileData.sns_type,
                 provider: profileData.sns_type,
-                token: access
+                token: access,
+                penalty_info: profileData.penalty_info, // 패널티 정보 추가
+                penaltyInfo: profileData.penaltyInfo // camelCase 버전도 추가
               };
               
               setUser(user);
@@ -762,12 +762,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('__auth_time');
         localStorage.removeItem('dungji_redirect_url');
         
+        // 프로필 관련 캐시 제거
+        localStorage.removeItem('profile_cache');
+        localStorage.removeItem('seller_profile');
+        localStorage.removeItem('buyer_profile');
+        localStorage.removeItem('business_number');
+        localStorage.removeItem('representative_name');
+        localStorage.removeItem('business_address');
+        
         // 추가로 생성된 수 있는 로컬 스토리지 클리어
         Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('auth.') || key.includes('token') || key.includes('Token')) {
+          if (key.startsWith('auth.') || 
+              key.includes('token') || 
+              key.includes('Token') ||
+              key.includes('profile') ||
+              key.includes('Profile') ||
+              key.includes('business') ||
+              key.includes('user')) {
             localStorage.removeItem(key);
           }
         });
+        
+        // 세션 스토리지도 정리
+        sessionStorage.clear();
         
         // 로그아웃 이벤트 발생
         window.dispatchEvent(new Event('storage'));

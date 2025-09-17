@@ -162,7 +162,17 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
         isAuthenticated,
         user,
         roles: user?.roles,
-        id: user?.id
+        id: user?.id,
+        penalty_info: user?.penalty_info,
+        penaltyInfo: user?.penaltyInfo
+      });
+      
+      // 패널티 정보 디버깅
+      console.log('🔴 GroupBuyClient - User penalty info check:', {
+        penalty_info: user?.penalty_info,
+        penaltyInfo: user?.penaltyInfo,
+        is_active_snake: user?.penalty_info?.is_active,
+        is_active_camel: user?.penaltyInfo?.isActive
       });
       
       // 1. 사용자 객체에서 역할 정보 확인
@@ -299,7 +309,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
     }
   }, [groupBuyState?.status]);
   
-  // 판매자 입찰권 보유 여부 확인
+  // 판매자 이용권 보유 여부 확인
   const checkBidTokens = async () => {
     if (!isSeller) {
       setHasBidTokens(false);
@@ -310,7 +320,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
       const hasTokens = await bidTokenService.hasAvailableBidTokens();
       setHasBidTokens(hasTokens);
     } catch (error) {
-      console.error('입찰권 확인 중 오류:', error);
+      console.error('이용권 확인 중 오류:', error);
       setHasBidTokens(false);
     }
   };
@@ -543,9 +553,9 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           <Link href="/" className="mr-2">
             <ArrowLeft size={24} />
           </Link>
-          <h1 className="text-lg font-medium">공구 참여하기</h1>
+          <h1 className="text-lg font-medium">같이 견적받기</h1>
         </div>
-        <p className="text-sm text-gray-500 mt-1">공구에 참여하세요</p>
+        <p className="text-sm text-gray-500 mt-1">같이 더 좋은 조건으로 견적받으세요</p>
       </div>
 
       {/* 메인 컨텐츠 */}
@@ -617,24 +627,15 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 {formatGroupBuyTitle(groupBuy, false)}
               </CardTitle>
               
-              {/* 방장(생성자) 정보 표시 */}
-              <div className="flex items-center mt-1 mb-1 gap-2">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm">👑</span>
-                  <span className="text-gray-500 text-xs">방장</span>
+              {/* 참여중 표시 - 본인이 참여중인 경우에만 */}
+              {participationStatus?.is_participating && (
+                <div className="flex items-center mt-1 mb-1 gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">✨</span>
+                    <span className="text-red-500 text-xs font-medium">참여중</span>
+                  </div>
                 </div>
-                <span className="text-sm font-medium">
-                  {groupBuyState?.creator_name || '익명'}
-                </span>
-                
-                {/* 참여중 표시 배지 */}
-                {participationStatus?.is_participating && (
-                  <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                    참여중
-                  </span>
-                )}
-              </div>
+              )}
               
               {/* 통신사, 가입유형 정보 - 공구 목록 스타일로 */}
               {/* 휴대폰 상품 정보 */}
@@ -642,18 +643,18 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                 <div className="flex items-center gap-2 mt-4">
                   {/* 통신사 표시 - 흰색 배경 */}
                   {groupBuy.telecom_detail.telecom_carrier && (
-                    <div className="flex items-center justify-center px-3 py-2 bg-white border-2 border-gray-400 rounded-lg h-11">
+                    <div className="flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-400 rounded-lg min-h-[60px]">
                       {(() => {
                         const carrier = groupBuy.telecom_detail.telecom_carrier;
-                        
+
                         switch(carrier) {
                           case 'SKT':
                             return (
                               <Image
                                 src="/logos/skt.png"
                                 alt="SKT"
-                                width={38}
-                                height={28}
+                                width={76}
+                                height={56}
                                 className="object-contain"
                               />
                             );
@@ -662,8 +663,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                               <Image
                                 src="/logos/kt.png"
                                 alt="KT"
-                                width={38}
-                                height={22}
+                                width={76}
+                                height={44}
                                 className="object-contain"
                               />
                             );
@@ -674,33 +675,33 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                               <Image
                                 src="/logos/lgu.png"
                                 alt="LG U+"
-                                width={56}
-                                height={22}
+                                width={112}
+                                height={44}
                                 className="object-contain"
                               />
                             );
                           default:
                             return (
-                              <span className="text-sm font-bold text-gray-700">{carrier}</span>
+                              <span className="text-2xl font-bold text-gray-700">{carrier}</span>
                             );
                         }
                       })()}
                     </div>
                   )}
-                  
+
                   {/* 가입유형 */}
                   {groupBuy.telecom_detail.subscription_type && (
-                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-11">
-                      <span className="text-sm font-bold text-purple-800">
+                    <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg min-h-[60px]">
+                      <span className="text-2xl font-bold text-purple-800">
                         {groupBuy.telecom_detail.subscription_type_korean || getSubscriptionTypeDisplay(groupBuy.telecom_detail.subscription_type)}
                       </span>
                     </div>
                   )}
-                  
+
                   {/* 요금제 */}
                   {groupBuy.telecom_detail.plan_info && (
-                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg h-11">
-                      <span className="text-sm font-bold text-green-800">
+                    <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg min-h-[60px]">
+                      <span className="text-2xl font-bold text-green-800">
                         {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
                       </span>
                     </div>
@@ -709,15 +710,15 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
               )}
               
               {/* 인터넷/TV 상품 정보 */}
-              {groupBuy.internet_detail && (groupBuy.product_info?.category_detail_type === 'internet' || 
+              {groupBuy.internet_detail && (groupBuy.product_info?.category_detail_type === 'internet' ||
                                               groupBuy.product_info?.category_detail_type === 'internet_tv') && (
                 <div className="flex items-center gap-2 mt-4">
                   {/* 통신사 표시 */}
                   {groupBuy.internet_detail.carrier_display && (
-                    <div className="flex items-center justify-center px-3 py-2 bg-white border-2 border-gray-400 rounded-lg h-11">
+                    <div className="flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-400 rounded-lg min-h-[60px]">
                       {(() => {
                         const carrier = groupBuy.internet_detail.carrier_display;
-                        
+
                         switch(carrier) {
                           case 'SK브로드밴드':
                           case 'SKT':
@@ -725,8 +726,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                               <Image
                                 src="/logos/sk-broadband.png"
                                 alt="SK브로드밴드"
-                                width={42}
-                                height={28}
+                                width={84}
+                                height={56}
                                 className="object-contain"
                               />
                             );
@@ -735,8 +736,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                               <Image
                                 src="/logos/kt.png"
                                 alt="KT"
-                                width={38}
-                                height={22}
+                                width={76}
+                                height={44}
                                 className="object-contain"
                               />
                             );
@@ -746,24 +747,24 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                               <Image
                                 src="/logos/lgu.png"
                                 alt="LG U+"
-                                width={56}
-                                height={22}
+                                width={112}
+                                height={44}
                                 className="object-contain"
                               />
                             );
                           default:
                             return (
-                              <span className="text-sm font-bold text-gray-700">{carrier}</span>
+                              <span className="text-2xl font-bold text-gray-700">{carrier}</span>
                             );
                         }
                       })()}
                     </div>
                   )}
-                  
+
                   {/* 가입유형 */}
                   {groupBuy.internet_detail.subscription_type_display && (
-                    <div className="inline-flex items-center px-3 py-2 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg h-11">
-                      <span className="text-sm font-bold text-purple-800">
+                    <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg min-h-[60px]">
+                      <span className="text-2xl font-bold text-purple-800">
                         {groupBuy.internet_detail.subscription_type_display}
                       </span>
                     </div>
@@ -822,7 +823,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
            groupBuy.product_details?.category_name !== '인터넷+TV' && (
             <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-green-700">요금제</span>
+                <span className="text-xs font-medium text-green-700">희망요금제</span>
                 <span className="text-base font-bold text-green-900">
                   {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
                 </span>
@@ -963,12 +964,12 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                       return;
                     }
                     
-                    // 입찰권이 없는 경우 입찰 불가 메시지 표시
+                    // 이용권이 없는 경우 입찰 불가 메시지 표시
                     if (hasBidTokens === false) {
                       toast({
                         variant: 'destructive',
-                        title: '입찰권 없음',
-                        description: '사용 가능한 입찰권이 없습니다. 입찰권을 구매하신 후 다시 시도해주세요.'
+                        title: '이용권 없음',
+                        description: '사용 가능한 이용권이 없습니다. 이용권을 구매하신 후 다시 시도해주세요.'
                       });
                       return;
                     }
@@ -998,7 +999,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                           {calculatedStatus === 'expired' && '공구 기간이 마감되었습니다.'}
                           {calculatedStatus === 'completed' && '공구가 완료되었습니다.'}
                           {isFull && '공구 인원이 다 차었습니다.'}
-                          {hasBidTokens === false && '입찰권이 없습니다.'}
+                          {hasBidTokens === false && '이용권이 없습니다.'}
                           {!isValidBidStatus && '입찰 불가능한 상태입니다.'}
                         </span>
                       </p>

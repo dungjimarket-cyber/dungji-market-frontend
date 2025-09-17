@@ -119,7 +119,7 @@ export default function SellerSalesConfirmed() {
   };
 
   const handleNoShowReport = (groupBuyId: number) => {
-    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
+    router.push(`/noshow-report/create?groupbuy=${groupBuyId}`);
   };
 
   if (loading) {

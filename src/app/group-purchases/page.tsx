@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { getSellerBids } from '@/lib/api/bidService';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
+import NoticeSection from '@/components/home/NoticeSection';
 
 interface GroupBuy {
   id: number;
@@ -83,11 +84,17 @@ function GroupPurchasesPageContent() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   
+  // 순차 로딩 관련 상태
+  const [initialLoading, setInitialLoading] = useState(true); // 초기 4개 로딩
+  const [secondaryLoading, setSecondaryLoading] = useState(false); // 추가 16개 로딩
+  
   // 무한 스크롤 관련 상태
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
-  const itemsPerPage = 12; // 한 번에 로드할 아이템 수
+  const initialItemsCount = 4; // 초기 빠른 로드
+  const secondaryItemsCount = 16; // 추가 로드
+  const itemsPerPage = 20; // 무한 스크롤 시
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false); // loadingMore 상태를 ref로도 관리
@@ -95,6 +102,13 @@ function GroupPurchasesPageContent() {
   const categoryFromUrl = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'phone' | 'internet' | 'internet_tv'>(categoryFromUrl || 'all');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentRegion, setCurrentRegion] = useState<string>(''); // 현재 선택된 지역
+  
+  // URL 변경 시 selectedCategory 동기화
+  useEffect(() => {
+    const newCategory = searchParams.get('category') as 'all' | 'phone' | 'internet' | 'internet_tv' | null;
+    setSelectedCategory(newCategory || 'all');
+  }, [searchParams]);
 
   /**
    * 공구 목록 가져오기 (필터 포함 및 무한 스크롤)
@@ -127,13 +141,28 @@ function GroupPurchasesPageContent() {
     setError('');
     const currentTab = tabValue || activeTab;
     const currentOffset = isLoadMore ? groupBuys.length : 0;
-    console.log('fetchGroupBuys 호출 - currentTab:', currentTab, 'filters:', filters, 'offset:', currentOffset, 'isLoadMore:', isLoadMore);
+    console.log('🔍 fetchGroupBuys 호출 - currentTab:', currentTab, 'offset:', currentOffset, 'isLoadMore:', isLoadMore);
+    console.log('🔍 전달받은 filters:', filters);
+    console.log('🔍 region 필터 값:', filters?.region);
+    console.log('🔍 category 필터 값:', filters?.category);
     
     try {
       const params = new URLSearchParams();
       
-      // 무한 스크롤 파라미터 추가
-      params.append('limit', itemsPerPage.toString());
+      // 로딩 단계별 limit 설정
+      let limit;
+      if (currentOffset === 0 && !isLoadMore) {
+        // 초기 로딩: 4개만 빠르게
+        limit = initialItemsCount;
+      } else if (currentOffset === initialItemsCount && !isLoadMore) {
+        // 두 번째 로딩: 추가 16개
+        limit = secondaryItemsCount;
+      } else {
+        // 무한 스크롤: 20개씩
+        limit = itemsPerPage;
+      }
+      
+      params.append('limit', limit.toString());
       params.append('offset', currentOffset.toString());
       
       // 기본 상태 설정 - 탭에 따라
@@ -313,15 +342,17 @@ function GroupPurchasesPageContent() {
             }
             // 지역 필터
             else if (key === 'region') {
-              console.log('지역 필터 처리 - value:', value);
+              console.log('🔍 지역 필터 처리 - key:', key, 'value:', value);
               // 쉼표로 구분된 지역들을 처리
               if (value.includes(',')) {
                 const regions = value.split(',').filter(region => region.trim());
-                console.log('확장된 지역들:', regions);
+                console.log('🔍 확장된 지역들:', regions);
                 // 백엔드가 OR 검색을 지원하는 경우
                 params.append('region', value);
+                console.log('🔍 API params에 region 추가 (확장):', value);
               } else {
                 params.append('region', value);
+                console.log('🔍 API params에 region 추가 (단일):', value);
               }
             }
             // 제품 분류 필터
@@ -355,7 +386,10 @@ function GroupPurchasesPageContent() {
       console.log('카테고리:', selectedCategory);
       console.log('활성 탭:', currentTab);
       console.log('필터:', filters);
-      console.log('최종 파라미터:', params.toString());
+      console.log('🔍 최종 파라미터:', params.toString());
+      console.log('🔍 파라미터 목록:', Array.from(params.entries()));
+      console.log('🔍 region 파라미터 포함 여부:', params.has('region'));
+      console.log('🔍 region 파라미터 값:', params.get('region'));
       console.log('====================================');
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?${params.toString()}`);
@@ -449,7 +483,22 @@ function GroupPurchasesPageContent() {
    * 필터 변경 처리
    */
   const handleFiltersChange = (filters: Record<string, string>) => {
-    fetchGroupBuys(filters, activeTab, false);
+    // 현재 URL의 모든 필터 가져오기 (지역 포함)
+    const currentFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (key !== 'tab' && key !== 'refresh') {
+        currentFilters[key] = value;
+      }
+    });
+    
+    // 새 필터로 업데이트 (기존 필터 유지)
+    const mergedFilters = { ...currentFilters, ...filters };
+    
+    console.log('필터 변경 - 기존 필터:', currentFilters);
+    console.log('필터 변경 - 새 필터:', filters);
+    console.log('필터 변경 - 병합된 필터:', mergedFilters);
+    
+    fetchGroupBuys(mergedFilters, activeTab, false);
   };
 
   /**
@@ -459,9 +508,36 @@ function GroupPurchasesPageContent() {
     console.log('카테고리 변경:', category);
     setSelectedCategory(category as 'all' | 'phone' | 'internet' | 'internet_tv');
     
-    // 카테고리 변경 시 즉시 필터 적용
-    const categoryFilter = { category };
-    fetchGroupBuys(categoryFilter, activeTab);
+    // 현재 URL에서 지역 필터만 가져오기 (카테고리 관련 필터는 제외)
+    const currentFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      // tab, refresh, category 관련 필터들은 제외
+      if (key !== 'tab' && 
+          key !== 'refresh' && 
+          key !== 'category' &&
+          key !== 'manufacturer' &&
+          key !== 'carrier' &&
+          key !== 'subscriptionType' &&
+          key !== 'planRange' &&
+          key !== 'internet_carrier' &&
+          key !== 'internet_subscriptionType' &&
+          key !== 'speed' &&
+          key !== 'internet_tv_carrier' &&
+          key !== 'internet_tv_subscriptionType' &&
+          key !== 'internet_tv_speed') {
+        currentFilters[key] = value;
+      }
+    });
+    
+    // 새 카테고리 설정
+    if (category !== 'all') {
+      currentFilters.category = category;
+    }
+    
+    console.log('카테고리 변경 시 전체 필터:', currentFilters);
+    
+    // 카테고리 변경 시 지역 필터 유지하면서 필터 적용
+    fetchGroupBuys(currentFilters, activeTab);
   };
 
   /**
@@ -469,17 +545,36 @@ function GroupPurchasesPageContent() {
    */
   const handleSearchChange = (search: string, region: string) => {
     console.log('검색어 변경 - search:', search, 'region:', region);
-    const searchFilters: Record<string, string> = {};
     
-    if (search) {
-      searchFilters.search = search;
+    // 지역 정보 업데이트
+    setCurrentRegion(region || '');
+    
+    // 기존 URL 파라미터를 가져와서 유지
+    const currentFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'plan'].includes(key)) {
+        currentFilters[key] = value;
+      }
+    });
+    
+    // 검색어와 지역 업데이트 (빈 값이어도 설정)
+    if (search !== undefined) {
+      if (search) {
+        currentFilters.search = search;
+      } else {
+        delete currentFilters.search;
+      }
     }
     
-    if (region) {
-      searchFilters.region = region;
+    if (region !== undefined) {
+      if (region) {
+        currentFilters.region = region;
+      } else {
+        delete currentFilters.region;
+      }
     }
     
-    fetchGroupBuys(searchFilters, activeTab);
+    fetchGroupBuys(currentFilters, activeTab);
   };
 
   /**
@@ -542,7 +637,7 @@ function GroupPurchasesPageContent() {
   }, [accessToken, user?.role]);
 
   /**
-   * 초기 데이터 로딩
+   * 초기 데이터 로딩 - 순차적으로
    */
   useEffect(() => {
     // URL 쿼리 파라미터에서 필터 추출
@@ -551,10 +646,18 @@ function GroupPurchasesPageContent() {
     let hasCategoryParam = false;
     
     searchParams.forEach((value, key) => {
+      // _t 파라미터는 무시 (타임스탬프 파라미터)
+      if (key === '_t') {
+        return;
+      }
       if (['category', 'manufacturer', 'carrier', 'purchaseType', 'priceRange', 'sort', 'search', 'region', 'brand', 'feature', 'condition', 'subscriptionType', 'speed', 'subCategory', 'plan'].includes(key)) {
         filters[key] = value;
         if (key === 'category') {
           hasCategoryParam = true;
+        }
+        // 지역 정보 설정
+        if (key === 'region') {
+          setCurrentRegion(value);
         }
       }
       if (key === 'refresh') {
@@ -572,7 +675,21 @@ function GroupPurchasesPageContent() {
       return; // URL 업데이트 후 리턴하여 중복 호출 방지
     }
     
-    fetchGroupBuys(filters, activeTab);
+    // 1단계: 초기 4개 빠른 로드
+    setInitialLoading(true);
+    fetchGroupBuys(filters, activeTab).then(() => {
+      setInitialLoading(false);
+      
+      // 2단계: 100ms 후 추가 16개 로드
+      setTimeout(() => {
+        setSecondaryLoading(true);
+        setOffset(initialItemsCount);
+        fetchGroupBuys(filters, activeTab, true).then(() => {
+          setSecondaryLoading(false);
+          setOffset(initialItemsCount + secondaryItemsCount);
+        });
+      }, 100);
+    });
     
     // 사용자가 로그인한 경우 참여/입찰 정보 가져오기
     if (accessToken) {
@@ -662,7 +779,10 @@ function GroupPurchasesPageContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <MainHeader title="공구 둘러보기" />
-      
+
+      {/* 공구·견적 페이지 공지사항 */}
+      <NoticeSection pageType="groupbuy" compact={true} />
+
       <div className="pb-20">
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* 통합 검색바 */}
@@ -691,8 +811,8 @@ function GroupPurchasesPageContent() {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`w-fit py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 border ${
                   showFilters 
-                    ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600' 
-                    : 'bg-white text-blue-600 border-blue-400 hover:bg-blue-50'
+                    ? 'bg-dungji-primary text-white border-dungji-primary hover:bg-dungji-primary-dark' 
+                    : 'bg-white text-dungji-primary border-dungji-primary-400 hover:bg-dungji-secondary'
                 }`}
               >
                 <svg 
@@ -721,6 +841,7 @@ function GroupPurchasesPageContent() {
             <div className="px-4 pb-4">
               <GroupBuyFilters 
               category={selectedCategory as 'phone' | 'internet' | 'internet_tv'}
+              currentRegion={currentRegion}
               onFiltersChange={(filters) => {
                 // 필터 변경 처리 - 합집합을 위해 콤마로 구분한 값을 전달
                 const flatFilters: Record<string, string> = {};
@@ -771,9 +892,21 @@ function GroupPurchasesPageContent() {
             {/* 통합된 콘텐츠 영역 - 모든 탭이 동일한 데이터 표시 */}
             <div className="mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {loading ? (
-                  [...Array(8)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
+                {/* 초기 로딩 시 20개 스켈레톤 표시 */}
+                {initialLoading ? (
+                  [...Array(20)].map((_, i) => (
+                    <div key={`skeleton-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-lg animate-pulse">
+                      <div className="h-52 bg-gray-200" />
+                      <div className="p-4 space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                        <div className="h-8 bg-gray-200 rounded" />
+                      </div>
+                      <div className="p-4 bg-gray-50 space-y-2">
+                        <div className="h-3 bg-gray-200 rounded w-full" />
+                        <div className="h-10 bg-gray-300 rounded" />
+                      </div>
+                    </div>
                   ))
                 ) : error ? (
                   <div className="col-span-full text-center py-8">
@@ -789,15 +922,37 @@ function GroupPurchasesPageContent() {
                     </p>
                   </div>
                 ) : (
-                  groupBuys.map((groupBuy) => (
-                    <GroupPurchaseCard 
-                      key={groupBuy.id} 
-                      groupBuy={groupBuy}
-                      isParticipant={userParticipations.includes(groupBuy.id)}
-                      hasBid={userBids.includes(groupBuy.id)}
-                      isCompletedTab={activeTab === 'completed'}
-                    />
-                  ))
+                  <>
+                    {/* 실제 데이터 표시 */}
+                    {groupBuys.map((groupBuy, index) => (
+                      <GroupPurchaseCard 
+                        key={groupBuy.id} 
+                        groupBuy={groupBuy}
+                        isParticipant={userParticipations.includes(groupBuy.id)}
+                        hasBid={userBids.includes(groupBuy.id)}
+                        isCompletedTab={activeTab === 'completed'}
+                        priority={index < 4} // 첫 4개 우선 로딩
+                      />
+                    ))}
+                    
+                    {/* 두 번째 로딩 중일 때 나머지 자리에 스켈레톤 표시 */}
+                    {secondaryLoading && groupBuys.length <= initialItemsCount && (
+                      [...Array(secondaryItemsCount)].map((_, i) => (
+                        <div key={`secondary-skeleton-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-lg animate-pulse">
+                          <div className="h-52 bg-gray-200" />
+                          <div className="p-4 space-y-3">
+                            <div className="h-4 bg-gray-200 rounded w-3/4" />
+                            <div className="h-3 bg-gray-200 rounded w-1/2" />
+                            <div className="h-8 bg-gray-200 rounded" />
+                          </div>
+                          <div className="p-4 bg-gray-50 space-y-2">
+                            <div className="h-3 bg-gray-200 rounded w-full" />
+                            <div className="h-10 bg-gray-300 rounded" />
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </>
                 )}
               </div>
               

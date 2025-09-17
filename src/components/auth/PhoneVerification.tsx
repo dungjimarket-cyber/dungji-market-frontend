@@ -1,12 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Phone, Shield, CheckCircle } from 'lucide-react';
 import { phoneVerificationService } from '@/lib/api/phoneVerification';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface PhoneVerificationProps {
   purpose?: 'signup' | 'profile' | 'password_reset';
@@ -55,6 +62,8 @@ export function PhoneVerification({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
 
   // 타이머 효과
   useEffect(() => {
@@ -77,8 +86,8 @@ export function PhoneVerification({
     setIsDuplicate(false); // 번호 변경 시 중복 상태 초기화
   };
 
-  // 인증번호 전송
-  const handleSendCode = async () => {
+  // 인증번호 전송 전 확인 모달 표시
+  const handleSendCodeClick = () => {
     if (!phoneNumber) {
       setError('휴대폰 번호를 입력해주세요.');
       return;
@@ -89,6 +98,13 @@ export function PhoneVerification({
       return;
     }
 
+    // 확인 모달 표시
+    setShowConfirmDialog(true);
+  };
+
+  // 실제 인증번호 전송
+  const handleSendCode = async () => {
+    setShowConfirmDialog(false);
     setIsSending(true);
     setError('');
     setSuccess('');
@@ -130,6 +146,16 @@ export function PhoneVerification({
     } finally {
       setIsSending(false);
     }
+  };
+
+  // 다시입력 클릭 시 모달 닫고 포커싱
+  const handleReInput = () => {
+    setShowConfirmDialog(false);
+    // setTimeout을 사용하여 모달이 닫힌 후 포커싱
+    setTimeout(() => {
+      phoneInputRef.current?.focus();
+      phoneInputRef.current?.select();
+    }, 100);
   };
 
   // 인증번호 확인
@@ -216,6 +242,7 @@ export function PhoneVerification({
         <div className="flex gap-2">
           <div className="flex-1">
             <Input
+              ref={phoneInputRef}
               id="phone"
               type="tel"
               placeholder="휴대폰 번호를 입력하세요"
@@ -225,14 +252,14 @@ export function PhoneVerification({
               className={isVerified ? 'bg-gray-50' : ''}
             />
             {isDuplicate && (
-              <p className="text-sm text-red-500 mt-1">이미 등록된 번호입니다.</p>
+              <p className="text-xs text-red-500 mt-0.5">이미 등록된 번호입니다.</p>
             )}
           </div>
           
           <Button
             type="button"
             variant="outline"
-            onClick={handleSendCode}
+            onClick={handleSendCodeClick}
             disabled={isSending || isVerified || (codeSent && timer > 0)}
             className="min-w-[100px]"
           >
@@ -281,16 +308,16 @@ export function PhoneVerification({
       )}
 
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="text-xs text-red-500 bg-red-50 px-3 py-1.5 rounded-md">
+          {error}
+        </div>
       )}
 
       {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">{success}</AlertDescription>
-        </Alert>
+        <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-3 py-1.5 rounded-md">
+          <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+          {success}
+        </div>
       )}
 
       {purpose === 'signup' && (
@@ -300,6 +327,39 @@ export function PhoneVerification({
           인증된 번호는 거래 알림 등에 사용됩니다.
         </div>
       )}
+
+      {/* 휴대폰 번호 확인 모달 */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-[360px]">
+          <div className="text-center space-y-3 py-2">
+            <p className="text-sm text-gray-600">
+              입력하신 번호로 인증번호를 발송합니다.
+            </p>
+            <div className="bg-gray-50 rounded-lg py-3 px-4">
+              <p className="text-base font-medium">
+                {phoneNumber}
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReInput}
+                className="flex-1"
+              >
+                다시입력
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSendCode}
+                className="flex-1 bg-blue-500 hover:bg-blue-600"
+              >
+                발송
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

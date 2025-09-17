@@ -37,7 +37,7 @@ export default function WaitingBuyerSelection() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
         }
       } catch (error) {
         console.error('구매자 대기중 공구 조회 오류:', error);

@@ -54,7 +54,7 @@ export const GroupBuyConsentManager: React.FC = () => {
       const response = await fetchWithAuth('/groupbuys/?status=final_selection,bidding');
       if (response.ok) {
         const data = await response.json();
-        setGroupBuys(data);
+        setGroupBuys(Array.isArray(data) ? data : (data.results || []));
       } else {
         throw new Error('공구 목록을 불러오는데 실패했습니다.');
       }

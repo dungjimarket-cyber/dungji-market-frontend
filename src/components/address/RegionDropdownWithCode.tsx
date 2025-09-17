@@ -8,7 +8,7 @@ interface Region {
   name: string;
   full_name: string;
   level: number;
-  parent_id?: string;
+  parent_code?: string;
 }
 
 interface RegionDropdownWithCodeProps {
@@ -61,9 +61,9 @@ export default function RegionDropdownWithCode({
           p.full_name === selectedProvince
         );
         if (selectedProvinceData) {
-          // parent_id로 하위 지역 찾기
+          // parent_code로 하위 지역 찾기
           const cityList = regions.filter((r: Region) => 
-            r.level === 1 && r.parent_id === selectedProvinceData.code
+            r.level === 1 && r.parent_code === selectedProvinceData.code
           );
           setCities(cityList);
           
@@ -98,9 +98,13 @@ export default function RegionDropdownWithCode({
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
       if (response.ok) {
         const data = await response.json();
-        cachedRegions = data;
+        console.log('RegionDropdown API Response:', typeof data, Array.isArray(data), data);
+        // data가 배열이 아니라 객체일 수도 있음
+        const regions = Array.isArray(data) ? data : data.results || [];
+        console.log('RegionDropdown Processed regions:', regions);
+        cachedRegions = regions;
         cacheTimestamp = now;
-        return data;
+        return regions;
       }
     } catch (error) {
       console.error('지역 데이터 로드 오류:', error);
@@ -117,6 +121,8 @@ export default function RegionDropdownWithCode({
       
       // 시/도 목록 추출 (level 0)
       const provinceList = regions.filter((r: Region) => r.level === 0);
+      console.log('Province list:', provinceList);
+      console.log('First province:', provinceList[0]);
       setProvinces(provinceList);
     };
     
@@ -135,9 +141,9 @@ export default function RegionDropdownWithCode({
       );
       
       if (selectedProvinceData) {
-        // parent_id로 하위 지역 찾기
+        // parent_code로 하위 지역 찾기
         const cityList = regions.filter((r: Region) => 
-          r.level === 1 && r.parent_id === selectedProvinceData.code
+          r.level === 1 && r.parent_code === selectedProvinceData.code
         );
         setCities(cityList);
         
@@ -167,7 +173,7 @@ export default function RegionDropdownWithCode({
     };
     
     loadCities();
-  }, [selectedProvince, selectedCity, selectedCityCode, provinces]);
+  }, [selectedProvince, selectedCity, selectedCityCode, provinces.length]);
 
   // 시/도 선택 시 시/군/구 목록 업데이트
   const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -186,9 +192,9 @@ export default function RegionDropdownWithCode({
     const selectedProvinceData = provinces.find(p => p.name === newProvince);
     
     if (selectedProvinceData) {
-      // parent_id로 하위 지역 찾기
+      // parent_code로 하위 지역 찾기
       const cityList = regions.filter((r: Region) => 
-        r.level === 1 && r.parent_id === selectedProvinceData.code
+        r.level === 1 && r.parent_code === selectedProvinceData.code
       );
       setCities(cityList);
     }
@@ -220,11 +226,14 @@ export default function RegionDropdownWithCode({
           className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">시/도 선택</option>
-          {provinces.map((region) => (
-            <option key={region.code} value={region.name}>
-              {region.name}
-            </option>
-          ))}
+          {provinces && provinces.length > 0 && provinces.map((region) => {
+            if (!region || typeof region !== 'object') return null;
+            return (
+              <option key={region.code || ''} value={region.name || ''}>
+                {String(region.name || '')}
+              </option>
+            );
+          })}
         </select>
         <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
       </div>
@@ -238,11 +247,14 @@ export default function RegionDropdownWithCode({
           className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">시/군/구 선택</option>
-          {cities.map((cityData) => (
-            <option key={cityData.code} value={cityData.code}>
-              {cityData.name}
-            </option>
-          ))}
+          {cities && cities.length > 0 && cities.map((cityData) => {
+            if (!cityData || typeof cityData !== 'object') return null;
+            return (
+              <option key={cityData.code || ''} value={cityData.code || ''}>
+                {String(cityData.name || '')}
+              </option>
+            );
+          })}
         </select>
         <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
       </div>

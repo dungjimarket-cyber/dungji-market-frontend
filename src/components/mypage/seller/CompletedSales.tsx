@@ -36,7 +36,7 @@ export default function CompletedSales() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
         }
       } catch (error) {
         console.error('판매완료 공구 조회 오류:', error);
@@ -89,15 +89,11 @@ export default function CompletedSales() {
                 <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2 flex-wrap">
                   <span className="flex items-center gap-1 whitespace-nowrap">
                     <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                    {new Date(groupBuy.completed_at || groupBuy.end_time).toLocaleDateString()}
+                    종료일: {new Date(groupBuy.completed_at || groupBuy.end_time).toLocaleDateString('ko-KR')}
                   </span>
                   <span className="flex items-center gap-1 whitespace-nowrap">
                     <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                     참여자 {groupBuy.confirmed_buyers || 0}명
-                  </span>
-                  <span className="flex items-center gap-1 text-purple-600 whitespace-nowrap">
-                    <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                    판매완료
                   </span>
                 </div>
 

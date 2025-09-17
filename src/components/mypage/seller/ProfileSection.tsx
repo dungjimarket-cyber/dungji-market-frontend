@@ -59,19 +59,9 @@ export default function ProfileSection() {
       
       {/* 프로필 카드 */}
       <Card className="mb-6">
-        <CardContent className="p-4 sm:p-6 relative">
-          {/* 모바일: 정보수정 버튼을 오른쪽 상단에 배치 */}
-          <div className="absolute top-4 right-4 sm:hidden">
-            <Link href="/mypage/seller/settings">
-              <Button variant="outline" size="sm" className="flex items-center">
-                <Settings className="h-4 w-4 mr-1" />
-                정보수정
-              </Button>
-            </Link>
-          </div>
-
+        <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col gap-3 w-full sm:w-auto pr-16 sm:pr-0">
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
               {/* 첫 번째 줄: 닉네임 */}
               <div className="text-left">
                 <div className="flex items-center gap-2">
@@ -84,7 +74,7 @@ export default function ProfileSection() {
                   />
                   <span className="text-sm text-gray-500 font-medium">닉네임</span>
                   <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-                    {user.nickname || user.username}
+                    {sellerProfile?.nickname || user.nickname || user.username}
                   </h2>
                 </div>
               </div>
@@ -107,16 +97,6 @@ export default function ProfileSection() {
                 )}
               </div>
             </div>
-
-            {/* PC: 정보수정 버튼을 오른쪽에 배치 */}
-            <div className="hidden sm:flex items-center gap-2">
-              <Link href="/mypage/seller/settings">
-                <Button variant="outline" size="sm" className="flex items-center">
-                  <Settings className="h-4 w-4 mr-1" />
-                  정보수정
-                </Button>
-              </Link>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -128,7 +108,7 @@ export default function ProfileSection() {
             <div className="w-full sm:w-auto">
               <h3 className="text-base sm:text-lg font-semibold mb-1">남은 견적이용권</h3>
               <div className="flex items-center gap-2 mb-1">
-                <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                <Ticket className="h-4 w-4 text-blue-500" />
                 <p className="text-xl sm:text-2xl font-bold">
                   {bidTokens?.unlimited_subscription
                     ? '무제한'

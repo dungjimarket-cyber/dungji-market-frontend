@@ -45,26 +45,35 @@ const CancelReasonBadge = ({ reason }: { reason?: string }) => {
           <span className="text-sm font-medium text-yellow-800">최종선택 기간 만료</span>
         </div>
       );
+    case '판매자의 판매포기로 인한 공구 진행 취소':
     case '낙찰자의 판매포기로 인한 공구 진행 취소':
     case '낙찰자 판매포기로 인한 공구 취소':
       return (
         <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-gray-50 to-red-50 rounded-lg border border-gray-200">
           <Info className="h-4 w-4 text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">낙찰자 판매포기로 인한 공구 취소</span>
+          <span className="text-sm font-medium text-gray-700">판매자의 판매포기로 인한 공구 취소</span>
         </div>
       );
     case '참여자 전원 구매포기로 인한 공구 취소':
+    case '구매자 전원 구매포기로 인한 공구 진행 취소':
       return (
         <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-50 to-red-50 rounded-lg border border-purple-200">
           <Info className="h-4 w-4 text-purple-600" />
-          <span className="text-sm font-medium text-purple-700">참여자 전원 구매포기로 인한 공구 취소</span>
+          <span className="text-sm font-medium text-purple-700">구매자 전원 구매포기로 인한 공구 취소</span>
+        </div>
+      );
+    case '구매자 전원 노쇼':
+      return (
+        <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-200">
+          <Info className="h-4 w-4 text-red-600" />
+          <span className="text-sm font-medium text-red-700">구매자 전원 노쇼로 인한 공구 취소</span>
         </div>
       );
     default:
       return (
         <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
           <Info className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-600">공구 취소</span>
+          <span className="text-sm font-medium text-gray-600">{reason || '공구 취소'}</span>
         </div>
       );
   }

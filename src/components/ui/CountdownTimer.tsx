@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { parseKSTDate } from '@/lib/date-utils';
 
 interface CountdownTimerProps {
   endTime: string | Date;
@@ -36,7 +37,7 @@ export function CountdownTimer({
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const target = new Date(endTime).getTime();
+      const target = parseKSTDate(endTime).getTime();
       const difference = target - now;
 
       if (difference <= 0) {

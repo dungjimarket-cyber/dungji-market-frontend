@@ -7,6 +7,7 @@ import { CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 /**
  * 가입유형을 표시하는 유틸리티 함수
@@ -59,6 +60,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
   const [step, setStep] = useState<'confirm' | 'success' | 'error'>('confirm');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
   /**
    * 공구 참여 처리를 수행하는 함수
@@ -239,6 +241,7 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
 
   if (loading) return null;
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         {step === 'confirm' && (
@@ -362,5 +365,14 @@ export default function JoinGroupBuyModal({ isOpen, onClose, onSuccess, groupBuy
 
       </DialogContent>
     </Dialog>
+    
+    {/* 패널티 모달 */}
+    <PenaltyModal
+      isOpen={showPenaltyModal}
+      onClose={() => setShowPenaltyModal(false)}
+      penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+      userRole="buyer"
+    />
+    </>
   );
 }

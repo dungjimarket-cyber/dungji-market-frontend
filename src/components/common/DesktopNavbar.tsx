@@ -10,6 +10,7 @@ import AuthButtons from '@/components/auth/AuthButtons';
 import NotificationBell from '@/components/notification/NotificationBell';
 import NotificationDropdown from '@/components/notification/NotificationDropdown';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 
 /**
  * 데스크탑용 상단 네비게이션 바 컴포넌트
@@ -18,6 +19,8 @@ export default function DesktopNavbar() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 프로필 체크 Hook 사용
   const { 
@@ -38,8 +41,20 @@ export default function DesktopNavbar() {
       return;
     }
     
+    // 패널티 체크
+    console.log('🔴 DesktopNavbar - 공구 등록하기 클릭');
+    console.log('🔴 User:', user);
+    console.log('🔴 Penalty info:', user?.penalty_info);
+    console.log('🔴 Is active:', user?.penalty_info?.is_active);
+    
+    if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
+      setShowPenaltyModal(true);
+      return;
+    }
+    
     // 프로필 완성도 체크
-    console.log('[DesktopNavbar] 공구 등록하기 클릭, 프로필 체크 시작');
+    console.log('[DesktopNavbar] 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
     
     if (!isProfileComplete) {
@@ -58,7 +73,7 @@ export default function DesktopNavbar() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
-            <Image src="/logo.png" alt="둥지마켓" width={40} height={40} />
+            <Image src="/logos/dunji_logo.jpg" alt="둥지마켓" width={40} height={40} className="rounded-lg" />
             <span className="text-xl font-bold">둥지마켓</span>
           </Link>
           
@@ -101,7 +116,7 @@ export default function DesktopNavbar() {
             {/* 판매회원 로그인 시 */}
             {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
               <>
-                <Link href="/mypage/seller#bid-history" className="text-gray-600 hover:text-gray-900">
+                <Link href="/mypage/seller/bids" className="text-gray-600 hover:text-gray-900">
                   견적 내역
                 </Link>
                 <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
@@ -114,7 +129,11 @@ export default function DesktopNavbar() {
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
               <div className="relative">
-                <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
+                <NotificationBell 
+                  onClick={() => setShowNotifications(!showNotifications)} 
+                  unreadCount={unreadCount}
+                  onUnreadCountChange={setUnreadCount}
+                />
                 {showNotifications && (
                   <>
                     {/* Click outside to close */}
@@ -124,7 +143,8 @@ export default function DesktopNavbar() {
                     />
                     <NotificationDropdown 
                       isOpen={showNotifications} 
-                      onClose={() => setShowNotifications(false)} 
+                      onClose={() => setShowNotifications(false)}
+                      onUnreadCountChange={setUnreadCount}
                     />
                   </>
                 )}
@@ -134,6 +154,14 @@ export default function DesktopNavbar() {
           </div>
         </div>
       </div>
+      
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole="buyer"
+      />
       
       {/* 프로필 체크 모달 */}
       <ProfileCheckModal
@@ -147,9 +175,19 @@ export default function DesktopNavbar() {
         onUpdateProfile={() => {
           // 프로필 업데이트 페이지로 이동
           clearCache();
-          const redirectPath = user?.role === 'seller' 
-            ? '/mypage/seller/settings' 
-            : '/mypage/settings';
+          
+          // 사용자 역할 확인
+          const isSeller = user?.role === 'seller' || user?.user_type === '판매';
+          const redirectPath = isSeller ? '/mypage/seller/settings' : '/mypage/settings';
+          
+          console.log('[DesktopNavbar] 프로필 업데이트 이동:', {
+            user_role: user?.role,
+            user_type: user?.user_type,
+            isSeller,
+            redirectPath
+          });
+          
+          setShowProfileModal(false);  // 모달 닫기
           router.push(redirectPath);
         }}
       />

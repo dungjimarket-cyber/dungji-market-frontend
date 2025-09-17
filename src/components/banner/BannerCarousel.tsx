@@ -57,13 +57,13 @@ export default function BannerCarousel() {
 
   if (loading) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-gray-100 animate-pulse md:rounded-lg" />
+      <div className="w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gray-100 animate-pulse md:rounded-xl" />
     );
   }
 
   if (error) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-red-100 md:rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-red-100 md:rounded-xl flex items-center justify-center">
         <p className="text-red-600">{error}</p>
       </div>
     );
@@ -71,7 +71,7 @@ export default function BannerCarousel() {
 
   if (banners.length === 0) {
     return (
-      <div className="w-full aspect-[16/9] md:aspect-[21/5] bg-gray-100 md:rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gray-100 md:rounded-xl flex items-center justify-center">
         <p className="text-gray-600">표시할 배너가 없습니다.</p>
       </div>
     );
@@ -86,10 +86,10 @@ export default function BannerCarousel() {
   
 
   return (
-    <div className="w-full">
-      <div className="relative w-full overflow-hidden md:rounded-lg">
-        {/* 배너 컨테이너 - aspect ratio로 이미지 비율 유지 */}
-        <div className="relative w-full aspect-[16/9] md:aspect-[21/5] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <div className="w-full max-w-7xl mx-auto px-0 md:px-4 lg:px-6">
+      <div className="relative w-full overflow-hidden md:rounded-xl shadow-sm md:shadow-lg">
+        {/* 배너 컨테이너 - 반응형 비율과 최대 높이 제한 */}
+        <div className="relative w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
           {/* 배너 이미지 */}
           {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
             <Link 
@@ -118,20 +118,20 @@ export default function BannerCarousel() {
                   e.preventDefault();
                   goToPrevious();
                 }}
-                className="absolute left-1 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-auto md:h-auto bg-white/20 md:bg-white/80 hover:bg-white/30 md:hover:bg-white text-gray-700 md:text-gray-800 rounded-full md:p-2 md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
+                className="absolute left-0 md:left-1 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/10 md:bg-white/20 hover:bg-white/20 md:hover:bg-white/40 text-white/70 md:text-white rounded-r-full transition-all duration-200 z-10 flex items-center justify-center group"
                 aria-label="이전 배너"
               >
-                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform drop-shadow-md" />
               </button>
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   goToNext();
                 }}
-                className="absolute right-1 md:right-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-auto md:h-auto bg-white/20 md:bg-white/80 hover:bg-white/30 md:hover:bg-white text-gray-700 md:text-gray-800 rounded-full md:p-2 md:shadow-lg transition-all duration-200 z-10 flex items-center justify-center"
+                className="absolute right-0 md:right-1 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-white/10 md:bg-white/20 hover:bg-white/20 md:hover:bg-white/40 text-white/70 md:text-white rounded-l-full transition-all duration-200 z-10 flex items-center justify-center group"
                 aria-label="다음 배너"
               >
-                <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform drop-shadow-md" />
               </button>
             </>
           )}
@@ -140,15 +140,15 @@ export default function BannerCarousel() {
       
       {/* 인디케이터 - 배너 영역 밖 하단에 위치, 배너가 2개 이상일 때만 표시 */}
       {banners.length > 1 && (
-        <div className="flex justify-center space-x-2 mt-3">
+        <div className="flex justify-center items-center gap-1.5 mt-2 md:mt-4">
           {banners.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`rounded-full transition-all duration-300 ${
                 index === currentIndex 
-                  ? 'w-8 bg-gray-600' 
-                  : 'w-2 bg-gray-300 hover:bg-gray-400'
+                  ? 'w-8 h-2 bg-blue-600' 
+                  : 'w-2 h-2 bg-gray-300 hover:bg-gray-400 hover:scale-125'
               }`}
               aria-label={`${index + 1}번째 배너로 이동`}
             />
@@ -176,13 +176,13 @@ function BannerImage({ currentBanner, currentIndex }: { currentBanner: Banner; c
       
       {/* 배너 텍스트 (선택사항) */}
       {currentBanner.event_detail && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/60 to-transparent">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 text-white drop-shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5 bg-gradient-to-t from-black/50 via-black/30 to-transparent">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold mb-1 text-white drop-shadow-lg">
               {currentBanner.event_detail.title}
             </h2>
             {currentBanner.event_detail.short_description && (
-              <p className="text-xs sm:text-sm md:text-base line-clamp-2 text-white/90 drop-shadow">
+              <p className="text-xs sm:text-sm md:text-sm lg:text-base line-clamp-1 md:line-clamp-2 text-white/90 drop-shadow">
                 {currentBanner.event_detail.short_description}
               </p>
             )}

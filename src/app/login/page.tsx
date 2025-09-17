@@ -152,32 +152,7 @@ function LoginForm() {
 
         {/* 사용자 구분 섹션 */}
         <div className="space-y-4">
-          {/* 회원이신가요? 섹션 */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-xl">👋</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">회원이신가요?</h3>
-                <p className="text-sm text-gray-500">
-                  이미 둥지마켓 회원이신 분은 로그인하세요!
-                </p>
-              </div>
-            </div>
-            
-            {/* 로그인 페이지로 이동 버튼 */}
-            <button
-              onClick={() => {
-                router.push('/login/signin');
-              }}
-              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              로그인하러 가기
-            </button>
-          </div>
-          
-          {/* 처음이신가요? 섹션 */}
+          {/* 처음이신가요? 섹션 - 상단으로 이동 */}
           <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg border border-orange-200 p-6">
             <div className="flex items-center space-x-3 mb-4">
               <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
@@ -206,6 +181,31 @@ function LoginForm() {
               회원가입 하기
             </button>
           </div>
+          
+          {/* 회원이신가요? 섹션 - 하단으로 이동 */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-xl">👋</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">회원이신가요?</h3>
+                <p className="text-sm text-gray-500">
+                  이미 둥지마켓 회원이신 분은 로그인하세요!
+                </p>
+              </div>
+            </div>
+            
+            {/* 로그인 페이지로 이동 버튼 */}
+            <button
+              onClick={() => {
+                router.push('/login/signin');
+              }}
+              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              로그인하러 가기
+            </button>
+          </div>
         </div>
 
         {/* 둥지마켓 이용안내 */}
@@ -214,11 +214,11 @@ function LoginForm() {
           <div className="space-y-2 text-sm text-blue-800">
             <div className="flex items-center gap-2">
               <span className="text-blue-600">🔒</span>
-              <span><strong>일반회원:</strong> 공동구매 참여, 비교견적 받기</span>
+              <span><strong>일반회원:</strong> 공동구매 참여, 견적 받기</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-green-600">🏪</span>
-              <span><strong>판매회원:</strong> 견적 제안하고 판매 기회 얻기</span>
+              <span><strong>판매회원:</strong> 견적 제안, 판매 활동</span>
             </div>
           </div>
         </div>

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { toast } from '@/components/ui/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import {
@@ -352,12 +353,13 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   const [createdGroupBuyId, setCreatedGroupBuyId] = useState<number | null>(null);
   const [createdProductName, setCreatedProductName] = useState('');
   const [createdProductImage, setCreatedProductImage] = useState('');
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   
   // 공구 제목 자동 생성 함수
   const generateTitle = () => {
     const productName = selectedProduct?.name || '공동구매';
     const regionText = selectedRegion?.name ? `[${selectedRegion.name}]` : '';
-    return `${regionText} ${productName} 공동구매`;
+    return `${regionText} ${productName}`;
   };
   
   const form = useForm<FormData>({
@@ -383,22 +385,12 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
   useEffect(() => {
     // 인증 상태 및 사용자 역할 확인
     if (isLoading) {
-      console.log('[CreateForm] 인증 상태 로딩 중...');
       return; // 로딩 중에는 아무 작업도 수행하지 않음
     }
     
-    // 인증 상태 디버깅
-    console.log('[CreateForm] 인증 상태:', { 
-      isAuthenticated, 
-      isLoading,
-      user, 
-      accessToken: accessToken ? '토큰 있음' : '토큰 없음',
-      tokenLength: accessToken?.length
-    });
     
     // 아직 인증 상태 로딩 중이면 대기
     if (isLoading) {
-      console.log('[CreateForm] 인증 상태 로딩 중...');
       return;
     }
     
@@ -409,18 +401,15 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // 비인증 상태일 때 로그인 페이지로 리디렉션
     if (!isAuthenticated && !localToken) {
-      console.log('[CreateForm] 인증되지 않음, 로그인 페이지로 리디렉션');
       router.push('/login?callbackUrl=/group-purchases/create');
       return;
     }
     
     // 토큰은 있지만 인증 상태가 false인 경우 (불일치 상태)
     if (!isAuthenticated && localToken && !isLoading) {
-      console.log('[CreateForm] 토큰은 있지만 인증 상태가 false, 재확인 중...');
       // 약간의 지연 후 다시 확인 (AuthContext 초기화 대기)
       const checkTimer = setTimeout(() => {
         if (!isAuthenticated && !isLoading) {
-          console.log('[CreateForm] 여전히 인증되지 않음, 새로고침');
           window.location.reload();
         }
       }, 1000);
@@ -430,13 +419,11 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // 사용자 정보가 아직 로드되지 않은 경우 대기
     if (isAuthenticated && !user) {
-      console.log('[CreateForm] 사용자 정보 로딩 대기 중...');
       return;
     }
     
     // 로딩 상태가 아니고 인증된 상태이지만 사용자 정보가 여전히 불완전한 경우 추가 대기
     if (!isLoading && isAuthenticated && user && (!user.id || user.id === undefined)) {
-      console.log('[CreateForm] 사용자 정보가 불완전함, 추가 대기 중...');
       return;
     }
     
@@ -452,7 +439,6 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
     
     // userDataLoaded가 false이면 아직 검증하지 않음
     if (isAuthenticated && !userDataLoaded) {
-      console.log('[CreateForm] 사용자 데이터 로딩 완료 대기 중...');
       return;
     }
     
@@ -503,8 +489,25 @@ export default function CreateForm({ mode = 'create', initialData, groupBuyId }:
         );
         
         if (tokenResponse && Array.isArray(tokenResponse)) {
-          // 출시일 기준 최신순 정렬 (release_date가 없는 경우 맨 뒤로)
+          // 브랜드 우선순위와 출시일 기준 정렬
           const sortedProducts = tokenResponse.sort((a, b) => {
+            // 브랜드 우선순위 결정 (Galaxy > iPhone > 기타)
+            const getBrandPriority = (name: string) => {
+              const lowerName = name.toLowerCase();
+              if (lowerName.includes('galaxy') || lowerName.includes('갤럭시')) return 1;
+              if (lowerName.includes('iphone') || lowerName.includes('아이폰')) return 2;
+              return 3;
+            };
+            
+            const aPriority = getBrandPriority(a.name);
+            const bPriority = getBrandPriority(b.name);
+            
+            // 브랜드 우선순위가 다르면 우선순위로 정렬
+            if (aPriority !== bPriority) {
+              return aPriority - bPriority;
+            }
+            
+            // 같은 브랜드 내에서는 출시일 기준 최신순 정렬
             if (!a.release_date && !b.release_date) return 0;
             if (!a.release_date) return 1;
             if (!b.release_date) return -1;
@@ -785,14 +788,10 @@ const continueSubmitWithUserId = async (
     }
     
     // 최종 API 요청 데이터 로깅
-    console.log('최종 API 요청 데이터:', JSON.stringify(apiRequestData, null, 2));
     if (mode !== 'edit') {
-      console.log('사용자 ID 확인:', apiRequestData.creator);
     }
-    console.log('[regions 데이터 상세]:', apiRequestData.regions);
     
     // 공구 등록/수정 API 요청 실행
-    console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} API 요청 시작`);
     const apiUrl = mode === 'edit' && groupBuyId 
       ? `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuyId}/`
       : `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/`;
@@ -805,7 +804,6 @@ const continueSubmitWithUserId = async (
       body: JSON.stringify(apiRequestData),
     });
     
-    console.log(`공구 ${mode === 'edit' ? '수정' : '등록'} 성공:`, response);
     
     if (mode === 'edit') {
       // 수정 모드일 때는 기존처럼 토스트 메시지 표시 후 이동
@@ -847,9 +845,6 @@ const continueSubmitWithUserId = async (
     
     return true;
   } catch (apiError: unknown) {
-    console.error('===== API 요청 실패 상세 정보 =====');
-    console.error('오류 객체:', apiError);
-    console.error('오류 메시지:', (apiError as Error).message);
     console.error('오류 스택:', (apiError as Error).stack);
     console.error('오류 타입:', typeof apiError);
     console.error('Error instanceof Error:', apiError instanceof Error);
@@ -935,6 +930,17 @@ const onSubmit = async (values: FormData) => {
     if (confirm('공구를 등록하기 위해서는 활동지역 입력이 필요합니다.\n\n내 정보 설정 페이지로 이동하시겠습니까?')) {
       router.push('/mypage/settings');
     }
+    return;
+  }
+  
+  // 패널티 체크
+  console.log('🔴 CreateForm - User:', user);
+  console.log('🔴 CreateForm - Penalty info:', user?.penalty_info);
+  console.log('🔴 CreateForm - Is active:', user?.penalty_info?.is_active);
+  
+  if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
+    console.log('🔴 패널티 활성 상태 감지! 모달 표시');
+    setShowPenaltyModal(true);
     return;
   }
   
@@ -1242,7 +1248,7 @@ const onSubmit = async (values: FormData) => {
       <p className="text-xl font-bold text-blue-700">{mode === 'edit' ? '공구 수정 중...' : '공구 등록 중...'}</p>
       <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
       <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
-        <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+        <div className="h-full bg-dungji-primary rounded-full animate-pulse" style={{ width: '100%' }}></div>
       </div>
     </div>
   );
@@ -1257,6 +1263,14 @@ const onSubmit = async (values: FormData) => {
         onClose={() => setShowProfileModal(false)}
         missingFields={missingFields}
         onUpdateProfile={clearCache}
+      />
+      
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={user?.penalty_info || user?.penaltyInfo}
+        userRole="buyer"
       />
       
       <Card className="w-full max-w-4xl mx-auto mt-5 mb-10 relative">
@@ -1321,7 +1335,7 @@ const onSubmit = async (values: FormData) => {
                   }}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     manufacturerFilter === 'samsung' 
-                      ? 'bg-blue-600 text-white' 
+                      ? 'bg-dungji-primary text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -1446,14 +1460,14 @@ const onSubmit = async (values: FormData) => {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
-                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'local' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'local' ? 'bg-dungji-primary text-white' : 'bg-gray-200 text-gray-700'}`}
                   onClick={() => setRegionType('local')}
                 >
                   지역
                 </button>
                 <button
                   type="button"
-                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'nationwide' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  className={`py-3 rounded-full font-medium transition-colors ${regionType === 'nationwide' ? 'bg-dungji-primary text-white' : 'bg-gray-200 text-gray-700'}`}
                   onClick={() => {
                     setRegionType('nationwide');
                     setSelectedRegion(null);
@@ -1589,7 +1603,7 @@ const onSubmit = async (values: FormData) => {
                             <FormControl>
                               <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={mode === 'edit'}>
                                 <SelectTrigger className="bg-gray-50 h-12">
-                                  <SelectValue placeholder="요금제 선택" />
+                                  <SelectValue placeholder="희망요금제 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="5G_standard">5만원대</SelectItem>
@@ -1659,25 +1673,31 @@ const onSubmit = async (values: FormData) => {
                             href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
-                            SK브로드밴드 →
+                            SK브로드밴드
+                            <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-2.5 w-auto" />
+                            →
                           </a>
                           <a
                             href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
-                            KT →
+                            KT
+                            <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                            →
                           </a>
                           <a
                             href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-colors"
                           >
-                            LG U+ →
+                            LG U+
+                            <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                            →
                           </a>
                         </div>
                       </div>
@@ -1779,25 +1799,31 @@ const onSubmit = async (values: FormData) => {
                         href="https://www.tworld.co.kr/web/product/plan/list"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        SK텔레콤 →
+                        SK텔레콤
+                        <img src="/logos/skt.png" alt="SKT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a
                         href="https://product.kt.com/wDic/index.do?CateCode=6002"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        KT →
+                        KT
+                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
+                        →
                       </a>
                       <a
                         href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-sm bg-white rounded-md border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        LG U+ →
+                        LG U+
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
+                        →
                       </a>
                     </div>
                   </div>
@@ -1990,7 +2016,7 @@ const onSubmit = async (values: FormData) => {
 
             <Button 
               type="submit" 
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-6 rounded-lg font-bold text-lg cursor-pointer" 
+              className="w-full bg-dungji-primary hover:bg-dungji-primary-dark text-white py-6 rounded-lg font-bold text-lg cursor-pointer" 
               disabled={isSubmitting || form.formState.isSubmitting}
             >
               {isSubmitting ? (

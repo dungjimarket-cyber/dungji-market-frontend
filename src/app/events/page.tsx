@@ -39,7 +39,9 @@ export default function EventListPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        setEvents(data);
+        // 페이징 응답 형식과 배열 형식 모두 지원
+        const eventItems = Array.isArray(data) ? data : (data.results || []);
+        setEvents(eventItems);
       }
     } catch (error) {
       console.error('이벤트 목록 조회 오류:', error);
@@ -60,44 +62,44 @@ export default function EventListPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">이벤트</h1>
+    <div className="container mx-auto px-4 py-8 max-w-4xl lg:max-w-5xl xl:max-w-6xl">
+      <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">이벤트</h1>
 
       {events.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-gray-500">진행 중인 이벤트가 없습니다.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
           {events.map((event) => (
             <Link
               key={event.id}
               href={`/events/${event.slug}`}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 transform scale-90 lg:scale-[0.85] xl:scale-[0.8]"
             >
-              <div className="aspect-[16/9] relative bg-gray-100">
+              <div className="aspect-square relative bg-gray-50">
                 <Image
                   src={event.thumbnail_url || '/placeholder.png'}
                   alt={event.title}
                   fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
+                  className="object-contain p-1"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                  quality={70}
                   priority={false}
                 />
                 {(event.is_active || event.is_valid || event.status === 'ongoing') && (
-                  <div className="absolute top-2 right-2 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
                     진행중
                   </div>
                 )}
               </div>
-              <div className="p-4">
-                <h2 className="text-lg font-semibold mb-2">{event.title}</h2>
-                <p className="text-sm text-gray-600">
-                  {format(new Date(event.start_date), 'yyyy.MM.dd', { locale: ko })} ~ 
-                  {format(new Date(event.end_date), 'yyyy.MM.dd', { locale: ko })}
+              <div className="p-2 sm:p-3">
+                <h2 className="text-sm sm:text-base font-semibold mb-1 line-clamp-2">{event.title}</h2>
+                <p className="text-xs text-gray-600">
+                  {format(new Date(event.start_date), 'MM.dd', { locale: ko })} ~ 
+                  {format(new Date(event.end_date), 'MM.dd', { locale: ko })}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-0.5">
                   조회 {event.view_count.toLocaleString()}
                 </p>
               </div>

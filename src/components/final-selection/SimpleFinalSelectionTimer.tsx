@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
+import { parseKSTDate } from '@/lib/date-utils';
 
 interface SimpleFinalSelectionTimerProps {
   endTime?: string;
@@ -20,7 +21,7 @@ export function SimpleFinalSelectionTimer({ endTime, onTimeEnd, maxHours = 12, l
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const end = new Date(endTime).getTime();
+      const end = parseKSTDate(endTime).getTime();
       const difference = end - now;
 
       if (difference <= 0) {

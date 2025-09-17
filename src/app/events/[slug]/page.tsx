@@ -69,7 +69,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-xl lg:max-w-2xl xl:max-w-3xl">
       <button
         onClick={() => router.back()}
         className="mb-6 flex items-center text-gray-600 hover:text-gray-800"
@@ -79,24 +79,17 @@ export default function EventDetailPage() {
       </button>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="aspect-[16/9] relative bg-gray-100">
-          <Image
-            src={event.thumbnail_url ? `${event.thumbnail_url}${event.thumbnail_url.includes('?') ? '&' : '?'}t=${Date.now()}` : '/placeholder.png'}
-            alt={event.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-            priority
-          />
-          {event.is_active && (
-            <div className="absolute top-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-              진행중
-            </div>
-          )}
-        </div>
-
         <div className="p-6 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4">{event.title}</h1>
+          <div className="mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <h1 className="text-2xl md:text-3xl font-bold">{event.title}</h1>
+              {event.is_active && (
+                <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap self-start">
+                  진행중
+                </span>
+              )}
+            </div>
+          </div>
           
           <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-6">
             <p>
@@ -107,24 +100,26 @@ export default function EventDetailPage() {
           </div>
 
           {event.content_image_url && (
-            <div className="mb-6 relative">
-              <div className="relative w-full aspect-auto">
-                <Image
-                  src={`${event.content_image_url}${event.content_image_url.includes('?') ? '&' : '?'}t=${Date.now()}`}
-                  alt={`${event.title} 상세 이미지`}
-                  width={1200}
-                  height={1600}
-                  className="w-full h-auto rounded-lg"
-                  style={{ maxWidth: '100%', height: 'auto' }}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-                  quality={90}
-                />
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-lg p-2 md:p-3 lg:p-4">
+                <div className="relative w-full max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+                  <Image
+                    src={`${event.content_image_url}${event.content_image_url.includes('?') ? '&' : '?'}t=${Date.now()}`}
+                    alt={`${event.title} 상세 이미지`}
+                    width={600}
+                    height={900}
+                    className="w-full h-auto rounded-lg shadow-sm"
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 500px, 600px"
+                    quality={75}
+                  />
+                </div>
               </div>
             </div>
           )}
           
           <div 
-            className="prose prose-lg max-w-none"
+            className="prose prose-base md:prose-lg max-w-none"
             dangerouslySetInnerHTML={{ __html: event.content }}
           />
         </div>

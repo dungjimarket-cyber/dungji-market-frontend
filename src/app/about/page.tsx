@@ -9,91 +9,80 @@ export default function AboutPage() {
           <div className="mb-12 bg-blue-50 p-6 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">💡 둥지마켓이란?</h2>
             <p className="text-gray-700 mb-4">
-              <strong>휴대폰, 인터넷, 렌탈 서비스</strong>를 공동구매로 최고 지원금과 혜택을 받을 수 있는 플랫폼입니다.
+              내가 원하는 상품의 견적을 여러 판매자가 경쟁하여 제안하는 <strong>공동구매 중개 플랫폼</strong>입니다.
             </p>
             <p className="text-gray-700">
-              한 곳에서 비교하고, 공동구매로 견적받아 <strong>최대한의 지원금 혜택</strong>을 누려보세요!
+              구매자들이 모여 공구를 만들면, 판매자들이 서로 경쟁하여 최고의 조건을 제안합니다!
             </p>
           </div>
 
-          {/* 주요 서비스 */}
+          {/* 주요 취급 상품 */}
           <div className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">🎯 주요 서비스</h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <h2 className="text-2xl font-semibold mb-6">🎯 주요 취급 상품</h2>
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-md border">
                 <div className="text-3xl mb-3">📱</div>
-                <h3 className="text-xl font-semibold mb-3">휴대폰 개통</h3>
+                <h3 className="text-xl font-semibold mb-3">휴대폰</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• SKT, KT, LG U+ 전 요금제</li>
-                  <li>• 신규/번호이동/기기변경</li>
-                  <li>• 최대 지원금 혜택</li>
-                  <li>• 온라인 간편 개통</li>
+                  <li>• 통신 3사 모든 요금제 취급</li>
+                  <li>• 신규가입, 번호이동, 기기변경</li>
+                  <li>• 판매자별 지원금 비교 가능</li>
+                  <li>• 우리 동네 대리점과 직거래</li>
                 </ul>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md border">
                 <div className="text-3xl mb-3">🌐</div>
                 <h3 className="text-xl font-semibold mb-3">인터넷/TV</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• 광랜, 케이블, IPTV</li>
-                  <li>• 결합상품 할인</li>
-                  <li>• 설치비 무료</li>
-                  <li>• 현금 지원금</li>
-                </ul>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-md border">
-                <div className="text-3xl mb-3">🏠</div>
-                <h3 className="text-xl font-semibold mb-3">렌탈 서비스</h3>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• 정수기, 비데, 매트리스</li>
-                  <li>• 공기청정기, 안마의자</li>
-                  <li>• 무료 설치 및 A/S</li>
-                  <li>• 월 렌탈료 할인</li>
+                  <li>• 각 통신사 인터넷, IPTV 상품</li>
+                  <li>• 판매자별 지원금 비교 가능</li>
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* 이용 방법 */}
+          {/* 공구 진행 과정 */}
           <div className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">📋 이용 방법</h2>
+            <h2 className="text-2xl font-semibold mb-6">📋 공구 진행 과정</h2>
             <div className="space-y-6">
               <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">1</div>
+                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">회원가입 및 로그인</h3>
-                  <p className="text-gray-600">카카오톡 간편가입 또는 이메일로 회원가입하세요.</p>
+                  <h3 className="font-semibold text-lg mb-2">공구 생성/참여</h3>
+                  <p className="text-gray-600">원하는 상품의 공구를 직접 만들거나, 진행 중인 공구에 참여하세요.</p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">2</div>
+                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">공동구매 상품 찾기</h3>
-                  <p className="text-gray-600">휴대폰, 인터넷, 렌탈 카테고리에서 원하는 상품을 찾아보세요.</p>
+                  <h3 className="font-semibold text-lg mb-2">구매자 모집</h3>
+                  <p className="text-gray-600">같은 상품을 원하는 구매자들이 모입니다. 많이 모일수록 협상력이 강해져요!</p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">3</div>
+                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">공동구매 참여</h3>
-                  <p className="text-gray-600">관심 있는 공동구매에 참여하고 다른 구매자들과 함께 혜택을 받으세요.</p>
+                  <h3 className="font-semibold text-lg mb-2">판매자 견적 제안</h3>
+                  <p className="text-gray-600">여러 판매자가 경쟁하며 각자 최고의 조건을 제시합니다.</p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">4</div>
+                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">판매자 선택 및 계약</h3>
-                  <p className="text-gray-600">입찰에 참여한 판매자 중 최적의 조건을 제공하는 판매자를 선택하세요.</p>
+                  <h3 className="font-semibold text-lg mb-2">최종 선택</h3>
+                  <p className="text-gray-600">모집 기간 종료 후 가장 좋은 조건의 판매자가 선정됩니다.<br />
+                  구매자는 12시간 내 구매확정/포기를 선택할 수 있어요.</p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">5</div>
+                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">개통 및 설치</h3>
-                  <p className="text-gray-600">선택한 판매자가 개통/설치를 진행하고 최고 혜택을 받으세요!</p>
+                  <h3 className="font-semibold text-lg mb-2">직거래 진행</h3>
+                  <p className="text-gray-600">구매 확정 시 판매자 연락처가 공개되며, 직접 만나 거래를 진행합니다.</p>
                 </div>
               </div>
             </div>
@@ -106,78 +95,53 @@ export default function AboutPage() {
               <div className="bg-green-50 p-6 rounded-lg border border-green-200">
                 <h3 className="text-xl font-semibold mb-3 text-green-800">🐦 일반회원 (구매자)</h3>
                 <ul className="text-gray-700 space-y-2">
-                  <li>• 공동구매 참여하여 최고 혜택 받기</li>
-                  <li>• 여러 판매자 견적 비교</li>
-                  <li>• 안전한 거래 보장</li>
-                  <li>• 실시간 알림 서비스</li>
+                  <li>• 공구 생성 및 참여 가능</li>
+                  <li>• 여러 판매자 견적 한눈에 비교</li>
+                  <li>• 수수료 없이 무료 이용</li>
                 </ul>
               </div>
               
               <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                 <h3 className="text-xl font-semibold mb-3 text-blue-800">🦅 판매회원 (사업자)</h3>
                 <ul className="text-gray-700 space-y-2">
-                  <li>• 공동구매 고객에게 견적 제공</li>
-                  <li>• 사업자등록증 기반 인증</li>
-                  <li>• 전문적인 상담 서비스</li>
-                  <li>• 고객 관리 시스템</li>
+                  <li>• 공구에 견적 제안 가능</li>
+                  <li>• 이용권 구독시 무제한 견적 제안 (업계 최초)</li>
+                  <li>• 입점비용, 거래 수수료 0원</li>
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* 특징 및 혜택 */}
+          {/* 둥지마켓만의 차별점 */}
           <div className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">✨ 둥지마켓의 특징</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="text-xl">💰</div>
-                  <div>
-                    <h4 className="font-semibold">최고 지원금 혜택</h4>
-                    <p className="text-sm text-gray-600">공동구매로 개별 구매보다 더 많은 혜택을 받으세요</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="text-xl">🛡️</div>
-                  <div>
-                    <h4 className="font-semibold">검증된 판매자</h4>
-                    <p className="text-sm text-gray-600">사업자등록증 인증을 통한 신뢰할 수 있는 판매자</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="text-xl">📱</div>
-                  <div>
-                    <h4 className="font-semibold">간편한 온라인 개통</h4>
-                    <p className="text-sm text-gray-600">방문 없이 온라인으로 간편하게 개통 가능</p>
-                  </div>
+            <h2 className="text-2xl font-semibold mb-6">✨ 둥지마켓만의 차별점</h2>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="text-xl">🤝</div>
+                <div>
+                  <h4 className="font-semibold">공동구매로 비교견적 받기</h4>
                 </div>
               </div>
               
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="text-xl">🔍</div>
-                  <div>
-                    <h4 className="font-semibold">한 곳에서 비교</h4>
-                    <p className="text-sm text-gray-600">여러 판매자의 조건을 한 번에 비교할 수 있어요</p>
-                  </div>
+              <div className="flex items-start space-x-3">
+                <div className="text-xl">🛡️</div>
+                <div>
+                  <h4 className="font-semibold">비대면 익명 참여</h4>
                 </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="text-xl">🎯</div>
-                  <div>
-                    <h4 className="font-semibold">지역별 맞춤 서비스</h4>
-                    <p className="text-sm text-gray-600">거주지역에 맞는 최적의 서비스를 제공해요</p>
-                  </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="text-xl">📍</div>
+                <div>
+                  <h4 className="font-semibold">지역 기반 거래 매칭</h4>
                 </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="text-xl">⚡</div>
-                  <div>
-                    <h4 className="font-semibold">실시간 알림</h4>
-                    <p className="text-sm text-gray-600">공동구매 진행 상황을 실시간으로 알려드려요</p>
-                  </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="text-xl">🔔</div>
+                <div>
+                  <h4 className="font-semibold">실시간 알림</h4>
+                  <p className="text-sm text-gray-600">공구 진행 상황, 견적 도착 등 중요 정보 즉시 알림</p>
                 </div>
               </div>
             </div>
@@ -187,9 +151,9 @@ export default function AboutPage() {
           <div className="bg-gray-100 p-6 rounded-lg">
             <h2 className="text-xl font-semibold mb-4">📞 고객센터</h2>
             <div className="space-y-2 text-gray-700">
-              <p><strong>전화:</strong> 1566-0025</p>
+              <p><strong>전화:</strong> 070-4507-4492</p>
               <p><strong>운영시간:</strong> 평일 09:00 ~ 18:00 (주말, 공휴일 휴무)</p>
-              <p><strong>이메일:</strong> support@dungjimarket.com</p>
+              <p><strong>이메일:</strong> dungjimarket@gmail.com</p>
             </div>
           </div>
         </div>

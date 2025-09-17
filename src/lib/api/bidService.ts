@@ -197,18 +197,10 @@ export const createBid = async (data: CreateBidRequest): Promise<BidData & { is_
       seller: userId // JWT 토큰에서 추출한 user_id 추가
     };
     
-    console.log('입찰 요청 데이터:', requestData);
-    console.log('API 호출 URL:', `${API_URL}/bids/`);
-    console.log('인증 헤더:', headers);
-    
     const response = await axios.post(`${API_URL}/bids/`, requestData, { headers });
     
-    // 입찰 성공 토스트 메시지 표시
-    toast({
-      title: "입찰이 완료되었습니다.",
-      description: "판매자가 확인 후 연락드릴 예정입니다.",
-      variant: "default",
-    });
+    // 토스트 메시지는 BidModal에서 처리하도록 제거 (is_updated 값에 따라 다른 메시지 표시)
+    // response.data에 is_updated 값이 포함되어 있음
     
     return response.data;
   } catch (error: any) {

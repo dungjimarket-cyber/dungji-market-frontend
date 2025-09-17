@@ -69,7 +69,7 @@ export default function WaitingSellerDecisionGroupBuys() {
               selected_bid_amount: gb.selected_bid_amount
             });
           });
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
         } else if (response.status === 404) {
           // API가 아직 없는 경우
           setGroupBuys([]);

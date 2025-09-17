@@ -60,8 +60,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
       id: 'internet_tv',
       name: '인터넷+TV',
       icon: Monitor,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 border-purple-200'
+      color: 'text-dungji-primary',
+      bgColor: 'bg-dungji-primary-50 border-dungji-primary-200'
     }
   ];
 
@@ -112,15 +112,38 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
     
     setSelectedCategory(category);
     
-    // 카테고리 변경 시 URL 업데이트 및 콜백 호출
-    const params = new URLSearchParams();
-    params.set('category', category);
+    // 카테고리 변경 시 기존 검색 파라미터 유지하면서 URL 업데이트
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // 카테고리 설정
+    if (category === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', category);
+    }
+    
+    // 카테고리별 필터는 제거 (카테고리가 바뀌면 해당 카테고리 필터는 초기화)
+    const categorySpecificFilters = [
+      'manufacturer', 'carrier', 'subscriptionType', 'planRange',
+      'internet_carrier', 'internet_subscriptionType', 'speed',
+      'internet_tv_carrier', 'internet_tv_subscriptionType', 'internet_tv_speed'
+    ];
+    categorySpecificFilters.forEach(filter => params.delete(filter));
+    
+    // 검색어는 초기화, 지역은 유지
+    params.delete('search');
     
     const newUrl = `?${params.toString()}`;
-    console.log('URL 업데이트:', newUrl);
+    console.log('URL 업데이트 (검색어 초기화, 지역 유지):', newUrl);
     router.push(newUrl);
     
-    onFiltersChange?.({ category });
+    // 현재 URL의 모든 필터를 포함하여 전달 (지역 포함)
+    const allFilters: Record<string, string> = {};
+    params.forEach((value, key) => {
+      allFilters[key] = value;
+    });
+    
+    onFiltersChange?.(allFilters);
     onCategoryChange?.(category);
     
     // 변경 완료 후 플래그 해제 (더 짧은 시간으로 조정)
@@ -154,8 +177,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
               variant={isSelected ? "default" : "outline"}
               className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 transition-all duration-200 whitespace-nowrap text-xs sm:text-sm flex-shrink-0 ${
                 isSelected 
-                  ? `${category.color} bg-white border-2 font-semibold` 
-                  : `hover:${category.bgColor} hover:border-current`
+                  ? 'bg-purple-600 text-white border-purple-600 hover:bg-purple-700 font-semibold shadow-md' 
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
               }`}
               onClick={() => handleCategoryChange(category.id)}
               disabled={false} // 버튼은 항상 활성화 상태로 유지

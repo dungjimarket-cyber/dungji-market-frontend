@@ -6,6 +6,7 @@ import { Clock, Users, Flame, Sparkles, Gavel, CheckCircle } from 'lucide-react'
 import { getRegistrationTypeText, calculateGroupBuyStatus } from '@/lib/groupbuy-utils';
 import { getPlanDisplay } from '@/lib/telecom-utils';
 import { ServiceInfoCards } from '@/components/common/ServiceInfoCards';
+import { parseKSTDate } from '@/lib/date-utils';
 
 // 통신사 로고 이미지 컴포넌트
 const getCarrierDisplay = (carrier: string, categoryName?: string) => {
@@ -81,6 +82,7 @@ interface GroupBuy {
   created_at?: string;
   creator_name?: string;
   host_username?: string;
+  creator_id?: number; // 생성자 ID 추가
   product_info?: any; // 상품 정보 (custom_values 포함)
   product_details: {
     id: number;
@@ -149,7 +151,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   const { isAuthenticated, user } = useAuth();
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
   // NEW 배지: created_at 기준 24시간 이내
-  const isNew = groupBuy.created_at ? new Date(groupBuy.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) : false;
+  const isNew = groupBuy.created_at ? parseKSTDate(groupBuy.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) : false;
   
   // 실제 상태를 시간 기반으로 계산
   const actualStatus = calculateGroupBuyStatus(groupBuy.status, groupBuy.start_time, groupBuy.end_time);
@@ -163,16 +165,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   
   // 실시간 타이머 상태 추가
   const [currentTimeLeft, setCurrentTimeLeft] = useState<number>(
-    new Date(groupBuy.end_time).getTime() - Date.now()
+    parseKSTDate(groupBuy.end_time).getTime() - Date.now()
   );
   const [timeLeftText, setTimeLeftText] = useState<string>('');
   
   // 전체 시간과 남은 시간 비율 계산
-  const totalDuration = new Date(groupBuy.end_time).getTime() - new Date(groupBuy.start_time).getTime();
+  const totalDuration = parseKSTDate(groupBuy.end_time).getTime() - parseKSTDate(groupBuy.start_time).getTime();
   const [timeRemainingPercent, setTimeRemainingPercent] = useState<number>(() => {
     const now = Date.now();
-    const startTime = new Date(groupBuy.start_time).getTime();
-    const endTime = new Date(groupBuy.end_time).getTime();
+    const startTime = parseKSTDate(groupBuy.start_time).getTime();
+    const endTime = parseKSTDate(groupBuy.end_time).getTime();
     
     // 아직 시작 전인 경우 100%
     if (now < startTime) return 100;
@@ -185,9 +187,8 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     return Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
   });
   
-  // 마감 임박 조건: 3시간 미만 또는 잔여 인원 3명 이하
-  const isUrgent = (currentTimeLeft < 3 * 60 * 60 * 1000 && currentTimeLeft > 0) || 
-                  (remainingSlots <= 3 && remainingSlots > 0);
+  // 마감 임박 조건: 3시간 미만
+  const isUrgent = currentTimeLeft < 3 * 60 * 60 * 1000 && currentTimeLeft > 0;
   
   const formatTimeLeft = (ms: number) => {
     if (ms <= 0) return '마감완료';
@@ -210,14 +211,14 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     // 1초마다 타이머 갱신
     const timerInterval = setInterval(() => {
-      const newTimeLeft = new Date(groupBuy.end_time).getTime() - Date.now();
+      const newTimeLeft = parseKSTDate(groupBuy.end_time).getTime() - Date.now();
       setCurrentTimeLeft(newTimeLeft);
       setTimeLeftText(formatTimeLeft(newTimeLeft));
       
       // 남은 시간 퍼센트 업데이트
       const now = Date.now();
-      const startTime = new Date(groupBuy.start_time).getTime();
-      const endTime = new Date(groupBuy.end_time).getTime();
+      const startTime = parseKSTDate(groupBuy.start_time).getTime();
+      const endTime = parseKSTDate(groupBuy.end_time).getTime();
       
       let percent;
       if (now < startTime) {
@@ -243,7 +244,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
   const getParticipantColor = () => {
     if (isCompleted) return 'text-blue-600';
-    if (isUrgent) return 'text-purple-600';
+    if (isUrgent) return 'text-dungji-danger';
     return 'text-green-600';
   };
 
@@ -259,7 +260,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     // 일반회원
     if (user?.role === 'buyer' || !user?.role) {
       if (status === 'recruiting') {
-        return isParticipant ? '참여 완료' : '공구 참여하기';
+        return isParticipant ? '참여 완료' : '같이 견적받기';
       }
       if (status === 'final_selection_buyers' || 
           status === 'final_selection_seller' || 
@@ -305,16 +306,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     
     if (status === 'recruiting') {
       if (user?.role === 'buyer' && isParticipant) {
-        return 'bg-blue-600 text-white hover:bg-blue-700';
+        return 'bg-dungji-secondary text-white hover:bg-dungji-secondary-dark';
       }
       if (user?.role === 'seller' && hasBid) {
-        return 'bg-indigo-600 text-white hover:bg-indigo-700';
+        return 'bg-dungji-primary-dark text-white hover:bg-dungji-primary-darker';
       }
-      return 'bg-purple-600 text-white hover:bg-purple-700';
+      return 'bg-dungji-primary text-white hover:bg-dungji-primary-dark';
     }
     
     // 진행상황 확인 버튼
-    return 'bg-orange-600 text-white hover:bg-orange-700';
+    return 'bg-dungji-secondary-dark text-white hover:bg-dungji-secondary-darker';
   };
 
   /**
@@ -350,7 +351,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           className="object-contain"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority={priority}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
           placeholder="blur"
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
@@ -380,7 +381,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                   );
                 }
                 return (
-                  <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <div className="flex items-center gap-1 bg-dungji-secondary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Users className="w-4 h-4" />
                     <span>모집중</span>
                   </div>
@@ -390,7 +391,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               // 견적중 상태
               if (status === 'bidding') {
                 return (
-                  <div className="flex items-center gap-1 bg-purple-600 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <div className="flex items-center gap-1 bg-dungji-primary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Gavel className="w-4 h-4" />
                     <span>견적중</span>
                   </div>
@@ -400,7 +401,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               // 진행 상태별 배지
               if (status === 'final_selection_buyers') {
                 return (
-                  <div className="flex items-center gap-1 bg-blue-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                  <div className="flex items-center gap-1 bg-dungji-secondary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Clock className="w-4 h-4" />
                     <span>구매자 선택중</span>
                   </div>
@@ -569,18 +570,18 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
 
       {/* 하단 정보 */}
       <div className="p-4 space-y-3 bg-gray-50">
-        {/* 작성자 정보 및 참여 현황 */}
+        {/* 참여 현황 */}
         <div className="space-y-2">
-          {/* 첫번째 줄: 방장 및 참여 인원 */}
+          {/* 첫번째 줄: 참여 상태 및 참여 인원 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-sm">👑</span>
-                <span className="text-gray-500 text-xs">방장</span>
-              </div>
-              <p className="text-gray-700 text-sm font-medium truncate max-w-[120px]">
-                {groupBuy.creator_name || groupBuy.host_username || groupBuy.creator?.username || '익명'}
-              </p>
+              {/* 본인이 참여중인 경우에만 표시 */}
+              {isParticipant && (
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">✨</span>
+                  <span className="text-red-500 text-xs font-medium">참여중</span>
+                </div>
+              )}
             </div>
             
             <p className="text-lg font-bold text-gray-900">
@@ -591,7 +592,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
           {/* 두번째 줄: 등록일 및 남은 자리 */}
           <div className="flex items-center justify-between">
             <p className="text-gray-500 text-xs">
-              등록일: {new Date(groupBuy.start_time).toLocaleDateString('ko-KR')}
+              등록일: {parseKSTDate(groupBuy.start_time).toLocaleDateString('ko-KR')}
             </p>
             {!isCompleted && (
               <p className="text-gray-500 text-xs">
@@ -618,7 +619,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div 
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  isUrgent ? 'bg-red-500' : 'bg-blue-500'
+                  isUrgent ? 'bg-dungji-danger' : 'bg-dungji-secondary'
                 }`}
                 style={{ width: `${timeRemainingPercent}%` }}
               />

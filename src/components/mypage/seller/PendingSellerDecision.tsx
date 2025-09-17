@@ -42,7 +42,7 @@ export default function PendingSellerDecision() {
 
         if (response.ok) {
           const data = await response.json();
-          setGroupBuys(data);
+          setGroupBuys(Array.isArray(data) ? data : (data.results || []));
         }
       } catch (error) {
         console.error('판매자 선택 대기 공구 조회 오류:', error);

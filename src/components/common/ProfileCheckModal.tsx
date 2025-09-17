@@ -30,13 +30,6 @@ export default function ProfileCheckModal({
 }: ProfileCheckModalProps) {
   const router = useRouter();
   const { user } = useAuth();
-  
-  // 디버깅 로그 추가
-  console.log('[ProfileCheckModal] 렌더링됨:', {
-    isOpen,
-    missingFields,
-    missingFieldsLength: missingFields?.length || 0
-  });
 
   const handleUpdateProfile = () => {
     // 프로필 업데이트 콜백 호출
@@ -71,23 +64,15 @@ export default function ProfileCheckModal({
     <Dialog 
       open={isOpen} 
       onOpenChange={(open) => {
-        // 배경 클릭으로 모달이 닫히는 것을 방지
-        // 오직 버튼 클릭으로만 닫을 수 있음
+        // 모달이 닫히려고 할 때 (X 버튼 또는 배경 클릭)
         if (!open && isOpen) {
-          // 모달이 닫히려고 할 때 아무것도 하지 않음
-          return;
+          // "나중에 할게요"와 동일하게 처리
+          onClose();
         }
-        onClose();
       }}
     >
       <DialogContent 
         className="sm:max-w-md"
-        onPointerDownOutside={(e) => {
-          e.preventDefault(); // 배경 클릭 방지
-        }}
-        onEscapeKeyDown={(e) => {
-          e.preventDefault(); // ESC 키로 닫기 방지
-        }}
       >
         <DialogHeader>
           <div className="flex items-center gap-2">

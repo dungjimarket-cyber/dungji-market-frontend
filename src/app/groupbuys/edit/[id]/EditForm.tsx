@@ -1036,9 +1036,9 @@ export default function EditForm({ groupBuyId }: { groupBuyId: string }) {
                       name="telecom_plan"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>요금제</FormLabel>
+                          <FormLabel>희망요금제</FormLabel>
                           <FormControl>
-                            <Input placeholder="요금제명을 입력해주세요" {...field} disabled={isSubmitting} />
+                            <Input placeholder="희망요금제명을 입력해주세요" {...field} disabled={isSubmitting} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1050,9 +1050,9 @@ export default function EditForm({ groupBuyId }: { groupBuyId: string }) {
                       name="plan_price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>요금제 가격</FormLabel>
+                          <FormLabel>희망요금제 가격</FormLabel>
                           <FormControl>
-                            <Input placeholder="요금제 가격을 입력해주세요" {...field} disabled={isSubmitting} />
+                            <Input placeholder="희망요금제 가격을 입력해주세요" {...field} disabled={isSubmitting} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
