@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Camera, Shield, Star, MapPin, Edit2 } from 'lucide-react';
+import { Camera, Shield, Star, MapPin, Edit2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMyPageStore } from '@/stores/myPageStore';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ProfileSection() {
   const { profile, uploadProfileImage } = useMyPageStore();

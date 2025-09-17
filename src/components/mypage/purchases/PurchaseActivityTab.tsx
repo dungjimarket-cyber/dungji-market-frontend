@@ -445,7 +445,6 @@ export default function PurchaseActivityTab() {
     } else if (activeTab === 'completed') {
       fetchTradingItems();
     }
-      }
   }, [activeTab]);
 
   // 실시간 상태 동기화 폴링
