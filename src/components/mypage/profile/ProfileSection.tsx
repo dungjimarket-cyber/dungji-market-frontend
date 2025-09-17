@@ -1,56 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Camera, Shield, Star, MapPin, Edit2, Package, ShoppingCart, Heart } from 'lucide-react';
+import { Camera, Shield, Star, MapPin, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMyPageStore } from '@/stores/myPageStore';
-import { sellerAPI, buyerAPI } from '@/lib/api/used';
 
 export default function ProfileSection() {
-  const { profile, stats, uploadProfileImage, setActiveTab, fetchStats } = useMyPageStore();
-  const router = useRouter();
+  const { profile, uploadProfileImage } = useMyPageStore();
   const [isEditing, setIsEditing] = useState(false);
-
-  // 통계 데이터 가져오기 및 폴링
-  useEffect(() => {
-    // 초기 데이터 로드
-    fetchStats();
-
-    // 30초마다 폴링 (페이지가 활성 상태일 때만)
-    let interval: NodeJS.Timeout;
-
-    const startPolling = () => {
-      interval = setInterval(() => {
-        if (!document.hidden) {
-          fetchStats();
-        }
-      }, 30000); // 30초
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        clearInterval(interval);
-      } else {
-        fetchStats(); // 페이지 활성화 시 즉시 업데이트
-        startPolling();
-      }
-    };
-
-    // 페이지가 활성 상태일 때만 폴링 시작
-    if (!document.hidden) {
-      startPolling();
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [fetchStats]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -166,49 +125,6 @@ export default function ProfileSection() {
         </Button>
       </div>
 
-      {/* 판매 활동 통계 */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Package className="w-5 h-5 text-blue-600" />
-          <h3 className="font-semibold text-gray-800">판매 활동</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{stats.selling || 0}</div>
-            <div className="text-xs text-gray-600">판매중</div>
-          </div>
-          <div className="text-center p-3 bg-orange-50 rounded-lg">
-            <div className="text-2xl font-bold text-orange-600">{stats.trading || 0}</div>
-            <div className="text-xs text-gray-600">거래중</div>
-          </div>
-          <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{stats.sold || 0}</div>
-            <div className="text-xs text-gray-600">판매완료</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 구매 활동 통계 */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <ShoppingCart className="w-5 h-5 text-purple-600" />
-          <h3 className="font-semibold text-gray-800">구매 활동</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">{stats.offering || 0}</div>
-            <div className="text-xs text-gray-600">제안중</div>
-          </div>
-          <div className="text-center p-3 bg-indigo-50 rounded-lg">
-            <div className="text-2xl font-bold text-indigo-600">{stats.buying || 0}</div>
-            <div className="text-xs text-gray-600">거래중</div>
-          </div>
-          <div className="text-center p-3 bg-teal-50 rounded-lg">
-            <div className="text-2xl font-bold text-teal-600">{stats.purchased || 0}</div>
-            <div className="text-xs text-gray-600">구매완료</div>
-          </div>
-        </div>
-      </div>
 
 
     </div>
