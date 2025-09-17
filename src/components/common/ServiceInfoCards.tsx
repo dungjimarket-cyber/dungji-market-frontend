@@ -136,7 +136,7 @@ export function ServiceInfoCards({
       {(planInfo || speed) && (
         <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1.5'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
           <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[8px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>
-            {isInternet ? '속도' : '요금제'}
+            {isInternet ? '속도' : '희망요금제'}
           </div>
           <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-6 md:h-6'} mb-1.5 md:mb-2 flex items-center justify-center bg-purple-50 rounded`}>
             {isInternet ? (
