@@ -65,8 +65,11 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
   // 기존 상품 정보 로드
   useEffect(() => {
-    fetchPhoneDetail();
-  }, [phoneId]);
+    // user 상태가 로드된 후에만 실행 (undefined는 초기 상태)
+    if (user !== undefined) {
+      fetchPhoneDetail();
+    }
+  }, [phoneId, user]);
 
   const fetchPhoneDetail = async () => {
     try {
@@ -96,15 +99,26 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       }
       
       const data = await response.json();
-      
-      // 권한 체크
-      if (data.seller?.id !== user?.id) {
+
+      // 권한 체크 - user가 null이 아닌 경우에만 체크
+      if (user && data.seller?.id !== user.id) {
         toast({
           title: '수정 권한이 없습니다',
           description: '본인이 등록한 상품만 수정할 수 있습니다.',
           variant: 'destructive',
         });
         router.push(`/used/${phoneId}`);
+        return;
+      }
+
+      // user가 없는 경우 (로그인하지 않은 경우)
+      if (!user) {
+        toast({
+          title: '로그인이 필요합니다',
+          description: '상품을 수정하려면 로그인이 필요합니다.',
+          variant: 'destructive',
+        });
+        router.push('/login');
         return;
       }
       
