@@ -2341,34 +2341,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   판매자정보보기
                 </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.log('Buyer no-show report button clicked');
-                    console.log('groupBuy object:', groupBuy);
-                    console.log('groupBuy.id:', groupBuy?.id);
-                    console.log('groupBuyData.id:', groupBuyData?.id);
-                    
-                    const groupBuyId = groupBuy?.id || groupBuyData?.id;
-                    
-                    if (!groupBuyId) {
-                      console.error('No groupBuy ID available for navigation');
-                      toast({
-                        title: '오류',
-                        description: '공구 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.',
-                        variant: 'destructive'
-                      });
-                      return;
-                    }
-                    
-                    console.log('Navigating to no-show report with ID:', groupBuyId);
-                    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-                  }}
-                  className="w-full py-3 text-red-600 border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer bg-white"
-                  style={{ opacity: 1, pointerEvents: 'auto' }}
-                >
-                  노쇼신고
-                </button>
               </>
             )}
 
@@ -2486,34 +2458,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 >
                   구매자정보보기
                 </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.log('Seller no-show report button clicked');
-                    console.log('groupBuy object:', groupBuy);
-                    console.log('groupBuy.id:', groupBuy?.id);
-                    console.log('groupBuyData.id:', groupBuyData?.id);
-                    
-                    const groupBuyId = groupBuy?.id || groupBuyData?.id;
-                    
-                    if (!groupBuyId) {
-                      console.error('No groupBuy ID available for navigation');
-                      toast({
-                        title: '오류',
-                        description: '공구 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.',
-                        variant: 'destructive'
-                      });
-                      return;
-                    }
-                    
-                    console.log('Navigating to no-show report with ID:', groupBuyId);
-                    router.push(`/noshow-report/create?groupbuy_id=${groupBuyId}`);
-                  }}
-                  className="w-full py-3 text-red-600 border border-red-300 hover:bg-red-50 rounded-md transition-colors cursor-pointer bg-white"
-                  style={{ opacity: 1, pointerEvents: 'auto' }}
-                >
-                  노쇼신고하기
-                </button>
               </>
             )}
 
