@@ -240,15 +240,25 @@ export default function CreateUsedPhonePage() {
         return;
       }
 
-      const newImages = files.map((file, index) => ({
-        file,
-        url: URL.createObjectURL(file),
-        isMain: replaceIndex === 0 && index === 0, // 첫 번째 슬롯의 첫 번째 이미지만 대표
-        isEmpty: false
-      }));
+      // 기존 대표 이미지가 있는지 확인
+      const hasMainImage = images.some(img => img && !img.isEmpty && img.isMain);
 
       setImages(prev => {
-        const updated = [...prev];
+        let updated = [...prev];
+
+        // 첫 번째 슬롯 클릭 시 기존 대표 이미지들 모두 해제
+        if (replaceIndex === 0) {
+          updated = updated.map(img => ({ ...img, isMain: false }));
+        }
+
+        const newImages = files.map((file, index) => ({
+          file,
+          url: URL.createObjectURL(file),
+          // 첫 번째 슬롯 클릭하고 첫 번째 파일이거나, 대표 이미지가 없고 전체 첫 이미지일 때만
+          isMain: (replaceIndex === 0 && index === 0) || (!hasMainImage && actualImageCount === 0 && index === 0),
+          isEmpty: false
+        }));
+
         let currentIndex = replaceIndex;
 
         // replaceIndex부터 시작해서 빈 슬롯에 순서대로 채우기
@@ -280,7 +290,7 @@ export default function CreateUsedPhonePage() {
     } else {
       // 새 이미지 추가 (다음 빈 슬롯에)
       const actualImageCount = images.filter(img => img && !img.isEmpty).length;
-      
+
       if (actualImageCount + files.length > 10) {
         toast({
           title: '이미지 개수 초과',
@@ -289,11 +299,15 @@ export default function CreateUsedPhonePage() {
         });
         return;
       }
-      
+
+      // 기존 대표 이미지가 있는지 확인
+      const hasMainImage = images.some(img => img && !img.isEmpty && img.isMain);
+
       const newImages = files.map((file, index) => ({
         file,
         url: URL.createObjectURL(file),
-        isMain: actualImageCount === 0 && index === 0,
+        // 대표 이미지가 없고 첫 이미지일 때만 대표로 설정
+        isMain: !hasMainImage && actualImageCount === 0 && index === 0,
         isEmpty: false
       }));
 
