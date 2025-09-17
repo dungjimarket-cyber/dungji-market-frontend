@@ -1375,7 +1375,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           groupBuy.product_details?.category_name === '인터넷+TV') && (
           <div className="mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
-              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 희망요금제 확인하기</p>
+              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
               <div className="flex flex-col gap-1">
                 <a
                   href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
@@ -1413,7 +1413,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         {groupBuy.product_details?.category_name === '휴대폰' && (
           <div className="mb-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
-              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 희망요금제 확인하기</p>
+              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
               <div className="flex flex-col gap-1">
                 <a
                   href="https://www.tworld.co.kr/web/product/plan/list"
@@ -1421,7 +1421,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
                 >
-                  <span>SKT 희망요금제</span>
+                  <span>SKT 요금제</span>
                   <span className="ml-2">→</span>
                 </a>
                 <a
@@ -1430,7 +1430,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
                 >
-                  <span>KT 희망요금제</span>
+                  <span>KT 요금제</span>
                   <span className="ml-2">→</span>
                 </a>
                 <a
@@ -1439,7 +1439,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
                 >
-                  <span>LG U+ 희망요금제</span>
+                  <span>LG U+ 요금제</span>
                   <span className="ml-2">→</span>
                 </a>
               </div>
