@@ -48,7 +48,9 @@ export default function UsedPhonesPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false); // 추가 로딩 상태
   const [totalCount, setTotalCount] = useState(0);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({
+    includeCompleted: true, // 거래완료 포함 기본값
+  });
   const [hasLoadedAll, setHasLoadedAll] = useState(false); // 모든 데이터 로드 완료 여부
   
   // 등록 제한 관련 상태

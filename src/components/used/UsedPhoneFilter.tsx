@@ -39,6 +39,7 @@ interface FilterOptions {
   acceptOffers?: boolean;
   sortBy?: string;
   region?: string;
+  includeCompleted?: boolean; // 거래완료 포함 옵션
 }
 
 interface UsedPhoneFilterProps {
@@ -51,7 +52,9 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
   totalCount = 0
 }: UsedPhoneFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({});
+  const [filters, setFilters] = useState<FilterOptions>({
+    includeCompleted: true // 기본적으로 거래완료 포함
+  });
   const [searchInput, setSearchInput] = useState('');
   const [regions, setRegions] = useState<any[]>([]);
   const [selectedSido, setSelectedSido] = useState<string>('');
@@ -295,7 +298,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               </SelectContent>
             </Select>
 
-            {/* 제안 가능 여부 */}
+            {/* 체크박스 필터들 */}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -304,6 +307,16 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 className="rounded border-gray-300"
               />
               <span className="text-sm">제안 가능만</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filters.includeCompleted !== false}
+                onChange={(e) => updateFilter('includeCompleted', e.target.checked || undefined)}
+                className="rounded border-gray-300"
+              />
+              <span className="text-sm">거래완료 포함</span>
             </label>
 
             {/* 초기화 버튼 */}
@@ -491,8 +504,8 @@ const FilterContent = memo(function FilterContent({
         </Select>
       </div>
 
-      {/* 제안 가능 여부 */}
-      <div>
+      {/* 체크박스 옵션들 */}
+      <div className="space-y-2">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -501,6 +514,16 @@ const FilterContent = memo(function FilterContent({
             className="rounded border-gray-300"
           />
           <span className="text-sm">가격 제안 가능한 상품만</span>
+        </label>
+
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={filters.includeCompleted !== false}
+            onChange={(e) => updateFilter('includeCompleted', e.target.checked || undefined)}
+            className="rounded border-gray-300"
+          />
+          <span className="text-sm">거래완료 상품 포함</span>
         </label>
       </div>
 

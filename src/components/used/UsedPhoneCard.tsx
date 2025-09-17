@@ -56,10 +56,15 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
     }
   };
 
+  // 거래완료 상태 확인
+  const isCompleted = phone.status === 'sold' || phone.status === 'completed';
+
   return (
-    <Link 
+    <Link
       href={`/used/${phone.id}`}
-      className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+      className={`group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 ${
+        isCompleted ? 'opacity-75' : ''
+      }`}
     >
       {/* 이미지 영역 */}
       <div className="relative aspect-square bg-gray-100 overflow-hidden">
@@ -69,14 +74,25 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
             alt={phone.model || '중고폰'}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
+              isCompleted ? 'grayscale' : ''
+            }`}
             priority={priority}
             loading={priority ? 'eager' : 'lazy'}
           />
         ) : (
           <div className="w-full h-full bg-gray-100" />
         )}
-        
+
+        {/* 거래완료 오버레이 */}
+        {isCompleted && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="bg-white/95 rounded-lg px-4 py-2">
+              <span className="text-sm font-bold text-gray-700">거래완료</span>
+            </div>
+          </div>
+        )}
+
         {/* 상태 뱃지 */}
         {phone.status === 'trading' && (
           <>
@@ -131,18 +147,39 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
 
         {/* 가격 */}
         <div className="mt-2">
-          <div className="flex items-baseline gap-1">
-            <span className="text-xs text-gray-500">즉시구매</span>
-            <span className="text-lg font-bold text-gray-900">
-              {formatPrice(phone.price)}
-            </span>
-          </div>
-          {phone.accept_offers && phone.min_offer_price && (
-            <div className="mt-1 flex items-center gap-1">
-              <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">
-                가격제안 {formatPrice(phone.min_offer_price)}부터
-              </span>
+          {isCompleted ? (
+            // 거래완료 상품 가격 표시
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-500">거래완료</span>
+                <span className="text-lg font-bold text-gray-700">
+                  {formatPrice(phone.final_price || phone.price)}
+                </span>
+              </div>
+              {/* 실제 거래가와 원래 가격이 다른 경우 원가 표시 */}
+              {phone.final_price && phone.final_price !== phone.price && (
+                <div className="text-xs text-gray-400 line-through mt-0.5">
+                  원가 {formatPrice(phone.price)}
+                </div>
+              )}
             </div>
+          ) : (
+            // 판매중 상품 가격 표시
+            <>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-500">즉시구매</span>
+                <span className="text-lg font-bold text-gray-900">
+                  {formatPrice(phone.price)}
+                </span>
+              </div>
+              {phone.accept_offers && phone.min_offer_price && (
+                <div className="mt-1 flex items-center gap-1">
+                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">
+                    가격제안 {formatPrice(phone.min_offer_price)}부터
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
