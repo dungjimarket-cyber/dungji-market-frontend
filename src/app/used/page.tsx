@@ -263,8 +263,8 @@ export default function UsedPhonesPage() {
       <NoticeSection pageType="used" compact={true} />
 
       {/* 히어로 섹션 */}
-      <section className="bg-gray-50 border-b py-8 lg:py-12">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-gray-50 border-b py-6 lg:py-8">
+        <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               쉽고 재밌고 편안한 중고거래
@@ -333,7 +333,7 @@ export default function UsedPhonesPage() {
       {/* 프로필 미완성 안내 */}
       {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
         <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="container mx-auto px-4 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
@@ -366,7 +366,7 @@ export default function UsedPhonesPage() {
       />
 
       {/* 상품 리스트 */}
-      <section className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section className="container mx-auto px-4 py-6">
         {/* 상품 그리드 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {phones.map((phone, index) => (
