@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Heart, Loader2 } from 'lucide-react';
-import UsedPhoneCard from '@/components/used/UsedPhoneCard';
+import { Heart, Loader2, Eye, HeartOff } from 'lucide-react';
 import { buyerAPI } from '@/lib/api/used';
 import { UsedPhone } from '@/types/used';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function FavoritesTab() {
   const [favorites, setFavorites] = useState<Partial<UsedPhone>[]>([]);
@@ -92,14 +96,75 @@ export default function FavoritesTab() {
         <h3 className="text-lg font-semibold">찜한 상품 ({favorites.length})</h3>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {favorites.map((phone, index) => (
-          <UsedPhoneCard
-            key={phone.id}
-            phone={phone}
-            priority={index < 4}
-            onFavorite={handleUnfavorite}
-          />
+      <div className="space-y-3">
+        {favorites.map((phone) => (
+          <Card key={phone.id} className="p-4">
+            <div className="flex gap-4">
+              {/* 상품 이미지 */}
+              <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                {phone.images && phone.images.length > 0 ? (
+                  <Image
+                    src={phone.images[0].image || phone.images[0]}
+                    alt={phone.title || '상품 이미지'}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <Heart className="w-8 h-8" />
+                  </div>
+                )}
+              </div>
+
+              {/* 상품 정보 */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-2">
+                    <h4 className="font-medium text-gray-900 line-clamp-1">
+                      {phone.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {phone.model} • {phone.storage}GB
+                    </p>
+                    <p className="text-lg font-semibold text-gray-900 mt-2">
+                      {phone.price?.toLocaleString()}원
+                    </p>
+                  </div>
+
+                  {/* 상태 표시 */}
+                  <Badge variant={phone.status === 'available' ? 'default' : 'secondary'}>
+                    {phone.status === 'available' ? '판매중' :
+                     phone.status === 'reserved' ? '예약중' :
+                     phone.status === 'trading' ? '거래중' : '판매완료'}
+                  </Badge>
+                </div>
+
+                {/* 버튼들 */}
+                <div className="flex gap-2 mt-3">
+                  <Link href={`/used/${phone.id}`} className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-1.5"
+                    >
+                      <Eye className="w-4 h-4" />
+                      상품 보기
+                    </Button>
+                  </Link>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleUnfavorite(phone.id!)}
+                    className="flex-1 gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    <HeartOff className="w-4 h-4" />
+                    찜 해제
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Camera, Shield, Star, MapPin, Edit2, X } from 'lucide-react';
+import { Camera, Star, MapPin, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMyPageStore } from '@/stores/myPageStore';
@@ -87,19 +87,6 @@ export default function ProfileSection() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-2">
-              {user.phone_verified ? (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Shield className="w-3 h-3 text-green-600" />
-                  휴대폰 인증
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-xs gap-1 border-gray-300">
-                  <X className="w-3 h-3 text-gray-500" />
-                  휴대폰 미인증
-                </Badge>
-              )}
-            </div>
           </div>
         </div>
 
