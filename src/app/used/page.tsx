@@ -469,6 +469,6 @@ export default function UsedPhonesPage() {
           router.push('/mypage?tab=used-phones');
         }}
       />
-    </>
+    </div>
   );
 }

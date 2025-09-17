@@ -143,7 +143,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
   return (
     <div className="bg-white/95 backdrop-blur-sm border-b sticky top-0 z-40 shadow-sm">
-      <div className="container mx-auto px-4 py-3">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 py-3">
         {/* 모바일 & 태블릿 뷰 */}
         <div className="lg:hidden">
           <div className="flex gap-2">
