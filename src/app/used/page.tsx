@@ -270,10 +270,10 @@ export default function UsedPhonesPage() {
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              쉽고 재밌고 편안한 중고거래
+              중고폰 직거래 서비스가 오픈했습니다
             </h1>
             <p className="text-base lg:text-lg text-gray-600 mb-8">
-              우리 동네에서 만나요 · 편하게 거래해요
+              안전하고 투명한 스마트폰 거래의 시작
             </p>
             
             {/* 특징 아이콘 */}
