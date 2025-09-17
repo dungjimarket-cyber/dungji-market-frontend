@@ -20,16 +20,26 @@ export default function FavoritesTab() {
       setLoading(true);
       const data = await buyerAPI.getFavorites();
 
-      // API 응답에서 찜한 상품 목록 추출
-      if (data && data.items) {
-        // 찜 목록에서 phone 객체 추출
-        const favoritePhones = data.items.map((item: any) => ({
-          ...item.phone,
-          is_favorite: true
-        }));
+      // PurchaseActivityTab과 동일한 구조로 처리
+      const favoritesList = data.results || data;
+
+      // 찜 목록 데이터 구조 정규화
+      if (Array.isArray(favoritesList)) {
+        const favoritePhones = favoritesList.map((item: any) => {
+          // item이 phone 객체를 포함하는 경우
+          if (item.phone) {
+            return {
+              ...item.phone,
+              is_favorite: true
+            };
+          }
+          // item이 직접 phone 데이터인 경우
+          return {
+            ...item,
+            is_favorite: true
+          };
+        });
         setFavorites(favoritePhones);
-      } else if (Array.isArray(data)) {
-        setFavorites(data);
       }
     } catch (error) {
       console.error('찜 목록 조회 오류:', error);

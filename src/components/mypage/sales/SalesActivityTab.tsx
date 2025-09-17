@@ -536,7 +536,7 @@ export default function SalesActivityTab() {
   return (
     <>
       <div className="bg-white rounded-lg p-4">
-        <h3 className="font-semibold text-lg mb-4">판매 활동</h3>
+        <h3 className="font-semibold text-lg mb-4">판매 내역</h3>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 mb-4">

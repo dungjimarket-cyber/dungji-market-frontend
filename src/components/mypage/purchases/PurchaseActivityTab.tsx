@@ -35,21 +35,6 @@ interface OfferItem {
   created_at: string;
 }
 
-interface FavoriteItem {
-  id: number;
-  phone: {
-    id: number;
-    title: string;
-    brand: string;
-    model: string;
-    price: number;
-    images: { image_url: string; is_main: boolean }[];
-    seller: {
-      nickname: string;
-    };
-  };
-  created_at: string;
-}
 
 interface TradingItem {
   id: number;
@@ -90,7 +75,6 @@ export default function PurchaseActivityTab() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('offers');
   const [offers, setOffers] = useState<OfferItem[]>([]);
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [tradingItems, setTradingItems] = useState<TradingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -177,34 +161,6 @@ export default function PurchaseActivityTab() {
     }
   };
 
-  // 찜 목록 조회
-  const fetchFavorites = async () => {
-    setLoading(true);
-    try {
-      const data = await buyerAPI.getFavorites();
-      setFavorites(data.results || data);
-    } catch (error) {
-      console.error('Failed to fetch favorites:', error);
-      // 목업 데이터
-      setFavorites([
-        {
-          id: 1,
-          phone: {
-            id: 20,
-            title: 'AirPods Pro 2',
-            brand: 'Apple',
-            model: 'AirPods Pro 2',
-            price: 280000,
-            images: [{ image_url: '/placeholder.png', is_main: true }],
-            seller: { nickname: '애플매니아' },
-          },
-          created_at: '2024-12-23T09:00:00',
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 페이지 변경 시 스크롤 위치 초기화
   useEffect(() => {
@@ -327,23 +283,6 @@ export default function PurchaseActivityTab() {
     );
   };
 
-  // 찜 해제
-  const handleRemoveFavorite = async (phoneId: number) => {
-    try {
-      await buyerAPI.toggleFavorite(phoneId);
-      toast({
-        title: '찜 해제',
-        description: '찜 목록에서 제거되었습니다.',
-      });
-      fetchFavorites();
-    } catch (error) {
-      toast({
-        title: '오류',
-        description: '찜 해제에 실패했습니다.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   // 판매자 정보 조회
   const fetchSellerInfo = async (phoneId: number) => {
@@ -495,7 +434,6 @@ export default function PurchaseActivityTab() {
   useEffect(() => {
     fetchMyOffers();
     fetchTradingItems();
-    fetchFavorites();
   }, []);
 
   // 탭 변경시 해당 데이터 새로고침
@@ -506,9 +444,8 @@ export default function PurchaseActivityTab() {
       fetchTradingItems();
     } else if (activeTab === 'completed') {
       fetchTradingItems();
-    } else if (activeTab === 'favorites') {
-      fetchFavorites();
     }
+      }
   }, [activeTab]);
 
   // 실시간 상태 동기화 폴링
@@ -564,10 +501,10 @@ export default function PurchaseActivityTab() {
 
   return (
     <div className="bg-white rounded-lg p-4">
-      <h3 className="font-semibold text-lg mb-4">구매 활동</h3>
+      <h3 className="font-semibold text-lg mb-4">구매 내역</h3>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="offers" className="text-xs sm:text-sm">
             제안내역 ({offers.filter(offer => offer.status !== 'cancelled' && offer.phone.status !== 'trading' && offer.phone.status !== 'sold').length})
           </TabsTrigger>
@@ -576,9 +513,6 @@ export default function PurchaseActivityTab() {
           </TabsTrigger>
           <TabsTrigger value="completed" className="text-xs sm:text-sm">
             거래완료 ({tradingItems.filter(item => item.phone.status === 'sold').length})
-          </TabsTrigger>
-          <TabsTrigger value="favorites" className="text-xs sm:text-sm">
-            찜 ({favorites.length})
           </TabsTrigger>
         </TabsList>
 
@@ -827,77 +761,6 @@ export default function PurchaseActivityTab() {
           )}
         </TabsContent>
 
-        {/* 찜 목록 탭 */}
-        <TabsContent value="favorites" className="space-y-3">
-          {loading ? (
-            <div className="text-center py-8">로딩중...</div>
-          ) : favorites.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              찜한 상품이 없습니다
-            </div>
-          ) : (
-            <>
-              {getPaginatedItems(favorites).map((item) => (
-              <Card key={item.id} className="p-3 sm:p-4">
-                <div className="flex gap-3 sm:gap-4">
-                  <Link 
-                    href={`/used/${item.phone.id}`}
-                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
-                  >
-                    <Image
-                      src={item.phone.images[0]?.image_url || '/placeholder.png'}
-                      alt={item.phone.title}
-                      width={80}
-                      height={80}
-                      className="object-cover w-full h-full"
-                    />
-                  </Link>
-                  
-                  <div className="flex-1 min-w-0">
-                    <Link 
-                      href={`/used/${item.phone.id}`}
-                      className="hover:text-dungji-primary transition-colors"
-                    >
-                      <h4 className="font-medium text-sm truncate">
-                        {item.phone.brand} {item.phone.model}
-                      </h4>
-                    </Link>
-                    <p className="text-base sm:text-lg font-semibold mt-1">
-                      {item.phone.price.toLocaleString()}원
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      판매자: {item.phone.seller.nickname}
-                    </p>
-                    
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(item.created_at), {
-                          addSuffix: true,
-                          locale: ko,
-                        })}
-                      </span>
-                      <div className="flex gap-2">
-                        <Button size="sm">
-                          가격 제안
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleRemoveFavorite(item.phone.id)}
-                        >
-                          <Heart className="w-3 h-3 mr-1" />
-                          찜 해제
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-              <Pagination items={favorites} />
-            </>
-          )}
-        </TabsContent>
       </Tabs>
 
       {/* 거래 취소 모달 */}

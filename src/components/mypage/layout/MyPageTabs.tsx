@@ -69,7 +69,7 @@ export default function MyPageTabs() {
             "w-5 h-5",
             activeTab === 'sales' ? "text-blue-600" : "text-gray-500"
           )} />
-          <span className="text-sm font-medium">판매활동</span>
+          <span className="text-sm font-medium">판매내역</span>
         </TabsTrigger>
 
         <TabsTrigger
@@ -83,7 +83,7 @@ export default function MyPageTabs() {
             "w-5 h-5",
             activeTab === 'purchases' ? "text-purple-600" : "text-gray-500"
           )} />
-          <span className="text-sm font-medium">구매활동</span>
+          <span className="text-sm font-medium">구매내역</span>
         </TabsTrigger>
 
         <TabsTrigger
