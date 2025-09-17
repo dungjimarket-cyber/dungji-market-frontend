@@ -729,7 +729,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {phone.condition_description && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-700 mb-2">제품상태 및 설명</h3>
-                <p className="text-gray-800 whitespace-pre-wrap">{phone.condition_description}</p>
+                <p className="text-gray-800 whitespace-pre-wrap break-words">{phone.condition_description}</p>
               </div>
             )}
           </div>
@@ -1296,7 +1296,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     <Info className="w-4 h-4" />
                     판매자 요청사항
                   </p>
-                  <p className="text-sm text-gray-800 whitespace-pre-wrap">{phone.meeting_place}</p>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{phone.meeting_place}</p>
                 </div>
               )}
             </div>
