@@ -206,6 +206,115 @@ export default function PurchaseActivityTab() {
     }
   };
 
+  // 페이지 변경 시 스크롤 위치 초기화
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  // 탭 변경 시 페이지 초기화
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+  // 페이징 처리된 데이터 계산
+  const getPaginatedItems = <T,>(items: T[]) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return items.slice(startIndex, endIndex);
+  };
+
+  // 총 페이지 수 계산
+  const getTotalPages = <T,>(items: T[]) => {
+    return Math.ceil(items.length / itemsPerPage);
+  };
+
+  // 페이지네이션 컴포넌트
+  const Pagination = <T,>({ items }: { items: T[] }) => {
+    const totalPages = getTotalPages(items);
+
+    if (totalPages <= 1) return null;
+
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      const maxVisible = 5; // 최대 표시 페이지 수
+
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      return pageNumbers;
+    };
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+        >
+          이전
+        </Button>
+
+        {currentPage > 3 && totalPages > 5 && (
+          <>
+            <Button
+              size="sm"
+              variant={currentPage === 1 ? "default" : "outline"}
+              onClick={() => setCurrentPage(1)}
+              className="w-8 h-8 p-0"
+            >
+              1
+            </Button>
+            {currentPage > 4 && <span className="px-1">...</span>}
+          </>
+        )}
+
+        {getPageNumbers().map((num) => (
+          <Button
+            key={num}
+            size="sm"
+            variant={currentPage === num ? "default" : "outline"}
+            onClick={() => setCurrentPage(num)}
+            className="w-8 h-8 p-0"
+          >
+            {num}
+          </Button>
+        ))}
+
+        {currentPage < totalPages - 2 && totalPages > 5 && (
+          <>
+            {currentPage < totalPages - 3 && <span className="px-1">...</span>}
+            <Button
+              size="sm"
+              variant={currentPage === totalPages ? "default" : "outline"}
+              onClick={() => setCurrentPage(totalPages)}
+              className="w-8 h-8 p-0"
+            >
+              {totalPages}
+            </Button>
+          </>
+        )}
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+        >
+          다음
+        </Button>
+      </div>
+    );
+  };
+
   // 제안 취소
   const handleCancelOffer = async (offerId: number) => {
     await executeTransactionAction(
@@ -482,7 +591,8 @@ export default function PurchaseActivityTab() {
               제안한 상품이 없습니다
             </div>
           ) : (
-            offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled').map((offer) => (
+            <>
+              {getPaginatedItems(offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled')).map((offer) => (
               <Card key={offer.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <Link 
@@ -571,7 +681,9 @@ export default function PurchaseActivityTab() {
                   </div>
                 </div>
               </Card>
-            ))
+            ))}
+              <Pagination items={offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled')} />
+            </>
           )}
         </TabsContent>
 
@@ -584,7 +696,8 @@ export default function PurchaseActivityTab() {
               거래중인 상품이 없습니다
             </div>
           ) : (
-            tradingItems.filter(item => item.phone.status === 'trading').map((item) => (
+            <>
+              {getPaginatedItems(tradingItems.filter(item => item.phone.status === 'trading')).map((item) => (
               <Card key={item.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -645,7 +758,9 @@ export default function PurchaseActivityTab() {
                   </div>
                 </div>
               </Card>
-            ))
+            ))}
+              <Pagination items={tradingItems.filter(item => item.phone.status === 'trading')} />
+            </>
           )}
         </TabsContent>
 
@@ -659,9 +774,8 @@ export default function PurchaseActivityTab() {
               거래완료된 상품이 없습니다
             </div>
           ) : (
-            tradingItems
-              .filter(item => item.phone.status === 'sold')
-              .map((item) => (
+            <>
+              {getPaginatedItems(tradingItems.filter(item => item.phone.status === 'sold')).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -707,7 +821,9 @@ export default function PurchaseActivityTab() {
                     </div>
                   </div>
                 </Card>
-              ))
+              ))}
+              <Pagination items={tradingItems.filter(item => item.phone.status === 'sold')} />
+            </>
           )}
         </TabsContent>
 
@@ -720,7 +836,8 @@ export default function PurchaseActivityTab() {
               찜한 상품이 없습니다
             </div>
           ) : (
-            favorites.map((item) => (
+            <>
+              {getPaginatedItems(favorites).map((item) => (
               <Card key={item.id} className="p-3 sm:p-4">
                 <div className="flex gap-3 sm:gap-4">
                   <Link 
@@ -776,7 +893,9 @@ export default function PurchaseActivityTab() {
                   </div>
                 </div>
               </Card>
-            ))
+            ))}
+              <Pagination items={favorites} />
+            </>
           )}
         </TabsContent>
       </Tabs>
