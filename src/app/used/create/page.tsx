@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Plus, AlertCircle, Check, Info, Upload, Image as ImageIcon } from 'lucide-react';
+import { Camera, X, Plus, AlertCircle, Check, Info, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -389,10 +389,6 @@ export default function CreateUsedPhonePage() {
     }
   }, [handleImageUpload]);
 
-  // 전체 업로드 버튼 클릭
-  const handleUploadButtonClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
 
   // 폼 입력 핸들러
   const handleInputChange = (field: string, value: any) => {
@@ -964,32 +960,11 @@ export default function CreateUsedPhonePage() {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <Label className="text-lg font-semibold">
                 상품 이미지 <span className="text-red-500">*</span>
+                <span className="text-sm font-normal text-gray-500 ml-2">(최대 10장)</span>
               </Label>
-
-              {/* 전체 업로드 버튼 */}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleUploadButtonClick}
-                className="gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                사진 추가
-              </Button>
-
-              {/* 숨겨진 파일 인풋 */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => handleImageUpload(e)}
-              />
             </div>
 
             {/* 드래그 앤 드롭 안내 */}
@@ -1099,7 +1074,7 @@ export default function CreateUsedPhonePage() {
                       {canUpload ? (
                         <>
                           <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                          <span className="text-xs text-gray-500">{index + 1}/5</span>
+                          <span className="text-xs text-gray-500">사진 추가</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1123,7 +1098,7 @@ export default function CreateUsedPhonePage() {
                       ) : (
                         <div className="text-gray-300">
                           <Camera className="w-6 h-6 mb-1" />
-                          <span className="text-xs">{index + 1}/10</span>
+                          <span className="text-xs">사진 추가</span>
                         </div>
                       )}
                     </label>

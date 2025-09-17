@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   ArrowLeft, Plus, X, Camera, AlertCircle, MapPin,
-  DollarSign, Package, Smartphone, Info, Lock, Upload, Image as ImageIcon
+  DollarSign, Package, Smartphone, Info, Lock, Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   const { toast } = useToast();
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const multiFileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -355,10 +354,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     }
   };
 
-  // 전체 업로드 버튼 클릭
-  const handleUploadButtonClick = () => {
-    multiFileInputRef.current?.click();
-  };
 
   // 폼 제출
   const handleSubmit = async (e: React.FormEvent) => {
@@ -756,23 +751,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
         {/* 이미지 */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               상품 이미지 <span className="text-red-500">*</span>
               {!isFieldEditable('images') && <Lock className="w-3 h-3 text-gray-400" />}
+              <span className="text-sm font-normal text-gray-500">(최대 10장)</span>
             </h2>
-            {isFieldEditable('images') && images.length < 10 && (
-              <Button
-                type="button"
-                onClick={handleUploadButtonClick}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                사진 추가
-              </Button>
-            )}
           </div>
 
           <div
@@ -820,7 +804,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
                 >
                   <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-xs text-gray-600">{images.length}/10</span>
+                  <span className="text-xs text-gray-600">사진 추가</span>
                 </button>
               )}
             </div>
@@ -835,14 +819,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
             className="hidden"
           />
 
-          <input
-            ref={multiFileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageChange}
-            className="hidden"
-          />
 
           {errors.images && <p className="text-xs text-red-500 mt-2">{errors.images}</p>}
         </div>
