@@ -48,9 +48,9 @@ export default function ProfileSection() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100">
-              {user.profile_image ? (
+              {user.image ? (
                 <Image
-                  src={user.profile_image}
+                  src={user.image}
                   alt={user.nickname || user.username || '사용자'}
                   width={80}
                   height={80}
