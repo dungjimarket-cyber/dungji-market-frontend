@@ -1997,7 +1997,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           </p>
                         )}
                       </div>
-                      <div className="flex flex-col gap-2">
+                      <div>
                         <Button
                           size="sm"
                           onClick={() => {
@@ -2008,18 +2008,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           }}
                         >
                           수락
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            // 거절 처리
-                            if (confirm('이 제안을 거절하시겠습니까?')) {
-                              // API 호출 로직
-                            }
-                          }}
-                        >
-                          거절
                         </Button>
                       </div>
                     </div>
