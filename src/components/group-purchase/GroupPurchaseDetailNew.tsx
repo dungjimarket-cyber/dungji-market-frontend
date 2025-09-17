@@ -139,7 +139,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   
   const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [isParticipant, setIsParticipant] = useState(false);
+  const [isParticipant, setIsParticipant] = useState<boolean | undefined>(undefined);
+  const [isParticipantLoading, setIsParticipantLoading] = useState(true);
   const [hasBid, setHasBid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
@@ -484,6 +485,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   };
 
   const checkParticipationStatus = async () => {
+    setIsParticipantLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/participations/`, {
         headers: {
@@ -491,19 +493,24 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         const participation = data.find((p: any) => p.groupbuy === groupBuy.id);
         setIsParticipant(!!participation);
-        
+
         // 최종선택 상태 설정
         if (participation && participation.final_decision) {
           setMyParticipationFinalDecision(participation.final_decision);
         }
+      } else {
+        setIsParticipant(false);
       }
     } catch (error) {
       console.error('참여 상태 확인 오류:', error);
+      setIsParticipant(false);
+    } finally {
+      setIsParticipantLoading(false);
     }
   };
 
@@ -1234,11 +1241,29 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   // 남은 자리 계산
   const remainingSlots = groupBuy.max_participants - currentParticipants;
 
+  // 종료된 공구인지 확인
+  const isEndedGroupBuy = [
+    'final_selection_buyers',
+    'final_selection_seller',
+    'in_progress',
+    'completed',
+    'cancelled'
+  ].includes(groupBuyData.status);
+
+  // 권한 체크가 필요한 상태에서 로딩 중일 때 로딩 표시
+  if (isEndedGroupBuy && isAuthenticated && isParticipantLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
   return (
     <EndedGroupBuyAccessControl
       status={groupBuyData.status}
       isAuthenticated={!!user}
-      isParticipant={isParticipant || hasBid}
+      isParticipant={isParticipant === true || hasBid}
       hasWinningBid={hasWinningBid}
     >
       <div className="min-h-screen bg-white">
