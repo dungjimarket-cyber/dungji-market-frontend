@@ -1332,8 +1332,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-          style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'}}
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4 py-8 sm:p-4 backdrop-blur-sm"
+          style={{
+            paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+            paddingTop: 'max(2rem, env(safe-area-inset-top))'
+          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowOfferModal(false);
@@ -1344,13 +1347,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             }
           }}
         >
-          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 flex flex-col shadow-2xl overflow-hidden" style={{maxHeight: 'min(80vh, calc(100vh - 8rem))'}}>
-            {/* 헤더 - 컴팩트 버전 */}
-            <div className="flex items-center justify-between mb-3 pb-3 border-b">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">가격 제안하기</h3>
-                <p className="text-xs text-gray-500 mt-0.5">판매자에게 희망 가격을 제안해보세요</p>
-              </div>
+          <div
+            className="bg-white rounded-2xl max-w-sm sm:max-w-md w-[calc(100%-2rem)] sm:w-full p-3 sm:p-4 md:p-6 flex flex-col shadow-2xl overflow-hidden"
+            style={{
+              maxHeight: 'min(70vh, calc(100vh - 10rem))'
+            }}
+          >
+            {/* 헤더 - 더 컴팩트 */}
+            <div className="flex items-center justify-between mb-2 pb-2 border-b">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">가격 제안하기</h3>
               <button
                 onClick={() => {
                   setShowOfferModal(false);
@@ -1359,45 +1364,45 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setOfferMessage('');
                   setSelectedMessages([]);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
               </button>
             </div>
             
             {/* 스크롤 가능한 컨텐츠 영역 - 최적화된 구조 */}
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 px-1">
               <div className="pb-4">
-              {/* 제품 정보 미리보기 - 컴팩트 */}
-              <div className="bg-gray-50 rounded-lg p-2.5 mb-3">
-              <div className="flex items-center gap-2.5">
+              {/* 제품 정보 미리보기 - 초컴팩트 */}
+              <div className="bg-gray-50 rounded-lg p-2 mb-2.5">
+              <div className="flex items-center gap-2">
                 {phone.images?.[0] && (
                   <Image
                     src={phone.images[0].imageUrl}
                     alt={phone.model}
-                    width={50}
-                    height={50}
-                    className="rounded-lg object-cover"
+                    width={40}
+                    height={40}
+                    className="rounded-md object-cover"
                   />
                 )}
                 <div className="flex-1">
-                  <p className="font-semibold text-sm">{phone.model}</p>
+                  <p className="font-semibold text-xs sm:text-sm">{phone.model}</p>
                   <p className="text-xs text-gray-600">{phone.storage}GB | {phone.color}</p>
-                  <p className="text-sm font-bold text-dungji-primary mt-0.5">
+                  <p className="text-xs sm:text-sm font-bold text-dungji-primary mt-0.5">
                     즉시 구매가: {phone.price?.toLocaleString()}원
                   </p>
                 </div>
               </div>
             </div>
             
-            {/* 제안 횟수 표시 - 컴팩트 */}
-            <div className="flex items-center justify-between mb-3 p-2.5 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
-              <span className="text-sm font-medium text-gray-700">
+            {/* 제안 횟수 표시 - 초컴팩트 */}
+            <div className="flex items-center justify-between mb-2.5 p-2 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">
                 남은 제안 횟수
               </span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
-                <span className="text-sm text-gray-600">/ 5회</span>
+              <div className="flex items-center gap-1">
+                <span className="text-lg sm:text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
+                <span className="text-xs sm:text-sm text-gray-600">/ 5회</span>
               </div>
             </div>
             
@@ -1442,7 +1447,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     setOfferAmount(numbersOnly);
                     setDisplayAmount(numValue.toLocaleString('ko-KR'));
                   }}
-                  className="pr-12 h-11 text-base font-semibold"
+                  className="pr-12 h-10 sm:h-11 text-sm sm:text-base font-semibold"
                   inputMode="numeric"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-sm">원</span>
@@ -1555,8 +1560,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             </div>
 
-            {/* 버튼 - 확실한 하단 고정 */}
-            <div className="flex gap-2.5 pt-3 border-t bg-white shrink-0">
+            {/* 버튼 - 초컴팩트 하단 고정 */}
+            <div className="flex gap-2 pt-2.5 border-t bg-white shrink-0">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -1565,7 +1570,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setDisplayAmount('');
                   setSelectedMessages([]);
                 }}
-                className="flex-1 h-11 text-sm"
+                className="flex-1 h-9 sm:h-10 text-xs sm:text-sm"
               >
                 취소
               </Button>
@@ -1577,7 +1582,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   handleOfferConfirm();
                 }}
                 disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0)}
-                className="flex-1 h-11 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm"
+                className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
                 제안하기
               </Button>
