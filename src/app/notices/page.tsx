@@ -27,7 +27,7 @@ interface Notice {
 export default function NoticesPage() {
   const [allNotices, setAllNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedNotices, setExpandedNotices] = useState<Set<number>>(new Set());
+  const [expandedNoticeId, setExpandedNoticeId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -40,7 +40,7 @@ export default function NoticesPage() {
     // 탭 변경 시 페이지를 1로 리셋
     setCurrentPage(1);
     // 열린 공지사항 초기화
-    setExpandedNotices(new Set());
+    setExpandedNoticeId(null);
   }, [activeTab]);
 
   const fetchNotices = async () => {
@@ -82,15 +82,8 @@ export default function NoticesPage() {
   const notices = filteredNotices.slice(startIndex, endIndex);
 
   const toggleExpand = (noticeId: number) => {
-    setExpandedNotices(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(noticeId)) {
-        newSet.delete(noticeId);
-      } else {
-        newSet.add(noticeId);
-      }
-      return newSet;
-    });
+    // 이미 열린 공지를 다시 클릭하면 닫기, 아니면 새로 열기
+    setExpandedNoticeId(prev => prev === noticeId ? null : noticeId);
   };
 
   const getCategoryBadge = (category: string) => {
@@ -155,7 +148,7 @@ export default function NoticesPage() {
           ) : (
             <div className="space-y-2">
               {notices.map((notice) => {
-                const isExpanded = expandedNotices.has(notice.id);
+                const isExpanded = expandedNoticeId === notice.id;
 
                 return (
                   <Card
