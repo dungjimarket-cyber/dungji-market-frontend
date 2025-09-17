@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS } from '@/types/used';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
+import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
@@ -456,19 +457,32 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (isFieldEditable('regions') && selectedRegions.length > 0) {
         // regions 필드 - 다중 지역
         selectedRegions.forEach((region) => {
-          const regionString = region.full_name || `${region.province || ''} ${region.city || ''}`.trim();
-          if (regionString) {
-            submitData.append('regions', regionString);
-          }
+          submitData.append('regions', `${region.province} ${region.city}`);
         });
 
         // region 필드 - 단일 지역 코드 (필수)
-        const primaryRegion = selectedRegions[0];
-        if (primaryRegion?.id) {
-          // ID가 있으면 그대로 사용
-          submitData.append('region', primaryRegion.id.toString());
-        } else {
-          // ID가 없으면 기본값
+        try {
+          const primaryRegion = selectedRegions[0];
+          // 지역명으로 실제 지역 코드 찾기
+          const searchName = primaryRegion.city || primaryRegion.province;
+          const regions = await searchRegionsByName(searchName);
+
+          if (regions && regions.length > 0) {
+            // 가장 정확한 매칭 찾기
+            const exactMatch = regions.find((r: any) =>
+              r.full_name.includes(primaryRegion.province) &&
+              r.full_name.includes(primaryRegion.city)
+            ) || regions[0];
+
+            submitData.append('region', exactMatch.code);
+            console.log('Region code found:', exactMatch.code, exactMatch.full_name);
+          } else {
+            // 기본값 사용
+            submitData.append('region', '11');  // 서울특별시 코드
+            console.log('Region not found, using default: Seoul');
+          }
+        } catch (error) {
+          console.error('Failed to fetch region code:', error);
           submitData.append('region', '11');  // 서울특별시 코드
         }
       }
