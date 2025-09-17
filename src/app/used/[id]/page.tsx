@@ -724,6 +724,63 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </p>
               </div>
             )}
+
+            {/* PC에서만 제품상태 및 설명을 사진 아래로 이동 */}
+            {phone.condition_description && (
+              <div className="hidden lg:block mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-3">제품상태 및 설명</h3>
+                <p className="text-gray-700 whitespace-pre-wrap break-all">{phone.condition_description}</p>
+              </div>
+            )}
+
+            {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 하단 중앙 배치 */}
+            {isOwner && phone.status === 'active' && (
+              <div className="hidden lg:block mt-6 pt-6 border-t">
+                <div className="flex justify-center gap-3">
+                  <Button
+                    onClick={async () => {
+                      setCheckingOffers(true);
+                      try {
+                        // 수정 전 최신 제안 상태 확인
+                        const latestOfferCount = await checkLatestOffers();
+
+                        // 이전에 제안이 없었는데 새로 생긴 경우
+                        if (phone.offer_count === 0 && latestOfferCount > 0) {
+                          toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
+                            duration: 3000,
+                          });
+                          // 상품 정보 새로고침
+                          await fetchPhoneDetail();
+                        }
+
+                        router.push(`/used/${phoneId}/edit`);
+                      } catch (error) {
+                        console.error('Failed to check offers:', error);
+                        router.push(`/used/${phoneId}/edit`);
+                      } finally {
+                        setCheckingOffers(false);
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 px-6"
+                    disabled={checkingOffers}
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    {checkingOffers ? '확인중...' : '수정하기'}
+                  </Button>
+                  <Button
+                    onClick={() => setShowDeleteModal(true)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    삭제하기
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 정보 섹션 */}
@@ -810,9 +867,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               </div>
 
-              {/* 제품상태 및 설명 - 구성품 영역 하단으로 이동 */}
+              {/* 제품상태 및 설명 - 모바일에서만 표시 */}
               {phone.condition_description && (
-                <div className="py-4 border-b">
+                <div className="lg:hidden py-4 border-b">
                   <p className="text-sm text-gray-600 mb-2">제품상태 및 설명</p>
                   <p className="text-gray-800 whitespace-pre-wrap break-all">{phone.condition_description}</p>
                 </div>
@@ -966,50 +1023,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       </Button>
                     )}
 
-                    {/* 수정/삭제 버튼 - 판매중일 때만 표시 */}
-                    {phone.status === 'active' && (
-                      <div className="grid grid-cols-2 gap-3 mt-3">
-                        <Button
-                          onClick={async () => {
-                            setCheckingOffers(true);
-                            try {
-                              // 수정 전 최신 제안 상태 확인
-                              const latestOfferCount = await checkLatestOffers();
-
-                              // 이전에 제안이 없었는데 새로 생긴 경우
-                              if (phone.offer_count === 0 && latestOfferCount > 0) {
-                                toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
-                                  duration: 3000,
-                                });
-                                // 상품 정보 새로고침
-                                await fetchPhoneDetail();
-                              }
-
-                              router.push(`/used/${phoneId}/edit`);
-                            } catch (error) {
-                              console.error('Failed to check offers:', error);
-                              router.push(`/used/${phoneId}/edit`);
-                            } finally {
-                              setCheckingOffers(false);
-                            }
-                          }}
-                          variant="outline"
-                          className="flex items-center justify-center gap-2"
-                          disabled={checkingOffers}
-                        >
-                          <Edit3 className="w-4 h-4" />
-                          {checkingOffers ? '확인중...' : '수정하기'}
-                        </Button>
-                        <Button
-                          onClick={() => setShowDeleteModal(true)}
-                          variant="outline"
-                          className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          삭제하기
-                        </Button>
-                      </div>
-                    )}
                   </>
                 ) : (
                   /* 다른 사람의 상품인 경우 */
@@ -1955,6 +1968,51 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 우측 하단 고정 */}
+      {isOwner && phone && phone.status === 'active' && (
+        <div className="lg:hidden fixed bottom-20 right-4 z-40 flex flex-col gap-2">
+          <Button
+            onClick={async () => {
+              setCheckingOffers(true);
+              try {
+                // 수정 전 최신 제안 상태 확인
+                const latestOfferCount = await checkLatestOffers();
+
+                // 이전에 제안이 없었는데 새로 생긴 경우
+                if (phone.offer_count === 0 && latestOfferCount > 0) {
+                  toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
+                    duration: 3000,
+                  });
+                  // 상품 정보 새로고침
+                  await fetchPhoneDetail();
+                }
+
+                router.push(`/used/${phoneId}/edit`);
+              } catch (error) {
+                console.error('Failed to check offers:', error);
+                router.push(`/used/${phoneId}/edit`);
+              } finally {
+                setCheckingOffers(false);
+              }
+            }}
+            size="sm"
+            className="flex items-center justify-center gap-1.5 shadow-lg bg-white hover:bg-gray-50"
+            disabled={checkingOffers}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            {checkingOffers ? '확인중' : '수정'}
+          </Button>
+          <Button
+            onClick={() => setShowDeleteModal(true)}
+            size="sm"
+            className="flex items-center justify-center gap-1.5 shadow-lg bg-white text-red-600 border-red-300 hover:bg-red-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            삭제
+          </Button>
         </div>
       )}
       </div>
