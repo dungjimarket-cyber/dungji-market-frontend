@@ -724,14 +724,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </p>
               </div>
             )}
-            
-            {/* 제품상태 및 설명 - 이미지 하단으로 이동 */}
-            {phone.condition_description && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg max-w-full overflow-hidden">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">제품상태 및 설명</h3>
-                <p className="text-gray-800 whitespace-pre-wrap break-all">{phone.condition_description}</p>
-              </div>
-            )}
           </div>
 
           {/* 정보 섹션 */}
@@ -817,6 +809,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   </span>
                 </div>
               </div>
+
+              {/* 제품상태 및 설명 - 구성품 영역 하단으로 이동 */}
+              {phone.condition_description && (
+                <div className="py-4 border-b">
+                  <p className="text-sm text-gray-600 mb-2">제품상태 및 설명</p>
+                  <p className="text-gray-800 whitespace-pre-wrap break-all">{phone.condition_description}</p>
+                </div>
+              )}
 
               {/* 조회수 및 통계 */}
               <div className="py-4 flex items-center justify-between text-sm text-gray-600">
