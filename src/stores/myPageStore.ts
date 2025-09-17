@@ -25,18 +25,15 @@ export interface UserProfile {
 }
 
 export interface TradeStats {
-  selling: number;
-  trading: number;
-  sold: number;
-  offering: number;
-  buying: number;
-  purchased: number;
+  sellNotifications: number;  // 판매 관련 알림 수
+  buyNotifications: number;   // 구매 관련 알림 수
+  favorites: number;          // 찜한 상품 수
 }
 
 interface MyPageState {
   profile: UserProfile | null;
   stats: TradeStats;
-  activeTab: 'sales' | 'purchases' | 'reviews' | 'settings';
+  activeTab: 'sales' | 'purchases' | 'favorites' | 'reviews';
   isLoading: boolean;
   isUpdating: boolean;
   error: string | null;
@@ -56,12 +53,9 @@ type MyPageStore = MyPageState & MyPageActions;
 const initialState: MyPageState = {
   profile: null,
   stats: {
-    selling: 0,
-    trading: 0,
-    sold: 0,
-    offering: 0,
-    buying: 0,
-    purchased: 0,
+    sellNotifications: 0,
+    buyNotifications: 0,
+    favorites: 0,
   },
   activeTab: 'sales',
   isLoading: false,
@@ -163,24 +157,48 @@ export const useMyPageStore = create<MyPageStore>()(
 
       fetchStats: async () => {
         try {
-          // TODO: API 호출 구현
-          // const response = await api.get('/api/mypage/stats/');
-          // set({ stats: response.data });
-          
-          // 임시 목업 데이터
-          set({ 
+          // 동적 import로 순환 의존성 방지
+          const { sellerAPI, buyerAPI } = await import('@/lib/api/used');
+
+          // 병렬로 데이터 가져오기
+          const [sellOffers, buyOffers, favorites] = await Promise.all([
+            sellerAPI.getReceivedOffers().catch(() => []),
+            buyerAPI.getMySentOffers().catch(() => []),
+            buyerAPI.getFavorites().catch(() => ({ items: [] }))
+          ]);
+
+          // 판매 알림 카운트 (읽지 않은 제안들)
+          const sellNotifications = Array.isArray(sellOffers) ? sellOffers.length : 0;
+
+          // 구매 알림 카운트 (수락된 제안들)
+          const buyNotifications = Array.isArray(buyOffers)
+            ? buyOffers.filter((offer: any) =>
+                offer.status === 'accepted' ||
+                offer.status === 'trading' ||
+                offer.status === 'completed'
+              ).length
+            : 0;
+
+          // 찜 카운트
+          const favoritesCount = favorites.items ? favorites.items.length :
+                                 Array.isArray(favorites) ? favorites.length : 0;
+
+          set({
             stats: {
-              selling: 3,
-              trading: 1,
-              sold: 5,
-              offering: 2,
-              buying: 1,
-              purchased: 3,
+              sellNotifications,
+              buyNotifications,
+              favorites: favoritesCount
             }
           });
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : '통계를 불러오는데 실패했습니다.'
+          console.error('통계 조회 오류:', error);
+          // 오류 발생 시에도 기본값 설정
+          set({
+            stats: {
+              sellNotifications: 0,
+              buyNotifications: 0,
+              favorites: 0
+            }
           });
         }
       },

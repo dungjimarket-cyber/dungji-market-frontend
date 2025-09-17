@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Package, ShoppingCart, MessageSquare, Settings } from 'lucide-react';
+import { Package, ShoppingCart, MessageSquare, Heart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SalesActivityTab from '../sales/SalesActivityTab';
 import PurchaseActivityTab from '../purchases/PurchaseActivityTab';
 import ReviewsTab from '../reviews/ReviewsTab';
-import SettingsTab from '../settings/SettingsTab';
+import FavoritesTab from '../favorites/FavoritesTab';
 
 export default function MyPageTabs() {
   const [activeTab, setActiveTab] = useState('sales');
@@ -24,15 +24,15 @@ export default function MyPageTabs() {
           <span className="hidden sm:inline">구매활동</span>
           <span className="sm:hidden">구매</span>
         </TabsTrigger>
+        <TabsTrigger value="favorites" className="gap-1.5">
+          <Heart className="w-4 h-4" />
+          <span className="hidden sm:inline">찜</span>
+          <span className="sm:hidden">찜</span>
+        </TabsTrigger>
         <TabsTrigger value="reviews" className="gap-1.5">
           <MessageSquare className="w-4 h-4" />
           <span className="hidden sm:inline">거래후기</span>
           <span className="sm:hidden">후기</span>
-        </TabsTrigger>
-        <TabsTrigger value="settings" className="gap-1.5">
-          <Settings className="w-4 h-4" />
-          <span className="hidden sm:inline">설정</span>
-          <span className="sm:hidden">설정</span>
         </TabsTrigger>
       </TabsList>
 
@@ -44,12 +44,12 @@ export default function MyPageTabs() {
         <PurchaseActivityTab />
       </TabsContent>
 
-      <TabsContent value="reviews" className="space-y-4">
-        <ReviewsTab />
+      <TabsContent value="favorites" className="space-y-4">
+        <FavoritesTab />
       </TabsContent>
 
-      <TabsContent value="settings" className="space-y-4">
-        <SettingsTab />
+      <TabsContent value="reviews" className="space-y-4">
+        <ReviewsTab />
       </TabsContent>
     </Tabs>
   );

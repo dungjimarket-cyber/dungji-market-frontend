@@ -1,16 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Camera, Shield, Star, MapPin, Clock, Edit2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Camera, Shield, Star, MapPin, Clock, Edit2, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useMyPageStore } from '@/stores/myPageStore';
+import UsedNotificationDropdown from '@/components/mypage/UsedNotificationDropdown';
+import { sellerAPI, buyerAPI } from '@/lib/api/used';
 
 export default function ProfileSection() {
-  const { profile, stats, uploadProfileImage } = useMyPageStore();
+  const { profile, stats, uploadProfileImage, setActiveTab, fetchStats } = useMyPageStore();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [showSellNotifications, setShowSellNotifications] = useState(false);
+  const [showBuyNotifications, setShowBuyNotifications] = useState(false);
+
+  // 통계 데이터 가져오기 및 폴링
+  useEffect(() => {
+    // 초기 데이터 로드
+    fetchStats();
+
+    // 30초마다 폴링 (페이지가 활성 상태일 때만)
+    let interval: NodeJS.Timeout;
+
+    const startPolling = () => {
+      interval = setInterval(() => {
+        if (!document.hidden) {
+          fetchStats();
+        }
+      }, 30000); // 30초
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearInterval(interval);
+      } else {
+        fetchStats(); // 페이지 활성화 시 즉시 업데이트
+        startPolling();
+      }
+    };
+
+    // 페이지가 활성 상태일 때만 폴링 시작
+    if (!document.hidden) {
+      startPolling();
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchStats]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,58 +170,52 @@ export default function ProfileSection() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{stats.selling}</div>
-          <div className="text-sm text-gray-600">판매중</div>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div
+          className="relative text-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => {
+            setShowSellNotifications(!showSellNotifications);
+            setShowBuyNotifications(false);
+          }}
+        >
+          <div className="text-2xl font-bold text-blue-600">{stats.sellNotifications || 0}</div>
+          <div className="text-sm text-gray-600">판매알림</div>
+          {showSellNotifications && (
+            <UsedNotificationDropdown
+              type="sell"
+              isOpen={showSellNotifications}
+              onClose={() => setShowSellNotifications(false)}
+              className="absolute top-full left-0 mt-2 z-50"
+            />
+          )}
         </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{stats.sold}</div>
-          <div className="text-sm text-gray-600">판매완료</div>
+        <div
+          className="relative text-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => {
+            setShowBuyNotifications(!showBuyNotifications);
+            setShowSellNotifications(false);
+          }}
+        >
+          <div className="text-2xl font-bold text-green-600">{stats.buyNotifications || 0}</div>
+          <div className="text-sm text-gray-600">구매알림</div>
+          {showBuyNotifications && (
+            <UsedNotificationDropdown
+              type="buy"
+              isOpen={showBuyNotifications}
+              onClose={() => setShowBuyNotifications(false)}
+              className="absolute top-full left-0 mt-2 z-50"
+            />
+          )}
         </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-orange-600">{stats.offering}</div>
-          <div className="text-sm text-gray-600">제안중</div>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-dungji-primary">{stats.purchased}</div>
-          <div className="text-sm text-gray-600">구매완료</div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {profile.bio && (
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-700">{profile.bio}</p>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">거래 선호 방식</span>
-          <span className="font-medium">
-            {profile.preferTradeType === 'both' ? '직거래/택배 모두' : 
-             profile.preferTradeType === 'direct' ? '직거래' : '택배'}
-          </span>
-        </div>
-
-        {profile.availableTime && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              거래 가능 시간
-            </span>
-            <span className="font-medium">{profile.availableTime}</span>
-          </div>
-        )}
-
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">프로필 완성도</span>
-            <span className="text-sm font-medium">{getProfileCompletion().toFixed(0)}%</span>
-          </div>
-          <Progress value={getProfileCompletion()} className="h-2" />
+        <div
+          className="text-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => setActiveTab('favorites')}
+        >
+          <div className="text-2xl font-bold text-orange-600">{stats.favorites || 0}</div>
+          <div className="text-sm text-gray-600">찜</div>
         </div>
       </div>
+
     </div>
   );
 }
