@@ -40,21 +40,23 @@ export function MainHeader({
   };
 
   return (
-    <header className="bg-gradient-to-r from-dungji-primary to-dungji-primary-dark text-white px-4 py-3 md:py-4 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        {showBackButton && (
-          <button
-            onClick={handleBack}
-            className="p-1 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        )}
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-6 bg-white/20 rounded-sm flex items-center justify-center">
-            <div className="w-3 h-4 bg-white rounded-xs"></div>
+    <header className="bg-gradient-to-r from-dungji-primary to-dungji-primary-dark text-white">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 py-3 md:py-3 lg:py-2.5 xl:py-2 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {showBackButton && (
+            <button
+              onClick={handleBack}
+              className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-6 bg-white/20 rounded-sm flex items-center justify-center">
+              <div className="w-3 h-4 bg-white rounded-xs"></div>
+            </div>
+            <h1 className="text-lg font-semibold">{title}</h1>
           </div>
-          <h1 className="text-lg font-semibold">{title}</h1>
         </div>
       </div>
     </header>
