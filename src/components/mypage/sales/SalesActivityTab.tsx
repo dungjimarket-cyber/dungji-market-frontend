@@ -1032,22 +1032,7 @@ export default function SalesActivityTab() {
                     </button>
                   </div>
                 )}
-                
-                {selectedBuyerInfo.email && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm">{selectedBuyerInfo.email}</span>
-                    <button
-                      onClick={() => {
-                        window.location.href = `mailto:${selectedBuyerInfo.email}`;
-                      }}
-                      className="ml-auto text-blue-600 text-sm hover:underline"
-                    >
-                      이메일
-                    </button>
-                  </div>
-                )}
-                
+
                 {selectedBuyerInfo.region && (
                   <div className="flex items-center gap-3">
                     <MapPin className="w-4 h-4 text-gray-500" />
