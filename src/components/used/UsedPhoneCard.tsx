@@ -105,13 +105,8 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         {phone.status === 'sold' && (
           <>
             <div className="absolute inset-0 bg-black/50 z-10" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-              <span className="text-white text-lg font-bold mb-1">판매완료</span>
-              {phone.final_price && (
-                <span className="text-white text-sm font-medium">
-                  {phone.final_price.toLocaleString()}원
-                </span>
-              )}
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              <span className="text-white text-lg font-bold">거래완료</span>
             </div>
           </>
         )}
@@ -150,20 +145,11 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
         {/* 가격 */}
         <div className="mt-2">
           {isCompleted ? (
-            // 거래완료 상품 가격 표시
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xs text-gray-500">거래완료</span>
-                <span className="text-lg font-bold text-gray-700">
-                  {formatPrice(phone.final_price || phone.price)}
-                </span>
-              </div>
-              {/* 실제 거래가와 원래 가격이 다른 경우 원가 표시 */}
-              {phone.final_price && phone.final_price !== phone.price && (
-                <div className="text-xs text-gray-400 line-through mt-0.5">
-                  원가 {formatPrice(phone.price)}
-                </div>
-              )}
+            // 거래완료 상품 - 거래가격만 표시
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-gray-700">
+                {formatPrice(phone.final_price || phone.price)}
+              </span>
             </div>
           ) : (
             // 판매중 상품 가격 표시

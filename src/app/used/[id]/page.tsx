@@ -748,7 +748,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             )}
 
-            {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 하단 중앙 배치 */}
+            {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 하단 중앙 배치 (판매완료 시 숨김) */}
             {phone.seller?.id === user?.id && phone.status === 'active' && (
               <div className="hidden lg:block mt-6 pt-6 border-t">
                 <div className="flex justify-center gap-3">
@@ -815,21 +815,34 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               
               {/* 가격 */}
               <div className="mb-4">
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-sm text-gray-600">즉시구매</span>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {phone.price.toLocaleString()}원
-                  </p>
-                </div>
-                {phone.accept_offers && phone.min_offer_price && (
-                  <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-                    <p className="text-sm font-medium text-dungji-primary-900">
-                      💰 가격 제안 가능
-                    </p>
-                    <p className="text-xs text-dungji-primary-700 mt-1">
-                      최소 제안가: {phone.min_offer_price.toLocaleString()}원부터
+                {phone.status === 'sold' ? (
+                  // 판매완료 - 거래가격만 표시
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-sm text-gray-600">거래완료</span>
+                    <p className="text-3xl font-bold text-gray-700">
+                      {(phone.final_price || phone.price).toLocaleString()}원
                     </p>
                   </div>
+                ) : (
+                  // 판매중/거래중 - 기존 표시
+                  <>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-sm text-gray-600">즉시구매</span>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {phone.price.toLocaleString()}원
+                      </p>
+                    </div>
+                    {phone.accept_offers && phone.min_offer_price && (
+                      <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                        <p className="text-sm font-medium text-dungji-primary-900">
+                          💰 가격 제안 가능
+                        </p>
+                        <p className="text-xs text-dungji-primary-700 mt-1">
+                          최소 제안가: {phone.min_offer_price.toLocaleString()}원부터
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -1346,7 +1359,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               )}
 
-              {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 */}
+              {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
               {phone.seller?.id === user?.id && phone.status === 'active' && (
                 <div className="lg:hidden mt-4 pt-4 border-t grid grid-cols-2 gap-3">
                   <Button
