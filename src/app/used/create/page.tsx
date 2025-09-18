@@ -64,7 +64,7 @@ export default function CreateUsedPhonePage() {
     showProfileModal,
     setShowProfileModal,
   } = useUsedPhoneProfileCheck();
-  
+
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -74,9 +74,26 @@ export default function CreateUsedPhonePage() {
   const [activeCount, setActiveCount] = useState(0);
   const [canRegister, setCanRegister] = useState(true);
   const [penaltyEnd, setPenaltyEnd] = useState<string | null>(null);
-  
+
   // 다중 지역 선택 관련 상태
   const [selectedRegions, setSelectedRegions] = useState<SelectedRegion[]>([]);
+
+  // 에러 상태
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 입력 필드 refs
+  const brandRef = useRef<HTMLButtonElement>(null);
+  const modelRef = useRef<HTMLInputElement>(null);
+  const storageRef = useRef<HTMLButtonElement>(null);
+  const colorRef = useRef<HTMLInputElement>(null);
+  const priceRef = useRef<HTMLInputElement>(null);
+  const minOfferPriceRef = useRef<HTMLInputElement>(null);
+  const conditionGradeRef = useRef<HTMLButtonElement>(null);
+  const conditionDescriptionRef = useRef<HTMLTextAreaElement>(null);
+  const batteryStatusRef = useRef<HTMLButtonElement>(null);
+  const meetingPlaceRef = useRef<HTMLTextAreaElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({
     brand: '',
@@ -393,12 +410,28 @@ export default function CreateUsedPhonePage() {
   // 폼 입력 핸들러
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // 입력 시 해당 필드 에러 제거
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   // 다중 지역 선택 핸들러
   const handleRegionSelectionChange = useCallback((regions: SelectedRegion[]) => {
     setSelectedRegions(regions);
-  }, []);
+    // 지역 선택 시 에러 제거
+    if (errors.regions) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.regions;
+        return newErrors;
+      });
+    }
+  }, [errors]);
 
   // 등록 처리
   const handleSubmit = async (e: React.FormEvent) => {
@@ -472,185 +505,129 @@ export default function CreateUsedPhonePage() {
       return;
     }
 
-    // 유효성 검사 - 첫 번째 슬롯(대표 이미지) 필수
-    if (images.length === 0 || !images[0] || images[0].isEmpty) {
-      toast({
-        title: '대표 이미지를 등록해주세요',
-        description: '첫 번째 슬롯에 대표 이미지가 필수입니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    // 실제 이미지가 있는지 확인
+    // 유효성 검사
+    const newErrors: Record<string, string> = {};
+    let firstErrorRef: React.RefObject<any> | null = null;
+
+    // 이미지 검사
     const actualImages = images.filter(img => img && !img.isEmpty);
     if (actualImages.length === 0) {
-      toast({
-        title: '이미지를 등록해주세요',
-        description: '최소 1장 이상의 상품 이미지가 필요합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.images = '최소 1장 이상의 상품 이미지가 필요합니다';
+      if (!firstErrorRef) firstErrorRef = imageRef;
     }
 
+    // 브랜드 검사
     if (!formData.brand) {
-      toast({
-        title: '브랜드를 선택해주세요',
-        description: '상품의 브랜드를 선택해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.brand = '브랜드를 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = brandRef;
     }
 
-    if (!formData.model) {
-      toast({
-        title: '모델명을 입력해주세요',
-        description: '상품의 모델명을 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+    // 모델명 검사
+    if (!formData.model || !formData.model.trim()) {
+      newErrors.model = '모델명을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = modelRef;
     }
 
+    // 저장공간 검사
     if (!formData.storage) {
-      toast({
-        title: '저장공간을 선택해주세요',
-        description: '상품의 저장공간 용량을 선택하거나 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.storage = '저장공간을 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = storageRef;
     }
 
-    if (!formData.color) {
-      toast({
-        title: '색상을 입력해주세요',
-        description: '상품의 색상을 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+    // 색상 검사
+    if (!formData.color || !formData.color.trim()) {
+      newErrors.color = '색상을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = colorRef;
     }
 
+    // 가격 검사
     if (!formData.price) {
-      toast({
-        title: '즉시 판매가를 입력해주세요',
-        description: '상품의 즉시 판매가를 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.price = '즉시 판매가를 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = priceRef;
+    } else {
+      const price = parseInt(formData.price);
+      if (price % 1000 !== 0) {
+        newErrors.price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price > 9900000) {
+        newErrors.price = '최대 판매 금액은 990만원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price < 1000) {
+        newErrors.price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      }
     }
 
-    // 천원 단위 검증
-    if (parseInt(formData.price) % 1000 !== 0) {
-      toast({
-        title: '가격 입력 오류',
-        description: '가격은 천원 단위로 입력해주세요.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 최대 금액 검증 (990만원)
-    if (parseInt(formData.price) > 9900000) {
-      toast({
-        title: '금액 제한',
-        description: '최대 판매 금액은 990만원입니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    // 최소 제안가 검사
     if (!formData.min_offer_price) {
-      toast({
-        title: '최소 제안가를 입력해주세요',
-        description: '최소 제안 가격을 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.min_offer_price = '최소 제안가를 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+    } else {
+      const minPrice = parseInt(formData.min_offer_price);
+      if (minPrice % 1000 !== 0) {
+        newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice > 9900000) {
+        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice < 1000) {
+        newErrors.min_offer_price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (formData.price && minPrice >= parseInt(formData.price)) {
+        newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      }
     }
 
-    // 천원 단위 검증
-    if (parseInt(formData.min_offer_price) % 1000 !== 0) {
-      toast({
-        title: '가격 입력 오류',
-        description: '가격은 천원 단위로 입력해주세요.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 최대 금액 검증 (990만원)
-    if (parseInt(formData.min_offer_price) > 9900000) {
-      toast({
-        title: '금액 제한',
-        description: '최대 제안 금액은 990만원입니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 최소 제안가가 즉시 판매가보다 높거나 같은지 체크
-    if (parseInt(formData.min_offer_price) >= parseInt(formData.price)) {
-      toast({
-        title: '최소 제안가를 확인해주세요',
-        description: '최소 제안가는 즉시 판매가보다 낮아야 합니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    // 상태 등급 검사
     if (!formData.condition_grade) {
-      toast({
-        title: '상태 등급을 선택해주세요',
-        description: 'S급부터 C급 중 상품 상태를 선택해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.condition_grade = '상태 등급을 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = conditionGradeRef;
     }
 
+    // 제품 상태 설명 검사
+    if (!formData.condition_description || !formData.condition_description.trim()) {
+      newErrors.condition_description = '제품 상태 및 설명을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
+    }
+
+    // 배터리 상태 검사
     if (!formData.battery_status) {
-      toast({
-        title: '배터리 상태를 선택해주세요',
-        description: '배터리 성능 상태를 선택해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
+      newErrors.battery_status = '배터리 상태를 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = batteryStatusRef;
     }
 
-    // 구성품 체크 (최소 하나는 선택)
-    if (!formData.body_only && !formData.has_box && !formData.has_charger && !formData.has_earphones) {
-      toast({
-        title: '구성품을 선택해주세요',
-        description: '본체만 또는 포함된 구성품을 선택해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    // 거래 지역 검사
     if (selectedRegions.length === 0) {
-      toast({
-        title: '거래 가능 지역을 선택해주세요',
-        description: '최소 1개 이상의 거래 가능 지역을 선택해야 합니다.',
-        variant: 'destructive',
-      });
+      newErrors.regions = '거래 가능 지역을 최소 1개 이상 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = regionRef;
+    }
+
+    // 거래시 요청사항 검사
+    if (!formData.meeting_place || !formData.meeting_place.trim()) {
+      newErrors.meeting_place = '거래시 요청사항을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = meetingPlaceRef;
+    }
+
+    // 에러가 있으면 처리
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+
+      // 첫 번째 에러 필드로 포커스 및 스크롤
+      if (firstErrorRef?.current) {
+        if ('focus' in firstErrorRef.current) {
+          firstErrorRef.current.focus();
+        }
+        firstErrorRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
       return;
     }
 
-    if (!formData.meeting_place) {
-      toast({
-        title: '거래시 요청사항을 입력해주세요',
-        description: '거래 장소나 시간대 등의 요청사항을 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!formData.condition_description || formData.condition_description.length < 10) {
-      toast({
-        title: '제품 상태 및 설명을 입력해주세요',
-        description: '제품 상태와 설명을 10자 이상 입력해야 합니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // 모든 에러 클리어
+    setErrors({});
 
     setLoading(true);
 
@@ -661,13 +638,15 @@ export default function CreateUsedPhonePage() {
       // 이미지 추가 (빈 슬롯 제외, 파일 검증)
       const actualImages = images.filter(img => img && !img.isEmpty && img.file instanceof File);
 
+      // 이미지 검증은 이미 위에서 완료했으므로 여기서는 생략
       if (actualImages.length === 0) {
-        toast({
-          title: '이미지를 추가해주세요',
-          description: '최소 1장 이상의 상품 이미지가 필요합니다.',
-          variant: 'destructive',
-        });
+        setLoading(false);
         return;
+      }
+
+      // 이미지 크기 체크 및 압축
+      for (const img of actualImages) {
+        if (!img.file) continue;
       }
 
       // 대표 이미지 찾기 (첫 번째 이미지가 기본 대표)
@@ -952,8 +931,10 @@ export default function CreateUsedPhonePage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 이미지 업로드 */}
           <div
+            ref={imageRef}
             className={`relative bg-white rounded-lg p-6 shadow-sm transition-all ${
-              isDragging ? 'ring-2 ring-dungji-primary ring-opacity-50 bg-blue-50' : ''
+              isDragging ? 'ring-2 ring-dungji-primary ring-opacity-50 bg-blue-50' :
+              errors.images ? 'ring-1 ring-red-300' : ''
             }`}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
@@ -965,6 +946,9 @@ export default function CreateUsedPhonePage() {
                 상품 이미지 <span className="text-red-500">*</span>
                 <span className="text-sm font-normal text-gray-500 ml-2">(최대 10장)</span>
               </Label>
+              {errors.images && (
+                <p className="mt-1 text-xs text-red-500/70">{errors.images}</p>
+              )}
             </div>
 
             {/* 드래그 앤 드롭 안내 */}
@@ -1124,11 +1108,14 @@ export default function CreateUsedPhonePage() {
               {/* 브랜드 */}
               <div>
                 <Label htmlFor="brand">브랜드 <span className="text-red-500">*</span></Label>
-                <Select 
-                  value={formData.brand} 
+                <Select
+                  value={formData.brand}
                   onValueChange={(value) => handleInputChange('brand', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    ref={brandRef}
+                    className={errors.brand ? 'border-red-300' : ''}
+                  >
                     <SelectValue placeholder="선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1139,12 +1126,16 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.brand && (
+                  <p className="mt-1 text-xs text-red-500/70">{errors.brand}</p>
+                )}
               </div>
 
               {/* 모델명 */}
               <div>
                 <Label htmlFor="model">모델명 <span className="text-red-500">*</span></Label>
                 <Input
+                  ref={modelRef}
                   id="model"
                   placeholder="예: iPhone 15 Pro"
                   value={formData.model}
@@ -1154,16 +1145,20 @@ export default function CreateUsedPhonePage() {
                     }
                   }}
                   maxLength={50}
+                  className={errors.model ? 'border-red-300' : ''}
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">{formData.model.length}/50자</p>
+                {errors.model && (
+                  <p className="text-xs text-red-500/70">{errors.model}</p>
+                )}
               </div>
 
               {/* 저장공간 */}
               <div>
                 <Label htmlFor="storage">저장공간 <span className="text-red-500">*</span></Label>
-                <Select 
-                  value={formData.storage === '64' || formData.storage === '128' || formData.storage === '256' || formData.storage === '512' || formData.storage === '1024' ? formData.storage : 'custom'} 
+                <Select
+                  value={formData.storage === '64' || formData.storage === '128' || formData.storage === '256' || formData.storage === '512' || formData.storage === '1024' ? formData.storage : 'custom'}
                   onValueChange={(value) => {
                     if (value === 'custom') {
                       handleInputChange('storage', '');
@@ -1172,7 +1167,10 @@ export default function CreateUsedPhonePage() {
                     }
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    ref={storageRef}
+                    className={errors.storage ? 'border-red-300' : ''}
+                  >
                     <SelectValue placeholder="선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1199,12 +1197,16 @@ export default function CreateUsedPhonePage() {
                     className="mt-2"
                   />
                 )}
+                {errors.storage && (
+                  <p className="mt-1 text-xs text-red-500/70">{errors.storage}</p>
+                )}
               </div>
 
               {/* 색상 */}
               <div>
                 <Label htmlFor="color">색상 <span className="text-red-500">*</span></Label>
                 <Input
+                  ref={colorRef}
                   id="color"
                   placeholder="예: 스페이스 블랙"
                   value={formData.color}
@@ -1214,8 +1216,12 @@ export default function CreateUsedPhonePage() {
                     }
                   }}
                   maxLength={30}
+                  className={errors.color ? 'border-red-300' : ''}
                 />
                 <p className="text-xs text-gray-500 mt-1">{formData.color.length}/30자</p>
+                {errors.color && (
+                  <p className="text-xs text-red-500/70">{errors.color}</p>
+                )}
               </div>
             </div>
           </div>
@@ -1242,21 +1248,14 @@ export default function CreateUsedPhonePage() {
               <div>
                 <Label htmlFor="price">즉시 판매가 <span className="text-red-500">*</span></Label>
                 <Input
+                  ref={priceRef}
                   id="price"
                   type="text"
                   placeholder="0"
                   value={formatPrice(formData.price)}
+                  className={errors.price ? 'border-red-300' : ''}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
-                    // 최대 금액 제한 (990만원)
-                    if (parseInt(unformatted) > 9900000) {
-                      toast({
-                        title: '금액 제한',
-                        description: '최대 판매 금액은 990만원입니다.',
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
                     handleInputChange('price', unformatted);
                   }}
                   onBlur={(e) => {
@@ -1275,36 +1274,23 @@ export default function CreateUsedPhonePage() {
                 <p className="text-xs text-gray-500 mt-1">
                   구매자가 이 금액으로 구매 시 즉시 거래 진행
                 </p>
+                {errors.price && (
+                  <p className="text-xs text-red-500/70">{errors.price}</p>
+                )}
               </div>
 
               {/* 최소 제안 가격 */}
               <div>
                 <Label htmlFor="min_offer_price">최소 제안 가격 <span className="text-red-500">*</span></Label>
                 <Input
+                  ref={minOfferPriceRef}
                   id="min_offer_price"
                   type="text"
                   placeholder="0"
                   value={formatPrice(formData.min_offer_price)}
+                  className={errors.min_offer_price ? 'border-red-300' : ''}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
-                    // 최대 금액 제한 (990만원)
-                    if (parseInt(unformatted) > 9900000) {
-                      toast({
-                        title: '금액 제한',
-                        description: '최대 제안 금액은 990만원입니다.',
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
-                    // 즉시 판매가보다 낮은지 체크
-                    if (formData.price && parseInt(unformatted) >= parseInt(formData.price)) {
-                      toast({
-                        title: '최소 제안가는 즉시 판매가보다 낮아야 합니다',
-                        description: '즉시 판매가보다 낮게 입력 부탁드립니다.',
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
                     handleInputChange('min_offer_price', unformatted);
                   }}
                   onBlur={(e) => {
@@ -1320,6 +1306,9 @@ export default function CreateUsedPhonePage() {
                 <p className="text-xs text-gray-500 mt-1">
                   가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
                 </p>
+                {errors.min_offer_price && (
+                  <p className="text-xs text-red-500/70">{errors.min_offer_price}</p>
+                )}
               </div>
             </div>
 

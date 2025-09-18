@@ -67,6 +67,20 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   const [selectedRegions, setSelectedRegions] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // 입력 필드 refs
+  const brandRef = useRef<HTMLButtonElement>(null);
+  const modelRef = useRef<HTMLInputElement>(null);
+  const storageRef = useRef<HTMLButtonElement>(null);
+  const colorRef = useRef<HTMLInputElement>(null);
+  const priceRef = useRef<HTMLInputElement>(null);
+  const minOfferPriceRef = useRef<HTMLInputElement>(null);
+  const conditionGradeRef = useRef<HTMLButtonElement>(null);
+  const conditionDescriptionRef = useRef<HTMLTextAreaElement>(null);
+  const batteryStatusRef = useRef<HTMLButtonElement>(null);
+  const meetingPlaceRef = useRef<HTMLTextAreaElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+
   // 기존 상품 정보 로드
   useEffect(() => {
     // user 상태가 로드된 후에만 실행 (undefined는 초기 상태)
@@ -378,37 +392,126 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     
     // 유효성 검사
     const newErrors: Record<string, string> = {};
-    
-    if (!formData.brand) newErrors.brand = '브랜드를 선택해주세요';
-    if (!formData.model.trim()) newErrors.model = '모델명을 입력해주세요';
-    if (!formData.storage) newErrors.storage = '저장공간을 선택해주세요';
-    if (!formData.price) newErrors.price = '즉시 판매가를 입력해주세요';
-    if (!formData.min_offer_price) newErrors.min_offer_price = '최소 제안가를 입력해주세요';
-    if (!formData.condition_description.trim()) newErrors.condition_description = '제품 상태 및 설명을 입력해주세요';
-    if (selectedRegions.length === 0) newErrors.region = '거래 가능 지역을 선택해주세요';
-    if (images.length === 0) newErrors.images = '상품 이미지를 등록해주세요';
-    
-    // 가격 검증
-    if (parseInt(formData.price) > 9900000) {
-      newErrors.price = '최대 판매 금액은 990만원입니다';
+    let firstErrorRef: React.RefObject<any> | null = null;
+
+    // 이미지 검사
+    if (images.length === 0) {
+      newErrors.images = '최소 1장 이상의 상품 이미지가 필요합니다';
+      if (!firstErrorRef) firstErrorRef = imageRef;
     }
-    if (parseInt(formData.min_offer_price) > 9900000) {
-      newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+
+    // 브랜드 검사
+    if (!formData.brand) {
+      newErrors.brand = '브랜드를 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = brandRef;
     }
-    if (parseInt(formData.min_offer_price) >= parseInt(formData.price)) {
-      newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+
+    // 모델명 검사
+    if (!formData.model || !formData.model.trim()) {
+      newErrors.model = '모델명을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = modelRef;
     }
-    
+
+    // 저장공간 검사
+    if (!formData.storage) {
+      newErrors.storage = '저장공간을 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = storageRef;
+    }
+
+    // 색상 검사
+    if (!formData.color || !formData.color.trim()) {
+      newErrors.color = '색상을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = colorRef;
+    }
+
+    // 가격 검사
+    if (!formData.price) {
+      newErrors.price = '즉시 판매가를 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = priceRef;
+    } else {
+      const price = parseInt(formData.price);
+      if (price % 1000 !== 0) {
+        newErrors.price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price > 9900000) {
+        newErrors.price = '최대 판매 금액은 990만원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price < 1000) {
+        newErrors.price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      }
+    }
+
+    // 최소 제안가 검사
+    if (!formData.min_offer_price) {
+      newErrors.min_offer_price = '최소 제안가를 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+    } else {
+      const minPrice = parseInt(formData.min_offer_price);
+      if (minPrice % 1000 !== 0) {
+        newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice > 9900000) {
+        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice < 1000) {
+        newErrors.min_offer_price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (formData.price && minPrice >= parseInt(formData.price)) {
+        newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      }
+    }
+
+    // 상태 등급 검사
+    if (!formData.condition_grade) {
+      newErrors.condition_grade = '상태 등급을 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = conditionGradeRef;
+    }
+
+    // 제품 상태 설명 검사
+    if (!formData.condition_description || !formData.condition_description.trim()) {
+      newErrors.condition_description = '제품 상태 및 설명을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
+    }
+
+    // 배터리 상태 검사
+    if (!formData.battery_status) {
+      newErrors.battery_status = '배터리 상태를 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = batteryStatusRef;
+    }
+
+    // 거래 지역 검사
+    if (selectedRegions.length === 0) {
+      newErrors.regions = '거래 가능 지역을 최소 1개 이상 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = regionRef;
+    }
+
+    // 거래시 요청사항 검사
+    if (!formData.meeting_place || !formData.meeting_place.trim()) {
+      newErrors.meeting_place = '거래시 요청사항을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = meetingPlaceRef;
+    }
+
+    // 에러가 있으면 처리
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      const firstErrorField = Object.keys(newErrors)[0];
-      toast({
-        title: '입력 확인',
-        description: newErrors[firstErrorField],
-        variant: 'destructive',
-      });
+
+      // 첫 번째 에러 필드로 포커스 및 스크롤
+      if (firstErrorRef?.current) {
+        if ('focus' in firstErrorRef.current) {
+          firstErrorRef.current.focus();
+        }
+        firstErrorRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
       return;
     }
+
+    // 모든 에러 클리어
+    setErrors({});
     
     setSubmitting(true);
     
