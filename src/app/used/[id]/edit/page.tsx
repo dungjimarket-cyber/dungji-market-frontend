@@ -24,7 +24,7 @@ import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place', 'regions'];
+const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
 const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 수정할 수 없습니다.';
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
@@ -68,18 +68,19 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // 입력 필드 refs
-  const brandRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLSelectElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
-  const storageRef = useRef<HTMLButtonElement>(null);
+  const storageRef = useRef<HTMLSelectElement>(null);
   const colorRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const minOfferPriceRef = useRef<HTMLInputElement>(null);
-  const conditionGradeRef = useRef<HTMLButtonElement>(null);
+  const conditionGradeRef = useRef<HTMLSelectElement>(null);
   const conditionDescriptionRef = useRef<HTMLTextAreaElement>(null);
-  const batteryStatusRef = useRef<HTMLButtonElement>(null);
+  const batteryStatusRef = useRef<HTMLSelectElement>(null);
   const meetingPlaceRef = useRef<HTMLTextAreaElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const componentsRef = useRef<HTMLDivElement>(null);
 
   // 기존 상품 정보 로드
   useEffect(() => {
@@ -254,25 +255,20 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
     // 최대 금액 제한 (990만원)
     if (parseInt(value) > 9900000) {
-      toast({
-        title: '금액 제한',
-        description: '최대 금액은 990만원입니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // 최소 제안가가 즉시 판매가보다 높을 때 경고
-    if (field === 'min_offer_price' && formData.price && parseInt(value) >= parseInt(formData.price)) {
-      toast({
-        title: '가격 오류',
-        description: '최소 제안가는 즉시 판매가보다 낮아야 합니다.',
-        variant: 'destructive',
-      });
       return;
     }
 
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    // 입력 시 해당 필드 에러 제거
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+
     setIsModified(true);
   };
 
@@ -473,12 +469,24 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     if (!formData.condition_description || !formData.condition_description.trim()) {
       newErrors.condition_description = '제품 상태 및 설명을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
+    } else if (formData.condition_description.length < 10) {
+      newErrors.condition_description = '최소 10자 이상 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
+    } else if (formData.condition_description.length > 2000) {
+      newErrors.condition_description = '최대 2000자까지 입력 가능합니다';
+      if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
     }
 
     // 배터리 상태 검사
     if (!formData.battery_status) {
       newErrors.battery_status = '배터리 상태를 선택해주세요';
       if (!firstErrorRef) firstErrorRef = batteryStatusRef;
+    }
+
+    // 구성품 검사 (최소 하나는 필요)
+    if (!formData.has_box && !formData.has_charger && !formData.has_earphones) {
+      newErrors.components = '구성품을 최소 1개 이상 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = componentsRef;
     }
 
     // 거래 지역 검사
@@ -490,6 +498,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     // 거래시 요청사항 검사
     if (!formData.meeting_place || !formData.meeting_place.trim()) {
       newErrors.meeting_place = '거래시 요청사항을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = meetingPlaceRef;
+    } else if (formData.meeting_place.length > 200) {
+      newErrors.meeting_place = '최대 200자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = meetingPlaceRef;
     }
 
@@ -717,6 +728,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 {!isFieldEditable('brand') && <Lock className="w-3 h-3 text-gray-400" />}
               </Label>
               <select
+                ref={brandRef}
                 name="brand"
                 value={formData.brand}
                 onChange={handleInputChange}
@@ -739,6 +751,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 {!isFieldEditable('model') && <Lock className="w-3 h-3 text-gray-400" />}
               </Label>
               <Input
+                ref={modelRef}
                 name="model"
                 value={formData.model}
                 onChange={(e) => {
@@ -762,6 +775,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   {!isFieldEditable('storage') && <Lock className="w-3 h-3 text-gray-400" />}
                 </Label>
                 <select
+                  ref={storageRef}
                   name="storage"
                   value={formData.storage === '64' || formData.storage === '128' || formData.storage === '256' || formData.storage === '512' || formData.storage === '1024' ? formData.storage : 'custom'}
                   onChange={(e) => {
@@ -770,6 +784,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     } else {
                       setFormData(prev => ({ ...prev, storage: e.target.value }));
                     }
+                    setErrors(prev => ({ ...prev, storage: '' }));
                   }}
                   disabled={!isFieldEditable('storage')}
                   className={`w-full px-3 py-2 border rounded-md ${
@@ -810,6 +825,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   {!isFieldEditable('color') && <Lock className="w-3 h-3 text-gray-400" />}
                 </Label>
                 <Input
+                  ref={colorRef}
                   name="color"
                   value={formData.color}
                   onChange={(e) => {
@@ -819,9 +835,11 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   }}
                   placeholder="예: 블랙 티타늄"
                   disabled={!isFieldEditable('color')}
+                  className={errors.color ? 'border-red-500' : ''}
                   maxLength={30}
                 />
-                <p className="text-xs text-gray-500 mt-1">{formData.color.length}/30자</p>
+                {errors.color && <p className="text-xs text-red-500 mt-1">{errors.color}</p>}
+                <p className="text-xs text-gray-500">{formData.color.length}/30자</p>
               </div>
             </div>
 
@@ -832,18 +850,20 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   {!isFieldEditable('condition_grade') && <Lock className="w-3 h-3 text-gray-400" />}
                 </Label>
                 <select
+                  ref={conditionGradeRef}
                   name="condition_grade"
                   value={formData.condition_grade}
                   onChange={handleInputChange}
                   disabled={!isFieldEditable('condition_grade')}
                   className={`w-full px-3 py-2 border rounded-md ${
-                    !isFieldEditable('condition_grade') ? 'bg-gray-100' : ''
-                  }`}
+                    errors.condition_grade ? 'border-red-500' : 'border-gray-300'
+                  } ${!isFieldEditable('condition_grade') ? 'bg-gray-100' : ''}`}
                 >
                   {Object.entries(CONDITION_GRADES).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
+                {errors.condition_grade && <p className="text-xs text-red-500 mt-1">{errors.condition_grade}</p>}
                 <div className="text-xs text-gray-500 mt-1 space-y-0.5">
                   <div><span className="font-medium">S급:</span> 사용감 거의 없음, 미세 기스 이하</div>
                   <div><span className="font-medium">A급:</span> 생활기스 있으나 깨끗한 상태</div>
@@ -858,18 +878,20 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   {!isFieldEditable('battery_status') && <Lock className="w-3 h-3 text-gray-400" />}
                 </Label>
                 <select
+                  ref={batteryStatusRef}
                   name="battery_status"
                   value={formData.battery_status}
                   onChange={handleInputChange}
                   disabled={!isFieldEditable('battery_status')}
                   className={`w-full px-3 py-2 border rounded-md ${
-                    !isFieldEditable('battery_status') ? 'bg-gray-100' : ''
-                  }`}
+                    errors.battery_status ? 'border-red-500' : 'border-gray-300'
+                  } ${!isFieldEditable('battery_status') ? 'bg-gray-100' : ''}`}
                 >
                   {Object.entries(BATTERY_STATUS_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
+                {errors.battery_status && <p className="text-xs text-red-500 mt-1">{errors.battery_status}</p>}
                 <div className="mt-2 space-y-1">
                   <div className="text-xs text-gray-500 space-y-0.5">
                     <div><span className="font-medium text-green-600">🟢 최상:</span> 새제품 또는 새제품 수준 • 하루 종일 충전 걱정 없음</div>
@@ -885,7 +907,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         </div>
 
         {/* 이미지 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div ref={imageRef} className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               상품 이미지 <span className="text-red-500">*</span>
@@ -974,6 +996,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               </Label>
               <div className="relative">
                 <Input
+                  ref={priceRef}
                   type="text"
                   value={formatCurrency(formData.price)}
                   onChange={(e) => handlePriceChange(e, 'price')}
@@ -996,6 +1019,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               </Label>
               <div className="relative">
                 <Input
+                  ref={minOfferPriceRef}
                   type="text"
                   value={formatCurrency(formData.min_offer_price)}
                   onChange={(e) => handlePriceChange(e, 'min_offer_price')}
@@ -1028,12 +1052,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         </div>
 
         {/* 구성품 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div ref={componentsRef} className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            구성품
+            구성품 <span className="text-red-500">*</span>
             {!isFieldEditable('has_box') && <Lock className="w-3 h-3 text-gray-400" />}
           </h2>
-          
+
           <div className="flex gap-6">
             <label className="flex items-center gap-2">
               <input
@@ -1069,6 +1093,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               <span>이어폰</span>
             </label>
           </div>
+          {errors.components && <p className="text-xs text-red-500 mt-2">{errors.components}</p>}
         </div>
 
         {/* 상태 및 설명 */}
@@ -1086,6 +1111,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           <div className="space-y-2">
             <div className="relative">
               <Textarea
+                ref={conditionDescriptionRef}
                 name="condition_description"
                 value={formData.condition_description}
                 onChange={(e) => {
@@ -1119,7 +1145,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
           
           <div className="space-y-4">
-            <div>
+            <div ref={regionRef}>
               <Label className="flex items-center gap-1">
                 거래 가능 지역 <span className="text-red-500">*</span>
                 {!isFieldEditable('regions') && <Lock className="w-3 h-3 text-gray-400" />}
@@ -1150,12 +1176,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   ))}
                 </div>
               )}
-              {errors.region && <p className="text-xs text-red-500 mt-1">{errors.region}</p>}
+              {errors.regions && <p className="text-xs text-red-500 mt-1">{errors.regions}</p>}
             </div>
 
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                거래시 요청사항
+                거래시 요청사항 <span className="text-red-500">*</span>
                 {isFieldEditable('meeting_place') && (
                   <span className="text-xs text-green-600 font-normal">
                     수정 가능
@@ -1163,6 +1189,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 )}
               </Label>
               <Textarea
+                ref={meetingPlaceRef}
                 name="meeting_place"
                 value={formData.meeting_place}
                 onChange={(e) => {
@@ -1172,10 +1199,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                 }}
                 placeholder="거래 시 요청사항이나 선호하는 거래 방식을 입력해주세요.&#10;예: 직거래 선호, 택배 가능, 특정 지하철역 등"
                 rows={3}
+                className={errors.meeting_place ? 'border-red-500' : ''}
                 maxLength={200}
               />
-              <div className="flex justify-end">
-                <p className="text-xs text-gray-500">{formData.meeting_place.length}/200자</p>
+              <div className="flex justify-between">
+                {errors.meeting_place && <p className="text-xs text-red-500">{errors.meeting_place}</p>}
+                <p className="text-xs text-gray-500 ml-auto">{formData.meeting_place.length}/200자</p>
               </div>
             </div>
           </div>

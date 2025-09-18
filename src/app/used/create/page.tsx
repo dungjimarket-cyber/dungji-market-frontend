@@ -82,18 +82,19 @@ export default function CreateUsedPhonePage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // 입력 필드 refs
-  const brandRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLSelectElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
-  const storageRef = useRef<HTMLButtonElement>(null);
+  const storageRef = useRef<HTMLSelectElement>(null);
   const colorRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const minOfferPriceRef = useRef<HTMLInputElement>(null);
-  const conditionGradeRef = useRef<HTMLButtonElement>(null);
+  const conditionGradeRef = useRef<HTMLSelectElement>(null);
   const conditionDescriptionRef = useRef<HTMLTextAreaElement>(null);
-  const batteryStatusRef = useRef<HTMLButtonElement>(null);
+  const batteryStatusRef = useRef<HTMLSelectElement>(null);
   const meetingPlaceRef = useRef<HTMLTextAreaElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const componentsRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({
     brand: '',
@@ -589,12 +590,24 @@ export default function CreateUsedPhonePage() {
     if (!formData.condition_description || !formData.condition_description.trim()) {
       newErrors.condition_description = '제품 상태 및 설명을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
+    } else if (formData.condition_description.length < 10) {
+      newErrors.condition_description = '최소 10자 이상 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
+    } else if (formData.condition_description.length > 2000) {
+      newErrors.condition_description = '최대 2000자까지 입력 가능합니다';
+      if (!firstErrorRef) firstErrorRef = conditionDescriptionRef;
     }
 
     // 배터리 상태 검사
     if (!formData.battery_status) {
       newErrors.battery_status = '배터리 상태를 선택해주세요';
       if (!firstErrorRef) firstErrorRef = batteryStatusRef;
+    }
+
+    // 구성품 검사 (최소 하나는 필요)
+    if (!formData.has_box && !formData.has_charger && !formData.has_earphones) {
+      newErrors.components = '구성품을 최소 1개 이상 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = componentsRef;
     }
 
     // 거래 지역 검사
@@ -606,6 +619,9 @@ export default function CreateUsedPhonePage() {
     // 거래시 요청사항 검사
     if (!formData.meeting_place || !formData.meeting_place.trim()) {
       newErrors.meeting_place = '거래시 요청사항을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = meetingPlaceRef;
+    } else if (formData.meeting_place.length > 200) {
+      newErrors.meeting_place = '최대 200자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = meetingPlaceRef;
     }
 
@@ -1256,6 +1272,10 @@ export default function CreateUsedPhonePage() {
                   className={errors.price ? 'border-red-300' : ''}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
+                    // 최대 금액 제한 (990만원)
+                    if (parseInt(unformatted) > 9900000) {
+                      return;
+                    }
                     handleInputChange('price', unformatted);
                   }}
                   onBlur={(e) => {
@@ -1291,6 +1311,10 @@ export default function CreateUsedPhonePage() {
                   className={errors.min_offer_price ? 'border-red-300' : ''}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
+                    // 최대 금액 제한 (990만원)
+                    if (parseInt(unformatted) > 9900000) {
+                      return;
+                    }
                     handleInputChange('min_offer_price', unformatted);
                   }}
                   onBlur={(e) => {
@@ -1336,10 +1360,13 @@ export default function CreateUsedPhonePage() {
               <div>
                 <Label htmlFor="condition_grade">상태 등급 <span className="text-red-500">*</span></Label>
                 <Select 
-                  value={formData.condition_grade} 
+                  value={formData.condition_grade}
                   onValueChange={(value) => handleInputChange('condition_grade', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    ref={conditionGradeRef}
+                    className={errors.condition_grade ? 'border-red-300' : ''}
+                  >
                     <SelectValue placeholder="선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1350,6 +1377,9 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.condition_grade && (
+                  <p className="mt-1 text-xs text-red-500/70">{errors.condition_grade}</p>
+                )}
                 <div className="text-xs text-gray-500 mt-1 space-y-0.5">
                   <div><span className="font-medium">S급:</span> 사용감 거의 없음, 미세 기스 이하</div>
                   <div><span className="font-medium">A급:</span> 생활기스 있으나 깨끗한 상태</div>
@@ -1365,7 +1395,10 @@ export default function CreateUsedPhonePage() {
                   value={formData.battery_status}
                   onValueChange={(value) => handleInputChange('battery_status', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    ref={batteryStatusRef}
+                    className={errors.battery_status ? 'border-red-300' : ''}
+                  >
                     <SelectValue placeholder="선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1376,6 +1409,9 @@ export default function CreateUsedPhonePage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.battery_status && (
+                  <p className="mt-1 text-xs text-red-500/70">{errors.battery_status}</p>
+                )}
                 <div className="mt-2 space-y-1">
                   <div className="text-xs text-gray-500 space-y-0.5">
                     <div><span className="font-medium text-green-600">🟢 최상:</span> 새제품 또는 새제품 수준 • 하루 종일 충전 걱정 없음</div>
@@ -1389,7 +1425,7 @@ export default function CreateUsedPhonePage() {
             </div>
 
             {/* 구성품 */}
-            <div>
+            <div ref={componentsRef}>
               <Label className="mb-3 block">구성품 <span className="text-red-500">*</span></Label>
               <div className="space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -1441,6 +1477,9 @@ export default function CreateUsedPhonePage() {
                   <span>이어폰</span>
                 </label>
               </div>
+              {errors.components && (
+                <p className="mt-1 text-xs text-red-500/70">{errors.components}</p>
+              )}
               <p className="text-xs text-gray-500 mt-2">
                 {formData.body_only ? '폰 본체만 거래합니다' : '포함된 구성품을 모두 선택해주세요'}
               </p>
@@ -1451,6 +1490,7 @@ export default function CreateUsedPhonePage() {
               <Label htmlFor="condition_description">제품 상태 및 설명 <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Textarea
+                  ref={conditionDescriptionRef}
                   id="condition_description"
                   placeholder="제품의 상태를 자세히 설명해주세요\n예: 기스, 찍힘, 배터리 성능, 기능 이상 유무 등\n구매자가 제품 상태를 정확히 파악할 수 있도록 작성해주세요"
                   value={formData.condition_description}
@@ -1460,7 +1500,7 @@ export default function CreateUsedPhonePage() {
                     }
                   }}
                   rows={6}
-                  className="min-h-[150px] resize-y"
+                  className={`min-h-[150px] resize-y ${errors.condition_description ? 'border-red-300' : ''}`}
                   maxLength={2000}
                 />
               </div>
@@ -1472,6 +1512,9 @@ export default function CreateUsedPhonePage() {
                   {formData.condition_description.length}/2000자
                 </p>
               </div>
+              {errors.condition_description && (
+                <p className="text-xs text-red-500/70">{errors.condition_description}</p>
+              )}
             </div>
           </div>
 
@@ -1480,7 +1523,7 @@ export default function CreateUsedPhonePage() {
             <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
             
             {/* 거래 가능 지역 선택 */}
-            <div className="space-y-2">
+            <div ref={regionRef} className="space-y-2">
               <Label>거래 가능 지역 <span className="text-red-500">*</span></Label>
               <p className="text-sm text-gray-500 mb-2">최대 3개 지역까지 선택 가능합니다</p>
               <MultiRegionDropdown
@@ -1488,12 +1531,16 @@ export default function CreateUsedPhonePage() {
                 onSelectionChange={handleRegionSelectionChange}
                 selectedRegions={selectedRegions}
               />
+              {errors.regions && (
+                <p className="text-xs text-red-500/70">{errors.regions}</p>
+              )}
             </div>
             
             {/* 거래시 요청사항 */}
             <div className="space-y-2">
               <Label htmlFor="meeting_place">거래시 요청사항 <span className="text-red-500">*</span></Label>
               <Textarea
+                ref={meetingPlaceRef}
                 id="meeting_place"
                 placeholder="예: 강남역 10번 출구 선호, 평일 저녁만 가능, 주말 오전 가능 등"
                 value={formData.meeting_place}
@@ -1503,12 +1550,16 @@ export default function CreateUsedPhonePage() {
                   }
                 }}
                 rows={3}
+                className={errors.meeting_place ? 'border-red-300' : ''}
                 maxLength={200}
               />
               <div className="flex justify-between items-center">
                 <p className="text-xs text-gray-500">구체적인 거래 장소나 시간대를 입력해주세요</p>
                 <p className="text-xs text-gray-500">{formData.meeting_place.length}/200자</p>
               </div>
+              {errors.meeting_place && (
+                <p className="text-xs text-red-500/70">{errors.meeting_place}</p>
+              )}
             </div>
 
             {/* 상품 설명 - 주석 처리 */}
