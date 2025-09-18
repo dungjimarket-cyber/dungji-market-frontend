@@ -105,11 +105,15 @@ export default function ReviewModal({
         </div>
 
         <div className="p-4 space-y-4">
-          {/* 상품 정보 & 거래 상대방 - 한 줄로 */}
+          {/* 상품 정보 & 거래 상대방 */}
           {productInfo && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">{productInfo.brand} {productInfo.model}</span>
-              <span className="text-gray-600">{revieweeName}님과의 거래</span>
+            <div className="space-y-1">
+              <div className="font-medium text-sm truncate" title={`${productInfo.brand} ${productInfo.model}`}>
+                {productInfo.brand} {productInfo.model}
+              </div>
+              <div className="text-gray-600 text-sm">
+                {revieweeName ? `${revieweeName}님과의 거래` : '거래 상대방'}
+              </div>
             </div>
           )}
 

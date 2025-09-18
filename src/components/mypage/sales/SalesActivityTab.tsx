@@ -35,6 +35,11 @@ interface SalesItem {
   model: string;
   storage: number;
   final_offer_price?: number;  // 거래중일 때 최종 거래가격
+  buyer?: {  // 구매자 정보 (거래완료 시)
+    id: number;
+    nickname: string;
+  };
+  transaction_id?: number;  // 거래 ID (거래완료 시)
 }
 
 interface ReceivedOffer {
@@ -407,20 +412,18 @@ export default function SalesActivityTab() {
   // 후기 작성 모달 열기
   const openReviewModal = async (item: SalesItem) => {
     console.log('openReviewModal - item:', item);
-    console.log('openReviewModal - item.id:', item.id);
-    console.log('openReviewModal - item.transaction_id:', (item as any).transaction_id);
-    console.log('openReviewModal - typeof item.id:', typeof item.id);
 
     // transaction_id가 있으면 사용, 없으면 item.id 사용
     const transactionId = (item as any).transaction_id || item.id;
     console.log('Using transactionId:', transactionId);
 
-    // 거래 정보는 이미 item에 있으므로 직접 사용
-    // item에 buyer 정보가 있으면 사용, 없으면 기본값
-    const buyerName = (item as any).buyer?.nickname || (item as any).buyer_nickname || '구매자';
+    // buyer 정보가 있으면 사용, 없으면 기본값
+    const buyerInfo = (item as any).buyer;
+    const buyerName = buyerInfo?.nickname || buyerInfo?.username || '구매자';
+    console.log('Buyer info:', buyerInfo, 'Buyer name:', buyerName);
 
     setReviewTarget({
-      transactionId: transactionId, // transaction_id 우선 사용
+      transactionId: transactionId,
       buyerName: buyerName,
       phoneInfo: item,
     });
