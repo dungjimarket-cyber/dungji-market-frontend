@@ -536,6 +536,18 @@ export default function CreateUsedPhonePage() {
     if (!formData.storage) {
       newErrors.storage = '저장공간을 선택해주세요';
       if (!firstErrorRef) firstErrorRef = storageRef;
+    } else {
+      const storageNum = parseInt(formData.storage);
+      if (isNaN(storageNum)) {
+        newErrors.storage = '숫자만 입력 가능합니다';
+        if (!firstErrorRef) firstErrorRef = storageRef;
+      } else if (storageNum > 9999) {
+        newErrors.storage = '최대 9999GB까지 입력 가능합니다';
+        if (!firstErrorRef) firstErrorRef = storageRef;
+      } else if (storageNum < 1) {
+        newErrors.storage = '최소 1GB 이상 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = storageRef;
+      }
     }
 
     // 색상 검사
@@ -1211,11 +1223,12 @@ export default function CreateUsedPhonePage() {
                     placeholder="저장공간을 입력하세요 (GB)"
                     value={formData.storage}
                     onChange={(e) => {
-                      if (e.target.value.length <= 10) {
-                        handleInputChange('storage', e.target.value);
+                      const value = e.target.value.replace(/[^\d]/g, '');
+                      if (value.length <= 4) {  // 최대 4자리 (9999GB)
+                        handleInputChange('storage', value);
                       }
                     }}
-                    maxLength={10}
+                    maxLength={4}
                     className="mt-2"
                   />
                 )}
