@@ -74,6 +74,10 @@ export default function UsedPhonesPage() {
         }
       });
 
+      // 디버깅용 로그
+      console.log('[중고거래] API 호출 필터:', currentFilters);
+      console.log('[중고거래] API URL 파라미터:', params.toString());
+
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com') 
         ? `${baseUrl}/used/phones/?${params}`
@@ -118,6 +122,10 @@ export default function UsedPhonesPage() {
           params.append(key, String(value));
         }
       });
+
+      // 디버깅용 로그
+      console.log('[중고거래] API 호출 필터:', currentFilters);
+      console.log('[중고거래] API URL 파라미터:', params.toString());
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com') 
@@ -274,7 +282,7 @@ export default function UsedPhonesPage() {
 
       {/* 히어로 섹션 - 본문과 동일한 너비 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
-        <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8 px-4">
+        <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               중고폰 직거래 서비스가 오픈했습니다
@@ -342,8 +350,8 @@ export default function UsedPhonesPage() {
 
       {/* 프로필 미완성 안내 */}
       {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
-          <div className="bg-yellow-50 border-b border-yellow-200 rounded-lg px-4 py-3">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 mb-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
