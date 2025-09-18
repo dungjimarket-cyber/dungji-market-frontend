@@ -217,8 +217,13 @@ export default function CreateUsedPhonePage() {
     }
   };
 
+  // 빈 슬롯 제거하고 앞으로 당기는 함수
+  const compactImages = (imageArray: typeof images) => {
+    return imageArray.filter(img => img && !img.isEmpty);
+  };
+
   // 이미지 업로드 핸들러
-  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], replaceIndex?: number) => {
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
     const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
     if (files.length === 0) return;
 
@@ -245,124 +250,95 @@ export default function CreateUsedPhonePage() {
       }
     }
 
-    if (replaceIndex !== undefined) {
-      // 특정 슬롯 클릭 시에도 여러 파일 모두 추가
-      const actualImageCount = images.filter(img => img && !img.isEmpty).length;
+    setImages(prev => {
+      const updated = [...prev];
 
-      if (actualImageCount + files.length > 10) {
-        toast({
-          title: '이미지 개수 초과',
-          description: '최대 10장까지 업로드 가능합니다.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // 기존 대표 이미지가 있는지 확인
-      const hasMainImage = images.some(img => img && !img.isEmpty && img.isMain);
-
-      setImages(prev => {
-        let updated = [...prev];
-
-        // 첫 번째 슬롯 클릭 시 기존 대표 이미지들 모두 해제
-        if (replaceIndex === 0) {
-          updated = updated.map(img => ({ ...img, isMain: false }));
+      // 특정 슬롯에 개별 업로드인 경우
+      if (targetIndex !== undefined && files.length === 1) {
+        const file = files[0];
+        // 기존 이미지가 있으면 URL 정리
+        if (updated[targetIndex] && updated[targetIndex].url) {
+          URL.revokeObjectURL(updated[targetIndex].url);
         }
 
-        const newImages = files.map((file, index) => ({
+        updated[targetIndex] = {
           file,
           url: URL.createObjectURL(file),
-          // 첫 번째 슬롯 클릭하고 첫 번째 파일이거나, 대표 이미지가 없고 전체 첫 이미지일 때만
-          isMain: (replaceIndex === 0 && index === 0) || (!hasMainImage && actualImageCount === 0 && index === 0),
+          isMain: targetIndex === 0,
           isEmpty: false
-        }));
-
-        let currentIndex = replaceIndex;
-
-        // replaceIndex부터 시작해서 빈 슬롯에 순서대로 채우기
-        for (const newImage of newImages) {
-          // 현재 위치에 이미지가 있으면 다음 빈 슬롯 찾기
-          while (currentIndex < 10 && updated[currentIndex] && !updated[currentIndex].isEmpty) {
-            currentIndex++;
-          }
-
-          if (currentIndex >= 10) break; // 10장 초과 방지
-
-          // 기존 이미지 URL 정리
-          if (updated[currentIndex] && updated[currentIndex].url) {
-            URL.revokeObjectURL(updated[currentIndex].url);
-          }
-
-          // 빈 슬롯이 없으면 추가
-          if (currentIndex >= updated.length) {
-            updated.push(newImage);
-          } else {
-            updated[currentIndex] = newImage;
-          }
-
-          currentIndex++;
-        }
+        };
 
         return updated;
-      });
-    } else {
-      // 새 이미지 추가 (다음 빈 슬롯에)
-      const actualImageCount = images.filter(img => img && !img.isEmpty).length;
+      }
 
-      if (actualImageCount + files.length > 10) {
+      // 다중 업로드인 경우 - 현재 채워진 이미지 오른쪽부터 채우기
+      const actualImages = updated.filter(img => img && !img.isEmpty);
+      const lastFilledIndex = actualImages.length > 0 ?
+        updated.findLastIndex(img => img && !img.isEmpty) : -1;
+
+      // 총 이미지 개수 체크
+      if (actualImages.length + files.length > 10) {
         toast({
           title: '이미지 개수 초과',
           description: '최대 10장까지 업로드 가능합니다.',
           variant: 'destructive',
         });
-        return;
+        return prev;
       }
 
-      // 기존 대표 이미지가 있는지 확인
-      const hasMainImage = images.some(img => img && !img.isEmpty && img.isMain);
+      let insertIndex = lastFilledIndex + 1;
 
-      const newImages = files.map((file, index) => ({
-        file,
-        url: URL.createObjectURL(file),
-        // 대표 이미지가 없고 첫 이미지일 때만 대표로 설정
-        isMain: !hasMainImage && actualImageCount === 0 && index === 0,
-        isEmpty: false
-      }));
-
-      setImages(prev => {
-        const updated = [...prev];
-        // 빈 슬롯 채우기
-        let addedCount = 0;
-        for (let i = 0; i < 10 && addedCount < newImages.length; i++) {
-          if (!updated[i] || updated[i].isEmpty) {
-            updated[i] = newImages[addedCount];
-            addedCount++;
+      files.forEach((file, index) => {
+        if (insertIndex < 10) {
+          // 기존 이미지가 있으면 URL 정리
+          if (updated[insertIndex] && updated[insertIndex].url) {
+            URL.revokeObjectURL(updated[insertIndex].url);
           }
-        }
-        // 남은 이미지가 있으면 추가
-        if (addedCount < newImages.length) {
-          updated.push(...newImages.slice(addedCount));
-        }
-        return updated.slice(0, 10); // 최대 10개로 제한
-      });
-    }
-  }, [images, toast]);
 
-  // 이미지 삭제 (빈 슬롯으로 변경)
+          updated[insertIndex] = {
+            file,
+            url: URL.createObjectURL(file),
+            isMain: insertIndex === 0,
+            isEmpty: false
+          };
+          insertIndex++;
+        }
+      });
+
+      return updated;
+    });
+  }, [toast]);
+
+  // 이미지 삭제 (빈 슬롯 유지)
   const handleImageRemove = useCallback((index: number) => {
     setImages(prev => {
       const updated = [...prev];
+      const imageToRemove = updated[index];
+
       // 기존 이미지 URL 정리
-      if (updated[index] && updated[index].url) {
-        URL.revokeObjectURL(updated[index].url);
+      if (imageToRemove && imageToRemove.url) {
+        URL.revokeObjectURL(imageToRemove.url);
       }
-      // 이미지를 삭제하고 빈 슬롯으로 변경
-      updated[index] = {
-        file: null,
-        url: '',
-        isMain: index === 0,
-        isEmpty: true
-      };
+
+      // 첫 번째 슬롯(대표 이미지) 삭제 방지
+      if (index === 0) {
+        // 첫 번째 슬롯은 빈 슬롯으로 만들고 isMain 유지
+        updated[index] = {
+          file: null,
+          url: '',
+          isMain: true,
+          isEmpty: true
+        };
+      } else {
+        // 다른 슬롯은 빈 슬롯으로 변경
+        updated[index] = {
+          file: null,
+          url: '',
+          isMain: false,
+          isEmpty: true
+        };
+      }
+
       return updated;
     });
   }, []);
@@ -510,7 +486,13 @@ export default function CreateUsedPhonePage() {
     const newErrors: Record<string, string> = {};
     let firstErrorRef: React.RefObject<any> | null = null;
 
-    // 이미지 검사
+    // 대표 이미지 검사 (첫 번째 슬롯)
+    if (!images[0] || images[0].isEmpty || !images[0].file) {
+      newErrors.images = '대표 이미지(첫 번째 슬롯)는 반드시 등록해주세요';
+      if (!firstErrorRef) firstErrorRef = imageRef;
+    }
+
+    // 전체 이미지 검사
     const actualImages = images.filter(img => img && !img.isEmpty);
     if (actualImages.length === 0) {
       newErrors.images = '최소 1장 이상의 상품 이미지가 필요합니다';
@@ -1024,7 +1006,7 @@ export default function CreateUsedPhonePage() {
                       
                       {/* 대표 이미지 표시 */}
                       {image.isMain && (
-                        <div className="absolute top-2 left-2 bg-dungji-primary text-white px-2 py-1 text-xs rounded font-medium">
+                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded font-medium">
                           대표
                         </div>
                       )}
@@ -1082,33 +1064,49 @@ export default function CreateUsedPhonePage() {
                           : 'border-gray-200 bg-gray-50 cursor-not-allowed'
                       }`}
                     >
-                      {/* 첫 번째 슬롯에 대표 표시 */}
+                      {/* 첫 번째 슬롯에 필수 표시 */}
                       {isFirstSlot && (
-                        <div className="absolute top-2 left-2 bg-dungji-primary text-white px-2 py-1 text-xs rounded font-medium z-10">
-                          대표
+                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded font-medium z-10">
+                          필수
                         </div>
                       )}
                       
                       {canUpload ? (
                         <>
                           <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                          <span className="text-xs text-gray-500">사진 추가</span>
+                          <span className="text-xs text-gray-500">
+                            {isFirstSlot ? '대표 이미지' : '사진 추가'}
+                          </span>
                           <input
                             type="file"
                             accept="image/*"
-                            // 첫 번째 빈 슬롯에서만 multiple 허용, 나머지는 개별 추가
-                            multiple={isFirstSlot && images.length === 0}
+                            // 항상 multiple 허용
+                            multiple={true}
                             onChange={(e) => {
-                              if (isFirstSlot) {
-                                // 첫 번째 슬롯은 항상 인덱스 0으로 업로드
-                                handleImageUpload(e, 0);
-                              } else if (index === 1 && (!images[1] || images[1].isEmpty)) {
-                                // 두 번째 슬롯이 비어있으면 인덱스 1로 업로드
-                                handleImageUpload(e, 1);
-                              } else {
-                                // 그 외의 경우 일반 업로드
-                                handleImageUpload(e, index);
+                              // 남은 슬롯 개수 계산
+                              const actualImageCount = images.filter(img => img && !img.isEmpty).length;
+                              const remainingSlots = 10 - actualImageCount;
+
+                              if (remainingSlots <= 0) {
+                                toast({
+                                  title: '이미지 개수 초과',
+                                  description: '최대 10장까지 업로드 가능합니다.',
+                                  variant: 'destructive',
+                                });
+                                return;
                               }
+
+                              // 파일 개수 제한
+                              const files = Array.from(e.target.files || []).slice(0, remainingSlots);
+                              if (files.length < (e.target.files?.length || 0)) {
+                                toast({
+                                  title: '일부 이미지만 추가됨',
+                                  description: `${files.length}장만 추가되었습니다. (최대 10장)`,
+                                });
+                              }
+
+                              // 빈 슬롯 자동 정리 후 추가
+                              handleImageUpload(files);
                             }}
                             className="hidden"
                             disabled={loading || !canUpload}
@@ -1117,7 +1115,9 @@ export default function CreateUsedPhonePage() {
                       ) : (
                         <div className="text-gray-300">
                           <Camera className="w-6 h-6 mb-1" />
-                          <span className="text-xs">사진 추가</span>
+                          <span className="text-xs">
+                            {isFirstSlot ? '대표 이미지' : '사진 추가'}
+                          </span>
                         </div>
                       )}
                     </label>
@@ -1126,13 +1126,20 @@ export default function CreateUsedPhonePage() {
               })}
             </div>
 
-            <p className="text-sm text-gray-500 mt-4">
-              * <span className="font-semibold">첫 번째 슬롯(대표)에 반드시 이미지를 등록해주세요.</span>
-              * 최대 10장까지 등록 가능합니다. (자동 압축 처리)
-              * 전면, 후면, 측면, 모서리 사진을 포함하면 신뢰도가 높아집니다.
-              * 흠집이나 파손 부위는 선명하게 촬영해주세요.
-              * 이미지를 클릭하면 크게 볼 수 있습니다.
-            </p>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                <p className="text-sm text-red-700 font-medium">
+                  대표 이미지(첫 번째 슬롯)는 반드시 등록해주세요
+                </p>
+              </div>
+              <p className="text-sm text-gray-500">
+                * 최대 10장까지 등록 가능합니다. (자동 압축 처리)<br/>
+                * 전면, 후면, 측면, 모서리 사진을 포함하면 신뢰도가 높아집니다.<br/>
+                * 흠집이나 파손 부위는 선명하게 촬영해주세요.<br/>
+                * 이미지를 클릭하면 크게 볼 수 있습니다.
+              </p>
+            </div>
           </div>
 
           {/* 기본 정보 */}
