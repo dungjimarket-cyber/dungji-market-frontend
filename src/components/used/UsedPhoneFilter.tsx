@@ -85,22 +85,12 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
     }
   }, [selectedProvince]);
 
-  // 지역 선택 시 필터 업데이트
-  useEffect(() => {
-    if (selectedProvince) {
-      const regionStr = selectedCity ? `${selectedProvince} ${selectedCity}` : selectedProvince;
-      updateFilter('region', regionStr);
-    } else {
-      updateFilter('region', undefined);
-    }
-  }, [selectedProvince, selectedCity, updateFilter]);
-
   // 검색 실행 함수
   const handleSearch = useCallback(() => {
     if (searchInput.trim() !== filters.search) {
-      handleFilterChange({ ...filters, search: searchInput.trim() });
+      updateFilter('search', searchInput.trim() || undefined);
     }
-  }, [searchInput, filters, handleFilterChange]);
+  }, [searchInput, filters.search, updateFilter]);
 
   // 엔터키 핸들러
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -152,14 +142,16 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
         <div className="flex flex-wrap gap-2 items-center">
           {/* 지역 필터 - 시/도 */}
           <Select
-            value={selectedProvince || ''}
+            value={selectedProvince || 'all'}
             onValueChange={(value) => {
-              if (value === '') {
+              if (value === 'all') {
                 setSelectedProvince('');
                 setSelectedCity('');
+                updateFilter('region', undefined);
               } else {
                 setSelectedProvince(value);
                 setSelectedCity('');
+                updateFilter('region', value);
               }
             }}
           >
@@ -170,7 +162,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">전체 지역</SelectItem>
+              <SelectItem value="all">전체 지역</SelectItem>
               {regions.map(region => (
                 <SelectItem key={region.name} value={region.name}>
                   {region.name}
@@ -182,14 +174,22 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
           {/* 지역 필터 - 시/군/구 */}
           {selectedProvince && (
             <Select
-              value={selectedCity || ''}
-              onValueChange={(value) => setSelectedCity(value)}
+              value={selectedCity || 'all'}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedCity('');
+                  updateFilter('region', selectedProvince);
+                } else {
+                  setSelectedCity(value);
+                  updateFilter('region', `${selectedProvince} ${value}`);
+                }
+              }}
             >
               <SelectTrigger className="w-full sm:w-28 md:w-32">
                 <SelectValue placeholder="시/군/구" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 {cities.map(city => (
                   <SelectItem key={city} value={city}>
                     {city}
@@ -244,8 +244,8 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
           <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
                 <input
                   type="checkbox"
-                  checked={filters.includeCompleted !== false}
-                  onChange={(e) => updateFilter('includeCompleted', e.target.checked || undefined)}
+                  checked={filters.includeCompleted === true}
+                  onChange={(e) => updateFilter('includeCompleted', e.target.checked ? true : undefined)}
                   className="rounded border-gray-300"
                 />
             <span className="text-xs sm:text-sm">거래완료 포함</span>
