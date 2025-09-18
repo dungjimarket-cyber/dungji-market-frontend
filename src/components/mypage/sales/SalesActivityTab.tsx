@@ -817,7 +817,7 @@ export default function SalesActivityTab() {
                         </Badge>
                       </div>
                       <div className="flex justify-end">
-                        {item.has_review ? (
+                        {item.has_review === true ? (
                           <Button
                             size="sm"
                             variant="secondary"

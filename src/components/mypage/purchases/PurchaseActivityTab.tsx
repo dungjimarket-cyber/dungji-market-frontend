@@ -747,7 +747,7 @@ export default function PurchaseActivityTab() {
                       </p>
 
                       <div className="flex gap-2">
-                        {item.has_review ? (
+                        {item.has_review === true ? (
                           <Button
                             size="sm"
                             variant="secondary"
