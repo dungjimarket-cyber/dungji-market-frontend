@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS } from '@/types/used';
+import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS, PHONE_BRANDS } from '@/types/used';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
@@ -47,6 +47,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   
   // 폼 데이터
   const [formData, setFormData] = useState({
+    brand: '',
     model: '',
     storage: '',
     color: '',
@@ -130,6 +131,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       
       // 폼 데이터 설정
       setFormData({
+        brand: data.brand || '',
         model: data.model || '',
         storage: data.storage || '',
         color: data.color || '',
@@ -376,6 +378,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     // 유효성 검사
     const newErrors: Record<string, string> = {};
     
+    if (!formData.brand) newErrors.brand = '브랜드를 선택해주세요';
     if (!formData.model.trim()) newErrors.model = '모델명을 입력해주세요';
     if (!formData.storage) newErrors.storage = '저장공간을 선택해주세요';
     if (!formData.price) newErrors.price = '즉시 판매가를 입력해주세요';
@@ -418,6 +421,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       const submitData = new FormData();
 
       // 수정 가능한 필드만 전송 - 값이 있을 때만 전송
+      if (isFieldEditable('brand') && formData.brand) {
+        submitData.append('brand', formData.brand);
+      }
       if (isFieldEditable('model') && formData.model) {
         submitData.append('model', formData.model);
       }
@@ -624,6 +630,28 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           <h2 className="text-lg font-semibold mb-4">기본 정보</h2>
           
           <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-1">
+                제조사 <span className="text-red-500">*</span>
+                {!isFieldEditable('brand') && <Lock className="w-3 h-3 text-gray-400" />}
+              </Label>
+              <select
+                name="brand"
+                value={formData.brand}
+                onChange={handleInputChange}
+                disabled={!isFieldEditable('brand')}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.brand ? 'border-red-500' : 'border-gray-300'
+                } ${!isFieldEditable('brand') ? 'bg-gray-100' : ''}`}
+              >
+                <option value="">선택</option>
+                {Object.entries(PHONE_BRANDS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+              {errors.brand && <p className="text-xs text-red-500 mt-1">{errors.brand}</p>}
+            </div>
+
             <div>
               <Label className="flex items-center gap-1">
                 모델명 <span className="text-red-500">*</span>

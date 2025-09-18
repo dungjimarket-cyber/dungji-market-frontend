@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
-import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
+import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, PHONE_BRANDS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { executeTransactionAction } from '@/lib/utils/transactionHelper';
@@ -834,6 +834,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 상태 정보 */}
               <div className="grid grid-cols-2 gap-4 py-4 border-y">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">제조사</p>
+                  <p className="font-medium">
+                    {phone.brand && PHONE_BRANDS[phone.brand] ? PHONE_BRANDS[phone.brand] : '-'}
+                  </p>
+                </div>
                 <div>
                   <p className="text-sm text-gray-600 mb-1 flex items-center gap-1">
                     상태
