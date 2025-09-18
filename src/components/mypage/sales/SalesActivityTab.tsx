@@ -73,7 +73,7 @@ export default function SalesActivityTab() {
   const [receivedOffers, setReceivedOffers] = useState<ReceivedOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
   const [selectedPhone, setSelectedPhone] = useState<SalesItem | null>(null);
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showBuyerInfoModal, setShowBuyerInfoModal] = useState(false);
@@ -641,7 +641,8 @@ export default function SalesActivityTab() {
                 받은 제안이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.offer_count > 0 && item.status !== 'trading' && item.status !== 'sold').map((item) => (
+              <>
+              {getPaginatedItems(listings.filter(item => item.offer_count > 0 && item.status !== 'trading' && item.status !== 'sold')).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
@@ -680,7 +681,9 @@ export default function SalesActivityTab() {
                     </div>
                   </div>
                 </Card>
-              ))
+              ))}
+              <Pagination items={listings.filter(item => item.offer_count > 0 && item.status !== 'trading' && item.status !== 'sold')} />
+              </>
             )}
           </TabsContent>
 
@@ -691,7 +694,8 @@ export default function SalesActivityTab() {
                 거래중인 상품이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.status === 'trading').map((item) => (
+              <>
+              {getPaginatedItems(listings.filter(item => item.status === 'trading')).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -764,7 +768,9 @@ export default function SalesActivityTab() {
                     </div>
                   </div>
                 </Card>
-              ))
+              ))}
+              <Pagination items={listings.filter(item => item.status === 'trading')} />
+              </>
             )}
           </TabsContent>
 
@@ -775,7 +781,8 @@ export default function SalesActivityTab() {
                 판매완료된 상품이 없습니다
               </div>
             ) : (
-              listings.filter(item => item.status === 'sold').map((item) => (
+              <>
+              {getPaginatedItems(listings.filter(item => item.status === 'sold')).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -816,7 +823,9 @@ export default function SalesActivityTab() {
                     </div>
                   </div>
                 </Card>
-              ))
+              ))}
+              <Pagination items={listings.filter(item => item.status === 'sold')} />
+              </>
             )}
           </TabsContent>
         </Tabs>
