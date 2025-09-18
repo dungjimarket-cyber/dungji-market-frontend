@@ -52,7 +52,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 }: UsedPhoneFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
-    includeCompleted: true // 기본적으로 거래완료 포함
+    includeCompleted: false // 기본적으로 거래중인 상품만 표시
   });
   const [searchInput, setSearchInput] = useState('');
   const [selectedProvince, setSelectedProvince] = useState<string>('');
@@ -102,11 +102,11 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
   // 필터 초기화
   const resetFilters = useCallback(() => {
-    setFilters({ includeCompleted: true });
+    setFilters({ includeCompleted: false });
     setSearchInput('');
     setSelectedProvince('');
     setSelectedCity('');
-    onFilterChange({ includeCompleted: true });
+    onFilterChange({ includeCompleted: false });
   }, [onFilterChange]);
 
   // 활성 필터 개수
@@ -253,7 +253,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             <input
               type="checkbox"
               checked={filters.includeCompleted === true}
-              onChange={(e) => updateFilter('includeCompleted', e.target.checked ? true : undefined)}
+              onChange={(e) => updateFilter('includeCompleted', e.target.checked)}
               className="rounded border-gray-300 w-3 h-3"
             />
             <span className="text-xs">완료포함</span>

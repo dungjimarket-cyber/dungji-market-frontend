@@ -49,7 +49,7 @@ export default function UsedPhonesPage() {
   const [loadingMore, setLoadingMore] = useState(false); // 추가 로딩 상태
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({
-    includeCompleted: true, // 거래완료 포함 기본값
+    includeCompleted: false, // 거래중인 상품만 기본 표시
   });
   const [hasLoadedAll, setHasLoadedAll] = useState(false); // 모든 데이터 로드 완료 여부
   
@@ -82,6 +82,7 @@ export default function UsedPhonesPage() {
               params.append('ordering', '-price');
             }
           } else if (key === 'includeCompleted') {
+            // false값도 명시적으로 전달
             params.append('include_completed', String(value));
           } else if (key === 'region') {
             // 지역 필터 특별 처리
@@ -152,6 +153,7 @@ export default function UsedPhonesPage() {
               params.append('ordering', '-price');
             }
           } else if (key === 'includeCompleted') {
+            // false값도 명시적으로 전달
             params.append('include_completed', String(value));
           } else if (key === 'region') {
             // 지역 필터 특별 처리
@@ -252,14 +254,14 @@ export default function UsedPhonesPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 1단계: 초기 20개 빠르게 로드
-    fetchInitialPhones({});
-    
+    // 1단계: 초기 20개 빠르게 로드 (기본 필터 적용)
+    fetchInitialPhones({ includeCompleted: false });
+
     // 2단계: 0.5초 후 나머지 백그라운드 로드
     const timer = setTimeout(() => {
-      fetchRemainingPhones({});
+      fetchRemainingPhones({ includeCompleted: false });
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
