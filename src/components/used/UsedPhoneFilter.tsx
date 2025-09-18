@@ -140,65 +140,6 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
         {/* 필터들을 하나의 라인에 감싸기 */}
         <div className="flex flex-wrap gap-2 items-center">
-          {/* 지역 필터 - 시/도 */}
-          <Select
-            value={selectedProvince || 'all'}
-            onValueChange={(value) => {
-              if (value === 'all') {
-                setSelectedProvince('');
-                setSelectedCity('');
-                updateFilter('region', undefined);
-              } else {
-                setSelectedProvince(value);
-                setSelectedCity('');
-                updateFilter('region', value);
-              }
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-32 md:w-40">
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                <SelectValue placeholder="시/도" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체 지역</SelectItem>
-              {regions.map(region => (
-                <SelectItem key={region.name} value={region.name}>
-                  {region.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* 지역 필터 - 시/군/구 */}
-          {selectedProvince && (
-            <Select
-              value={selectedCity || 'all'}
-              onValueChange={(value) => {
-                if (value === 'all') {
-                  setSelectedCity('');
-                  updateFilter('region', selectedProvince);
-                } else {
-                  setSelectedCity(value);
-                  updateFilter('region', `${selectedProvince} ${value}`);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-28 md:w-32">
-                <SelectValue placeholder="시/군/구" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
           {/* 제조사 필터 */}
           <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
             <SelectTrigger className="w-full sm:w-28 md:w-32">
@@ -239,6 +180,69 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 <SelectItem value="price_high">가격 높은순</SelectItem>
               </SelectContent>
           </Select>
+
+          {/* 지역 필터 - 시/도 */}
+          <Select
+            value={selectedProvince || 'all'}
+            onValueChange={(value) => {
+              if (value === 'all') {
+                setSelectedProvince('');
+                setSelectedCity('');
+                updateFilter('region', undefined);
+              } else {
+                setSelectedProvince(value);
+                setSelectedCity('');
+                updateFilter('region', value);
+              }
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-32 md:w-40">
+              <div className="flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                <SelectValue placeholder="시/도" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체 지역</SelectItem>
+              {regions.map(region => (
+                <SelectItem key={region.name} value={region.name}>
+                  {region.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* 지역 필터 - 시/군/구 */}
+          {selectedProvince && (
+            <Select
+              value={selectedCity || 'all'}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedCity('');
+                  const regionValue = selectedProvince;
+                  console.log('[지역필터] 시/도만 선택:', regionValue);
+                  updateFilter('region', regionValue);
+                } else {
+                  setSelectedCity(value);
+                  const regionValue = `${selectedProvince} ${value}`;
+                  console.log('[지역필터] 시/도 + 시/군/구 선택:', regionValue);
+                  updateFilter('region', regionValue);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-28 md:w-32">
+                <SelectValue placeholder="시/군/구" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {cities.map(city => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* 거래완료 포함 체크박스 */}
           <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">

@@ -81,6 +81,11 @@ export default function UsedPhonesPage() {
             }
           } else if (key === 'includeCompleted') {
             params.append('include_completed', String(value));
+          } else if (key === 'region') {
+            // 지역 필터 특별 처리
+            const regionValue = String(value).trim();
+            console.log('[중고거래] 지역 필터 값:', regionValue);
+            params.append('region', regionValue);
           } else {
             params.append(key, String(value));
           }
@@ -90,6 +95,7 @@ export default function UsedPhonesPage() {
       // 디버깅용 로그
       console.log('[중고거래] API 호출 필터:', currentFilters);
       console.log('[중고거래] API URL 파라미터:', params.toString());
+      console.log('[중고거래] 디코딩된 URL:', decodeURIComponent(params.toString()));
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com') 
@@ -143,6 +149,11 @@ export default function UsedPhonesPage() {
             }
           } else if (key === 'includeCompleted') {
             params.append('include_completed', String(value));
+          } else if (key === 'region') {
+            // 지역 필터 특별 처리
+            const regionValue = String(value).trim();
+            console.log('[중고거래] 지역 필터 값:', regionValue);
+            params.append('region', regionValue);
           } else {
             params.append(key, String(value));
           }
@@ -152,6 +163,7 @@ export default function UsedPhonesPage() {
       // 디버깅용 로그
       console.log('[중고거래] API 호출 필터:', currentFilters);
       console.log('[중고거래] API URL 파라미터:', params.toString());
+      console.log('[중고거래] 디코딩된 URL:', decodeURIComponent(params.toString()));
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com') 
