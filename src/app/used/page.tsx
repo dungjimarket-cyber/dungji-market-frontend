@@ -273,7 +273,7 @@ export default function UsedPhonesPage() {
       <NoticeSection pageType="used" compact={true} />
 
       {/* 히어로 섹션 - 본문과 동일한 너비 */}
-      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
         <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8 px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -342,8 +342,8 @@ export default function UsedPhonesPage() {
 
       {/* 프로필 미완성 안내 */}
       {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
+          <div className="bg-yellow-50 border-b border-yellow-200 rounded-lg px-4 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
