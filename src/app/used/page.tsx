@@ -67,10 +67,23 @@ export default function UsedPhonesPage() {
       const params = new URLSearchParams();
       params.append('limit', '20');
 
-      // 필터 파라미터 추가
+      // 필터 파라미터 추가 (백엔드 API에 맞게 변환)
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
+          // 파라미터명 변환
+          if (key === 'brand') {
+            params.append('manufacturer', String(value));
+          } else if (key === 'sortBy') {
+            if (value === 'price_low') {
+              params.append('ordering', 'price');
+            } else if (value === 'price_high') {
+              params.append('ordering', '-price');
+            }
+          } else if (key === 'includeCompleted') {
+            params.append('include_completed', String(value));
+          } else {
+            params.append(key, String(value));
+          }
         }
       });
 
@@ -116,10 +129,23 @@ export default function UsedPhonesPage() {
       params.append('limit', '1000');
       params.append('offset', '20');
 
-      // 필터 파라미터 추가
+      // 필터 파라미터 추가 (백엔드 API에 맞게 변환)
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
+          // 파라미터명 변환
+          if (key === 'brand') {
+            params.append('manufacturer', String(value));
+          } else if (key === 'sortBy') {
+            if (value === 'price_low') {
+              params.append('ordering', 'price');
+            } else if (value === 'price_high') {
+              params.append('ordering', '-price');
+            }
+          } else if (key === 'includeCompleted') {
+            params.append('include_completed', String(value));
+          } else {
+            params.append(key, String(value));
+          }
         }
       });
 
