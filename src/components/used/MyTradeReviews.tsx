@@ -241,17 +241,16 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
 
       {/* 평가 탭 */}
       <Card>
-        <CardHeader>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <CardHeader>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="received">받은 후기</TabsTrigger>
               <TabsTrigger value="written">작성한 후기</TabsTrigger>
             </TabsList>
-          </Tabs>
-        </CardHeader>
-        <CardContent>
-          {/* 받은 후기 탭 */}
-          <TabsContent value="received" className="mt-0">
+          </CardHeader>
+          <CardContent>
+            {/* 받은 후기 탭 */}
+            <TabsContent value="received" className="mt-0">
             {reviews.length > 0 ? (
               <div className="space-y-2">
                 {reviews
@@ -450,7 +449,8 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
             )}
           </TabsContent>
         </CardContent>
-      </Card>
+      </Tabs>
+    </Card>
 
       {/* 리뷰 작성 모달 */}
       {showReviewModal && selectedTransaction && (
