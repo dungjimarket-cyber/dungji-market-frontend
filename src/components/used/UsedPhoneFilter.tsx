@@ -118,159 +118,163 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
     <div className="py-3">
       {/* 모든 화면에서 동일한 필터 사용 */}
       <div className="flex flex-col gap-3">
-        {/* 검색 바 */}
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="모델명 검색..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="pl-9 pr-10 w-full"
-          />
-          <button
-            onClick={handleSearch}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
-            aria-label="검색"
-          >
-            <Search className="w-4 h-4 text-gray-600" />
-          </button>
+        {/* 검색바와 지역검색을 반반 처리 */}
+        <div className="flex gap-2">
+          {/* 통합검색 (50%) */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="모델명 검색..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="pl-9 pr-10 w-full"
+            />
+            <button
+              onClick={handleSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
+              aria-label="검색"
+            >
+              <Search className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+
+          {/* 지역검색 (50%) */}
+          <div className="flex gap-1 flex-1">
+            {/* 시/도 선택 */}
+            <Select
+              value={selectedProvince || 'all'}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedProvince('');
+                  setSelectedCity('');
+                  updateFilter('region', undefined);
+                } else {
+                  setSelectedProvince(value);
+                  setSelectedCity('');
+                  updateFilter('region', value);
+                }
+              }}
+            >
+              <SelectTrigger className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <SelectValue placeholder="시/도" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {regions.map(region => (
+                  <SelectItem key={region.name} value={region.name}>
+                    {region.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* 시/군/구 선택 */}
+            {selectedProvince && (
+              <Select
+                value={selectedCity || 'all'}
+                onValueChange={(value) => {
+                  if (value === 'all') {
+                    setSelectedCity('');
+                    const regionValue = selectedProvince;
+                    updateFilter('region', regionValue);
+                  } else {
+                    setSelectedCity(value);
+                    const regionValue = `${selectedProvince} ${value}`;
+                    updateFilter('region', regionValue);
+                  }
+                }}
+              >
+                <SelectTrigger className="flex-1 min-w-0">
+                  <SelectValue placeholder="시/군/구" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </div>
 
-        {/* 필터들을 하나의 라인에 감싸기 */}
-        <div className="flex flex-wrap gap-2 items-center">
-          {/* 제조사 필터 */}
+        {/* 필터들을 컴팩트하게 가로 배치 */}
+        <div className="flex flex-wrap gap-1.5 items-center">
+          {/* 브랜드 */}
           <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
-            <SelectTrigger className="w-full sm:w-28 md:w-32">
-                <SelectValue placeholder="제조사" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                {Object.entries(PHONE_BRANDS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-          </Select>
-
-          {/* 상태 필터 */}
-          <Select value={filters.condition || 'all'} onValueChange={(value) => updateFilter('condition', value === 'all' ? undefined : value)}>
-            <SelectTrigger className="w-full sm:w-28 md:w-32">
-                <SelectValue placeholder="상태" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                {Object.entries(CONDITION_GRADES).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-          </Select>
-
-          {/* 정렬 */}
-          <Select value={filters.sortBy || ''} onValueChange={(value) => updateFilter('sortBy', value || undefined)}>
-            <SelectTrigger className="w-full sm:w-28 md:w-32">
-                <SelectValue placeholder="정렬" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="price_low">가격 낮은순</SelectItem>
-                <SelectItem value="price_high">가격 높은순</SelectItem>
-              </SelectContent>
-          </Select>
-
-          {/* 지역 필터 - 시/도 */}
-          <Select
-            value={selectedProvince || 'all'}
-            onValueChange={(value) => {
-              if (value === 'all') {
-                setSelectedProvince('');
-                setSelectedCity('');
-                updateFilter('region', undefined);
-              } else {
-                setSelectedProvince(value);
-                setSelectedCity('');
-                updateFilter('region', value);
-              }
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-32 md:w-40">
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                <SelectValue placeholder="시/도" />
-              </div>
+            <SelectTrigger className="w-20 text-xs">
+              <SelectValue placeholder="브랜드" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체 지역</SelectItem>
-              {regions.map(region => (
-                <SelectItem key={region.name} value={region.name}>
-                  {region.name}
+              <SelectItem value="all">전체</SelectItem>
+              {Object.entries(PHONE_BRANDS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          {/* 지역 필터 - 시/군/구 */}
-          {selectedProvince && (
-            <Select
-              value={selectedCity || 'all'}
-              onValueChange={(value) => {
-                if (value === 'all') {
-                  setSelectedCity('');
-                  const regionValue = selectedProvince;
-                  console.log('[지역필터] 시/도만 선택:', regionValue);
-                  updateFilter('region', regionValue);
-                } else {
-                  setSelectedCity(value);
-                  const regionValue = `${selectedProvince} ${value}`;
-                  console.log('[지역필터] 시/도 + 시/군/구 선택:', regionValue);
-                  updateFilter('region', regionValue);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-28 md:w-32">
-                <SelectValue placeholder="시/군/구" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          {/* 상태 */}
+          <Select value={filters.condition || 'all'} onValueChange={(value) => updateFilter('condition', value === 'all' ? undefined : value)}>
+            <SelectTrigger className="w-16 text-xs">
+              <SelectValue placeholder="상태" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              {Object.entries(CONDITION_GRADES).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          {/* 거래완료 포함 체크박스 */}
-          <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
-                <input
-                  type="checkbox"
-                  checked={filters.includeCompleted === true}
-                  onChange={(e) => updateFilter('includeCompleted', e.target.checked ? true : undefined)}
-                  className="rounded border-gray-300"
-                />
-            <span className="text-xs sm:text-sm">거래완료 포함</span>
+          {/* 정렬 */}
+          <Select value={filters.sortBy || ''} onValueChange={(value) => updateFilter('sortBy', value || undefined)}>
+            <SelectTrigger className="w-20 text-xs">
+              <SelectValue placeholder="정렬" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="price_low">낮은가격</SelectItem>
+              <SelectItem value="price_high">높은가격</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* 거래완료 포함 */}
+          <label className="flex items-center gap-1 cursor-pointer whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={filters.includeCompleted === true}
+              onChange={(e) => updateFilter('includeCompleted', e.target.checked ? true : undefined)}
+              className="rounded border-gray-300 w-3 h-3"
+            />
+            <span className="text-xs">완료포함</span>
           </label>
 
-          {/* 초기화 버튼 */}
+          {/* 초기화 */}
           {activeFilterCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={resetFilters}
-              className="ml-auto"
+              className="h-8 px-2 text-xs"
             >
-              <X className="w-4 h-4 mr-1" />
+              <X className="w-3 h-3 mr-1" />
               초기화
             </Button>
           )}
 
           {/* 결과 수 */}
-          <div className="text-xs sm:text-sm text-gray-600 whitespace-nowrap ml-auto">
-            총 <span className="font-medium">{totalCount.toLocaleString()}</span>개
+          <div className="text-xs text-gray-600 whitespace-nowrap ml-auto">
+            <span className="font-medium">{totalCount.toLocaleString()}</span>개
           </div>
         </div>
       </div>
