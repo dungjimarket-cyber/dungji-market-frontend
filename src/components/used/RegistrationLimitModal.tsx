@@ -36,7 +36,7 @@ export default function RegistrationLimitModal({
           <DialogTitle className="text-center">등록 가능 개수 초과</DialogTitle>
           <DialogDescription className="text-center space-y-3">
             <p>
-              최대 <span className="font-semibold text-blue-600">{maxCount}개</span>까지만 등록 가능합니다.
+              최대 <span className="font-semibold text-blue-600">5개</span>까지만 등록 가능합니다.
             </p>
             <div className="bg-gray-50 rounded-lg p-3 mt-4">
               <p className="text-sm text-gray-600">
