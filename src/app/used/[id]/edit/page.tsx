@@ -160,6 +160,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         // regions 데이터를 MultiRegionDropdown 형식에 맞게 변환
         const formattedRegions = data.regions.map((region: any) => ({
           id: region.id,
+          code: region.code,  // 백엔드에서 제공하는 지역 코드 저장
           province: region.full_name?.split(' ')[0] || region.name?.split(' ')[0] || '',
           city: region.full_name?.split(' ')[1] || region.name?.split(' ')[1] || '',
           full_name: region.full_name || region.name,
@@ -467,29 +468,36 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         });
 
         // region 필드 - 단일 지역 코드 (필수)
-        try {
-          const primaryRegion = selectedRegions[0];
-          // 지역명으로 실제 지역 코드 찾기
-          const searchName = primaryRegion.city || primaryRegion.province;
-          const regions = await searchRegionsByName(searchName);
+        const primaryRegion = selectedRegions[0];
 
-          if (regions && regions.length > 0) {
-            // 가장 정확한 매칭 찾기
-            const exactMatch = regions.find((r: any) =>
-              r.full_name.includes(primaryRegion.province) &&
-              r.full_name.includes(primaryRegion.city)
-            ) || regions[0];
+        // 이미 code가 있으면 바로 사용 (수정 시 로드된 데이터)
+        if ((primaryRegion as any).code) {
+          submitData.append('region', (primaryRegion as any).code);
+          console.log('Using existing region code:', (primaryRegion as any).code);
+        } else {
+          // code가 없으면 API로 조회 (새로 추가된 지역)
+          try {
+            const searchName = primaryRegion.city || primaryRegion.province;
+            const regions = await searchRegionsByName(searchName);
 
-            submitData.append('region', exactMatch.code);
-            console.log('Region code found:', exactMatch.code, exactMatch.full_name);
-          } else {
-            // 기본값 사용
+            if (regions && regions.length > 0) {
+              // 가장 정확한 매칭 찾기
+              const exactMatch = regions.find((r: any) =>
+                r.full_name.includes(primaryRegion.province) &&
+                r.full_name.includes(primaryRegion.city)
+              ) || regions[0];
+
+              submitData.append('region', exactMatch.code);
+              console.log('Region code found via API:', exactMatch.code, exactMatch.full_name);
+            } else {
+              // 기본값 사용
+              submitData.append('region', '11');  // 서울특별시 코드
+              console.log('Region not found, using default: Seoul');
+            }
+          } catch (error) {
+            console.error('Failed to fetch region code:', error);
             submitData.append('region', '11');  // 서울특별시 코드
-            console.log('Region not found, using default: Seoul');
           }
-        } catch (error) {
-          console.error('Failed to fetch region code:', error);
-          submitData.append('region', '11');  // 서울특별시 코드
         }
       }
       
