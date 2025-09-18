@@ -527,6 +527,9 @@ export default function CreateUsedPhonePage() {
     if (!formData.model || !formData.model.trim()) {
       newErrors.model = '모델명을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = modelRef;
+    } else if (formData.model.length > 50) {
+      newErrors.model = '모델명은 최대 50자까지 입력 가능합니다';
+      if (!firstErrorRef) firstErrorRef = modelRef;
     }
 
     // 저장공간 검사
@@ -538,6 +541,9 @@ export default function CreateUsedPhonePage() {
     // 색상 검사
     if (!formData.color || !formData.color.trim()) {
       newErrors.color = '색상을 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = colorRef;
+    } else if (formData.color.length > 30) {
+      newErrors.color = '색상은 최대 30자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = colorRef;
     }
 
