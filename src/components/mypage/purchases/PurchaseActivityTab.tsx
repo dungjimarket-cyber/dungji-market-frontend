@@ -645,43 +645,44 @@ export default function PurchaseActivityTab() {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <h4 className="font-medium text-sm truncate">
                           {item.phone.brand} {item.phone.model}
                         </h4>
-                        <p className="text-base font-semibold text-green-600">
-                          {item.offered_price.toLocaleString()}원
-                        </p>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xs text-gray-500">거래가격</span>
+                          <p className="text-base font-semibold text-green-600">
+                            {item.offered_price.toLocaleString()}원
+                          </p>
+                        </div>
                       </div>
                       <Badge className="bg-green-100 text-green-700">거래중</Badge>
                     </div>
-                    
+
                     {/* 거래 진행 상태 */}
-                    <div className="bg-green-50 rounded-lg p-2 mb-3 text-xs">
-                      <div className="flex items-center gap-2 text-green-700">
-                        <CheckCircle className="w-3.5 h-3.5" />
+                    <div className="bg-green-50 rounded-lg px-2 py-1.5 mb-3 text-xs inline-block">
+                      <div className="flex items-center gap-1.5 text-green-700">
+                        <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
                         <span>판매자와 거래가 진행중입니다</span>
                       </div>
                     </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
+
+                    <div className="flex items-center justify-between gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex items-center gap-1"
+                        onClick={() => fetchSellerInfo(item.phone.id)}
+                      >
+                        <User className="w-3.5 h-3.5" />
+                        판매자 정보
+                      </Button>
+                      {/* 판매자가 완료하지 않은 경우에만 취소 버튼 표시 */}
+                      {!item.phone.seller_completed && (
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex items-center gap-1"
-                          onClick={() => fetchSellerInfo(item.phone.id)}
-                        >
-                          <User className="w-3.5 h-3.5" />
-                          판매자 정보
-                        </Button>
-                      </div>
-                      {/* 판매자가 완료하지 않은 경우에만 취소 버튼 표시 */}
-                      {!item.phone.seller_completed && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          className="border-red-300 text-red-600 hover:bg-red-50 px-3 py-1.5"
                           onClick={() => openCancelModal(item)}
                         >
                           거래 취소
@@ -856,8 +857,8 @@ export default function PurchaseActivityTab() {
 
       {/* 판매자 정보 모달 */}
       {showSellerInfoModal && selectedSellerInfo && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 pt-20 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-sm w-full p-4 max-h-[70vh] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">판매자 정보</h3>
               <button
@@ -870,8 +871,8 @@ export default function PurchaseActivityTab() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
-            <div className="space-y-4">
+
+            <div className="space-y-4 overflow-y-auto flex-1">
               {/* 프로필 섹션 */}
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
