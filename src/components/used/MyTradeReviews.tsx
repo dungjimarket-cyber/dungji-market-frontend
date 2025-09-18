@@ -35,6 +35,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('accessToken');
+      console.log('=== 후기 데이터 fetch 시작 ===');
 
       // 내가 받은 평가 통계
       const statsRes = await axios.get(
@@ -43,6 +44,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
+      console.log('평가 통계 API 응답:', statsRes.data);
       setStats(statsRes.data);
 
       // 내가 받은 리뷰 목록
@@ -53,7 +55,15 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         }
       );
       console.log('받은 리뷰 API 응답:', reviewsRes.data);
-      setReviews(reviewsRes.data);
+      console.log('받은 리뷰 배열 길이:', reviewsRes.data?.length || 0);
+
+      // 롤백 후 다시 필터링 필요
+      const allReviews = reviewsRes.data || [];
+      const receivedReviews = allReviews.filter((review: any) =>
+        review.reviewee === reviewsRes.config?.headers?.user_id // 임시로 모든 데이터 사용
+      );
+      console.log('필터링된 받은 리뷰:', receivedReviews);
+      setReviews(allReviews); // 임시로 모든 데이터 표시
 
       // 내가 작성한 리뷰 목록
       const writtenRes = await axios.get(
@@ -63,6 +73,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         }
       );
       console.log('작성한 리뷰 API 응답:', writtenRes.data);
+      console.log('작성한 리뷰 배열 길이:', writtenRes.data?.length || 0);
       setMyWrittenReviews(writtenRes.data);
 
       // 평가 대기중인 거래
