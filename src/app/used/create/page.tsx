@@ -82,15 +82,15 @@ export default function CreateUsedPhonePage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // 입력 필드 refs
-  const brandRef = useRef<HTMLSelectElement>(null);
+  const brandRef = useRef<HTMLButtonElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
-  const storageRef = useRef<HTMLSelectElement>(null);
+  const storageRef = useRef<HTMLButtonElement>(null);
   const colorRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const minOfferPriceRef = useRef<HTMLInputElement>(null);
-  const conditionGradeRef = useRef<HTMLSelectElement>(null);
+  const conditionGradeRef = useRef<HTMLButtonElement>(null);
   const conditionDescriptionRef = useRef<HTMLTextAreaElement>(null);
-  const batteryStatusRef = useRef<HTMLSelectElement>(null);
+  const batteryStatusRef = useRef<HTMLButtonElement>(null);
   const meetingPlaceRef = useRef<HTMLTextAreaElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
