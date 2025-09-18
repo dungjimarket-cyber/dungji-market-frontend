@@ -54,16 +54,17 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
-      console.log('받은 리뷰 API 응답:', reviewsRes.data);
-      console.log('받은 리뷰 배열 길이:', reviewsRes.data?.length || 0);
+      console.log('=== 받은 리뷰 API 상세 응답 ===');
+      console.log('Status:', reviewsRes.status);
+      console.log('Headers:', reviewsRes.headers);
+      console.log('Data:', reviewsRes.data);
+      console.log('Data type:', typeof reviewsRes.data);
+      console.log('Is Array:', Array.isArray(reviewsRes.data));
+      console.log('Length:', reviewsRes.data?.length || 0);
 
       // 롤백 후 다시 필터링 필요
       const allReviews = reviewsRes.data || [];
-      const receivedReviews = allReviews.filter((review: any) =>
-        review.reviewee === reviewsRes.config?.headers?.user_id // 임시로 모든 데이터 사용
-      );
-      console.log('필터링된 받은 리뷰:', receivedReviews);
-      setReviews(allReviews); // 임시로 모든 데이터 표시
+      setReviews(allReviews); // 우선 모든 데이터 표시해서 확인
 
       // 내가 작성한 리뷰 목록
       const writtenRes = await axios.get(
@@ -72,8 +73,13 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
-      console.log('작성한 리뷰 API 응답:', writtenRes.data);
-      console.log('작성한 리뷰 배열 길이:', writtenRes.data?.length || 0);
+      console.log('=== 작성한 리뷰 API 상세 응답 ===');
+      console.log('Status:', writtenRes.status);
+      console.log('Headers:', writtenRes.headers);
+      console.log('Data:', writtenRes.data);
+      console.log('Data type:', typeof writtenRes.data);
+      console.log('Is Array:', Array.isArray(writtenRes.data));
+      console.log('Length:', writtenRes.data?.length || 0);
       setMyWrittenReviews(writtenRes.data);
 
       // 평가 대기중인 거래
@@ -91,7 +97,13 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       setPendingReviews(completed);
 
     } catch (error) {
-      console.error('Failed to fetch reviews:', error);
+      console.error('=== 후기 데이터 fetch 에러 ===');
+      console.error('Error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Response status:', error.response?.status);
+        console.error('Response data:', error.response?.data);
+        console.error('Request URL:', error.config?.url);
+      }
     } finally {
       setLoading(false);
     }
