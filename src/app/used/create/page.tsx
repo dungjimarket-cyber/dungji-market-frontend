@@ -1053,7 +1053,8 @@ export default function CreateUsedPhonePage() {
                   const actualImageCount = images.filter(img => img && !img.isEmpty).length;
                   const isNextSlot = index === actualImageCount;
                   const isFirstSlot = index === 0;
-                  const canUpload = isFirstSlot || (isNextSlot && actualImageCount > 0);
+                  // 모든 빈 슬롯에서 업로드 허용 (총 10개 제한만 확인)
+                  const canUpload = actualImageCount < 10;
                   
                   return (
                     <label

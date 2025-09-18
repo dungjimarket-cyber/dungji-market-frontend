@@ -52,6 +52,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
+      console.log('받은 리뷰 API 응답:', reviewsRes.data);
       setReviews(reviewsRes.data);
 
       // 내가 작성한 리뷰 목록
@@ -61,6 +62,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
+      console.log('작성한 리뷰 API 응답:', writtenRes.data);
       setMyWrittenReviews(writtenRes.data);
 
       // 평가 대기중인 거래
