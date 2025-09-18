@@ -391,9 +391,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             console.log('판매자 연락처:', data.seller_contact);
           }
 
-          // 2초 후 마이페이지 거래중 탭으로 이동
+          // 2초 후 구매내역 거래중 탭으로 이동
           setTimeout(() => {
-            router.push('/used/mypage?tab=trading');
+            router.push('/used/mypage?tab=purchases');
           }, 2000);
         }
 
