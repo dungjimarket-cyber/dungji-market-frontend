@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { sellerAPI } from '@/lib/api/used';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
 import ReceivedOffersModal from './ReceivedOffersModal';
 import ReviewModal from '@/components/used/ReviewModal';
 import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
@@ -120,25 +119,6 @@ export default function SalesActivityTab() {
       let allItems = allListings;
       if (allItems.length === 0) {
         allItems = await fetchAllListings();
-      }
-
-      // 판매완료 상품에 대해 리뷰 작성 여부 확인
-      try {
-        const reviewRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`);
-        const writtenReviews = reviewRes.data?.results || reviewRes.data || [];
-
-        // 리뷰 작성 여부를 각 상품에 추가
-        allItems = allItems.map((item: any) => {
-          if (item.status === 'sold' && item.transaction_id) {
-            const hasReview = writtenReviews.some((review: any) =>
-              review.transaction === item.transaction_id
-            );
-            return { ...item, has_review: hasReview };
-          }
-          return item;
-        });
-      } catch (reviewError) {
-        console.log('Could not fetch reviews, continuing without review status');
       }
 
       // status에 따라 필터링

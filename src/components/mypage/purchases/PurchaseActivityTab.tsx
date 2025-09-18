@@ -99,7 +99,6 @@ export default function PurchaseActivityTab() {
     };
   } | null>(null);
   const [pollingManager] = useState(() => new TransactionPollingManager());
-  const [writtenReviews, setWrittenReviews] = useState<any[]>([]);
 
   // 내 제안 목록 조회
   const fetchMyOffers = async () => {
@@ -154,30 +153,8 @@ export default function PurchaseActivityTab() {
     setLoading(true);
     try {
       const data = await buyerAPI.getMyTradingItems();
-
-      // 내가 작성한 리뷰 목록 가져오기
-      const token = localStorage.getItem('accessToken');
-      try {
-        const writtenRes = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
-          {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }
-        );
-        setWrittenReviews(writtenRes.data);
-
-        // 거래 데이터에 리뷰 작성 여부 추가
-        const itemsWithReviewStatus = (Array.isArray(data) ? data : data.results || []).map((item: any) => {
-          const transactionId = item.transaction_id || item.id;
-          const hasReview = writtenRes.data.some((r: any) => r.transaction === transactionId);
-          return { ...item, has_review: hasReview };
-        });
-
-        setTradingItems(itemsWithReviewStatus);
-      } catch (reviewError) {
-        console.log('Could not fetch reviews, continuing without review status');
-        setTradingItems(Array.isArray(data) ? data : data.results || []);
-      }
+      // 백엔드에서 has_review가 이미 포함되어 있음
+      setTradingItems(Array.isArray(data) ? data : data.results || []);
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
       setTradingItems([]);
