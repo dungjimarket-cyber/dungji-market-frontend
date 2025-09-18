@@ -52,7 +52,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 }: UsedPhoneFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
-    includeCompleted: false // 기본적으로 거래중인 상품만 표시
+    includeCompleted: true // 기본적으로 거래완료 포함
   });
   const [searchInput, setSearchInput] = useState('');
   const [selectedProvince, setSelectedProvince] = useState<string>('');
@@ -102,11 +102,11 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
   // 필터 초기화
   const resetFilters = useCallback(() => {
-    setFilters({ includeCompleted: false });
+    setFilters({ includeCompleted: true });
     setSearchInput('');
     setSelectedProvince('');
     setSelectedCity('');
-    onFilterChange({ includeCompleted: false });
+    onFilterChange({ includeCompleted: true });
   }, [onFilterChange]);
 
   // 활성 필터 개수

@@ -49,7 +49,7 @@ export default function UsedPhonesPage() {
   const [loadingMore, setLoadingMore] = useState(false); // 추가 로딩 상태
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({
-    includeCompleted: false, // 거래중인 상품만 기본 표시
+    includeCompleted: true, // 거래완료 포함 기본 표시
   });
   const [hasLoadedAll, setHasLoadedAll] = useState(false); // 모든 데이터 로드 완료 여부
   
@@ -258,12 +258,12 @@ export default function UsedPhonesPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 1단계: 초기 20개 빠르게 로드 (기본 필터 적용)
-    fetchInitialPhones(filters);
+    // 1단계: 초기 20개 빠르게 로드 (기본 필터 적용 - 거래완료 포함)
+    fetchInitialPhones({ includeCompleted: true });
 
     // 2단계: 0.5초 후 나머지 백그라운드 로드
     const timer = setTimeout(() => {
-      fetchRemainingPhones(filters);
+      fetchRemainingPhones({ includeCompleted: true });
     }, 500);
 
     return () => clearTimeout(timer);
