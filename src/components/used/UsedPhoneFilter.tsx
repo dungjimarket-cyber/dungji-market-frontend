@@ -164,7 +164,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="all">전국</SelectItem>
                 {regions.map(region => (
                   <SelectItem key={region.name} value={region.name}>
                     {region.name}
