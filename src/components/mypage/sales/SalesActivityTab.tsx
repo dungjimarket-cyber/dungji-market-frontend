@@ -710,7 +710,7 @@ export default function SalesActivityTab() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <h4 className="font-medium text-sm truncate">
                             {item.brand} {item.model}
                           </h4>
