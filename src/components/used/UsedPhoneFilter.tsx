@@ -26,6 +26,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { PHONE_BRANDS, CONDITION_GRADES } from '@/types/used';
+import { regions } from '@/lib/regions';
 
 interface FilterOptions {
   search?: string;
@@ -54,49 +55,45 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
     includeCompleted: true // 기본적으로 거래완료 포함
   });
   const [searchInput, setSearchInput] = useState('');
-  const [regions, setRegions] = useState<any[]>([]);
-  const [selectedSido, setSelectedSido] = useState<string>('');
-  const [sigunguList, setSigunguList] = useState<any[]>([]);
-
-  // 지역 데이터 로드
-  useEffect(() => {
-    const fetchRegions = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-        const data = await response.json();
-        // 배열인지 확인
-        if (Array.isArray(data)) {
-          setRegions(data);
-        } else {
-          console.error('Regions data is not an array:', data);
-          setRegions([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch regions:', error);
-        setRegions([]);
-      }
-    };
-    fetchRegions();
-  }, []);
-
-  // 시/도 선택 시 시/군/구 목록 업데이트
-  useEffect(() => {
-    if (selectedSido && regions.length > 0) {
-      const sido = regions.find(r => r.level === 0 && r.name === selectedSido);
-      if (sido) {
-        const subRegions = regions.filter(r => r.parent_id === sido.pk);
-        setSigunguList(subRegions);
-      }
-    } else {
-      setSigunguList([]);
-    }
-  }, [selectedSido, regions]);
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [cities, setCities] = useState<string[]>([]);
 
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(newFilters);
     onFilterChange(newFilters);
   }, [onFilterChange]);
+
+  // 개별 필터 변경
+  const updateFilter = useCallback((key: keyof FilterOptions, value: any) => {
+    const updated = { ...filters, [key]: value };
+    if (value === '' || value === undefined) {
+      delete updated[key];
+    }
+    handleFilterChange(updated);
+  }, [filters, handleFilterChange]);
+
+  // 시/도 선택 시 시/군/구 목록 업데이트
+  useEffect(() => {
+    if (selectedProvince) {
+      const region = regions.find(r => r.name === selectedProvince);
+      setCities(region?.cities || []);
+    } else {
+      setCities([]);
+      setSelectedCity('');
+    }
+  }, [selectedProvince]);
+
+  // 지역 선택 시 필터 업데이트
+  useEffect(() => {
+    if (selectedProvince) {
+      const regionStr = selectedCity ? `${selectedProvince} ${selectedCity}` : selectedProvince;
+      updateFilter('region', regionStr);
+    } else {
+      updateFilter('region', undefined);
+    }
+  }, [selectedProvince, selectedCity, updateFilter]);
 
   // 검색 실행 함수
   const handleSearch = useCallback(() => {
@@ -112,23 +109,14 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
     }
   }, [handleSearch]);
 
-  // 개별 필터 변경
-  const updateFilter = useCallback((key: keyof FilterOptions, value: any) => {
-    const updated = { ...filters, [key]: value };
-    if (value === '' || value === undefined) {
-      delete updated[key];
-    }
-    handleFilterChange(updated);
-  }, [filters, handleFilterChange]);
-
 
   // 필터 초기화
   const resetFilters = useCallback(() => {
     setFilters({ includeCompleted: true });
     setSearchInput('');
-    setSelectedSido('');
+    setSelectedProvince('');
+    setSelectedCity('');
     onFilterChange({ includeCompleted: true });
-    setIsOpen(false);
   }, [onFilterChange]);
 
   // 활성 필터 개수
@@ -162,50 +150,54 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
         {/* 필터들을 하나의 라인에 감싸기 */}
         <div className="flex flex-wrap gap-2 items-center">
-          {/* 지역 필터 */}
+          {/* 지역 필터 - 시/도 */}
           <Select
-                value={filters.region || 'all'}
-                onValueChange={(value) => {
-                  if (value === 'all') {
-                    updateFilter('region', undefined);
-                    setSelectedSido('');
-                  } else if (value.includes(' ')) {
-                    // 시/군/구 선택
-                    updateFilter('region', value);
-                  } else {
-                    // 시/도만 선택
-                    setSelectedSido(value);
-                    updateFilter('region', value);
-                  }
-                }}
-              >
+            value={selectedProvince || ''}
+            onValueChange={(value) => {
+              if (value === '') {
+                setSelectedProvince('');
+                setSelectedCity('');
+              } else {
+                setSelectedProvince(value);
+                setSelectedCity('');
+              }
+            }}
+          >
             <SelectTrigger className="w-full sm:w-32 md:w-40">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  <SelectValue placeholder="지역" />
-                </div>
+              <div className="flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                <SelectValue placeholder="시/도" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">전체 지역</SelectItem>
+              {regions.map(region => (
+                <SelectItem key={region.name} value={region.name}>
+                  {region.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* 지역 필터 - 시/군/구 */}
+          {selectedProvince && (
+            <Select
+              value={selectedCity || ''}
+              onValueChange={(value) => setSelectedCity(value)}
+            >
+              <SelectTrigger className="w-full sm:w-28 md:w-32">
+                <SelectValue placeholder="시/군/구" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">전체 지역</SelectItem>
-                {regions.filter(r => r.level === 0).map(region => (
-                  <SelectItem key={region.pk} value={region.name}>
-                    {region.name}
+                <SelectItem value="">전체</SelectItem>
+                {cities.map(city => (
+                  <SelectItem key={city} value={city}>
+                    {city}
                   </SelectItem>
                 ))}
-                {selectedSido && sigunguList.length > 0 && (
-                  <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 border-t">
-                      {selectedSido} 하위 지역
-                    </div>
-                    {sigunguList.map(sigungu => (
-                      <SelectItem key={sigungu.pk} value={`${selectedSido} ${sigungu.name}`}>
-                        {sigungu.name}
-                      </SelectItem>
-                    ))}
-                  </>
-                )}
               </SelectContent>
-          </Select>
+            </Select>
+          )}
 
           {/* 제조사 필터 */}
           <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>

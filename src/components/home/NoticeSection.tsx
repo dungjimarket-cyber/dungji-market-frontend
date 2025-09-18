@@ -131,9 +131,9 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
     <>
       {/* 상단 고정 바 (상단 고정된 텍스트 공지만) */}
       {pinnedNotice && isTopBarVisible && (
-        <div className="bg-blue-50 border-b border-blue-200">
-          <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
-            <div className="flex items-center justify-between py-2">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg mt-2">
+            <div className="flex items-center justify-between px-4 py-2">
               <Link
                 href="/notices"
                 className="flex items-center gap-2 flex-1 text-sm hover:text-blue-600 transition-colors"
