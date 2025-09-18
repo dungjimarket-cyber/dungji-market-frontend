@@ -1015,7 +1015,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               </div>
               {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
               <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다</p>
-              <p className="text-xs text-gray-500">구매자가 이 금액으로 구매 시 즉시 거래 진행</p>
+              <p className="text-xs text-green-600">별도의 수락 과정 없이 즉시 거래가 진행됩니다</p>
             </div>
 
             <div>
