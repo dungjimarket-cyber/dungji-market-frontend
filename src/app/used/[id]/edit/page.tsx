@@ -24,7 +24,7 @@ import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
+const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place', 'regions'];
 const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 수정할 수 없습니다.';
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
@@ -460,8 +460,16 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (isFieldEditable('has_charger')) submitData.append('has_charger', (formData.has_charger || false).toString());
       if (isFieldEditable('has_earphones')) submitData.append('has_earphones', (formData.has_earphones || false).toString());
 
-      // 지역 정보는 수정하지 않음 (임시 조치)
-      // TODO: 지역 수정 기능 재구현 필요
+      // 지역 정보 전송 (재등록 방식)
+      if (isFieldEditable('regions') && selectedRegions.length > 0) {
+        selectedRegions.forEach((region) => {
+          const regionData = {
+            province: region.province || region.sido || '',
+            city: region.city || region.sigungu || ''
+          };
+          submitData.append('regions', JSON.stringify(regionData));
+        });
+      }
       
       // 새로운 이미지만 전송
       if (isFieldEditable('images')) {
