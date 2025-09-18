@@ -17,11 +17,13 @@ interface MyTradeReviewsProps {
 
 export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
   const [reviews, setReviews] = useState<any[]>([]);
+  const [myWrittenReviews, setMyWrittenReviews] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [pendingReviews, setPendingReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('received');
 
   useEffect(() => {
     fetchData();
@@ -49,6 +51,15 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       );
       setReviews(reviewsRes.data);
 
+      // 내가 작성한 리뷰 목록
+      const writtenRes = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/my-written/`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      setMyWrittenReviews(writtenRes.data);
+
       // 평가 대기중인 거래
       const transactionsRes = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
@@ -59,7 +70,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
 
       // 완료된 거래 중 내가 리뷰를 작성하지 않은 거래
       const completed = transactionsRes.data.filter((t: any) =>
-        t.status === 'completed' && !reviews.some((r: any) => r.transaction === t.id)
+        t.status === 'completed' && !writtenRes.data.some((r: any) => r.transaction === t.id)
       );
       setPendingReviews(completed);
 
@@ -128,29 +139,33 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
               </div>
             </div>
 
-            {/* 평가 항목 */}
+            {/* 평가 항목 - 개선된 명칭 */}
             {stats.total_reviews > 0 && (
               <div className="mt-3 pt-3 border-t">
-                <div className="flex flex-wrap gap-1">
+                <div className="grid grid-cols-2 gap-2">
                   {stats.is_punctual_count > 0 && (
-                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
-                      시간약속 {stats.is_punctual_count}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="text-gray-600">신뢰해요</span>
+                      <span className="font-medium">{stats.is_punctual_count}</span>
+                    </div>
                   )}
                   {stats.is_friendly_count > 0 && (
-                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
-                      친절 {stats.is_friendly_count}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="text-gray-600">친절해요</span>
+                      <span className="font-medium">{stats.is_friendly_count}</span>
+                    </div>
                   )}
                   {stats.is_honest_count > 0 && (
-                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
-                      정직 {stats.is_honest_count}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="text-gray-600">정직해요</span>
+                      <span className="font-medium">{stats.is_honest_count}</span>
+                    </div>
                   )}
                   {stats.is_fast_response_count > 0 && (
-                    <Badge variant="secondary" className="text-xs py-0.5 px-2">
-                      빠른응답 {stats.is_fast_response_count}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="text-gray-600">응답이빨라요</span>
+                      <span className="font-medium">{stats.is_fast_response_count}</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -192,83 +207,162 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         </Card>
       )}
 
-      {/* 받은 평가 목록 */}
+      {/* 평가 탭 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">받은 평가</CardTitle>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="received">받은 평가</TabsTrigger>
+              <TabsTrigger value="written">작성한 평가</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
-          {reviews.length > 0 ? (
-            <div className="space-y-2">
-              {reviews.map((review) => (
-                <div key={review.id} className="border-b last:border-b-0 pb-2 last:pb-0">
-                  <div className="flex items-start gap-2">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-gray-500" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-sm font-medium">
-                          {review.reviewer_username}
-                        </span>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-2.5 w-2.5 ${
-                                i < review.rating
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
+          {/* 받은 평가 탭 */}
+          <TabsContent value="received" className="mt-0">
+            {reviews.length > 0 ? (
+              <div className="space-y-2">
+                {reviews.map((review) => (
+                  <div key={review.id} className="border-b last:border-b-0 pb-2 last:pb-0">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-gray-500" />
                         </div>
                       </div>
-                      {review.comment && (
-                        <p className="text-xs text-gray-700 mb-1">
-                          {review.comment}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-sm font-medium">
+                            {review.reviewer_username}
+                          </span>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-2.5 w-2.5 ${
+                                  i < review.rating
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {/* comment 제거 - 텍스트 후기는 표시하지 않음 */}
+                        <div className="flex items-center gap-1">
+                          {review.is_punctual && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              신뢰해요
+                            </Badge>
+                          )}
+                          {review.is_friendly && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              친절해요
+                            </Badge>
+                          )}
+                          {review.is_honest && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              정직해요
+                            </Badge>
+                          )}
+                          {review.is_fast_response && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              응답이빨라요
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDistanceToNow(new Date(review.created_at), {
+                            addSuffix: true,
+                            locale: ko
+                          })}
                         </p>
-                      )}
-                      <div className="flex items-center gap-1">
-                        {review.is_punctual && (
-                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                            시간약속
-                          </Badge>
-                        )}
-                        {review.is_friendly && (
-                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                            친절
-                          </Badge>
-                        )}
-                        {review.is_honest && (
-                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                            정직
-                          </Badge>
-                        )}
-                        {review.is_fast_response && (
-                          <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                            빠른응답
-                          </Badge>
-                        )}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatDistanceToNow(new Date(review.created_at), {
-                          addSuffix: true,
-                          locale: ko
-                        })}
-                      </p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500 py-8">
-              아직 받은 평가가 없습니다
-            </p>
-          )}
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-8">
+                아직 받은 평가가 없습니다
+              </p>
+            )}
+          </TabsContent>
+
+          {/* 작성한 평가 탭 */}
+          <TabsContent value="written" className="mt-0">
+            {myWrittenReviews.length > 0 ? (
+              <div className="space-y-2">
+                {myWrittenReviews.map((review) => (
+                  <div key={review.id} className="border-b last:border-b-0 pb-2 last:pb-0">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-gray-500" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-sm font-medium">
+                            {review.reviewee_username}님에게
+                          </span>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-2.5 w-2.5 ${
+                                  i < review.rating
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {review.is_punctual && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              신뢰해요
+                            </Badge>
+                          )}
+                          {review.is_friendly && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              친절해요
+                            </Badge>
+                          )}
+                          {review.is_honest && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              정직해요
+                            </Badge>
+                          )}
+                          {review.is_fast_response && (
+                            <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
+                              응답이빨라요
+                            </Badge>
+                          )}
+                        </div>
+                        {review.comment && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            {review.comment}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDistanceToNow(new Date(review.created_at), {
+                            addSuffix: true,
+                            locale: ko
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-8">
+                아직 작성한 평가가 없습니다
+              </p>
+            )}
+          </TabsContent>
         </CardContent>
       </Card>
 
