@@ -50,7 +50,7 @@ export default function TradeCancelModal({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>거래 취소 불가</DialogTitle>
-            <DialogDescription>{phoneModel}</DialogDescription>
+            <DialogDescription className="truncate">{phoneModel}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -137,7 +137,7 @@ export default function TradeCancelModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>거래 취소</DialogTitle>
-          <DialogDescription>{phoneModel}</DialogDescription>
+          <DialogDescription className="truncate">{phoneModel}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

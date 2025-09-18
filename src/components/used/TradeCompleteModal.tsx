@@ -83,7 +83,7 @@ export default function TradeCompleteModal({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-base">거래완료</DialogTitle>
-          <DialogDescription className="text-xs">{phoneModel}</DialogDescription>
+          <DialogDescription className="text-xs truncate">{phoneModel}</DialogDescription>
         </DialogHeader>
 
         <div className="py-4">

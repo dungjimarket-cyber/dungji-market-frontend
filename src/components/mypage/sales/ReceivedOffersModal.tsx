@@ -84,7 +84,7 @@ export default function ReceivedOffersModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>받은 제안</DialogTitle>
         </DialogHeader>
@@ -100,8 +100,8 @@ export default function ReceivedOffersModal({
               className="object-cover w-full h-full"
             />
           </div>
-          <div>
-            <h4 className="font-medium text-sm">
+          <div className="min-w-0 flex-1">
+            <h4 className="font-medium text-sm truncate">
               {phone.brand} {phone.model}
             </h4>
             <p className="text-lg font-semibold">
