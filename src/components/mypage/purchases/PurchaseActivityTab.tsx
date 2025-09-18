@@ -159,7 +159,7 @@ export default function PurchaseActivityTab() {
       const token = localStorage.getItem('accessToken');
       try {
         const writtenRes = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/my-written/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }

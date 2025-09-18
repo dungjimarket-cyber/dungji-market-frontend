@@ -59,54 +59,34 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       console.log('평가 통계 API 응답:', statsRes.data);
       setStats(statsRes.data);
 
-      // 내가 받은 리뷰 목록
-      const reviewsRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`,
+      // 받은 리뷰 가져오기 (분리된 엔드포인트)
+      const receivedRes = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
-      console.log('=== 받은 리뷰 API 상세 응답 ===');
-      console.log('Status:', reviewsRes.status);
-      console.log('Headers:', reviewsRes.headers);
-      console.log('Data:', reviewsRes.data);
-      console.log('Data type:', typeof reviewsRes.data);
-      console.log('Is Array:', Array.isArray(reviewsRes.data));
-      console.log('Length:', reviewsRes.data?.length || 0);
+      console.log('=== 받은 리뷰 API 응답 ===');
+      console.log('Data:', receivedRes.data);
 
       // API 응답이 페이지네이션 형태로 오므로 results 추출
-      const allReviews = reviewsRes.data?.results || [];
-
-      // 현재 사용자가 받은 리뷰만 필터링
-      const userStr2 = localStorage.getItem('user');
-      const userIdToUse = currentUserId || (userStr2 ? JSON.parse(userStr2).id : userId);
-      const receivedReviews = allReviews.filter((review: any) => {
-        console.log(`Review ${review.id}: reviewee=${review.reviewee}, reviewer=${review.reviewer}, currentUser=${userIdToUse}`);
-        return review.reviewee === userIdToUse;
-      });
-
-      console.log('전체 리뷰:', allReviews.length, '개');
-      console.log('필터링된 받은 리뷰:', receivedReviews.length, '개');
+      const receivedReviews = receivedRes.data?.results || receivedRes.data || [];
+      console.log('받은 리뷰:', receivedReviews.length, '개');
       setReviews(receivedReviews);
 
-      // 내가 작성한 리뷰 목록
+      // 작성한 리뷰 가져오기 (분리된 엔드포인트)
       const writtenRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/my-written/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
       );
-      console.log('=== 작성한 리뷰 API 상세 응답 ===');
-      console.log('Status:', writtenRes.status);
-      console.log('Headers:', writtenRes.headers);
+      console.log('=== 작성한 리뷰 API 응답 ===');
       console.log('Data:', writtenRes.data);
-      console.log('Data type:', typeof writtenRes.data);
-      console.log('Is Array:', Array.isArray(writtenRes.data));
-      console.log('Length:', writtenRes.data?.length || 0);
 
       // 작성한 리뷰도 페이지네이션 형태일 수 있으므로 확인
       const writtenReviews = writtenRes.data?.results || writtenRes.data || [];
-      console.log('작성한 리뷰 처리된 배열:', writtenReviews);
+      console.log('작성한 리뷰:', writtenReviews.length, '개');
       setMyWrittenReviews(writtenReviews);
 
       // 평가 대기중인 거래

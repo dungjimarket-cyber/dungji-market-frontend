@@ -124,7 +124,7 @@ export default function SalesActivityTab() {
 
       // 판매완료 상품에 대해 리뷰 작성 여부 확인
       try {
-        const reviewRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`);
+        const reviewRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`);
         const writtenReviews = reviewRes.data?.results || reviewRes.data || [];
 
         // 리뷰 작성 여부를 각 상품에 추가
