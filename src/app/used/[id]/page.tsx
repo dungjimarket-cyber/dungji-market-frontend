@@ -748,10 +748,38 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             )}
 
-            {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 하단 중앙 배치 (판매완료 시 숨김) */}
+            {/* PC에서만 거래 가능 지역 - 제품상태 설명 아래로 이동 */}
+            {(phone.regions && phone.regions.length > 0) && (
+              <div className="hidden lg:block mt-4 p-4 bg-dungji-primary-50 rounded-lg border border-dungji-primary-200">
+                <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  거래 가능 지역
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {phone.regions.map((region, index) => (
+                    <span key={index} className="px-3 py-1 bg-dungji-primary text-white rounded-full text-sm font-medium">
+                      {region.full_name || region.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PC에서만 거래시 요청사항 - 제품상태 설명 아래로 이동 */}
+            {phone.meeting_place && (
+              <div className="hidden lg:block mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                  <Info className="w-4 h-4" />
+                  거래시 요청사항
+                </p>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{phone.meeting_place}</p>
+              </div>
+            )}
+
+            {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
             {phone.seller?.id === user?.id && phone.status === 'active' && (
-              <div className="hidden lg:block mt-6 pt-6 border-t">
-                <div className="flex justify-center gap-3">
+              <div className="hidden lg:block mt-8 pt-6 border-t">
+                <div className="flex justify-start gap-6 ml-4">
                   <Button
                     onClick={async () => {
                       setCheckingOffers(true);
@@ -906,6 +934,34 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div className="lg:hidden py-4 border-b">
                   <p className="text-sm text-gray-600 mb-2">제품상태 및 설명</p>
                   <p className="text-gray-800 whitespace-pre-wrap break-all">{phone.condition_description}</p>
+                </div>
+              )}
+
+              {/* 모바일: 거래 가능 지역 - 제품상태 설명 아래로 이동 */}
+              {(phone.regions && phone.regions.length > 0) && (
+                <div className="lg:hidden py-4 border-b">
+                  <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    거래 가능 지역
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {phone.regions.map((region, index) => (
+                      <span key={index} className="px-3 py-1 bg-dungji-primary text-white rounded-full text-sm font-medium">
+                        {region.full_name || region.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 모바일: 거래시 요청사항 - 제품상태 설명 아래로 이동 */}
+              {phone.meeting_place && (
+                <div className="lg:hidden py-4 border-b">
+                  <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                    <Info className="w-4 h-4" />
+                    거래시 요청사항
+                  </p>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{phone.meeting_place}</p>
                 </div>
               )}
 
@@ -1331,33 +1387,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               </div>
               
-              {/* 거래 가능 지역 - 통합 표시 */}
-              {(phone.regions && phone.regions.length > 0) && (
-                <div className="mt-4 p-4 bg-dungji-primary-50 rounded-lg border border-dungji-primary-200">
-                  <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    거래 가능 지역
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {phone.regions.map((region, index) => (
-                      <span key={index} className="px-3 py-1 bg-dungji-primary text-white rounded-full text-sm font-medium">
-                        {region.full_name || region.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* 거래시 요청사항 */}
-              {phone.meeting_place && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 max-w-full overflow-hidden">
-                  <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-                    <Info className="w-4 h-4" />
-                    거래시 요청사항
-                  </p>
-                  <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{phone.meeting_place}</p>
-                </div>
-              )}
 
               {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
               {phone.seller?.id === user?.id && phone.status === 'active' && (
