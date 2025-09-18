@@ -184,12 +184,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       if (!response.ok) throw new Error('Failed to fetch');
       
       const data = await response.json();
-      console.log('Phone API response:', data);
+      console.log('=== Phone API 상세 응답 ===');
+      console.log('Full API response:', data);
+      console.log('is_favorite 필드:', data.is_favorite);
+      console.log('is_favorite 타입:', typeof data.is_favorite);
       console.log('Buyer from API:', data.buyer);
       console.log('Transaction ID from API:', data.transaction_id);
       console.log('Seller from API:', data.seller);
       setPhone(data);
-      setIsFavorite(data.is_favorite || false);
+
+      // 찜 상태 설정 개선
+      const favoriteStatus = data.is_favorite === true;
+      console.log('설정할 찜 상태:', favoriteStatus);
+      setIsFavorite(favoriteStatus);
       
       // 조회수는 백엔드에서 자동으로 증가됨 (retrieve 메서드에서 처리)
       // fetch(`/api/used/phones/${phoneId}/view`, { method: 'POST' });
@@ -582,8 +589,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             <button onClick={handleShare}>
               <Share2 className="w-5 h-5" />
             </button>
-            <button onClick={handleFavorite}>
-              <Heart className={`w-5 h-5 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
+            <button onClick={handleFavorite} disabled={isFavorite === null}>
+              <Heart className={`w-5 h-5 ${
+                isFavorite === null
+                  ? 'text-gray-300'
+                  : isFavorite === true
+                    ? 'fill-red-500 text-red-500'
+                    : 'text-gray-500 hover:text-red-500'
+              }`} />
             </button>
           </div>
         </div>
@@ -612,10 +625,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
               <button
                 onClick={handleFavorite}
-                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+                disabled={isFavorite === null}
+                className={`flex items-center gap-2 px-3 py-2 transition-colors ${
+                  isFavorite === null
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                <Heart className={`w-4 h-4 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
-                <span className="text-sm">찜하기</span>
+                <Heart className={`w-4 h-4 ${
+                  isFavorite === null
+                    ? 'text-gray-300'
+                    : isFavorite === true
+                      ? 'fill-red-500 text-red-500'
+                      : 'text-gray-500 hover:text-red-500'
+                }`} />
+                <span className="text-sm">
+                  {isFavorite === null ? '로딩...' : (isFavorite ? '찜됨' : '찜하기')}
+                </span>
               </button>
             </div>
           </div>
@@ -899,10 +925,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <Button
                           variant="outline"
                           onClick={handleFavorite}
-                          className="flex items-center justify-center gap-2 h-12"
+                          disabled={isFavorite === null}
+                          className={`flex items-center justify-center gap-2 h-12 ${
+                            isFavorite === null ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                         >
-                          <Heart className={`w-4 h-4 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
-                          {isFavorite === true ? '찜 해제' : '찜하기'}
+                          <Heart className={`w-4 h-4 ${
+                            isFavorite === null
+                              ? 'text-gray-300'
+                              : isFavorite === true
+                                ? 'fill-red-500 text-red-500'
+                                : 'text-gray-500'
+                          }`} />
+                          {isFavorite === null ? '로딩...' : (isFavorite === true ? '찜 해제' : '찜하기')}
                         </Button>
                         <Button
                           variant="outline"
