@@ -273,7 +273,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
           )}
 
           {/* 결과 수 */}
-          <div className="text-xs text-gray-600 whitespace-nowrap ml-auto">
+          <div className="text-xs text-gray-600 whitespace-nowrap">
             <span className="font-medium">{totalCount.toLocaleString()}</span>개
           </div>
         </div>
