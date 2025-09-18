@@ -155,7 +155,7 @@ export default function ReviewModal({
                   : 'bg-white border-gray-200'
               }`}
             >
-              <span>시간준수</span>
+              <span>약속을지켜요</span>
               {isPunctual && <Check className="w-3 h-3 text-green-600" />}
             </button>
             <button
@@ -166,7 +166,7 @@ export default function ReviewModal({
                   : 'bg-white border-gray-200'
               }`}
             >
-              <span>친절함</span>
+              <span>친절해요</span>
               {isFriendly && <Check className="w-3 h-3 text-green-600" />}
             </button>
             <button
@@ -177,7 +177,7 @@ export default function ReviewModal({
                   : 'bg-white border-gray-200'
               }`}
             >
-              <span>신뢰성</span>
+              <span>믿을만해요</span>
               {isHonest && <Check className="w-3 h-3 text-green-600" />}
             </button>
             <button
@@ -188,7 +188,7 @@ export default function ReviewModal({
                   : 'bg-white border-gray-200'
               }`}
             >
-              <span>빠른응답</span>
+              <span>응답이빨라요</span>
               {isFastResponse && <Check className="w-3 h-3 text-green-600" />}
             </button>
           </div>
@@ -196,14 +196,19 @@ export default function ReviewModal({
           {/* 후기 내용 - 선택사항 */}
           <div>
             <Textarea
-              placeholder="거래 경험을 공유해주세요 (선택사항)"
+              placeholder="거래 경험을 공유해주세요 (선택사항, 최대 100자)"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 100) {
+                  setComment(e.target.value);
+                }
+              }}
+              maxLength={100}
               rows={3}
               className="resize-none text-sm"
             />
             <p className="text-xs text-gray-400 mt-1">
-              {comment.length}/500자
+              {comment.length}/100자
             </p>
           </div>
 

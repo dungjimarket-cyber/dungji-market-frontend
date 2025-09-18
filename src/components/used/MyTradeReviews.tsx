@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, User, Calendar, ChevronRight } from 'lucide-react';
+import { Star, User, Calendar, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,6 +24,9 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('received');
+  const [receivedPage, setReceivedPage] = useState(1);
+  const [writtenPage, setWrittenPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchData();
@@ -145,7 +148,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                 <div className="grid grid-cols-2 gap-2">
                   {stats.is_punctual_count > 0 && (
                     <div className="flex items-center gap-1.5 text-xs">
-                      <span className="text-gray-600">신뢰해요</span>
+                      <span className="text-gray-600">약속을지켜요</span>
                       <span className="font-medium">{stats.is_punctual_count}</span>
                     </div>
                   )}
@@ -157,7 +160,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                   )}
                   {stats.is_honest_count > 0 && (
                     <div className="flex items-center gap-1.5 text-xs">
-                      <span className="text-gray-600">정직해요</span>
+                      <span className="text-gray-600">믿을만해요</span>
                       <span className="font-medium">{stats.is_honest_count}</span>
                     </div>
                   )}
@@ -212,17 +215,19 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         <CardHeader>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="received">받은 평가</TabsTrigger>
-              <TabsTrigger value="written">작성한 평가</TabsTrigger>
+              <TabsTrigger value="received">받은 후기</TabsTrigger>
+              <TabsTrigger value="written">작성한 후기</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
         <CardContent>
-          {/* 받은 평가 탭 */}
+          {/* 받은 후기 탭 */}
           <TabsContent value="received" className="mt-0">
             {reviews.length > 0 ? (
               <div className="space-y-2">
-                {reviews.map((review) => (
+                {reviews
+                  .slice((receivedPage - 1) * itemsPerPage, receivedPage * itemsPerPage)
+                  .map((review) => (
                   <div key={review.id} className="border-b last:border-b-0 pb-2 last:pb-0">
                     <div className="flex items-start gap-2">
                       <div className="flex-shrink-0">
@@ -248,11 +253,17 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                             ))}
                           </div>
                         </div>
-                        {/* comment 제거 - 텍스트 후기는 표시하지 않음 */}
-                        <div className="flex items-center gap-1">
+                        {/* 후기 내용 표시 (있을 경우만) */}
+                        {review.comment && (
+                          <p className="text-xs text-gray-600 mt-1 mb-1">
+                            {review.comment}
+                          </p>
+                        )}
+                        {/* 평가 항목 표시 */}
+                        <div className="flex flex-wrap items-center gap-1">
                           {review.is_punctual && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              신뢰해요
+                              약속을지켜요
                             </Badge>
                           )}
                           {review.is_friendly && (
@@ -262,7 +273,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                           )}
                           {review.is_honest && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              정직해요
+                              믿을만해요
                             </Badge>
                           )}
                           {review.is_fast_response && (
@@ -284,16 +295,40 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
               </div>
             ) : (
               <p className="text-center text-gray-500 py-8">
-                아직 받은 평가가 없습니다
+                아직 받은 후기가 없습니다
               </p>
+            )}
+            {/* 받은 후기 페이징 */}
+            {reviews.length > itemsPerPage && (
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  onClick={() => setReceivedPage(prev => Math.max(1, prev - 1))}
+                  disabled={receivedPage === 1}
+                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm">
+                  {receivedPage} / {Math.ceil(reviews.length / itemsPerPage)}
+                </span>
+                <button
+                  onClick={() => setReceivedPage(prev => Math.min(Math.ceil(reviews.length / itemsPerPage), prev + 1))}
+                  disabled={receivedPage === Math.ceil(reviews.length / itemsPerPage)}
+                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </TabsContent>
 
-          {/* 작성한 평가 탭 */}
+          {/* 작성한 후기 탭 */}
           <TabsContent value="written" className="mt-0">
             {myWrittenReviews.length > 0 ? (
               <div className="space-y-2">
-                {myWrittenReviews.map((review) => (
+                {myWrittenReviews
+                  .slice((writtenPage - 1) * itemsPerPage, writtenPage * itemsPerPage)
+                  .map((review) => (
                   <div key={review.id} className="border-b last:border-b-0 pb-2 last:pb-0">
                     <div className="flex items-start gap-2">
                       <div className="flex-shrink-0">
@@ -322,7 +357,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                         <div className="flex items-center gap-1">
                           {review.is_punctual && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              신뢰해요
+                              약속을지켜요
                             </Badge>
                           )}
                           {review.is_friendly && (
@@ -332,7 +367,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                           )}
                           {review.is_honest && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              정직해요
+                              믿을만해요
                             </Badge>
                           )}
                           {review.is_fast_response && (
@@ -359,8 +394,30 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
               </div>
             ) : (
               <p className="text-center text-gray-500 py-8">
-                아직 작성한 평가가 없습니다
+                아직 작성한 후기가 없습니다
               </p>
+            )}
+            {/* 작성한 후기 페이징 */}
+            {myWrittenReviews.length > itemsPerPage && (
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  onClick={() => setWrittenPage(prev => Math.max(1, prev - 1))}
+                  disabled={writtenPage === 1}
+                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm">
+                  {writtenPage} / {Math.ceil(myWrittenReviews.length / itemsPerPage)}
+                </span>
+                <button
+                  onClick={() => setWrittenPage(prev => Math.min(Math.ceil(myWrittenReviews.length / itemsPerPage), prev + 1))}
+                  disabled={writtenPage === Math.ceil(myWrittenReviews.length / itemsPerPage)}
+                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </TabsContent>
         </CardContent>

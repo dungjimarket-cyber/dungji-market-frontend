@@ -1096,7 +1096,8 @@ export default function CreateUsedPhonePage() {
                           <input
                             type="file"
                             accept="image/*"
-                            multiple
+                            // 첫 번째 빈 슬롯에서만 multiple 허용, 나머지는 개별 추가
+                            multiple={isFirstSlot && images.length === 0}
                             onChange={(e) => {
                               if (isFirstSlot) {
                                 // 첫 번째 슬롯은 항상 인덱스 0으로 업로드

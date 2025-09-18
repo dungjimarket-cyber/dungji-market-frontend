@@ -41,24 +41,14 @@ export default function TradeReviewModal({
   const [comment, setComment] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // 평가 태그 옵션 (역할별)
+  // 평가 태그 옵션 (통일)
   const getReviewTags = () => {
-    if (isSeller) {
-      // 판매자가 구매자를 평가
-      return [
-        { id: 'is_punctual', label: '시간 약속을 잘 지켜요', icon: Clock },
-        { id: 'is_friendly', label: '친절하고 매너가 좋아요', icon: ThumbsUp },
-        { id: 'is_fast_response', label: '응답이 빨라요', icon: MessageCircle },
-      ];
-    } else {
-      // 구매자가 판매자를 평가
-      return [
-        { id: 'is_honest', label: '상품 설명이 정확해요', icon: UserCheck },
-        { id: 'is_friendly', label: '친절하고 매너가 좋아요', icon: ThumbsUp },
-        { id: 'is_punctual', label: '시간 약속을 잘 지켜요', icon: Clock },
-        { id: 'is_fast_response', label: '응답이 빨라요', icon: MessageCircle },
-      ];
-    }
+    return [
+      { id: 'is_punctual', label: '약속을지켜요', icon: Clock },
+      { id: 'is_friendly', label: '친절해요', icon: ThumbsUp },
+      { id: 'is_honest', label: '믿을만해요', icon: UserCheck },
+      { id: 'is_fast_response', label: '응답이빨라요', icon: MessageCircle },
+    ];
   };
 
   const handleSubmit = async () => {
@@ -170,19 +160,20 @@ export default function TradeReviewModal({
             </p>
           </div>
 
-          {/* 평가 태그 선택 */}
+          {/* 평가 태그 선택 - ReviewModal과 동일한 UI */}
           <div>
             <Label className="text-xs">어떤 점이 좋았나요? (선택)</Label>
-            <div className="grid grid-cols-2 gap-1.5 mt-1">
+            <div className="grid grid-cols-2 gap-2 mt-2">
               {getReviewTags().map((tag) => {
                 const Icon = tag.icon;
+                const isSelected = selectedTags.includes(tag.id);
                 return (
                   <button
                     key={tag.id}
-                    className={`flex items-center gap-1.5 p-2 rounded-md border text-xs transition-colors ${
-                      selectedTags.includes(tag.id)
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg border text-xs ${
+                      isSelected
+                        ? 'bg-green-50 border-green-300'
+                        : 'bg-white border-gray-200'
                     }`}
                     onClick={() => {
                       setSelectedTags(prev =>
@@ -193,28 +184,30 @@ export default function TradeReviewModal({
                     }}
                     type="button"
                   >
-                    <Checkbox
-                      checked={selectedTags.includes(tag.id)}
-                      onCheckedChange={() => {}}
-                      className="pointer-events-none h-3 w-3"
-                    />
-                    <Icon className="h-3 w-3 text-gray-500" />
-                    <span className="flex-1 text-left">
-                      {tag.label}
-                    </span>
+                    <span>{tag.label}</span>
+                    {isSelected && (
+                      <svg
+                        className="w-3 h-3 text-green-600"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* 텍스트 후기 (선택) */}
+          {/* 텍스트 후기 (선택) - ReviewModal과 동일 */}
           <div>
             <Label htmlFor="comment" className="text-xs">
-              후기 (선택)
-              <span className="ml-1 text-gray-500">
-                {comment.length}/100
-              </span>
+              후기 내용 (선택사항)
             </Label>
             <Textarea
               id="comment"
@@ -224,11 +217,14 @@ export default function TradeReviewModal({
                   setComment(e.target.value);
                 }
               }}
-              placeholder="간단한 후기를 남겨주세요"
-              rows={2}
+              placeholder="거래 경험을 공유해주세요 (선택사항, 최대 100자)"
+              rows={3}
               maxLength={100}
-              className="text-xs mt-1"
+              className="resize-none text-sm mt-1"
             />
+            <p className="text-xs text-gray-400 mt-1">
+              {comment.length}/100자
+            </p>
           </div>
 
           {/* 안내 메시지 */}
