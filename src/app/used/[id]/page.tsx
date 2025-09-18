@@ -721,7 +721,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               {/* 상태 뱃지 */}
               {phone.status === 'sold' && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">판매완료</span>
+                  <span className="text-white text-2xl font-bold">거래완료</span>
                 </div>
               )}
             </div>
@@ -1046,7 +1046,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 액션 버튼 영역 - 이미 위로 이동함 */}
               <div className="space-y-3">
-                {/* 거래중/판매완료 시 거래 당사자에게 마이페이지 안내 */}
+                {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
                 {(phone.status === 'trading' || phone.status === 'sold') &&
                  user && (Number(user.id) === phone.seller?.id || Number(user.id) === phone.buyer?.id) && (
                   <Link href="/used/mypage?tab=trading">
@@ -1055,7 +1055,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="flex items-center gap-2">
                           <Info className="w-4 h-4 text-blue-600" />
                           <span className="text-sm font-medium text-blue-800">
-                            거래 관리는 마이페이지에서 하실 수 있습니다
+                            {phone.status === 'sold'
+                              ? '거래가 완료되었습니다. 마이페이지에서 후기를 작성할 수 있습니다.'
+                              : '거래 관리는 마이페이지에서 하실 수 있습니다'
+                            }
                           </span>
                         </div>
                         <ChevronRight className="w-4 h-4 text-blue-600" />
@@ -1137,43 +1140,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 ) : (
                   /* 다른 사람의 상품인 경우 */
                   <>
-                    {/* 거래완료 상태일 때 구매자도 후기 작성 가능 */}
-                    {phone.status === 'sold' && phone.buyer?.id === user?.id && phone.transaction_id && (
-                      <Button
-                        onClick={() => {
-                          console.log('구매자 후기 버튼 클릭');
-                          console.log('phone.transaction_id:', phone.transaction_id);
-                          console.log('reviewCompleted:', reviewCompleted);
-                          if (!reviewCompleted) {
-                            setReviewTarget('seller');
-                            setShowTradeReviewModal(true);
-                          }
-                        }}
-                        disabled={reviewCompleted}
-                        className={`w-full h-14 text-lg font-semibold mb-3 ${
-                          reviewCompleted
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-purple-500 hover:bg-purple-600 text-white'
-                        }`}
-                      >
-                        {reviewCompleted ? (
-                          <>
-                            <Check className="w-5 h-5 mr-2" />
-                            후기 작성 완료
-                          </>
-                        ) : (
-                          <>
-                            <MessageSquarePlus className="w-5 h-5 mr-2" />
-                            후기 작성하기
-                          </>
-                        )}
-                      </Button>
-                    )}
-
-                    {/* 거래가 완료된 경우 안내 메시지 */}
-                    {phone.status === 'sold' && phone.buyer?.id !== user?.id && (
+                    {/* 거래가 완료된 경우 안내 메시지 (구매자/제3자 모두) */}
+                    {phone.status === 'sold' && (
                       <div className="p-4 bg-gray-100 rounded-lg mb-3">
-                        <p className="text-center text-gray-600 font-medium">거래가 종료되었습니다</p>
+                        <p className="text-center text-gray-600 font-medium">
+                          {phone.buyer?.id === user?.id
+                            ? '거래가 완료되었습니다. 마이페이지에서 후기를 작성할 수 있습니다.'
+                            : '거래가 완료된 상품입니다'}
+                        </p>
                       </div>
                     )}
 
@@ -1226,7 +1200,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             {phone.status === 'trading'
                               ? '거래중인 상품입니다'
                               : phone.status === 'sold'
-                              ? '판매완료된 상품입니다'
+                              ? '거래완료된 상품입니다'
                               : myOffer && myOffer.status === 'pending'
                               ? '제안 수정하기'
                               : '가격 제안하기'}
@@ -1321,7 +1295,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             <div className="flex items-center gap-2 text-gray-700">
                               <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                               <span className="text-sm font-medium">
-                                {phone.final_price.toLocaleString()}원에 판매완료된 상품입니다
+                                {phone.final_price.toLocaleString()}원에 거래완료
                               </span>
                             </div>
                           </div>
@@ -1331,7 +1305,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                             <div className="flex items-center gap-2 text-gray-700">
                               <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                              <span className="text-sm font-medium">판매완료된 상품입니다</span>
+                              <span className="text-sm font-medium">거래완료된 상품입니다</span>
                             </div>
                           </div>
                         )}
