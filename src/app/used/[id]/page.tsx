@@ -14,6 +14,7 @@ import {
   Check, X, Phone, User, Smartphone, Edit3, Trash2, DollarSign, Info, ZoomIn,
   CheckCircle2, MessageSquarePlus
 } from 'lucide-react';
+import Link from 'next/link';
 import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
@@ -937,17 +938,35 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     공유하기
                   </Button>
                 </div>
+                {/* 거래중/판매완료 시 거래 당사자에게 마이페이지 안내 */}
+                {(phone.status === 'trading' || phone.status === 'sold') &&
+                 user && (user.id === phone.seller?.id || user.id === phone.buyer?.id) && (
+                  <Link href="/used/mypage?tab=trading">
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Info className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-800">
+                            거래 관리는 마이페이지에서 하실 수 있습니다
+                          </span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-blue-600" />
+                      </div>
+                    </div>
+                  </Link>
+                )}
+
                 {/* 본인이 등록한 상품인 경우 */}
                 {user?.id === phone.seller?.id ? (
                   <>
-                    {/* 거래중 상태일 때 거래완료 버튼 표시 */}
+                    {/* 거래중 상태일 때 거래완료 버튼 비활성화 */}
                     {phone.status === 'trading' && (
                       <Button
-                        onClick={() => setShowTradeCompleteModal(true)}
-                        className="w-full h-14 text-lg font-semibold bg-green-500 hover:bg-green-600 text-white mb-3"
+                        disabled
+                        className="w-full h-14 text-lg font-semibold bg-gray-400 cursor-not-allowed text-white mb-3"
                       >
                         <CheckCircle2 className="w-5 h-5 mr-2" />
-                        거래완료
+                        거래중
                       </Button>
                     )}
 
@@ -961,50 +980,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       buyer: phone.buyer,
                       allConditions: phone.status === 'sold' && phone.seller?.id === user?.id && phone.transaction_id
                     })}
-                    {phone.status === 'sold' && phone.seller?.id === user?.id && phone.transaction_id && (
+                    {phone.status === 'sold' && phone.seller?.id === user?.id && (
                       <Button
-                        onClick={() => {
-                          console.log('판매자 후기 버튼 클릭');
-                          console.log('phone 전체 객체:', phone);
-                          console.log('phone이 있나?:', !!phone);
-                          console.log('showTradeReviewModal 설정 전:', showTradeReviewModal);
-                          console.log('reviewTarget 설정 전:', reviewTarget);
-
-                          if (!phone) {
-                            console.error('phone 객체가 없어서 모달을 열 수 없습니다!');
-                            return;
-                          }
-
-                          console.log('phone.transaction_id:', phone.transaction_id);
-                          console.log('phone.buyer:', phone.buyer);
-                          console.log('phone.model_name:', phone.model_name);
-                          console.log('reviewCompleted:', reviewCompleted);
-
-                          if (!reviewCompleted) {
-                            console.log('reviewTarget을 buyer로 설정');
-                            setReviewTarget('buyer');
-                            console.log('showTradeReviewModal을 true로 설정');
-                            setShowTradeReviewModal(true);
-                          }
-                        }}
-                        disabled={reviewCompleted}
-                        className={`w-full h-14 text-lg font-semibold mb-3 ${
-                          reviewCompleted
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-purple-500 hover:bg-purple-600 text-white'
-                        }`}
+                        disabled
+                        className="w-full h-14 text-lg font-semibold mb-3 bg-gray-400 cursor-not-allowed text-white"
                       >
-                        {reviewCompleted ? (
-                          <>
-                            <Check className="w-5 h-5 mr-2" />
-                            후기 작성 완료
-                          </>
-                        ) : (
-                          <>
-                            <MessageSquarePlus className="w-5 h-5 mr-2" />
-                            후기 작성하기
-                          </>
-                        )}
+                        <Check className="w-5 h-5 mr-2" />
+                        판매완료
                       </Button>
                     )}
 
@@ -1185,17 +1167,48 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
                         {/* 거래중 상태 메시지 - 구매자 본인일 때만 */}
                         {phone.status === 'trading' && phone.buyer_id === user?.id && (
-                          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                            <div className="flex items-center gap-2 text-orange-700">
-                              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm font-medium">
-                                판매자와 거래가 진행중입니다
-                              </span>
+                          <>
+                            <Link href="/used/mypage?tab=trading">
+                              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Info className="w-4 h-4 text-blue-600" />
+                                    <span className="text-sm font-medium text-blue-800">
+                                      거래 관리는 마이페이지에서 하실 수 있습니다
+                                    </span>
+                                  </div>
+                                  <ChevronRight className="w-4 h-4 text-blue-600" />
+                                </div>
+                              </div>
+                            </Link>
+                            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                              <div className="flex items-center gap-2 text-orange-700">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm font-medium">
+                                  판매자와 거래가 진행중입니다
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          </>
                         )}
 
-                        {phone.status === 'sold' && phone.final_price && (
+                        {phone.status === 'sold' && phone.buyer_id === user?.id && (
+                          <Link href="/used/mypage?tab=trading">
+                            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Info className="w-4 h-4 text-blue-600" />
+                                  <span className="text-sm font-medium text-blue-800">
+                                    거래 완료된 상품입니다. 거래 내역은 마이페이지에서 확인하실 수 있습니다
+                                  </span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-blue-600" />
+                              </div>
+                            </div>
+                          </Link>
+                        )}
+
+                        {phone.status === 'sold' && phone.final_price && phone.buyer_id !== user?.id && (
                           <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                             <div className="flex items-center gap-2 text-gray-700">
                               <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
