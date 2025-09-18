@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPin, Edit2, Star } from 'lucide-react';
+import { MapPin, Edit2, Star, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -81,16 +81,29 @@ export default function ProfileSection() {
           </div>
         </div>
 
-        {/* 프로필 수정 버튼 - 회색 톤 */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleEditProfile}
-          className="gap-1.5 border-gray-300 text-gray-700 hover:bg-gray-50"
-        >
-          <Edit2 className="w-4 h-4" />
-          내정보 설정
-        </Button>
+        <div className="flex gap-2">
+          {/* 신고관리 버튼 - 빨간색 톤 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/used/mypage/reports')}
+            className="gap-1.5 border-red-300 text-red-600 hover:bg-red-50"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            신고관리
+          </Button>
+
+          {/* 프로필 수정 버튼 - 회색 톤 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEditProfile}
+            className="gap-1.5 border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            <Edit2 className="w-4 h-4" />
+            내정보 설정
+          </Button>
+        </div>
       </div>
     </div>
   );
