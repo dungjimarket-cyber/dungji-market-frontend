@@ -26,7 +26,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { PHONE_BRANDS, CONDITION_GRADES } from '@/types/used';
-import { useDebounce } from '@/hooks/useDebounce';
 
 interface FilterOptions {
   search?: string;
@@ -58,9 +57,6 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
   const [regions, setRegions] = useState<any[]>([]);
   const [selectedSido, setSelectedSido] = useState<string>('');
   const [sigunguList, setSigunguList] = useState<any[]>([]);
-  
-  // 검색어 디바운싱 (300ms)
-  const debouncedSearch = useDebounce(searchInput, 300);
 
   // 지역 데이터 로드
   useEffect(() => {
@@ -96,18 +92,25 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
     }
   }, [selectedSido, regions]);
 
-  // 검색어 변경 시
-  useEffect(() => {
-    if (debouncedSearch !== filters.search) {
-      handleFilterChange({ ...filters, search: debouncedSearch });
-    }
-  }, [debouncedSearch]);
-
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(newFilters);
     onFilterChange(newFilters);
   }, [onFilterChange]);
+
+  // 검색 실행 함수
+  const handleSearch = useCallback(() => {
+    if (searchInput.trim() !== filters.search) {
+      handleFilterChange({ ...filters, search: searchInput.trim() });
+    }
+  }, [searchInput, filters, handleFilterChange]);
+
+  // 엔터키 핸들러
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  }, [handleSearch]);
 
   // 개별 필터 변경
   const updateFilter = useCallback((key: keyof FilterOptions, value: any) => {
@@ -121,9 +124,10 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
   // 필터 초기화
   const resetFilters = useCallback(() => {
-    setFilters({});
+    setFilters({ includeCompleted: true });
     setSearchInput('');
-    onFilterChange({});
+    setSelectedSido('');
+    onFilterChange({ includeCompleted: true });
     setIsOpen(false);
   }, [onFilterChange]);
 
@@ -146,8 +150,16 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 placeholder="아이폰 14 Pro, 갤럭시 S23..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-9 pr-4 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                onKeyPress={handleKeyPress}
+                className="pl-9 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
               />
+              <button
+                onClick={handleSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
+                aria-label="검색"
+              >
+                <Search className="w-4 h-4 text-gray-600" />
+              </button>
             </div>
             
             {/* 필터 버튼 */}
@@ -196,8 +208,16 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 placeholder="모델명 검색..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-9 pr-4"
+                onKeyPress={handleKeyPress}
+                className="pl-9 pr-10"
               />
+              <button
+                onClick={handleSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
+                aria-label="검색"
+              >
+                <Search className="w-4 h-4 text-gray-600" />
+              </button>
             </div>
 
             {/* 지역 필터 */}
