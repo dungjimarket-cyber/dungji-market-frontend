@@ -289,7 +289,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                       <div className="flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="text-sm font-medium">
-                            {review.reviewer_username}
+                            {review.reviewer_nickname || review.reviewer_username}
                           </span>
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
@@ -390,7 +390,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                       <div className="flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="text-sm font-medium">
-                            {review.reviewee_username}님에게
+                            {review.reviewee_nickname || review.reviewee_username}님에게
                           </span>
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
