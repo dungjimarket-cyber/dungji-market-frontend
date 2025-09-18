@@ -62,9 +62,9 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       console.log('Is Array:', Array.isArray(reviewsRes.data));
       console.log('Length:', reviewsRes.data?.length || 0);
 
-      // 롤백 후 다시 필터링 필요
-      const allReviews = reviewsRes.data || [];
-      setReviews(allReviews); // 우선 모든 데이터 표시해서 확인
+      // API 응답이 페이지네이션 형태로 오므로 results 추출
+      const allReviews = reviewsRes.data?.results || [];
+      setReviews(allReviews);
 
       // 내가 작성한 리뷰 목록
       const writtenRes = await axios.get(
@@ -80,7 +80,11 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       console.log('Data type:', typeof writtenRes.data);
       console.log('Is Array:', Array.isArray(writtenRes.data));
       console.log('Length:', writtenRes.data?.length || 0);
-      setMyWrittenReviews(writtenRes.data);
+
+      // 작성한 리뷰도 페이지네이션 형태일 수 있으므로 확인
+      const writtenReviews = writtenRes.data?.results || writtenRes.data || [];
+      console.log('작성한 리뷰 처리된 배열:', writtenReviews);
+      setMyWrittenReviews(writtenReviews);
 
       // 평가 대기중인 거래
       const transactionsRes = await axios.get(
@@ -92,7 +96,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
 
       // 완료된 거래 중 내가 리뷰를 작성하지 않은 거래
       const completed = transactionsRes.data.filter((t: any) =>
-        t.status === 'completed' && !writtenRes.data.some((r: any) => r.transaction === t.id)
+        t.status === 'completed' && !writtenReviews.some((r: any) => r.transaction === t.id)
       );
       setPendingReviews(completed);
 
