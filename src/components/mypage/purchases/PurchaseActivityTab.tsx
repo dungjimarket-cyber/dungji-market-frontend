@@ -736,10 +736,6 @@ export default function PurchaseActivityTab() {
                             {item.offered_price.toLocaleString()}원
                           </p>
                         </div>
-                        <Badge variant="secondary">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          거래완료
-                        </Badge>
                       </div>
 
                       <p className="text-xs text-gray-600 mb-2">

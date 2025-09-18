@@ -811,10 +811,6 @@ export default function SalesActivityTab() {
                             {item.price.toLocaleString()}원
                           </p>
                         </div>
-                        <Badge variant="secondary">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          거래완료
-                        </Badge>
                       </div>
                       <div className="flex justify-end">
                         {item.has_review === true ? (
