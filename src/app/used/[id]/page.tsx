@@ -940,7 +940,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
                 {/* 거래중/판매완료 시 거래 당사자에게 마이페이지 안내 */}
                 {(phone.status === 'trading' || phone.status === 'sold') &&
-                 user && (user.id === phone.seller?.id || user.id === phone.buyer?.id) && (
+                 user && (Number(user.id) === phone.seller?.id || Number(user.id) === phone.buyer?.id) && (
                   <Link href="/used/mypage?tab=trading">
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between">
@@ -1166,7 +1166,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </div>
 
                         {/* 거래중 상태 메시지 - 구매자 본인일 때만 */}
-                        {phone.status === 'trading' && phone.buyer_id === user?.id && (
+                        {phone.status === 'trading' && phone.buyer_id === Number(user?.id) && (
                           <>
                             <Link href="/used/mypage?tab=trading">
                               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
@@ -1192,7 +1192,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           </>
                         )}
 
-                        {phone.status === 'sold' && phone.buyer_id === user?.id && (
+                        {phone.status === 'sold' && phone.buyer_id === Number(user?.id) && (
                           <Link href="/used/mypage?tab=trading">
                             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
                               <div className="flex items-center justify-between">
@@ -1208,7 +1208,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           </Link>
                         )}
 
-                        {phone.status === 'sold' && phone.final_price && phone.buyer_id !== user?.id && (
+                        {phone.status === 'sold' && phone.final_price && phone.buyer_id !== Number(user?.id) && (
                           <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                             <div className="flex items-center gap-2 text-gray-700">
                               <div className="w-2 h-2 bg-gray-500 rounded-full"></div>

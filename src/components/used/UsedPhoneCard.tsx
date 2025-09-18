@@ -116,13 +116,15 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           </>
         )}
         
-        {/* 찜하기 버튼 */}
+        {/* 찜하기 버튼 - 찜한 상품은 항상 표시 */}
         <button
           onClick={handleFavorite}
-          className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
+          className={`absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full transition-all duration-200 hover:bg-white ${
+            phone.is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
           aria-label="찜하기"
         >
-          <Heart 
+          <Heart
             className={`w-4 h-4 ${phone.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
           />
         </button>
