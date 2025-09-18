@@ -160,7 +160,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               <SelectTrigger className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 truncate">
                   <MapPin className="w-3 h-3 flex-shrink-0" />
-                  <SelectValue placeholder="거래지역 검색" />
+                  <SelectValue placeholder="전국" />
                 </div>
               </SelectTrigger>
               <SelectContent>
