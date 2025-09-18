@@ -25,8 +25,11 @@ export default function MyPageTabs() {
   const checkActivityNotices = async () => {
     try {
       // 판매 활동 체크
-      const myListings = await sellerAPI.getMyListings().catch(() => []);
-      const receivedOffers = await sellerAPI.getReceivedOffers().catch(() => []);
+      const myListingsRes = await sellerAPI.getMyListings().catch(() => ({ results: [] }));
+      const myListings = Array.isArray(myListingsRes) ? myListingsRes : (myListingsRes.results || []);
+
+      const receivedOffersRes = await sellerAPI.getReceivedOffers().catch(() => ({ results: [] }));
+      const receivedOffers = Array.isArray(receivedOffersRes) ? receivedOffersRes : (receivedOffersRes.results || []);
 
       // 새로운 제안 체크
       const newOffers = receivedOffers.filter((offer: any) => offer.status === 'pending');
@@ -40,7 +43,9 @@ export default function MyPageTabs() {
       }
 
       // 구매 활동 체크
-      const sentOffers = await buyerAPI.getMySentOffers().catch(() => []);
+      const sentOffersRes = await buyerAPI.getMySentOffers().catch(() => ({ results: [] }));
+      const sentOffers = Array.isArray(sentOffersRes) ? sentOffersRes : (sentOffersRes.results || []);
+
       const acceptedOffers = sentOffers.filter((offer: any) => offer.status === 'accepted');
       if (acceptedOffers.length > 0) {
         setPurchaseNotice(`제안이 수락되었습니다! 거래를 진행해주세요`);
@@ -48,7 +53,8 @@ export default function MyPageTabs() {
 
       // 찜 개수
       const favorites = await buyerAPI.getFavorites().catch(() => ({ items: [] }));
-      setFavoritesCount(favorites.items?.length || 0);
+      const favoriteItems = favorites.items || favorites.results || [];
+      setFavoritesCount(favoriteItems.length || 0);
 
     } catch (error) {
       console.error('Failed to check activity notices:', error);
