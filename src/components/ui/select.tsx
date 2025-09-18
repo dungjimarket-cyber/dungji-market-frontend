@@ -46,6 +46,8 @@ const SelectContent = React.forwardRef<
         className
       )}
       position={position}
+      side="bottom"
+      align="start"
       sideOffset={5}
       collisionPadding={10}
       {...props}
