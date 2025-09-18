@@ -73,6 +73,8 @@ export default function UsedPhonesPage() {
           // 파라미터명 변환
           if (key === 'brand') {
             params.append('manufacturer', String(value));
+          } else if (key === 'condition') {
+            params.append('condition_grade', String(value));
           } else if (key === 'sortBy') {
             if (value === 'price_low') {
               params.append('ordering', 'price');
@@ -141,6 +143,8 @@ export default function UsedPhonesPage() {
           // 파라미터명 변환
           if (key === 'brand') {
             params.append('manufacturer', String(value));
+          } else if (key === 'condition') {
+            params.append('condition_grade', String(value));
           } else if (key === 'sortBy') {
             if (value === 'price_low') {
               params.append('ordering', 'price');
