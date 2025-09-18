@@ -103,18 +103,31 @@ export default function UsedPhonesPage() {
       console.log('[중고거래] 디코딩된 URL:', decodeURIComponent(params.toString()));
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com') 
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/?${params}`
         : `${baseUrl}/api/used/phones/?${params}`;
-      const response = await fetch(apiUrl);
-      
+
+      // 인증 헤더 추가 (is_favorite 필드를 위해 필요)
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      console.log('[중고거래] API 호출 인증:', token ? '인증됨' : '비인증');
+
+      const response = await fetch(apiUrl, { headers });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       const items = Array.isArray(data) ? data : (data.results || data.items || []);
-      
+
+      // is_favorite 필드 확인을 위한 로깅
+      console.log('[중고거래] API 응답 첫 번째 아이템:', items[0]);
+      console.log('[중고거래] is_favorite 필드 확인:', items[0]?.is_favorite);
+
       setPhones(items);
       setTotalCount(items.length);
       
@@ -176,15 +189,24 @@ export default function UsedPhonesPage() {
       console.log('[중고거래] 디코딩된 URL:', decodeURIComponent(params.toString()));
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com') 
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/?${params}`
         : `${baseUrl}/api/used/phones/?${params}`;
-      const response = await fetch(apiUrl);
-      
+
+      // 인증 헤더 추가 (is_favorite 필드를 위해 필요)
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      console.log('[중고거래] API 호출 인증:', token ? '인증됨' : '비인증');
+
+      const response = await fetch(apiUrl, { headers });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       const items = Array.isArray(data) ? data : (data.results || data.items || []);
       
