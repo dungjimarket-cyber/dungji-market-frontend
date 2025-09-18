@@ -870,6 +870,50 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </p>
                       </div>
                     )}
+
+                    {/* 조회수 및 통계 - 가격제안 영역 아래로 이동 */}
+                    <div className="pt-4 flex items-center justify-between text-sm text-gray-600">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-4 h-4" />
+                          조회 {phone.view_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Heart className="w-4 h-4" />
+                          찜 {phone.favorite_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="w-4 h-4" />
+                          제안 {phone.offer_count || 0}
+                        </span>
+                      </div>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {phone.created_at ? formatDistanceToNow(new Date(phone.created_at), { addSuffix: true, locale: ko }) : '-'}
+                      </span>
+                    </div>
+
+                    {/* 액션 버튼 - 가격제안 영역 아래로 이동 */}
+                    <div className="pt-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={handleFavorite}
+                          className="flex items-center justify-center gap-2 h-12"
+                        >
+                          <Heart className={`w-4 h-4 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
+                          {isFavorite === true ? '찜 해제' : '찜하기'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={handleShare}
+                          className="flex items-center justify-center gap-2 h-12"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          공유하기
+                        </Button>
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -965,48 +1009,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               )}
 
-              {/* 조회수 및 통계 */}
-              <div className="py-4 flex items-center justify-between text-sm text-gray-600">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    조회 {phone.view_count}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Heart className="w-4 h-4" />
-                    찜 {phone.favorite_count}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MessageCircle className="w-4 h-4" />
-                    제안 {phone.offer_count || 0}
-                  </span>
-                </div>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {phone.created_at ? formatDistanceToNow(new Date(phone.created_at), { addSuffix: true, locale: ko }) : '-'}
-                </span>
-              </div>
-
-              {/* 액션 버튼 */}
+              {/* 액션 버튼 영역 - 이미 위로 이동함 */}
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleFavorite}
-                    className="flex items-center justify-center gap-2 h-12"
-                  >
-                    <Heart className={`w-4 h-4 ${isFavorite === true ? 'fill-red-500 text-red-500' : ''}`} />
-                    {isFavorite === true ? '찜 해제' : '찜하기'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleShare}
-                    className="flex items-center justify-center gap-2 h-12"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    공유하기
-                  </Button>
-                </div>
                 {/* 거래중/판매완료 시 거래 당사자에게 마이페이지 안내 */}
                 {(phone.status === 'trading' || phone.status === 'sold') &&
                  user && (Number(user.id) === phone.seller?.id || Number(user.id) === phone.buyer?.id) && (
