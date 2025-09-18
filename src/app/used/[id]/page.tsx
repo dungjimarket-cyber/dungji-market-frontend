@@ -1140,13 +1140,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 ) : (
                   /* 다른 사람의 상품인 경우 */
                   <>
-                    {/* 거래가 완료된 경우 안내 메시지 (구매자/제3자 모두) */}
-                    {phone.status === 'sold' && (
+                    {/* 거래가 완료된 경우 안내 메시지 (제3자에게만 표시, 구매자는 위에서 이미 표시) */}
+                    {phone.status === 'sold' && phone.buyer?.id !== user?.id && (
                       <div className="p-4 bg-gray-100 rounded-lg mb-3">
                         <p className="text-center text-gray-600 font-medium">
-                          {phone.buyer?.id === user?.id
-                            ? '거래가 완료되었습니다. 마이페이지에서 후기를 작성할 수 있습니다.'
-                            : '거래가 완료된 상품입니다'}
+                          거래가 완료된 상품입니다
                         </p>
                       </div>
                     )}
