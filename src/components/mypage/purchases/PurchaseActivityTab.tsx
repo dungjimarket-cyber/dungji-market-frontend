@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { buyerAPI } from '@/lib/api/used';
+import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import ReviewModal from '@/components/used/ReviewModal';
 import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
@@ -59,6 +60,7 @@ interface TradingItem {
   offered_price: number;
   status: 'accepted' | 'cancelled';
   created_at: string;
+  has_review?: boolean; // 후기 작성 여부 추가
 }
 
 interface SellerInfo {
@@ -97,6 +99,7 @@ export default function PurchaseActivityTab() {
     };
   } | null>(null);
   const [pollingManager] = useState(() => new TransactionPollingManager());
+  const [writtenReviews, setWrittenReviews] = useState<any[]>([]);
 
   // 내 제안 목록 조회
   const fetchMyOffers = async () => {
@@ -151,8 +154,30 @@ export default function PurchaseActivityTab() {
     setLoading(true);
     try {
       const data = await buyerAPI.getMyTradingItems();
-      // 백엔드가 배열을 직접 반환
-      setTradingItems(Array.isArray(data) ? data : data.results || []);
+
+      // 내가 작성한 리뷰 목록 가져오기
+      const token = localStorage.getItem('accessToken');
+      try {
+        const writtenRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/my-written/`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+        setWrittenReviews(writtenRes.data);
+
+        // 거래 데이터에 리뷰 작성 여부 추가
+        const itemsWithReviewStatus = (Array.isArray(data) ? data : data.results || []).map((item: any) => {
+          const transactionId = item.transaction_id || item.id;
+          const hasReview = writtenRes.data.some((r: any) => r.transaction === transactionId);
+          return { ...item, has_review: hasReview };
+        });
+
+        setTradingItems(itemsWithReviewStatus);
+      } catch (reviewError) {
+        console.log('Could not fetch reviews, continuing without review status');
+        setTradingItems(Array.isArray(data) ? data : data.results || []);
+      }
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
       setTradingItems([]);
@@ -426,7 +451,7 @@ export default function PurchaseActivityTab() {
   const handleReviewSuccess = () => {
     setShowReviewModal(false);
     setReviewTarget(null);
-    // 필요시 목록 새로고침
+    // 목록 새로고침하여 리뷰 작성 상태 업데이트
     fetchTradingItems();
   };
 
@@ -745,14 +770,26 @@ export default function PurchaseActivityTab() {
                       </p>
 
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openReviewModal(item)}
-                          className="text-xs"
-                        >
-                          후기 작성
-                        </Button>
+                        {item.has_review ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled
+                            className="text-xs"
+                          >
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            후기작성완료
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openReviewModal(item)}
+                            className="text-xs"
+                          >
+                            후기 작성
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
