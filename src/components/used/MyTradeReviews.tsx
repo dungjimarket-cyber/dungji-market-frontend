@@ -26,6 +26,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
   const [activeTab, setActiveTab] = useState('received');
   const [receivedPage, setReceivedPage] = useState(1);
   const [writtenPage, setWrittenPage] = useState(1);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -36,6 +37,17 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
     try {
       const token = localStorage.getItem('accessToken');
       console.log('=== 후기 데이터 fetch 시작 ===');
+
+      // 현재 사용자 ID 가져오기
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setCurrentUserId(user.id || userId);
+        console.log('현재 사용자 ID:', user.id || userId);
+      } else if (userId) {
+        setCurrentUserId(userId);
+        console.log('props에서 받은 사용자 ID:', userId);
+      }
 
       // 내가 받은 평가 통계
       const statsRes = await axios.get(
@@ -64,7 +76,18 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
 
       // API 응답이 페이지네이션 형태로 오므로 results 추출
       const allReviews = reviewsRes.data?.results || [];
-      setReviews(allReviews);
+
+      // 현재 사용자가 받은 리뷰만 필터링
+      const userStr2 = localStorage.getItem('user');
+      const userIdToUse = currentUserId || (userStr2 ? JSON.parse(userStr2).id : userId);
+      const receivedReviews = allReviews.filter((review: any) => {
+        console.log(`Review ${review.id}: reviewee=${review.reviewee}, reviewer=${review.reviewer}, currentUser=${userIdToUse}`);
+        return review.reviewee === userIdToUse;
+      });
+
+      console.log('전체 리뷰:', allReviews.length, '개');
+      console.log('필터링된 받은 리뷰:', receivedReviews.length, '개');
+      setReviews(receivedReviews);
 
       // 내가 작성한 리뷰 목록
       const writtenRes = await axios.get(
