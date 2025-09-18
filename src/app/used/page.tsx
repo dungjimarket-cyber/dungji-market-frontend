@@ -82,8 +82,10 @@ export default function UsedPhonesPage() {
               params.append('ordering', '-price');
             }
           } else if (key === 'includeCompleted') {
-            // false값도 명시적으로 전달
-            params.append('include_completed', String(value));
+            // boolean을 명시적으로 'true' 또는 'false' 문자열로 변환
+            const includeValue = value === true ? 'true' : 'false';
+            console.log('[중고거래] includeCompleted:', value, '→', includeValue);
+            params.append('include_completed', includeValue);
           } else if (key === 'region') {
             // 지역 필터 특별 처리
             const regionValue = String(value).trim();
@@ -153,8 +155,10 @@ export default function UsedPhonesPage() {
               params.append('ordering', '-price');
             }
           } else if (key === 'includeCompleted') {
-            // false값도 명시적으로 전달
-            params.append('include_completed', String(value));
+            // boolean을 명시적으로 'true' 또는 'false' 문자열로 변환
+            const includeValue = value === true ? 'true' : 'false';
+            console.log('[중고거래] includeCompleted:', value, '→', includeValue);
+            params.append('include_completed', includeValue);
           } else if (key === 'region') {
             // 지역 필터 특별 처리
             const regionValue = String(value).trim();
@@ -255,11 +259,11 @@ export default function UsedPhonesPage() {
   // 초기 데이터 로드
   useEffect(() => {
     // 1단계: 초기 20개 빠르게 로드 (기본 필터 적용)
-    fetchInitialPhones({ includeCompleted: false });
+    fetchInitialPhones(filters);
 
     // 2단계: 0.5초 후 나머지 백그라운드 로드
     const timer = setTimeout(() => {
-      fetchRemainingPhones({ includeCompleted: false });
+      fetchRemainingPhones(filters);
     }, 500);
 
     return () => clearTimeout(timer);

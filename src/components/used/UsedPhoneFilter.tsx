@@ -252,8 +252,11 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
           <label className="flex items-center gap-1 cursor-pointer whitespace-nowrap">
             <input
               type="checkbox"
-              checked={filters.includeCompleted === true}
-              onChange={(e) => updateFilter('includeCompleted', e.target.checked)}
+              checked={!!filters.includeCompleted}
+              onChange={(e) => {
+                console.log('[필터] 체크박스 변경:', e.target.checked);
+                updateFilter('includeCompleted', e.target.checked);
+              }}
               className="rounded border-gray-300 w-3 h-3"
             />
             <span className="text-xs">완료포함</span>
