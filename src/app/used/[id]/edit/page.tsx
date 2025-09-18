@@ -58,6 +58,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     condition_description: '',
     description: '', // 현재 사용 안함
     meeting_place: '',
+    body_only: false,
     has_box: false,
     has_charger: false,
     has_earphones: false,
@@ -157,6 +158,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         condition_description: data.condition_description || '',
         description: data.description || '',
         meeting_place: data.meeting_place || '',
+        body_only: data.body_only || false,
         has_box: data.has_box || false,
         has_charger: data.has_charger || false,
         has_earphones: data.has_earphones || false,
@@ -501,9 +503,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (!firstErrorRef) firstErrorRef = batteryStatusRef;
     }
 
-    // 구성품 검사 (최소 하나는 필요)
-    if (!formData.has_box && !formData.has_charger && !formData.has_earphones) {
-      newErrors.components = '구성품을 최소 1개 이상 선택해주세요';
+    // 구성품 검사 (본체만 또는 최소 하나는 필요)
+    if (!formData.body_only && !formData.has_box && !formData.has_charger && !formData.has_earphones) {
+      newErrors.components = '구성품을 선택해주세요 (본체만 또는 구성품 선택)';
       if (!firstErrorRef) firstErrorRef = componentsRef;
     }
 
@@ -588,9 +590,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         submitData.append('meeting_place', formData.meeting_place);
       }
 
-      if (isFieldEditable('has_box')) submitData.append('has_box', (formData.has_box || false).toString());
-      if (isFieldEditable('has_charger')) submitData.append('has_charger', (formData.has_charger || false).toString());
-      if (isFieldEditable('has_earphones')) submitData.append('has_earphones', (formData.has_earphones || false).toString());
+      if (isFieldEditable('has_box')) {
+        submitData.append('body_only', (formData.body_only || false).toString());
+        submitData.append('has_box', (formData.has_box || false).toString());
+        submitData.append('has_charger', (formData.has_charger || false).toString());
+        submitData.append('has_earphones', (formData.has_earphones || false).toString());
+      }
 
       // 지역 정보 전송 (재등록 방식)
       if (isFieldEditable('regions') && selectedRegions.length > 0) {
@@ -1078,40 +1083,69 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
             {!isFieldEditable('has_box') && <Lock className="w-3 h-3 text-gray-400" />}
           </h2>
 
-          <div className="flex gap-6">
+          <div className="space-y-3">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                name="has_box"
-                checked={formData.has_box}
-                onChange={handleInputChange}
+                name="body_only"
+                checked={formData.body_only}
+                onChange={(e) => {
+                  const isBodyOnly = e.target.checked;
+                  handleInputChange(e);
+                  // 본체만 선택 시 다른 구성품 체크 해제
+                  if (isBodyOnly) {
+                    setFormData(prev => ({
+                      ...prev,
+                      body_only: true,
+                      has_box: false,
+                      has_charger: false,
+                      has_earphones: false
+                    }));
+                  }
+                }}
                 disabled={!isFieldEditable('has_box')}
                 className="rounded"
               />
-              <span>박스</span>
+              <span className="font-medium text-orange-600">본체만</span>
             </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="has_charger"
-                checked={formData.has_charger}
-                onChange={handleInputChange}
-                disabled={!isFieldEditable('has_charger')}
-                className="rounded"
-              />
-              <span>충전기</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="has_earphones"
-                checked={formData.has_earphones}
-                onChange={handleInputChange}
-                disabled={!isFieldEditable('has_earphones')}
-                className="rounded"
-              />
-              <span>이어폰</span>
-            </label>
+            <div className={`flex gap-6 ${formData.body_only ? 'opacity-50' : ''}`}>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="has_box"
+                  checked={formData.has_box}
+                  onChange={handleInputChange}
+                  disabled={!isFieldEditable('has_box') || formData.body_only}
+                  className="rounded"
+                />
+                <span>박스</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="has_charger"
+                  checked={formData.has_charger}
+                  onChange={handleInputChange}
+                  disabled={!isFieldEditable('has_charger') || formData.body_only}
+                  className="rounded"
+                />
+                <span>충전기</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="has_earphones"
+                  checked={formData.has_earphones}
+                  onChange={handleInputChange}
+                  disabled={!isFieldEditable('has_earphones') || formData.body_only}
+                  className="rounded"
+                />
+                <span>이어폰</span>
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {formData.body_only ? '폰 본체만 거래합니다' : '포함된 구성품을 모두 선택해주세요'}
+            </p>
           </div>
           {errors.components && <p className="text-xs text-red-500 mt-2">{errors.components}</p>}
         </div>

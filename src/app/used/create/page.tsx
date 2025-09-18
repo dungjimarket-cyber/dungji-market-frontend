@@ -622,9 +622,9 @@ export default function CreateUsedPhonePage() {
       if (!firstErrorRef) firstErrorRef = batteryStatusRef;
     }
 
-    // 구성품 검사 (최소 하나는 필요)
-    if (!formData.has_box && !formData.has_charger && !formData.has_earphones) {
-      newErrors.components = '구성품을 최소 1개 이상 선택해주세요';
+    // 구성품 검사 (본체만 또는 최소 하나는 필요)
+    if (!formData.body_only && !formData.has_box && !formData.has_charger && !formData.has_earphones) {
+      newErrors.components = '구성품을 선택해주세요 (본체만 또는 구성품 선택)';
       if (!firstErrorRef) firstErrorRef = componentsRef;
     }
 
