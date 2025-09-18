@@ -277,11 +277,12 @@ export default function UsedPhonesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 공지사항 - 전체 너비 */}
-      <NoticeSection pageType="used" compact={true} />
-
-      {/* 히어로 섹션 - 본문과 동일한 너비 */}
+      {/* 모든 콘텐츠를 동일한 너비로 제한 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
+        {/* 공지사항 */}
+        <NoticeSection pageType="used" compact={true} />
+
+        {/* 히어로 섹션 */}
         <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -346,12 +347,10 @@ export default function UsedPhonesPage() {
             </div>
           </div>
         </section>
-      </div>
 
-      {/* 프로필 미완성 안내 */}
-      {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 mb-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
+        {/* 프로필 미완성 안내 */}
+        {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 mb-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
@@ -374,17 +373,18 @@ export default function UsedPhonesPage() {
               </Button>
             </div>
           </div>
+        )}
+
+        {/* 필터 섹션 */}
+        <div className="sticky top-0 z-40 -mx-4 px-4 bg-white/95 backdrop-blur-sm border-b shadow-sm">
+          <UsedPhoneFilter
+            onFilterChange={handleFilterChange}
+            totalCount={totalCount}
+          />
         </div>
-      )}
 
-      {/* 필터 섹션 */}
-      <UsedPhoneFilter
-        onFilterChange={handleFilterChange}
-        totalCount={totalCount}
-      />
-
-      {/* 상품 리스트 */}
-      <section className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 py-6">
+        {/* 상품 리스트 */}
+        <section className="py-6">
         {/* 상품 그리드 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {phones.map((phone, index) => (
@@ -451,9 +451,10 @@ export default function UsedPhonesPage() {
             <p className="text-sm text-gray-500">총 {phones.length}개의 상품</p>
           </div>
         )}
-      </section>
+        </section>
+      </div>
 
-      {/* 플로팅 버튼 (모바일) */}
+      {/* 플로팅 버튼 (모바일) - 컨테이너 밖에 배치 */}
       <div className="lg:hidden fixed bottom-20 right-4 z-50">
         <Button
           size="icon"
