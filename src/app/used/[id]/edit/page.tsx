@@ -459,47 +459,9 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (isFieldEditable('has_box')) submitData.append('has_box', (formData.has_box || false).toString());
       if (isFieldEditable('has_charger')) submitData.append('has_charger', (formData.has_charger || false).toString());
       if (isFieldEditable('has_earphones')) submitData.append('has_earphones', (formData.has_earphones || false).toString());
-      
-      // 지역 정보 - 등록 페이지와 동일한 형식으로
-      if (isFieldEditable('regions') && selectedRegions.length > 0) {
-        // regions 필드 - 다중 지역
-        selectedRegions.forEach((region) => {
-          submitData.append('regions', `${region.province} ${region.city}`);
-        });
 
-        // region 필드 - 단일 지역 코드 (필수)
-        const primaryRegion = selectedRegions[0];
-
-        // 이미 code가 있으면 바로 사용 (수정 시 로드된 데이터)
-        if ((primaryRegion as any).code) {
-          submitData.append('region', (primaryRegion as any).code);
-          console.log('Using existing region code:', (primaryRegion as any).code);
-        } else {
-          // code가 없으면 API로 조회 (새로 추가된 지역)
-          try {
-            const searchName = primaryRegion.city || primaryRegion.province;
-            const regions = await searchRegionsByName(searchName);
-
-            if (regions && regions.length > 0) {
-              // 가장 정확한 매칭 찾기
-              const exactMatch = regions.find((r: any) =>
-                r.full_name.includes(primaryRegion.province) &&
-                r.full_name.includes(primaryRegion.city)
-              ) || regions[0];
-
-              submitData.append('region', exactMatch.code);
-              console.log('Region code found via API:', exactMatch.code, exactMatch.full_name);
-            } else {
-              // 기본값 사용
-              submitData.append('region', '11');  // 서울특별시 코드
-              console.log('Region not found, using default: Seoul');
-            }
-          } catch (error) {
-            console.error('Failed to fetch region code:', error);
-            submitData.append('region', '11');  // 서울특별시 코드
-          }
-        }
-      }
+      // 지역 정보는 수정하지 않음 (임시 조치)
+      // TODO: 지역 수정 기능 재구현 필요
       
       // 새로운 이미지만 전송
       if (isFieldEditable('images')) {
