@@ -527,7 +527,7 @@ export default function UsedPhonesPage() {
         maxCount={registrationLimit.max}
         onViewMyPhones={() => {
           setShowLimitModal(false);
-          router.push('/mypage?tab=sales');
+          router.push('/mypage/used-sales');
         }}
       />
     </div>
