@@ -10,7 +10,6 @@ import { Search, SlidersHorizontal, X, Filter, Sparkles, MapPin } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import {
   Select,
   SelectContent,
@@ -119,14 +118,6 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
     handleFilterChange(updated);
   }, [filters, handleFilterChange]);
 
-  // 가격 범위 변경
-  const handlePriceChange = useCallback((values: number[]) => {
-    handleFilterChange({
-      ...filters,
-      minPrice: values[0] * 10000,
-      maxPrice: values[1] * 10000
-    });
-  }, [filters, handleFilterChange]);
 
   // 필터 초기화
   const resetFilters = useCallback(() => {
@@ -187,7 +178,6 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 <FilterContent
                   filters={filters}
                   updateFilter={updateFilter}
-                  handlePriceChange={handlePriceChange}
                   resetFilters={resetFilters}
                 />
               </SheetContent>
@@ -255,10 +245,10 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               </SelectContent>
             </Select>
 
-            {/* 브랜드 필터 */}
+            {/* 제조사 필터 */}
             <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="브랜드" />
+                <SelectValue placeholder="제조사" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
@@ -286,29 +276,17 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             </Select>
 
             {/* 정렬 */}
-            <Select value={filters.sortBy || 'latest'} onValueChange={(value) => updateFilter('sortBy', value)}>
+            <Select value={filters.sortBy || ''} onValueChange={(value) => updateFilter('sortBy', value || undefined)}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="정렬" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="latest">최신순</SelectItem>
                 <SelectItem value="price_low">가격 낮은순</SelectItem>
                 <SelectItem value="price_high">가격 높은순</SelectItem>
-                <SelectItem value="popular">인기순</SelectItem>
               </SelectContent>
             </Select>
 
-            {/* 체크박스 필터들 */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filters.acceptOffers || false}
-                onChange={(e) => updateFilter('acceptOffers', e.target.checked || undefined)}
-                className="rounded border-gray-300"
-              />
-              <span className="text-sm">제안 가능만</span>
-            </label>
-
+            {/* 거래완료 포함 체크박스 */}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -347,7 +325,6 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 const FilterContent = memo(function FilterContent({
   filters,
   updateFilter,
-  handlePriceChange,
   resetFilters
 }: any) {
   const [regions, setRegions] = useState<any[]>([]);
@@ -378,10 +355,6 @@ const FilterContent = memo(function FilterContent({
       setSigunguList([]);
     }
   }, [selectedSido, regions]);
-  const priceRange = [
-    (filters.minPrice || 0) / 10000,
-    (filters.maxPrice || 3000000) / 10000
-  ];
 
   return (
     <div className="mt-6 space-y-6">
@@ -431,9 +404,9 @@ const FilterContent = memo(function FilterContent({
         </Select>
       </div>
 
-      {/* 브랜드 */}
+      {/* 제조사 */}
       <div>
-        <Label>브랜드</Label>
+        <Label>제조사</Label>
         <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
           <SelectTrigger className="mt-2">
             <SelectValue placeholder="전체" />
@@ -447,25 +420,6 @@ const FilterContent = memo(function FilterContent({
             ))}
           </SelectContent>
         </Select>
-      </div>
-
-      {/* 가격 범위 */}
-      <div>
-        <Label>가격 범위</Label>
-        <div className="mt-3 px-3">
-          <Slider
-            value={priceRange}
-            onValueChange={handlePriceChange}
-            min={0}
-            max={300}
-            step={10}
-            className="mt-2"
-          />
-          <div className="flex justify-between mt-2 text-sm text-gray-600">
-            <span>{priceRange[0]}만원</span>
-            <span>{priceRange[1] === 300 ? '300만원+' : `${priceRange[1]}만원`}</span>
-          </div>
-        </div>
       </div>
 
       {/* 상태 */}
@@ -486,36 +440,22 @@ const FilterContent = memo(function FilterContent({
         </Select>
       </div>
 
-      {/* 용량 */}
+      {/* 정렬 */}
       <div>
-        <Label>용량</Label>
-        <Select value={filters.storage?.toString() || 'all'} onValueChange={(value) => updateFilter('storage', value === 'all' ? undefined : parseInt(value))}>
+        <Label>정렬</Label>
+        <Select value={filters.sortBy || ''} onValueChange={(value) => updateFilter('sortBy', value || undefined)}>
           <SelectTrigger className="mt-2">
-            <SelectValue placeholder="전체" />
+            <SelectValue placeholder="기본순" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="64">64GB</SelectItem>
-            <SelectItem value="128">128GB</SelectItem>
-            <SelectItem value="256">256GB</SelectItem>
-            <SelectItem value="512">512GB</SelectItem>
-            <SelectItem value="1024">1TB</SelectItem>
+            <SelectItem value="price_low">가격 낮은순</SelectItem>
+            <SelectItem value="price_high">가격 높은순</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* 체크박스 옵션들 */}
+      {/* 거래완료 포함 */}
       <div className="space-y-2">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={filters.acceptOffers || false}
-            onChange={(e) => updateFilter('acceptOffers', e.target.checked || undefined)}
-            className="rounded border-gray-300"
-          />
-          <span className="text-sm">가격 제안 가능한 상품만</span>
-        </label>
-
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"

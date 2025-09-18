@@ -64,9 +64,14 @@ export default function UsedPhonesPage() {
       setHasLoadedAll(false);
       
       // 첫 화면용 20개만 빠르게 로드
-      const params = new URLSearchParams({
-        limit: '20',
-        ...currentFilters
+      const params = new URLSearchParams();
+      params.append('limit', '20');
+
+      // 필터 파라미터 추가
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
       });
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
@@ -103,10 +108,15 @@ export default function UsedPhonesPage() {
       setLoadingMore(true);
       
       // 나머지 데이터 로드 (offset 20부터)
-      const params = new URLSearchParams({
-        limit: '1000',
-        offset: '20',
-        ...currentFilters
+      const params = new URLSearchParams();
+      params.append('limit', '1000');
+      params.append('offset', '20');
+
+      // 필터 파라미터 추가
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
       });
 
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
