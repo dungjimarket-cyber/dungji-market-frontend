@@ -306,7 +306,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                         </div>
                         {/* 후기 내용 표시 (있을 경우만) */}
                         {review.comment && (
-                          <p className="text-xs text-gray-600 mt-1 mb-1">
+                          <p className="text-xs text-gray-600 mt-1 mb-1 whitespace-pre-wrap break-words">
                             {review.comment}
                           </p>
                         )}
@@ -314,22 +314,22 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                         <div className="flex flex-wrap items-center gap-1">
                           {review.is_punctual && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              약속을지켜요
+                              약속시간
                             </Badge>
                           )}
                           {review.is_friendly && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              친절해요
+                              친절
                             </Badge>
                           )}
                           {review.is_honest && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              믿을만해요
+                              신뢰
                             </Badge>
                           )}
                           {review.is_fast_response && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              응답이빨라요
+                              빠른응답
                             </Badge>
                           )}
                         </div>
@@ -408,27 +408,27 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                         <div className="flex items-center gap-1">
                           {review.is_punctual && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              약속을지켜요
+                              약속시간
                             </Badge>
                           )}
                           {review.is_friendly && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              친절해요
+                              친절
                             </Badge>
                           )}
                           {review.is_honest && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              믿을만해요
+                              신뢰
                             </Badge>
                           )}
                           {review.is_fast_response && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
-                              응답이빨라요
+                              빠른응답
                             </Badge>
                           )}
                         </div>
                         {review.comment && (
-                          <p className="text-xs text-gray-600 mt-1">
+                          <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap break-words">
                             {review.comment}
                           </p>
                         )}
