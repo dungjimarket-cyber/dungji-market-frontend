@@ -820,9 +820,8 @@ export default function SalesActivityTab() {
                         {item.has_review === true ? (
                           <Button
                             size="sm"
-                            variant="secondary"
                             disabled
-                            className="text-xs"
+                            className="text-xs bg-gray-200 hover:bg-gray-200 text-gray-600"
                           >
                             <CheckCircle className="w-3 h-3 mr-1" />
                             후기작성완료

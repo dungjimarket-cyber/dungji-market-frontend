@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import axios from 'axios';
-import TradeReviewModal from './TradeReviewModal';
+import ReviewModal from './ReviewModal';
 
 interface MyTradeReviewsProps {
   userId?: number;
@@ -284,6 +284,12 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                             ))}
                           </div>
                         </div>
+                        {/* 상품 정보 표시 */}
+                        {(review.phone_brand || review.phone_model) && (
+                          <p className="text-xs text-gray-500 mb-1">
+                            {review.phone_brand} {review.phone_model}
+                          </p>
+                        )}
                         {/* 후기 내용 표시 (있을 경우만) */}
                         {review.comment && (
                           <p className="text-xs text-gray-600 mt-1 mb-1 whitespace-pre-wrap break-words">
@@ -385,6 +391,12 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                             ))}
                           </div>
                         </div>
+                        {/* 상품 정보 표시 */}
+                        {(review.phone_brand || review.phone_model) && (
+                          <p className="text-xs text-gray-500 mb-1">
+                            {review.phone_brand} {review.phone_model}
+                          </p>
+                        )}
                         <div className="flex items-center gap-1">
                           {review.is_punctual && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
@@ -457,21 +469,24 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
 
       {/* 리뷰 작성 모달 */}
       {showReviewModal && selectedTransaction && (
-        <TradeReviewModal
+        <ReviewModal
           isOpen={showReviewModal}
           onClose={() => {
             setShowReviewModal(false);
             setSelectedTransaction(null);
           }}
           transactionId={selectedTransaction.id}
-          isSeller={selectedTransaction.seller === userId}
-          partnerName={
+          revieweeName={
             selectedTransaction.seller === userId
               ? selectedTransaction.buyer_username
               : selectedTransaction.seller_username
           }
-          phoneModel={selectedTransaction.phone_model}
-          onReviewComplete={() => {
+          productInfo={{
+            brand: selectedTransaction.phone_brand || '',
+            model: selectedTransaction.phone_model || '',
+            price: selectedTransaction.price || 0
+          }}
+          onSuccess={() => {
             fetchData();
           }}
         />
