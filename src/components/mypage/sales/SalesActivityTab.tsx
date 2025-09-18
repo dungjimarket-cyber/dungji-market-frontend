@@ -34,6 +34,7 @@ interface SalesItem {
   brand: string;
   model: string;
   storage: number;
+  final_offer_price?: number;  // 거래중일 때 최종 거래가격
 }
 
 interface ReceivedOffer {
