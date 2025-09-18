@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { sellerAPI } from '@/lib/api/used';
 import { useToast } from '@/hooks/use-toast';
+import axios from 'axios';
 import ReceivedOffersModal from './ReceivedOffersModal';
 import ReviewModal from '@/components/used/ReviewModal';
 import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
@@ -40,6 +41,7 @@ interface SalesItem {
     nickname: string;
   };
   transaction_id?: number;  // 거래 ID (거래완료 시)
+  has_review?: boolean;  // 후기 작성 여부
 }
 
 interface ReceivedOffer {
@@ -119,7 +121,26 @@ export default function SalesActivityTab() {
       if (allItems.length === 0) {
         allItems = await fetchAllListings();
       }
-      
+
+      // 판매완료 상품에 대해 리뷰 작성 여부 확인
+      try {
+        const reviewRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/used/reviews/`);
+        const writtenReviews = reviewRes.data?.results || reviewRes.data || [];
+
+        // 리뷰 작성 여부를 각 상품에 추가
+        allItems = allItems.map((item: any) => {
+          if (item.status === 'sold' && item.transaction_id) {
+            const hasReview = writtenReviews.some((review: any) =>
+              review.transaction === item.transaction_id
+            );
+            return { ...item, has_review: hasReview };
+          }
+          return item;
+        });
+      } catch (reviewError) {
+        console.log('Could not fetch reviews, continuing without review status');
+      }
+
       // status에 따라 필터링
       if (status) {
         const filtered = allItems.filter(item => item.status === status);
@@ -816,14 +837,26 @@ export default function SalesActivityTab() {
                         </Badge>
                       </div>
                       <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openReviewModal(item)}
-                          className="text-xs"
-                        >
-                          후기 작성
-                        </Button>
+                        {item.has_review ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled
+                            className="text-xs"
+                          >
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            후기작성완료
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openReviewModal(item)}
+                            className="text-xs"
+                          >
+                            후기 작성
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
