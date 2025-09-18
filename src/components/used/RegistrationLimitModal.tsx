@@ -36,9 +36,6 @@ export default function RegistrationLimitModal({
           <DialogTitle className="text-center">등록 가능 개수 초과</DialogTitle>
           <DialogDescription className="text-center space-y-3">
             <p>
-              현재 <span className="font-semibold text-gray-900">{currentCount}개</span>의 상품이 등록되어 있습니다.
-            </p>
-            <p>
               최대 <span className="font-semibold text-blue-600">{maxCount}개</span>까지만 등록 가능합니다.
             </p>
             <div className="bg-gray-50 rounded-lg p-3 mt-4">
