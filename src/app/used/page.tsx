@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag } from 'lucide-react';
+import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag, CheckCircle, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
@@ -377,6 +377,37 @@ export default function UsedPhonesPage() {
                 </div>
                 <p className="text-sm font-medium text-gray-700">중고직거래</p>
                 <p className="text-xs text-gray-500 mt-1">안전한 거래</p>
+              </div>
+            </div>
+
+            {/* 주요 이용방법 */}
+            <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-100">
+              <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-1">
+                <Info className="w-4 h-4" />
+                중고거래 이용방법
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-blue-900">안전거래</p>
+                    <p className="text-blue-700">공공장소에서 직접 만나 현금거래</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-blue-900">빠른거래</p>
+                    <p className="text-blue-700">가격제안 → 수락 → 연락처 공개</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-blue-900">동네거래</p>
+                    <p className="text-blue-700">가까운 지역에서 편리하게</p>
+                  </div>
+                </div>
               </div>
             </div>
 
