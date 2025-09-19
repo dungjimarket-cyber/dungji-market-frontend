@@ -2214,10 +2214,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 null  // 선정된 경우 백엔드 메시지 숨김
               ) : (
                 <div className="mt-4 p-4 bg-yellow-100 rounded-md">
-                  <p className="text-yellow-800">{myBidInfo.message}</p>
-                  <p className="text-sm text-yellow-700 mt-2">
-                    기회는 항상 열려있습니다! 💪
-                  </p>
+                  <p className="text-yellow-800">공구에 선정되지 않았습니다.</p>
                 </div>
               )}
             </div>
