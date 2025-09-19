@@ -1247,29 +1247,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
                         {/* 거래중 상태 메시지 - 구매자 본인일 때만 */}
                         {phone.status === 'trading' && phone.buyer_id === Number(user?.id) && (
-                          <>
-                            <Link href="/used/mypage?tab=trading">
-                              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Info className="w-4 h-4 text-blue-600" />
-                                    <span className="text-sm font-medium text-blue-800">
-                                      거래 관리는 마이페이지에서 하실 수 있습니다
-                                    </span>
-                                  </div>
-                                  <ChevronRight className="w-4 h-4 text-blue-600" />
-                                </div>
-                              </div>
-                            </Link>
-                            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                              <div className="flex items-center gap-2 text-orange-700">
-                                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm font-medium">
-                                  판매자와 거래가 진행중입니다
-                                </span>
-                              </div>
+                          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                            <div className="flex items-center gap-2 text-orange-700">
+                              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-medium">
+                                판매자와 거래가 진행중입니다
+                              </span>
                             </div>
-                          </>
+                          </div>
                         )}
 
                         {phone.status === 'sold' && phone.buyer_id === Number(user?.id) && (
