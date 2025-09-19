@@ -107,6 +107,18 @@ export default function SalesActivityTab() {
   } | null>(null);
   const [pollingManager] = useState(() => new TransactionPollingManager());
 
+  // URL 파라미터 변경 감지하여 탭 업데이트
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter === 'trading') {
+      setActiveTab('trading');
+    } else if (filter === 'offers') {
+      setActiveTab('offers');
+    } else if (filter === 'sold') {
+      setActiveTab('sold');
+    }
+  }, [searchParams]);
+
   // 전체 목록 가져오기 (캐싱용)
   const fetchAllListings = async () => {
     try {

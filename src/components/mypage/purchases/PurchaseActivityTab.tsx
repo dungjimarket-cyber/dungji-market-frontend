@@ -109,6 +109,16 @@ export default function PurchaseActivityTab() {
   } | null>(null);
   const [pollingManager] = useState(() => new TransactionPollingManager());
 
+  // URL 파라미터 변경 감지하여 탭 업데이트
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter === 'trading') {
+      setActiveTab('trading');
+    } else if (filter === 'completed') {
+      setActiveTab('completed');
+    }
+  }, [searchParams]);
+
   // 내 제안 목록 조회
   const fetchMyOffers = async () => {
     setLoading(true);
