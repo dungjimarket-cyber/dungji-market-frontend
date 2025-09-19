@@ -37,7 +37,8 @@ export default function MyPageLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-40 bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        {/* PC: 기존 1줄 레이아웃 */}
+        <div className="hidden sm:flex max-w-5xl mx-auto px-4 h-14 items-center justify-between">
           {/* 왼쪽: 신고관리, 내정보설정 */}
           <div className="flex items-center gap-2">
             <Button
@@ -47,8 +48,7 @@ export default function MyPageLayout({
               className="border-red-300 text-red-600 hover:bg-red-50 gap-1 text-xs"
             >
               <AlertTriangle className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">신고관리</span>
-              <span className="sm:hidden">신고</span>
+              <span>신고관리</span>
             </Button>
             <Button
               variant="outline"
@@ -57,23 +57,78 @@ export default function MyPageLayout({
               className="gap-1 text-xs"
             >
               <Edit2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">내정보설정</span>
-              <span className="sm:hidden">설정</span>
+              <span>내정보설정</span>
             </Button>
           </div>
 
-          {/* 오른쪽: 찜/후기(모바일), 중고거래, 공동구매 */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* 모바일에서만 표시되는 찜/후기 버튼 */}
+          {/* 오른쪽: 중고거래, 공동구매 */}
+          <div className="flex items-center gap-2">
+            <Link href="/used">
+              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                <Package className="h-3.5 w-3.5" />
+                <span>중고거래</span>
+              </Button>
+            </Link>
+            <Link href="/group-purchases">
+              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                <ShoppingBag className="h-3.5 w-3.5" />
+                <span>공동구매</span>
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* 모바일: 2줄 레이아웃 */}
+        <div className="sm:hidden">
+          {/* 첫 번째 줄: 신고, 설정, 중고, 공구 */}
+          <div className="flex items-center justify-between px-4 h-12 border-b border-gray-100">
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/used/mypage/reports')}
+                className="border-red-300 text-red-600 hover:bg-red-50 gap-1 text-xs px-2.5 py-1"
+              >
+                <AlertTriangle className="h-3 w-3" />
+                <span>신고</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSettingsClick}
+                className="gap-1 text-xs px-2.5 py-1"
+              >
+                <Edit2 className="h-3 w-3" />
+                <span>설정</span>
+              </Button>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Link href="/used">
+                <Button variant="outline" size="sm" className="gap-1 text-xs px-2.5 py-1">
+                  <Package className="h-3 w-3" />
+                  <span>중고</span>
+                </Button>
+              </Link>
+              <Link href="/group-purchases">
+                <Button variant="outline" size="sm" className="gap-1 text-xs px-2.5 py-1">
+                  <ShoppingBag className="h-3 w-3" />
+                  <span>공구</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* 두 번째 줄: 찜, 후기 (오른쪽 정렬) */}
+          <div className="flex items-center justify-end px-4 h-10 gap-1.5">
             {onFavoritesClick && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onFavoritesClick}
-                className="sm:hidden flex items-center gap-1 text-xs"
+                className="flex items-center gap-1 text-xs px-2.5 py-1"
               >
-                <Heart className="w-3.5 h-3.5 text-red-500" />
-                찜
+                <Heart className="w-3 h-3 text-red-500" />
+                <span>찜</span>
               </Button>
             )}
             {onReviewsClick && (
@@ -81,26 +136,12 @@ export default function MyPageLayout({
                 variant="outline"
                 size="sm"
                 onClick={onReviewsClick}
-                className="sm:hidden flex items-center gap-1 text-xs"
+                className="flex items-center gap-1 text-xs px-2.5 py-1"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                후기
+                <MessageSquare className="w-3 h-3" />
+                <span>후기</span>
               </Button>
             )}
-            <Link href="/used">
-              <Button variant="outline" size="sm" className="gap-1 text-xs">
-                <Package className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">중고거래</span>
-                <span className="sm:hidden">중고</span>
-              </Button>
-            </Link>
-            <Link href="/group-purchases">
-              <Button variant="outline" size="sm" className="gap-1 text-xs">
-                <ShoppingBag className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">공동구매</span>
-                <span className="sm:hidden">공구</span>
-              </Button>
-            </Link>
           </div>
         </div>
       </header>

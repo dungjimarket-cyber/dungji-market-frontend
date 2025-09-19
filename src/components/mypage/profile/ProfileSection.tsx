@@ -7,9 +7,19 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-interface ProfileSectionProps {}
+interface ProfileSectionProps {
+  onFavoritesClick?: () => void;
+  onReviewsClick?: () => void;
+  favoritesCount?: number;
+  reviewsCount?: number;
+}
 
-export default function ProfileSection({}: ProfileSectionProps) {
+export default function ProfileSection({
+  onFavoritesClick,
+  onReviewsClick,
+  favoritesCount = 0,
+  reviewsCount = 0
+}: ProfileSectionProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [rating, setRating] = useState<{ avg_rating: number; total_reviews: number } | null>(null);
@@ -52,7 +62,7 @@ export default function ProfileSection({}: ProfileSectionProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1.5 sm:gap-2">
           {/* 닉네임과 평점 */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -83,6 +93,33 @@ export default function ProfileSection({}: ProfileSectionProps) {
           </div>
         </div>
 
+        {/* PC에서만 표시되는 찜/후기 버튼 - 중앙 정렬 */}
+        <div className="hidden sm:flex items-center gap-2">
+          {onFavoritesClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onFavoritesClick}
+              className="flex items-center gap-1 bg-white hover:bg-gray-50 text-xs"
+            >
+              <Heart className="w-3 h-3 text-red-500" />
+              찜 목록
+              <span className="text-gray-600">({favoritesCount})</span>
+            </Button>
+          )}
+          {onReviewsClick && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onReviewsClick}
+              className="flex items-center gap-1 bg-white hover:bg-gray-50 text-xs"
+            >
+              <MessageSquare className="w-3 h-3" />
+              거래후기
+              <span className="text-gray-600">({reviewsCount})</span>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

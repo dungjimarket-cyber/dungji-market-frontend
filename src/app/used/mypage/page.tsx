@@ -41,7 +41,12 @@ export default function UsedMyPage() {
         reviewsCount={reviewsCount}
       >
         <div className="space-y-3 sm:space-y-6">
-          <ProfileSection />
+          <ProfileSection
+            onFavoritesClick={handleFavoritesClick}
+            onReviewsClick={handleReviewsClick}
+            favoritesCount={favoritesCount}
+            reviewsCount={reviewsCount}
+          />
           <MyPageTabs
             ref={myPageTabsRef}
             onCountsUpdate={(favorites, reviews) => {

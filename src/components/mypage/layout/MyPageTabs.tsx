@@ -291,32 +291,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
   return (
     <div className="w-full space-y-6">
-      {/* 상단 버튼 영역 */}
-      <div className="flex justify-end gap-1 sm:gap-2 mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFavoritesModal(true)}
-          className="flex items-center gap-1 bg-white hover:bg-gray-50 border-gray-300 text-xs px-2 py-1.5"
-        >
-          <Heart className="w-3 h-3 text-red-500" />
-          <span className="hidden sm:inline">찜 목록</span>
-          <span className="sm:hidden">찜</span>
-          <span className="text-gray-600">({favoritesCount})</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowReviewsModal(true)}
-          className="flex items-center gap-1 bg-white hover:bg-gray-50 border-gray-300 text-xs px-2 py-1.5"
-        >
-          <MessageSquare className="w-3 h-3" />
-          <span className="hidden sm:inline">거래후기</span>
-          <span className="sm:hidden">후기</span>
-          <span className="text-gray-600">({reviewsCount})</span>
-        </Button>
-      </div>
-
       {/* 판매내역 테이블 */}
       <Card className="p-4">
         <div className="flex items-center gap-2 mb-3">
