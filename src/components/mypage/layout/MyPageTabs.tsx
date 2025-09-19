@@ -48,6 +48,7 @@ export default function MyPageTabs() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [initialSectionLoaded, setInitialSectionLoaded] = useState(false);
 
   // Modals and handlers
   const [selectedPhone, setSelectedPhone] = useState<any>(null);
@@ -204,6 +205,28 @@ export default function MyPageTabs() {
     }
   };
 
+  // URL 파라미터에서 초기 섹션 로드
+  useEffect(() => {
+    if (!initialSectionLoaded) {
+      const section = searchParams.get('section');
+      if (section) {
+        // 유효한 섹션인지 확인
+        const validSections = [
+          'sales-active', 'sales-offers', 'sales-trading', 'sales-sold',
+          'purchase-offers', 'purchase-trading', 'purchase-completed'
+        ];
+
+        if (validSections.includes(section)) {
+          // 데이터 로드 후 섹션 열기
+          setTimeout(() => {
+            handleSectionClick(section);
+          }, 500);
+        }
+      }
+      setInitialSectionLoaded(true);
+    }
+  }, [searchParams, initialSectionLoaded]);
+
   // 초기 로드
   useEffect(() => {
     fetchStatusCounts();
@@ -292,7 +315,7 @@ export default function MyPageTabs() {
             )}
           >
             <div className="text-xs text-gray-600">거래중</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.trading}</div>
+            <div className="text-lg sm:text-xl font-bold text-green-600">{statusCounts.sales.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-sold')}
@@ -332,7 +355,7 @@ export default function MyPageTabs() {
             )}
           >
             <div className="text-xs text-gray-600">거래중</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.purchases.trading}</div>
+            <div className="text-lg sm:text-xl font-bold text-green-600">{statusCounts.purchases.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-completed')}
@@ -473,9 +496,36 @@ export default function MyPageTabs() {
                               거래가격: {(item.final_offer_price || item.price).toLocaleString()}원
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Button size="sm" variant="outline">구매자 정보</Button>
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700">판매 완료</Button>
-                              <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">거래 취소</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => fetchBuyerInfo(item.id)}
+                              >
+                                구매자 정보
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => {
+                                  if (confirm('판매를 완료하시겠습니까?')) {
+                                    handleCompleteTransaction(item.id, true);
+                                  }
+                                }}
+                              >
+                                판매 완료
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm('거래를 취소하시겠습니까?')) {
+                                    handleCancelTransaction(item.id);
+                                  }
+                                }}
+                              >
+                                거래 취소
+                              </Button>
                             </div>
                           </div>
                           <Badge className="bg-green-100 text-green-700">거래중</Badge>
@@ -552,7 +602,18 @@ export default function MyPageTabs() {
                             </p>
                             <div className="mt-2">
                               {item.status === 'pending' && (
-                                <Button size="sm" variant="outline" className="text-red-600">제안 취소</Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600"
+                                  onClick={() => {
+                                    if (confirm('제안을 취소하시겠습니까?')) {
+                                      handleCancelOffer(item.id);
+                                    }
+                                  }}
+                                >
+                                  제안 취소
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -582,9 +643,36 @@ export default function MyPageTabs() {
                               거래가격: {item.offered_price.toLocaleString()}원
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Button size="sm" variant="outline">판매자 정보</Button>
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700">구매 완료</Button>
-                              <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">거래 취소</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => fetchSellerInfo(item.phone?.id || item.id)}
+                              >
+                                판매자 정보
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => {
+                                  if (confirm('구매를 완료하시겠습니까?')) {
+                                    handleCompleteTransaction(item.phone?.id || item.id, false);
+                                  }
+                                }}
+                              >
+                                구매 완료
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                                onClick={() => {
+                                  if (confirm('거래를 취소하시겠습니까?')) {
+                                    handleCancelTransaction(item.phone?.id || item.id);
+                                  }
+                                }}
+                              >
+                                거래 취소
+                              </Button>
                             </div>
                           </div>
                           <Badge className="bg-green-100 text-green-700">거래중</Badge>
@@ -713,7 +801,8 @@ export default function MyPageTabs() {
               await sellerAPI.respondToOffer(offerId, action);
               toast('제안을 수락했습니다. 거래가 시작됩니다.');
               setShowOffersModal(false);
-              fetchStatusCounts();
+              // 페이지 새로고침
+              setTimeout(() => window.location.reload(), 500);
             } catch (error) {
               toast('제안 응답 중 오류가 발생했습니다.');
             }
@@ -724,7 +813,8 @@ export default function MyPageTabs() {
               await sellerAPI.proceedTrade(offerId);
               toast('거래가 시작되었습니다.');
               setShowOffersModal(false);
-              fetchStatusCounts();
+              // 페이지 새로고침
+              setTimeout(() => window.location.reload(), 500);
             } catch (error) {
               toast('거래 진행 중 오류가 발생했습니다.');
             }
@@ -746,9 +836,96 @@ export default function MyPageTabs() {
           onSuccess={() => {
             setShowReviewModal(false);
             setReviewTarget(null);
-            fetchStatusCounts();
+            // 페이지 새로고침
+            setTimeout(() => window.location.reload(), 500);
           }}
         />
+      )}
+
+      {/* 구매자 정보 모달 */}
+      {showBuyerInfoModal && selectedUserInfo && (
+        <Dialog open={showBuyerInfoModal} onOpenChange={setShowBuyerInfoModal}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>구매자 정보</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-gray-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-lg">{selectedUserInfo.nickname}</p>
+                  <p className="text-sm text-gray-600">구매자</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {selectedUserInfo.phone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">{selectedUserInfo.phone}</span>
+                  </div>
+                )}
+                {selectedUserInfo.region && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm">지역: {selectedUserInfo.region}</span>
+                  </div>
+                )}
+                {selectedUserInfo.offered_price && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-green-800 mb-2">거래 진행중</p>
+                    <p className="text-lg font-bold text-green-700">
+                      {selectedUserInfo.offered_price.toLocaleString()}원
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* 판매자 정보 모달 */}
+      {showSellerInfoModal && selectedUserInfo && (
+        <Dialog open={showSellerInfoModal} onOpenChange={setShowSellerInfoModal}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>판매자 정보</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-gray-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-lg">{selectedUserInfo.nickname}</p>
+                  <p className="text-sm text-gray-600">판매자</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {selectedUserInfo.phone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">{selectedUserInfo.phone}</span>
+                  </div>
+                )}
+                {selectedUserInfo.region && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm">지역: {selectedUserInfo.region}</span>
+                  </div>
+                )}
+                {selectedUserInfo.accepted_price && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-green-800 mb-2">거래 진행중</p>
+                    <p className="text-lg font-bold text-green-700">
+                      {selectedUserInfo.accepted_price.toLocaleString()}원
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
@@ -769,7 +946,8 @@ export default function MyPageTabs() {
     try {
       await buyerAPI.cancelOffer(offerId);
       toast('제안이 취소되었습니다.');
-      fetchStatusCounts();
+      // 페이지 새로고침
+      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
       toast('제안 취소 중 오류가 발생했습니다.');
     }
@@ -792,7 +970,8 @@ export default function MyPageTabs() {
 
       if (response.ok) {
         toast(isSeller ? '판매가 완료되었습니다.' : '구매가 완료되었습니다.');
-        fetchStatusCounts();
+        // 페이지 새로고침
+        setTimeout(() => window.location.reload(), 500);
       }
     } catch (error) {
       toast('거래 완료 처리 중 오류가 발생했습니다.');
@@ -819,10 +998,33 @@ export default function MyPageTabs() {
 
       if (response.ok) {
         toast('거래가 취소되었습니다.');
-        fetchStatusCounts();
+        // 페이지 새로고침
+        setTimeout(() => window.location.reload(), 500);
       }
     } catch (error) {
       toast('거래 취소 중 오류가 발생했습니다.');
+    }
+  }
+
+  async function fetchBuyerInfo(phoneId: number) {
+    try {
+      const data = await sellerAPI.getBuyerInfo(phoneId);
+      setSelectedUserInfo(data);
+      setShowBuyerInfoModal(true);
+    } catch (error) {
+      console.error('Failed to fetch buyer info:', error);
+      toast('구매자 정보를 불러올 수 없습니다.');
+    }
+  }
+
+  async function fetchSellerInfo(phoneId: number) {
+    try {
+      const data = await buyerAPI.getSellerInfo(phoneId);
+      setSelectedUserInfo(data);
+      setShowSellerInfoModal(true);
+    } catch (error) {
+      console.error('Failed to fetch seller info:', error);
+      toast('판매자 정보를 불러올 수 없습니다.');
     }
   }
 }
