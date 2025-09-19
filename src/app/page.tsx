@@ -207,20 +207,18 @@ function HomeContent() {
       
       <section className="mb-12">       
         <div className="grid grid-cols-2 sm:flex sm:flex-row justify-center items-center gap-2 mb-8 mt-4">
-          {/* 판매자 역할이 아닐 때만 공구 등록 버튼 표시 - 클라이언트 컴포넌트 */}
-          <RoleButton 
-            href="/group-purchases/create"
-            className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 w-full sm:w-auto"
-            disableForRoles={['seller']}            
-          >
-            <span className="text-xs sm:text-base">공구 등록하기</span>
-          </RoleButton>
-          
-          <Link 
+          <Link
             href="/group-purchases"
             className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">공구 둘러보기</span>
+          </Link>
+
+          <Link
+            href="/used"
+            className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
+          >
+            <span className="text-xs sm:text-base">중고폰직거래</span>
           </Link>
           
           <Link 
