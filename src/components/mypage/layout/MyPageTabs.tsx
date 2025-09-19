@@ -2,11 +2,21 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle } from 'lucide-react';
+import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle, Info, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import SalesActivityTab from '../sales/SalesActivityTab';
 import PurchaseActivityTab from '../purchases/PurchaseActivityTab';
 import ReviewsTab from '../reviews/ReviewsTab';
@@ -59,6 +69,16 @@ export default function MyPageTabs() {
   const [selectedUserInfo, setSelectedUserInfo] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<any>(null);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [selectedCompleteId, setSelectedCompleteId] = useState<number | null>(null);
+  const [selectedCancelId, setSelectedCancelId] = useState<number | null>(null);
+  const [isBuyerComplete, setIsBuyerComplete] = useState(false);
+  const [showOfferCancelDialog, setShowOfferCancelDialog] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+  const [returnToSale, setReturnToSale] = useState(true);
 
   // 상태별 카운트 조회
   const fetchStatusCounts = useCallback(async () => {
@@ -408,37 +428,51 @@ export default function MyPageTabs() {
                   if (activeSection === 'sales-active') {
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
+                        <div className="flex gap-3">
                           {item.images?.[0] && (
                             <img
                               src={item.images[0].image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded"
+                              className="w-16 h-16 object-cover rounded flex-shrink-0"
                             />
                           )}
-                          <div className="flex-1">
-                            <h4 className="font-medium">{item.title}</h4>
-                            <p className="text-sm text-gray-600">
-                              {item.price.toLocaleString()}원
-                            </p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <h4 className="font-medium">{item.title}</h4>
+                                <p className="text-sm text-gray-600">
+                                  {item.price.toLocaleString()}원
+                                </p>
+                              </div>
+                              <Badge variant="default" className="flex-shrink-0">판매중</Badge>
+                            </div>
                             <div className="flex gap-2 mt-2">
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => window.location.href = `/used/${item.id}`}
+                                onClick={async () => {
+                                  setSelectedPhone(item);
+                                  try {
+                                    const data = await sellerAPI.getReceivedOffers(item.id);
+                                    setReceivedOffers(Array.isArray(data) ? data : (data.results || []));
+                                    setShowOffersModal(true);
+                                  } catch (error) {
+                                    console.error('Failed to fetch offers:', error);
+                                    toast('제안을 불러올 수 없습니다.');
+                                  }
+                                }}
                               >
                                 제안 확인
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => window.location.href = `/used/${item.id}/edit`}
+                                onClick={() => router.push(`/used/${item.id}/edit`)}
                               >
                                 상품 수정
                               </Button>
                             </div>
                           </div>
-                          <Badge variant="default">판매중</Badge>
                         </div>
                       </div>
                     );
@@ -507,9 +541,8 @@ export default function MyPageTabs() {
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700"
                                 onClick={() => {
-                                  if (confirm('판매를 완료하시겠습니까?')) {
-                                    handleCompleteTransaction(item.id, true);
-                                  }
+                                  setSelectedCompleteId(item.id);
+                                  setShowCompleteDialog(true);
                                 }}
                               >
                                 판매 완료
@@ -518,11 +551,7 @@ export default function MyPageTabs() {
                                 size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm('거래를 취소하시겠습니까?')) {
-                                    handleCancelTransaction(item.id);
-                                  }
-                                }}
+                                onClick={() => handleCancelTransaction(item.id)}
                               >
                                 거래 취소
                               </Button>
@@ -607,9 +636,8 @@ export default function MyPageTabs() {
                                   variant="outline"
                                   className="text-red-600"
                                   onClick={() => {
-                                    if (confirm('제안을 취소하시겠습니까?')) {
-                                      handleCancelOffer(item.id);
-                                    }
+                                    setSelectedOfferId(item.id);
+                                    setShowOfferCancelDialog(true);
                                   }}
                                 >
                                   제안 취소
@@ -654,9 +682,9 @@ export default function MyPageTabs() {
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700"
                                 onClick={() => {
-                                  if (confirm('구매를 완료하시겠습니까?')) {
-                                    handleCompleteTransaction(item.phone?.id || item.id, false);
-                                  }
+                                  setSelectedCompleteId(item.phone?.id || item.id);
+                                  setIsBuyerComplete(true);
+                                  setShowCompleteDialog(true);
                                 }}
                               >
                                 구매 완료
@@ -665,11 +693,7 @@ export default function MyPageTabs() {
                                 size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                  if (confirm('거래를 취소하시겠습니까?')) {
-                                    handleCancelTransaction(item.phone?.id || item.id);
-                                  }
-                                }}
+                                onClick={() => handleCancelTransaction(item.phone?.id || item.id)}
                               >
                                 거래 취소
                               </Button>
@@ -927,6 +951,204 @@ export default function MyPageTabs() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* 거래 완료 확인 다이얼로그 */}
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>거래 완료 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isBuyerComplete ? '구매를 완료하시겠습니까?' : '판매를 완료하시겠습니까?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setSelectedCompleteId(null);
+              setIsBuyerComplete(false);
+            }}>
+              아니오
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (selectedCompleteId) {
+                handleCompleteTransaction(selectedCompleteId, !isBuyerComplete);
+                setSelectedCompleteId(null);
+                setIsBuyerComplete(false);
+              }
+            }}>
+              네
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 거래 취소 모달 */}
+      {showCancelDialog && selectedCancelId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <XCircle className="w-5 h-5 text-red-500" />
+                거래 취소
+              </h3>
+              <button
+                onClick={() => {
+                  setShowCancelDialog(false);
+                  setSelectedCancelId(null);
+                  setCancellationReason('');
+                  setCustomReason('');
+                  setReturnToSale(true);
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600">
+                <p className="text-red-500">거래를 취소하시겠습니까?</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">취소 사유 선택 *</label>
+                <select
+                  className="w-full p-2 border rounded-lg"
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                >
+                  <option value="">취소 사유를 선택하세요</option>
+                  {activeSection?.startsWith('sales-') ? (
+                    // 판매자 취소 사유
+                    <>
+                      <option value="buyer_no_response">구매자 연락 두절</option>
+                      <option value="buyer_no_show">구매자 약속 불이행</option>
+                      <option value="payment_issue">결제 문제 발생</option>
+                      <option value="buyer_unreasonable">구매자 무리한 요구</option>
+                      <option value="schedule_conflict">거래 일정 조율 실패</option>
+                      <option value="personal_reason">개인 사정으로 판매 불가</option>
+                      <option value="buyer_cancel_request">구매자 취소 요청</option>
+                      <option value="product_sold">다른 경로로 판매됨</option>
+                    </>
+                  ) : (
+                    // 구매자 취소 사유
+                    <>
+                      <option value="seller_no_response">판매자 연락 두절</option>
+                      <option value="seller_no_show">판매자 약속 불이행</option>
+                      <option value="product_issue">상품 상태 문제</option>
+                      <option value="price_disagreement">가격 협의 실패</option>
+                      <option value="schedule_conflict">거래 일정 조율 실패</option>
+                      <option value="change_of_mind">단순 변심</option>
+                    </>
+                  )}
+                  <option value="other">기타</option>
+                </select>
+              </div>
+
+              {cancellationReason === 'other' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">기타 사유 입력 *</label>
+                  <textarea
+                    className="w-full p-2 border rounded-lg"
+                    rows={3}
+                    placeholder="취소 사유를 입력해주세요"
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {activeSection?.startsWith('sales-') && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      id="returnToSale"
+                      checked={returnToSale}
+                      onChange={(e) => setReturnToSale(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <label htmlFor="returnToSale" className="text-sm">
+                      <span className="font-medium">상품을 다시 판매중으로 전환</span>
+                      <p className="text-gray-600 mt-1">
+                        체크하면 상품이 다시 '판매중' 상태가 되어 다른 구매자들이 제안할 수 있습니다.
+                      </p>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <span className="font-medium">주의사항</span><br />
+                  • 상대방에게 취소 알림이 전송됩니다<br />
+                  • 취소 사유는 통계 자료로 활용됩니다<br />
+                  • 빈번한 취소는 신뢰도에 영향을 줄 수 있습니다
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCancelDialog(false);
+                  setSelectedCancelId(null);
+                  setCancellationReason('');
+                  setCustomReason('');
+                  setReturnToSale(true);
+                }}
+                className="flex-1"
+              >
+                닫기
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (!cancellationReason) {
+                    toast('취소 사유를 선택해주세요.');
+                    return;
+                  }
+                  if (cancellationReason === 'other' && !customReason.trim()) {
+                    toast('기타 사유를 입력해주세요.');
+                    return;
+                  }
+                  if (selectedCancelId) {
+                    handleCancelTransactionWithReason(selectedCancelId);
+                  }
+                }}
+                className="flex-1"
+              >
+                거래 취소
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 제안 취소 확인 다이얼로그 */}
+      <AlertDialog open={showOfferCancelDialog} onOpenChange={setShowOfferCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>제안 취소 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              제안을 취소하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedOfferId(null)}>
+              아니오
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (selectedOfferId) {
+                handleCancelOffer(selectedOfferId);
+                setSelectedOfferId(null);
+              }
+            }}>
+              네
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 
@@ -979,8 +1201,16 @@ export default function MyPageTabs() {
   }
 
   async function handleCancelTransaction(phoneId: number) {
+    setSelectedCancelId(phoneId);
+    setShowCancelDialog(true);
+  }
+
+  async function handleCancelTransactionWithReason(phoneId: number) {
     try {
       const token = localStorage.getItem('accessToken');
+      // 판매자와 구매자 구분
+      const isSeller = activeSection?.startsWith('sales-');
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/cancel-trade/`,
         {
@@ -990,14 +1220,25 @@ export default function MyPageTabs() {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            reason: 'user_cancel',
-            return_to_sale: true
+            reason: cancellationReason,
+            custom_reason: cancellationReason === 'other' ? customReason : null,
+            // 판매자만 returnToSale 옵션 사용, 구매자는 항상 true
+            return_to_sale: isSeller ? returnToSale : true
           })
         }
       );
 
       if (response.ok) {
-        toast('거래가 취소되었습니다.');
+        if (isSeller) {
+          toast(returnToSale ? '거래가 취소되고 상품이 판매중으로 변경되었습니다.' : '거래가 취소되었습니다.');
+        } else {
+          toast('거래가 취소되었습니다. 상품이 다시 판매중 상태가 되었습니다.');
+        }
+        setShowCancelDialog(false);
+        setSelectedCancelId(null);
+        setCancellationReason('');
+        setCustomReason('');
+        setReturnToSale(true);
         // 페이지 새로고침
         setTimeout(() => window.location.reload(), 500);
       }
