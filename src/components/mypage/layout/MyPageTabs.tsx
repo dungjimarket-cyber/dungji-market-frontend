@@ -280,7 +280,7 @@ export default function MyPageTabs() {
           variant="outline"
           size="sm"
           onClick={() => setShowFavoritesModal(true)}
-          className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 border-gray-300 text-xs px-2 py-1.5"
+          className="flex items-center gap-1 bg-white hover:bg-gray-50 border-gray-300 text-xs px-2 py-1.5"
         >
           <Heart className="w-3 h-3 text-red-500" />
           <span className="hidden sm:inline">찜 목록</span>
@@ -291,7 +291,7 @@ export default function MyPageTabs() {
           variant="outline"
           size="sm"
           onClick={() => setShowReviewsModal(true)}
-          className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 border-gray-300 text-xs px-2 py-1.5"
+          className="flex items-center gap-1 bg-white hover:bg-gray-50 border-gray-300 text-xs px-2 py-1.5"
         >
           <MessageSquare className="w-3 h-3" />
           <span className="hidden sm:inline">거래후기</span>
