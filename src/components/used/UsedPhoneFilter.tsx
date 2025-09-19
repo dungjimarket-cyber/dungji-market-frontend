@@ -213,7 +213,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               <SelectValue placeholder="제조사" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="all">제조사</SelectItem>
               {Object.entries(PHONE_BRANDS).map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
@@ -228,7 +228,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               <SelectValue placeholder="상태" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="all">제품상태</SelectItem>
               {Object.entries(CONDITION_GRADES).map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
