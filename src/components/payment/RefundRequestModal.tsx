@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, AlertTriangle, CreditCard, Banknote } from 'lucide-react';
+import { Loader2, AlertTriangle, CreditCard } from 'lucide-react';
 
 interface PaymentInfo {
   id: string;
@@ -107,7 +107,7 @@ export default function RefundRequestModal({
               {payment.pay_method === 'CARD' ? (
                 <CreditCard className="h-4 w-4" />
               ) : (
-                <Banknote className="h-4 w-4" />
+                <span className="font-bold text-sm">￦</span>
               )}
               <span className="font-medium">{payment.order_id}</span>
             </div>

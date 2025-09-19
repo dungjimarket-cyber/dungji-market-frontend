@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Package, Banknote, MapPin, AlertTriangle, CheckCircle, Phone, MessageCircle, Star, Heart } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, AlertTriangle, CheckCircle, Phone, MessageCircle, Star, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function UsedTradingGuidePage() {
@@ -44,7 +44,7 @@ export default function UsedTradingGuidePage() {
         {/* 가격 시스템 */}
         <section className="mb-6">
           <h2 className="text-base font-bold mb-4 flex items-center gap-2">
-            <Banknote className="w-4 h-4 text-blue-600" />
+            <span className="text-blue-600 font-bold">￦</span>
             가격 설정 방식
           </h2>
           <div className="bg-white rounded-lg p-4 border space-y-3">
