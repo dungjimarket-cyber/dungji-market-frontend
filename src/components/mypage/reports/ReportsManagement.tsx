@@ -198,27 +198,27 @@ export default function ReportsManagement() {
   const totalPages = Math.ceil(submittedReports.length / itemsPerPage);
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            신고 관리
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-3 sm:mb-4 gap-3">
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+            <span className="truncate">신고 관리</span>
           </h2>
           <Button
             onClick={() => setShowReportModal(true)}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700 text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1.5 h-auto whitespace-nowrap"
             size="sm"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             신고하기
           </Button>
         </div>
 
         <div className="space-y-3">
           {submittedReports.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>제출한 신고가 없습니다.</p>
+            <div className="text-center py-6 sm:py-8 text-gray-500">
+              <p className="text-sm sm:text-base">제출한 신고가 없습니다.</p>
             </div>
           ) : (
             <>
