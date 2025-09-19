@@ -160,6 +160,15 @@ export default function UsedTradingGuidePage() {
                 <li>• 밤늦은 시간대 거래</li>
               </ul>
             </div>
+            <div className="mt-3 pt-3 border-t border-red-200">
+              <h3 className="font-medium mb-2 text-orange-800">책임 범위 안내</h3>
+              <ul className="space-y-1 text-gray-600 text-xs">
+                <li>• 중고거래 시 발생하는 모든 사고나 문제는 거래 당사자간의 책임입니다</li>
+                <li>• 둥지마켓은 개인간 거래의 중개 플랫폼으로써 거래 자체에 대한 책임을 지지 않습니다</li>
+                <li>• 거래 전 반드시 상품 상태를 직접 확인하시고 신중하게 거래하시기 바랍니다</li>
+                <li>• 분쟁 발생 시 당사자간 원만한 해결을 우선으로 하시기 바랍니다</li>
+              </ul>
+            </div>
           </div>
         </section>
 
@@ -170,7 +179,7 @@ export default function UsedTradingGuidePage() {
               중고거래 시작하기
             </h2>
             <p className="text-emerald-700 mb-4 text-xs">
-              가이드를 숙지하셨다면 이제 안전하고 재밌는 중고거래를 시작해보세요!
+              가이드를 숙지하셨다면 이제 쉽고 재밌는 중고거래를 시작해보세요!
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/used">
