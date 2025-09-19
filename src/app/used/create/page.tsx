@@ -246,6 +246,26 @@ export default function CreateUsedPhonePage() {
           description: `${file.name} 파일이 3MB를 초과합니다.`,
           variant: 'destructive',
         });
+
+        // 해당 슬롯 클리어
+        if (targetIndex !== undefined) {
+          setImages(prev => {
+            const updated = [...prev];
+            updated[targetIndex] = {
+              file: null,
+              url: '',
+              isMain: targetIndex === 0,
+              isEmpty: true
+            };
+            return updated;
+          });
+        }
+
+        // input 필드 초기화
+        if (!Array.isArray(e) && e.target) {
+          e.target.value = '';
+        }
+
         return;
       }
     }

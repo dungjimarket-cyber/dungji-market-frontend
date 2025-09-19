@@ -303,7 +303,43 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       return;
     }
 
-    const newImages = files.map(file => ({
+    // 파일 유효성 검사
+    const validFiles: File[] = [];
+    for (const file of files) {
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: '지원하지 않는 파일 형식',
+          description: '이미지 파일만 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+
+        // input 필드 초기화
+        if (!Array.isArray(e) && e.target) {
+          e.target.value = '';
+        }
+        return;
+      }
+
+      // 파일 크기 체크 (3MB)
+      if (file.size > 3 * 1024 * 1024) {
+        toast({
+          title: '이미지 크기 초과',
+          description: `${file.name} 파일이 3MB를 초과합니다.`,
+          variant: 'destructive',
+        });
+
+        // input 필드 초기화
+        if (!Array.isArray(e) && e.target) {
+          e.target.value = '';
+        }
+        return;
+      }
+
+      validFiles.push(file);
+    }
+
+    const newImages = validFiles.map(file => ({
       file,
       preview: URL.createObjectURL(file)
     }));
