@@ -1287,8 +1287,4 @@ export default function MyPageTabs() {
       toast('판매자 정보를 불러올 수 없습니다.');
     }
   }
-}});
-
-MyPageTabs.displayName = 'MyPageTabs';
-
-export default MyPageTabs;
+}
