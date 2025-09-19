@@ -615,13 +615,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       <div className="hidden lg:block bg-white border-b sticky top-0 z-50">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => router.push('/used')}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
                 <span className="font-medium">목록으로</span>
+              </button>
+              <button
+                onClick={() => router.push('/used/mypage')}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100 transition-colors"
+              >
+                <span>거래내역</span>
               </button>
             </div>
             <div className="flex items-center gap-3">
@@ -1066,7 +1072,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                           <span className="text-sm font-medium text-blue-800">
                             {phone.status === 'sold'
                               ? '거래가 완료되었습니다. 마이페이지에서 후기를 작성할 수 있습니다.'
-                              : '거래 관리는 마이페이지에서 하실 수 있습니다'
+                              : '거래내역 바로가기'
                             }
                           </span>
                         </div>
