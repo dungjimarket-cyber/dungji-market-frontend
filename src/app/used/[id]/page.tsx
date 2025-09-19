@@ -2052,7 +2052,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-semibold">{offer.buyer?.username || '익명'}</span>
+                          <span className="font-semibold">{offer.buyer?.nickname || offer.buyer?.username || '익명'}</span>
                           <span className="text-sm text-gray-500">
                             {offer.created_at && formatDistanceToNow(new Date(offer.created_at), { addSuffix: true, locale: ko })}
                           </span>
