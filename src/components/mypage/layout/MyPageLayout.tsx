@@ -44,19 +44,21 @@ export default function MyPageLayout({
               variant="outline"
               size="sm"
               onClick={() => router.push('/used/mypage/reports')}
-              className="border-red-300 text-red-600 hover:bg-red-50 gap-1.5"
+              className="border-red-300 text-red-600 hover:bg-red-50 gap-1 text-xs"
             >
-              <AlertTriangle className="h-4 w-4" />
+              <AlertTriangle className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">신고관리</span>
+              <span className="sm:hidden">신고</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleSettingsClick}
-              className="gap-1.5"
+              className="gap-1 text-xs"
             >
-              <Edit2 className="h-4 w-4" />
+              <Edit2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">내정보설정</span>
+              <span className="sm:hidden">설정</span>
             </Button>
           </div>
 
@@ -68,10 +70,10 @@ export default function MyPageLayout({
                 variant="outline"
                 size="sm"
                 onClick={onFavoritesClick}
-                className="sm:hidden flex items-center gap-1 text-xs px-2 py-1.5"
+                className="sm:hidden flex items-center gap-1 text-xs"
               >
-                <Heart className="w-3 h-3 text-red-500" />
-                <span className="text-gray-600">({favoritesCount})</span>
+                <Heart className="w-3.5 h-3.5 text-red-500" />
+                찜
               </Button>
             )}
             {onReviewsClick && (
@@ -79,22 +81,24 @@ export default function MyPageLayout({
                 variant="outline"
                 size="sm"
                 onClick={onReviewsClick}
-                className="sm:hidden flex items-center gap-1 text-xs px-2 py-1.5"
+                className="sm:hidden flex items-center gap-1 text-xs"
               >
-                <MessageSquare className="w-3 h-3" />
-                <span className="text-gray-600">({reviewsCount})</span>
+                <MessageSquare className="w-3.5 h-3.5" />
+                후기
               </Button>
             )}
             <Link href="/used">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Package className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                <Package className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">중고거래</span>
+                <span className="sm:hidden">중고</span>
               </Button>
             </Link>
             <Link href="/group-purchases">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <ShoppingBag className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                <ShoppingBag className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">공동구매</span>
+                <span className="sm:hidden">공구</span>
               </Button>
             </Link>
           </div>

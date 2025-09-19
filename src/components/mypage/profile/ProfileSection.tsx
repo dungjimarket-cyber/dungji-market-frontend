@@ -7,19 +7,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-interface ProfileSectionProps {
-  onFavoritesClick?: () => void;
-  onReviewsClick?: () => void;
-  favoritesCount?: number;
-  reviewsCount?: number;
-}
+interface ProfileSectionProps {}
 
-export default function ProfileSection({
-  onFavoritesClick,
-  onReviewsClick,
-  favoritesCount = 0,
-  reviewsCount = 0
-}: ProfileSectionProps) {
+export default function ProfileSection({}: ProfileSectionProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [rating, setRating] = useState<{ avg_rating: number; total_reviews: number } | null>(null);
@@ -93,33 +83,6 @@ export default function ProfileSection({
           </div>
         </div>
 
-        {/* PC에서만 표시되는 찜/후기 버튼 */}
-        <div className="hidden sm:flex items-center gap-2">
-          {onFavoritesClick && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onFavoritesClick}
-              className="flex items-center gap-1 bg-white hover:bg-gray-50 text-xs"
-            >
-              <Heart className="w-3 h-3 text-red-500" />
-              찜 목록
-              <span className="text-gray-600">({favoritesCount})</span>
-            </Button>
-          )}
-          {onReviewsClick && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onReviewsClick}
-              className="flex items-center gap-1 bg-white hover:bg-gray-50 text-xs"
-            >
-              <MessageSquare className="w-3 h-3" />
-              거래후기
-              <span className="text-gray-600">({reviewsCount})</span>
-            </Button>
-          )}
-        </div>
       </div>
     </div>
   );
