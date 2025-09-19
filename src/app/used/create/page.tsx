@@ -239,11 +239,11 @@ export default function CreateUsedPhonePage() {
         return;
       }
 
-      // 파일 크기 체크 (5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // 파일 크기 체크 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
         toast({
           title: '이미지 크기 초과',
-          description: `${file.name} 파일이 5MB를 초과합니다.`,
+          description: `${file.name} 파일이 10MB를 초과합니다.`,
           variant: 'destructive',
         });
 
