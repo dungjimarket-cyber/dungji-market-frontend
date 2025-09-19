@@ -2094,15 +2094,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">제안을 수락하시겠습니까?</h3>
             <div className="mb-6">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">수락 시 다음과 같이 진행됩니다:</p>
-                <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• 구매자에게 연락처가 공개됩니다</li>
-                  <li>• 거래상태가 '거래중'으로 변경됩니다</li>
-                  <li>• 다른 제안은 자동으로 거절됩니다</li>
-                </ul>
-              </div>
-              <p className="text-sm text-gray-500 mt-3">
+              <p className="text-sm text-gray-600 mb-4">
+                제안 수락 시 즉시 거래가 진행됩니다.
+              </p>
+              <p className="text-sm text-gray-500">
                 제안 금액: <span className="font-bold text-lg text-blue-600">
                   {offers.find(o => o.id === selectedOfferId)?.offered_price.toLocaleString()}원
                 </span>
