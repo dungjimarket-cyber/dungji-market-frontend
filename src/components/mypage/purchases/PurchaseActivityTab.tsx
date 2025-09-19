@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Heart, Clock, CheckCircle, XCircle, MessageSquare, Banknote, Phone, Mail, MapPin, Info, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -75,7 +76,15 @@ interface SellerInfo {
 
 export default function PurchaseActivityTab() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('offers');
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get('filter');
+
+  // URL 파라미터에 따라 초기 탭 설정
+  const [activeTab, setActiveTab] = useState(() => {
+    if (filterParam === 'trading') return 'trading';
+    if (filterParam === 'completed') return 'completed';
+    return 'offers';
+  });
   const [offers, setOffers] = useState<OfferItem[]>([]);
   const [tradingItems, setTradingItems] = useState<TradingItem[]>([]);
   const [loading, setLoading] = useState(true);

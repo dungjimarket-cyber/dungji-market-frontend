@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, Heart, MessageCircle, MoreVertical, Edit, Trash2, User, Banknote, Clock, CheckCircle, Phone, Mail, MapPin, Info, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -72,8 +72,17 @@ interface BuyerInfo {
 
 export default function SalesActivityTab() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get('filter');
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('active');
+
+  // URL 파라미터에 따라 초기 탭 설정
+  const [activeTab, setActiveTab] = useState(() => {
+    if (filterParam === 'trading') return 'trading';
+    if (filterParam === 'offers') return 'offers';
+    if (filterParam === 'sold') return 'sold';
+    return 'active';
+  });
   const [listings, setListings] = useState<SalesItem[]>([]);
   const [allListings, setAllListings] = useState<SalesItem[]>([]); // 전체 목록 캐시
   const [receivedOffers, setReceivedOffers] = useState<ReceivedOffer[]>([]);
