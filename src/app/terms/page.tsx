@@ -6,9 +6,9 @@ import { useState } from 'react';
 
 export default function TermsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'general' | 'seller'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'seller' | 'used'>('general');
 
-  const handleTabChange = (tab: 'general' | 'seller') => {
+  const handleTabChange = (tab: 'general' | 'seller' | 'used') => {
     setActiveTab(tab);
     router.push(`/terms/${tab}`);
   };

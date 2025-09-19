@@ -43,6 +43,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/used/guide" className="text-sm text-gray-600 hover:text-emerald-600 font-bold">
+                  중고거래 이용가이드
+                </Link>
+              </li>
+              <li>
                 <Link href="/privacy" className="text-sm text-gray-600 hover:text-emerald-600">
                   개인정보처리방침
                 </Link>
