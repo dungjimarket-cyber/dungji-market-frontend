@@ -1563,7 +1563,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
                     <span className="inline-block">🎉</span>
                     <span className="inline-block mx-1">
-                      {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '견적이 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
+                      {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '공구에 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
                     </span>
                     <span className="inline-block">🎉</span>
                   </p>
@@ -2291,7 +2291,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       <p className="text-lg sm:text-xl font-bold text-center text-green-700 mb-2 whitespace-nowrap">
                         <span className="inline-block">🎉</span>
                         <span className="inline-block mx-1">
-                          {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '견적이 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
+                          {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '공구에 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
                         </span>
                         <span className="inline-block">🎉</span>
                       </p>
