@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag, CheckCircle, Clock, MapPin } from 'lucide-react';
+import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag, CheckCircle, Clock, MapPin, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
@@ -354,27 +354,42 @@ export default function UsedPhonesPage() {
 
         {/* 상단 버튼 영역 */}
         <section className="mb-6 py-4">
-          <div className="flex justify-end gap-3">
-            <Button
-              size="lg"
-              onClick={handleCreateClick}
-              className="px-6"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              내폰 판매하기
-            </Button>
-            {isAuthenticated && (
-              <Link href="/used/mypage">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="px-6"
-                >
-                  <User className="w-5 h-5 mr-2" />
-                  중고거래내역
-                </Button>
-              </Link>
-            )}
+          <div className="flex justify-between items-center">
+            {/* 왼쪽: 이용가이드 버튼 */}
+            <Link href="/used/guide">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                이용가이드
+              </Button>
+            </Link>
+
+            {/* 오른쪽: 기존 버튼들 */}
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                onClick={handleCreateClick}
+                className="px-6"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                내폰 판매하기
+              </Button>
+              {isAuthenticated && (
+                <Link href="/used/mypage">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="px-6"
+                  >
+                    <User className="w-5 h-5 mr-2" />
+                    중고거래내역
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </section>
 
