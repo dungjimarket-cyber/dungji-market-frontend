@@ -1974,8 +1974,117 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       </>
                     )}
                   </div>
-                ) : isSeller && !isFinalSelection && 
-                 groupBuyData.status === 'recruiting' && 
+                ) : isSeller && (hasWinningBid || isMyBidSelected) ? (
+                  // 낙찰된 판매회원
+                  <div className="space-y-3">
+                    {/* 1. 구매자 최종선택 대기중 */}
+                    {isBuyerFinalSelection && (
+                      <>
+                        <div className="p-4 bg-yellow-50 rounded-lg text-center mb-3">
+                          <p className="font-semibold text-yellow-800">구매자 최종선택 대기중</p>
+                        </div>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                                headers: {
+                                  'Authorization': `Bearer ${accessToken}`,
+                                }
+                              });
+                              const data = await res.json();
+                              setBuyerConfirmationData(data);
+                              setShowBuyerConfirmationModal(true);
+                            } catch (error) {
+                              console.error('Error fetching buyer confirmation stats:', error);
+                            }
+                          }}
+                          variant="outline"
+                          className="w-full py-3"
+                        >
+                          구매자확정률 확인하기
+                        </Button>
+                      </>
+                    )}
+
+                    {/* 2. 판매확정/포기 선택하기 */}
+                    {isSellerFinalSelection && !isFinalSelectionExpired && (
+                      <>
+                        <div className="p-4 bg-blue-50 rounded-lg mb-3">
+                          <p className="text-sm text-gray-700">구매자 확정률 최종</p>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                                  headers: {
+                                    'Authorization': `Bearer ${accessToken}`,
+                                  }
+                                });
+                                const data = await res.json();
+                                setBuyerConfirmationData(data);
+                                setShowBuyerConfirmationModal(true);
+                              } catch (error) {
+                                console.error('Error fetching buyer confirmation stats:', error);
+                              }
+                            }}
+                            variant="ghost"
+                            className="text-blue-600 underline text-sm mt-1"
+                          >
+                            확인하기
+                          </Button>
+                        </div>
+                        {myBidFinalDecision === 'pending' ? (
+                          <>
+                            <Button
+                              onClick={() => handleFinalSelection('confirm')}
+                              className="w-full py-4 text-base font-medium bg-green-600 hover:bg-green-700"
+                            >
+                              판매확정
+                            </Button>
+                            <Button
+                              onClick={() => handleFinalSelection('cancel')}
+                              variant="outline"
+                              className="w-full py-4 text-base font-medium border-red-600 text-red-600 hover:bg-red-50"
+                            >
+                              판매포기
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            disabled
+                            className="w-full py-4 text-base font-medium"
+                          >
+                            {myBidFinalDecision === 'confirmed' ? '✓ 판매확정' : '✓ 판매포기'}
+                          </Button>
+                        )}
+                      </>
+                    )}
+
+                    {/* 3. 거래중 및 판매자 최종선택 */}
+                    {(isInProgress || isSellerFinalSelection) && myBidFinalDecision === 'confirmed' && (
+                      <>
+                        <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
+                          <p className="font-semibold text-green-800">
+                            {isInProgress ? '거래중' : '판매자 최종선택중'}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => setShowBuyerInfoModal(true)}
+                          className="w-full py-3 bg-blue-600 hover:bg-blue-700"
+                        >
+                          구매자정보보기
+                        </Button>
+                      </>
+                    )}
+
+                    {/* 4. 판매완료 */}
+                    {isCompleted && myBidFinalDecision === 'confirmed' && (
+                      <div className="p-4 bg-purple-50 rounded-lg text-center">
+                        <p className="font-semibold text-purple-800">판매완료</p>
+                      </div>
+                    )}
+                  </div>
+                ) : isSeller && !isFinalSelection &&
+                 groupBuyData.status === 'recruiting' &&
                  !isEnded ? (
                   // 판매자용 인터페이스
                   <div className="space-y-4">
