@@ -218,7 +218,7 @@ export default function TradingGroupBuys({ onComplete }: TradingGroupBuysProps) 
           <AlertDialogHeader>
             <AlertDialogTitle>거래 종료 확인</AlertDialogTitle>
             <AlertDialogDescription>
-              거래를 종료하시겠습니까? 종료 후 노쇼 신고가 가능합니다.
+              거래를 종료하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
