@@ -606,51 +606,62 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         });
       }
       
-      // 이미지 처리 - 기존 이미지와 신규 이미지 구분하여 효율적으로 처리
+      // 이미지 처리 - 백엔드가 update 메서드를 지원하지 않으므로 모든 이미지를 다시 전송
+      // 단, 이미지가 변경되었을 때만 처리
       if (isFieldEditable('images')) {
         const actualImages = images.filter(img => img && (img.file || img.preview));
         const existingImages = actualImages.filter(img => img.preview && !img.file);
         const newImages = actualImages.filter(img => img.file);
 
-        // 1차 시도: 효율적인 방식 (기존 이미지 ID + 신규 이미지 파일)
-        // 기존 이미지 ID들 전송 (중복 업로드 방지)
-        if (existingImages.length > 0) {
-          existingImages.forEach((image, index) => {
-            if (image.id) {
-              submitData.append('existing_image_ids', image.id.toString());
-            }
-          });
-        }
+        // 이미지가 변경되었는지 확인 (새 이미지 추가, 삭제, 순서 변경 등)
+        const originalImageCount = phone?.images?.length || 0;
+        const hasImageChanges = newImages.length > 0 || actualImages.length !== originalImageCount;
 
-        // 새로 추가된 이미지만 업로드
-        if (newImages.length > 0) {
-          toast({
-            title: '이미지 처리 중...',
-            description: `새로운 이미지 ${newImages.length}개를 압축하고 있습니다.`,
-          });
+        if (hasImageChanges) {
+          // 이미지가 변경된 경우에만 모든 이미지를 다시 전송
+          if (actualImages.length > 0) {
+            toast({
+              title: '이미지 처리 중...',
+              description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.',
+            });
+          }
 
-          for (const image of newImages) {
-            try {
-              const compressedBlob = await compressImageInBrowser(image.file!, {
-                maxWidth: 1200,
-                maxHeight: 1200,
-                quality: 0.85,
-                format: 'webp'
-              });
+          for (const image of actualImages) {
+            if (image.file) {
+              // 새로 추가된 이미지 - 압축 처리
+              try {
+                const compressedBlob = await compressImageInBrowser(image.file, {
+                  maxWidth: 1200,
+                  maxHeight: 1200,
+                  quality: 0.85,
+                  format: 'webp'
+                });
 
-              const compressedFile = new File(
-                [compressedBlob],
-                `image_${Date.now()}.webp`,
-                { type: 'image/webp' }
-              );
+                const compressedFile = new File(
+                  [compressedBlob],
+                  `image_${Date.now()}.webp`,
+                  { type: 'image/webp' }
+                );
 
-              submitData.append('new_images', compressedFile);
-            } catch (error) {
-              console.error('Failed to compress image:', error);
-              submitData.append('new_images', image.file!);
+                submitData.append('images', compressedFile);
+              } catch (error) {
+                console.error('Failed to compress image:', error);
+                submitData.append('images', image.file);
+              }
+            } else if (image.preview) {
+              // 기존 이미지 - URL에서 다시 fetch해서 전송
+              try {
+                const response = await fetch(image.preview);
+                const blob = await response.blob();
+                const file = new File([blob], `image_${Date.now()}.jpg`, { type: blob.type });
+                submitData.append('images', file);
+              } catch (error) {
+                console.error('Failed to fetch existing image:', error);
+              }
             }
           }
         }
+        // 이미지가 변경되지 않은 경우는 이미지 필드를 전송하지 않음
       }
 
       // 디버깅용 FormData 내용 출력
@@ -684,137 +695,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
     } catch (error: any) {
       console.error('Failed to update phone:', error);
-
-      // 백엔드에서 새로운 필드를 지원하지 않을 경우 fallback 시도
-      if (error.message?.includes('existing_image_ids') || error.message?.includes('new_images')) {
-        console.log('새로운 이미지 필드 지원 안됨. 기존 방식으로 재시도...');
-
-        try {
-          // 기존 방식으로 fallback: 모든 이미지를 다시 업로드
-          const fallbackData = new FormData();
-
-          // 기본 필드들 다시 추가
-          if (isFieldEditable('brand') && formData.brand) {
-            fallbackData.append('brand', formData.brand);
-          }
-          if (isFieldEditable('model') && formData.model) {
-            fallbackData.append('model', formData.model);
-          }
-          if (isFieldEditable('storage') && formData.storage) {
-            fallbackData.append('storage', formData.storage);
-          }
-          if (isFieldEditable('color') && formData.color) {
-            fallbackData.append('color', formData.color);
-          }
-          if (isFieldEditable('condition_grade') && formData.condition_grade) {
-            fallbackData.append('condition_grade', formData.condition_grade);
-          }
-          if (isFieldEditable('battery_status') && formData.battery_status) {
-            fallbackData.append('battery_status', formData.battery_status);
-          }
-          if (isFieldEditable('price') && formData.price) {
-            fallbackData.append('price', formData.price);
-          }
-          if (isFieldEditable('min_offer_price') && formData.min_offer_price) {
-            fallbackData.append('min_offer_price', formData.min_offer_price);
-          }
-          if (isFieldEditable('condition_description') && formData.condition_description) {
-            fallbackData.append('condition_description', formData.condition_description);
-          }
-          if (isFieldEditable('description') && formData.description) {
-            fallbackData.append('description', formData.description);
-          }
-          if (isFieldEditable('meeting_place') && formData.meeting_place) {
-            fallbackData.append('meeting_place', formData.meeting_place);
-          }
-
-          if (isFieldEditable('has_box')) {
-            fallbackData.append('body_only', (formData.body_only || false).toString());
-            fallbackData.append('has_box', (formData.has_box || false).toString());
-            fallbackData.append('has_charger', (formData.has_charger || false).toString());
-            fallbackData.append('has_earphones', (formData.has_earphones || false).toString());
-          }
-
-          if (isFieldEditable('regions') && selectedRegions.length > 0) {
-            selectedRegions.forEach((region) => {
-              const regionData = {
-                province: region.province || region.sido || '',
-                city: region.city || region.sigungu || ''
-              };
-              fallbackData.append('regions', JSON.stringify(regionData));
-            });
-          }
-
-          // 모든 이미지를 다시 업로드 (기존 방식)
-          if (isFieldEditable('images')) {
-            const actualImages = images.filter(img => img && (img.file || img.preview));
-
-            for (const image of actualImages) {
-              if (image.file) {
-                // 새로운 이미지
-                try {
-                  const compressedBlob = await compressImageInBrowser(image.file, {
-                    maxWidth: 1200,
-                    maxHeight: 1200,
-                    quality: 0.85,
-                    format: 'webp'
-                  });
-
-                  const compressedFile = new File(
-                    [compressedBlob],
-                    `image_${Date.now()}.webp`,
-                    { type: 'image/webp' }
-                  );
-
-                  fallbackData.append('images', compressedFile);
-                } catch (error) {
-                  console.error('Failed to compress image:', error);
-                  fallbackData.append('images', image.file);
-                }
-              } else if (image.preview) {
-                // 기존 이미지를 다시 fetch해서 업로드
-                try {
-                  const response = await fetch(image.preview);
-                  const blob = await response.blob();
-                  const file = new File([blob], `image_${Date.now()}.jpg`, { type: blob.type });
-                  fallbackData.append('images', file);
-                } catch (error) {
-                  console.error('Failed to fetch existing image:', error);
-                }
-              }
-            }
-          }
-
-          // Fallback API 호출
-          const fallbackToken = localStorage.getItem('accessToken');
-          const fallbackBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
-          const fallbackApiUrl = `${fallbackBaseUrl}/used/phones/${phoneId}/`;
-          const fallbackResponse = await fetch(fallbackApiUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${fallbackToken}`
-            },
-            body: fallbackData,
-          });
-
-          if (!fallbackResponse.ok) {
-            const errorData = await fallbackResponse.json();
-            throw new Error(errorData.message || errorData.detail || JSON.stringify(errorData) || 'Failed to update');
-          }
-
-          toast({
-            title: '수정 완료',
-            description: hasOffers ? '상품이 수정되었습니다. (수정됨 표시)' : '상품이 수정되었습니다.',
-          });
-
-          router.push(`/used/${phoneId}`);
-          return;
-
-        } catch (fallbackError) {
-          console.error('Fallback update also failed:', fallbackError);
-        }
-      }
-
       toast({
         title: '수정 실패',
         description: '상품 수정 중 오류가 발생했습니다.',
