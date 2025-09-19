@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle, Info, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,11 @@ interface StatusCounts {
   };
 }
 
-export default function MyPageTabs() {
+interface MyPageTabsProps {
+  onCountsUpdate?: (favorites: number, reviews: number) => void;
+}
+
+const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -246,6 +250,19 @@ export default function MyPageTabs() {
       setInitialSectionLoaded(true);
     }
   }, [searchParams, initialSectionLoaded]);
+
+  // ref로 메서드 expose
+  useImperativeHandle(ref, () => ({
+    openFavoritesModal: () => setShowFavoritesModal(true),
+    openReviewsModal: () => setShowReviewsModal(true)
+  }));
+
+  // 카운트 업데이트 시 부모 컴포넌트에 전달
+  useEffect(() => {
+    if (onCountsUpdate) {
+      onCountsUpdate(favoritesCount, reviewsCount);
+    }
+  }, [favoritesCount, reviewsCount, onCountsUpdate]);
 
   // 초기 로드
   useEffect(() => {
@@ -1287,4 +1304,8 @@ export default function MyPageTabs() {
       toast('판매자 정보를 불러올 수 없습니다.');
     }
   }
-}
+});
+
+MyPageTabs.displayName = 'MyPageTabs';
+
+export default MyPageTabs;
