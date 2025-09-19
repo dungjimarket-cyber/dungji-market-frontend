@@ -96,7 +96,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
         const salesItems = salesData.results || salesData.items || [];
 
         const salesCount = {
-          active: salesItems.filter((item: any) => item.status === 'active' && item.offer_count === 0).length,
+          active: salesItems.filter((item: any) => item.status === 'active').length,
           offers: salesItems.filter((item: any) => item.status === 'active' && item.offer_count > 0).length,
           trading: salesItems.filter((item: any) => item.status === 'trading').length,
           sold: salesItems.filter((item: any) => item.status === 'sold').length,
@@ -184,7 +184,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
         switch(status) {
           case 'active':
-            data = allItems.filter((item: any) => item.status === 'active' && item.offer_count === 0);
+            data = allItems.filter((item: any) => item.status === 'active');
             break;
           case 'offers':
             data = allItems.filter((item: any) => item.status === 'active' && item.offer_count > 0);
