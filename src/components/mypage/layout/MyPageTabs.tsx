@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Package, ShoppingCart, MessageSquare, Heart, X } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,9 @@ import ReviewsTab from '../reviews/ReviewsTab';
 import FavoritesTab from '../favorites/FavoritesTab';
 import { buyerAPI, sellerAPI } from '@/lib/api/used';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import ReceivedOffersModal from '../sales/ReceivedOffersModal';
+import ReviewModal from '@/components/used/ReviewModal';
 
 interface StatusCounts {
   sales: {
@@ -30,6 +33,7 @@ interface StatusCounts {
 
 export default function MyPageTabs() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [statusCounts, setStatusCounts] = useState<StatusCounts>({
     sales: { active: 0, offers: 0, trading: 0, sold: 0 },
@@ -44,6 +48,16 @@ export default function MyPageTabs() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Modals and handlers
+  const [selectedPhone, setSelectedPhone] = useState<any>(null);
+  const [showOffersModal, setShowOffersModal] = useState(false);
+  const [receivedOffers, setReceivedOffers] = useState<any[]>([]);
+  const [showSellerInfoModal, setShowSellerInfoModal] = useState(false);
+  const [showBuyerInfoModal, setShowBuyerInfoModal] = useState(false);
+  const [selectedUserInfo, setSelectedUserInfo] = useState<any>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<any>(null);
 
   // 상태별 카운트 조회
   const fetchStatusCounts = useCallback(async () => {
@@ -97,8 +111,24 @@ export default function MyPageTabs() {
         console.error('Failed to fetch favorites count:', error);
       }
 
-      // 거래후기 개수 (임시 - 실제 API 연결 필요)
-      setReviewsCount(23);
+      // 거래후기 개수 조회
+      try {
+        const reviewsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/used/reviews/my/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (reviewsResponse.ok) {
+          const reviewsData = await reviewsResponse.json();
+          const reviews = reviewsData.results || reviewsData.reviews || reviewsData;
+          setReviewsCount(Array.isArray(reviews) ? reviews.length : 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch reviews count:', error);
+        setReviewsCount(0);
+      }
 
     } catch (error) {
       console.error('Failed to fetch counts:', error);
@@ -202,24 +232,28 @@ export default function MyPageTabs() {
   return (
     <div className="w-full space-y-6">
       {/* 상단 버튼 영역 */}
-      <div className="flex justify-end gap-2 mb-4">
+      <div className="flex justify-end gap-1 sm:gap-2 mb-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setShowFavoritesModal(true)}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border-gray-300"
+          className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 border-gray-300 text-xs px-2 py-1.5"
         >
-          <Heart className="w-4 h-4 text-red-500" />
-          찜 목록 ({favoritesCount})
+          <Heart className="w-3 h-3 text-red-500" />
+          <span className="hidden sm:inline">찜 목록</span>
+          <span className="sm:hidden">찜</span>
+          <span className="text-gray-600">({favoritesCount})</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setShowReviewsModal(true)}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border-gray-300"
+          className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 border-gray-300 text-xs px-2 py-1.5"
         >
-          <MessageSquare className="w-4 h-4" />
-          거래후기 ({reviewsCount})
+          <MessageSquare className="w-3 h-3" />
+          <span className="hidden sm:inline">거래후기</span>
+          <span className="sm:hidden">후기</span>
+          <span className="text-gray-600">({reviewsCount})</span>
         </Button>
       </div>
 
@@ -229,46 +263,46 @@ export default function MyPageTabs() {
           <Package className="w-5 h-5 text-blue-600" />
           <h3 className="font-semibold">판매내역</h3>
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-1 sm:gap-2">
           <button
             onClick={() => handleSectionClick('sales-active')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-active' && "bg-blue-50 border-blue-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">판매중</div>
-            <div className="text-xl font-bold">{statusCounts.sales.active}</div>
+            <div className="text-xs text-gray-600">판매중</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.active}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-offers')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-offers' && "bg-orange-50 border-orange-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">받은제안</div>
-            <div className="text-xl font-bold">{statusCounts.sales.offers}</div>
+            <div className="text-xs text-gray-600">받은제안</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.offers}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-trading')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-trading' && "bg-green-50 border-green-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">거래중</div>
-            <div className="text-xl font-bold">{statusCounts.sales.trading}</div>
+            <div className="text-xs text-gray-600">거래중</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-sold')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-sold' && "bg-gray-100 border-gray-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">판매완료</div>
-            <div className="text-xl font-bold">{statusCounts.sales.sold}</div>
+            <div className="text-xs text-gray-600">판매완료</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.sold}</div>
           </button>
         </div>
       </Card>
@@ -279,36 +313,36 @@ export default function MyPageTabs() {
           <ShoppingCart className="w-5 h-5 text-purple-600" />
           <h3 className="font-semibold">구매내역</h3>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1 sm:gap-2">
           <button
             onClick={() => handleSectionClick('purchase-offers')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'purchase-offers' && "bg-purple-50 border-purple-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">구매제안</div>
-            <div className="text-xl font-bold">{statusCounts.purchases.offers}</div>
+            <div className="text-xs text-gray-600">구매제안</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.purchases.offers}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-trading')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'purchase-trading' && "bg-green-50 border-green-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">거래중</div>
-            <div className="text-xl font-bold">{statusCounts.purchases.trading}</div>
+            <div className="text-xs text-gray-600">거래중</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.purchases.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-completed')}
             className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'purchase-completed' && "bg-gray-100 border-gray-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">거래완료</div>
-            <div className="text-xl font-bold">{statusCounts.purchases.completed}</div>
+            <div className="text-xs text-gray-600">거래완료</div>
+            <div className="text-lg sm:text-xl font-bold">{statusCounts.purchases.completed}</div>
           </button>
         </div>
       </Card>
@@ -471,7 +505,25 @@ export default function MyPageTabs() {
                               {item.has_review ? (
                                 <Button size="sm" disabled className="text-xs bg-gray-200">후기작성완료</Button>
                               ) : (
-                                <Button size="sm" variant="outline" className="text-xs">후기 작성</Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => {
+                                    setReviewTarget({
+                                      transactionId: item.transaction_id || item.id,
+                                      revieweeName: item.buyer?.nickname || '구매자',
+                                      productInfo: {
+                                        brand: item.brand || '',
+                                        model: item.model || '',
+                                        price: item.price
+                                      }
+                                    });
+                                    setShowReviewModal(true);
+                                  }}
+                                >
+                                  후기 작성
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -562,7 +614,25 @@ export default function MyPageTabs() {
                               {item.has_review ? (
                                 <Button size="sm" disabled className="text-xs bg-gray-200">후기작성완료</Button>
                               ) : (
-                                <Button size="sm" variant="outline" className="text-xs">후기 작성</Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => {
+                                    setReviewTarget({
+                                      transactionId: item.transaction_id || item.id,
+                                      revieweeName: item.phone?.seller?.nickname || '판매자',
+                                      productInfo: {
+                                        brand: item.phone?.brand || '',
+                                        model: item.phone?.model || '',
+                                        price: item.phone?.price || item.offered_price
+                                      }
+                                    });
+                                    setShowReviewModal(true);
+                                  }}
+                                >
+                                  후기 작성
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -626,6 +696,133 @@ export default function MyPageTabs() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 받은 제안 모달 */}
+      {selectedPhone && (
+        <ReceivedOffersModal
+          isOpen={showOffersModal}
+          onClose={() => {
+            setShowOffersModal(false);
+            setSelectedPhone(null);
+          }}
+          phone={selectedPhone}
+          offers={receivedOffers}
+          onRespond={async (offerId, action) => {
+            // 제안 수락 처리
+            try {
+              await sellerAPI.respondToOffer(offerId, action);
+              toast('제안을 수락했습니다. 거래가 시작됩니다.');
+              setShowOffersModal(false);
+              fetchStatusCounts();
+            } catch (error) {
+              toast('제안 응답 중 오류가 발생했습니다.');
+            }
+          }}
+          onProceedTrade={async (offerId) => {
+            // 거래 진행 처리
+            try {
+              await sellerAPI.proceedTrade(offerId);
+              toast('거래가 시작되었습니다.');
+              setShowOffersModal(false);
+              fetchStatusCounts();
+            } catch (error) {
+              toast('거래 진행 중 오류가 발생했습니다.');
+            }
+          }}
+        />
+      )}
+
+      {/* 후기 작성 모달 */}
+      {showReviewModal && reviewTarget && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => {
+            setShowReviewModal(false);
+            setReviewTarget(null);
+          }}
+          transactionId={reviewTarget.transactionId}
+          revieweeName={reviewTarget.revieweeName}
+          productInfo={reviewTarget.productInfo}
+          onSuccess={() => {
+            setShowReviewModal(false);
+            setReviewTarget(null);
+            fetchStatusCounts();
+          }}
+        />
+      )}
     </div>
   );
+
+  // 액션 핸들러 함수들
+  async function fetchReceivedOffers(phoneId: number) {
+    try {
+      const data = await sellerAPI.getReceivedOffers(phoneId);
+      setReceivedOffers(Array.isArray(data) ? data : (data.results || []));
+      setShowOffersModal(true);
+    } catch (error) {
+      console.error('Failed to fetch offers:', error);
+      toast('제안을 불러올 수 없습니다.');
+    }
+  }
+
+  async function handleCancelOffer(offerId: number) {
+    try {
+      await buyerAPI.cancelOffer(offerId);
+      toast('제안이 취소되었습니다.');
+      fetchStatusCounts();
+    } catch (error) {
+      toast('제안 취소 중 오류가 발생했습니다.');
+    }
+  }
+
+  async function handleCompleteTransaction(phoneId: number, isSeller: boolean) {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const endpoint = isSeller ? 'complete-trade' : 'buyer-complete';
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/${endpoint}/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        toast(isSeller ? '판매가 완료되었습니다.' : '구매가 완료되었습니다.');
+        fetchStatusCounts();
+      }
+    } catch (error) {
+      toast('거래 완료 처리 중 오류가 발생했습니다.');
+    }
+  }
+
+  async function handleCancelTransaction(phoneId: number) {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/cancel-trade/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reason: 'user_cancel',
+            return_to_sale: true
+          })
+        }
+      );
+
+      if (response.ok) {
+        toast('거래가 취소되었습니다.');
+        fetchStatusCounts();
+      }
+    } catch (error) {
+      toast('거래 취소 중 오류가 발생했습니다.');
+    }
+  }
 }
