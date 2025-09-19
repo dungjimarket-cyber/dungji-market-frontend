@@ -182,7 +182,12 @@ export async function executeTransactionAction(
     }
 
     return result;
-  } catch (error) {
+  } catch (error: any) {
+    // 즉시구매 성공 처리를 위한 특별 케이스
+    if (error?.skipSuccess) {
+      return error.data;
+    }
+
     const transactionError = parseTransactionError(error);
 
     // 에러 토스트 표시

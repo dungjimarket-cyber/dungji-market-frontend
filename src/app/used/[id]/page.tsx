@@ -391,10 +391,17 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             console.log('판매자 연락처:', data.seller_contact);
           }
 
+          // 모달 닫기
+          setShowOfferModal(false);
+          setShowConfirmModal(false);
+
           // 2초 후 구매내역 거래중 탭으로 이동
           setTimeout(() => {
-            router.push('/used/mypage?tab=purchases&status=trading');
+            router.push('/used/mypage?tab=purchases&filter=trading');
           }, 2000);
+
+          // 즉시구매의 경우 아래 onSuccess 콜백 실행하지 않음
+          throw { skipSuccess: true, data };
         }
 
         return data;
