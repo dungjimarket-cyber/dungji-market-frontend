@@ -307,7 +307,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
             )}
           >
             <div className="text-xs text-gray-600">판매중</div>
-            <div className="text-base sm:text-lg font-bold">{statusCounts.sales.active}</div>
+            <div className={cn("text-base sm:text-lg font-bold", statusCounts.sales.active > 0 && "text-green-600")}>{statusCounts.sales.active}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-offers')}
@@ -317,7 +317,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
             )}
           >
             <div className="text-xs text-gray-600">받은제안</div>
-            <div className="text-base sm:text-lg font-bold">{statusCounts.sales.offers}</div>
+            <div className={cn("text-base sm:text-lg font-bold", statusCounts.sales.offers > 0 && "text-green-600")}>{statusCounts.sales.offers}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-trading')}
@@ -327,7 +327,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
             )}
           >
             <div className="text-xs text-gray-600">거래중</div>
-            <div className="text-base sm:text-lg font-bold text-green-600">{statusCounts.sales.trading}</div>
+            <div className={cn("text-base sm:text-lg font-bold", statusCounts.sales.trading > 0 && "text-green-600")}>{statusCounts.sales.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-sold')}
@@ -357,7 +357,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
             )}
           >
             <div className="text-xs text-gray-600">구매제안</div>
-            <div className="text-base sm:text-lg font-bold">{statusCounts.purchases.offers}</div>
+            <div className={cn("text-base sm:text-lg font-bold", statusCounts.purchases.offers > 0 && "text-green-600")}>{statusCounts.purchases.offers}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-trading')}
@@ -367,7 +367,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
             )}
           >
             <div className="text-xs text-gray-600">거래중</div>
-            <div className="text-base sm:text-lg font-bold text-green-600">{statusCounts.purchases.trading}</div>
+            <div className={cn("text-base sm:text-lg font-bold", statusCounts.purchases.trading > 0 && "text-green-600")}>{statusCounts.purchases.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-completed')}
