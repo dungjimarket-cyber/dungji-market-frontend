@@ -501,7 +501,17 @@ export default function MyPageTabs() {
                             <div className="mt-2">
                               <Button
                                 size="sm"
-                                onClick={() => window.location.href = `/used/${item.id}`}
+                                onClick={async () => {
+                                  setSelectedPhone(item);
+                                  try {
+                                    const data = await sellerAPI.getReceivedOffers(item.id);
+                                    setReceivedOffers(Array.isArray(data) ? data : (data.results || []));
+                                    setShowOffersModal(true);
+                                  } catch (error) {
+                                    console.error('Failed to fetch offers:', error);
+                                    toast('제안을 불러올 수 없습니다.');
+                                  }
+                                }}
                               >
                                 제안 확인
                               </Button>
@@ -589,9 +599,15 @@ export default function MyPageTabs() {
                                   variant="outline"
                                   className="text-xs"
                                   onClick={() => {
+                                    // transaction_id가 있으면 사용, 없으면 item.id 사용
+                                    const transactionId = (item as any).transaction_id || item.id;
+                                    // buyer 정보가 있으면 사용
+                                    const buyerInfo = (item as any).buyer;
+                                    const buyerName = buyerInfo?.nickname || buyerInfo?.username || '구매자';
+
                                     setReviewTarget({
-                                      transactionId: item.transaction_id || item.id,
-                                      revieweeName: item.buyer?.nickname || '구매자',
+                                      transactionId: transactionId,
+                                      revieweeName: buyerName,
                                       productInfo: {
                                         brand: item.brand || '',
                                         model: item.model || '',
@@ -731,13 +747,16 @@ export default function MyPageTabs() {
                                   variant="outline"
                                   className="text-xs"
                                   onClick={() => {
+                                    // transaction_id가 있으면 사용, 없으면 item.id 사용
+                                    const transactionId = (item as any).transaction_id || item.id;
+
                                     setReviewTarget({
-                                      transactionId: item.transaction_id || item.id,
+                                      transactionId: transactionId,
                                       revieweeName: item.phone?.seller?.nickname || '판매자',
                                       productInfo: {
                                         brand: item.phone?.brand || '',
                                         model: item.phone?.model || '',
-                                        price: item.phone?.price || item.offered_price
+                                        price: item.offered_price || item.phone?.price // 구매자는 offered_price 우선
                                       }
                                     });
                                     setShowReviewModal(true);
