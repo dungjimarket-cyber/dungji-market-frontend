@@ -60,6 +60,7 @@ export default function ReportSubmitModal({
   const [searchNickname, setSearchNickname] = useState('');
   const [searchResults, setSearchResults] = useState<SearchedUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<SearchedUser | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // 신고 정보
   const [reportType, setReportType] = useState('');
@@ -88,6 +89,7 @@ export default function ReportSubmitModal({
       );
 
       setSearchResults(response.data.users || []);
+      setHasSearched(true);
       if (response.data.users.length === 0) {
         toast.info('일치하는 사용자를 찾을 수 없습니다. 입력하신 정보로 신고하시겠습니까?');
       }
@@ -130,12 +132,23 @@ export default function ReportSubmitModal({
     try {
       const token = localStorage.getItem('accessToken');
 
+      const reportedNicknameText = selectedUser ? selectedUser.nickname : searchNickname;
+      const reportedPhoneText = selectedUser?.phone_number || searchPhone;
+
+      let reportedInfoText = '[상대방 정보]\n';
+      if (reportedNicknameText) {
+        reportedInfoText += `닉네임: ${reportedNicknameText}\n`;
+      }
+      if (reportedPhoneText) {
+        reportedInfoText += `연락처: ${reportedPhoneText}\n`;
+      }
+      if (productInfo) {
+        reportedInfoText += `거래 상품: ${productInfo}\n`;
+      }
+
       const requestData: any = {
         report_type: reportType,
-        description: `[상대방 정보]
-닉네임: ${selectedUser ? selectedUser.nickname : searchNickname || '제공되지 않음'}
-연락처: ${selectedUser?.phone_number || searchPhone || '제공되지 않음'}
-${productInfo ? `거래 상품: ${productInfo}\n` : ''}
+        description: `${reportedInfoText}
 [신고 내용]
 ${description}`,
       };
@@ -187,6 +200,7 @@ ${description}`,
     setSearchNickname('');
     setSearchResults([]);
     setSelectedUser(null);
+    setHasSearched(false);
     setReportType('');
     setProductInfo(phoneModel || '');
     setDescription('');
@@ -286,7 +300,7 @@ ${description}`,
             )}
 
             {/* 선택된 사용자 또는 입력된 정보 */}
-            {(selectedUser || (searchResults.length === 0 && (searchPhone || searchNickname))) && (
+            {(selectedUser || (hasSearched && searchResults.length === 0 && (searchPhone || searchNickname))) && (
               <div>
                 <Label>신고 대상</Label>
                 {selectedUser ? (
@@ -304,7 +318,7 @@ ${description}`,
                       <Check className="w-5 h-5 text-green-600" />
                     </div>
                   </div>
-                ) : (
+                ) : hasSearched && (
                   <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />

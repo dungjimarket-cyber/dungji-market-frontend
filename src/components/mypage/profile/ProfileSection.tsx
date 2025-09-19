@@ -87,9 +87,8 @@ export default function ProfileSection() {
             variant="outline"
             size="sm"
             onClick={() => router.push('/used/mypage/reports')}
-            className="gap-1.5 border-red-300 text-red-600 hover:bg-red-50"
+            className="border-red-300 text-red-600 hover:bg-red-50"
           >
-            <AlertTriangle className="w-4 h-4" />
             신고관리
           </Button>
 

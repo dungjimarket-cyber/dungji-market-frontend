@@ -218,15 +218,7 @@ export default function ReportsManagement() {
         <div className="space-y-3">
           {submittedReports.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <p className="mb-2">제출한 신고가 없습니다.</p>
-              <Button
-                variant="outline"
-                onClick={() => setShowReportModal(true)}
-                className="text-red-600 border-red-300 hover:bg-red-50"
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                신고하기
-              </Button>
+              <p>제출한 신고가 없습니다.</p>
             </div>
           ) : (
             <>
