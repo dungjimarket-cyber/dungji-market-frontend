@@ -72,6 +72,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [offers, setOffers] = useState<any[]>([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [myOffer, setMyOffer] = useState<any>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
   const [remainingOffers, setRemainingOffers] = useState<number | null>(null); // null로 초기화하여 로딩 상태 표시
@@ -2070,10 +2072,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <Button
                           size="sm"
                           onClick={() => {
-                            // 수락 처리
-                            if (confirm(`${offer.offered_price.toLocaleString()}원에 판매하시겠습니까?`)) {
-                              // API 호출 로직
-                            }
+                            setSelectedOfferId(offer.id);
+                            setShowAcceptModal(true);
                           }}
                         >
                           수락
@@ -2084,6 +2084,76 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 제안 수락 확인 모달 */}
+      {showAcceptModal && selectedOfferId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">제안을 수락하시겠습니까?</h3>
+            <div className="mb-6">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-gray-600 mb-2">수락 시 다음과 같이 진행됩니다:</p>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• 구매자에게 연락처가 공개됩니다</li>
+                  <li>• 거래상태가 '거래중'으로 변경됩니다</li>
+                  <li>• 다른 제안은 자동으로 거절됩니다</li>
+                </ul>
+              </div>
+              <p className="text-sm text-gray-500 mt-3">
+                제안 금액: <span className="font-bold text-lg text-blue-600">
+                  {offers.find(o => o.id === selectedOfferId)?.offered_price.toLocaleString()}원
+                </span>
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAcceptModal(false);
+                  setSelectedOfferId(null);
+                }}
+                className="flex-1"
+              >
+                취소
+              </Button>
+              <Button
+                onClick={async () => {
+                  await executeTransactionAction(
+                    async () => {
+                      const token = localStorage.getItem('accessToken');
+                      const response = await axios.post(
+                        `${process.env.NEXT_PUBLIC_API_URL}/used/offers/${selectedOfferId}/respond/`,
+                        { action: 'accept' },
+                        { headers: { 'Authorization': `Bearer ${token}` } }
+                      );
+                      return response.data;
+                    },
+                    {
+                      successMessage: '제안을 수락했습니다. 거래가 시작됩니다.',
+                      onSuccess: () => {
+                        setShowAcceptModal(false);
+                        setShowOffersModal(false);
+                        setSelectedOfferId(null);
+                        // 2초 후 마이페이지 판매내역 거래중 탭으로 이동
+                        setTimeout(() => {
+                          router.push('/used/mypage?tab=sales&filter=trading');
+                        }, 2000);
+                      },
+                      onError: () => {
+                        setShowAcceptModal(false);
+                        setSelectedOfferId(null);
+                      }
+                    }
+                  );
+                }}
+                className="flex-1"
+              >
+                수락하기
+              </Button>
+            </div>
           </div>
         </div>
       )}
