@@ -13,15 +13,8 @@ export default function MyPageLayout({ children }: MyPageLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-40 bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/used">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="text-lg font-semibold">마이페이지</h1>
-          </div>
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-end">
+          <div></div>
           
           <div className="flex items-center gap-2">
             <Link href="/used">
