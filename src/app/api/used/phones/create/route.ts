@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 파일 업로드 제한
-const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 5;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         // 파일 크기 검증
         if (file.size > MAX_FILE_SIZE) {
           return NextResponse.json(
-            { error: `이미지 ${file.name}의 크기가 3MB를 초과합니다.` },
+            { error: `이미지 ${file.name}의 크기가 10MB를 초과합니다.` },
             { status: 400 }
           );
         }

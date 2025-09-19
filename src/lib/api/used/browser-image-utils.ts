@@ -102,10 +102,10 @@ export async function createThumbnailInBrowser(
  * 이미지 유효성 검사
  */
 export function validateImage(file: File): { isValid: boolean; error?: string } {
-  // 파일 크기 검사 (3MB)
-  const maxSize = 3 * 1024 * 1024;
+  // 파일 크기 검사 (10MB)
+  const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
-    return { isValid: false, error: '이미지 크기는 3MB를 초과할 수 없습니다.' };
+    return { isValid: false, error: '이미지 크기는 10MB를 초과할 수 없습니다.' };
   }
   
   // 파일 형식 검사
