@@ -612,46 +612,42 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       // 이미지 처리 - 이미지가 변경된 경우에만 전송
       if (isFieldEditable('images') && imagesModified) {
         const actualImages = images.filter(img => img && (img.file || img.preview));
+        const existingImages = actualImages.filter(img => img.preview && !img.file);
+        const newImages = actualImages.filter(img => img.file);
 
-        // 이미지가 있으면 처리
-        if (actualImages.length > 0) {
+        // 기존 이미지 ID들 전송 (유지할 이미지)
+        existingImages.forEach((image) => {
+          if (image.id) {
+            submitData.append('existing_image_ids', image.id.toString());
+          }
+        });
+
+        // 새로 추가된 이미지만 업로드
+        if (newImages.length > 0) {
           toast({
             title: '이미지 처리 중...',
-            description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.',
+            description: `새로운 이미지 ${newImages.length}개를 압축하고 있습니다.`,
           });
 
-          for (const image of actualImages) {
-            if (image.file) {
-              // 새로 추가된 이미지 - 압축 처리
-              try {
-                const compressedBlob = await compressImageInBrowser(image.file, {
-                  maxWidth: 1200,
-                  maxHeight: 1200,
-                  quality: 0.85,
-                  format: 'webp'
-                });
+          for (const image of newImages) {
+            try {
+              const compressedBlob = await compressImageInBrowser(image.file!, {
+                maxWidth: 1200,
+                maxHeight: 1200,
+                quality: 0.85,
+                format: 'webp'
+              });
 
-                const compressedFile = new File(
-                  [compressedBlob],
-                  `image_${Date.now()}.webp`,
-                  { type: 'image/webp' }
-                );
+              const compressedFile = new File(
+                [compressedBlob],
+                `image_${Date.now()}.webp`,
+                { type: 'image/webp' }
+              );
 
-                submitData.append('images', compressedFile);
-              } catch (error) {
-                console.error('Failed to compress image:', error);
-                submitData.append('images', image.file);
-              }
-            } else if (image.preview) {
-              // 기존 이미지 - URL에서 다시 fetch해서 전송
-              try {
-                const response = await fetch(image.preview);
-                const blob = await response.blob();
-                const file = new File([blob], `image_${Date.now()}.jpg`, { type: blob.type });
-                submitData.append('images', file);
-              } catch (error) {
-                console.error('Failed to fetch existing image:', error);
-              }
+              submitData.append('new_images', compressedFile);
+            } catch (error) {
+              console.error('Failed to compress image:', error);
+              submitData.append('new_images', image.file!);
             }
           }
         }
