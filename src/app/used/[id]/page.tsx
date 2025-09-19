@@ -1194,7 +1194,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             } text-white`}
                             disabled={phone.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
                           >
-                            <Banknote className="w-5 h-5 mr-2" />
+                            <span className="text-lg font-bold mr-2">￦</span>
                             {phone.status === 'trading'
                               ? '거래중인 상품입니다'
                               : phone.status === 'sold'
@@ -1780,7 +1780,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           <div className="bg-white rounded-lg max-w-sm w-full p-6">
             <div className="text-center mb-6">
               <div className={`w-16 h-16 ${parseInt(offerAmount) === phone.price ? 'bg-green-100' : 'bg-blue-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                <Banknote className={`w-8 h-8 ${parseInt(offerAmount) === phone.price ? 'text-green-600' : 'text-blue-600'}`} />
+                <span className={`text-3xl font-bold ${parseInt(offerAmount) === phone.price ? 'text-green-600' : 'text-blue-600'}`}>￦</span>
               </div>
               <h3 className="text-lg font-semibold mb-2">
                 {parseInt(offerAmount) === phone.price ? '🎉 즉시구매 확인' : '가격 제안 확인'}
