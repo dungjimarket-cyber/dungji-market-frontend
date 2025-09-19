@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User } from 'lucide-react';
+import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
@@ -355,35 +355,28 @@ export default function UsedPhonesPage() {
         {/* 히어로 섹션 */}
         <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              중고폰 직거래 서비스가 오픈했습니다
-            </h1>
-            <p className="text-base lg:text-lg text-gray-600 mb-8">
-              안전하고 투명한 스마트폰 거래의 시작
-            </p>
-            
             {/* 특징 아이콘 */}
             <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-2xl mx-auto mb-8">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
-                  <Smartphone className="w-6 h-6" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-pink-100 text-pink-600 rounded-full mb-2">
+                  <Heart className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">동네 거래</p>
-                <p className="text-xs text-gray-500 mt-1">가까운 곳에서</p>
+                <p className="text-sm font-medium text-gray-700">재밌는</p>
+                <p className="text-xs text-gray-500 mt-1">즐거운 거래</p>
               </div>
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
-                  <Shield className="w-6 h-6" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full mb-2">
+                  <Star className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">안심 거래</p>
-                <p className="text-xs text-gray-500 mt-1">믿을 수 있는</p>
+                <p className="text-sm font-medium text-gray-700">재밌는</p>
+                <p className="text-xs text-gray-500 mt-1">특별한 경험</p>
               </div>
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-600 rounded-full mb-2">
-                  <Zap className="w-6 h-6" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 rounded-full mb-2">
+                  <ShoppingBag className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">빠른 거래</p>
-                <p className="text-xs text-gray-500 mt-1">오늘 바로</p>
+                <p className="text-sm font-medium text-gray-700">중고직거래</p>
+                <p className="text-xs text-gray-500 mt-1">안전한 거래</p>
               </div>
             </div>
 
