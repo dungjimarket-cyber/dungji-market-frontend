@@ -17,9 +17,9 @@ import { cn } from '@/lib/utils';
 interface StatusCounts {
   sales: {
     active: number;
-    reserved: number;
+    offers: number;
+    trading: number;
     sold: number;
-    hidden: number;
   };
   purchases: {
     offers: number;
@@ -32,7 +32,7 @@ export default function MyPageTabs() {
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [statusCounts, setStatusCounts] = useState<StatusCounts>({
-    sales: { active: 0, reserved: 0, sold: 0, hidden: 0 },
+    sales: { active: 0, offers: 0, trading: 0, sold: 0 },
     purchases: { offers: 0, trading: 0, completed: 0 }
   });
   const [favoritesCount, setFavoritesCount] = useState(0);
@@ -57,10 +57,10 @@ export default function MyPageTabs() {
         const salesItems = salesData.results || salesData.items || [];
 
         const salesCount = {
-          active: salesItems.filter((item: any) => item.status === 'for_sale').length,
-          reserved: salesItems.filter((item: any) => item.status === 'reserved').length,
+          active: salesItems.filter((item: any) => item.status === 'active' && item.offer_count === 0).length,
+          offers: salesItems.filter((item: any) => item.status === 'active' && item.offer_count > 0).length,
+          trading: salesItems.filter((item: any) => item.status === 'trading').length,
           sold: salesItems.filter((item: any) => item.status === 'sold').length,
-          hidden: salesItems.filter((item: any) => item.status === 'hidden').length,
         };
 
         setStatusCounts(prev => ({ ...prev, sales: salesCount }));
@@ -129,16 +129,16 @@ export default function MyPageTabs() {
 
         switch(status) {
           case 'active':
-            data = allItems.filter((item: any) => item.status === 'for_sale');
+            data = allItems.filter((item: any) => item.status === 'active' && item.offer_count === 0);
             break;
-          case 'reserved':
-            data = allItems.filter((item: any) => item.status === 'reserved');
+          case 'offers':
+            data = allItems.filter((item: any) => item.status === 'active' && item.offer_count > 0);
+            break;
+          case 'trading':
+            data = allItems.filter((item: any) => item.status === 'trading');
             break;
           case 'sold':
             data = allItems.filter((item: any) => item.status === 'sold');
-            break;
-          case 'hidden':
-            data = allItems.filter((item: any) => item.status === 'hidden');
             break;
         }
       }
@@ -207,16 +207,16 @@ export default function MyPageTabs() {
           variant="outline"
           size="sm"
           onClick={() => setShowFavoritesModal(true)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border-gray-300"
         >
-          <Heart className="w-4 h-4" />
+          <Heart className="w-4 h-4 text-red-500" />
           찜 목록 ({favoritesCount})
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setShowReviewsModal(true)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 border-gray-300"
         >
           <MessageSquare className="w-4 h-4" />
           거래후기 ({reviewsCount})
@@ -241,14 +241,24 @@ export default function MyPageTabs() {
             <div className="text-xl font-bold">{statusCounts.sales.active}</div>
           </button>
           <button
-            onClick={() => handleSectionClick('sales-reserved')}
+            onClick={() => handleSectionClick('sales-offers')}
             className={cn(
               "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
-              activeSection === 'sales-reserved' && "bg-orange-50 border-orange-500"
+              activeSection === 'sales-offers' && "bg-orange-50 border-orange-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">예약중</div>
-            <div className="text-xl font-bold">{statusCounts.sales.reserved}</div>
+            <div className="text-xs text-gray-600 mb-1">받은제안</div>
+            <div className="text-xl font-bold">{statusCounts.sales.offers}</div>
+          </button>
+          <button
+            onClick={() => handleSectionClick('sales-trading')}
+            className={cn(
+              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              activeSection === 'sales-trading' && "bg-green-50 border-green-500"
+            )}
+          >
+            <div className="text-xs text-gray-600 mb-1">거래중</div>
+            <div className="text-xl font-bold">{statusCounts.sales.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-sold')}
@@ -257,18 +267,8 @@ export default function MyPageTabs() {
               activeSection === 'sales-sold' && "bg-gray-100 border-gray-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">거래완료</div>
+            <div className="text-xs text-gray-600 mb-1">판매완료</div>
             <div className="text-xl font-bold">{statusCounts.sales.sold}</div>
-          </button>
-          <button
-            onClick={() => handleSectionClick('sales-hidden')}
-            className={cn(
-              "p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
-              activeSection === 'sales-hidden' && "bg-gray-100 border-gray-500"
-            )}
-          >
-            <div className="text-xs text-gray-600 mb-1">숨김</div>
-            <div className="text-xl font-bold">{statusCounts.sales.hidden}</div>
           </button>
         </div>
       </Card>
@@ -287,7 +287,7 @@ export default function MyPageTabs() {
               activeSection === 'purchase-offers' && "bg-purple-50 border-purple-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">제안중</div>
+            <div className="text-xs text-gray-600 mb-1">구매제안</div>
             <div className="text-xl font-bold">{statusCounts.purchases.offers}</div>
           </button>
           <button
@@ -307,7 +307,7 @@ export default function MyPageTabs() {
               activeSection === 'purchase-completed' && "bg-gray-100 border-gray-500"
             )}
           >
-            <div className="text-xs text-gray-600 mb-1">구매완료</div>
+            <div className="text-xs text-gray-600 mb-1">거래완료</div>
             <div className="text-xl font-bold">{statusCounts.purchases.completed}</div>
           </button>
         </div>
@@ -318,14 +318,13 @@ export default function MyPageTabs() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">
-              {activeSection.includes('sales') ? '판매 ' : '구매 '}
-              {activeSection.includes('active') && '판매중 상품'}
-              {activeSection.includes('reserved') && '예약중 상품'}
-              {activeSection.includes('sold') && '거래완료 상품'}
-              {activeSection.includes('hidden') && '숨김 상품'}
-              {activeSection.includes('offers') && '제안중 상품'}
-              {activeSection.includes('trading') && '거래중 상품'}
-              {activeSection.includes('completed') && '구매완료 상품'}
+              {activeSection === 'sales-active' && '판매중'}
+              {activeSection === 'sales-offers' && '받은제안'}
+              {activeSection === 'sales-trading' && '거래중'}
+              {activeSection === 'sales-sold' && '판매완료'}
+              {activeSection === 'purchase-offers' && '구매제안'}
+              {activeSection === 'purchase-trading' && '거래중'}
+              {activeSection === 'purchase-completed' && '거래완료'}
             </h3>
             <Button
               variant="ghost"
@@ -345,43 +344,237 @@ export default function MyPageTabs() {
             <div className="text-center py-8 text-gray-500">해당 상품이 없습니다.</div>
           ) : (
             <>
-              {/* 기존 컴포넌트 재사용 또는 새로운 리스트 컴포넌트 */}
+              {/* 섹션별 상세 리스트 */}
               <div className="space-y-3">
-                {paginatedData.map((item: any) => (
-                  <div key={item.id} className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {item.images?.[0] && (
-                        <img
-                          src={item.images[0].image_url || item.phone?.images?.[0]?.image_url}
-                          alt=""
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item.title || item.phone?.title}</h4>
-                        <p className="text-sm text-gray-600">
-                          {(item.price || item.phone?.price || item.offered_price || 0).toLocaleString()}원
-                        </p>
+                {paginatedData.map((item: any) => {
+                  // 판매중 상품
+                  if (activeSection === 'sales-active') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.images?.[0] && (
+                            <img
+                              src={item.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              {item.price.toLocaleString()}원
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.location.href = `/used/${item.id}`}
+                              >
+                                제안 확인
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.location.href = `/used/${item.id}/edit`}
+                              >
+                                상품 수정
+                              </Button>
+                            </div>
+                          </div>
+                          <Badge variant="default">판매중</Badge>
+                        </div>
                       </div>
-                      <Badge variant={
-                        item.status === 'for_sale' || item.status === 'active' ? 'default' :
-                        item.status === 'trading' ? 'secondary' :
-                        item.status === 'sold' ? 'outline' :
-                        item.status === 'pending' ? 'default' :
-                        item.status === 'accepted' ? 'secondary' :
-                        'outline'
-                      }>
-                        {item.status === 'for_sale' && '판매중'}
-                        {item.status === 'reserved' && '예약중'}
-                        {item.status === 'sold' && '거래완료'}
-                        {item.status === 'hidden' && '숨김'}
-                        {item.status === 'pending' && '제안중'}
-                        {item.status === 'accepted' && item.phone?.status === 'trading' && '거래중'}
-                        {item.status === 'accepted' && item.phone?.status === 'sold' && '구매완료'}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  }
+
+                  // 받은 제안
+                  if (activeSection === 'sales-offers') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.images?.[0] && (
+                            <img
+                              src={item.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              판매가: {item.price.toLocaleString()}원
+                            </p>
+                            <Badge variant="outline" className="text-xs mt-1">
+                              제안 {item.offer_count}건
+                            </Badge>
+                            <div className="mt-2">
+                              <Button
+                                size="sm"
+                                onClick={() => window.location.href = `/used/${item.id}`}
+                              >
+                                제안 확인
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 판매자 거래중
+                  if (activeSection === 'sales-trading') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.images?.[0] && (
+                            <img
+                              src={item.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              거래가격: {(item.final_offer_price || item.price).toLocaleString()}원
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Button size="sm" variant="outline">구매자 정보</Button>
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700">판매 완료</Button>
+                              <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">거래 취소</Button>
+                            </div>
+                          </div>
+                          <Badge className="bg-green-100 text-green-700">거래중</Badge>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 판매완료
+                  if (activeSection === 'sales-sold') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.images?.[0] && (
+                            <img
+                              src={item.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              {item.price.toLocaleString()}원
+                            </p>
+                            <div className="mt-2">
+                              {item.has_review ? (
+                                <Button size="sm" disabled className="text-xs bg-gray-200">후기작성완료</Button>
+                              ) : (
+                                <Button size="sm" variant="outline" className="text-xs">후기 작성</Button>
+                              )}
+                            </div>
+                          </div>
+                          <Badge variant="outline">판매완료</Badge>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 구매제안
+                  if (activeSection === 'purchase-offers') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.phone?.images?.[0] && (
+                            <img
+                              src={item.phone.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.phone?.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              제안가: {item.offered_price.toLocaleString()}원
+                            </p>
+                            <div className="mt-2">
+                              {item.status === 'pending' && (
+                                <Button size="sm" variant="outline" className="text-red-600">제안 취소</Button>
+                              )}
+                            </div>
+                          </div>
+                          <Badge variant={item.status === 'pending' ? 'default' : 'secondary'}>
+                            {item.status === 'pending' ? '대기중' : '수락됨'}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 구매자 거래중
+                  if (activeSection === 'purchase-trading') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.phone?.images?.[0] && (
+                            <img
+                              src={item.phone.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.phone?.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              거래가격: {item.offered_price.toLocaleString()}원
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Button size="sm" variant="outline">판매자 정보</Button>
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700">구매 완료</Button>
+                              <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">거래 취소</Button>
+                            </div>
+                          </div>
+                          <Badge className="bg-green-100 text-green-700">거래중</Badge>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 구매완료
+                  if (activeSection === 'purchase-completed') {
+                    return (
+                      <div key={item.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {item.phone?.images?.[0] && (
+                            <img
+                              src={item.phone.images[0].image_url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.phone?.title}</h4>
+                            <p className="text-sm text-gray-600">
+                              {(item.phone?.price || item.offered_price).toLocaleString()}원
+                            </p>
+                            <div className="mt-2">
+                              {item.has_review ? (
+                                <Button size="sm" disabled className="text-xs bg-gray-200">후기작성완료</Button>
+                              ) : (
+                                <Button size="sm" variant="outline" className="text-xs">후기 작성</Button>
+                              )}
+                            </div>
+                          </div>
+                          <Badge variant="outline">거래완료</Badge>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 기본 리턴
+                  return null;
+                })}
               </div>
 
               {/* 페이지네이션 */}
