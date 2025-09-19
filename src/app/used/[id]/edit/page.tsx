@@ -607,46 +607,16 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       }
       
       // 이미지 처리 - 백엔드가 update 메서드를 지원하지 않으므로 모든 이미지를 다시 전송
-      // 단, 이미지가 변경되었을 때만 처리
+      // 백엔드가 이미지를 완전 교체 방식으로 처리하므로 항상 모든 이미지를 전송해야 함
       if (isFieldEditable('images')) {
         const actualImages = images.filter(img => img && (img.file || img.preview));
-        const existingImages = actualImages.filter(img => img.preview && !img.file);
-        const newImages = actualImages.filter(img => img.file);
 
-        // 이미지가 변경되었는지 정확하게 확인
-        // 1. 새 이미지가 추가됨
-        // 2. 이미지 개수가 변경됨
-        // 3. 이미지 ID 순서가 변경됨
-        // 4. 기존 이미지가 삭제됨
-        const originalImages = phone?.images || [];
-        const originalImageCount = originalImages.length;
-
-        // 원본 이미지 ID 목록 (순서 유지)
-        const originalImageIdsInOrder = originalImages.map((img: any) => img.id).join(',');
-        // 현재 기존 이미지 ID 목록 (순서 유지)
-        const currentImageIdsInOrder = existingImages.map(img => img.id).filter(id => id).join(',');
-
-        const hasImageChanges =
-          newImages.length > 0 || // 새 이미지 추가
-          actualImages.length !== originalImageCount || // 개수 변경
-          originalImageIdsInOrder !== currentImageIdsInOrder; // ID 또는 순서 변경
-
-        // 디버그 로그
-        console.log('=== 이미지 변경 감지 ===');
-        console.log('새 이미지:', newImages.length);
-        console.log('원본 개수:', originalImageCount, '현재 개수:', actualImages.length);
-        console.log('원본 ID 순서:', originalImageIdsInOrder);
-        console.log('현재 ID 순서:', currentImageIdsInOrder);
-        console.log('변경 감지:', hasImageChanges);
-
-        if (hasImageChanges) {
-          // 이미지가 변경된 경우에만 모든 이미지를 다시 전송
-          if (actualImages.length > 0) {
-            toast({
-              title: '이미지 처리 중...',
-              description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.',
-            });
-          }
+        // 이미지가 있으면 처리
+        if (actualImages.length > 0) {
+          toast({
+            title: '이미지 처리 중...',
+            description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.',
+          });
 
           for (const image of actualImages) {
             if (image.file) {
@@ -683,7 +653,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
             }
           }
         }
-        // 이미지가 변경되지 않은 경우는 이미지 필드를 전송하지 않음
       }
 
       // 디버깅용 FormData 내용 출력
