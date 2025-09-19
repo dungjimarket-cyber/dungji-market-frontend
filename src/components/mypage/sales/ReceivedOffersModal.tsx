@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, User, MessageSquare, DollarSign, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { X, User, MessageSquare, Banknote, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {

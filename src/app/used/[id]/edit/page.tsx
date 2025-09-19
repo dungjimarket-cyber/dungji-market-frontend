@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   ArrowLeft, Plus, X, Camera, AlertCircle, MapPin,
-  DollarSign, Package, Smartphone, Info, Lock, Image as ImageIcon
+  Banknote, Package, Smartphone, Info, Lock, Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

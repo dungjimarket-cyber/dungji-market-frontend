@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Clock, CheckCircle, XCircle, MessageSquare, DollarSign, Phone, Mail, MapPin, Info, X, User } from 'lucide-react';
+import { Heart, Clock, CheckCircle, XCircle, MessageSquare, Banknote, Phone, Mail, MapPin, Info, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';

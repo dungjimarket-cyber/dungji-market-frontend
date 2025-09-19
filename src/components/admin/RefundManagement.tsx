@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, CheckCircle, XCircle, CreditCard, DollarSign, Calendar } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, CreditCard, Banknote, Calendar } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,7 +94,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 // 결제 수단별 아이콘
 const PaymentMethodIcon = ({ method }: { method: string }) => {
   if (method === 'CARD') return <CreditCard className="h-4 w-4" />;
-  if (method === 'VBANK') return <DollarSign className="h-4 w-4" />;
+  if (method === 'VBANK') return <Banknote className="h-4 w-4" />;
   return <Calendar className="h-4 w-4" />;
 };
 
