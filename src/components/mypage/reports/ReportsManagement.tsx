@@ -201,8 +201,7 @@ export default function ReportsManagement() {
     <div className="space-y-4 sm:space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3 sm:mb-4 gap-3">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+          <h2 className="text-lg sm:text-xl font-semibold min-w-0">
             <span className="truncate">신고 관리</span>
           </h2>
           <Button
