@@ -593,6 +593,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             >
               목록
             </button>
+            <button
+              onClick={() => router.push('/used/mypage')}
+              className="text-xs px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+            >
+              거래내역
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={handleShare}>
