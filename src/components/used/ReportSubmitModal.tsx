@@ -104,10 +104,18 @@ export default function ReportSubmitModal({
 
   const handleNext = () => {
     if (step === 1) {
-      if (!selectedUser) {
-        toast.error('신고 대상을 선택해주세요.');
+      if (!selectedUser && !searchPhone && !searchNickname) {
+        toast.error('신고 대상 정보를 입력해주세요.');
         return;
       }
+
+      // 사용자를 찾지 못했지만 정보가 입력된 경우 경고
+      if (!selectedUser && (searchPhone || searchNickname)) {
+        if (searchResults.length === 0 && (searchPhone || searchNickname)) {
+          toast.info('일치하는 사용자를 찾지 못했지만 신고는 가능합니다.');
+        }
+      }
+
       setStep(2);
     }
   };
@@ -127,17 +135,29 @@ export default function ReportSubmitModal({
     try {
       const token = localStorage.getItem('accessToken');
 
-      const requestData = {
-        reported_user: selectedUser!.id,
-        reported_phone: phoneId || null,
+      const requestData: any = {
         report_type: reportType,
         description: `[상대방 정보]
-닉네임: ${selectedUser!.nickname}
-연락처: ${selectedUser!.phone_number || '정보 없음'}
+닉네임: ${selectedUser ? selectedUser.nickname : searchNickname || '제공되지 않음'}
+연락처: ${selectedUser?.phone_number || searchPhone || '제공되지 않음'}
 ${productInfo ? `거래 상품: ${productInfo}\n` : ''}
 [신고 내용]
 ${description}`,
       };
+
+      // 사용자를 찾은 경우
+      if (selectedUser) {
+        requestData.reported_user = selectedUser.id;
+      } else {
+        // 사용자를 찾지 못한 경우 텍스트 정보로 저장
+        requestData.reported_nickname = searchNickname || null;
+        requestData.reported_phone_number = searchPhone || null;
+      }
+
+      // 상품 정보가 있는 경우
+      if (phoneId) {
+        requestData.reported_phone = phoneId;
+      }
 
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/used/reports/`,
@@ -270,24 +290,42 @@ ${description}`,
               </div>
             )}
 
-            {/* 선택된 사용자 */}
-            {selectedUser && (
+            {/* 선택된 사용자 또는 입력된 정보 */}
+            {(selectedUser || (searchPhone || searchNickname)) && (
               <div>
                 <Label>신고 대상</Label>
-                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <div className="flex items-center justify-between">
+                {selectedUser ? (
+                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-start gap-3">
+                        <User className="w-5 h-5 text-red-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-red-900">{selectedUser.nickname}</p>
+                          {selectedUser.phone_number && (
+                            <p className="text-sm text-red-700">{selectedUser.phone_number}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Check className="w-5 h-5 text-red-600" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="flex items-start gap-3">
-                      <User className="w-5 h-5 text-red-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-red-900">{selectedUser.nickname}</p>
-                        {selectedUser.phone_number && (
-                          <p className="text-sm text-red-700">{selectedUser.phone_number}</p>
-                        )}
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-amber-900">일치하는 사용자를 찾을 수 없음</p>
+                        <div className="text-sm text-amber-700 mt-1">
+                          {searchNickname && <p>닉네임: {searchNickname}</p>}
+                          {searchPhone && <p>연락처: {searchPhone}</p>}
+                        </div>
+                        <p className="text-xs text-amber-600 mt-2">
+                          입력하신 정보로 신고가 접수됩니다
+                        </p>
                       </div>
                     </div>
-                    <Check className="w-5 h-5 text-red-600" />
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -350,7 +388,10 @@ ${description}`,
               <Button variant="outline" onClick={handleClose}>
                 취소
               </Button>
-              <Button onClick={handleNext} disabled={!selectedUser}>
+              <Button
+                onClick={handleNext}
+                disabled={!selectedUser && !searchPhone && !searchNickname}
+              >
                 다음
               </Button>
             </>
