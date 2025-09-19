@@ -34,6 +34,7 @@ interface SearchedUser {
   region?: string;
 }
 
+
 const REPORT_TYPES = [
   { value: 'fake_listing', label: '허위매물', description: '실제와 다른 상품 정보' },
   { value: 'fraud', label: '사기', description: '돈을 받고 상품을 주지 않음' },
@@ -65,6 +66,7 @@ export default function ReportSubmitModal({
   const [productInfo, setProductInfo] = useState(phoneModel || '');
   const [description, setDescription] = useState('');
 
+
   const handleSearch = async () => {
     if (!searchPhone && !searchNickname) {
       toast.error('연락처 또는 닉네임을 입력해주세요.');
@@ -87,7 +89,7 @@ export default function ReportSubmitModal({
 
       setSearchResults(response.data.users || []);
       if (response.data.users.length === 0) {
-        toast.info('일치하는 사용자를 찾을 수 없습니다.');
+        toast.info('일치하는 사용자를 찾을 수 없습니다. 입력하신 정보로 신고하시겠습니까?');
       }
     } catch (error) {
       console.error('User search failed:', error);
@@ -107,13 +109,6 @@ export default function ReportSubmitModal({
       if (!selectedUser && !searchPhone && !searchNickname) {
         toast.error('신고 대상 정보를 입력해주세요.');
         return;
-      }
-
-      // 사용자를 찾지 못했지만 정보가 입력된 경우 경고
-      if (!selectedUser && (searchPhone || searchNickname)) {
-        if (searchResults.length === 0 && (searchPhone || searchNickname)) {
-          toast.info('일치하는 사용자를 찾지 못했지만 신고는 가능합니다.');
-        }
       }
 
       setStep(2);
@@ -217,7 +212,7 @@ ${description}`,
             <div>
               <Label>상대방 정보 입력</Label>
               <p className="text-sm text-gray-500 mb-3">
-                연락처와 닉네임 중 하나 이상을 입력해주세요.
+                연락처 또는 닉네임 중 하나를 입력하고 검색해주세요.
               </p>
 
               <div className="space-y-3">
@@ -291,22 +286,22 @@ ${description}`,
             )}
 
             {/* 선택된 사용자 또는 입력된 정보 */}
-            {(selectedUser || (searchPhone || searchNickname)) && (
+            {(selectedUser || (searchResults.length === 0 && (searchPhone || searchNickname))) && (
               <div>
                 <Label>신고 대상</Label>
                 {selectedUser ? (
-                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-3">
-                        <User className="w-5 h-5 text-red-600 mt-0.5" />
+                        <User className="w-5 h-5 text-green-600 mt-0.5" />
                         <div>
-                          <p className="font-medium text-red-900">{selectedUser.nickname}</p>
+                          <p className="font-medium text-green-900">{selectedUser.nickname}</p>
                           {selectedUser.phone_number && (
-                            <p className="text-sm text-red-700">{selectedUser.phone_number}</p>
+                            <p className="text-sm text-green-700">{selectedUser.phone_number}</p>
                           )}
                         </div>
                       </div>
-                      <Check className="w-5 h-5 text-red-600" />
+                      <Check className="w-5 h-5 text-green-600" />
                     </div>
                   </div>
                 ) : (
@@ -314,7 +309,7 @@ ${description}`,
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-amber-900">일치하는 사용자를 찾을 수 없음</p>
+                        <p className="text-sm font-medium text-amber-900">검색 결과가 없습니다</p>
                         <div className="text-sm text-amber-700 mt-1">
                           {searchNickname && <p>닉네임: {searchNickname}</p>}
                           {searchPhone && <p>연락처: {searchPhone}</p>}
