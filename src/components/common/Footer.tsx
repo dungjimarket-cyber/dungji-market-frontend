@@ -2,19 +2,125 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
-  
+  const [isExpanded, setIsExpanded] = useState(false);
+
   // Don't show footer on terms pages to avoid redundancy
   if (pathname.startsWith('/terms')) {
     return null;
   }
 
   return (
-    <footer className="border-t mt-1 sm:mt-2 md:mt-4 py-1 sm:py-2 md:py-3 bg-gray-50 mb-16 md:mb-0">
+    <footer className="border-t mt-1 sm:mt-2 md:mt-4 py-1 sm:py-2 md:py-2 bg-gray-50 mb-16 md:mb-0">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 모바일 레이아웃 */}
+        <div className="block md:hidden">
+          {/* 기본 표시 영역 */}
+          <div className="flex flex-col items-center text-center space-y-2">
+            <p className="text-sm font-medium text-gray-700">둥지마켓</p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <a href="tel:070-4507-4492" className="inline-flex items-center justify-center px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                <span>☎️ 070-4507-4492</span>
+              </a>
+              <a
+                href="http://pf.kakao.com/_Jyavn/chat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-medium rounded-lg transition-colors"
+              >
+                💬 카카오톡 문의
+              </a>
+            </div>
+
+            {/* 더보기/접기 버튼 */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {isExpanded ? (
+                <>
+                  <span>접기</span>
+                  <ChevronUp size={14} />
+                </>
+              ) : (
+                <>
+                  <span>더보기</span>
+                  <ChevronDown size={14} />
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* 펼쳐지는 영역 */}
+          {isExpanded && (
+            <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+              {/* 회사정보 */}
+              <div className="text-center">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">회사정보</h4>
+                <div className="text-xs text-gray-600 space-y-0.5">
+                  <p>대표: 김성민 | 사업자: 275-23-02159</p>
+                  <p>통신판매업: 제2025-경기하남-1650호</p>
+                  <p>경기도 하남시 검단산로 239, B1층 26호</p>
+                </div>
+              </div>
+
+              {/* 바로가기 링크 */}
+              <div className="text-center">
+                <h4 className="text-xs font-medium text-gray-700 mb-1">바로가기</h4>
+                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-600">
+                  <Link href="/terms/general" className="hover:text-emerald-600">약관</Link>
+                  <span className="text-gray-400">|</span>
+                  <Link href="/used/guide" className="hover:text-emerald-600">가이드</Link>
+                  <span className="text-gray-400">|</span>
+                  <Link href="/privacy" className="hover:text-emerald-600">개인정보</Link>
+                  <span className="text-gray-400">|</span>
+                  <Link href="/faq" className="hover:text-emerald-600">FAQ</Link>
+                  <span className="text-gray-400">|</span>
+                  <Link href="/notices" className="hover:text-emerald-600">공지</Link>
+                  <span className="text-gray-400">|</span>
+                  <Link href="/inquiries" className="hover:text-emerald-600">문의</Link>
+                </div>
+              </div>
+
+              {/* SNS 링크 */}
+              <div className="flex justify-center gap-4">
+                <a
+                  href="https://www.instagram.com/dungjimarket"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-xs text-gray-600 hover:text-pink-600 transition-colors"
+                >
+                  📷 인스타그램
+                </a>
+                <a
+                  href="https://m.blog.naver.com/dungjimarket-1-"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-xs text-gray-600 hover:text-green-600 transition-colors"
+                >
+                  📝 블로그
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* 저작권 안내 (항상 표시) */}
+          <div className="mt-3 pt-2 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-500">
+              © {new Date().getFullYear()} 둥지마켓. All rights reserved.
+            </p>
+            <p className="text-[10px] text-gray-400 mt-1">
+              둥지마켓은 통신판매중개자로서, 통신판매의 당사자가 아니며 상품의 주문, 배송 및 환불 등과 관련한 의무와 책임은 각 판매자에게 있습니다.
+            </p>
+          </div>
+        </div>
+
+        {/* PC 레이아웃 (기존 유지) */}
+        <div className="hidden md:grid md:grid-cols-3 gap-4">
           {/* Company Info */}
           <div>
             <p className="text-sm text-gray-600 mb-1">상호: 둥지마켓</p>
