@@ -431,7 +431,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <h4 className="font-medium">{item.title}</h4>
+                                <h4 className="font-medium truncate">{item.title}</h4>
                                 <p className="text-sm text-gray-600">
                                   {item.price.toLocaleString()}원
                                 </p>
@@ -497,11 +497,11 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.title}</h4>
+                            <h4 className="font-medium truncate">{item.title}</h4>
                             <p className="text-sm text-gray-600">
                               판매가: {item.price.toLocaleString()}원
                             </p>
-                            <Badge variant="outline" className="text-xs mt-1">
+                            <Badge variant="outline" className="text-xs mt-1 flex-shrink-0">
                               제안 {item.offer_count}건
                             </Badge>
                             <div className="mt-2">
@@ -541,7 +541,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.title}</h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium truncate">{item.title}</h4>
+                              <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
+                            </div>
                             <p className="text-sm text-gray-600">
                               거래가격: {(item.final_offer_price || item.price).toLocaleString()}원
                             </p>
@@ -573,7 +576,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               </Button>
                             </div>
                           </div>
-                          <Badge className="bg-green-100 text-green-700">거래중</Badge>
                         </div>
                       </div>
                     );
@@ -592,7 +594,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.title}</h4>
+                            <h4 className="font-medium truncate">{item.title}</h4>
                             <p className="text-sm text-gray-600">
                               {item.price.toLocaleString()}원
                             </p>
@@ -628,7 +630,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant="outline">판매완료</Badge>
+                          <Badge variant="outline" className="flex-shrink-0">판매완료</Badge>
                         </div>
                       </div>
                     );
@@ -647,7 +649,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.phone?.title}</h4>
+                            <h4 className="font-medium truncate">{item.phone?.title}</h4>
                             <p className="text-sm text-gray-600">
                               제안가: {item.offered_price.toLocaleString()}원
                             </p>
@@ -685,7 +687,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant={item.status === 'pending' ? 'default' : 'secondary'}>
+                          <Badge variant={item.status === 'pending' ? 'default' : 'secondary'} className="flex-shrink-0">
                             {item.status === 'pending' ? '대기중' : '수락됨'}
                           </Badge>
                         </div>
@@ -706,7 +708,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.phone?.title}</h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium truncate">{item.phone?.title}</h4>
+                              <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
+                            </div>
                             <p className="text-sm text-gray-600">
                               거래가격: {item.offered_price.toLocaleString()}원
                             </p>
@@ -739,7 +744,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               </Button>
                             </div>
                           </div>
-                          <Badge className="bg-green-100 text-green-700">거래중</Badge>
                         </div>
                       </div>
                     );
@@ -758,7 +762,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.phone?.title}</h4>
+                            <h4 className="font-medium truncate">{item.phone?.title}</h4>
                             <p className="text-sm text-gray-600">
                               {(item.phone?.price || item.offered_price).toLocaleString()}원
                             </p>
@@ -791,7 +795,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant="outline">거래완료</Badge>
+                          <Badge variant="outline" className="flex-shrink-0">거래완료</Badge>
                         </div>
                       </div>
                     );
