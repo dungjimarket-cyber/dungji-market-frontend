@@ -18,9 +18,9 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
-  description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
-  keywords: "둥지마켓, 휴대폰 공동구매, 인터넷 비교견적, 휴대폰 지원금, 인터넷 가입, 통신사 비교, SKT, KT, LGU+",
+  title: "둥지마켓 - 통신상품비교견적/지역기반중고거래",
+  description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶지역기반 중고직거래 서비스 오픈",
+  keywords: "둥지마켓, 휴대폰 공동구매, 인터넷 비교견적, 휴대폰 지원금, 인터넷 가입, 통신사 비교, SKT, KT, LGU+, 중고폰, 지역중고거래, 직거래",
   authors: [{ name: '둥지마켓' }],
   creator: '둥지마켓',
   publisher: '둥지마켓',
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
-    description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
+    title: "둥지마켓 - 통신상품비교견적/지역기반중고거래",
+    description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶지역기반 중고직거래 서비스 오픈",
     url: process.env.NEXTAUTH_URL || 'https://dungji-market.com',
     siteName: '둥지마켓',
     images: [
@@ -59,8 +59,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼",
-    description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶이제 한곳에서 비교 끝!",
+    title: "둥지마켓 - 통신상품비교견적/지역기반중고거래",
+    description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶지역기반 중고직거래 서비스 오픈",
     images: ['/logos/dungji_logo_text.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
