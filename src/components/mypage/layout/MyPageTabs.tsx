@@ -40,10 +40,13 @@ export default function MyPageTabs() {
         const salesData = await sellerAPI.getMyListings();
         const salesItems = salesData.results || salesData.items || [];
 
-        // 제안이 있거나 거래중인 상품 수
-        const notificationCount = salesItems.filter((item: any) =>
-          item.offer_count > 0 || item.status === 'trading'
-        ).length;
+        // 현재 활성 상태인 제안이나 거래중인 상품만 카운트
+        const notificationCount = salesItems.filter((item: any) => {
+          // 거래중 상태이거나, 제안이 있는 판매중 상품만
+          if (item.status === 'trading') return true;
+          if (item.status === 'for_sale' && item.offer_count > 0) return true;
+          return false;
+        }).length;
 
         setSalesNotifications(notificationCount);
       } catch (error) {
@@ -55,10 +58,11 @@ export default function MyPageTabs() {
         const purchaseData = await buyerAPI.getMySentOffers();
         const purchaseItems = purchaseData.results || purchaseData.items || [];
 
-        // 거래중인 상품 수
-        const tradingCount = purchaseItems.filter((item: any) =>
-          item.status === 'accepted' || item.phone?.status === 'trading'
-        ).length;
+        // 현재 거래중인 제안만 카운트 (완료된 거래 제외)
+        const tradingCount = purchaseItems.filter((item: any) => {
+          // 수락된 제안이면서 상품이 거래중 상태인 경우만
+          return item.status === 'accepted' && item.phone?.status === 'trading';
+        }).length;
 
         setPurchaseNotifications(tradingCount);
       } catch (error) {
@@ -118,7 +122,7 @@ export default function MyPageTabs() {
           <span className="text-sm font-medium relative">
             판매내역
             {salesNotifications > 0 && (
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
                 {salesNotifications}
               </span>
             )}
@@ -139,7 +143,7 @@ export default function MyPageTabs() {
           <span className="text-sm font-medium relative">
             구매내역
             {purchaseNotifications > 0 && (
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
                 {purchaseNotifications}
               </span>
             )}
