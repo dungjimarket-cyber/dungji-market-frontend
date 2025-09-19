@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Clock, CheckCircle, XCircle, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertTriangle, Clock, CheckCircle, XCircle, FileText, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import ReportSubmitModal from '@/components/used/ReportSubmitModal';
 
 interface Report {
   id: number;
@@ -82,11 +82,10 @@ const getStatusColor = (status: string) => {
 };
 
 export default function ReportsManagement() {
-  const [activeTab, setActiveTab] = useState('submitted');
   const [submittedReports, setSubmittedReports] = useState<Report[]>([]);
-  const [receivedReports, setReceivedReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showReportModal, setShowReportModal] = useState(false);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -113,11 +112,6 @@ export default function ReportsManagement() {
       const submittedData = submittedResponse.data.results || submittedResponse.data || [];
       setSubmittedReports(submittedData);
 
-      // 내가 받은 신고 조회 (백엔드에서 권한 체크)
-      // 일반 사용자는 자신이 받은 신고를 직접 조회할 수 없으므로
-      // 여기서는 빈 배열로 설정
-      setReceivedReports([]);
-
     } catch (error) {
       console.error('Failed to fetch reports:', error);
     } finally {
@@ -130,7 +124,7 @@ export default function ReportsManagement() {
     return items.slice(startIndex, startIndex + itemsPerPage);
   };
 
-  const renderReportCard = (report: Report, type: 'submitted' | 'received') => {
+  const renderReportCard = (report: Report) => {
     const StatusIcon = getStatusIcon(report.status);
 
     return (
@@ -153,11 +147,7 @@ export default function ReportsManagement() {
                   </Badge>
                 </div>
                 <div className="text-sm text-gray-600">
-                  {type === 'submitted' ? (
-                    <>신고 대상: {report.reported_user.nickname || report.reported_user.username}</>
-                  ) : (
-                    <>신고자: {report.reporter?.nickname || report.reporter?.username}</>
-                  )}
+                  신고 대상: {report.reported_user.nickname || report.reported_user.username}
                 </div>
                 {report.reported_phone && (
                   <div className="text-sm text-gray-500 mt-1">
@@ -205,97 +195,83 @@ export default function ReportsManagement() {
     );
   }
 
-  const currentReports = activeTab === 'submitted' ? submittedReports : receivedReports;
-  const totalPages = Math.ceil(currentReports.length / itemsPerPage);
+  const totalPages = Math.ceil(submittedReports.length / itemsPerPage);
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-red-600" />
-          신고 관리
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            신고 관리
+          </h2>
+          <Button
+            onClick={() => setShowReportModal(true)}
+            className="bg-red-600 hover:bg-red-700"
+            size="sm"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            신고하기
+          </Button>
+        </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => {
-          setActiveTab(value);
-          setCurrentPage(1);
-        }} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="submitted">
-              내가 한 신고 ({submittedReports.length})
-            </TabsTrigger>
-            <TabsTrigger value="received">
-              받은 신고 ({receivedReports.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="submitted" className="mt-4 space-y-3">
-            {submittedReports.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                제출한 신고가 없습니다.
-              </div>
-            ) : (
-              <>
-                {getPaginatedItems(submittedReports).map((report) =>
-                  renderReportCard(report, 'submitted')
-                )}
-
-                {/* 페이지네이션 */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <span className="text-sm">
-                      {currentPage} / {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="received" className="mt-4 space-y-3">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm">
-                  <p className="font-medium text-amber-800">안내</p>
-                  <p className="text-amber-700 mt-1">
-                    본인이 받은 신고 내역은 개인정보 보호를 위해 제한적으로 표시됩니다.
-                    신고로 인한 제재 사항은 별도로 안내됩니다.
-                  </p>
-                </div>
-              </div>
+        <div className="space-y-3">
+          {submittedReports.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="mb-2">제출한 신고가 없습니다.</p>
+              <Button
+                variant="outline"
+                onClick={() => setShowReportModal(true)}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                신고하기
+              </Button>
             </div>
+          ) : (
+            <>
+              {getPaginatedItems(submittedReports).map((report) =>
+                renderReportCard(report)
+              )}
 
-            {receivedReports.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                받은 신고가 없습니다.
-              </div>
-            ) : (
-              <>
-                {getPaginatedItems(receivedReports).map((report) =>
-                  renderReportCard(report, 'received')
-                )}
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* 신고 제출 모달 */}
+      <ReportSubmitModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onReportComplete={() => {
+          setShowReportModal(false);
+          fetchReports();
+        }}
+      />
     </div>
   );
 }
