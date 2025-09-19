@@ -43,6 +43,7 @@ interface GroupBuy {
   bids?: Bid[];
   final_selection_deadline?: string;
   is_leader?: boolean;
+  my_final_decision?: 'pending' | 'confirmed' | 'cancelled';
 }
 
 /**
@@ -202,6 +203,17 @@ export default function PendingSelectionGroupBuys() {
                         판매자 선택하기
                       </Button>
                     </Link>
+                  ) : groupBuy.my_final_decision === 'confirmed' ? (
+                    <Button size="sm" disabled className="w-full bg-blue-50 hover:bg-blue-50 text-blue-700 border-blue-200">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs font-semibold">✓ 구매확정</span>
+                        <span className="text-[10px] font-normal">다른 참여자의 선택을 기다리는 중</span>
+                      </div>
+                    </Button>
+                  ) : groupBuy.my_final_decision === 'cancelled' ? (
+                    <Button size="sm" disabled className="w-full">
+                      ✓ 구매포기
+                    </Button>
                   ) : (
                     <Link href={`/groupbuys/${groupBuy.id}`}>
                       <Button size="sm" variant="outline" className="w-full">

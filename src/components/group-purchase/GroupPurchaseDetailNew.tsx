@@ -1957,12 +1957,19 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                             </Button>
                           </>
                         ) : (
-                          <Button
-                            disabled
-                            className="w-full py-4 text-base font-medium"
-                          >
-                            {myParticipationFinalDecision === 'confirmed' ? '✓ 구매확정' : '✓ 구매포기'}
-                          </Button>
+                          <>
+                            <Button
+                              disabled
+                              className="w-full py-4 text-base font-medium"
+                            >
+                              {myParticipationFinalDecision === 'confirmed' ? '✓ 구매확정' : '✓ 구매포기'}
+                            </Button>
+                            {myParticipationFinalDecision === 'confirmed' && (
+                              <div className="mt-3 p-3 bg-blue-50 rounded-lg text-center">
+                                <p className="text-sm text-blue-700">다른 참여자의 선택을 기다리는 중</p>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     )}
