@@ -81,6 +81,9 @@ export default function DesktopNavbar() {
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
               공구 둘러보기
             </Link>
+            <Link href="/used" className="text-gray-600 hover:text-gray-900">
+              중고거래
+            </Link>
             <Link href="/events" className="text-gray-600 hover:text-gray-900">
               이벤트
             </Link>

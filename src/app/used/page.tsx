@@ -352,93 +352,29 @@ export default function UsedPhonesPage() {
         {/* 공지사항 */}
         <NoticeSection pageType="used" compact={true} />
 
-        {/* 히어로 섹션 */}
-        <section className="bg-gradient-to-b from-gray-50 to-white border rounded-lg my-4 py-6 lg:py-8">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* 특징 아이콘 */}
-            <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-2xl mx-auto mb-8">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-pink-100 text-pink-600 rounded-full mb-2">
-                  <Heart className="w-6 h-6" />
-                </div>
-                <p className="text-sm font-medium text-gray-700">재밌는</p>
-                <p className="text-xs text-gray-500 mt-1">즐거운 거래</p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full mb-2">
-                  <Star className="w-6 h-6" />
-                </div>
-                <p className="text-sm font-medium text-gray-700">재밌는</p>
-                <p className="text-xs text-gray-500 mt-1">특별한 경험</p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 rounded-full mb-2">
-                  <ShoppingBag className="w-6 h-6" />
-                </div>
-                <p className="text-sm font-medium text-gray-700">중고직거래</p>
-                <p className="text-xs text-gray-500 mt-1">안전한 거래</p>
-              </div>
-            </div>
-
-            {/* 주요 이용방법 */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-100">
-              <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-1">
-                <Info className="w-4 h-4" />
-                중고거래 이용방법
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-blue-900">안전거래</p>
-                    <p className="text-blue-700">공공장소에서 직접 만나 현금거래</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Clock className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-blue-900">빠른거래</p>
-                    <p className="text-blue-700">가격제안 → 수락 → 연락처 공개</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-blue-900">동네거래</p>
-                    <p className="text-blue-700">가까운 지역에서 편리하게</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CTA 버튼 */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex flex-col sm:flex-row gap-4">
+        {/* 상단 버튼 영역 */}
+        <section className="mb-6 py-4">
+          <div className="flex justify-end gap-3">
+            <Button
+              size="lg"
+              onClick={handleCreateClick}
+              className="px-6"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              내폰 판매하기
+            </Button>
+            {isAuthenticated && (
+              <Link href="/used/mypage">
                 <Button
                   size="lg"
-                  onClick={handleCreateClick}
-                  className="px-8"
+                  variant="outline"
+                  className="px-6"
                 >
-                  <Plus className="w-5 h-5 mr-2" />
-                  내 폰 판매하기
+                  <User className="w-5 h-5 mr-2" />
+                  중고거래내역
                 </Button>
-                {isAuthenticated && (
-                  <Link href="/used/mypage">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="px-8"
-                    >
-                      <User className="w-5 h-5 mr-2" />
-                      마이페이지
-                    </Button>
-                  </Link>
-                )}
-              </div>
-              <p className="text-sm text-gray-500">
-                최대 5개까지 동시 등록 가능
-              </p>
-            </div>
+              </Link>
+            )}
           </div>
         </section>
 
