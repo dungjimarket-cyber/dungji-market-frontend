@@ -85,9 +85,13 @@ export function FinalDecisionModal({
   const handleDecision = async (decision: 'confirmed' | 'cancelled') => {
     if (!user || !accessToken) return;
 
-    const confirmMessage = decision === 'confirmed' 
-      ? `정말 구매를 확정하시겠습니까?\n\n구매 확정 후에는 취소할 수 없습니다.`
-      : `정말 구매를 포기하시겠습니까?\n\n구매 포기 후에는 취소할 수 없습니다.`;
+    const confirmMessage = decision === 'confirmed'
+      ? isSeller
+        ? `선정된 금액으로 최종 판매확정 하시겠습니까?\n\n판매 확정 후에는 취소할 수 없습니다.`
+        : `선정된 금액으로 최종 구매확정 하시겠습니까?\n\n구매 확정 후에는 취소할 수 없습니다.`
+      : isSeller
+        ? `정말 판매를 포기하시겠습니까?\n\n판매 포기 후에는 취소할 수 없습니다.`
+        : `정말 구매를 포기하시겠습니까?\n\n구매 포기 후에는 취소할 수 없습니다.`;
 
     if (!confirm(confirmMessage)) return;
 
