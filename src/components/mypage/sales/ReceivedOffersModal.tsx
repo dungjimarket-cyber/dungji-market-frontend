@@ -161,13 +161,13 @@ export default function ReceivedOffersModal({
                         onClick={() => setExpandedMessage(
                           expandedMessage === offer.id ? null : offer.id
                         )}
-                        className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
                       >
                         <MessageSquare className="w-4 h-4" />
                         메시지 {expandedMessage === offer.id ? '접기' : '보기'}
                       </button>
                       {expandedMessage === offer.id && (
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                           <p className="text-sm text-gray-700">
                             {offer.message}
                           </p>

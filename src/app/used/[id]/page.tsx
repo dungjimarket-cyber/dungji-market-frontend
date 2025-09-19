@@ -1345,22 +1345,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   </p>
                                 )}
                               </div>
-                              <div className="text-right">
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                                  myOffer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                  myOffer.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                                  myOffer.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {myOffer.status === 'pending' ? '대기중' :
-                                   myOffer.status === 'accepted' ? '수락됨' :
-                                   myOffer.status === 'rejected' ? '거절됨' :
-                                   myOffer.status}
-                                </span>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {myOffer.created_at && formatDistanceToNow(new Date(myOffer.created_at), { addSuffix: true, locale: ko })}
-                                </p>
-                              </div>
+                              {myOffer.status !== 'pending' && (
+                                <div className="text-right">
+                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                    myOffer.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                    myOffer.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {myOffer.status === 'accepted' ? '수락됨' :
+                                     myOffer.status === 'rejected' ? '거절됨' :
+                                     myOffer.status}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

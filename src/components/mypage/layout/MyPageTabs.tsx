@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle, Info, MapPin } from 'lucide-react';
+import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle, Info, MapPin, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,6 +83,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   const [cancellationReason, setCancellationReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [returnToSale, setReturnToSale] = useState(true);
+  const [expandedMessage, setExpandedMessage] = useState<number | null>(null);
 
   // 상태별 카운트 조회
   const fetchStatusCounts = useCallback(async () => {
@@ -437,6 +438,20 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               </div>
                               <Badge variant="default" className="flex-shrink-0">판매중</Badge>
                             </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                              <span className="flex items-center gap-0.5">
+                                <Eye className="w-3 h-3" />
+                                {item.view_count || 0}
+                              </span>
+                              <span className="flex items-center gap-0.5">
+                                <Heart className="w-3 h-3" />
+                                {item.favorite_count || 0}
+                              </span>
+                              <span className="flex items-center gap-0.5">
+                                <MessageSquare className="w-3 h-3" />
+                                {item.offer_count || 0}
+                              </span>
+                            </div>
                             <div className="flex gap-2 mt-2">
                               <Button
                                 size="sm"
@@ -636,6 +651,24 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <p className="text-sm text-gray-600">
                               제안가: {item.offered_price.toLocaleString()}원
                             </p>
+                            {item.message && (
+                              <div className="mt-2">
+                                <button
+                                  onClick={() => setExpandedMessage(
+                                    expandedMessage === item.id ? null : item.id
+                                  )}
+                                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                                >
+                                  <MessageSquare className="w-3 h-3" />
+                                  메시지 {expandedMessage === item.id ? '접기' : '보기'}
+                                </button>
+                                {expandedMessage === item.id && (
+                                  <div className="mt-1 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                    <p className="text-xs text-gray-700">{item.message}</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             <div className="mt-2">
                               {item.status === 'pending' && (
                                 <Button
