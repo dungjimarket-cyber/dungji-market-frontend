@@ -2010,7 +2010,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     {isSellerFinalSelection && !isFinalSelectionExpired && (
                       <>
                         <div className="p-4 bg-blue-50 rounded-lg mb-3">
-                          <p className="text-sm text-gray-700">구매자 확정률 최종</p>
+                          <p className="text-sm text-gray-700 mb-2">구매자 확정률 확인하기</p>
                           <Button
                             onClick={async () => {
                               try {
@@ -2026,8 +2026,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                                 console.error('Error fetching buyer confirmation stats:', error);
                               }
                             }}
-                            variant="ghost"
-                            className="text-blue-600 underline text-sm mt-1"
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
                           >
                             확인하기
                           </Button>
@@ -2224,6 +2225,47 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   </>
                 )}
               </div>
+
+              {/* 판매자 입찰 정보 - PC에서만 오른쪽 영역에 표시 */}
+              {isSeller && myBidInfo && groupBuyData.status !== 'recruiting' && (
+                <div className="hidden lg:block mt-6">
+                  <div className={`p-6 rounded-lg border ${
+                    myBidInfo.status === 'won'
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-yellow-50 border-yellow-200'
+                  }`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className={`font-medium flex items-center ${
+                        myBidInfo.status === 'won' ? 'text-green-800' : 'text-yellow-800'
+                      }`}>
+                        <Gavel className="w-5 h-5 mr-2" />
+                        견적제안 내역
+                      </h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="text-sm">
+                        <span className="font-medium">내 순위:</span>
+                        <span className={myBidInfo.rank === 1 ? "text-lg font-bold text-green-600 mx-1" : ""}>{myBidInfo.rank}위</span>
+                        {myBidInfo.rank !== 1 && " "}/ 전체 {myBidInfo.total_bidders}명
+                        {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') && (
+                          <span className="text-yellow-600 font-bold ml-2">축하합니다!</span>
+                        )}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">견적 금액:</span> {myBidInfo.amount.toLocaleString()}원
+                      </div>
+                      {/* 선정된 경우 메시지 숨김, 미선정은 표시 */}
+                      {myBidInfo.status === 'won' ? (
+                        null  // 선정된 경우 백엔드 메시지 숨김
+                      ) : (
+                        <div className="mt-4 p-4 bg-yellow-100 rounded-md">
+                          <p className="text-yellow-800">아쉽지만 공구에 선정되지 않았습니다.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -2297,9 +2339,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       </div>
       
-      {/* 판매자 입찰 정보 - 낙찰 실패 시 안내 메시지 강화 */}
+      {/* 판매자 입찰 정보 - 모바일에서만 하단에 표시 */}
       {isSeller && myBidInfo && groupBuyData.status !== 'recruiting' && (
-        <div className="lg:max-w-7xl lg:mx-auto px-4 lg:px-6 mt-8 mb-8">
+        <div className="lg:hidden px-4 mt-8 mb-8">
           <div className={`p-6 rounded-lg border ${
             myBidInfo.status === 'won'
               ? 'bg-green-50 border-green-200'
@@ -2533,7 +2575,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             {isSellerFinalSelection && !isFinalSelectionExpired && (
               <>
                 <div className="p-4 bg-blue-50 rounded-lg mb-3">
-                  <p className="text-sm text-gray-700">구매자 확정률 최종</p>
+                  <p className="text-sm text-gray-700 mb-2">구매자 확정률 확인하기</p>
                   <Button
                     onClick={async () => {
                       try {
@@ -2549,8 +2591,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                         console.error('Error fetching buyer confirmation stats:', error);
                       }
                     }}
-                    variant="ghost"
-                    className="text-blue-600 underline text-sm mt-1"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
                   >
                     확인하기
                   </Button>
