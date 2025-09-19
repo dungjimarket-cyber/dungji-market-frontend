@@ -43,6 +43,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
   const [phone, setPhone] = useState<UsedPhone | null>(null);
   const [hasOffers, setHasOffers] = useState(false);
   const [isModified, setIsModified] = useState(false);
+  const [imagesModified, setImagesModified] = useState(false); // 이미지 변경 여부 추적
   const [isDragging, setIsDragging] = useState(false);
   
   // 폼 데이터
@@ -313,6 +314,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
     setImages(prev => [...prev, ...newImages]);
     setIsModified(true);
+    setImagesModified(true); // 이미지 변경됨 표시
   };
 
   const removeImage = (index: number) => {
@@ -327,6 +329,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
     setImages(prev => prev.filter((_, i) => i !== index));
     setIsModified(true);
+    setImagesModified(true); // 이미지 변경됨 표시
   };
 
   // 드래그 앤 드롭 핸들러
@@ -606,9 +609,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         });
       }
       
-      // 이미지 처리 - 백엔드가 update 메서드를 지원하지 않으므로 모든 이미지를 다시 전송
-      // 백엔드가 이미지를 완전 교체 방식으로 처리하므로 항상 모든 이미지를 전송해야 함
-      if (isFieldEditable('images')) {
+      // 이미지 처리 - 이미지가 변경된 경우에만 전송
+      if (isFieldEditable('images') && imagesModified) {
         const actualImages = images.filter(img => img && (img.file || img.preview));
 
         // 이미지가 있으면 처리
@@ -657,6 +659,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
       // 디버깅용 FormData 내용 출력
       console.log('=== FormData 전송 내용 ===');
+      console.log('이미지 변경 여부:', imagesModified);
       for (let [key, value] of submitData.entries()) {
         console.log(`${key}: ${value}`);
       }
