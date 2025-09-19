@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import RequireAuth from '@/components/auth/RequireAuth';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESCRIPTIONS, PHONE_BRANDS } from '@/types/used';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
@@ -29,7 +30,11 @@ const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 수정할 수 �
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <UsedPhoneEditClient phoneId={id} />;
+  return (
+    <RequireAuth>
+      <UsedPhoneEditClient phoneId={id} />
+    </RequireAuth>
+  );
 }
 
 function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
@@ -132,16 +137,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         return;
       }
 
-      // user가 없는 경우 (로그인하지 않은 경우)
-      if (!user) {
-        toast({
-          title: '로그인이 필요합니다',
-          description: '상품을 수정하려면 로그인이 필요합니다.',
-          variant: 'destructive',
-        });
-        router.push('/login');
-        return;
-      }
+      // user가 없는 경우는 RequireAuth에서 처리되므로 제거
       
       setPhone(data);
       setHasOffers(data.offer_count > 0);

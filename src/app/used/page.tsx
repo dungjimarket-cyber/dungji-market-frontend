@@ -353,39 +353,42 @@ export default function UsedPhonesPage() {
         <NoticeSection pageType="used" compact={true} />
 
         {/* 상단 버튼 영역 */}
-        <section className="mb-6 py-4">
-          <div className="flex justify-between items-center">
+        <section className="mb-4 sm:mb-6 py-2 sm:py-4">
+          <div className="flex justify-between items-center gap-2">
             {/* 왼쪽: 이용가이드 버튼 */}
             <Link href="/used/guide">
               <Button
-                size="lg"
+                size="sm"
                 variant="ghost"
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm"
               >
-                <BookOpen className="w-4 h-4 mr-2" />
-                이용가이드
+                <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                <span className="hidden sm:inline">이용가이드</span>
+                <span className="sm:hidden">가이드</span>
               </Button>
             </Link>
 
             {/* 오른쪽: 기존 버튼들 */}
-            <div className="flex gap-3">
+            <div className="flex gap-1.5 sm:gap-3">
               <Button
-                size="lg"
+                size="sm"
                 onClick={handleCreateClick}
-                className="px-6"
+                className="px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm"
               >
-                <Plus className="w-5 h-5 mr-2" />
-                내폰 판매하기
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">내폰 판매하기</span>
+                <span className="sm:hidden">판매하기</span>
               </Button>
               {isAuthenticated && (
                 <Link href="/used/mypage">
                   <Button
-                    size="lg"
+                    size="sm"
                     variant="outline"
-                    className="px-6"
+                    className="px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm"
                   >
-                    <User className="w-5 h-5 mr-2" />
-                    중고거래내역
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">중고거래내역</span>
+                    <span className="sm:hidden">내역</span>
                   </Button>
                 </Link>
               )}

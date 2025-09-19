@@ -205,11 +205,11 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
           </div>
         </div>
 
-        {/* 필터들을 가로 배치, 간격 확대 */}
-        <div className="flex flex-wrap gap-2.5 items-center">
+        {/* 필터들을 가로 배치, 모바일에서 간격 최소화 */}
+        <div className="flex flex-wrap gap-1.5 sm:gap-2.5 items-center">
           {/* 브랜드 */}
           <Select value={filters.brand || 'all'} onValueChange={(value) => updateFilter('brand', value === 'all' ? undefined : value)}>
-            <SelectTrigger className="w-24 text-xs">
+            <SelectTrigger className="w-20 sm:w-24 text-xs">
               <SelectValue placeholder="제조사" />
             </SelectTrigger>
             <SelectContent>
@@ -224,7 +224,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
           {/* 상태 */}
           <Select value={filters.condition || 'all'} onValueChange={(value) => updateFilter('condition', value === 'all' ? undefined : value)}>
-            <SelectTrigger className="w-24 text-xs whitespace-nowrap">
+            <SelectTrigger className="w-[4.5rem] sm:w-24 text-xs whitespace-nowrap">
               <SelectValue placeholder="상태" />
             </SelectTrigger>
             <SelectContent>
@@ -239,7 +239,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
           {/* 정렬 */}
           <Select value={filters.sortBy || ''} onValueChange={(value) => updateFilter('sortBy', value || undefined)}>
-            <SelectTrigger className="w-24 text-xs">
+            <SelectTrigger className="w-20 sm:w-24 text-xs">
               <SelectValue placeholder="가격" />
             </SelectTrigger>
             <SelectContent>
