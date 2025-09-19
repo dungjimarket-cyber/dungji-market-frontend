@@ -393,7 +393,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
           // 2초 후 구매내역 거래중 탭으로 이동
           setTimeout(() => {
-            router.push('/used/mypage?tab=purchases');
+            router.push('/used/mypage?tab=purchases&status=trading');
           }, 2000);
         }
 
@@ -1190,7 +1190,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             className={`w-full h-14 text-lg font-semibold ${
                               phone.status !== 'active'
                                 ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-dungji-primary hover:bg-dungji-primary-dark'
+                                : 'bg-blue-600 hover:bg-blue-700'
                             } text-white`}
                             disabled={phone.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
                           >
@@ -1200,8 +1200,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               : phone.status === 'sold'
                               ? '거래완료된 상품입니다'
                               : myOffer && myOffer.status === 'pending'
-                              ? '제안 수정하기'
-                              : '가격 제안하기'}
+                              ? '제안 수정'
+                              : '가격제안'}
                           </Button>
                           
                           {/* 제안 취소 버튼 - 거래중/판매완료가 아닌 경우에만 표시 */}
@@ -1583,7 +1583,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
               <div className="flex items-center justify-between mt-1.5">
                 <p className="text-xs text-gray-500">
-                  최소: {phone.min_offer_price?.toLocaleString()}원 | 최대: {phone.price.toLocaleString()}원
+                  최소: {phone.min_offer_price?.toLocaleString()}원
                 </p>
                 <button
                   type="button"
@@ -1591,9 +1591,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     setOfferAmount(phone.price.toString());
                     setDisplayAmount(phone.price.toLocaleString('ko-KR'));
                   }}
-                  className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                  className="text-sm px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold shadow-sm"
                 >
-                  즉시구매가 입력
+                  💰 즉시구매가 {phone.price.toLocaleString()}원
                 </button>
               </div>
             </div>
@@ -1783,14 +1783,19 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <Banknote className={`w-8 h-8 ${parseInt(offerAmount) === phone.price ? 'text-green-600' : 'text-blue-600'}`} />
               </div>
               <h3 className="text-lg font-semibold mb-2">
-                {parseInt(offerAmount) === phone.price ? '즉시구매 확인' : '가격 제안 확인'}
+                {parseInt(offerAmount) === phone.price ? '🎉 즉시구매 확인' : '가격 제안 확인'}
               </h3>
               <p className={`text-2xl font-bold ${parseInt(offerAmount) === phone.price ? 'text-green-600' : 'text-blue-600'} mb-2`}>
                 {parseInt(offerAmount).toLocaleString()}원
               </p>
+              {parseInt(offerAmount) === phone.price && (
+                <div className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full mb-2">
+                  판매자가 설정한 즉시구매가
+                </div>
+              )}
               <p className="text-sm text-gray-600">
                 {parseInt(offerAmount) === phone.price
-                  ? '즉시구매가로 구매하시겠습니까?'
+                  ? '즉시구매 시 바로 거래가 시작됩니다'
                   : '이 금액으로 제안하시겠습니까?'}
               </p>
               <p className="text-xs text-gray-500 mt-1">
