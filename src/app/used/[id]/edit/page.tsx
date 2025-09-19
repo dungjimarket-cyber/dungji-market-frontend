@@ -613,9 +613,31 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         const existingImages = actualImages.filter(img => img.preview && !img.file);
         const newImages = actualImages.filter(img => img.file);
 
-        // 이미지가 변경되었는지 확인 (새 이미지 추가, 삭제, 순서 변경 등)
-        const originalImageCount = phone?.images?.length || 0;
-        const hasImageChanges = newImages.length > 0 || actualImages.length !== originalImageCount;
+        // 이미지가 변경되었는지 정확하게 확인
+        // 1. 새 이미지가 추가됨
+        // 2. 이미지 개수가 변경됨
+        // 3. 이미지 ID 순서가 변경됨
+        // 4. 기존 이미지가 삭제됨
+        const originalImages = phone?.images || [];
+        const originalImageCount = originalImages.length;
+
+        // 원본 이미지 ID 목록 (순서 유지)
+        const originalImageIdsInOrder = originalImages.map((img: any) => img.id).join(',');
+        // 현재 기존 이미지 ID 목록 (순서 유지)
+        const currentImageIdsInOrder = existingImages.map(img => img.id).filter(id => id).join(',');
+
+        const hasImageChanges =
+          newImages.length > 0 || // 새 이미지 추가
+          actualImages.length !== originalImageCount || // 개수 변경
+          originalImageIdsInOrder !== currentImageIdsInOrder; // ID 또는 순서 변경
+
+        // 디버그 로그
+        console.log('=== 이미지 변경 감지 ===');
+        console.log('새 이미지:', newImages.length);
+        console.log('원본 개수:', originalImageCount, '현재 개수:', actualImages.length);
+        console.log('원본 ID 순서:', originalImageIdsInOrder);
+        console.log('현재 ID 순서:', currentImageIdsInOrder);
+        console.log('변경 감지:', hasImageChanges);
 
         if (hasImageChanges) {
           // 이미지가 변경된 경우에만 모든 이미지를 다시 전송
