@@ -2897,7 +2897,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {finalSelectionType === 'confirm' ? (
                 isSeller ? (
                   <>
-                    제안하신 견적 그대로 책임 하에 판매하시겠습니까?<br />
+                    선정된 금액으로 최종 판매확정 하시겠습니까?<br />
                     <span className="text-sm text-gray-600 mt-2 block">
                       (판매를 확정하시면 구매자 리스트를 제공해 드립니다)
                     </span>
