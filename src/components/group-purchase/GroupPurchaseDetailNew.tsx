@@ -2009,30 +2009,26 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     {/* 2. 판매확정/포기 선택하기 */}
                     {isSellerFinalSelection && !isFinalSelectionExpired && (
                       <>
-                        <div className="p-4 bg-blue-50 rounded-lg mb-3">
-                          <p className="text-sm text-gray-700 mb-2">구매자 확정률 확인하기</p>
-                          <Button
-                            onClick={async () => {
-                              try {
-                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                                  headers: {
-                                    'Authorization': `Bearer ${accessToken}`,
-                                  }
-                                });
-                                const data = await res.json();
-                                setBuyerConfirmationData(data);
-                                setShowBuyerConfirmationModal(true);
-                              } catch (error) {
-                                console.error('Error fetching buyer confirmation stats:', error);
-                              }
-                            }}
-                            variant="outline"
-                            size="sm"
-                            className="w-full"
-                          >
-                            확인하기
-                          </Button>
-                        </div>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                                headers: {
+                                  'Authorization': `Bearer ${accessToken}`,
+                                }
+                              });
+                              const data = await res.json();
+                              setBuyerConfirmationData(data);
+                              setShowBuyerConfirmationModal(true);
+                            } catch (error) {
+                              console.error('Error fetching buyer confirmation stats:', error);
+                            }
+                          }}
+                          variant="outline"
+                          className="w-full py-3 mb-3"
+                        >
+                          구매자 확정률 보기
+                        </Button>
                         {myBidFinalDecision === 'pending' ? (
                           <>
                             <Button
@@ -2574,30 +2570,26 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             {/* 2. 판매확정/포기 선택하기 */}
             {isSellerFinalSelection && !isFinalSelectionExpired && (
               <>
-                <div className="p-4 bg-blue-50 rounded-lg mb-3">
-                  <p className="text-sm text-gray-700 mb-2">구매자 확정률 확인하기</p>
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
-                          headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                          }
-                        });
-                        const data = await res.json();
-                        setBuyerConfirmationData(data);
-                        setShowBuyerConfirmationModal(true);
-                      } catch (error) {
-                        console.error('Error fetching buyer confirmation stats:', error);
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                  >
-                    확인하기
-                  </Button>
-                </div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-confirmation-stats/`, {
+                        headers: {
+                          'Authorization': `Bearer ${accessToken}`,
+                        }
+                      });
+                      const data = await res.json();
+                      setBuyerConfirmationData(data);
+                      setShowBuyerConfirmationModal(true);
+                    } catch (error) {
+                      console.error('Error fetching buyer confirmation stats:', error);
+                    }
+                  }}
+                  variant="outline"
+                  className="w-full py-3 mb-3"
+                >
+                  구매자 확정률 보기
+                </Button>
                 {myBidFinalDecision === 'pending' ? (
                   <>
                     <Button
