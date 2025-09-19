@@ -310,42 +310,42 @@ export default function MyPageTabs() {
           <button
             onClick={() => handleSectionClick('sales-active')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-active' && "bg-blue-50 border-blue-500"
             )}
           >
             <div className="text-xs text-gray-600">판매중</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.active}</div>
+            <div className="text-base sm:text-lg font-bold">{statusCounts.sales.active}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-offers')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-offers' && "bg-orange-50 border-orange-500"
             )}
           >
             <div className="text-xs text-gray-600">받은제안</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.offers}</div>
+            <div className="text-base sm:text-lg font-bold">{statusCounts.sales.offers}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-trading')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-trading' && "bg-green-50 border-green-500"
             )}
           >
             <div className="text-xs text-gray-600">거래중</div>
-            <div className="text-lg sm:text-xl font-bold text-green-600">{statusCounts.sales.trading}</div>
+            <div className="text-base sm:text-lg font-bold text-green-600">{statusCounts.sales.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('sales-sold')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'sales-sold' && "bg-gray-100 border-gray-500"
             )}
           >
             <div className="text-xs text-gray-600">판매완료</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.sales.sold}</div>
+            <div className="text-base sm:text-lg font-bold">{statusCounts.sales.sold}</div>
           </button>
         </div>
       </Card>
@@ -360,32 +360,32 @@ export default function MyPageTabs() {
           <button
             onClick={() => handleSectionClick('purchase-offers')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'purchase-offers' && "bg-purple-50 border-purple-500"
             )}
           >
             <div className="text-xs text-gray-600">구매제안</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.purchases.offers}</div>
+            <div className="text-base sm:text-lg font-bold">{statusCounts.purchases.offers}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-trading')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'purchase-trading' && "bg-green-50 border-green-500"
             )}
           >
             <div className="text-xs text-gray-600">거래중</div>
-            <div className="text-lg sm:text-xl font-bold text-green-600">{statusCounts.purchases.trading}</div>
+            <div className="text-base sm:text-lg font-bold text-green-600">{statusCounts.purchases.trading}</div>
           </button>
           <button
             onClick={() => handleSectionClick('purchase-completed')}
             className={cn(
-              "p-2 sm:p-3 text-center border rounded-lg transition-all hover:bg-gray-50",
+              "p-1.5 sm:p-2 text-center border rounded-lg transition-all hover:bg-gray-50",
               activeSection === 'purchase-completed' && "bg-gray-100 border-gray-500"
             )}
           >
             <div className="text-xs text-gray-600">거래완료</div>
-            <div className="text-lg sm:text-xl font-bold">{statusCounts.purchases.completed}</div>
+            <div className="text-base sm:text-lg font-bold">{statusCounts.purchases.completed}</div>
           </button>
         </div>
       </Card>
@@ -1287,4 +1287,8 @@ export default function MyPageTabs() {
       toast('판매자 정보를 불러올 수 없습니다.');
     }
   }
-}
+});
+
+MyPageTabs.displayName = 'MyPageTabs';
+
+export default MyPageTabs;

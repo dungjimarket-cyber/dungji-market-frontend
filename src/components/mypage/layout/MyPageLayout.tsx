@@ -3,15 +3,25 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Package, ShoppingBag, Edit2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Package, ShoppingBag, Edit2, AlertTriangle, Heart, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface MyPageLayoutProps {
   children: ReactNode;
+  onFavoritesClick?: () => void;
+  onReviewsClick?: () => void;
+  favoritesCount?: number;
+  reviewsCount?: number;
 }
 
-export default function MyPageLayout({ children }: MyPageLayoutProps) {
+export default function MyPageLayout({
+  children,
+  onFavoritesClick,
+  onReviewsClick,
+  favoritesCount = 0,
+  reviewsCount = 0
+}: MyPageLayoutProps) {
   const router = useRouter();
   const { user } = useAuth();
 
@@ -50,8 +60,31 @@ export default function MyPageLayout({ children }: MyPageLayoutProps) {
             </Button>
           </div>
 
-          {/* 오른쪽: 중고거래, 공동구매 */}
-          <div className="flex items-center gap-2">
+          {/* 오른쪽: 찜/후기(모바일), 중고거래, 공동구매 */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* 모바일에서만 표시되는 찜/후기 버튼 */}
+            {onFavoritesClick && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onFavoritesClick}
+                className="sm:hidden flex items-center gap-1 text-xs px-2 py-1.5"
+              >
+                <Heart className="w-3 h-3 text-red-500" />
+                <span className="text-gray-600">({favoritesCount})</span>
+              </Button>
+            )}
+            {onReviewsClick && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onReviewsClick}
+                className="sm:hidden flex items-center gap-1 text-xs px-2 py-1.5"
+              >
+                <MessageSquare className="w-3 h-3" />
+                <span className="text-gray-600">({reviewsCount})</span>
+              </Button>
+            )}
             <Link href="/used">
               <Button variant="outline" size="sm" className="gap-1.5">
                 <Package className="h-4 w-4" />
