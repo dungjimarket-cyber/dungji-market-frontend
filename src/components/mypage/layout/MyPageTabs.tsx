@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Package, ShoppingCart, MessageSquare, Heart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,7 +8,7 @@ import SalesActivityTab from '../sales/SalesActivityTab';
 import PurchaseActivityTab from '../purchases/PurchaseActivityTab';
 import ReviewsTab from '../reviews/ReviewsTab';
 import FavoritesTab from '../favorites/FavoritesTab';
-import { buyerAPI } from '@/lib/api/used';
+import { buyerAPI, sellerAPI } from '@/lib/api/used';
 import { cn } from '@/lib/utils';
 
 export default function MyPageTabs() {
@@ -17,6 +17,9 @@ export default function MyPageTabs() {
     return searchParams.get('tab') || 'sales';
   });
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [salesNotifications, setSalesNotifications] = useState(0); // 판매 알림 (제안, 거래중)
+  const [purchaseNotifications, setPurchaseNotifications] = useState(0); // 구매 알림 (거래중)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // URL 파라미터 변경 감지
   useEffect(() => {
@@ -26,22 +29,77 @@ export default function MyPageTabs() {
     }
   }, [searchParams]);
 
-  // 찜 개수만 체크
-  useEffect(() => {
-    checkFavoritesCount();
+  // 알림 체크 함수
+  const checkNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      // 판매 내역 알림 체크
+      try {
+        const salesData = await sellerAPI.getMyListings();
+        const salesItems = salesData.results || salesData.items || [];
+
+        // 제안이 있거나 거래중인 상품 수
+        const notificationCount = salesItems.filter((item: any) =>
+          item.offer_count > 0 || item.status === 'trading'
+        ).length;
+
+        setSalesNotifications(notificationCount);
+      } catch (error) {
+        console.error('Failed to check sales notifications:', error);
+      }
+
+      // 구매 내역 알림 체크
+      try {
+        const purchaseData = await buyerAPI.getMySentOffers();
+        const purchaseItems = purchaseData.results || purchaseData.items || [];
+
+        // 거래중인 상품 수
+        const tradingCount = purchaseItems.filter((item: any) =>
+          item.status === 'accepted' || item.phone?.status === 'trading'
+        ).length;
+
+        setPurchaseNotifications(tradingCount);
+      } catch (error) {
+        console.error('Failed to check purchase notifications:', error);
+      }
+
+      // 찜 개수
+      try {
+        const favorites = await buyerAPI.getFavorites().catch(() => ({ items: [] }));
+        const favoriteItems = favorites.items || favorites.results || [];
+        setFavoritesCount(favoriteItems.length || 0);
+      } catch (error) {
+        console.error('Failed to check favorites count:', error);
+      }
+    } catch (error) {
+      console.error('Failed to check notifications:', error);
+    }
   }, []);
 
-  const checkFavoritesCount = async () => {
-    try {
-      // 찜 개수
-      const favorites = await buyerAPI.getFavorites().catch(() => ({ items: [] }));
-      const favoriteItems = favorites.items || favorites.results || [];
-      setFavoritesCount(favoriteItems.length || 0);
+  // 초기 로드 및 폴링 설정
+  useEffect(() => {
+    checkNotifications();
 
-    } catch (error) {
-      console.error('Failed to check favorites count:', error);
-    }
-  };
+    // 30초마다 폴링 (최적화를 위해 탭이 활성 상태일 때만)
+    pollingIntervalRef.current = setInterval(() => {
+      if (!document.hidden) { // 페이지가 보이는 상태일 때만
+        checkNotifications();
+      }
+    }, 30000); // 30초
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [checkNotifications]);
+
+  // 탭 변경 시 즉시 업데이트
+  useEffect(() => {
+    checkNotifications();
+  }, [activeTab, checkNotifications]);
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -57,7 +115,14 @@ export default function MyPageTabs() {
             "w-5 h-5",
             activeTab === 'sales' ? "text-blue-600" : "text-gray-500"
           )} />
-          <span className="text-sm font-medium">판매내역</span>
+          <span className="text-sm font-medium relative">
+            판매내역
+            {salesNotifications > 0 && (
+              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                {salesNotifications}
+              </span>
+            )}
+          </span>
         </TabsTrigger>
 
         <TabsTrigger
@@ -71,7 +136,14 @@ export default function MyPageTabs() {
             "w-5 h-5",
             activeTab === 'purchases' ? "text-purple-600" : "text-gray-500"
           )} />
-          <span className="text-sm font-medium">구매내역</span>
+          <span className="text-sm font-medium relative">
+            구매내역
+            {purchaseNotifications > 0 && (
+              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                {purchaseNotifications}
+              </span>
+            )}
+          </span>
         </TabsTrigger>
 
         <TabsTrigger
