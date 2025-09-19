@@ -26,9 +26,9 @@ const MobileNotificationButton: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/5 py-2 relative">
+    <div className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-full py-2 relative">
       <NotificationBell onClick={() => setShowNotifications(!showNotifications)} />
-      <span className="text-xs">알림</span>
+      <span className="text-[10px]">알림</span>
       
       {showNotifications && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowNotifications(false)}>
