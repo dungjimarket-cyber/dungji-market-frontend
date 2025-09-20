@@ -1608,8 +1608,7 @@ export default function CreateUsedPhonePage() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <p className="text-sm text-yellow-800">
               <span className="font-medium">⚠️ 주의사항</span><br/>
-              • 가격 제안이 들어온 후에는 즉시 판매가와 설명만 수정 가능합니다<br/>
-              • 제품 정보, 상태, 거래 지역은 변경할 수 없으니 신중하게 입력해주세요
+              • 가격 제안이 들어온 후에는 즉시 판매가와 거래요청사항을 제외한<br className="sm:hidden"/> <span className="hidden sm:inline"></span>제품 정보, 상태, 거래 지역은 변경할 수 없으니 신중하게 입력해주세요
             </p>
           </div>
 
