@@ -1500,7 +1500,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           <div
             className="bg-white rounded-2xl max-w-sm sm:max-w-md w-[calc(100%-2rem)] sm:w-full p-3 sm:p-4 md:p-6 flex flex-col shadow-2xl overflow-hidden"
             style={{
-              maxHeight: 'min(70vh, calc(100vh - 10rem))'
+              maxHeight: 'min(85vh, calc(100vh - 6rem))'
             }}
           >
             {/* 헤더 - 더 컴팩트 */}
@@ -1520,33 +1520,18 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
             </div>
             
-            {/* 스크롤 가능한 컨텐츠 영역 - 최적화된 구조 */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 px-1">
-              <div className="pb-4">
-              {/* 제품 정보 미리보기 - 초컴팩트 */}
-              <div className="bg-gray-50 rounded-lg p-2 mb-2.5">
-              <div className="flex items-center gap-2">
-                {phone.images?.[0] && (
-                  <Image
-                    src={phone.images[0].imageUrl}
-                    alt={phone.model}
-                    width={40}
-                    height={40}
-                    className="rounded-md object-cover"
-                  />
-                )}
-                <div className="flex-1">
-                  <p className="font-semibold text-xs sm:text-sm">{phone.model}</p>
-                  <p className="text-xs text-gray-600">{phone.storage}GB | {phone.color}</p>
-                  <p className="text-xs sm:text-sm font-bold text-dungji-primary mt-0.5">
-                    즉시 구매가: {phone.price?.toLocaleString()}원
-                  </p>
-                </div>
+            {/* 컨텐츠 영역 - 스크롤 제거 */}
+            <div className="flex-1 px-1">
+              <div className="pb-3">
+              {/* 제품 정보 미리보기 - 한 줄로 압축 */}
+              <div className="bg-gray-50 rounded-lg px-3 py-2 mb-2">
+                <p className="font-semibold text-xs sm:text-sm text-gray-800 truncate">
+                  {phone.model.length > 30 ? phone.model.slice(0, 30) + '...' : phone.model} | {phone.storage}GB | {phone.color}
+                </p>
               </div>
-            </div>
             
             {/* 제안 횟수 표시 - 초컴팩트 */}
-            <div className="flex items-center justify-between mb-2.5 p-2 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
+            <div className="flex items-center justify-between mb-2 p-2 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
               <span className="text-xs sm:text-sm font-medium text-gray-700">
                 남은 제안 횟수
               </span>
@@ -1569,7 +1554,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
             )}
             
-            <div className="mb-3">
+            <div className="mb-2">
               <label className="block text-sm font-semibold mb-1.5 text-gray-900">
                 제안 금액 <span className="text-red-500">*</span>
               </label>
@@ -1669,7 +1654,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
 
               {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
-              <div className="border rounded-lg p-2 max-h-40 overflow-y-auto">
+              <div className="border rounded-lg p-2 max-h-32 overflow-y-auto">
                 {Object.entries(messageTemplates).map(([category, messages]) => (
                   <details key={category} className="mb-2 last:mb-0">
                     <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
@@ -1703,16 +1688,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </div>
 
               {/* 제안 안내사항 - 컴팩트 */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
               <div className="flex items-start gap-2">
                 <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5" />
                 <div className="text-xs text-amber-800">
                   <p className="font-semibold mb-0.5">안내사항</p>
-                  <ul className="space-y-0 text-amber-700">
-                    <li>• 가격 제안은 신중하게 부탁드립니다</li>
-                    <li>• 판매자가 가격제안 수락시 거래가 진행됩니다</li>
-                    <li>• 판매자 정보는 거래진행 시 열람 가능합니다</li>
-                  </ul>
+                  <p className="text-amber-700">• 가격 제안은 신중하게 부탁드립니다</p>
+                  <p className="text-amber-700">• 판매자 수락 시 거래가 진행됩니다</p>
                 </div>
               </div>
               </div>
