@@ -1523,10 +1523,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {/* 컨텐츠 영역 - 스크롤 제거 */}
             <div className="flex-1 px-1">
               <div className="pb-3">
-              {/* 제품 정보 미리보기 - 한 줄로 압축 */}
-              <div className="bg-gray-50 rounded-lg px-3 py-2 mb-2">
-                <p className="font-semibold text-xs sm:text-sm text-gray-800 truncate">
-                  {phone.model.length > 30 ? phone.model.slice(0, 30) + '...' : phone.model} | {phone.storage}GB | {phone.color}
+              {/* 제품 정보 미리보기 - 2줄 구성 */}
+              <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-2">
+                <p className="font-bold text-sm sm:text-base text-gray-900 truncate">
+                  {phone.brand} {phone.model.length > 25 ? phone.model.slice(0, 25) + '...' : phone.model}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                  {phone.storage}GB | {phone.color}
                 </p>
               </div>
             
