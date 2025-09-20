@@ -1745,7 +1745,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   setOfferMessage(combinedMessage);
                   handleOfferConfirm();
                 }}
-                disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || (offerAmount && parseInt(offerAmount) < (phone.min_offer_price || 0))}
+                disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || Boolean(offerAmount && parseInt(offerAmount) < (phone.min_offer_price || 0))}
                 className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
                 제안하기
