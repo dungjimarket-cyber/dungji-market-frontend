@@ -54,7 +54,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     purchases: { offers: 0, trading: 0, completed: 0 }
   });
   const [favoritesCount, setFavoritesCount] = useState(0);
-  const [reviewsCount, setReviewsCount] = useState(0);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [sectionData, setSectionData] = useState<any[]>([]);
@@ -143,24 +142,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
         console.error('Failed to fetch favorites count:', error);
       }
 
-      // 거래후기 개수 조회
-      try {
-        const reviewsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/used/reviews/my/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (reviewsResponse.ok) {
-          const reviewsData = await reviewsResponse.json();
-          const reviews = reviewsData.results || reviewsData.reviews || reviewsData;
-          setReviewsCount(Array.isArray(reviews) ? reviews.length : 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch reviews count:', error);
-        setReviewsCount(0);
-      }
 
     } catch (error) {
       console.error('Failed to fetch counts:', error);
@@ -285,9 +266,9 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   // 카운트 업데이트 시 부모 컴포넌트에 전달
   useEffect(() => {
     if (onCountsUpdate) {
-      onCountsUpdate(favoritesCount, reviewsCount);
+      onCountsUpdate(favoritesCount, 0);  // reviewsCount는 사용하지 않으므로 0 전달
     }
-  }, [favoritesCount, reviewsCount, onCountsUpdate]);
+  }, [favoritesCount, onCountsUpdate]);
 
   // 초기 로드
   useEffect(() => {
@@ -900,7 +881,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-green-600" />
-              거래후기 ({reviewsCount})
+              거래후기
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4">

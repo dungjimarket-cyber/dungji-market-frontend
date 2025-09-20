@@ -117,7 +117,6 @@ export default function ProfileSection({
             >
               <MessageSquare className="w-3 h-3 text-gray-700" />
               <span className="text-gray-900">거래후기</span>
-              <span className="text-gray-600">({reviewsCount})</span>
             </Button>
           )}
         </div>
@@ -177,7 +176,6 @@ export default function ProfileSection({
               >
                 <MessageSquare className="w-3 h-3 text-gray-700" />
                 <span className="text-gray-900">후기</span>
-                <span className="text-gray-600">({reviewsCount})</span>
               </Button>
             )}
           </div>

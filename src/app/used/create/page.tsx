@@ -1148,12 +1148,6 @@ export default function CreateUsedPhonePage() {
             </div>
 
             <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                <p className="text-sm text-red-700 font-medium">
-                  대표 이미지(첫 번째 슬롯)는 반드시 등록해주세요
-                </p>
-              </div>
               <p className="text-sm text-gray-500">
                 * 최대 10장까지 등록 가능합니다. (자동 압축 처리)<br/>
                 * 전면, 후면, 측면, 모서리 사진을 포함하면 신뢰도가 높아집니다.<br/>
