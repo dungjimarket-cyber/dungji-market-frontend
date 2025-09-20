@@ -104,7 +104,7 @@ export default function ProfileSection({
               className="flex items-center gap-1 border-gray-300 hover:bg-gray-50 text-xs"
             >
               <Heart className="w-3 h-3 text-red-500" />
-              <span>찜 목록</span>
+              <span className="text-gray-900">찜 목록</span>
               <span className="text-gray-600">({favoritesCount})</span>
             </Button>
           )}
@@ -116,7 +116,7 @@ export default function ProfileSection({
               className="flex items-center gap-1 border-gray-300 hover:bg-gray-50 text-xs"
             >
               <MessageSquare className="w-3 h-3 text-gray-700" />
-              <span>거래후기</span>
+              <span className="text-gray-900">거래후기</span>
               <span className="text-gray-600">({reviewsCount})</span>
             </Button>
           )}
@@ -164,7 +164,7 @@ export default function ProfileSection({
                 className="flex items-center gap-1 border-gray-300 hover:bg-gray-50 text-xs px-2.5 py-1"
               >
                 <Heart className="w-3 h-3 text-red-500" />
-                <span>찜</span>
+                <span className="text-gray-900">찜</span>
                 <span className="text-gray-600">({favoritesCount})</span>
               </Button>
             )}
@@ -176,7 +176,7 @@ export default function ProfileSection({
                 className="flex items-center gap-1 border-gray-300 hover:bg-gray-50 text-xs px-2.5 py-1"
               >
                 <MessageSquare className="w-3 h-3 text-gray-700" />
-                <span>후기</span>
+                <span className="text-gray-900">후기</span>
                 <span className="text-gray-600">({reviewsCount})</span>
               </Button>
             )}

@@ -609,7 +609,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             </p>
                             <div className="mt-2">
                               {item.has_review ? (
-                                <Button size="sm" disabled className="text-xs bg-gray-200">후기작성완료</Button>
+                                <Button size="sm" disabled className="text-xs bg-gray-400 text-white">후기작성완료</Button>
                               ) : (
                                 <Button
                                   size="sm"
@@ -777,7 +777,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             </p>
                             <div className="mt-2">
                               {item.has_review ? (
-                                <Button size="sm" disabled className="text-xs bg-gray-200">후기작성완료</Button>
+                                <Button size="sm" disabled className="text-xs bg-gray-400 text-white">후기작성완료</Button>
                               ) : (
                                 <Button
                                   size="sm"
