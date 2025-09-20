@@ -1204,7 +1204,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   duration: 2000,
                                 });
                               } else {
-                                // 신규 제안
+                                // 신규 제안 - 최소제안가를 기본값으로 설정
+                                const defaultPrice = phone.min_offer_price || 0;
+                                setOfferAmount(defaultPrice.toString());
+                                setDisplayAmount(defaultPrice.toLocaleString('ko-KR'));
                                 setShowOfferModal(true);
                               }
                             }}
@@ -1479,10 +1482,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4 py-8 sm:p-4 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/60 flex items-start sm:items-center justify-center z-50 px-4 pt-16 pb-8 sm:p-4 backdrop-blur-sm"
           style={{
             paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
-            paddingTop: 'max(2rem, env(safe-area-inset-top))'
+            paddingTop: window.innerWidth < 640 ? 'max(4rem, env(safe-area-inset-top))' : 'max(2rem, env(safe-area-inset-top))'
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -1599,10 +1602,17 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-sm">원</span>
               </div>
-              <div className="flex items-center justify-between mt-1.5">
-                <p className="text-xs text-gray-500">
-                  최소: {phone.min_offer_price?.toLocaleString()}원
+              {offerAmount && parseInt(offerAmount) < (phone.min_offer_price || 0) && (
+                <p className="text-xs text-red-500 mt-1">
+                  최소제안가 {phone.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요
                 </p>
+              )}
+              <div className="flex items-center justify-between mt-1.5">
+                <div className="inline-flex items-center px-2.5 py-1 bg-amber-100 border border-amber-300 rounded-full">
+                  <span className="text-xs font-semibold text-amber-800">
+                    최소제안가: {phone.min_offer_price?.toLocaleString()}원
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -1611,7 +1621,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   }}
                   className="text-sm px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold shadow-sm"
                 >
-                  💰 즉시구매가 {phone.price.toLocaleString()}원
+                  즉시구매가 {phone.price.toLocaleString()}원
                 </button>
               </div>
             </div>
@@ -1658,29 +1668,30 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               )}
 
-              {/* 컴팩트한 템플릿 선택 영역 */}
-              <div className="border rounded-lg p-1.5 max-h-40 overflow-y-auto">
+              {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
+              <div className="border rounded-lg p-2 max-h-40 overflow-y-auto">
                 {Object.entries(messageTemplates).map(([category, messages]) => (
-                  <details key={category} className="mb-1.5 last:mb-0">
+                  <details key={category} className="mb-2 last:mb-0">
                     <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
                       {category}
                     </summary>
-                    <div className="mt-0.5 pl-2 space-y-0.5">
+                    <div className="mt-1 grid grid-cols-2 gap-1">
                       {messages.map((msg) => (
                         <button
                           key={msg}
                           type="button"
                           onClick={() => {
-                            if (selectedMessages.length < 5) {
+                            if (selectedMessages.length < 5 && !selectedMessages.includes(msg)) {
                               setSelectedMessages(prev => [...prev, msg]);
                             }
                           }}
-                          disabled={selectedMessages.length >= 5}
-                          className={`block w-full text-left text-xs py-1 px-1.5 rounded hover:bg-gray-100 transition-colors ${
+                          disabled={selectedMessages.length >= 5 && !selectedMessages.includes(msg)}
+                          className={`text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 transition-colors truncate ${
                             selectedMessages.includes(msg)
-                              ? 'bg-gray-100 text-gray-800 font-medium'
-                              : 'text-gray-700'
+                              ? 'bg-gray-200 text-gray-800 font-medium border border-gray-400'
+                              : 'text-gray-700 border border-gray-200'
                           } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={msg}
                         >
                           {msg}
                         </button>
@@ -1724,12 +1735,17 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </Button>
               <Button
                 onClick={() => {
+                  // 최소제안가 검증
+                  if (parseInt(offerAmount) < (phone.min_offer_price || 0)) {
+                    toast.error(`최소제안가 ${phone.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요`);
+                    return;
+                  }
                   // 선택된 메시지들을 합쳐서 하나의 메시지로 만들기
                   const combinedMessage = selectedMessages.join(' / ');
                   setOfferMessage(combinedMessage);
                   handleOfferConfirm();
                 }}
-                disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0)}
+                disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || (offerAmount && parseInt(offerAmount) < (phone.min_offer_price || 0))}
                 className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
                 제안하기
