@@ -1656,9 +1656,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
 
               {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
-              <div className="border rounded-lg p-2 max-h-32 overflow-y-auto">
+              <div className="border rounded-lg p-2 max-h-32 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {Object.entries(messageTemplates).map(([category, messages]) => (
-                  <details key={category} className="mb-2 last:mb-0">
+                  <details key={category} className="">
                     <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
                       {category}
                     </summary>
