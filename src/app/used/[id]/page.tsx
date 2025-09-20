@@ -1218,14 +1218,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             } text-white`}
                             disabled={phone.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
                           >
-                            <span className="text-lg font-bold mr-2">￦</span>
                             {phone.status === 'trading'
                               ? '거래중인 상품입니다'
                               : phone.status === 'sold'
                               ? '거래완료된 상품입니다'
                               : myOffer && myOffer.status === 'pending'
-                              ? '제안 수정'
-                              : '가격제안'}
+                              ? '￦제안 수정'
+                              : '￦가격제안'}
                           </Button>
                           
                           {/* 제안 취소 버튼 - 거래중/판매완료가 아닌 경우에만 표시 */}
@@ -1663,7 +1662,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
                       {category}
                     </summary>
-                    <div className="mt-1 grid grid-cols-2 gap-1">
+                    <div className="mt-1 grid grid-cols-1 gap-1">
                       {messages.map((msg) => (
                         <button
                           key={msg}
@@ -1674,7 +1673,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             }
                           }}
                           disabled={selectedMessages.length >= 5 && !selectedMessages.includes(msg)}
-                          className={`text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 transition-colors truncate ${
+                          className={`text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 transition-colors ${
                             selectedMessages.includes(msg)
                               ? 'bg-gray-200 text-gray-800 font-medium border border-gray-400'
                               : 'text-gray-700 border border-gray-200'
