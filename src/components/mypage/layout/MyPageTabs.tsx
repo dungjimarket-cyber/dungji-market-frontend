@@ -233,13 +233,13 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
       setSectionData(data);
 
-      // 모바일에서 리스트 영역으로 스크롤 (데이터 유무 관계없이)
+      // 모바일에서 판매내역 섹션으로 스크롤 (데이터 유무 관계없이)
       setTimeout(() => {
         const isMobile = window.innerWidth < 640; // sm breakpoint
         if (isMobile) {
-          const listElement = document.getElementById('section-list');
-          if (listElement) {
-            const offsetTop = listElement.offsetTop - 80; // 헤더 높이 고려
+          const salesElement = document.getElementById('sales-section');
+          if (salesElement) {
+            const offsetTop = salesElement.offsetTop - 80; // 헤더 높이 고려
             window.scrollTo({
               top: offsetTop,
               behavior: 'smooth'
@@ -317,7 +317,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   return (
     <div className="w-full space-y-6">
       {/* 판매내역 테이블 */}
-      <Card className="p-4">
+      <Card id="sales-section" className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Package className="w-5 h-5 text-blue-600" />
           <h3 className="font-semibold">판매내역</h3>
@@ -517,11 +517,17 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={item.images[0].image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded"
+                              className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                              onClick={() => router.push(`/used/${item.id}`)}
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium truncate">{item.title}</h4>
+                            <h4
+                              className="font-medium truncate cursor-pointer hover:text-blue-600"
+                              onClick={() => router.push(`/used/${item.id}`)}
+                            >
+                              {(item.title || `${item.brand} ${item.model}`).slice(0, 30)}
+                            </h4>
                             <p className="text-sm text-gray-600">
                               판매가: {item.price.toLocaleString()}원
                             </p>
@@ -614,13 +620,19 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={item.images[0].image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded"
+                              className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                              onClick={() => router.push(`/used/${item.id}`)}
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium truncate">{item.title}</h4>
+                            <h4
+                              className="font-medium truncate cursor-pointer hover:text-blue-600"
+                              onClick={() => router.push(`/used/${item.id}`)}
+                            >
+                              {(item.title || `${item.brand} ${item.model}`).slice(0, 30)}
+                            </h4>
                             <p className="text-sm text-gray-600">
-                              {item.price.toLocaleString()}원
+                              {(item.final_price || item.final_offer_price || item.price).toLocaleString()}원
                             </p>
                             <div className="mt-2">
                               {item.has_review ? (
@@ -669,11 +681,17 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={item.phone.images[0].image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded"
+                              className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                              onClick={() => router.push(`/used/${item.phone.id}`)}
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium truncate">{item.phone?.title}</h4>
+                            <h4
+                              className="font-medium truncate cursor-pointer hover:text-blue-600"
+                              onClick={() => router.push(`/used/${item.phone?.id}`)}
+                            >
+                              {item.phone?.title?.slice(0, 30)}
+                            </h4>
                             <p className="text-sm text-gray-600">
                               제안가: {item.offered_price.toLocaleString()}원
                             </p>
@@ -733,7 +751,12 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                           )}
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-medium truncate">{item.phone?.title}</h4>
+                              <h4
+                                className="font-medium truncate cursor-pointer hover:text-blue-600"
+                                onClick={() => router.push(`/used/${item.phone?.id}`)}
+                              >
+                                {item.phone?.title?.slice(0, 30)}
+                              </h4>
                               <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
                             </div>
                             <p className="text-sm text-gray-600">
@@ -782,13 +805,19 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={item.phone.images[0].image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded"
+                              className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                              onClick={() => router.push(`/used/${item.phone.id}`)}
                             />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-medium truncate">{item.phone?.title}</h4>
+                            <h4
+                              className="font-medium truncate cursor-pointer hover:text-blue-600"
+                              onClick={() => router.push(`/used/${item.phone?.id}`)}
+                            >
+                              {item.phone?.title?.slice(0, 30)}
+                            </h4>
                             <p className="text-sm text-gray-600">
-                              {(item.phone?.price || item.offered_price).toLocaleString()}원
+                              거래가: {(item.offered_price || item.phone?.price).toLocaleString()}원
                             </p>
                             <div className="mt-2">
                               {item.has_review ? (
