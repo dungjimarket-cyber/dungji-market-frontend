@@ -233,22 +233,20 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
       setSectionData(data);
 
-      // 모바일에서 데이터가 있을 때 리스트 영역으로 스크롤
-      if (data.length > 0) {
-        setTimeout(() => {
-          const isMobile = window.innerWidth < 640; // sm breakpoint
-          if (isMobile) {
-            const listElement = document.getElementById('section-list');
-            if (listElement) {
-              const offsetTop = listElement.offsetTop - 80; // 헤더 높이 고려
-              window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-              });
-            }
+      // 모바일에서 리스트 영역으로 스크롤 (데이터 유무 관계없이)
+      setTimeout(() => {
+        const isMobile = window.innerWidth < 640; // sm breakpoint
+        if (isMobile) {
+          const listElement = document.getElementById('section-list');
+          if (listElement) {
+            const offsetTop = listElement.offsetTop - 80; // 헤더 높이 고려
+            window.scrollTo({
+              top: offsetTop,
+              behavior: 'smooth'
+            });
           }
-        }, 100);
-      }
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to fetch section data:', error);
     } finally {
