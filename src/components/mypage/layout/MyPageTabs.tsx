@@ -232,6 +232,23 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       }
 
       setSectionData(data);
+
+      // 모바일에서 데이터가 있을 때 리스트 영역으로 스크롤
+      if (data.length > 0) {
+        setTimeout(() => {
+          const isMobile = window.innerWidth < 640; // sm breakpoint
+          if (isMobile) {
+            const listElement = document.getElementById('section-list');
+            if (listElement) {
+              const offsetTop = listElement.offsetTop - 80; // 헤더 높이 고려
+              window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+              });
+            }
+          }
+        }, 100);
+      }
     } catch (error) {
       console.error('Failed to fetch section data:', error);
     } finally {
@@ -393,7 +410,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
       {/* 선택된 섹션 리스트 */}
       {activeSection && (
-        <Card className="p-4">
+        <Card id="section-list" className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">
               {activeSection === 'sales-active' && '판매중'}
