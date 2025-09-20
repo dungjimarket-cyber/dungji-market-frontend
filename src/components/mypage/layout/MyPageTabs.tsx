@@ -110,16 +110,22 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
       // 구매 내역 카운트
       try {
+        // 구매제안 카운트 (sent API)
         const purchaseData = await buyerAPI.getMySentOffers();
         const purchaseItems = purchaseData.results || purchaseData.items || [];
+        const offersCount = purchaseItems.filter((item: any) => item.status === 'pending').length;
+
+        // 거래중/거래완료 카운트 (my-trading API)
+        const tradingData = await buyerAPI.getMyTradingItems();
+        const tradingItems = Array.isArray(tradingData) ? tradingData : tradingData.results || [];
 
         const purchaseCount = {
-          offers: purchaseItems.filter((item: any) => item.status === 'pending').length,
-          trading: purchaseItems.filter((item: any) =>
-            item.status === 'accepted' && item.phone?.status === 'trading'
+          offers: offersCount,
+          trading: tradingItems.filter((item: any) =>
+            item.phone?.status === 'trading'
           ).length,
-          completed: purchaseItems.filter((item: any) =>
-            item.status === 'accepted' && item.phone?.status === 'sold'
+          completed: tradingItems.filter((item: any) =>
+            item.phone?.status === 'sold'
           ).length,
         };
 
@@ -202,23 +208,26 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       // 구매 내역
       else if (section.startsWith('purchase-')) {
         const status = section.replace('purchase-', '');
-        const purchaseData = await buyerAPI.getMySentOffers();
-        const allItems = purchaseData.results || purchaseData.items || [];
 
-        switch(status) {
-          case 'offers':
-            data = allItems.filter((item: any) => item.status === 'pending');
-            break;
-          case 'trading':
-            data = allItems.filter((item: any) =>
-              item.status === 'accepted' && item.phone?.status === 'trading'
+        if (status === 'completed' || status === 'trading') {
+          // 거래중/거래완료는 my-trading API 사용 (has_review 포함)
+          const tradingData = await buyerAPI.getMyTradingItems();
+          const tradingItems = Array.isArray(tradingData) ? tradingData : tradingData.results || [];
+
+          if (status === 'trading') {
+            data = tradingItems.filter((item: any) =>
+              item.phone?.status === 'trading'
             );
-            break;
-          case 'completed':
-            data = allItems.filter((item: any) =>
-              item.status === 'accepted' && item.phone?.status === 'sold'
+          } else {
+            data = tradingItems.filter((item: any) =>
+              item.phone?.status === 'sold'
             );
-            break;
+          }
+        } else {
+          // 구매제안은 sent API 사용
+          const purchaseData = await buyerAPI.getMySentOffers();
+          const allItems = purchaseData.results || purchaseData.items || [];
+          data = allItems.filter((item: any) => item.status === 'pending');
         }
       }
 

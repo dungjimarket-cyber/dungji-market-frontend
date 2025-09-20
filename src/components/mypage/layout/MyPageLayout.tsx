@@ -78,70 +78,41 @@ export default function MyPageLayout({
           </div>
         </div>
 
-        {/* 모바일: 2줄 레이아웃 */}
-        <div className="sm:hidden">
-          {/* 첫 번째 줄: 신고, 설정, 중고, 공구 */}
-          <div className="flex items-center justify-between px-4 h-12 border-b border-gray-100">
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push('/used/mypage/reports')}
-                className="border-red-300 text-red-600 hover:bg-red-50 gap-1 text-xs px-2.5 py-1"
-              >
-                <AlertTriangle className="h-3 w-3" />
-                <span>신고</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSettingsClick}
-                className="gap-1 text-xs px-2.5 py-1"
-              >
-                <Edit2 className="h-3 w-3" />
-                <span>설정</span>
-              </Button>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Link href="/used">
-                <Button variant="outline" size="sm" className="gap-1 text-xs px-2.5 py-1">
-                  <Package className="h-3 w-3" />
-                  <span>중고</span>
-                </Button>
-              </Link>
-              <Link href="/group-purchases">
-                <Button variant="outline" size="sm" className="gap-1 text-xs px-2.5 py-1">
-                  <ShoppingBag className="h-3 w-3" />
-                  <span>공구</span>
-                </Button>
-              </Link>
-            </div>
+        {/* 모바일: 1줄 레이아웃 */}
+        <div className="sm:hidden flex items-center justify-between px-4 h-14">
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/used/mypage/reports')}
+              className="border-red-300 text-red-600 hover:bg-red-50 gap-1 text-xs px-2.5 py-1"
+            >
+              <AlertTriangle className="h-3 w-3" />
+              <span>신고</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSettingsClick}
+              className="gap-1 text-xs px-2.5 py-1"
+            >
+              <Edit2 className="h-3 w-3" />
+              <span>설정</span>
+            </Button>
           </div>
-
-          {/* 두 번째 줄: 찜, 후기 (오른쪽 정렬) */}
-          <div className="flex items-center justify-end px-4 h-10 gap-1.5">
-            {onFavoritesClick && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onFavoritesClick}
-                className="flex items-center gap-1 text-xs px-2.5 py-1"
-              >
-                <Heart className="w-3 h-3 text-red-500" />
-                <span>찜</span>
+          <div className="flex items-center gap-1.5">
+            <Link href="/used">
+              <Button variant="outline" size="sm" className="gap-1 text-xs px-2.5 py-1">
+                <Package className="h-3 w-3" />
+                <span>중고</span>
               </Button>
-            )}
-            {onReviewsClick && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onReviewsClick}
-                className="flex items-center gap-1 text-xs px-2.5 py-1"
-              >
-                <MessageSquare className="w-3 h-3" />
-                <span>후기</span>
+            </Link>
+            <Link href="/group-purchases">
+              <Button variant="outline" size="sm" className="gap-1 text-xs px-2.5 py-1">
+                <ShoppingBag className="h-3 w-3" />
+                <span>공구</span>
               </Button>
-            )}
+            </Link>
           </div>
         </div>
       </header>

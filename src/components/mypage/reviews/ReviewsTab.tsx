@@ -35,7 +35,6 @@ export default function ReviewsTab() {
 
   return (
     <div className="bg-white rounded-lg p-4">
-      <h3 className="font-semibold mb-3">중고폰 거래 후기</h3>
       <MyTradeReviews userId={userId} />
     </div>
   );
