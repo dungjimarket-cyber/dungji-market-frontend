@@ -513,7 +513,7 @@ export function UnifiedSearchBar({ onSearchChange }: UnifiedSearchBarProps) {
               onChange={handleProvinceChange}
               className="appearance-none rounded-md w-full px-3 py-2 pr-8 border border-gray-300 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-dungji-primary focus:border-dungji-primary text-sm"
             >
-              <option value="">시/도 선택</option>
+              <option value="">전국</option>
               {regions.map((region) => (
                 <option key={region.name} value={region.name}>
                   {region.name}
