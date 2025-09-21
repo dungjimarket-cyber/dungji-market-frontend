@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Search, Filter, MapPin, Heart, Eye, MessageCircle } from 'lucide-react';
@@ -27,7 +27,7 @@ import type { UsedElectronics } from '@/types/electronics';
 import { ELECTRONICS_SUBCATEGORIES, CONDITION_GRADES, PURCHASE_PERIODS } from '@/types/electronics';
 import Image from 'next/image';
 
-export default function UsedElectronicsListPage() {
+function UsedElectronicsListPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -365,5 +365,18 @@ export default function UsedElectronicsListPage() {
         </Link>
       )}
     </div>
+  );
+}
+
+// Suspense로 감싸서 export
+export default function UsedElectronicsListPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <UsedElectronicsListPageContent />
+    </Suspense>
   );
 }
