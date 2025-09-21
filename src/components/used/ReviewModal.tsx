@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Star, Check } from 'lucide-react';
+import { X, Star, Check, Smartphone, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { reviewAPI } from '@/lib/api/used';
+import electronicsApi from '@/lib/api/electronics';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReviewModalProps {
@@ -17,6 +18,7 @@ interface ReviewModalProps {
     model: string;
     price: number;
   };
+  itemType?: 'phone' | 'electronics';
   onSuccess?: () => void;
 }
 
@@ -26,6 +28,7 @@ export default function ReviewModal({
   transactionId,
   revieweeName,
   productInfo,
+  itemType = 'phone',
   onSuccess,
 }: ReviewModalProps) {
   const { toast } = useToast();
@@ -39,19 +42,26 @@ export default function ReviewModal({
 
   const handleSubmit = async () => {
     console.log('ReviewModal handleSubmit - transactionId:', transactionId);
-    console.log('ReviewModal handleSubmit - typeof transactionId:', typeof transactionId);
+    console.log('ReviewModal handleSubmit - itemType:', itemType);
 
     try {
       setIsSubmitting(true);
 
-      await reviewAPI.createReview(transactionId, {
+      const reviewData = {
         rating,
         comment: comment.trim() || '좋은 거래였습니다.',
         is_punctual: isPunctual,
         is_friendly: isFriendly,
         is_honest: isHonest,
         is_fast_response: isFastResponse,
-      });
+      };
+
+      // 아이템 타입에 따라 다른 API 호출
+      if (itemType === 'electronics') {
+        await electronicsApi.createReview(transactionId, reviewData);
+      } else {
+        await reviewAPI.createReview(transactionId, reviewData);
+      }
 
       toast({
         title: '후기 작성 완료',

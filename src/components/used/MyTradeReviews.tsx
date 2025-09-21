@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, User, Calendar, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Star, User, Calendar, ChevronRight, ChevronLeft, Smartphone, Monitor } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -49,57 +49,104 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         console.log('props에서 받은 사용자 ID:', userId);
       }
 
-      // 내가 받은 평가 통계
-      const statsRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
+      // 병렬로 휴대폰과 전자제품 데이터 가져오기
+      const [phoneData, electronicsData] = await Promise.all([
+        // 휴대폰 관련 데이터
+        Promise.all([
+          // 휴대폰 평가 통계
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: null })),
+          // 휴대폰 받은 리뷰
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: { results: [] } })),
+          // 휴대폰 작성한 리뷰
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: { results: [] } })),
+          // 휴대폰 거래 내역
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: { results: [] } }))
+        ]),
+        // 전자제품 관련 데이터
+        Promise.all([
+          // 전자제품 평가 통계
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/reviews/user-stats/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: null })),
+          // 전자제품 받은 리뷰
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/reviews/received/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: { results: [] } })),
+          // 전자제품 작성한 리뷰
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/reviews/written/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: { results: [] } })),
+          // 전자제품 거래 내역
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/transactions/my-transactions/`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          ).catch(() => ({ data: { results: [] } }))
+        ])
+      ]);
+
+      // 휴대폰 데이터 처리
+      const [phoneStats, phoneReceived, phoneWritten, phoneTransactions] = phoneData;
+      // 전자제품 데이터 처리
+      const [elecStats, elecReceived, elecWritten, elecTransactions] = electronicsData;
+
+      // 통계 통합
+      const combinedStats = {
+        average_rating: ((phoneStats.data?.average_rating || 0) + (elecStats.data?.average_rating || 0)) / 2,
+        total_reviews: (phoneStats.data?.total_reviews || 0) + (elecStats.data?.total_reviews || 0),
+        rating_distribution: {
+          5: (phoneStats.data?.rating_distribution?.['5'] || 0) + (elecStats.data?.rating_distribution?.['5'] || 0),
+          4: (phoneStats.data?.rating_distribution?.['4'] || 0) + (elecStats.data?.rating_distribution?.['4'] || 0),
+          3: (phoneStats.data?.rating_distribution?.['3'] || 0) + (elecStats.data?.rating_distribution?.['3'] || 0),
+          2: (phoneStats.data?.rating_distribution?.['2'] || 0) + (elecStats.data?.rating_distribution?.['2'] || 0),
+          1: (phoneStats.data?.rating_distribution?.['1'] || 0) + (elecStats.data?.rating_distribution?.['1'] || 0),
         }
+      };
+      console.log('통합 평가 통계:', combinedStats);
+      setStats(combinedStats);
+
+      // 받은 리뷰 통합 (itemType 추가)
+      const phoneReceivedReviews = (phoneReceived.data?.results || phoneReceived.data || []).map((r: any) => ({ ...r, itemType: 'phone' }));
+      const elecReceivedReviews = (elecReceived.data?.results || elecReceived.data || []).map((r: any) => ({ ...r, itemType: 'electronics' }));
+      const allReceivedReviews = [...phoneReceivedReviews, ...elecReceivedReviews].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-      console.log('평가 통계 API 응답:', statsRes.data);
-      setStats(statsRes.data);
+      console.log('통합 받은 리뷰:', allReceivedReviews.length, '개');
+      setReviews(allReceivedReviews);
 
-      // 받은 리뷰 가져오기 (분리된 엔드포인트)
-      const receivedRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
+      // 작성한 리뷰 통합 (itemType 추가)
+      const phoneWrittenReviews = (phoneWritten.data?.results || phoneWritten.data || []).map((r: any) => ({ ...r, itemType: 'phone' }));
+      const elecWrittenReviews = (elecWritten.data?.results || elecWritten.data || []).map((r: any) => ({ ...r, itemType: 'electronics' }));
+      const allWrittenReviews = [...phoneWrittenReviews, ...elecWrittenReviews].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-      console.log('=== 받은 리뷰 API 응답 ===');
-      console.log('Data:', receivedRes.data);
+      console.log('통합 작성한 리뷰:', allWrittenReviews.length, '개');
+      setMyWrittenReviews(allWrittenReviews);
 
-      // API 응답이 페이지네이션 형태로 오므로 results 추출
-      const receivedReviews = receivedRes.data?.results || receivedRes.data || [];
-      console.log('받은 리뷰:', receivedReviews.length, '개');
-      setReviews(receivedReviews);
+      // 거래 내역 통합 (itemType 추가)
+      const phoneTransactionsList = phoneTransactions.data?.results || phoneTransactions.data || [];
+      const elecTransactionsList = elecTransactions.data?.results || elecTransactions.data || [];
+      const phoneTransactionsWithType = phoneTransactionsList.map((t: any) => ({ ...t, itemType: 'phone' }));
+      const elecTransactionsWithType = elecTransactionsList.map((t: any) => ({ ...t, itemType: 'electronics' }));
 
-      // 작성한 리뷰 가져오기 (분리된 엔드포인트)
-      const writtenRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
-      console.log('=== 작성한 리뷰 API 응답 ===');
-      console.log('Data:', writtenRes.data);
-
-      // 작성한 리뷰도 페이지네이션 형태일 수 있으므로 확인
-      const writtenReviews = writtenRes.data?.results || writtenRes.data || [];
-      console.log('작성한 리뷰:', writtenReviews.length, '개');
-      setMyWrittenReviews(writtenReviews);
-
-      // 평가 대기중인 거래
-      const transactionsRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
-
-      // 완료된 거래 중 내가 리뷰를 작성하지 않은 거래
-      const completed = transactionsRes.data.filter((t: any) =>
-        t.status === 'completed' && !writtenReviews.some((r: any) => r.transaction === t.id)
+      // 완료된 거래 중 내가 리뷰를 작성하지 않은 거래 통합
+      const allTransactions = [...phoneTransactionsWithType, ...elecTransactionsWithType];
+      const completed = allTransactions.filter((t: any) =>
+        t.status === 'completed' && !allWrittenReviews.some((r: any) => r.transaction === t.id)
       );
       setPendingReviews(completed);
 
@@ -222,7 +269,18 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                 className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50"
               >
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{transaction.phone_model}</p>
+                  <div className="flex items-center gap-1.5">
+                    {transaction.itemType === 'electronics' ? (
+                      <Monitor className="w-3 h-3 text-gray-400" />
+                    ) : (
+                      <Smartphone className="w-3 h-3 text-gray-400" />
+                    )}
+                    <p className="text-sm font-medium">
+                      {transaction.itemType === 'electronics'
+                        ? transaction.product_name || '전자제품'
+                        : transaction.phone_model || '휴대폰'}
+                    </p>
+                  </div>
                   <p className="text-xs text-gray-500">
                     {transaction.seller === userId
                       ? transaction.buyer_username
@@ -285,11 +343,18 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                           </div>
                         </div>
                         {/* 상품 정보 표시 */}
-                        {(review.phone_brand || review.phone_model) && (
-                          <p className="text-xs text-gray-500 mb-1">
-                            {review.phone_brand} {review.phone_model}
+                        <div className="flex items-center gap-1 mb-1">
+                          {review.itemType === 'electronics' ? (
+                            <Monitor className="w-3 h-3 text-gray-400" />
+                          ) : (
+                            <Smartphone className="w-3 h-3 text-gray-400" />
+                          )}
+                          <p className="text-xs text-gray-500">
+                            {review.itemType === 'electronics'
+                              ? (review.product_name || '전자제품')
+                              : `${review.phone_brand || ''} ${review.phone_model || '휴대폰'}`.trim()}
                           </p>
-                        )}
+                        </div>
                         {/* 후기 내용 표시 (있을 경우만) */}
                         {review.comment && (
                           <p className="text-xs text-gray-600 mt-1 mb-1 whitespace-pre-wrap break-words">
@@ -392,11 +457,18 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                           </div>
                         </div>
                         {/* 상품 정보 표시 */}
-                        {(review.phone_brand || review.phone_model) && (
-                          <p className="text-xs text-gray-500 mb-1">
-                            {review.phone_brand} {review.phone_model}
+                        <div className="flex items-center gap-1 mb-1">
+                          {review.itemType === 'electronics' ? (
+                            <Monitor className="w-3 h-3 text-gray-400" />
+                          ) : (
+                            <Smartphone className="w-3 h-3 text-gray-400" />
+                          )}
+                          <p className="text-xs text-gray-500">
+                            {review.itemType === 'electronics'
+                              ? (review.product_name || '전자제품')
+                              : `${review.phone_brand || ''} ${review.phone_model || '휴대폰'}`.trim()}
                           </p>
-                        )}
+                        </div>
                         <div className="flex items-center gap-1">
                           {review.is_punctual && (
                             <Badge variant="outline" className="text-xs py-0 px-1.5 h-5">
@@ -476,6 +548,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
             setSelectedTransaction(null);
           }}
           transactionId={selectedTransaction.id}
+          itemType={selectedTransaction.itemType}
           revieweeName={
             selectedTransaction.seller === userId
               ? selectedTransaction.buyer_username

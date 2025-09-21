@@ -242,6 +242,49 @@ export const completeTransaction = async (electronicsId: number): Promise<{ mess
   return response.data;
 };
 
+// ============================================
+// 리뷰 관련 API
+// ============================================
+
+/**
+ * 리뷰 작성
+ */
+export const createReview = async (transactionId: number, data: {
+  rating: number;
+  comment: string;
+  is_punctual?: boolean;
+  is_friendly?: boolean;
+  is_honest?: boolean;
+  is_fast_response?: boolean;
+}): Promise<any> => {
+  const response = await api.post(`/transactions/${transactionId}/review/`, data);
+  return response.data;
+};
+
+/**
+ * 받은 리뷰 목록
+ */
+export const getReceivedReviews = async (): Promise<{ results: any[] }> => {
+  const response = await api.get('/reviews/received/');
+  return response.data;
+};
+
+/**
+ * 작성한 리뷰 목록
+ */
+export const getWrittenReviews = async (): Promise<{ results: any[] }> => {
+  const response = await api.get('/reviews/written/');
+  return response.data;
+};
+
+/**
+ * 리뷰 통계
+ */
+export const getUserStats = async (): Promise<any> => {
+  const response = await api.get('/reviews/user-stats/');
+  return response.data;
+};
+
 export default {
   getElectronicsList,
   getElectronicsDetail,
@@ -257,4 +300,8 @@ export default {
   toggleFavorite,
   getFavorites,
   completeTransaction,
+  createReview,
+  getReceivedReviews,
+  getWrittenReviews,
+  getUserStats,
 };
