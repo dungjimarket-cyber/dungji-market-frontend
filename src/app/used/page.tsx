@@ -8,11 +8,27 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag, CheckCircle, Clock, MapPin, BookOpen } from 'lucide-react';
+import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag, CheckCircle, Clock, MapPin, BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
+import ElectronicsFilter from '@/components/used/ElectronicsFilter';
+import UnifiedTabs, { TabType } from '@/components/used/UnifiedTabs';
+import UnifiedItemCard from '@/components/used/UnifiedItemCard';
 import { UsedPhone } from '@/types/used';
+import { UsedElectronics } from '@/types/electronics';
+import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
+import { isPhoneItem, isElectronicsItem, getMainImageUrl, getItemTitle, getItemDetailUrl, getSellerNickname } from '@/types/market';
+import electronicsApi from '@/lib/api/electronics';
+import { regions } from '@/lib/regions';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsedProfileCheck } from '@/hooks/useUsedProfileCheck';
@@ -43,8 +59,11 @@ export default function UsedPhonesPage() {
     showProfileModal,
     setShowProfileModal,
   } = useUsedProfileCheck();
-  
+
+  const [activeTab, setActiveTab] = useState<TabType>('all');
   const [phones, setPhones] = useState<UsedPhone[]>([]);
+  const [electronics, setElectronics] = useState<UsedElectronics[]>([]);
+  const [unifiedItems, setUnifiedItems] = useState<UnifiedMarketItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false); // 추가 로딩 상태
   const [totalCount, setTotalCount] = useState(0);
@@ -52,10 +71,156 @@ export default function UsedPhonesPage() {
     includeCompleted: true, // 거래완료 포함 기본 표시
   });
   const [hasLoadedAll, setHasLoadedAll] = useState(false); // 모든 데이터 로드 완료 여부
+
+  // 간단한 필터 상태 (전체 탭용)
+  const [simpleSearch, setSimpleSearch] = useState('');
+  const [simpleRegion, setSimpleRegion] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [cities, setCities] = useState<string[]>([]);
   
   // 등록 제한 관련 상태
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [registrationLimit, setRegistrationLimit] = useState({ current: 0, max: 5 });
+
+  // 시/도 선택 시 시/군/구 목록 업데이트
+  useEffect(() => {
+    if (selectedProvince) {
+      const region = regions.find(r => r.name === selectedProvince);
+      setCities(region?.cities || []);
+    } else {
+      setCities([]);
+      setSelectedCity('');
+    }
+  }, [selectedProvince]);
+
+  // 전자제품 목록 조회
+  const fetchElectronics = useCallback(async (currentFilters: any) => {
+    try {
+      setLoading(true);
+      const params: any = {
+        ordering: currentFilters.sortBy === 'price_low' ? 'price' : currentFilters.sortBy === 'price_high' ? '-price' : '-created_at',
+        search: currentFilters.search,
+        subcategory: currentFilters.subcategory,
+        condition: currentFilters.condition,
+        min_price: currentFilters.minPrice,
+        max_price: currentFilters.maxPrice,
+      };
+
+      // includeCompleted가 false인 경우만 status 필터 추가
+      if (!currentFilters.includeCompleted) {
+        params.status = 'active';
+      }
+
+      // 지역 필터
+      if (currentFilters.region) {
+        params.region = currentFilters.region;
+      }
+
+      const response = await electronicsApi.getElectronicsList(params);
+      const items = response.results || [];
+
+      setElectronics(items);
+      setTotalCount(items.length);
+    } catch (error) {
+      console.error('Failed to fetch electronics:', error);
+      toast({
+        title: '오류',
+        description: '전자제품을 불러오는데 실패했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  // 전체 아이템 조회 (all 탭)
+  const fetchAllItems = useCallback(async (currentFilters: any) => {
+    try {
+      setLoading(true);
+      setHasLoadedAll(false);
+
+      // 병렬로 휴대폰과 전자제품 로드
+      const [phoneData, electronicsData] = await Promise.all([
+        // 휴대폰 API 호출
+        (async () => {
+          const params = new URLSearchParams();
+          params.append('limit', '1000');
+
+          // 검색어
+          if (currentFilters.search) {
+            params.append('search', currentFilters.search);
+          }
+
+          // 지역
+          if (currentFilters.region) {
+            params.append('region', currentFilters.region);
+          }
+
+          // includeCompleted가 false인 경우 active만
+          if (!currentFilters.includeCompleted) {
+            params.append('status', 'active');
+          } else {
+            params.append('include_completed', 'true');
+          }
+
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+          const apiUrl = baseUrl.includes('api.dungjimarket.com')
+            ? `${baseUrl}/used/phones/?${params}`
+            : `${baseUrl}/api/used/phones/?${params}`;
+
+          const token = localStorage.getItem('accessToken');
+          const headers: HeadersInit = {};
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const response = await fetch(apiUrl, { headers });
+          if (!response.ok) throw new Error('Failed to fetch phones');
+          const data = await response.json();
+          return Array.isArray(data) ? data : (data.results || data.items || []);
+        })(),
+        // 전자제품 API 호출
+        electronicsApi.getElectronicsList({
+          search: currentFilters.search,
+          region: currentFilters.region,
+          // status 파라미터는 전자제품 API에서 지원하지 않음
+          // 대신 프론트엔드에서 필터링
+        }).then(res => {
+          const items = res.results || [];
+          // includeCompleted가 false인 경우 active 상태만 필터링
+          if (!currentFilters.includeCompleted) {
+            return items.filter((item: UsedElectronics) => item.status === 'active');
+          }
+          return items;
+        }).catch(() => [])
+      ]);
+
+      // 데이터 통합
+      const phoneItems: PhoneItem[] = phoneData.map((phone: UsedPhone) => ({ ...phone, itemType: 'phone' as const }));
+      const electronicsItems: ElectronicsItem[] = electronicsData.map((elec: UsedElectronics) => ({ ...elec, itemType: 'electronics' as const }));
+
+      // 날짜순 정렬
+      const allItems = [...phoneItems, ...electronicsItems].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setPhones(phoneData);
+      setElectronics(electronicsData);
+      setUnifiedItems(allItems);
+      setTotalCount(allItems.length);
+      setHasLoadedAll(true);
+    } catch (error) {
+      console.error('Failed to fetch all items:', error);
+      toast({
+        title: '오류',
+        description: '상품을 불러오는데 실패했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   // 초기 상품 목록 조회 (빠른 로딩)
   const fetchInitialPhones = useCallback(async (currentFilters: any) => {
@@ -226,16 +391,62 @@ export default function UsedPhonesPage() {
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((newFilters: any) => {
     setFilters(newFilters);
-    // 필터 변경 시 초기 데이터만 로드 (빠른 응답)
-    fetchInitialPhones(newFilters);
-    // 0.5초 후 나머지 데이터 로드
-    setTimeout(() => {
-      fetchRemainingPhones(newFilters);
-    }, 500);
-  }, [fetchInitialPhones, fetchRemainingPhones]);
+    if (activeTab === 'phone') {
+      // 휴대폰 탭: 기존 로직
+      fetchInitialPhones(newFilters);
+      setTimeout(() => {
+        fetchRemainingPhones(newFilters);
+      }, 500);
+    } else if (activeTab === 'electronics') {
+      // 전자제품 탭
+      fetchElectronics(newFilters);
+    } else {
+      // 전체 탭: 간단한 필터만 적용
+      const allFilters = {
+        search: simpleSearch,
+        region: simpleRegion,
+        includeCompleted: newFilters.includeCompleted ?? true
+      };
+      fetchAllItems(allFilters);
+    }
+  }, [activeTab, fetchInitialPhones, fetchRemainingPhones, fetchElectronics, fetchAllItems, simpleSearch, simpleRegion]);
 
-  // 찜하기 핸들러
-  const handleFavorite = useCallback(async (phoneId: number) => {
+  // 간단한 검색 핸들러 (전체 탭용)
+  const handleSimpleSearch = useCallback(() => {
+    const filters = {
+      search: simpleSearch,
+      region: simpleRegion,
+      includeCompleted: true
+    };
+    fetchAllItems(filters);
+  }, [simpleSearch, simpleRegion, fetchAllItems]);
+
+  // 탭 변경 핸들러
+  const handleTabChange = useCallback((tab: TabType) => {
+    console.log('Tab changed to:', tab);
+    setActiveTab(tab);
+    // 필터 초기화
+    setFilters({ includeCompleted: true });
+    setSimpleSearch('');
+    setSimpleRegion('');
+    setSelectedProvince('');
+    setSelectedCity('');
+    // 데이터 로드
+    if (tab === 'all') {
+      fetchAllItems({ includeCompleted: true });
+    } else if (tab === 'phone') {
+      fetchInitialPhones({ includeCompleted: true });
+      setTimeout(() => fetchRemainingPhones({ includeCompleted: true }), 500);
+    } else if (tab === 'electronics') {
+      fetchElectronics({ includeCompleted: true });
+    }
+  }, [fetchAllItems, fetchInitialPhones, fetchRemainingPhones, fetchElectronics]);
+
+  // 찜하기 핸들러 (통합)
+  const handleFavorite = useCallback(async (itemId: number, itemType?: 'phone' | 'electronics') => {
+    // itemType이 전달되지 않으면 activeTab으로 판단
+    const type = itemType || (activeTab === 'electronics' ? 'electronics' : 'phone');
+
     if (!isAuthenticated) {
       toast({
         title: '로그인 필요',
@@ -247,48 +458,69 @@ export default function UsedPhonesPage() {
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/favorite/`
-        : `${baseUrl}/api/used/phones/${phoneId}/favorite/`;
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        // 상태 업데이트
-        setPhones(prev => prev.map(phone => 
-          phone.id === phoneId 
-            ? { ...phone, is_favorite: !phone.is_favorite }
-            : phone
+      if (type === 'electronics') {
+        const response = await electronicsApi.toggleFavorite(itemId);
+        // 전자제품 상태 업데이트
+        setElectronics(prev => prev.map(item =>
+          item.id === itemId
+            ? { ...item, is_favorited: !item.is_favorited }
+            : item
         ));
-        
-        toast({
-          title: '찜 완료',
-          description: '찜 목록에 추가되었습니다.'
+        // 통합 아이템도 업데이트
+        setUnifiedItems(prev => prev.map(item =>
+          item.id === itemId && isElectronicsItem(item)
+            ? { ...item, is_favorited: !item.is_favorited }
+            : item
+        ));
+      } else {
+        // 기존 휴대폰 로직
+        const token = localStorage.getItem('accessToken');
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const apiUrl = baseUrl.includes('api.dungjimarket.com')
+          ? `${baseUrl}/used/phones/${itemId}/favorite/`
+          : `${baseUrl}/api/used/phones/${itemId}/favorite/`;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
+
+        if (response.ok) {
+          // 휴대폰 상태 업데이트
+          setPhones(prev => prev.map(phone =>
+            phone.id === itemId
+              ? { ...phone, is_favorite: !phone.is_favorite }
+              : phone
+          ));
+          // 통합 아이템도 업데이트
+          setUnifiedItems(prev => prev.map(item =>
+            item.id === itemId && isPhoneItem(item)
+              ? { ...item, is_favorited: !(item as any).is_favorited || !(item as any).is_favorite }
+              : item
+          ));
+        }
       }
+
+      toast({
+        title: '찜 완료',
+        description: '찜 목록에 추가되었습니다.'
+      });
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }
-  }, [isAuthenticated, toast, router]);
+  }, [isAuthenticated, toast, router, activeTab]);
+
+  // 폰 찜하기 핸들러 (기존 호환성)
+  const handlePhoneFavorite = useCallback(async (phoneId: number) => {
+    return handleFavorite(phoneId, 'phone');
+  }, [handleFavorite]);
 
   // 초기 데이터 로드
   useEffect(() => {
-    // 1단계: 초기 20개 빠르게 로드 (기본 필터 적용 - 거래완료 포함)
-    fetchInitialPhones({ includeCompleted: true });
-
-    // 2단계: 0.5초 후 나머지 백그라운드 로드
-    const timer = setTimeout(() => {
-      fetchRemainingPhones({ includeCompleted: true });
-    }, 500);
-
-    return () => clearTimeout(timer);
+    // 전체 탭으로 시작
+    fetchAllItems({ includeCompleted: true });
   }, []);
 
   // 프로필 체크 (로그인한 경우)
@@ -423,27 +655,169 @@ export default function UsedPhonesPage() {
           </div>
         )}
 
+        {/* 탭 섹션 */}
+        <div className="mb-4">
+          <UnifiedTabs
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            counts={{
+              all: unifiedItems.length,
+              phone: phones.length,
+              electronics: electronics.length
+            }}
+          />
+        </div>
+
         {/* 필터 섹션 */}
         <div className="sticky top-0 z-40 -mx-4 px-4 bg-white/95 backdrop-blur-sm border-b shadow-sm">
-          <UsedPhoneFilter
-            onFilterChange={handleFilterChange}
-            totalCount={totalCount}
-          />
+          {activeTab === 'all' ? (
+            // 전체 탭: 간단한 필터만
+            <div className="py-3">
+              <div className="flex flex-col gap-3">
+                {/* 검색바와 지역검색 */}
+                <div className="flex gap-2">
+                  {/* 통합검색 (50%) */}
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="검색..."
+                      value={simpleSearch}
+                      onChange={(e) => setSimpleSearch(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSimpleSearch()}
+                      className="pl-9 pr-10 w-full"
+                    />
+                    <button
+                      onClick={handleSimpleSearch}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
+                      aria-label="검색"
+                    >
+                      <Search className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* 지역검색 (50%) */}
+                  <div className="flex gap-1 flex-1">
+                    {/* 시/도 선택 */}
+                    <Select
+                      value={selectedProvince || 'all'}
+                      onValueChange={(value) => {
+                        if (value === 'all') {
+                          setSelectedProvince('');
+                          setSelectedCity('');
+                          setSimpleRegion('');
+                        } else {
+                          setSelectedProvince(value);
+                          setSelectedCity('');
+                          setSimpleRegion(value);
+                        }
+                        handleSimpleSearch();
+                      }}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        <SelectValue placeholder="시/도" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전국</SelectItem>
+                        {regions.map((region) => (
+                          <SelectItem key={region.name} value={region.name}>
+                            {region.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* 시/군/구 선택 */}
+                    <Select
+                      value={selectedCity || 'all'}
+                      disabled={!selectedProvince}
+                      onValueChange={(value) => {
+                        if (value === 'all') {
+                          setSelectedCity('');
+                          setSimpleRegion(selectedProvince);
+                        } else {
+                          setSelectedCity(value);
+                          setSimpleRegion(`${selectedProvince} ${value}`);
+                        }
+                        handleSimpleSearch();
+                      }}
+                    >
+                      <SelectTrigger className="flex-1" disabled={!selectedProvince}>
+                        <SelectValue placeholder="시/군/구" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        {cities.map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* 결과 요약 */}
+                <div className="text-sm text-gray-600">
+                  총 <span className="font-semibold text-gray-900">{totalCount}개</span>의 상품
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'phone' ? (
+            // 휴대폰 탭: 기존 필터 사용
+            <UsedPhoneFilter
+              onFilterChange={handleFilterChange}
+              totalCount={totalCount}
+            />
+          ) : (
+            // 전자제품 탭: 전자제품 필터 사용
+            <ElectronicsFilter
+              onFilterChange={handleFilterChange}
+              totalCount={totalCount}
+            />
+          )}
         </div>
 
         {/* 상품 리스트 */}
         <section className="py-6">
         {/* 상품 그리드 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {phones.map((phone, index) => (
-            <UsedPhoneCard
-              key={phone.id}
-              phone={phone}
-              priority={index < 10} // 첫 10개 이미지 우선 로딩
-              onFavorite={handleFavorite}
-            />
-          ))}
-          
+          {activeTab === 'all' ? (
+            // 전체 탭: 통합 아이템 표시
+            unifiedItems.map((item, index) => (
+              <UnifiedItemCard
+                key={`${item.itemType}-${item.id}`}
+                item={item}
+                priority={index < 10}
+                onFavorite={(id) => handleFavorite(id, item.itemType)}
+              />
+            ))
+          ) : activeTab === 'phone' ? (
+            // 휴대폰 탭: 기존 폰 카드
+            phones.map((phone, index) => (
+              <UsedPhoneCard
+                key={phone.id}
+                phone={phone}
+                priority={index < 10}
+                onFavorite={handlePhoneFavorite}
+              />
+            ))
+          ) : (
+            // 전자제품 탭: 통합 카드로 표시
+            electronics.map((item, index) => {
+              const unifiedItem: ElectronicsItem = { ...item, itemType: 'electronics' as const };
+              return (
+                <UnifiedItemCard
+                  key={item.id}
+                  item={unifiedItem}
+                  priority={index < 10}
+                  onFavorite={(id) => handleFavorite(id, 'electronics')}
+                />
+              );
+            })
+          )}
+
           {/* 로딩 스켈레톤 */}
           {loading && (
             <>
@@ -474,7 +848,11 @@ export default function UsedPhonesPage() {
         )}
         
         {/* 검색 결과 없음 */}
-        {!loading && phones.length === 0 && (
+        {!loading && (
+          (activeTab === 'all' && unifiedItems.length === 0) ||
+          (activeTab === 'phone' && phones.length === 0) ||
+          (activeTab === 'electronics' && electronics.length === 0)
+        ) && (
           <div className="text-center py-16">
             <Smartphone className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -494,9 +872,9 @@ export default function UsedPhonesPage() {
         )}
 
         {/* 상품 개수 표시 */}
-        {!loading && phones.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-500">총 {phones.length}개의 상품</p>
+            <p className="text-sm text-gray-500">총 {totalCount}개의 상품</p>
           </div>
         )}
         </section>

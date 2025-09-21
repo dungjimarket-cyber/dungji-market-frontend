@@ -22,10 +22,13 @@ import PurchaseActivityTab from '../purchases/PurchaseActivityTab';
 import ReviewsTab from '../reviews/ReviewsTab';
 import FavoritesTab from '../favorites/FavoritesTab';
 import { buyerAPI, sellerAPI } from '@/lib/api/used';
+import electronicsApi from '@/lib/api/electronics';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import ReceivedOffersModal from '../sales/ReceivedOffersModal';
 import ReviewModal from '@/components/used/ReviewModal';
+import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
+import { isPhoneItem, isElectronicsItem, sortByDate, normalizeApiResponse } from '@/types/market';
 
 interface StatusCounts {
   sales: {
@@ -84,22 +87,34 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   const [returnToSale, setReturnToSale] = useState(true);
   const [expandedMessage, setExpandedMessage] = useState<number | null>(null);
 
-  // 상태별 카운트 조회
+  // 상태별 카운트 조회 (휴대폰 + 전자제품 통합)
   const fetchStatusCounts = useCallback(async () => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
-      // 판매 내역 카운트
+      // 판매 내역 카운트 (휴대폰 + 전자제품)
       try {
-        const salesData = await sellerAPI.getMyListings();
-        const salesItems = salesData.results || salesData.items || [];
+        // 병렬로 두 API 호출
+        const [phoneData, electronicsData] = await Promise.all([
+          sellerAPI.getMyListings().catch(() => ({ results: [] })),
+          electronicsApi.getMyElectronics().catch(() => ({ results: [] }))
+        ]);
+
+        const phoneItems = Array.isArray(phoneData) ? phoneData : normalizeApiResponse(phoneData);
+        const electronicsItems = Array.isArray(electronicsData) ? electronicsData : normalizeApiResponse(electronicsData);
+
+        // 모든 아이템 병합
+        const allSalesItems = [
+          ...(phoneItems || []).map((item: any) => ({ ...item, itemType: 'phone' as const })),
+          ...(electronicsItems || []).map((item: any) => ({ ...item, itemType: 'electronics' as const }))
+        ];
 
         const salesCount = {
-          active: salesItems.filter((item: any) => item.status === 'active').length,
-          offers: salesItems.filter((item: any) => item.status === 'active' && item.offer_count > 0).length,
-          trading: salesItems.filter((item: any) => item.status === 'trading').length,
-          sold: salesItems.filter((item: any) => item.status === 'sold').length,
+          active: allSalesItems.filter((item: any) => item.status === 'active').length,
+          offers: allSalesItems.filter((item: any) => item.status === 'active' && item.offer_count > 0).length,
+          trading: allSalesItems.filter((item: any) => item.status === 'trading').length,
+          sold: allSalesItems.filter((item: any) => item.status === 'sold').length,
         };
 
         setStatusCounts(prev => ({ ...prev, sales: salesCount }));
@@ -133,11 +148,17 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
         console.error('Failed to fetch purchase counts:', error);
       }
 
-      // 찜 개수
+      // 찜 개수 (휴대폰 + 전자제품)
       try {
-        const favorites = await buyerAPI.getFavorites().catch(() => ({ items: [] }));
-        const favoriteItems = favorites.items || favorites.results || [];
-        setFavoritesCount(favoriteItems.length || 0);
+        const [phoneFavorites, electronicsFavorites] = await Promise.all([
+          buyerAPI.getFavorites().catch(() => ({ items: [] })),
+          electronicsApi.getFavorites().catch(() => ({ results: [] }))
+        ]);
+
+        const phoneFavItems = (phoneFavorites as any).items || (phoneFavorites as any).results || [];
+        const elecFavItems = (electronicsFavorites as any).results || [];
+
+        setFavoritesCount(phoneFavItems.length + elecFavItems.length);
       } catch (error) {
         console.error('Failed to fetch favorites count:', error);
       }

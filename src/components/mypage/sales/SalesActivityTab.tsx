@@ -16,32 +16,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { sellerAPI } from '@/lib/api/used';
+import electronicsApi from '@/lib/api/electronics';
 import { useToast } from '@/hooks/use-toast';
 import ReceivedOffersModal from './ReceivedOffersModal';
 import ReviewModal from '@/components/used/ReviewModal';
 import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
+import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
+import { isPhoneItem, isElectronicsItem, getMainImageUrl, getItemTitle, getItemDetailUrl, getItemEditUrl } from '@/types/market';
 
-interface SalesItem {
-  id: number;
-  title: string;
-  price: number;
-  images: { image_url: string; is_main: boolean }[];
-  status: 'active' | 'trading' | 'sold';
-  view_count: number;
-  favorite_count: number;
-  offer_count: number;
-  created_at: string;
-  brand: string;
-  model: string;
-  storage: number;
-  final_offer_price?: number;  // 거래중일 때 최종 거래가격
-  buyer?: {  // 구매자 정보 (거래완료 시)
-    id: number;
-    nickname: string;
-  };
-  transaction_id?: number;  // 거래 ID (거래완료 시)
-  has_review?: boolean;  // 후기 작성 여부
-}
+// 통합 아이템 사용
+type SalesItem = UnifiedMarketItem;
 
 interface ReceivedOffer {
   id: number;
@@ -83,8 +67,8 @@ export default function SalesActivityTab() {
     if (filterParam === 'sold') return 'sold';
     return 'active';
   });
-  const [listings, setListings] = useState<SalesItem[]>([]);
-  const [allListings, setAllListings] = useState<SalesItem[]>([]); // 전체 목록 캐시
+  const [listings, setListings] = useState<UnifiedMarketItem[]>([]);
+  const [allListings, setAllListings] = useState<UnifiedMarketItem[]>([]); // 전체 목록 캐시
   const [receivedOffers, setReceivedOffers] = useState<ReceivedOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -119,13 +103,28 @@ export default function SalesActivityTab() {
     }
   }, [searchParams]);
 
-  // 전체 목록 가져오기 (캐싱용)
+  // 전체 목록 가져오기 (캐싱용) - 휴대폰과 전자제품 통합
   const fetchAllListings = async () => {
     try {
-      const data = await sellerAPI.getMyListings(); // status 없이 전체 조회
-      const listings = Array.isArray(data) ? data : (data.results || []);
-      setAllListings(listings);
-      return listings;
+      // 병렬로 휴대폰과 전자제품 데이터 가져오기
+      const [phoneData, electronicsData] = await Promise.all([
+        sellerAPI.getMyListings().catch(() => ({ results: [] })),
+        electronicsApi.getMyElectronics().catch(() => ({ results: [] }))
+      ]);
+
+      // 데이터 정규화 및 타입 추가
+      const phones: PhoneItem[] = (Array.isArray(phoneData) ? phoneData : (phoneData.results || []))
+        .map((item: any) => ({ ...item, itemType: 'phone' as const }));
+      const electronics: ElectronicsItem[] = (Array.isArray(electronicsData) ? electronicsData : (electronicsData.results || []))
+        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
+
+      // 통합 및 날짜순 정렬
+      const allItems = [...phones, ...electronics].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setAllListings(allItems);
+      return allItems;
     } catch (error) {
       console.error('Failed to fetch all listings:', error);
       return [];
@@ -162,10 +161,15 @@ export default function SalesActivityTab() {
     }
   };
 
-  // 받은 제안 조회
-  const fetchReceivedOffers = async (phoneId: number) => {
+  // 받은 제안 조회 - 타입에 따라 다른 API 호출
+  const fetchReceivedOffers = async (item: UnifiedMarketItem) => {
     try {
-      const data = await sellerAPI.getReceivedOffers(phoneId);
+      let data;
+      if (isPhoneItem(item)) {
+        data = await sellerAPI.getReceivedOffers(item.id);
+      } else {
+        data = await electronicsApi.getOffers(item.id);
+      }
       const offers = Array.isArray(data) ? data : (data.results || []);
       setReceivedOffers(offers);
       setShowOffersModal(true);
@@ -281,12 +285,14 @@ export default function SalesActivityTab() {
   };
 
   // 판매 완료 처리
-  const handleCompleteTransaction = async (phoneId: number) => {
+  const handleCompleteTransaction = async (item: UnifiedMarketItem) => {
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-        const apiUrl = `${baseUrl}/used/phones/${phoneId}/complete-trade/`;
+        const apiUrl = isPhoneItem(item)
+          ? `${baseUrl}/used/phones/${item.id}/complete-trade/`
+          : `${baseUrl}/used/electronics/${item.id}/complete-transaction/`;
 
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -351,13 +357,16 @@ export default function SalesActivityTab() {
       return;
     }
 
-    const phoneId = cancellingItem.id;
+    const itemId = cancellingItem.id;
+    const itemType = isPhoneItem(cancellingItem) ? 'phone' : 'electronics';
 
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-        const apiUrl = `${baseUrl}/used/phones/${phoneId}/cancel-trade/`;
+        const apiUrl = itemType === 'phone'
+          ? `${baseUrl}/used/phones/${itemId}/cancel-trade/`
+          : `${baseUrl}/used/electronics/${itemId}/cancel-trade/`;
 
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -412,11 +421,17 @@ export default function SalesActivityTab() {
       .reduce((sum, item) => sum + (item.offer_count || 0), 0);
   };
 
-  // 거래 상대 정보 조회
-  const fetchBuyerInfo = async (phoneId: number) => {
+  // 거래 상대 정보 조회 - 타입에 따라 다른 API 호출
+  const fetchBuyerInfo = async (item: UnifiedMarketItem) => {
     setLoadingBuyerInfo(true);
     try {
-      const data = await sellerAPI.getBuyerInfo(phoneId);
+      let data;
+      if (isPhoneItem(item)) {
+        data = await sellerAPI.getBuyerInfo(item.id);
+      } else {
+        // 전자제품용 API가 필요하면 추가
+        data = await sellerAPI.getBuyerInfo(item.id); // 임시로 같은 API 사용
+      }
       setSelectedBuyerInfo(data);
       setShowBuyerInfoModal(true);
     } catch (error) {
@@ -593,10 +608,10 @@ export default function SalesActivityTab() {
                 {getPaginatedItems(listings.filter(item => item.status === 'active')).map((item) => (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
-                      <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                      <Link href={getItemDetailUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                         <Image
-                          src={item.images[0]?.image_url || '/placeholder.png'}
-                          alt={item.title}
+                          src={getMainImageUrl(item)}
+                          alt={getItemTitle(item)}
                           width={80}
                           height={80}
                           className="object-cover w-full h-full"
@@ -605,9 +620,9 @@ export default function SalesActivityTab() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <Link href={`/used/${item.id}`} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
+                          <Link href={getItemDetailUrl(item)} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
                             <h4 className="font-medium text-sm truncate">
-                              {item.brand} {item.model}
+                              {getItemTitle(item)}
                             </h4>
                             <p className="text-base sm:text-lg font-semibold">
                               {item.price.toLocaleString()}원
@@ -637,7 +652,7 @@ export default function SalesActivityTab() {
                             variant="outline"
                             onClick={() => {
                               setSelectedPhone(item);
-                              fetchReceivedOffers(item.id);
+                              fetchReceivedOffers(item);
                             }}
                           >
                             제안 확인
@@ -645,7 +660,7 @@ export default function SalesActivityTab() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => router.push(`/used/${item.id}/edit`)}
+                            onClick={() => router.push(getItemEditUrl(item))}
                           >
                             상품 수정
                           </Button>
@@ -670,10 +685,10 @@ export default function SalesActivityTab() {
               {getPaginatedItems(listings.filter(item => item.offer_count > 0 && item.status !== 'trading' && item.status !== 'sold')).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
-                    <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                    <Link href={getItemDetailUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                       <Image
-                        src={item.images[0]?.image_url || '/placeholder.png'}
-                        alt={item.title}
+                        src={getMainImageUrl(item)}
+                        alt={getItemTitle(item)}
                         width={80}
                         height={80}
                         className="object-cover w-full h-full"
@@ -681,9 +696,9 @@ export default function SalesActivityTab() {
                     </Link>
                     
                     <div className="flex-1 min-w-0">
-                      <Link href={`/used/${item.id}`} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
+                      <Link href={getItemDetailUrl(item)} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
                         <h4 className="font-medium text-sm truncate">
-                          {item.brand} {item.model}
+                          {getItemTitle(item)}
                         </h4>
                       </Link>
                       <p className="text-sm text-gray-600">
@@ -697,7 +712,7 @@ export default function SalesActivityTab() {
                           size="sm"
                           onClick={() => {
                             setSelectedPhone(item);
-                            fetchReceivedOffers(item.id);
+                            fetchReceivedOffers(item);
                           }}
                         >
                           제안 확인
@@ -723,10 +738,10 @@ export default function SalesActivityTab() {
               {getPaginatedItems(listings.filter(item => item.status === 'trading')).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
-                    <Link href={`/used/${item.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <Link href={getItemDetailUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <Image
-                        src={item.images[0]?.image_url || '/placeholder.png'}
-                        alt={item.title}
+                        src={getMainImageUrl(item)}
+                        alt={getItemTitle(item)}
                         width={80}
                         height={80}
                         className="object-cover w-full h-full"
@@ -736,15 +751,15 @@ export default function SalesActivityTab() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="min-w-0 flex-1">
-                          <Link href={`/used/${item.id}`} className="hover:underline">
+                          <Link href={getItemDetailUrl(item)} className="hover:underline">
                             <h4 className="font-medium text-sm truncate">
-                              {item.brand} {item.model}
+                              {getItemTitle(item)}
                             </h4>
                           </Link>
                           <div className="flex items-baseline gap-2">
                             <span className="text-xs text-gray-500">거래가격</span>
                             <p className="text-base font-semibold text-green-600">
-                              {item.final_offer_price ? item.final_offer_price.toLocaleString() : item.price.toLocaleString()}원
+                              {(item as any).final_offer_price ? (item as any).final_offer_price.toLocaleString() : item.price.toLocaleString()}원
                             </p>
                           </div>
                         </div>
@@ -765,7 +780,7 @@ export default function SalesActivityTab() {
                             size="sm"
                             variant="outline"
                             className="flex items-center gap-1"
-                            onClick={() => fetchBuyerInfo(item.id)}
+                            onClick={() => fetchBuyerInfo(item)}
                             disabled={loadingBuyerInfo}
                           >
                             <User className="w-3.5 h-3.5" />
@@ -776,7 +791,7 @@ export default function SalesActivityTab() {
                             className="bg-green-600 hover:bg-green-700"
                             onClick={() => {
                               if (confirm('판매를 완료하시겠습니까?')) {
-                                handleCompleteTransaction(item.id);
+                                handleCompleteTransaction(item);
                               }
                             }}
                           >
@@ -814,8 +829,8 @@ export default function SalesActivityTab() {
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <Image
-                        src={item.images[0]?.image_url || '/placeholder.png'}
-                        alt={item.title}
+                        src={getMainImageUrl(item)}
+                        alt={getItemTitle(item)}
                         width={80}
                         height={80}
                         className="object-cover w-full h-full"
@@ -826,7 +841,7 @@ export default function SalesActivityTab() {
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="min-w-0 flex-1">
                           <h4 className="font-medium text-sm truncate">
-                            {item.brand} {item.model}
+                            {getItemTitle(item)}
                           </h4>
                           <p className="text-base font-semibold">
                             {item.price.toLocaleString()}원
@@ -834,7 +849,7 @@ export default function SalesActivityTab() {
                         </div>
                       </div>
                       <div className="flex justify-end">
-                        {item.has_review === true ? (
+                        {(item as any).has_review === true ? (
                           <Button
                             size="sm"
                             disabled
@@ -873,7 +888,7 @@ export default function SalesActivityTab() {
             setShowOffersModal(false);
             setSelectedPhone(null);
           }}
-          phone={selectedPhone}
+          phone={selectedPhone as any}
           offers={receivedOffers}
           onRespond={handleOfferResponse}
           onProceedTrade={handleProceedTrade}
@@ -902,7 +917,7 @@ export default function SalesActivityTab() {
             
             <div className="space-y-4">
               <div className="text-sm text-gray-600">
-                <p className="font-medium mb-2">상품: {cancellingItem.brand} {cancellingItem.model}</p>
+                <p className="font-medium mb-2">상품: {getItemTitle(cancellingItem)}</p>
                 <p className="text-red-500">거래를 취소하시겠습니까?</p>
               </div>
 
@@ -1106,7 +1121,7 @@ export default function SalesActivityTab() {
           revieweeName={reviewTarget.buyerName}
           productInfo={{
             brand: reviewTarget.phoneInfo.brand,
-            model: reviewTarget.phoneInfo.model,
+            model: isPhoneItem(reviewTarget.phoneInfo) ? reviewTarget.phoneInfo.model : (reviewTarget.phoneInfo as any).model_name || '',
             price: reviewTarget.phoneInfo.price,
           }}
           onSuccess={handleReviewSuccess}

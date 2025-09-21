@@ -10,12 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { buyerAPI } from '@/lib/api/used';
+import electronicsApi from '@/lib/api/electronics';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import ReviewModal from '@/components/used/ReviewModal';
 import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils/transactionHelper';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
+import { isPhoneItem, isElectronicsItem, getMainImageUrl, getItemTitle, getItemDetailUrl } from '@/types/market';
 
 interface OfferItem {
   id: number;
@@ -119,12 +122,23 @@ export default function PurchaseActivityTab() {
     }
   }, [searchParams]);
 
-  // 내 제안 목록 조회
+  // 내 제안 목록 조회 - 휴대폰과 전자제품 통합
   const fetchMyOffers = async () => {
     setLoading(true);
     try {
-      const data = await buyerAPI.getMySentOffers();
-      setOffers(data.results || data);
+      // 병렬로 휴대폰과 전자제품 제안 가져오기
+      const [phoneOffers, electronicsOffers] = await Promise.all([
+        buyerAPI.getMySentOffers().catch(() => ({ results: [] })),
+        // 전자제품의 내 제안 API가 필요 (추가 필요)
+        Promise.resolve({ results: [] }) // 임시 - API 추가 필요
+      ]);
+
+      const allOffers = [
+        ...(phoneOffers.results || phoneOffers || []),
+        ...(electronicsOffers.results || electronicsOffers || [])
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setOffers(allOffers);
     } catch (error) {
       console.error('Failed to fetch offers:', error);
       // 목업 데이터
@@ -167,13 +181,23 @@ export default function PurchaseActivityTab() {
     }
   };
 
-  // 거래중 목록 조회
+  // 거래중 목록 조회 - 휴대폰과 전자제품 통합
   const fetchTradingItems = async () => {
     setLoading(true);
     try {
-      const data = await buyerAPI.getMyTradingItems();
-      // 백엔드에서 has_review가 이미 포함되어 있음
-      setTradingItems(Array.isArray(data) ? data : data.results || []);
+      // 병렬로 휴대폰과 전자제품 거래중 항목 가져오기
+      const [phoneTrading, electronicsTrading] = await Promise.all([
+        buyerAPI.getMyTradingItems().catch(() => ({ results: [] })),
+        // 전자제품의 거래중 API가 필요 (추가 필요)
+        Promise.resolve({ results: [] }) // 임시 - API 추가 필요
+      ]);
+
+      const allTrading = [
+        ...(Array.isArray(phoneTrading) ? phoneTrading : phoneTrading.results || []),
+        ...(Array.isArray(electronicsTrading) ? electronicsTrading : electronicsTrading.results || [])
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setTradingItems(allTrading);
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
       setTradingItems([]);

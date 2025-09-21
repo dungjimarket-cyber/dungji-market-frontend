@@ -3,24 +3,21 @@
 import { useState, useEffect } from 'react';
 import { Heart, Loader2, Eye } from 'lucide-react';
 import { buyerAPI } from '@/lib/api/used';
+import electronicsApi from '@/lib/api/electronics';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import type { UnifiedMarketItem, PhoneItem, ElectronicsItem, UnifiedFavorite } from '@/types/market';
+import { isPhoneItem, isElectronicsItem, getMainImageUrl, getItemTitle, getItemDetailUrl, getSellerNickname } from '@/types/market';
 
+// 통합 찜 아이템 타입 사용
 interface FavoriteItem {
   id: number;
-  phone: {
-    id: number;
-    brand: string;
-    model: string;
-    price: number;
-    images: Array<{ image_url?: string; is_main?: boolean }>;
-    seller: { nickname: string };
-    status?: string;
-  };
+  itemType: 'phone' | 'electronics';
+  item: UnifiedMarketItem;
   created_at: string;
 }
 
@@ -36,8 +33,33 @@ export default function FavoritesTab() {
   const fetchFavorites = async () => {
     setLoading(true);
     try {
-      const data = await buyerAPI.getFavorites();
-      setFavorites(data.results || data);
+      // 병렬로 휴대폰과 전자제품 찜 목록 가져오기
+      const [phoneFavorites, electronicsFavorites] = await Promise.all([
+        buyerAPI.getFavorites().catch(() => ({ items: [], results: [] })),
+        electronicsApi.getFavorites().catch(() => ({ results: [] }))
+      ]);
+
+      // 데이터 통합 및 타입 추가
+      const phoneItems = (phoneFavorites.results || phoneFavorites.items || []).map((fav: any) => ({
+        id: fav.id,
+        itemType: 'phone' as const,
+        item: { ...fav.phone, itemType: 'phone' as const },
+        created_at: fav.created_at
+      }));
+
+      const electronicsItems = (electronicsFavorites.results || []).map((fav: any) => ({
+        id: fav.id,
+        itemType: 'electronics' as const,
+        item: { ...fav.electronics, itemType: 'electronics' as const },
+        created_at: fav.created_at
+      }));
+
+      // 날짜순 정렬
+      const allFavorites = [...phoneItems, ...electronicsItems].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setFavorites(allFavorites);
     } catch (error) {
       console.error('Failed to fetch favorites:', error);
       setError('찜 목록을 불러오는데 실패했습니다.');
@@ -46,9 +68,13 @@ export default function FavoritesTab() {
     }
   };
 
-  const handleRemoveFavorite = async (phoneId: number) => {
+  const handleRemoveFavorite = async (item: FavoriteItem) => {
     try {
-      await buyerAPI.toggleFavorite(phoneId);
+      if (item.itemType === 'phone') {
+        await buyerAPI.toggleFavorite(item.item.id);
+      } else {
+        await electronicsApi.toggleFavorite(item.item.id);
+      }
       // 찜 해제 후 목록 새로고침
       fetchFavorites();
     } catch (error) {
@@ -89,12 +115,12 @@ export default function FavoritesTab() {
         <Card key={item.id} className="p-3 sm:p-4">
           <div className="flex gap-3 sm:gap-4">
             <Link
-              href={`/used/${item.phone.id}`}
+              href={getItemDetailUrl(item.item)}
               className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
             >
               <Image
-                src={item.phone.images[0]?.image_url || '/placeholder.png'}
-                alt={item.phone.model}
+                src={getMainImageUrl(item.item)}
+                alt={getItemTitle(item.item)}
                 width={80}
                 height={80}
                 className="object-cover w-full h-full"
@@ -103,18 +129,18 @@ export default function FavoritesTab() {
 
             <div className="flex-1 min-w-0">
               <Link
-                href={`/used/${item.phone.id}`}
+                href={getItemDetailUrl(item.item)}
                 className="hover:text-dungji-primary transition-colors"
               >
                 <h4 className="font-medium text-sm truncate">
-                  {item.phone.brand} {item.phone.model}
+                  {getItemTitle(item.item)}
                 </h4>
               </Link>
               <p className="text-base sm:text-lg font-semibold mt-1">
-                {item.phone.price.toLocaleString()}원
+                {item.item.price.toLocaleString()}원
               </p>
               <p className="text-xs text-gray-500">
-                판매자: {item.phone.seller.nickname}
+                판매자: {getSellerNickname(item.item)}
               </p>
 
               <div className="flex items-center justify-between mt-3">
@@ -125,7 +151,7 @@ export default function FavoritesTab() {
                   })}
                 </span>
                 <div className="flex gap-2">
-                  <Link href={`/used/${item.phone.id}`}>
+                  <Link href={getItemDetailUrl(item.item)}>
                     <Button size="sm">
                       <Eye className="w-3 h-3 mr-1" />
                       상품 보기
@@ -134,7 +160,7 @@ export default function FavoritesTab() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleRemoveFavorite(item.phone.id)}
+                    onClick={() => handleRemoveFavorite(item)}
                   >
                     <Heart className="w-3 h-3 mr-1" />
                     찜 해제
