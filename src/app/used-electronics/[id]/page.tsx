@@ -177,6 +177,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       return;
     }
 
+    // 거래 완료 상품은 찜 불가
+    if (electronics?.status === 'sold') {
+      toast.error('거래 완료된 상품은 찜할 수 없습니다.');
+      return;
+    }
+
     try {
       const response = await electronicsApi.toggleFavorite(Number(electronicsId), isFavorite || false);
       const newFavoriteState = !isFavorite;

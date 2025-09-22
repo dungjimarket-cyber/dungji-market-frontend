@@ -250,8 +250,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/phones/${phoneId}/favorite/`
         : `${baseUrl}/api/used/phones/${phoneId}/favorite/`;
+
+      // 찜 상태에 따라 메서드 결정 (POST: 추가, DELETE: 제거)
+      const method = isFavorite ? 'DELETE' : 'POST';
+
       const response = await fetch(apiUrl, {
-        method: 'POST',
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
