@@ -564,8 +564,8 @@ export default function ElectronicsCreatePage() {
                 r.full_name.includes(region.city)
               ) || regions[0];
 
-              regionIds.push(Number(exactMatch.id));
-              console.log('Region found:', exactMatch.id, exactMatch.full_name);
+              regionIds.push(Number(exactMatch.code));
+              console.log('Region found:', exactMatch.code, exactMatch.full_name);
             }
           } catch (error) {
             console.error('Failed to find region:', error);
