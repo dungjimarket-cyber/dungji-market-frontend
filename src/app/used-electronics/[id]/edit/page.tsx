@@ -140,7 +140,6 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         model_name: data.model_name,
         purchase_period: data.purchase_period as any,
         condition_grade: data.condition_grade as any,
-        condition_description: data.condition_description || '',
         has_box: data.has_box,
         has_charger: data.has_charger,
         other_accessories: data.other_accessories || '',
@@ -627,21 +626,6 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="condition_description">상태 설명</Label>
-                <Textarea
-                  id="condition_description"
-                  value={formData.condition_description}
-                  onChange={(e) => setFormData({ ...formData, condition_description: e.target.value })}
-                  placeholder="제품의 현재 상태를 자세히 설명해주세요 (스크래치, 찍힘 등)"
-                  rows={3}
-                  maxLength={500}
-                  className="mt-1"
-                />
-                <p className="text-xs text-gray-500 mt-1 text-right">
-                  {formData.condition_description?.length || 0}/500
-                </p>
-              </div>
             </CardContent>
           </Card>
 
