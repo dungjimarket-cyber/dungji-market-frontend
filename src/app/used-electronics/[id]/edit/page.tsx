@@ -60,7 +60,6 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     model_name: '',
     purchase_period: '6months',
     condition_grade: 'B',
-    condition_description: '',
     has_box: false,
     has_charger: true,
     other_accessories: '',
