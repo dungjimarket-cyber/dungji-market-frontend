@@ -72,7 +72,6 @@ export default function ElectronicsCreatePage() {
     usage_period: '',
     is_unused: false,
     condition_grade: 'B',
-    condition_description: '',
     has_box: false,
     has_charger: false,
     other_accessories: '',
@@ -909,26 +908,6 @@ export default function ElectronicsCreatePage() {
             </div>
           </div>
 
-          {/* 상태 설명 */}
-          <div>
-            <Label htmlFor="condition_description">상태 설명</Label>
-            <Textarea
-              id="condition_description"
-              value={formData.condition_description || ''}
-              onChange={(e) => {
-                if (e.target.value.length <= 500) {
-                  handleInputChange('condition_description', e.target.value);
-                }
-              }}
-              placeholder="하자사항이나 수리이력을 입력해주세요 (선택)"
-              rows={3}
-              maxLength={500}
-              disabled={loading}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.condition_description?.length || 0}/500자
-            </p>
-          </div>
 
           {/* 구성품 */}
           <div>
@@ -992,6 +971,10 @@ export default function ElectronicsCreatePage() {
                 value={formatPrice(formData.price)}
                 onChange={(e) => {
                   const unformatted = unformatPrice(e.target.value);
+                  // 최대 금액 제한 (990만원)
+                  if (parseInt(unformatted) > 9900000) {
+                    return;
+                  }
                   handleInputChange('price', unformatted);
                 }}
                 onBlur={(e) => {
@@ -1031,6 +1014,10 @@ export default function ElectronicsCreatePage() {
                     value={formatPrice(formData.min_offer_price || '')}
                     onChange={(e) => {
                       const unformatted = unformatPrice(e.target.value);
+                      // 최대 금액 제한 (990만원)
+                      if (parseInt(unformatted) > 9900000) {
+                        return;
+                      }
                       handleInputChange('min_offer_price', unformatted);
                     }}
                     onBlur={(e) => {
@@ -1127,10 +1114,10 @@ export default function ElectronicsCreatePage() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-xs sm:text-sm text-yellow-800">
               <span className="font-medium">⚠️ 주의사항</span><br/>
-              • 가격 제안이 들어온 후에는 일부 정보만 수정 가능합니다<br className="sm:hidden"/>
-              <span className="hidden sm:inline"> </span>(가격, 제안가, 거래요청사항, 상품설명)<br/>
-              • 거래는 직거래만 가능합니다 (택배거래 불가)<br/>
-              • 허위 매물 등록 시 이용이 제한될 수 있습니다
+              • 가격 제안이 들어온 후에는 일부정보만 수정 가능하니 신중하게 작성 부탁드립니다<br/>
+              • 허위 매물 등록 시 이용이 제한될 수 있습니다<br/>
+              <br/>
+              <span className="text-xs text-yellow-700">*제안후 수정가능 항목: 즉시판매가, 거래요청사항</span>
             </p>
           </div>
 

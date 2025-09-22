@@ -32,11 +32,9 @@ export interface UsedElectronics {
   model_name: string;
 
   // 상태 정보
-  purchase_period: PurchasePeriod;
-  purchase_period_display?: string;
+  purchase_period?: string;  // 자유 텍스트 입력
   condition_grade: ConditionGrade;
   condition_display?: string;
-  condition_description?: string;
 
   // 구성품
   has_box: boolean;
@@ -157,11 +155,10 @@ export interface ElectronicsFormData {
   subcategory: ElectronicsSubcategory;
   brand: string;
   model_name: string;
-  purchase_period: PurchasePeriod | string;
+  purchase_period?: string;  // 자유 텍스트 입력
   usage_period?: string;  // 사용기간 추가
   is_unused?: boolean;    // 미사용 여부 추가
   condition_grade: ConditionGrade;
-  condition_description?: string;
   has_box: boolean;
   has_charger: boolean;
   other_accessories?: string;

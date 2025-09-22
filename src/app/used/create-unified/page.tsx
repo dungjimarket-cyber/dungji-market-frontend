@@ -119,7 +119,7 @@ export default function UnifiedCreatePage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-base">휴대폰</h3>
-                    <p className="text-sm text-gray-500">스마트폰, 태블릿 등</p>
+                    <p className="text-sm text-gray-500">스마트폰, 태블릿</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -156,7 +156,7 @@ export default function UnifiedCreatePage() {
             <div>
               <p className="text-sm text-blue-700 font-medium mb-1">등록 제한 안내</p>
               <p className="text-xs text-blue-600">
-                각 카테고리별로 최대 5개까지 상품 등록이 가능합니다.
+각 카테고리별 최대 5개까지 동시 등록 가능합니다.
               </p>
             </div>
           </div>
