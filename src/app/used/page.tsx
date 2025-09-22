@@ -99,7 +99,7 @@ export default function UsedPhonesPage() {
     try {
       setLoading(true);
       const params: any = {
-        ordering: currentFilters.sortBy === 'price_low' ? 'price' : currentFilters.sortBy === 'price_high' ? '-price' : '-created_at',
+        ordering: currentFilters.sortBy === 'price_low' || currentFilters.sortBy === 'price' ? 'price' : currentFilters.sortBy === 'price_high' ? '-price' : '-created_at',
         search: currentFilters.search,
         subcategory: currentFilters.subcategory,
         condition: currentFilters.condition,
@@ -183,18 +183,30 @@ export default function UsedPhonesPage() {
           const data = await response.json();
           return Array.isArray(data) ? data : (data.results || data.items || []);
         })(),
-        // 전자제품 API 호출
+        // 전자제품 API 호출 - 휴대폰과 동일한 방식 적용
         electronicsApi.getElectronicsList({
           search: currentFilters.search,
           region: currentFilters.region,
-          // status 파라미터는 전자제품 API에서 지원하지 않음
-          // 대신 프론트엔드에서 필터링
+          // 거래완료 포함 옵션을 전자제품 API에도 적용
+          ...(currentFilters.includeCompleted === false && { status: 'active' })
         }).then(res => {
-          const items = res.results || [];
+          let items = res.results || [];
+
           // includeCompleted가 false인 경우 active 상태만 필터링
           if (!currentFilters.includeCompleted) {
-            return items.filter((item: UsedElectronics) => item.status === 'active');
+            items = items.filter((item: UsedElectronics) => item.status === 'active');
           }
+
+          // 백엔드에서 지역 필터가 작동하지 않는 경우를 대비해 프론트엔드에서도 필터링
+          if (currentFilters.region) {
+            items = items.filter((item: UsedElectronics) => {
+              if (!item.regions || item.regions.length === 0) return false;
+              return item.regions.some(region =>
+                region.name && region.name.includes(currentFilters.region)
+              );
+            });
+          }
+
           return items;
         }).catch(() => [])
       ]);
@@ -419,7 +431,7 @@ export default function UsedPhonesPage() {
     }
   }, [activeTab, fetchInitialPhones, fetchRemainingPhones, fetchElectronics, fetchAllItems, simpleSearch, simpleRegion]);
 
-  // 간단한 검색 핸들러 (전체 탭용)
+  // 간단한 검색 핸들러 (전체 탭용) - 휴대폰 기반 필터 방식 사용
   const handleSimpleSearch = useCallback(() => {
     const filters = {
       search: simpleSearch,
@@ -688,17 +700,32 @@ export default function UsedPhonesPage() {
                           setSelectedProvince('');
                           setSelectedCity('');
                           setSimpleRegion('');
+                          // 직접 값 전달
+                          const filters = {
+                            search: simpleSearch,
+                            region: '',
+                            includeCompleted: true
+                          };
+                          fetchAllItems(filters);
                         } else {
                           setSelectedProvince(value);
                           setSelectedCity('');
                           setSimpleRegion(value);
+                          // 직접 값 전달
+                          const filters = {
+                            search: simpleSearch,
+                            region: value,
+                            includeCompleted: true
+                          };
+                          fetchAllItems(filters);
                         }
-                        handleSimpleSearch();
                       }}
                     >
-                      <SelectTrigger className="flex-1">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        <SelectValue placeholder="시/도" />
+                      <SelectTrigger className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          <SelectValue placeholder="전국" />
+                        </div>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">전국</SelectItem>
@@ -718,15 +745,31 @@ export default function UsedPhonesPage() {
                         if (value === 'all') {
                           setSelectedCity('');
                           setSimpleRegion(selectedProvince);
+                          // 직접 값 전달
+                          const filters = {
+                            search: simpleSearch,
+                            region: selectedProvince,
+                            includeCompleted: true
+                          };
+                          fetchAllItems(filters);
                         } else {
                           setSelectedCity(value);
-                          setSimpleRegion(`${selectedProvince} ${value}`);
+                          const fullRegion = `${selectedProvince} ${value}`;
+                          setSimpleRegion(fullRegion);
+                          // 직접 값 전달
+                          const filters = {
+                            search: simpleSearch,
+                            region: fullRegion,
+                            includeCompleted: true
+                          };
+                          fetchAllItems(filters);
                         }
-                        handleSimpleSearch();
                       }}
                     >
-                      <SelectTrigger className="flex-1" disabled={!selectedProvince}>
-                        <SelectValue placeholder="시/군/구" />
+                      <SelectTrigger className="flex-1 min-w-0" disabled={!selectedProvince}>
+                        <div className="flex items-center gap-1 truncate">
+                          <SelectValue placeholder="시/군/구" />
+                        </div>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">전체</SelectItem>

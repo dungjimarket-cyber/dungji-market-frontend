@@ -155,9 +155,11 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
                 }
               }}
             >
-              <SelectTrigger className="flex-1">
-                <MapPin className="w-3 h-3 mr-1" />
-                <SelectValue placeholder="시/도" />
+              <SelectTrigger className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <SelectValue placeholder="전국" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전국</SelectItem>
@@ -183,8 +185,10 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
                 }
               }}
             >
-              <SelectTrigger className="flex-1" disabled={!selectedProvince}>
-                <SelectValue placeholder="시/군/구" />
+              <SelectTrigger className="flex-1 min-w-0" disabled={!selectedProvince}>
+                <div className="flex items-center gap-1 truncate">
+                  <SelectValue placeholder="시/군/구" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체</SelectItem>
@@ -238,16 +242,16 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
 
           {/* 정렬 필터 */}
           <Select
-            value={filters.sortBy || 'latest'}
+            value={filters.sortBy || 'price'}
             onValueChange={(value) => updateFilter('sortBy', value)}
           >
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="정렬" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="latest">최신순</SelectItem>
-              <SelectItem value="price_low">가격낮은순</SelectItem>
-              <SelectItem value="price_high">가격높은순</SelectItem>
+              <SelectItem value="price">가격</SelectItem>
+              <SelectItem value="price_low">가격 낮은순</SelectItem>
+              <SelectItem value="price_high">가격 높은순</SelectItem>
             </SelectContent>
           </Select>
 
