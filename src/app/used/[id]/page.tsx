@@ -236,6 +236,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       return;
     }
 
+    // 거래 완료 상품은 찜 불가
+    if (phone?.status === 'sold') {
+      toast.error('거래 완료된 상품은 찜할 수 없습니다.', {
+        duration: 3000,
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
@@ -244,7 +252,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         : `${baseUrl}/api/used/phones/${phoneId}/favorite/`;
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
@@ -618,22 +626,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
               <button
                 onClick={handleFavorite}
-                disabled={isFavorite === null}
+                disabled={isFavorite === null || phone?.status === 'sold'}
                 className={`flex items-center gap-2 px-3 py-2 transition-colors ${
-                  isFavorite === null
+                  isFavorite === null || phone?.status === 'sold'
                     ? 'text-gray-300 cursor-not-allowed'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                title={phone?.status === 'sold' ? '거래 완료된 상품은 찜할 수 없습니다' : ''}
               >
                 <Heart className={`w-4 h-4 ${
-                  isFavorite === null
+                  isFavorite === null || phone?.status === 'sold'
                     ? 'text-gray-300'
                     : isFavorite === true
                       ? 'fill-red-500 text-red-500'
                       : 'text-gray-500 hover:text-red-500'
                 }`} />
                 <span className="text-sm">
-                  {isFavorite === null ? '로딩...' : (isFavorite ? '찜됨' : '찜하기')}
+                  {phone?.status === 'sold' ? '거래완료' : (isFavorite === null ? '로딩...' : (isFavorite ? '찜됨' : '찜하기'))}
                 </span>
               </button>
             </div>

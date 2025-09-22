@@ -8,16 +8,13 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Eye, MessageCircle, MapPin } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Heart, Edit3 } from 'lucide-react';
 import type { UnifiedMarketItem } from '@/types/market';
 import {
   isPhoneItem,
-  isElectronicsItem,
   getMainImageUrl,
   getItemTitle,
   getItemDetailUrl,
-  getSellerNickname
 } from '@/types/market';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -30,183 +27,261 @@ interface UnifiedItemCardProps {
   onFavorite?: (itemId: number) => void;
 }
 
+// 상태 등급 라벨 (휴대폰)
+const PHONE_CONDITION_LABELS: Record<string, string> = {
+  'S': 'S급',
+  'A': 'A급',
+  'B': 'B급',
+  'C': 'C급'
+};
+
+// 배터리 상태 라벨
+const BATTERY_STATUS_LABELS: Record<string, string> = {
+  'under_70': '70% 미만',
+  '70_80': '70-80%',
+  '80_85': '80-85%',
+  '85_90': '85-90%',
+  'over_90': '90% 이상',
+  'replaced': '교체됨'
+};
+
 const UnifiedItemCard = memo(function UnifiedItemCard({
   item,
   priority = false,
   onFavorite
 }: UnifiedItemCardProps) {
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+
+  // 가격 포맷팅
+  const formatPrice = (price?: number) => {
+    if (!price) return '가격 협의';
+    return `${price.toLocaleString('ko-KR')}원`;
+  };
+
+  // 날짜 포맷팅
+  const formatDate = (date?: string) => {
+    if (!date) return '';
+    try {
+      return formatDistanceToNow(new Date(date), {
+        addSuffix: true,
+        locale: ko
+      });
+    } catch {
+      return '';
+    }
+  };
+
+  // 찜하기 핸들러
+  const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // 거래 완료 상품은 찜하기 불가
+    if (item.status === 'sold' || item.status === 'completed') {
+      return;
+    }
     if (onFavorite) {
       onFavorite(item.id);
     }
   };
 
-  // 상태에 따른 배지 스타일
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'default';
-      case 'trading':
-        return 'secondary';
-      case 'sold':
-        return 'outline';
-      default:
-        return 'outline';
-    }
-  };
+  // 거래완료 상태 확인
+  const isCompleted = item.status === 'sold' || item.status === 'completed';
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active':
-        return '판매중';
-      case 'trading':
-        return '거래중';
-      case 'sold':
-        return '판매완료';
-      default:
-        return status;
-    }
-  };
+  // 찜 상태 확인
+  const isFavorite = (item as any).is_favorited || (item as any).is_favorite;
 
-  // 지역 정보 가져오기
-  const getRegionDisplay = () => {
-    if (item.regions && item.regions.length > 0) {
-      const firstRegion = item.regions[0];
-      const regionName = firstRegion.dong || firstRegion.sigungu || firstRegion.name;
-      return item.regions.length > 1
-        ? `${regionName} 외 ${item.regions.length - 1}곳`
-        : regionName;
-    }
-    return '지역 미정';
-  };
+  // 이미지 URL
+  const imageUrl = getMainImageUrl(item);
+  const hasImage = imageUrl && imageUrl !== '/images/phone-placeholder.png' && imageUrl !== '/images/electronics-placeholder.png';
 
   return (
-    <Link href={getItemDetailUrl(item)} className="block">
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-        {/* 이미지 섹션 */}
-        <div className="relative aspect-square">
+    <Link
+      href={getItemDetailUrl(item)}
+      className={`group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 ${
+        isCompleted ? 'opacity-75' : ''
+      }`}
+    >
+      {/* 이미지 영역 */}
+      <div className="relative aspect-square bg-gray-100 overflow-hidden">
+        {hasImage ? (
           <Image
-            src={getMainImageUrl(item)}
+            src={imageUrl}
             alt={getItemTitle(item)}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+            className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
+              isCompleted ? 'grayscale' : ''
+            }`}
             priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
           />
+        ) : (
+          <div className="w-full h-full bg-gray-100" />
+        )}
 
-          {/* 상태 배지 */}
-          <div className="absolute top-2 left-2">
-            <Badge variant={getStatusBadgeVariant(item.status)}>
-              {getStatusText(item.status)}
-            </Badge>
+        {/* 거래완료 오버레이 */}
+        {isCompleted && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="bg-white/95 rounded-lg px-4 py-2">
+              <span className="text-sm font-bold text-gray-700">거래완료</span>
+            </div>
           </div>
+        )}
 
-          {/* 찜 버튼 */}
+        {/* 거래중 상태 */}
+        {item.status === 'trading' && (
+          <>
+            <div className="absolute inset-0 bg-black/30 z-10" />
+            <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded font-medium z-20">
+              거래중
+            </div>
+          </>
+        )}
+        {item.status === 'sold' && (
+          <>
+            <div className="absolute inset-0 bg-black/50 z-10" />
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              <span className="text-white text-lg font-bold">거래완료</span>
+            </div>
+          </>
+        )}
+
+        {/* 찜하기 버튼 - 항상 표시, 거래 완료 상품은 표시하지 않음 */}
+        {!isCompleted && (
           <button
-            onClick={handleFavoriteClick}
-            className="absolute top-2 right-2 p-1.5 bg-white/80 rounded-full hover:bg-white transition-colors"
+            onClick={handleFavorite}
+            className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full transition-all duration-200 hover:bg-white opacity-100"
             aria-label="찜하기"
           >
             <Heart
-              className={`w-4 h-4 ${
-                ((item as any).is_favorited || (item as any).is_favorite) ? 'fill-red-500 text-red-500' : 'text-gray-600'
-              }`}
+              className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
             />
           </button>
+        )}
 
-          {/* 아이템 타입 표시 */}
-          <div className="absolute bottom-2 left-2">
-            <Badge variant="secondary" className="text-xs bg-white/90 whitespace-nowrap">
-              {isPhoneItem(item) ? '📱 휴대폰' : '🖥️ 전자제품'}
-            </Badge>
+        {/* 수정됨 표시 */}
+        {(item as any).is_modified && item.offer_count && item.offer_count > 0 && (
+          <div className="absolute bottom-2 right-2 bg-yellow-500/90 backdrop-blur-sm text-white px-2 py-1 text-xs rounded font-medium flex items-center gap-1">
+            <Edit3 className="w-3 h-3" />
+            수정됨
           </div>
+        )}
+      </div>
+
+      {/* 정보 영역 */}
+      <div className="p-3">
+        {/* 모델명/제품명 */}
+        <h3 className="font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+          {getItemTitle(item)}
+        </h3>
+
+        {/* 가격 */}
+        <div className="mt-2">
+          {isCompleted ? (
+            // 거래완료 상품 - 거래가격만 표시
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-gray-700">
+                {formatPrice((item as any).final_price || item.price)}
+              </span>
+            </div>
+          ) : (
+            // 판매중 상품 가격 표시
+            <>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-500">즉시구매</span>
+                <span className="text-lg font-bold text-gray-900">
+                  {formatPrice(item.price)}
+                </span>
+              </div>
+              {item.accept_offers && (item as any).min_offer_price && (
+                <div className="mt-1 flex items-center gap-1">
+                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">
+                    가격제안 {formatPrice((item as any).min_offer_price)}부터
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        {/* 정보 섹션 */}
-        <div className="p-3">
-          {/* 카테고리/제조사 */}
-          <div className="text-xs text-gray-500 mb-1">
-            {isPhoneItem(item) ? (
-              item.brand
-            ) : (
-              ELECTRONICS_SUBCATEGORIES[item.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES] || item.subcategory
-            )}
+        {/* 상태 정보 */}
+        <div className="mt-2 flex items-center gap-3 text-xs text-gray-600">
+          {isPhoneItem(item) ? (
+            <>
+              {item.condition_grade && (
+                <span className="inline-flex items-center">
+                  <span className={`
+                    px-1.5 py-0.5 rounded font-medium
+                    ${item.condition_grade === 'S' ? 'bg-blue-100 text-blue-700' : ''}
+                    ${item.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
+                    ${item.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
+                    ${item.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
+                  `}>
+                    {PHONE_CONDITION_LABELS[item.condition_grade]}
+                  </span>
+                </span>
+              )}
+              {item.storage && (
+                <span>{item.storage}GB</span>
+              )}
+            </>
+          ) : (
+            <>
+              {item.condition_grade && (
+                <span className="inline-flex items-center">
+                  <span className={`
+                    px-1.5 py-0.5 rounded font-medium
+                    ${item.condition_grade === 'new_unopened' ? 'bg-blue-100 text-blue-700' : ''}
+                    ${item.condition_grade === 'like_new' ? 'bg-green-100 text-green-700' : ''}
+                    ${item.condition_grade === 'minor_signs' ? 'bg-yellow-100 text-yellow-700' : ''}
+                    ${item.condition_grade === 'visible_signs' ? 'bg-orange-100 text-orange-700' : ''}
+                    ${item.condition_grade === 'heavy_signs' ? 'bg-red-100 text-red-700' : ''}
+                  `}>
+                    {ELEC_CONDITIONS[item.condition_grade as keyof typeof ELEC_CONDITIONS]?.split(' ')[0] || item.condition_grade}
+                  </span>
+                </span>
+              )}
+              {/* 카테고리 표시 */}
+              <span className="text-xs text-gray-500">
+                {ELECTRONICS_SUBCATEGORIES[item.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES] || item.subcategory}
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* 배터리 상태 (휴대폰만) */}
+        {isPhoneItem(item) && (item as any).battery_status && (
+          <div className="mt-1 text-xs text-gray-600">
+            배터리 {BATTERY_STATUS_LABELS[(item as any).battery_status]}
           </div>
+        )}
 
-          {/* 제목 */}
-          <h3 className="font-medium text-sm mb-1 line-clamp-2 min-h-[2.5rem]">
-            {getItemTitle(item)}
-          </h3>
-
-          {/* 상태 정보 */}
-          <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-            {isPhoneItem(item) ? (
-              <>
-                {item.condition_grade && (
-                  <span>{PHONE_CONDITIONS[item.condition_grade as keyof typeof PHONE_CONDITIONS]}</span>
-                )}
-                {item.storage && (
-                  <>
-                    <span>·</span>
-                    <span>{item.storage}GB</span>
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                {item.condition_grade && (
-                  <span>{ELEC_CONDITIONS[item.condition_grade as keyof typeof ELEC_CONDITIONS]?.split(' ')[0]}</span>
-                )}
-                {item.brand && (
-                  <>
-                    <span>·</span>
-                    <span>{item.brand}</span>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* 가격 */}
-          <div className="font-bold text-base mb-2">
-            {item.price.toLocaleString()}원
-            {item.accept_offers && (
-              <span className="text-xs font-normal text-blue-600 ml-1">제안가능</span>
-            )}
-          </div>
-
-          {/* 위치 */}
-          <div className="flex items-center text-xs text-gray-500 mb-2">
-            <MapPin className="w-3 h-3 mr-1" />
-            {getRegionDisplay()}
-          </div>
-
-          {/* 통계 정보 */}
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span className="flex items-center gap-0.5">
-              <Eye className="w-3 h-3" />
-              {item.view_count}
-            </span>
-            <span className="flex items-center gap-0.5">
-              <Heart className="w-3 h-3" />
-              {item.favorite_count}
-            </span>
-            {item.offer_count > 0 && (
-              <span className="flex items-center gap-0.5">
-                <MessageCircle className="w-3 h-3" />
-                {item.offer_count}
+        {/* 하단 정보 */}
+        <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          {/* 지역 */}
+          <div className="flex items-center gap-4">
+            {item.regions && item.regions.length > 0 && (
+              <span>
+                {item.regions[0].dong || item.regions[0].sigungu || item.regions[0].name}
+                {item.regions.length > 1 && ` 외 ${item.regions.length - 1}곳`}
               </span>
             )}
-            <span className="ml-auto text-xs text-gray-400">
-              {formatDistanceToNow(new Date(item.created_at), {
-                addSuffix: true,
-                locale: ko,
-              })}
-            </span>
           </div>
+
+          {/* 시간 */}
+          <span>{formatDate(item.created_at)}</span>
         </div>
+
+        {/* 조회수와 찜 수 */}
+        {(item.view_count > 0 || item.favorite_count > 0) && (
+          <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+            {item.view_count > 0 && (
+              <span>조회 {item.view_count}</span>
+            )}
+            {item.favorite_count > 0 && (
+              <span>찜 {item.favorite_count}</span>
+            )}
+          </div>
+        )}
       </div>
     </Link>
   );

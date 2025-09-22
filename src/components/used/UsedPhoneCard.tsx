@@ -51,6 +51,10 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // 거래 완료 상품은 찜하기 불가
+    if (phone.status === 'sold' || phone.status === 'completed') {
+      return;
+    }
     if (phone.id && onFavorite) {
       onFavorite(phone.id);
     }
@@ -111,18 +115,20 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           </>
         )}
         
-        {/* 찜하기 버튼 - 찜한 상품은 항상 표시 */}
-        <button
-          onClick={handleFavorite}
-          className={`absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full transition-all duration-200 hover:bg-white ${
-            phone.is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
-          aria-label="찜하기"
-        >
-          <Heart
-            className={`w-4 h-4 ${phone.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
-          />
-        </button>
+        {/* 찜하기 버튼 - 거래 완료 상품은 표시하지 않음 */}
+        {!isCompleted && (
+          <button
+            onClick={handleFavorite}
+            className={`absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full transition-all duration-200 hover:bg-white ${
+              phone.is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}
+            aria-label="찜하기"
+          >
+            <Heart
+              className={`w-4 h-4 ${phone.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
+            />
+          </button>
+        )}
 
         {/* 제안 가능 표시 - 제거 (가격에 통합) */}
         
