@@ -115,7 +115,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   // 상품 정보 조회
   useEffect(() => {
     fetchPhoneDetail();
-    fetchOfferCount();
     // 로그인한 경우 내가 제안한 금액 확인
     if (isAuthenticated) {
       fetchMyOffer();
@@ -213,32 +212,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     }
   };
 
-  // 사용자의 제안 횟수 조회
-  const fetchOfferCount = async () => {
-    if (!isAuthenticated) return;
-
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/offer_count/`
-        : `${baseUrl}/api/used/phones/${phoneId}/offer_count/`;
-
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOfferCount(data.count || 0);
-        setRemainingOffers(Math.max(0, 5 - (data.count || 0)));
-      }
-    } catch (error) {
-      console.error('Failed to fetch offer count:', error);
-    }
-  };
 
   // 이미지 네비게이션
   const handlePrevImage = () => {
@@ -420,9 +393,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           setOfferMessage('');
           setSelectedMessages([]);
 
-          // 내 제안 정보와 카운트 다시 불러오기
+          // 내 제안 정보 다시 불러오기
           await fetchMyOffer();
-          await fetchOfferCount();
           await fetchPhoneDetail();
         },
         onTabChange: (tab) => {
@@ -444,8 +416,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/${phoneId}/offer_count/`
-        : `${baseUrl}/api/used/phones/${phoneId}/offer_count/`;
+        ? `${baseUrl}/used/phones/${phoneId}/`
+        : `${baseUrl}/api/used/phones/${phoneId}/`;
 
       const response = await fetch(apiUrl, {
         headers: {
@@ -1250,7 +1222,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                       setMyOffer(null);
                                       // 취소해도 5회 카운팅은 원복하지 않음
                                       // setRemainingOffers(prev => Math.min(5, prev + 1));
-                                      await fetchOfferCount(); // 서버에서 실제 카운트 다시 조회
+                                      await fetchPhoneDetail(); // 상품 정보 다시 조회
                                       toast.success('가격 제안이 취소되었습니다.', {
                                         duration: 2000,
                                       });
