@@ -178,10 +178,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
 
     try {
-      const response = await electronicsApi.toggleFavorite(Number(electronicsId));
-      setIsFavorite(response.is_favorited);
+      const response = await electronicsApi.toggleFavorite(Number(electronicsId), isFavorite || false);
+      const newFavoriteState = !isFavorite;
+      setIsFavorite(newFavoriteState);
       toast.success(
-        response.is_favorited ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.'
+        newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.'
       );
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
