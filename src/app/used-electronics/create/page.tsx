@@ -653,7 +653,7 @@ export default function ElectronicsCreatePage() {
             <Label className="text-base font-semibold mb-2 block">
               상품 사진 <span className="text-red-500">*</span>
               <span className="text-sm font-normal text-gray-500 ml-2">
-                (최소 1장, 최대 10장)
+                (최소 1장, 최대 10장 • 한 번에 여러 장 선택 가능)
               </span>
             </Label>
 
@@ -675,13 +675,38 @@ export default function ElectronicsCreatePage() {
                       <input
                         type="file"
                         accept="image/*"
+                        multiple={true}
                         className="hidden"
-                        onChange={(e) => handleImageUpload(e, index)}
+                        onChange={(e) => {
+                          // 남은 슬롯 개수 계산
+                          const actualImageCount = imagePreviews.filter(img => img && !img.isEmpty).length;
+                          const remainingSlots = 10 - actualImageCount;
+
+                          if (remainingSlots <= 0) {
+                            toast({
+                              title: '이미지 개수 초과',
+                              description: '최대 10장까지 업로드 가능합니다.',
+                              variant: 'destructive',
+                            });
+                            return;
+                          }
+
+                          // 파일 개수 제한
+                          const files = Array.from(e.target.files || []).slice(0, remainingSlots);
+                          if (files.length < (e.target.files?.length || 0)) {
+                            toast({
+                              title: '일부 이미지만 추가됨',
+                              description: `${files.length}장만 추가되었습니다. (최대 10장)`,
+                            });
+                          }
+
+                          handleImageUpload(files, index);
+                        }}
                         disabled={loading}
                       />
                       <div className="w-full h-full border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-primary transition-colors">
                         <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                        <span className="text-xs text-gray-400">{index === 0 ? '대표' : `${index + 1}`}</span>
+                        <span className="text-xs text-gray-400">{index === 0 ? '대표 이미지' : '사진 추가'}</span>
                       </div>
                     </label>
                   ) : (
