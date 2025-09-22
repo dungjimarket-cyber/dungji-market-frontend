@@ -43,7 +43,6 @@ function UsedElectronicsListPageContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCondition, setSelectedCondition] = useState<string>('');
   const [sortBy, setSortBy] = useState('latest');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   // 데이터 로드
   const loadElectronics = useCallback(async (resetList = false) => {
@@ -57,8 +56,6 @@ function UsedElectronicsListPageContent() {
 
       if (selectedCategory) params.subcategory = selectedCategory;
       if (selectedCondition) params.condition = selectedCondition;
-      if (priceRange.min) params.min_price = priceRange.min;
-      if (priceRange.max) params.max_price = priceRange.max;
 
       const response = await electronicsApi.getElectronicsList(params);
 
@@ -80,12 +77,12 @@ function UsedElectronicsListPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchTerm, selectedCategory, selectedCondition, sortBy, priceRange, toast]);
+  }, [page, searchTerm, selectedCategory, selectedCondition, sortBy, toast]);
 
   // 초기 로드
   useEffect(() => {
     loadElectronics(true);
-  }, [selectedCategory, selectedCondition, sortBy, priceRange.min, priceRange.max]);
+  }, [selectedCategory, selectedCondition, sortBy]);
 
   // 검색
   const handleSearch = () => {
