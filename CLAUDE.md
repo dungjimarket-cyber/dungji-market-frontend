@@ -438,5 +438,88 @@ NEVER proactively create documentation files (*.md) or README files. Only create
    - 수정 전 항상 원본 상태 확인 필수
    - ListSerializer와 DetailSerializer 필드명 일관성 유지
 
+## 🏗️ 통합 모델 마이그레이션 (2025.09)
+
+### 통합 찜/후기 시스템
+**목적**: 휴대폰과 전자제품의 찜/후기를 하나의 테이블로 통합 관리
+
+#### UnifiedFavorite (통합 찜)
+```python
+# api/models_unified_simple.py
+class UnifiedFavorite:
+    user = ForeignKey(User)
+    item_type = CharField(choices=['phone', 'electronics'])
+    item_id = PositiveIntegerField()
+    created_at = DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'item_type', 'item_id')
+```
+
+#### UnifiedReview (통합 후기)
+```python
+class UnifiedReview:
+    item_type = CharField(choices=['phone', 'electronics'])
+    transaction_id = PositiveIntegerField()  # 거래 ID
+    reviewer = ForeignKey(User, related_name='written_reviews')
+    reviewee = ForeignKey(User, related_name='received_reviews')
+    rating = IntegerField(1-5)
+    comment = TextField()
+    is_from_buyer = BooleanField()  # 구매자/판매자 구분
+    # 추가 평가 항목
+    is_punctual = BooleanField()
+    is_friendly = BooleanField()
+    is_honest = BooleanField()
+    is_fast_response = BooleanField()
+```
+
+#### Migration 주의사항
+1. **unique_together 변경 시**: 먼저 기존 제약조건 제거 → 필드 수정 → 새 제약조건 설정
+2. **필드명 변경**: RenameField 사용 (예: reviewed_user → reviewee)
+3. **필드 타입 변경**: RemoveField → AddField 순서로 진행
+4. **AlterUniqueTogether 파라미터**: `name=` 사용 (`model_name=` 아님)
+
+#### 제거된 모델들
+- ❌ `UsedPhoneFavorite` → ✅ `UnifiedFavorite`
+- ❌ `ElectronicsFavorite` → ✅ `UnifiedFavorite`
+- ❌ `UsedPhoneReview` → ✅ `UnifiedReview`
+
+#### API 엔드포인트 변경
+**찜하기**:
+- 이전: POST만으로 토글
+- 현재: POST (추가) / DELETE (제거) 명확히 구분
+```javascript
+// Frontend
+const method = isFavorited ? 'delete' : 'post';
+await api[method](`/${id}/favorite/`);
+```
+
+**후기**:
+- Backend는 UnifiedReview 사용하지만 기존 API 엔드포인트 유지
+- Serializer에서 backward compatibility 제공 (transaction → transaction_id 매핑)
+
+### 전자제품 상태 등급 개선
+```javascript
+// 기존: S급/A급/B급/C급
+// 개선안 (타 플랫폼 참조):
+CONDITION_CHOICES = [
+    ('new_unopened', '미개봉'),
+    ('like_new', '거의 새 것'),
+    ('minor_signs', '사용감 적음'),
+    ('visible_signs', '사용감 있음'),
+    ('heavy_signs', '사용감 많음')
+]
+```
+
+### prefetch_related 정리
+```python
+# 삭제된 관계는 prefetch에서 제거 필수
+queryset = UsedPhone.objects.prefetch_related(
+    'regions__region',
+    'images',
+    # 'favorites',  # ❌ 제거됨
+    'transactions'
+)
+
       
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
