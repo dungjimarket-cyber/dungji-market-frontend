@@ -18,23 +18,36 @@ import { executeTransactionAction, TransactionPollingManager } from '@/lib/utils
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
-import { isPhoneItem, isElectronicsItem, getMainImageUrl, getItemTitle, getItemDetailUrl } from '@/types/market';
+import { isPhoneItem, isElectronicsItem, getMainImageUrl, getItemDetailUrl } from '@/types/market';
 
 interface OfferItem {
   id: number;
-  phone: {
+  itemType?: 'phone' | 'electronics'; // 아이템 타입 추가
+  phone?: {
     id: number;
     title: string;
     brand: string;
     model: string;
     price: number;
-    status?: 'active' | 'trading' | 'sold';  // 상품 상태 추가
+    status?: 'active' | 'trading' | 'sold';
     images: { image_url: string; is_main: boolean }[];
     seller: {
       nickname: string;
     };
   };
+  electronics?: {
+    id: number;
+    brand: string;
+    model_name: string;
+    price: number;
+    status?: 'active' | 'trading' | 'sold';
+    images: { imageUrl: string; is_primary: boolean }[];
+    seller: {
+      nickname: string;
+    };
+  };
   offered_price: number;
+  offer_price?: number; // 전자제품용 필드
   message?: string;
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
   created_at: string;
@@ -43,7 +56,8 @@ interface OfferItem {
 
 interface TradingItem {
   id: number;
-  phone: {
+  itemType?: 'phone' | 'electronics';
+  phone?: {
     id: number;
     title: string;
     brand: string;
@@ -61,10 +75,28 @@ interface TradingItem {
       region?: string;
     };
   };
+  electronics?: {
+    id: number;
+    brand: string;
+    model_name: string;
+    price: number;
+    images: { imageUrl: string; is_primary: boolean }[];
+    status: 'trading' | 'sold' | 'active';
+    seller_completed: boolean;
+    buyer_completed: boolean;
+    seller: {
+      id: number;
+      nickname: string;
+      phone?: string;
+      email?: string;
+      region?: string;
+    };
+  };
   offered_price: number;
+  offer_price?: number;
   status: 'accepted' | 'cancelled';
   created_at: string;
-  has_review?: boolean; // 후기 작성 여부 추가
+  has_review?: boolean;
 }
 
 interface SellerInfo {
@@ -76,6 +108,92 @@ interface SellerInfo {
   profile_image?: string;
   accepted_price: number;
 }
+
+// 헬퍼 함수들
+const getItemFromOffer = (offer: OfferItem) => {
+  return offer.phone || offer.electronics;
+};
+
+const getItemId = (offer: OfferItem) => {
+  const item = getItemFromOffer(offer);
+  return item?.id || 0;
+};
+
+const getItemTitle = (offer: OfferItem) => {
+  if (offer.phone) {
+    return `${offer.phone.brand} ${offer.phone.model}`;
+  } else if (offer.electronics) {
+    return `${offer.electronics.brand} ${offer.electronics.model_name}`;
+  }
+  return '';
+};
+
+const getItemPrice = (offer: OfferItem | TradingItem) => {
+  if ('phone' in offer && offer.phone) {
+    return offer.phone.price;
+  } else if ('electronics' in offer && offer.electronics) {
+    return offer.electronics.price;
+  }
+  return 0;
+};
+
+const getItemImages = (offer: OfferItem | TradingItem) => {
+  if ('phone' in offer && offer.phone) {
+    return offer.phone.images;
+  } else if ('electronics' in offer && offer.electronics) {
+    return offer.electronics.images.map(img => ({
+      image_url: img.imageUrl,
+      is_main: img.is_primary
+    }));
+  }
+  return [];
+};
+
+const getItemSeller = (offer: OfferItem | TradingItem) => {
+  if ('phone' in offer && offer.phone) {
+    return offer.phone.seller;
+  } else if ('electronics' in offer && offer.electronics) {
+    return offer.electronics.seller;
+  }
+  return { nickname: '알 수 없음' };
+};
+
+const getItemStatus = (offer: OfferItem | TradingItem) => {
+  if ('phone' in offer && offer.phone) {
+    return offer.phone.status;
+  } else if ('electronics' in offer && offer.electronics) {
+    return offer.electronics.status;
+  }
+  return 'active';
+};
+
+const getItemUrl = (offer: OfferItem | TradingItem) => {
+  const itemType = offer.itemType || (offer.phone ? 'phone' : 'electronics');
+  const itemId = offer.phone?.id || offer.electronics?.id || 0;
+  return itemType === 'phone' ? `/used/${itemId}` : `/used-electronics/${itemId}`;
+};
+
+// 필터 헬퍼 함수
+const filterActiveOffers = (offers: OfferItem[]) => {
+  return offers.filter(offer => {
+    const status = getItemStatus(offer);
+    return status !== 'trading' && status !== 'sold' && offer.status !== 'cancelled';
+  });
+};
+
+const filterTradingItems = (items: TradingItem[]) => {
+  return items.filter(item => {
+    const status = getItemStatus(item);
+    return status === 'trading';
+  });
+};
+
+const filterCompletedItems = (items: TradingItem[]) => {
+  return items.filter(item => {
+    const status = getItemStatus(item);
+    return status === 'sold';
+  });
+};
 
 export default function PurchaseActivityTab() {
   const { toast } = useToast();
@@ -129,8 +247,7 @@ export default function PurchaseActivityTab() {
       // 병렬로 휴대폰과 전자제품 제안 가져오기
       const [phoneOffers, electronicsOffers] = await Promise.all([
         buyerAPI.getMySentOffers().catch(() => ({ results: [] })),
-        // 전자제품의 내 제안 API가 필요 (추가 필요)
-        Promise.resolve({ results: [] }) // 임시 - API 추가 필요
+        electronicsApi.getMySentOffers().catch(() => ({ results: [] }))
       ]);
 
       const allOffers = [
@@ -188,8 +305,7 @@ export default function PurchaseActivityTab() {
       // 병렬로 휴대폰과 전자제품 거래중 항목 가져오기
       const [phoneTrading, electronicsTrading] = await Promise.all([
         buyerAPI.getMyTradingItems().catch(() => ({ results: [] })),
-        // 전자제품의 거래중 API가 필요 (추가 필요)
-        Promise.resolve({ results: [] }) // 임시 - API 추가 필요
+        electronicsApi.getMyTradingItems().catch(() => ({ results: [] }))
       ]);
 
       const allTrading = [
@@ -411,7 +527,13 @@ export default function PurchaseActivityTab() {
       async () => {
         const token = localStorage.getItem('accessToken');
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-        const apiUrl = `${baseUrl}/used/phones/${cancellingItem.phone.id}/cancel-trade/`;
+        const itemId = cancellingItem.phone?.id || cancellingItem.electronics?.id;
+        if (!itemId) throw new Error('No item ID found');
+
+        const apiPath = cancellingItem.itemType === 'electronics'
+          ? `/used/electronics/${itemId}/cancel-trade/`
+          : `/used/phones/${itemId}/cancel-trade/`;
+        const apiUrl = `${baseUrl}${apiPath}`;
 
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -455,15 +577,27 @@ export default function PurchaseActivityTab() {
     console.log('Using transactionId:', transactionId);
 
     // 거래 정보는 이미 item에 있으므로 직접 사용
-    setReviewTarget({
-      transactionId: transactionId, // transaction_id 우선 사용
-      sellerName: item.phone.seller.nickname,
-      phoneInfo: {
-        brand: item.phone.brand,
-        model: item.phone.model,
-        price: item.offered_price,
-      },
-    });
+    if (item.phone) {
+      setReviewTarget({
+        transactionId: transactionId, // transaction_id 우선 사용
+        sellerName: item.phone.seller.nickname,
+        phoneInfo: {
+          brand: item.phone.brand,
+          model: item.phone.model,
+          price: item.offered_price,
+        },
+      });
+    } else if (item.electronics) {
+      setReviewTarget({
+        transactionId: transactionId, // transaction_id 우선 사용
+        sellerName: item.electronics.seller.nickname,
+        phoneInfo: {
+          brand: item.electronics.brand,
+          model: item.electronics.model_name,
+          price: item.offered_price,
+        },
+      });
+    }
     setShowReviewModal(true);
   };
 
@@ -550,13 +684,13 @@ export default function PurchaseActivityTab() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="offers" className="text-xs sm:text-sm">
-            제안내역 ({offers.filter(offer => offer.status !== 'cancelled' && offer.phone.status !== 'trading' && offer.phone.status !== 'sold').length})
+            제안내역 ({filterActiveOffers(offers).length})
           </TabsTrigger>
           <TabsTrigger value="trading" className="text-xs sm:text-sm">
-            거래중 ({tradingItems.filter(item => item.phone.status === 'trading').length})
+            거래중 ({filterTradingItems(tradingItems).length})
           </TabsTrigger>
           <TabsTrigger value="completed" className="text-xs sm:text-sm">
-            거래완료 ({tradingItems.filter(item => item.phone.status === 'sold').length})
+            거래완료 ({filterCompletedItems(tradingItems).length})
           </TabsTrigger>
         </TabsList>
 
@@ -564,50 +698,60 @@ export default function PurchaseActivityTab() {
         <TabsContent value="offers" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled').length === 0 ? (
+          ) : filterActiveOffers(offers).length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               제안한 상품이 없습니다
             </div>
           ) : (
             <>
-              {getPaginatedItems(offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled')).map((offer) => (
-              <Card key={offer.id} className="p-3 sm:p-4">
-                <div className="flex gap-3 sm:gap-4">
-                  <Link 
-                    href={`/used/${offer.phone.id}`}
-                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
-                  >
-                    <Image
-                      src={offer.phone.images[0]?.image_url || '/placeholder.png'}
-                      alt={offer.phone.title}
-                      width={80}
-                      height={80}
-                      className="object-cover w-full h-full"
-                    />
-                  </Link>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="min-w-0 flex-1">
-                        <Link 
-                          href={`/used/${offer.phone.id}`}
-                          className="hover:text-dungji-primary transition-colors"
-                        >
-                          <h4 className="font-medium text-sm truncate">
-                            {offer.phone.brand} {offer.phone.model}
-                          </h4>
-                        </Link>
-                        <p className="text-xs text-gray-500">
-                          판매자: {offer.phone.seller.nickname}
-                        </p>
-                      </div>
-                      {getOfferStatusBadge(offer.status)}
-                    </div>
-                    
-                    <div className="space-y-1 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">판매가</span>
-                        <span>{offer.phone.price.toLocaleString()}원</span>
+              {getPaginatedItems(filterActiveOffers(offers)).map((offer) => {
+                const itemId = getItemId(offer);
+                const itemUrl = getItemUrl(offer);
+                const itemTitle = getItemTitle(offer);
+                const itemImages = getItemImages(offer);
+                const itemPrice = getItemPrice(offer);
+                const itemSeller = getItemSeller(offer);
+                const primaryImage = itemImages[0];
+                const imageUrl = offer.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
+
+                return (
+                  <Card key={offer.id} className="p-3 sm:p-4">
+                    <div className="flex gap-3 sm:gap-4">
+                      <Link
+                        href={itemUrl}
+                        className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
+                      >
+                        <Image
+                          src={imageUrl || '/placeholder.png'}
+                          alt={itemTitle}
+                          width={80}
+                          height={80}
+                          className="object-cover w-full h-full"
+                        />
+                      </Link>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0 flex-1">
+                            <Link
+                              href={itemUrl}
+                              className="hover:text-dungji-primary transition-colors"
+                            >
+                              <h4 className="font-medium text-sm truncate">
+                                {itemTitle}
+                              </h4>
+                            </Link>
+                            <p className="text-xs text-gray-500">
+                              판매자: {itemSeller?.nickname || '알 수 없음'}
+                            </p>
+                          </div>
+                          {getOfferStatusBadge(offer.status)}
+                        </div>
+
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">판매가</span>
+                            <span>{itemPrice.toLocaleString()}원</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">제안가</span>
@@ -659,8 +803,9 @@ export default function PurchaseActivityTab() {
                   </div>
                 </div>
               </Card>
-            ))}
-              <Pagination items={offers.filter(offer => offer.phone.status !== 'trading' && offer.phone.status !== 'sold' && offer.status !== 'cancelled')} />
+            );
+          })}
+              <Pagination items={filterActiveOffers(offers)} />
             </>
           )}
         </TabsContent>
@@ -669,33 +814,42 @@ export default function PurchaseActivityTab() {
         <TabsContent value="trading" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : tradingItems.filter(item => item.phone.status === 'trading').length === 0 ? (
+          ) : filterTradingItems(tradingItems).length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               거래중인 상품이 없습니다
             </div>
           ) : (
             <>
-              {getPaginatedItems(tradingItems.filter(item => item.phone.status === 'trading')).map((item) => (
-              <Card key={item.id} className="p-3 sm:p-4">
-                <div className="flex gap-3 sm:gap-4">
-                  <Link href={`/used/${item.phone.id}`} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image
-                      src={item.phone.images[0]?.image_url || '/placeholder.png'}
-                      alt={item.phone.title}
-                      width={80}
-                      height={80}
-                      className="object-cover w-full h-full"
-                    />
-                  </Link>
+              {getPaginatedItems(filterTradingItems(tradingItems)).map((item) => {
+                const itemId = getItemId(item);
+                const itemUrl = getItemUrl(item);
+                const itemTitle = getItemTitle(item);
+                const itemImages = getItemImages(item);
+                const primaryImage = itemImages[0];
+                const imageUrl = item.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
+                const product = item.phone || item.electronics;
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="min-w-0 flex-1">
-                        <Link href={`/used/${item.phone.id}`} className="hover:underline">
-                          <h4 className="font-medium text-sm truncate">
-                            {item.phone.brand} {item.phone.model}
-                          </h4>
-                        </Link>
+                return (
+                  <Card key={item.id} className="p-3 sm:p-4">
+                    <div className="flex gap-3 sm:gap-4">
+                      <Link href={itemUrl} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <Image
+                          src={imageUrl || '/placeholder.png'}
+                          alt={itemTitle}
+                          width={80}
+                          height={80}
+                          className="object-cover w-full h-full"
+                        />
+                      </Link>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0 flex-1">
+                            <Link href={itemUrl} className="hover:underline">
+                              <h4 className="font-medium text-sm truncate">
+                                {itemTitle}
+                              </h4>
+                            </Link>
                         <div className="flex items-baseline gap-2">
                           <span className="text-xs text-gray-500">거래가격</span>
                           <p className="text-base font-semibold text-green-600">
@@ -719,13 +873,13 @@ export default function PurchaseActivityTab() {
                         size="sm"
                         variant="outline"
                         className="flex items-center gap-1"
-                        onClick={() => fetchSellerInfo(item.phone.id)}
+                        onClick={() => fetchSellerInfo(itemId)}
                       >
                         <User className="w-3.5 h-3.5" />
                         판매자 정보
                       </Button>
                       {/* 판매자가 완료하지 않은 경우에만 취소 버튼 표시 */}
-                      {!item.phone.seller_completed && (
+                      {!product?.seller_completed && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -739,8 +893,9 @@ export default function PurchaseActivityTab() {
                   </div>
                 </div>
               </Card>
-            ))}
-              <Pagination items={tradingItems.filter(item => item.phone.status === 'trading')} />
+            );
+          })}
+              <Pagination items={filterTradingItems(tradingItems)} />
             </>
           )}
         </TabsContent>
@@ -750,40 +905,47 @@ export default function PurchaseActivityTab() {
         <TabsContent value="completed" className="space-y-3">
           {loading ? (
             <div className="text-center py-8">로딩중...</div>
-          ) : tradingItems.filter(item => item.phone.status === 'sold').length === 0 ? (
+          ) : filterCompletedItems(tradingItems).length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               거래완료된 상품이 없습니다
             </div>
           ) : (
             <>
-              {getPaginatedItems(tradingItems.filter(item => item.phone.status === 'sold')).map((item) => (
-                <Card key={item.id} className="p-3 sm:p-4">
-                  <div className="flex gap-3 sm:gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      <Image
-                        src={item.phone.images[0]?.image_url || '/placeholder.png'}
-                        alt={item.phone.title}
-                        width={80}
-                        height={80}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
+              {getPaginatedItems(filterCompletedItems(tradingItems)).map((item) => {
+                const itemTitle = getItemTitle(item);
+                const itemImages = getItemImages(item);
+                const itemSeller = getItemSeller(item);
+                const primaryImage = itemImages[0];
+                const imageUrl = item.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          <h4 className="font-medium text-sm truncate">
-                            {item.phone.brand} {item.phone.model}
-                          </h4>
-                          <p className="text-base font-semibold text-green-600">
-                            {item.offered_price.toLocaleString()}원
-                          </p>
-                        </div>
+                return (
+                  <Card key={item.id} className="p-3 sm:p-4">
+                    <div className="flex gap-3 sm:gap-4">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <Image
+                          src={imageUrl || '/placeholder.png'}
+                          alt={itemTitle}
+                          width={80}
+                          height={80}
+                          className="object-cover w-full h-full"
+                        />
                       </div>
 
-                      <p className="text-xs text-gray-600 mb-2">
-                        판매자: {item.phone.seller.nickname}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <h4 className="font-medium text-sm truncate">
+                              {itemTitle}
+                            </h4>
+                            <p className="text-base font-semibold text-green-600">
+                              {item.offered_price.toLocaleString()}원
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-gray-600 mb-2">
+                          판매자: {itemSeller?.nickname || '알 수 없음'}
+                        </p>
 
                       <div className="flex gap-2">
                         {item.has_review === true ? (
@@ -809,8 +971,9 @@ export default function PurchaseActivityTab() {
                     </div>
                   </div>
                 </Card>
-              ))}
-              <Pagination items={tradingItems.filter(item => item.phone.status === 'sold')} />
+              );
+            })}
+              <Pagination items={filterCompletedItems(tradingItems)} />
             </>
           )}
         </TabsContent>
@@ -839,7 +1002,7 @@ export default function PurchaseActivityTab() {
             
             <div className="space-y-4">
               <div className="text-sm text-gray-600">
-                <p className="font-medium mb-2">상품: {cancellingItem.phone.brand} {cancellingItem.phone.model}</p>
+                <p className="font-medium mb-2">상품: {getItemTitle(cancellingItem)}</p>
                 <p className="text-red-500">거래를 취소하시겠습니까?</p>
               </div>
 

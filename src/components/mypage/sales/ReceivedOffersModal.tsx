@@ -14,6 +14,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import type { UnifiedMarketItem } from '@/types/market';
+import { getMainImageUrl, getItemTitle } from '@/types/market';
 
 interface ReceivedOffer {
   id: number;
@@ -28,19 +30,10 @@ interface ReceivedOffer {
   created_at: string;
 }
 
-interface Phone {
-  id: number;
-  title: string;
-  brand: string;
-  model: string;
-  price: number;
-  images: { image_url: string; is_main: boolean }[];
-}
-
 interface ReceivedOffersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  phone: Phone;
+  phone: UnifiedMarketItem;
   offers: ReceivedOffer[];
   onRespond: (offerId: number, action: 'accept') => void;
   onProceedTrade?: (offerId: number) => void;
@@ -93,8 +86,8 @@ export default function ReceivedOffersModal({
         <div className="flex gap-3 p-3 bg-gray-50 rounded-lg mb-4">
           <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
             <Image
-              src={phone.images[0]?.image_url || '/placeholder.png'}
-              alt={phone.title}
+              src={getMainImageUrl(phone)}
+              alt={getItemTitle(phone)}
               width={64}
               height={64}
               className="object-cover w-full h-full"
@@ -102,7 +95,7 @@ export default function ReceivedOffersModal({
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="font-medium text-sm truncate">
-              {phone.brand} {phone.model}
+              {getItemTitle(phone)}
             </h4>
             <p className="text-lg font-semibold">
               {phone.price.toLocaleString()}원

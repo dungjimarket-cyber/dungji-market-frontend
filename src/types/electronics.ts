@@ -8,7 +8,7 @@
 
 export type ElectronicsSubcategory = 'laptop' | 'tv' | 'game' | 'camera' | 'audio' | 'home' | 'etc';
 export type ConditionGrade = 'S' | 'A' | 'B' | 'C';
-export type PurchasePeriod = '1month' | '3months' | '6months' | '1year' | 'over';
+export type PurchasePeriod = '1month' | '3months' | '6months' | '1year' | 'over' | 'custom';  // custom 추가 for 자유 입력
 export type ElectronicsStatus = 'active' | 'trading' | 'sold' | 'deleted';
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
@@ -157,18 +157,18 @@ export interface ElectronicsFormData {
   subcategory: ElectronicsSubcategory;
   brand: string;
   model_name: string;
-  purchase_period: PurchasePeriod;
+  purchase_period: PurchasePeriod | string;
+  usage_period?: string;  // 사용기간 추가
+  is_unused?: boolean;    // 미사용 여부 추가
   condition_grade: ConditionGrade;
   condition_description?: string;
   has_box: boolean;
   has_charger: boolean;
-  has_manual: boolean;
   other_accessories?: string;
-  has_receipt?: boolean;
   has_warranty_card?: boolean;
-  price: number;
+  price: string;  // string으로 변경 (폰과 통일)
   accept_offers: boolean;
-  min_offer_price?: number;
+  min_offer_price?: string;  // string으로 변경 (폰과 통일)
   description: string;
   regions: number[];
   meeting_place: string;

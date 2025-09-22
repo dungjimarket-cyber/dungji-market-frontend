@@ -255,16 +255,52 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
   };
 
-  // 삭제
-  const handleDelete = async () => {
+  // 최신 제안 확인
+  const checkLatestOffers = async (): Promise<number> => {
     try {
-      setDeleting(true);
+      const data = await electronicsApi.getElectronicsDetail(Number(electronicsId));
+      return data.offer_count || 0;
+    } catch (error) {
+      console.error('Failed to check latest offers:', error);
+      return 0;
+    }
+  };
+
+  // 삭제 처리 - 실시간 제안 체크 추가
+  const handleDelete = async () => {
+    if (!electronics) return;
+
+    setDeleting(true);
+
+    try {
+      // 삭제 전 최신 제안 상태 확인
+      const latestOfferCount = await checkLatestOffers();
+
+      // 이전에 제안이 없었는데 새로 생긴 경우
+      if (electronics.offer_count === 0 && latestOfferCount > 0) {
+        setDeleting(false);
+        toast.error('방금 새로운 제안이 도착했습니다. 제안이 있는 상품은 삭제 시 6시간 패널티가 적용됩니다.');
+        // 상품 정보 새로고침
+        await fetchElectronicsDetail();
+        return;
+      }
+
       await electronicsApi.deleteElectronics(Number(electronicsId));
+
+      // TODO: 백엔드에서 패널티 정보 반환 시 처리
       toast.success('상품이 삭제되었습니다.');
       router.push('/used-electronics');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete electronics:', error);
-      toast.error('삭제에 실패했습니다.');
+
+      // 제안이 있는 경우 패널티 경고
+      if (error.response?.data?.has_offers) {
+        toast.error(error.response.data.message || '제안된 가격이 있어 6시간 패널티가 적용됩니다.');
+        setDeleting(false);
+        return;
+      }
+
+      toast.error(error.response?.data?.message || '삭제에 실패했습니다.');
     } finally {
       setDeleting(false);
     }
@@ -895,6 +931,29 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white w-full max-w-md mx-4 rounded-2xl p-6">
             <h3 className="text-lg font-bold mb-4">상품을 삭제하시겠습니까?</h3>
+
+            {/* 제안이 있는 경우 패널티 안내 */}
+            {electronics?.offer_count > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded p-3 mb-3 text-sm">
+                <p className="font-medium text-amber-900 mb-1">
+                  ⚠️ 제안 {electronics.offer_count}개 있음
+                </p>
+                <p className="text-amber-700">
+                  6시간 패널티 (
+                  {(() => {
+                    const endTime = new Date();
+                    endTime.setHours(endTime.getHours() + 6);
+                    return endTime.toLocaleTimeString('ko-KR', {
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      hour12: true
+                    });
+                  })()}
+                  까지)
+                </p>
+              </div>
+            )}
+
             <p className="text-gray-600 mb-6">
               삭제된 상품은 복구할 수 없습니다.
             </p>
@@ -912,7 +971,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 onClick={handleDelete}
                 disabled={deleting}
               >
-                {deleting ? '삭제 중...' : '삭제'}
+                {deleting ? '삭제 중...' : electronics?.offer_count > 0 ? '패널티 감수하고 삭제' : '삭제'}
               </Button>
             </div>
           </div>

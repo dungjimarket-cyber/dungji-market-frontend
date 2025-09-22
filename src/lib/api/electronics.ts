@@ -209,6 +209,67 @@ export const acceptOffer = async (
 };
 
 // ============================================
+// 판매자 관련 API
+// ============================================
+
+/**
+ * 내 판매 상품 목록 조회
+ */
+export const getMyListings = async (params?: {
+  status?: string;
+  page?: number;
+}): Promise<any> => {
+  const response = await api.get('/my-listings/', { params });
+  return response.data;
+};
+
+/**
+ * 받은 제안 목록 조회
+ */
+export const getReceivedOffers = async (electronicsId?: number): Promise<any> => {
+  const url = electronicsId
+    ? `/${electronicsId}/offers/`
+    : '/offers/received/';
+  const response = await api.get(url);
+  return response.data;
+};
+
+/**
+ * 제안 응답 (수락/거절)
+ */
+export const respondToOffer = async (offerId: number, action: 'accept' | 'reject', message?: string): Promise<any> => {
+  const response = await api.post(`/offers/${offerId}/respond/`, {
+    action,
+    message,
+  });
+  return response.data;
+};
+
+/**
+ * 거래 진행 (수락된 제안을 거래중으로 전환)
+ */
+export const proceedTrade = async (offerId: number): Promise<any> => {
+  const response = await api.post(`/offers/${offerId}/proceed-trade/`);
+  return response.data;
+};
+
+/**
+ * 상품 상태 변경
+ */
+export const updateListingStatus = async (electronicsId: number, status: string): Promise<any> => {
+  const response = await api.patch(`/${electronicsId}/`, { status });
+  return response.data;
+};
+
+/**
+ * 구매자 정보 조회 (거래중인 판매자용)
+ */
+export const getBuyerInfo = async (electronicsId: number): Promise<any> => {
+  const response = await api.get(`/${electronicsId}/buyer-info/`);
+  return response.data;
+};
+
+// ============================================
 // 찜하기 관련 API
 // ============================================
 
@@ -235,10 +296,78 @@ export const getFavorites = async (params?: {
 // ============================================
 
 /**
- * 거래 완료
+ * 거래 완료 (판매자용)
  */
 export const completeTransaction = async (electronicsId: number): Promise<{ message: string }> => {
   const response = await api.post(`/${electronicsId}/complete_transaction/`);
+  return response.data;
+};
+
+/**
+ * 구매 완료 (구매자용)
+ */
+export const buyerCompleteTransaction = async (electronicsId: number): Promise<{ message: string }> => {
+  const response = await api.post(`/${electronicsId}/buyer-complete/`);
+  return response.data;
+};
+
+/**
+ * 거래 취소
+ */
+export const cancelTrade = async (electronicsId: number, data: {
+  reason: string;
+  custom_reason?: string;
+}): Promise<{ message: string }> => {
+  const response = await api.post(`/${electronicsId}/cancel-trade/`, data);
+  return response.data;
+};
+
+/**
+ * 거래 정보 조회 (후기 작성용)
+ */
+export const getTransactionInfo = async (electronicsId: number): Promise<any> => {
+  const response = await api.get(`/${electronicsId}/transaction-info/`);
+  return response.data;
+};
+
+// ============================================
+// 구매자 관련 API
+// ============================================
+
+/**
+ * 내가 보낸 제안 목록 조회
+ */
+export const getMySentOffers = async (params?: {
+  page?: number;
+  status?: string;
+}): Promise<{ results: ElectronicsOffer[] }> => {
+  const response = await api.get('/my-offers/', { params });
+  return response.data;
+};
+
+/**
+ * 내 거래중 목록 조회
+ */
+export const getMyTradingItems = async (params?: {
+  page?: number;
+}): Promise<{ results: any[] }> => {
+  const response = await api.get('/my-trading/', { params });
+  return response.data;
+};
+
+/**
+ * 제안 취소
+ */
+export const cancelOffer = async (offerId: number): Promise<{ message: string }> => {
+  const response = await api.post(`/offers/${offerId}/cancel/`);
+  return response.data;
+};
+
+/**
+ * 판매자 정보 조회
+ */
+export const getSellerInfo = async (electronicsId: number): Promise<any> => {
+  const response = await api.get(`/${electronicsId}/seller-info/`);
   return response.data;
 };
 
@@ -257,7 +386,11 @@ export const createReview = async (transactionId: number, data: {
   is_honest?: boolean;
   is_fast_response?: boolean;
 }): Promise<any> => {
-  const response = await api.post(`/transactions/${transactionId}/review/`, data);
+  // 휴대폰과 동일한 simple 엔드포인트 사용
+  const response = await api.post('/reviews/simple/', {
+    transaction: transactionId,
+    ...data,
+  });
   return response.data;
 };
 
@@ -285,7 +418,29 @@ export const getUserStats = async (): Promise<any> => {
   return response.data;
 };
 
+// 판매자 API 그룹
+export const sellerAPI = {
+  getMyListings,
+  getReceivedOffers,
+  respondToOffer,
+  proceedTrade,
+  updateListingStatus,
+  getBuyerInfo,
+  getTransactionInfo,
+};
+
+// 구매자 API 그룹
+export const buyerAPI = {
+  getMySentOffers,
+  getMyTradingItems,
+  cancelOffer,
+  getSellerInfo,
+  buyerCompleteTransaction,
+  cancelTrade,
+};
+
 export default {
+  // 기본 CRUD
   getElectronicsList,
   getElectronicsDetail,
   createElectronics,
@@ -293,13 +448,32 @@ export default {
   deleteElectronics,
   getMyElectronics,
   checkRegistrationLimit,
+  // 가격제안
   createOffer,
   getMyOffer,
   getOffers,
   acceptOffer,
+  // 판매자
+  getMyListings,
+  getReceivedOffers,
+  respondToOffer,
+  proceedTrade,
+  updateListingStatus,
+  getBuyerInfo,
+  // 구매자
+  getMySentOffers,
+  getMyTradingItems,
+  cancelOffer,
+  getSellerInfo,
+  // 찜하기
   toggleFavorite,
   getFavorites,
+  // 거래
   completeTransaction,
+  buyerCompleteTransaction,
+  cancelTrade,
+  getTransactionInfo,
+  // 리뷰
   createReview,
   getReceivedReviews,
   getWrittenReviews,

@@ -62,11 +62,21 @@ export type UnifiedMarketItem = PhoneItem | ElectronicsItem;
 
 // 타입 가드 함수들
 export function isPhoneItem(item: UnifiedMarketItem): item is PhoneItem {
-  return item.itemType === 'phone';
+  // itemType이 있으면 우선 사용, 없으면 필드 체크
+  if ('itemType' in item && item.itemType) {
+    return item.itemType === 'phone';
+  }
+  // 휴대폰만 가지는 필드로 판별
+  return 'model' in item && 'storage' in item && !('model_name' in item);
 }
 
 export function isElectronicsItem(item: UnifiedMarketItem): item is ElectronicsItem {
-  return item.itemType === 'electronics';
+  // itemType이 있으면 우선 사용, 없으면 필드 체크
+  if ('itemType' in item && item.itemType) {
+    return item.itemType === 'electronics';
+  }
+  // 전자제품만 가지는 필드로 판별
+  return 'model_name' in item && 'subcategory' in item;
 }
 
 // 아이템에서 메인 이미지 URL 가져오기

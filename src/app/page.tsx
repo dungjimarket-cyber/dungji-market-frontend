@@ -218,7 +218,7 @@ function HomeContent() {
             href="/used"
             className="btn-animated btn-primary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
-            <span className="text-xs sm:text-base">중고폰직거래</span>
+            <span className="text-xs sm:text-base">중고거래</span>
           </Link>
           
           <Link 

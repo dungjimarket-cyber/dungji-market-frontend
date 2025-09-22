@@ -37,7 +37,7 @@ export default function UnifiedTabs({
         </TabsTrigger>
         <TabsTrigger value="phone" className="flex items-center gap-1.5">
           <Smartphone className="w-4 h-4" />
-          <span>휴대폰</span>
+          <span>휴대폰/태블릿</span>
           {counts?.phone !== undefined && (
             <span className="text-xs text-gray-500 ml-1">({counts.phone})</span>
           )}

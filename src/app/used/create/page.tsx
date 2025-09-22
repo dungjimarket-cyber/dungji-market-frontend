@@ -529,8 +529,8 @@ export default function CreateUsedPhonePage() {
     if (!formData.model || !formData.model.trim()) {
       newErrors.model = '모델명을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = modelRef;
-    } else if (formData.model.length > 50) {
-      newErrors.model = '모델명은 최대 50자까지 입력 가능합니다';
+    } else if (formData.model.length > 100) {
+      newErrors.model = '모델명은 최대 100자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = modelRef;
     }
 
@@ -1197,15 +1197,15 @@ export default function CreateUsedPhonePage() {
                   placeholder="예: iPhone 15 Pro"
                   value={formData.model}
                   onChange={(e) => {
-                    if (e.target.value.length <= 50) {
+                    if (e.target.value.length <= 100) {
                       handleInputChange('model', e.target.value);
                     }
                   }}
-                  maxLength={50}
+                  maxLength={100}
                   className={errors.model ? 'border-red-300' : ''}
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">{formData.model.length}/50자</p>
+                <p className="text-xs text-gray-500 mt-1">{formData.model.length}/100자</p>
                 {errors.model && (
                   <p className="text-xs text-red-500/70">{errors.model}</p>
                 )}
@@ -1296,7 +1296,7 @@ export default function CreateUsedPhonePage() {
                   ref={priceRef}
                   id="price"
                   type="text"
-                  placeholder="0"
+                  placeholder="판매 희망 가격"
                   value={formatPrice(formData.price)}
                   className={errors.price ? 'border-red-300' : ''}
                   onChange={(e) => {
@@ -1335,7 +1335,7 @@ export default function CreateUsedPhonePage() {
                   ref={minOfferPriceRef}
                   id="min_offer_price"
                   type="text"
-                  placeholder="0"
+                  placeholder="최소 제안 가격"
                   value={formatPrice(formData.min_offer_price)}
                   className={errors.min_offer_price ? 'border-red-300' : ''}
                   onChange={(e) => {

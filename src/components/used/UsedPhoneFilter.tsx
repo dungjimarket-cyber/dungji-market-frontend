@@ -224,11 +224,11 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
 
           {/* 상태 */}
           <Select value={filters.condition || 'all'} onValueChange={(value) => updateFilter('condition', value === 'all' ? undefined : value)}>
-            <SelectTrigger className="w-[4.5rem] sm:w-24 text-xs whitespace-nowrap">
+            <SelectTrigger className="w-[4.5rem] sm:w-24 text-xs">
               <SelectValue placeholder="상태" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="whitespace-nowrap">제품상태</SelectItem>
+              <SelectItem value="all">제품상태</SelectItem>
               {Object.entries(CONDITION_GRADES).map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}

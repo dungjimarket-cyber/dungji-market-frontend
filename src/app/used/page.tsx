@@ -120,8 +120,11 @@ export default function UsedPhonesPage() {
       const response = await electronicsApi.getElectronicsList(params);
       const items = response.results || [];
 
-      setElectronics(items);
-      setTotalCount(items.length);
+      // itemType 추가
+      const electronicsWithType = items.map((item: any) => ({ ...item, itemType: 'electronics' as const }));
+
+      setElectronics(electronicsWithType);
+      setTotalCount(electronicsWithType.length);
     } catch (error) {
       console.error('Failed to fetch electronics:', error);
       toast({
@@ -293,8 +296,10 @@ export default function UsedPhonesPage() {
       console.log('[중고거래] API 응답 첫 번째 아이템:', items[0]);
       console.log('[중고거래] is_favorite 필드 확인:', items[0]?.is_favorite);
 
-      setPhones(items);
-      setTotalCount(items.length);
+      // itemType 추가
+      const phonesWithType = items.map((item: any) => ({ ...item, itemType: 'phone' as const }));
+      setPhones(phonesWithType);
+      setTotalCount(phonesWithType.length);
       
     } catch (error) {
       console.error('Failed to fetch initial phones:', error);
@@ -374,10 +379,13 @@ export default function UsedPhonesPage() {
 
       const data = await response.json();
       const items = Array.isArray(data) ? data : (data.results || data.items || []);
-      
+
+      // itemType 추가
+      const phonesWithType = items.map((item: any) => ({ ...item, itemType: 'phone' as const }));
+
       // 기존 데이터에 추가
-      setPhones(prev => [...prev, ...items]);
-      setTotalCount(prev => prev + items.length);
+      setPhones(prev => [...prev, ...phonesWithType]);
+      setTotalCount(prev => prev + phonesWithType.length);
       setHasLoadedAll(true);
       
     } catch (error) {
@@ -530,7 +538,7 @@ export default function UsedPhonesPage() {
     }
   }, [isAuthenticated, checkProfile]);
 
-  // 내 폰 판매하기 버튼 핸들러
+  // 판매하기 버튼 핸들러 - 통합 등록 페이지로 이동
   const handleCreateClick = async () => {
     if (!isAuthenticated) {
       toast({
@@ -548,33 +556,8 @@ export default function UsedPhonesPage() {
       return;
     }
 
-    // 등록 제한 체크
-    try {
-      const token = localStorage.getItem('accessToken');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
-      const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used/phones/check-limit/`
-        : `${baseUrl}/api/used/phones/check-limit/`;
-      
-      const response = await fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (!data.can_register) {
-          setRegistrationLimit({ current: data.current_count, max: data.max_count });
-          setShowLimitModal(true);
-          return;
-        }
-      }
-    } catch (error) {
-      console.error('Failed to check registration limit:', error);
-    }
-
-    router.push('/used/create');
+    // 통합 등록 선택 페이지로 이동
+    router.push('/used/create-unified');
   };
 
   return (
@@ -608,8 +591,7 @@ export default function UsedPhonesPage() {
                 className="px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">내폰 판매하기</span>
-                <span className="sm:hidden">판매하기</span>
+                <span>판매하기</span>
               </Button>
               {isAuthenticated && (
                 <Link href="/used/mypage">
@@ -911,7 +893,7 @@ export default function UsedPhonesPage() {
         maxCount={registrationLimit.max}
         onViewMyPhones={() => {
           setShowLimitModal(false);
-          router.push('/used/mypage');
+          router.push('/mypage?tab=sales');
         }}
       />
     </div>

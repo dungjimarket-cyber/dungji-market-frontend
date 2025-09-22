@@ -118,8 +118,8 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
 
           {/* 아이템 타입 표시 */}
           <div className="absolute bottom-2 left-2">
-            <Badge variant="secondary" className="text-xs bg-white/90">
-              {isPhoneItem(item) ? '휴대폰' : '전자제품'}
+            <Badge variant="secondary" className="text-xs bg-white/90 whitespace-nowrap">
+              {isPhoneItem(item) ? '📱 휴대폰' : '🖥️ 전자제품'}
             </Badge>
           </div>
         </div>
@@ -136,7 +136,7 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
           </div>
 
           {/* 제목 */}
-          <h3 className="font-medium text-sm mb-1 line-clamp-2">
+          <h3 className="font-medium text-sm mb-1 line-clamp-2 min-h-[2.5rem]">
             {getItemTitle(item)}
           </h3>
 

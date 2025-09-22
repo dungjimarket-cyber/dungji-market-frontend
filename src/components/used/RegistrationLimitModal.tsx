@@ -39,8 +39,8 @@ export default function RegistrationLimitModal({
               최대 <span className="font-semibold text-blue-600">5개</span>까지만 등록 가능합니다.
             </p>
             <div className="bg-gray-50 rounded-lg p-3 mt-4">
-              <p className="text-sm text-gray-600">
-                💡 기존 상품을 판매 완료하거나 삭제 후 새로운 상품을 등록할 수 있습니다.
+              <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                💡 기존 상품을 판매 완료하거나 삭제 후{'\n'}새로운 상품을 등록할 수 있습니다.
               </p>
             </div>
           </DialogDescription>

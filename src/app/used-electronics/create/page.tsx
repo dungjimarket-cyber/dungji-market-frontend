@@ -26,7 +26,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import UsedPhoneProfileCheckModal from '@/components/common/UsedPhoneProfileCheckModal';
 import electronicsApi from '@/lib/api/electronics';
-import { searchRegionsByName, type Region } from '@/lib/api/regionService';
+import { searchRegionsByName } from '@/lib/api/regionService';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { ELECTRONICS_SUBCATEGORIES, CONDITION_GRADES, PURCHASE_PERIODS } from '@/types/electronics';
 import type { ElectronicsFormData } from '@/types/electronics';
@@ -58,6 +58,7 @@ export default function ElectronicsCreatePage() {
   const brandRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
+  const minOfferPriceRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const meetingPlaceRef = useRef<HTMLTextAreaElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -67,22 +68,25 @@ export default function ElectronicsCreatePage() {
     subcategory: 'laptop',
     brand: '',
     model_name: '',
-    purchase_period: '6months',
+    purchase_period: '',
+    usage_period: '',
+    is_unused: false,
     condition_grade: 'B',
     condition_description: '',
     has_box: false,
     has_charger: false,
-    has_manual: false,
     other_accessories: '',
-    has_receipt: false,
     has_warranty_card: false,
-    price: 0,
-    accept_offers: false,
-    min_offer_price: 0,
+    price: '',
+    accept_offers: true,  // 항상 true로 고정
+    min_offer_price: '',
     description: '',
     regions: [],
     meeting_place: '',
   });
+
+  // 미개봉 체크 전 사용기간 백업 (체크 해제 시 복구용)
+  const [prevUsagePeriod, setPrevUsagePeriod] = useState<string>('');
 
   // 이미지 상태 (1-10장)
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>(
@@ -101,6 +105,7 @@ export default function ElectronicsCreatePage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [canRegister, setCanRegister] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
 
   // 프로필 체크
   useEffect(() => {
@@ -132,6 +137,26 @@ export default function ElectronicsCreatePage() {
   }, [user, toast]);
 
   // 입력 핸들러
+  // 천원 단위로 맞추기
+  const roundToThousand = (value: string) => {
+    const num = parseInt(value);
+    if (isNaN(num)) return '';
+    const rounded = Math.round(num / 1000) * 1000;
+    return rounded.toString();
+  };
+
+  // 가격 포맷팅 (콤마 추가)
+  const formatPrice = (value: string) => {
+    const num = value.replace(/[^0-9]/g, '');
+    if (!num) return '';
+    return parseInt(num).toLocaleString();
+  };
+
+  // 가격 언포맷팅 (콤마 제거)
+  const unformatPrice = (value: string) => {
+    return value.replace(/[^0-9]/g, '');
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // 에러 클리어
@@ -144,70 +169,151 @@ export default function ElectronicsCreatePage() {
     }
   };
 
-  // 이미지 선택
-  const handleImageSelect = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+  // 빈 슬롯 제거하고 앞으로 당기는 함수
+  const compactImages = (imageArray: typeof imagePreviews) => {
+    return imageArray.filter(img => img && !img.isEmpty);
+  };
 
-    const file = files[0];
+  // 이미지 업로드 핸들러
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
+    const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // 파일 크기 체크 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: '파일 크기 초과',
-        description: '이미지는 10MB 이하만 업로드 가능합니다.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      // 이미지 압축
-      const compressedFile = await compressImageInBrowser(file);
-
-      const url = URL.createObjectURL(compressedFile);
-      const newPreviews = [...imagePreviews];
-
-      // 기존 URL 해제
-      if (newPreviews[index].url) {
-        URL.revokeObjectURL(newPreviews[index].url);
+    // 파일 유효성 검사
+    for (const file of files) {
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: '지원하지 않는 파일 형식',
+          description: '이미지 파일만 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+        return;
       }
 
-      newPreviews[index] = {
-        file: compressedFile as File,
-        url,
-        isMain: index === 0,
-        isEmpty: false,
-      };
+      // 파일 크기 체크 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: '이미지 크기 초과',
+          description: `${file.name} 파일이 10MB를 초과합니다.`,
+          variant: 'destructive',
+        });
 
-      setImagePreviews(newPreviews);
-    } catch (error) {
-      console.error('Failed to compress image:', error);
-      toast({
-        title: '이미지 처리 실패',
-        description: '이미지 압축 중 오류가 발생했습니다.',
-        variant: 'destructive',
+        // 해당 슬롯 클리어
+        if (targetIndex !== undefined) {
+          setImagePreviews(prev => {
+            const updated = [...prev];
+            updated[targetIndex] = {
+              file: null,
+              url: '',
+              isMain: targetIndex === 0,
+              isEmpty: true
+            };
+            return updated;
+          });
+        }
+
+        // input 필드 초기화
+        if (!Array.isArray(e) && e.target) {
+          e.target.value = '';
+        }
+
+        return;
+      }
+    }
+
+    setImagePreviews(prev => {
+      const updated = [...prev];
+
+      // 특정 슬롯에 개별 업로드인 경우
+      if (targetIndex !== undefined && files.length === 1) {
+        const file = files[0];
+        // 기존 이미지가 있으면 URL 정리
+        if (updated[targetIndex] && updated[targetIndex].url) {
+          URL.revokeObjectURL(updated[targetIndex].url);
+        }
+
+        updated[targetIndex] = {
+          file,
+          url: URL.createObjectURL(file),
+          isMain: targetIndex === 0,
+          isEmpty: false
+        };
+
+        return updated;
+      }
+
+      // 다중 업로드인 경우 - 현재 채워진 이미지 오른쪽부터 채우기
+      const actualImages = updated.filter(img => img && !img.isEmpty);
+      const lastFilledIndex = actualImages.length > 0 ?
+        updated.findLastIndex(img => img && !img.isEmpty) : -1;
+
+      // 총 이미지 개수 체크
+      if (actualImages.length + files.length > 10) {
+        toast({
+          title: '이미지 개수 초과',
+          description: '최대 10장까지 업로드 가능합니다.',
+          variant: 'destructive',
+        });
+        return prev;
+      }
+
+      let insertIndex = lastFilledIndex + 1;
+
+      files.forEach((file, index) => {
+        if (insertIndex < 10) {
+          // 기존 이미지가 있으면 URL 정리
+          if (updated[insertIndex] && updated[insertIndex].url) {
+            URL.revokeObjectURL(updated[insertIndex].url);
+          }
+
+          updated[insertIndex] = {
+            file,
+            url: URL.createObjectURL(file),
+            isMain: insertIndex === 0,
+            isEmpty: false
+          };
+          insertIndex++;
+        }
       });
-    }
-  };
 
-  // 이미지 삭제
-  const handleImageRemove = (index: number) => {
-    const newPreviews = [...imagePreviews];
+      return updated;
+    });
+  }, [toast]);
 
-    if (newPreviews[index].url) {
-      URL.revokeObjectURL(newPreviews[index].url);
-    }
+  // 이미지 삭제 (빈 슬롯 유지)
+  const handleImageRemove = useCallback((index: number) => {
+    setImagePreviews(prev => {
+      const updated = [...prev];
+      const imageToRemove = updated[index];
 
-    newPreviews[index] = {
-      file: null,
-      url: '',
-      isMain: index === 0,
-      isEmpty: true,
-    };
+      // 기존 이미지 URL 정리
+      if (imageToRemove && imageToRemove.url) {
+        URL.revokeObjectURL(imageToRemove.url);
+      }
 
-    setImagePreviews(newPreviews);
-  };
+      // 첫 번째 슬롯(대표 이미지) 삭제 방지
+      if (index === 0) {
+        // 첫 번째 슬롯은 빈 슬롯으로 만들고 isMain 유지
+        updated[index] = {
+          file: null,
+          url: '',
+          isMain: true,
+          isEmpty: true
+        };
+      } else {
+        // 다른 슬롯은 빈 슬롯으로만 변경
+        updated[index] = {
+          file: null,
+          url: '',
+          isMain: false,
+          isEmpty: true
+        };
+      }
+
+      return updated;
+    });
+  }, []);
 
   // 대표 이미지 설정
   const handleSetMainImage = (index: number) => {
@@ -248,18 +354,41 @@ export default function ElectronicsCreatePage() {
     }
 
     // 가격
-    if (!formData.price || formData.price < 1000) {
-      newErrors.price = '가격은 1,000원 이상 입력해주세요';
+    if (!formData.price) {
+      newErrors.price = '즉시 판매가를 입력해주세요';
       if (!firstErrorRef) firstErrorRef = priceRef;
-    } else if (formData.price > 99000000) {
-      newErrors.price = '가격은 99,000,000원 이하로 입력해주세요';
-      if (!firstErrorRef) firstErrorRef = priceRef;
+    } else {
+      const price = parseInt(formData.price);
+      if (price < 1000) {
+        newErrors.price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price % 1000 !== 0) {
+        newErrors.price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price > 9900000) {
+        newErrors.price = '최대 판매 금액은 990만원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      }
     }
 
-    // 최소 제안가
-    if (formData.accept_offers && formData.min_offer_price) {
-      if (formData.min_offer_price >= formData.price) {
-        newErrors.min_offer_price = '최소 제안가는 판매가보다 낮아야 합니다';
+    // 최소 제안가 (필수)
+    if (!formData.min_offer_price) {
+      newErrors.min_offer_price = '최소 제안가를 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+    } else {
+      const minPrice = parseInt(formData.min_offer_price);
+      if (minPrice < 1000) {
+        newErrors.min_offer_price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice % 1000 !== 0) {
+        newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice > 9900000) {
+        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (formData.price && minPrice >= parseInt(formData.price)) {
+        newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       }
     }
 
@@ -305,6 +434,50 @@ export default function ElectronicsCreatePage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // 드래그앤드롭 이벤트 핸들러
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+    if (imageFiles.length > 0) {
+      // 첫 번째 빈 슬롯 찾기
+      const firstEmptyIndex = imagePreviews.findIndex(preview => preview.isEmpty);
+
+      if (firstEmptyIndex !== -1) {
+        // 첫 번째 이미지 파일만 처리
+        handleImageUpload(imageFiles.slice(0, 1), firstEmptyIndex);
+      } else {
+        toast({
+          title: '이미지 슬롯이 가득 찼습니다',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
   // 폼 제출
   const handleSubmit = async () => {
     // 프로필 체크
@@ -337,17 +510,80 @@ export default function ElectronicsCreatePage() {
 
     try {
       // 이미지 파일 수집
-      const images = imagePreviews
+      const imageFiles = imagePreviews
         .filter(preview => !preview.isEmpty && preview.file)
         .sort((a, b) => (a.isMain ? -1 : b.isMain ? 1 : 0))
         .map(preview => preview.file!);
 
+      // 이미지 압축
+      let compressedImages: File[] = [];
+      if (imageFiles.length > 0) {
+        toast({
+          title: '이미지 압축 중',
+          description: `${imageFiles.length}개의 이미지를 압축하고 있습니다.`,
+        });
+
+        for (const imageFile of imageFiles) {
+          try {
+            const compressedBlob = await compressImageInBrowser(imageFile, {
+              maxWidth: 1200,
+              maxHeight: 1200,
+              quality: 0.85,
+              format: 'webp'
+            });
+
+            const compressedFile = new File(
+              [compressedBlob],
+              `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webp`,
+              { type: 'image/webp' }
+            );
+
+            compressedImages.push(compressedFile);
+          } catch (error) {
+            console.error('Failed to compress image:', error);
+            // 압축 실패 시 원본 이미지 사용
+            compressedImages.push(imageFile);
+          }
+        }
+      }
+
       // 데이터 준비
-      // 지역 문자열을 임시 숫자 ID로 변환 (백엔드에서 처리)
+      // 지역 처리 - 휴대폰과 동일한 방식 사용
+      let regionIds: number[] = [];
+      if (selectedRegions.length > 0) {
+        // 지역명으로 실제 지역 코드 찾기
+        for (const region of selectedRegions) {
+          try {
+            const searchName = region.city || region.province;
+            const regions = await searchRegionsByName(searchName);
+
+            if (regions && regions.length > 0) {
+              // 가장 정확한 매칭 찾기
+              const exactMatch = regions.find(r =>
+                r.full_name.includes(region.province) &&
+                r.full_name.includes(region.city)
+              ) || regions[0];
+
+              regionIds.push(Number(exactMatch.id));
+              console.log('Region found:', exactMatch.id, exactMatch.full_name);
+            }
+          } catch (error) {
+            console.error('Failed to find region:', error);
+            // 실패시 기본값 사용
+            regionIds.push(11); // 서울특별시
+          }
+        }
+      }
+
+      // 지역 ID가 없으면 기본값 추가
+      if (regionIds.length === 0) {
+        regionIds = [11]; // 서울특별시
+      }
+
       const submitData: ElectronicsFormData = {
         ...formData,
-        regions: selectedRegions.map((r, index) => index + 1), // 임시 ID
-        images,
+        regions: regionIds,
+        images: compressedImages,
       };
 
       // API 호출
@@ -408,13 +644,29 @@ export default function ElectronicsCreatePage() {
         <div className="bg-white rounded-lg p-4 space-y-6">
 
           {/* 이미지 업로드 */}
-          <div ref={imageContainerRef}>
+          <div
+            ref={imageContainerRef}
+            className={`relative ${isDragging ? 'ring-2 ring-primary ring-opacity-50 bg-blue-50' : ''}`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}>
             <Label className="text-base font-semibold mb-2 block">
               상품 사진 <span className="text-red-500">*</span>
               <span className="text-sm font-normal text-gray-500 ml-2">
                 (최소 1장, 최대 10장)
               </span>
             </Label>
+
+            {/* 드래그 앤 드롭 안내 */}
+            {isDragging && (
+              <div className="absolute inset-0 bg-blue-50 bg-opacity-90 flex items-center justify-center rounded-lg z-10">
+                <div className="text-center">
+                  <Camera className="w-12 h-12 text-primary mx-auto mb-2" />
+                  <p className="text-primary font-semibold">여기에 이미지를 놓으세요</p>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {imagePreviews.map((preview, index) => (
@@ -425,7 +677,7 @@ export default function ElectronicsCreatePage() {
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={(e) => handleImageSelect(index, e)}
+                        onChange={(e) => handleImageUpload(e, index)}
                         disabled={loading}
                       />
                       <div className="w-full h-full border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-primary transition-colors">
@@ -540,23 +792,100 @@ export default function ElectronicsCreatePage() {
           {/* 상태 정보 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label>사용 기간 <span className="text-red-500">*</span></Label>
-              <Select
-                value={formData.purchase_period}
-                onValueChange={(value) => handleInputChange('purchase_period', value)}
+              <Label htmlFor="purchase_period">구매 시기</Label>
+              <Input
+                id="purchase_period"
+                type="text"
+                value={formData.purchase_period || ''}
+                onChange={(e) => {
+                  if (e.target.value.length <= 50) {
+                    handleInputChange('purchase_period', e.target.value);
+                  }
+                }}
+                placeholder="예: 2024년 3월, 작년 여름, 6개월 전, 모름"
+                maxLength={50}
                 disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PURCHASE_PERIODS).map(([key, value]) => (
-                    <SelectItem key={key} value={key}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                대략적인 구매 시기를 자유롭게 입력 (선택사항)
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="usage_period">사용 기간</Label>
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="is_unopened"
+                      checked={formData.usage_period === '미개봉'}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          // 미개봉 체크 시
+                          setPrevUsagePeriod(formData.usage_period || '');
+                          handleInputChange('usage_period', '미개봉');
+                          handleInputChange('is_unused', true);
+                          handleInputChange('condition_grade', 'S');
+                        } else {
+                          // 체크 해제 시
+                          handleInputChange('usage_period', prevUsagePeriod);
+                          handleInputChange('is_unused', false);
+                          handleInputChange('condition_grade', 'B');
+                        }
+                      }}
+                      disabled={loading}
+                    />
+                    <Label htmlFor="is_unopened" className="font-normal cursor-pointer text-sm">
+                      미개봉
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="is_unused"
+                      checked={formData.usage_period === '미사용'}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          // 미사용 체크 시
+                          setPrevUsagePeriod(formData.usage_period || '');
+                          handleInputChange('usage_period', '미사용');
+                          handleInputChange('is_unused', true);
+                          handleInputChange('condition_grade', 'A');
+                        } else {
+                          // 체크 해제 시
+                          handleInputChange('usage_period', prevUsagePeriod);
+                          handleInputChange('is_unused', false);
+                          handleInputChange('condition_grade', 'B');
+                        }
+                      }}
+                      disabled={loading}
+                    />
+                    <Label htmlFor="is_unused" className="font-normal cursor-pointer text-sm">
+                      미사용 (개봉 후)
+                    </Label>
+                  </div>
+                </div>
+                <Input
+                  id="usage_period"
+                  type="text"
+                  value={formData.usage_period || ''}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      handleInputChange('usage_period', e.target.value);
+                      // 직접 입력 시 체크박스들 해제
+                      if (e.target.value !== '미개봉' && e.target.value !== '미사용') {
+                        handleInputChange('is_unused', false);
+                      }
+                    }
+                  }}
+                  placeholder="예: 6개월 사용, 1년 사용, 거의 안씀"
+                  maxLength={50}
+                  disabled={loading || formData.usage_period === '미개봉' || formData.usage_period === '미사용'}
+                  className={(formData.usage_period === '미개봉' || formData.usage_period === '미사용') ? 'bg-gray-100' : ''}
+                />
+                <p className="text-xs text-gray-500">
+                  실제 사용한 기간을 입력해주세요 (선택사항)
+                </p>
+              </div>
             </div>
 
             <div>
@@ -625,24 +954,6 @@ export default function ElectronicsCreatePage() {
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="has_manual"
-                  checked={formData.has_manual}
-                  onCheckedChange={(checked) => handleInputChange('has_manual', checked)}
-                  disabled={loading}
-                />
-                <Label htmlFor="has_manual" className="font-normal cursor-pointer">설명서</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="has_receipt"
-                  checked={formData.has_receipt}
-                  onCheckedChange={(checked) => handleInputChange('has_receipt', checked)}
-                  disabled={loading}
-                />
-                <Label htmlFor="has_receipt" className="font-normal cursor-pointer">영수증</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
                   id="has_warranty_card"
                   checked={formData.has_warranty_card}
                   onCheckedChange={(checked) => handleInputChange('has_warranty_card', checked)}
@@ -672,14 +983,25 @@ export default function ElectronicsCreatePage() {
 
           {/* 가격 정보 */}
           <div>
-            <Label htmlFor="price">판매 가격 <span className="text-red-500">*</span></Label>
+            <Label htmlFor="price">즉시 판매가 <span className="text-red-500">*</span></Label>
             <div className="relative">
               <Input
                 ref={priceRef}
                 id="price"
-                type="number"
-                value={formData.price || ''}
-                onChange={(e) => handleInputChange('price', parseInt(e.target.value) || 0)}
+                type="text"
+                value={formatPrice(formData.price)}
+                onChange={(e) => {
+                  const unformatted = unformatPrice(e.target.value);
+                  handleInputChange('price', unformatted);
+                }}
+                onBlur={(e) => {
+                  // 포커스 아웃 시 천원 단위로 자동 조정
+                  const unformatted = unformatPrice(e.target.value);
+                  if (unformatted) {
+                    const rounded = roundToThousand(unformatted);
+                    handleInputChange('price', rounded);
+                  }
+                }}
                 placeholder="판매 희망 가격"
                 className={errors.price ? 'border-red-300' : ''}
                 disabled={loading}
@@ -689,28 +1011,36 @@ export default function ElectronicsCreatePage() {
             {errors.price && (
               <p className="text-sm text-red-500 mt-1">{errors.price}</p>
             )}
+            <p className="text-xs text-gray-500 mt-1">
+              가격은 천원 단위로 입력 가능합니다
+            </p>
 
-            <div className="flex items-center space-x-2 mt-3">
-              <Switch
-                id="accept_offers"
-                checked={formData.accept_offers}
-                onCheckedChange={(checked) => handleInputChange('accept_offers', checked)}
-                disabled={loading}
-              />
-              <Label htmlFor="accept_offers" className="font-normal cursor-pointer">
-                가격 제안 받기
-              </Label>
-            </div>
+            {/* 가격 제안은 항상 받음 (토글 제거) */}
+            <p className="text-xs text-gray-500 mt-2">
+              구매자가 가격을 제안할 수 있습니다. 즉시 구매도 가능합니다.
+            </p>
 
-            {formData.accept_offers && (
-              <div className="mt-3">
-                <Label htmlFor="min_offer_price">최소 제안가 (선택)</Label>
+            {/* 최소 제안가 (필수) */}
+            <div className="mt-4">
+              <Label htmlFor="min_offer_price">최소 제안가 <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Input
+                    ref={minOfferPriceRef}
                     id="min_offer_price"
-                    type="number"
-                    value={formData.min_offer_price || ''}
-                    onChange={(e) => handleInputChange('min_offer_price', parseInt(e.target.value) || 0)}
+                    type="text"
+                    value={formatPrice(formData.min_offer_price || '')}
+                    onChange={(e) => {
+                      const unformatted = unformatPrice(e.target.value);
+                      handleInputChange('min_offer_price', unformatted);
+                    }}
+                    onBlur={(e) => {
+                      // 포커스 아웃 시 천원 단위로 자동 조정
+                      const unformatted = unformatPrice(e.target.value);
+                      if (unformatted) {
+                        const rounded = roundToThousand(unformatted);
+                        handleInputChange('min_offer_price', rounded);
+                      }
+                    }}
                     placeholder="최소 제안 가격"
                     className={errors.min_offer_price ? 'border-red-300' : ''}
                     disabled={loading}
@@ -720,8 +1050,10 @@ export default function ElectronicsCreatePage() {
                 {errors.min_offer_price && (
                   <p className="text-sm text-red-500 mt-1">{errors.min_offer_price}</p>
                 )}
-              </div>
-            )}
+                <p className="text-xs text-gray-500 mt-1">
+                  가격은 천원 단위로 입력 가능합니다 (판매가보다 낮게)
+                </p>
+            </div>
           </div>
 
           {/* 상품 설명 */}
