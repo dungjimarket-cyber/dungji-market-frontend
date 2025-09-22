@@ -503,8 +503,8 @@ export default function UsedPhonesPage() {
         ));
 
         toast({
-          title: isFavorited ? '찜 해제' : '찜 완료',
-          description: isFavorited ? '찜 목록에서 제거되었습니다.' : '찜 목록에 추가되었습니다.'
+          title: !isFavorited ? '찜 완료' : '찜 해제',
+          description: !isFavorited ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.'
         });
       } else {
         // 휴대폰 찜하기 로직
@@ -530,19 +530,19 @@ export default function UsedPhonesPage() {
           // 휴대폰 상태 업데이트
           setPhones(prev => prev.map(phone =>
             phone.id === itemId
-              ? { ...phone, is_favorite: !phone.is_favorite }
+              ? { ...phone, is_favorite: !isFavorited }
               : phone
           ));
           // 통합 아이템도 업데이트
           setUnifiedItems(prev => prev.map(item =>
             item.id === itemId && isPhoneItem(item)
-              ? { ...item, is_favorited: !isFavorited }
+              ? { ...item, is_favorited: !isFavorited, is_favorite: !isFavorited }
               : item
           ));
 
           toast({
-            title: isFavorited ? '찜 해제' : '찜 완료',
-            description: isFavorited ? '찜 목록에서 제거되었습니다.' : '찜 목록에 추가되었습니다.'
+            title: !isFavorited ? '찜 완료' : '찜 해제',
+            description: !isFavorited ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.'
           });
         }
       }
