@@ -585,6 +585,12 @@ export default function ElectronicsCreatePage() {
         images: compressedImages,
       };
 
+      // 디버깅: 전송 데이터 확인
+      console.log('전자제품 등록 데이터:', {
+        ...submitData,
+        images: `${submitData.images.length}개 이미지`
+      });
+
       // API 호출
       const response = await electronicsApi.createElectronics(submitData);
 
@@ -596,16 +602,30 @@ export default function ElectronicsCreatePage() {
       router.push(`/used-electronics/${response.id}`);
     } catch (error: any) {
       console.error('Failed to create electronics:', error);
+      console.error('Error response:', error.response);
 
       if (error.response?.data) {
         const errorData = error.response.data;
-        const errorMessages = Object.entries(errorData)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\n');
+        console.error('Error details:', errorData);
+
+        let errorMessage = '상품 등록에 실패했습니다.';
+
+        if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\n');
+          errorMessage = errorMessages;
+        }
 
         toast({
           title: '등록 실패',
-          description: errorMessages || '상품 등록에 실패했습니다.',
+          description: errorMessage,
           variant: 'destructive',
         });
       } else {
