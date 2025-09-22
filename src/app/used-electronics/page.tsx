@@ -104,15 +104,20 @@ function UsedElectronicsListPageContent() {
     }
 
     try {
-      const response = await electronicsApi.toggleFavorite(electronicsId);
+      // Find current item to get its favorite status
+      const currentItem = electronics.find(item => item.id === electronicsId);
+      const isFavorited = currentItem?.is_favorited || false;
+
+      const response = await electronicsApi.toggleFavorite(electronicsId, isFavorited);
+      const newFavoriteState = !isFavorited;
 
       setElectronics(prev =>
         prev.map(item =>
           item.id === electronicsId
             ? {
                 ...item,
-                is_favorited: response.is_favorited,
-                favorite_count: response.is_favorited
+                is_favorited: newFavoriteState,
+                favorite_count: newFavoriteState
                   ? (item.favorite_count || 0) + 1
                   : Math.max(0, (item.favorite_count || 0) - 1),
               }
@@ -121,7 +126,7 @@ function UsedElectronicsListPageContent() {
       );
 
       toast({
-        description: response.is_favorited ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+        description: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
       });
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
