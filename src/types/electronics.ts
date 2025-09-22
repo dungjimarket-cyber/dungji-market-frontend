@@ -203,11 +203,12 @@ export const ELECTRONICS_SUBCATEGORIES = {
   etc: '기타',
 } as const;
 
+// 번개장터/당근마켓 스타일로 명확하게 정리
 export const CONDITION_GRADES = {
-  S: 'S급 (미개봉/새상품)',
-  A: 'A급 (사용감 거의 없음)',
-  B: 'B급 (사용감 있음)',
-  C: 'C급 (사용감 많음)',
+  S: '미개봉',           // 포장 미개봉 새제품
+  A: '거의 새것',        // 사용감 없거나 1-2회 사용
+  B: '사용감 적음',      // 깨끗하게 사용, 생활기스 정도
+  C: '사용감 많음',      // 사용감 있지만 기능 정상
 } as const;
 
 export const PURCHASE_PERIODS = {

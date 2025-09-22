@@ -82,7 +82,7 @@ function UsedElectronicsListPageContent() {
   // 초기 로드
   useEffect(() => {
     loadElectronics(true);
-  }, [selectedCategory, selectedCondition, sortBy]);
+  }, [selectedCategory, selectedCondition, sortBy, loadElectronics]);
 
   // 검색
   const handleSearch = () => {

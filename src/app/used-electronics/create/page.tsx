@@ -788,112 +788,25 @@ export default function ElectronicsCreatePage() {
             </div>
           </div>
 
-          {/* 상태 정보 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="purchase_period">구매 시기</Label>
-              <Input
-                id="purchase_period"
-                type="text"
-                value={formData.purchase_period || ''}
-                onChange={(e) => {
-                  if (e.target.value.length <= 50) {
-                    handleInputChange('purchase_period', e.target.value);
-                  }
-                }}
-                placeholder="예: 2024년 3월, 작년 여름, 6개월 전, 모름"
-                maxLength={50}
-                disabled={loading || formData.usage_period === '미개봉'}
-                className={formData.usage_period === '미개봉' ? 'bg-gray-100' : ''}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                대략적인 구매 시기를 자유롭게 입력 (선택사항)
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="usage_period">사용 기간</Label>
-              <div className="space-y-2">
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is_unopened"
-                      checked={formData.usage_period === '미개봉'}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          // 미개봉 체크 시
-                          setPrevUsagePeriod(formData.usage_period || '');
-                          handleInputChange('usage_period', '미개봉');
-                          handleInputChange('is_unused', true);
-                          handleInputChange('condition_grade', 'S');
-                          handleInputChange('purchase_period', ''); // 구매시기 초기화
-                        } else {
-                          // 체크 해제 시
-                          handleInputChange('usage_period', prevUsagePeriod);
-                          handleInputChange('is_unused', false);
-                          handleInputChange('condition_grade', 'B');
-                        }
-                      }}
-                      disabled={loading}
-                    />
-                    <Label htmlFor="is_unopened" className="font-normal cursor-pointer text-sm">
-                      미개봉
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is_unused"
-                      checked={formData.usage_period === '미사용'}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          // 미사용 체크 시
-                          setPrevUsagePeriod(formData.usage_period || '');
-                          handleInputChange('usage_period', '미사용');
-                          handleInputChange('is_unused', true);
-                          handleInputChange('condition_grade', 'A');
-                        } else {
-                          // 체크 해제 시
-                          handleInputChange('usage_period', prevUsagePeriod);
-                          handleInputChange('is_unused', false);
-                          handleInputChange('condition_grade', 'B');
-                        }
-                      }}
-                      disabled={loading}
-                    />
-                    <Label htmlFor="is_unused" className="font-normal cursor-pointer text-sm">
-                      미사용 (개봉 후)
-                    </Label>
-                  </div>
-                </div>
-                <Input
-                  id="usage_period"
-                  type="text"
-                  value={formData.usage_period || ''}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 50) {
-                      handleInputChange('usage_period', e.target.value);
-                      // 직접 입력 시 체크박스들 해제
-                      if (e.target.value !== '미개봉' && e.target.value !== '미사용') {
-                        handleInputChange('is_unused', false);
-                      }
-                    }
-                  }}
-                  placeholder="예: 6개월 사용, 1년 사용, 거의 안씀"
-                  maxLength={50}
-                  disabled={loading || formData.usage_period === '미개봉' || formData.usage_period === '미사용'}
-                  className={(formData.usage_period === '미개봉' || formData.usage_period === '미사용') ? 'bg-gray-100' : ''}
-                />
-                <p className="text-xs text-gray-500">
-                  실제 사용한 기간을 입력해주세요 (선택사항)
-                </p>
-              </div>
-            </div>
-
+          {/* 상태 정보 - 심플하게 정리 */}
+          <div className="space-y-4">
+            {/* 상태 등급 선택 (가장 중요) */}
             <div>
               <Label>상태 등급 <span className="text-red-500">*</span></Label>
               <Select
                 value={formData.condition_grade}
-                onValueChange={(value) => handleInputChange('condition_grade', value)}
+                onValueChange={(value) => {
+                  handleInputChange('condition_grade', value);
+                  // S급 선택시 자동으로 미개봉 설정
+                  if (value === 'S') {
+                    handleInputChange('usage_period', '미개봉');
+                    handleInputChange('purchase_period', '');
+                  } else if (value === 'A') {
+                    handleInputChange('usage_period', '거의 사용 안함');
+                  } else {
+                    handleInputChange('usage_period', '');
+                  }
+                }}
                 disabled={loading}
               >
                 <SelectTrigger>
@@ -907,6 +820,59 @@ export default function ElectronicsCreatePage() {
                   ))}
                 </SelectContent>
               </Select>
+              <div className="mt-2 space-y-1 text-xs text-gray-600">
+                <p>• S급: 미개봉 - 포장 뜯지 않은 새제품</p>
+                <p>• A급: 거의 새것 - 개봉 후 1-2회 사용</p>
+                <p>• B급: 사용감 적음 - 생활기스 정도</p>
+                <p>• C급: 사용감 많음 - 기능은 정상</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* 구매 시기 (선택사항) */}
+              <div>
+                <Label htmlFor="purchase_period">구매 시기 (선택)</Label>
+                <Input
+                  id="purchase_period"
+                  type="text"
+                  value={formData.purchase_period || ''}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      handleInputChange('purchase_period', e.target.value);
+                    }
+                  }}
+                  placeholder="예: 2024년 3월"
+                  maxLength={50}
+                  disabled={loading || formData.condition_grade === 'S'}
+                  className={formData.condition_grade === 'S' ? 'bg-gray-100' : ''}
+                />
+                {formData.condition_grade === 'S' && (
+                  <p className="text-xs text-gray-500 mt-1">미개봉 제품은 입력 불가</p>
+                )}
+              </div>
+
+              {/* 사용 기간 (선택사항) */}
+              <div>
+                <Label htmlFor="usage_period">사용 기간 (선택)</Label>
+                <Input
+                  id="usage_period"
+                  type="text"
+                  value={formData.usage_period || ''}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      handleInputChange('usage_period', e.target.value);
+                    }
+                  }}
+                  placeholder="예: 6개월 사용"
+                  maxLength={50}
+                  disabled={loading || formData.condition_grade === 'S'}
+                  className={formData.condition_grade === 'S' ? 'bg-gray-100' : ''}
+                />
+                {formData.condition_grade === 'S' && (
+                  <p className="text-xs text-blue-600 mt-1">미개봉 자동 설정</p>
+                )}
+              </div>
+            </div>
             </div>
           </div>
 
