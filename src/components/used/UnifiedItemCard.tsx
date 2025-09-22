@@ -230,11 +230,10 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
                 <span className="inline-flex items-center">
                   <span className={`
                     px-1.5 py-0.5 rounded font-medium
-                    ${item.condition_grade === 'new_unopened' ? 'bg-blue-100 text-blue-700' : ''}
-                    ${item.condition_grade === 'like_new' ? 'bg-green-100 text-green-700' : ''}
-                    ${item.condition_grade === 'minor_signs' ? 'bg-yellow-100 text-yellow-700' : ''}
-                    ${item.condition_grade === 'visible_signs' ? 'bg-orange-100 text-orange-700' : ''}
-                    ${item.condition_grade === 'heavy_signs' ? 'bg-red-100 text-red-700' : ''}
+                    ${item.condition_grade === 'S' ? 'bg-blue-100 text-blue-700' : ''}
+                    ${item.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
+                    ${item.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
+                    ${item.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
                   `}>
                     {ELEC_CONDITIONS[item.condition_grade as keyof typeof ELEC_CONDITIONS]?.split(' ')[0] || item.condition_grade}
                   </span>
@@ -272,12 +271,12 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
         </div>
 
         {/* 조회수와 찜 수 */}
-        {(item.view_count > 0 || item.favorite_count > 0) && (
+        {((item.view_count && item.view_count > 0) || (item.favorite_count && item.favorite_count > 0)) && (
           <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
-            {item.view_count > 0 && (
+            {item.view_count && item.view_count > 0 && (
               <span>조회 {item.view_count}</span>
             )}
-            {item.favorite_count > 0 && (
+            {item.favorite_count && item.favorite_count > 0 && (
               <span>찜 {item.favorite_count}</span>
             )}
           </div>
