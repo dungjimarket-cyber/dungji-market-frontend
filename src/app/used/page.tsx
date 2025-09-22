@@ -462,9 +462,8 @@ export default function UsedPhonesPage() {
     }
   }, [fetchAllItems, fetchInitialPhones, fetchRemainingPhones, fetchElectronics]);
 
-  // 찜하기 핸들러 (통합)
+  // 찜하기 핸들러 - 상세페이지처럼 단순하게
   const handleFavorite = useCallback(async (itemId: number, itemType?: 'phone' | 'electronics') => {
-    // itemType이 전달되지 않으면 activeTab으로 판단
     const type = itemType || (activeTab === 'electronics' ? 'electronics' : 'phone');
 
     if (!isAuthenticated) {
@@ -481,98 +480,95 @@ export default function UsedPhonesPage() {
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
 
+      // 현재 아이템 찾기 - 단순하게
+      let currentItem: any = null;
+      let isFavorited = false;
+
       if (type === 'electronics') {
-        const apiUrl = baseUrl.includes('api.dungjimarket.com')
-          ? `${baseUrl}/used/electronics/${itemId}/favorite/`
-          : `${baseUrl}/api/used/electronics/${itemId}/favorite/`;
+        currentItem = electronics.find(e => e.id === itemId);
+        if (!currentItem) {
+          currentItem = unifiedItems.find(item => item.id === itemId && isElectronicsItem(item));
+        }
+        // 명확하게 boolean으로 변환
+        isFavorited = currentItem?.is_favorited === true || currentItem?.is_favorite === true;
+      } else {
+        currentItem = phones.find(p => p.id === itemId);
+        if (!currentItem) {
+          currentItem = unifiedItems.find(item => item.id === itemId && isPhoneItem(item));
+        }
+        // 명확하게 boolean으로 변환
+        isFavorited = currentItem?.is_favorite === true || currentItem?.is_favorited === true;
+      }
 
-        // 현재 찜 상태 확인 - 모든 배열에서 확인
-        const currentItem = electronics.find(e => e.id === itemId) ||
-                          unifiedItems.find(item => item.id === itemId && isElectronicsItem(item));
-        const isFavorited = (currentItem as any)?.is_favorited || (currentItem as any)?.is_favorite || false;
+      console.log('찜하기 토글 상태:', { itemId, type, currentItem, isFavorited });
 
-        // 찜 상태에 따라 메서드 결정 (POST: 추가, DELETE: 제거)
-        const method = isFavorited ? 'DELETE' : 'POST';
+      // API URL 설정
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used/${type === 'electronics' ? 'electronics' : 'phones'}/${itemId}/favorite/`
+        : `${baseUrl}/api/used/${type === 'electronics' ? 'electronics' : 'phones'}/${itemId}/favorite/`;
 
-        const response = await fetch(apiUrl, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+      // 메서드 결정 - 상세페이지와 동일
+      const method = isFavorited ? 'DELETE' : 'POST';
+      console.log('API 호출:', { apiUrl, method });
 
-        if (response.ok) {
-          const newFavoriteState = !isFavorited;
+      const response = await fetch(apiUrl, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-          // 전자제품 상태 업데이트 - 모든 필드 통일
+      console.log('API 응답:', { ok: response.ok, status: response.status });
+
+      if (response.ok) {
+        const newFavoriteState = !isFavorited;
+        console.log('새로운 상태:', newFavoriteState);
+
+        // 즉시 상태 업데이트 - 모든 필드를 동일하게
+        if (type === 'electronics') {
           setElectronics(prev => prev.map(item =>
             item.id === itemId
               ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
               : item
           ));
-
-          // 통합 아이템도 업데이트
-          setUnifiedItems(prev => prev.map(item =>
-            item.id === itemId && isElectronicsItem(item)
-              ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
-              : item
-          ));
-
-          toast({
-            title: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
-            duration: 1000
-          });
-        }
-      } else {
-        // 휴대폰 찜하기
-        const apiUrl = baseUrl.includes('api.dungjimarket.com')
-          ? `${baseUrl}/used/phones/${itemId}/favorite/`
-          : `${baseUrl}/api/used/phones/${itemId}/favorite/`;
-
-        // 현재 찜 상태 확인 - 모든 배열에서 확인
-        const currentPhone = phones.find(p => p.id === itemId) ||
-                           unifiedItems.find(item => item.id === itemId && isPhoneItem(item));
-        const isFavorited = (currentPhone as any)?.is_favorite || (currentPhone as any)?.is_favorited || false;
-
-        // 찜 상태에 따라 메서드 결정 (POST: 추가, DELETE: 제거)
-        const method = isFavorited ? 'DELETE' : 'POST';
-
-        const response = await fetch(apiUrl, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const newFavoriteState = !isFavorited;
-
-          // 휴대폰 상태 업데이트 - 모든 필드 통일
+        } else {
           setPhones(prev => prev.map(phone =>
             phone.id === itemId
               ? { ...phone, is_favorite: newFavoriteState, is_favorited: newFavoriteState }
               : phone
           ));
-
-          // 통합 아이템도 업데이트
-          setUnifiedItems(prev => prev.map(item =>
-            item.id === itemId && isPhoneItem(item)
-              ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
-              : item
-          ));
-
-          toast({
-            title: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
-            duration: 1000
-          });
         }
+
+        // 통합 아이템도 업데이트
+        setUnifiedItems(prev => prev.map(item => {
+          if (item.id === itemId) {
+            return { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState };
+          }
+          return item;
+        }));
+
+        toast({
+          title: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+          duration: 1000
+        });
+      } else {
+        console.error('API 오류:', response.status, response.statusText);
+        toast({
+          title: '오류 발생',
+          description: '잠시 후 다시 시도해 주세요.',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
+      toast({
+        title: '오류 발생',
+        description: '잠시 후 다시 시도해 주세요.',
+        variant: 'destructive'
+      });
     }
-  }, [isAuthenticated, toast, router]);
+  }, [isAuthenticated, toast, router, activeTab, phones, electronics, unifiedItems]);
 
   // 폰 찜하기 핸들러 (기존 호환성)
   const handlePhoneFavorite = useCallback(async (phoneId: number) => {
