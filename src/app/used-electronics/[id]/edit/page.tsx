@@ -794,11 +794,20 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 disabled={!isFieldEditable('description')}
-                placeholder="상품에 대해 자세히 설명해주세요"
-                rows={6}
+                placeholder="상품에 대해 자세히 설명해주세요
+
+💻 상품 상태: 외관, 기능, 성능 등의 상세 설명
+📅 구매/사용 시기: 언제 구매했는지, 얼마나 사용했는지
+🔧 특이사항: 수리 이력, 업그레이드 내역, 문제점 등
+📦 구성품 정보: 포함된 액세서리, 박스, 설명서 등
+⚡ 성능 정보: 속도, 용량, 배터리 상태 등
+🎯 판매 이유: 왜 판매하는지 간단한 설명
+
+구매자가 충분히 검토할 수 있도록 솔직하고 자세하게 작성해주세요."
+                rows={10}
                 minLength={10}
                 maxLength={2000}
-                className="mt-1"
+                className={`min-h-[250px] resize-y mt-1 ${!isFieldEditable('description') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               />
               <div className="flex justify-between items-center mt-1">
                 {errors.description ? (

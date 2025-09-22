@@ -1521,15 +1521,23 @@ export default function CreateUsedPhonePage() {
                 <Textarea
                   ref={conditionDescriptionRef}
                   id="condition_description"
-                  placeholder="제품의 상태를 자세히 설명해주세요\n예: 기스, 찍힘, 배터리 성능, 기능 이상 유무 등\n구매자가 제품 상태를 정확히 파악할 수 있도록 작성해주세요"
+                  placeholder="제품의 상태를 자세히 설명해주세요
+
+📱 외관 상태: 기스, 찍힘, 액정 상태 등
+🔋 배터리 성능: 배터리 지속시간, 충전 속도 등
+📞 기능 이상: 카메라, 스피커, 홈버튼, 지문인식 등
+📋 사용 기간: 실제 사용한 기간 및 구매 시기
+🛡️ 수리 이력: 액정 교체, 배터리 교체 등의 수리 내역
+
+구매자가 제품 상태를 정확히 파악할 수 있도록 솔직하고 자세하게 작성해주세요."
                   value={formData.condition_description}
                   onChange={(e) => {
                     if (e.target.value.length <= 2000) {
                       handleInputChange('condition_description', e.target.value);
                     }
                   }}
-                  rows={6}
-                  className={`min-h-[150px] resize-y ${errors.condition_description ? 'border-red-300' : ''}`}
+                  rows={10}
+                  className={`min-h-[250px] resize-y ${errors.condition_description ? 'border-red-300' : ''}`}
                   maxLength={2000}
                 />
               </div>

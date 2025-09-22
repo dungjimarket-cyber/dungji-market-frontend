@@ -561,14 +561,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         <Card className="mb-4">
           <CardContent className="p-4">
             <h2 className="font-semibold mb-3">상품 설명</h2>
-            {electronics.condition_description && (
-              <div className="mb-3 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm font-medium mb-1">상태 상세</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {electronics.condition_description}
-                </p>
-              </div>
-            )}
             <p className="whitespace-pre-wrap text-gray-700">
               {electronics.description}
             </p>
