@@ -521,5 +521,68 @@ queryset = UsedPhone.objects.prefetch_related(
     'transactions'
 )
 
-      
+## 🔍 디버깅 접근법 - 찜하기 토글 구현
+
+### 핵심 원칙: 되던걸 기준으로 안되는걸 맞춰나가기
+문제 해결 시 작동하는 코드를 참조점으로 삼아 작동하지 않는 코드를 수정하는 접근법
+
+### 사례 연구: 찜하기 실시간 토글 문제 해결 (2025.09)
+
+#### 문제 상황
+- 휴대폰 탭: 찜하기 토글 정상 작동 ✅
+- 전체 탭/전자제품 탭: 찜하기는 되지만 해제가 안됨 ❌
+
+#### 디버깅 과정
+
+1. **작동하는 코드 분석 (휴대폰 탭)**
+   ```javascript
+   // src/app/used/[id]/page.tsx
+   const method = isFavorite ? 'DELETE' : 'POST';
+   const response = await fetch(url, { method });
+   ```
+
+2. **문제 있는 코드 비교 (전체 탭)**
+   ```javascript
+   // 문제: 항상 POST만 사용
+   const response = await fetch(url, { method: 'POST' });
+   ```
+
+3. **해결: 작동하는 로직 적용**
+   ```javascript
+   // 수정: 상태에 따라 메서드 결정
+   const newFavoriteState = !isFavorited;
+   const method = isFavorited ? 'DELETE' : 'POST';
+   ```
+
+#### 일관성 체크포인트
+- **API 호출 방식**: POST (추가) / DELETE (제거)
+- **상태 변수명**: `is_favorite` vs `is_favorited` 통일
+- **토스트 메시지**: 실제 동작과 일치하는지 확인
+- **거래완료 상품**: 찜하기 버튼 비활성화
+
+#### 교훈
+1. **부분적 수정 금지**: 한 곳만 고치면 다른 곳이 깨짐
+2. **전체 로직 일치**: 모든 컴포넌트가 같은 패턴 사용
+3. **상태 관리 일관성**: newFavoriteState 변수로 명확히
+4. **테스트 순서**: 휴대폰 → 전체 → 전자제품 순으로 확인
+
+### 적용 가이드
+```javascript
+// ✅ 올바른 패턴
+const handleFavorite = async () => {
+  const newFavoriteState = !currentState;
+  const method = currentState ? 'DELETE' : 'POST';
+
+  // API 호출
+  await api[method](url);
+
+  // 상태 업데이트
+  setState(newFavoriteState);
+
+  // 메시지 표시
+  toast(newFavoriteState ? '추가됨' : '제거됨');
+};
+```
+
+
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.

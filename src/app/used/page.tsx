@@ -479,9 +479,11 @@ export default function UsedPhonesPage() {
 
     try {
       if (type === 'electronics') {
-        // 현재 찜 상태 확인
+        // 현재 찜 상태 확인 - electronics와 unifiedItems 모두 확인
         const currentItem = electronics.find(e => e.id === itemId);
-        const isFavorited = currentItem?.is_favorited || false;
+        const currentUnifiedItem = unifiedItems.find(item => item.id === itemId && isElectronicsItem(item));
+        // is_favorited와 is_favorite 둘 다 확인
+        const isFavorited = currentItem?.is_favorited || (currentUnifiedItem as any)?.is_favorited || (currentUnifiedItem as any)?.is_favorite || false;
 
         console.log('Electronics favorite toggle:', { itemId, currentFavorited: isFavorited });
 
@@ -497,10 +499,10 @@ export default function UsedPhonesPage() {
             ? { ...item, is_favorited: newFavoriteState }
             : item
         ));
-        // 통합 아이템도 업데이트
+        // 통합 아이템도 업데이트 - is_favorite와 is_favorited 둘 다 설정
         setUnifiedItems(prev => prev.map(item =>
           item.id === itemId && isElectronicsItem(item)
-            ? { ...item, is_favorited: newFavoriteState }
+            ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
             : item
         ));
 
@@ -516,9 +518,11 @@ export default function UsedPhonesPage() {
           ? `${baseUrl}/used/phones/${itemId}/favorite/`
           : `${baseUrl}/api/used/phones/${itemId}/favorite/`;
 
-        // 현재 찜 상태 확인
+        // 현재 찜 상태 확인 - phones와 unifiedItems 모두 확인
         const currentPhone = phones.find(p => p.id === itemId);
-        const isFavorited = currentPhone?.is_favorite || false;
+        const currentUnifiedItem = unifiedItems.find(item => item.id === itemId && isPhoneItem(item));
+        // is_favorite와 is_favorited 둘 다 확인
+        const isFavorited = currentPhone?.is_favorite || (currentUnifiedItem as any)?.is_favorited || (currentUnifiedItem as any)?.is_favorite || false;
 
         const response = await fetch(apiUrl, {
           method: isFavorited ? 'DELETE' : 'POST',
