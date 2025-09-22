@@ -780,7 +780,7 @@ function GroupPurchasesPageContent() {
     <div className="min-h-screen bg-gray-50">
       {/* PC에서 상단 영역 너비 제한 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-        <MainHeader title="공구 둘러보기" />
+        <MainHeader title="공구 견적받기" />
 
         {/* 공구·견적 페이지 공지사항 */}
         <NoticeSection pageType="groupbuy" compact={true} />
@@ -986,7 +986,7 @@ export default function GroupPurchasesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50">
-        <MainHeader title="공구 둘러보기" />
+        <MainHeader title="공구 견적받기" />
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>        

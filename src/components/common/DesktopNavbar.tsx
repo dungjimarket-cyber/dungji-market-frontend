@@ -79,7 +79,7 @@ export default function DesktopNavbar() {
           
           <div className="flex space-x-8">
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
-              공구 둘러보기
+              공구 견적받기
             </Link>
             <Link href="/used" className="text-gray-600 hover:text-gray-900">
               중고거래
