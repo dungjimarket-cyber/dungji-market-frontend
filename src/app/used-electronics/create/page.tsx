@@ -898,7 +898,6 @@ export default function ElectronicsCreatePage() {
                 )}
               </div>
             </div>
-            </div>
           </div>
 
 
