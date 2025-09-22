@@ -588,7 +588,7 @@ export default function ElectronicsCreatePage() {
       // 디버깅: 전송 데이터 확인
       console.log('전자제품 등록 데이터:', {
         ...submitData,
-        images: `${submitData.images.length}개 이미지`
+        images: `${submitData.images?.length || 0}개 이미지`
       });
 
       // API 호출
