@@ -479,7 +479,12 @@ export default function UsedPhonesPage() {
 
     try {
       if (type === 'electronics') {
-        const response = await electronicsApi.toggleFavorite(itemId);
+        // 현재 찜 상태 확인
+        const currentItem = electronics.find(e => e.id === itemId);
+        const isFavorited = currentItem?.is_favorited || false;
+
+        const response = await electronicsApi.toggleFavorite(itemId, isFavorited);
+
         // 전자제품 상태 업데이트
         setElectronics(prev => prev.map(item =>
           item.id === itemId
@@ -492,15 +497,25 @@ export default function UsedPhonesPage() {
             ? { ...item, is_favorited: !item.is_favorited }
             : item
         ));
+
+        toast({
+          title: isFavorited ? '찜 해제' : '찜 완료',
+          description: isFavorited ? '찜 목록에서 제거되었습니다.' : '찜 목록에 추가되었습니다.'
+        });
       } else {
-        // 기존 휴대폰 로직
+        // 휴대폰 찜하기 로직
         const token = localStorage.getItem('accessToken');
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
         const apiUrl = baseUrl.includes('api.dungjimarket.com')
           ? `${baseUrl}/used/phones/${itemId}/favorite/`
           : `${baseUrl}/api/used/phones/${itemId}/favorite/`;
+
+        // 현재 찜 상태 확인
+        const currentPhone = phones.find(p => p.id === itemId);
+        const isFavorited = currentPhone?.is_favorite || false;
+
         const response = await fetch(apiUrl, {
-          method: 'POST',
+          method: isFavorited ? 'DELETE' : 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -517,16 +532,16 @@ export default function UsedPhonesPage() {
           // 통합 아이템도 업데이트
           setUnifiedItems(prev => prev.map(item =>
             item.id === itemId && isPhoneItem(item)
-              ? { ...item, is_favorited: !(item as any).is_favorited || !(item as any).is_favorite }
+              ? { ...item, is_favorited: !isFavorited }
               : item
           ));
+
+          toast({
+            title: isFavorited ? '찜 해제' : '찜 완료',
+            description: isFavorited ? '찜 목록에서 제거되었습니다.' : '찜 목록에 추가되었습니다.'
+          });
         }
       }
-
-      toast({
-        title: '찜 완료',
-        description: '찜 목록에 추가되었습니다.'
-      });
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }

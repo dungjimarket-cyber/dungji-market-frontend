@@ -276,8 +276,10 @@ export const getBuyerInfo = async (electronicsId: number): Promise<any> => {
 /**
  * 찜하기 토글
  */
-export const toggleFavorite = async (electronicsId: number): Promise<{ is_favorited: boolean }> => {
-  const response = await api.post(`/${electronicsId}/favorite/`);
+export const toggleFavorite = async (electronicsId: number, isFavorited?: boolean): Promise<{ status: string; message: string }> => {
+  // isFavorited가 제공되면 그 값을 사용, 아니면 POST(찜하기)로 시도
+  const method = isFavorited ? 'delete' : 'post';
+  const response = await api[method](`/${electronicsId}/favorite/`);
   return response.data;
 };
 
