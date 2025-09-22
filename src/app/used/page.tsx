@@ -483,18 +483,22 @@ export default function UsedPhonesPage() {
         const currentItem = electronics.find(e => e.id === itemId);
         const isFavorited = currentItem?.is_favorited || false;
 
+        console.log('Electronics favorite toggle:', { itemId, currentFavorited: isFavorited });
+
         const response = await electronicsApi.toggleFavorite(itemId, isFavorited);
+
+        console.log('Electronics favorite response:', response);
 
         // 전자제품 상태 업데이트
         setElectronics(prev => prev.map(item =>
           item.id === itemId
-            ? { ...item, is_favorited: !item.is_favorited }
+            ? { ...item, is_favorited: !isFavorited }
             : item
         ));
         // 통합 아이템도 업데이트
         setUnifiedItems(prev => prev.map(item =>
           item.id === itemId && isElectronicsItem(item)
-            ? { ...item, is_favorited: !item.is_favorited }
+            ? { ...item, is_favorited: !isFavorited }
             : item
         ));
 
