@@ -281,29 +281,6 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
               </SheetHeader>
 
               <div className="py-6 space-y-6">
-                {/* 가격대 */}
-                <div>
-                  <Label className="text-sm font-medium mb-3 block">가격대</Label>
-                  <div className="flex gap-2 items-center">
-                    <Input
-                      type="number"
-                      placeholder="최소"
-                      value={filters.minPrice || ''}
-                      onChange={(e) => updateFilter('minPrice', e.target.value ? Number(e.target.value) : undefined)}
-                      className="w-24"
-                    />
-                    <span className="text-gray-500">~</span>
-                    <Input
-                      type="number"
-                      placeholder="최대"
-                      value={filters.maxPrice || ''}
-                      onChange={(e) => updateFilter('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
-                      className="w-24"
-                    />
-                    <span className="text-gray-500">원</span>
-                  </div>
-                </div>
-
                 {/* 거래완료 포함 */}
                 <div className="flex items-center justify-between">
                   <Label htmlFor="include-completed" className="text-sm font-medium">
