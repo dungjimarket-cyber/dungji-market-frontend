@@ -584,5 +584,58 @@ const handleFavorite = async () => {
 };
 ```
 
+## 🚨 Region 모델 필드 오류 (2025-01-23)
+
+### 문제 상황
+전자제품 등록 시 500 에러: `FieldError: Cannot resolve keyword 'id' into field`
+
+### 원인
+**Region 모델 구조를 잘못 이해하고 존재하지 않는 필드 사용**
+
+#### 실제 Region 모델 필드
+```python
+# api/models_region.py
+class Region(models.Model):
+    code = models.CharField(primary_key=True)  # PK는 code!
+    name = models.CharField()
+    full_name = models.CharField()
+    parent = models.ForeignKey('self')
+    level = models.IntegerField()
+    is_active = models.BooleanField()
+```
+
+#### 잘못 사용한 필드들
+- ❌ `id` - 존재하지 않음 (code가 PK)
+- ❌ `sido`, `sigungu`, `dong` - 존재하지 않는 필드들
+
+### 교훈: 기존 코드 참고의 중요성
+
+**⚠️ 휴대폰(UsedPhone) 모듈이 이미 올바른 구현을 가지고 있었음!**
+
+```python
+# ✅ 올바른 구현 (UsedPhone)
+queryset.filter(regions__region__name__icontains=region)
+
+# ❌ 잘못된 구현 (UsedElectronics)
+queryset.filter(regions__region__id=region)  # id 필드 없음!
+```
+
+### 개발 원칙 강화
+
+1. **새 기능 개발 시 체크리스트**
+   - [ ] 유사 기능이 이미 구현되어 있는지 확인
+   - [ ] 사용할 모델의 실제 필드 구조 확인
+   - [ ] 기존 코드의 패턴 참고 (특히 UsedPhone)
+
+2. **중고거래 기능 개발 시**
+   - **반드시 UsedPhone 모듈을 참고할 것**
+   - 지역 검색, 거래 프로세스, 찜하기 등 모든 패턴이 이미 구현되어 있음
+   - 독자적 구현 금지, 일관성 유지 필수
+
+3. **모델 필드 접근 전**
+   - 실제 모델 파일 열어서 필드 확인
+   - Primary Key 필드명 특히 주의 (id가 아닐 수 있음)
+   - Foreign Key 관계 확인
+
 
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
