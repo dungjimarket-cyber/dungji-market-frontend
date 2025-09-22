@@ -1124,7 +1124,6 @@ export default function ElectronicsCreatePage() {
         </div>
       </div>
 
-      {/* 프로필 체크 모달 */}
       <UsedPhoneProfileCheckModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
