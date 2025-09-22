@@ -803,7 +803,8 @@ export default function ElectronicsCreatePage() {
                 }}
                 placeholder="예: 2024년 3월, 작년 여름, 6개월 전, 모름"
                 maxLength={50}
-                disabled={loading}
+                disabled={loading || formData.usage_period === '미개봉'}
+                className={formData.usage_period === '미개봉' ? 'bg-gray-100' : ''}
               />
               <p className="text-xs text-gray-500 mt-1">
                 대략적인 구매 시기를 자유롭게 입력 (선택사항)
@@ -825,6 +826,7 @@ export default function ElectronicsCreatePage() {
                           handleInputChange('usage_period', '미개봉');
                           handleInputChange('is_unused', true);
                           handleInputChange('condition_grade', 'S');
+                          handleInputChange('purchase_period', ''); // 구매시기 초기화
                         } else {
                           // 체크 해제 시
                           handleInputChange('usage_period', prevUsagePeriod);
@@ -1041,6 +1043,20 @@ export default function ElectronicsCreatePage() {
                   가격은 천원 단위로 입력 가능합니다 (판매가보다 낮게)
                 </p>
             </div>
+
+            {/* 가격 정보 표시 */}
+            {formData.price && formData.min_offer_price && (
+              <div className="bg-gray-50 p-3 rounded-lg mt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">즉시 판매가:</span>
+                  <span className="font-medium">{parseInt(formData.price).toLocaleString('ko-KR')}원</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-gray-600">최소 제안가:</span>
+                  <span className="font-medium">{parseInt(formData.min_offer_price).toLocaleString('ko-KR')}원</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 상품 설명 */}

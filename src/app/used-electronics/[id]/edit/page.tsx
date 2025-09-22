@@ -779,6 +779,20 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
                 </p>
               </div>
+
+              {/* 가격 정보 표시 */}
+              {formData.price && formData.min_offer_price && (
+                <div className="bg-gray-50 p-3 rounded-lg mt-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">즉시 판매가:</span>
+                    <span className="font-medium">{parseInt(formData.price).toLocaleString('ko-KR')}원</span>
+                  </div>
+                  <div className="flex justify-between text-sm mt-1">
+                    <span className="text-gray-600">최소 제안가:</span>
+                    <span className="font-medium">{parseInt(formData.min_offer_price).toLocaleString('ko-KR')}원</span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
