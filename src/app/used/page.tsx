@@ -478,54 +478,24 @@ export default function UsedPhonesPage() {
     }
 
     try {
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+
       if (type === 'electronics') {
-        // 현재 찜 상태 확인 - electronics와 unifiedItems 모두 확인
-        const currentItem = electronics.find(e => e.id === itemId);
-        const currentUnifiedItem = unifiedItems.find(item => item.id === itemId && isElectronicsItem(item));
-        // is_favorited와 is_favorite 둘 다 확인
-        const isFavorited = currentItem?.is_favorited || (currentUnifiedItem as any)?.is_favorited || (currentUnifiedItem as any)?.is_favorite || false;
-
-        console.log('Electronics favorite toggle:', { itemId, currentFavorited: isFavorited });
-
-        const response = await electronicsApi.toggleFavorite(itemId, isFavorited);
-
-        console.log('Electronics favorite response:', response);
-
-        const newFavoriteState = !isFavorited;
-
-        // 전자제품 상태 업데이트
-        setElectronics(prev => prev.map(item =>
-          item.id === itemId
-            ? { ...item, is_favorited: newFavoriteState }
-            : item
-        ));
-        // 통합 아이템도 업데이트 - is_favorite와 is_favorited 둘 다 설정
-        setUnifiedItems(prev => prev.map(item =>
-          item.id === itemId && isElectronicsItem(item)
-            ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
-            : item
-        ));
-
-        toast({
-          title: newFavoriteState ? '찜 완료' : '찜 해제',
-          description: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.'
-        });
-      } else {
-        // 휴대폰 찜하기 로직
-        const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
         const apiUrl = baseUrl.includes('api.dungjimarket.com')
-          ? `${baseUrl}/used/phones/${itemId}/favorite/`
-          : `${baseUrl}/api/used/phones/${itemId}/favorite/`;
+          ? `${baseUrl}/used/electronics/${itemId}/favorite/`
+          : `${baseUrl}/api/used/electronics/${itemId}/favorite/`;
 
-        // 현재 찜 상태 확인 - phones와 unifiedItems 모두 확인
-        const currentPhone = phones.find(p => p.id === itemId);
-        const currentUnifiedItem = unifiedItems.find(item => item.id === itemId && isPhoneItem(item));
-        // is_favorite와 is_favorited 둘 다 확인
-        const isFavorited = currentPhone?.is_favorite || (currentUnifiedItem as any)?.is_favorited || (currentUnifiedItem as any)?.is_favorite || false;
+        // 현재 찜 상태 확인 - 모든 배열에서 확인
+        const currentItem = electronics.find(e => e.id === itemId) ||
+                          unifiedItems.find(item => item.id === itemId && isElectronicsItem(item));
+        const isFavorited = (currentItem as any)?.is_favorited || (currentItem as any)?.is_favorite || false;
+
+        // 찜 상태에 따라 메서드 결정 (POST: 추가, DELETE: 제거)
+        const method = isFavorited ? 'DELETE' : 'POST';
 
         const response = await fetch(apiUrl, {
-          method: isFavorited ? 'DELETE' : 'POST',
+          method: method,
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -535,12 +505,57 @@ export default function UsedPhonesPage() {
         if (response.ok) {
           const newFavoriteState = !isFavorited;
 
-          // 휴대폰 상태 업데이트
+          // 전자제품 상태 업데이트 - 모든 필드 통일
+          setElectronics(prev => prev.map(item =>
+            item.id === itemId
+              ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
+              : item
+          ));
+
+          // 통합 아이템도 업데이트
+          setUnifiedItems(prev => prev.map(item =>
+            item.id === itemId && isElectronicsItem(item)
+              ? { ...item, is_favorited: newFavoriteState, is_favorite: newFavoriteState }
+              : item
+          ));
+
+          toast({
+            title: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+            duration: 1000
+          });
+        }
+      } else {
+        // 휴대폰 찜하기
+        const apiUrl = baseUrl.includes('api.dungjimarket.com')
+          ? `${baseUrl}/used/phones/${itemId}/favorite/`
+          : `${baseUrl}/api/used/phones/${itemId}/favorite/`;
+
+        // 현재 찜 상태 확인 - 모든 배열에서 확인
+        const currentPhone = phones.find(p => p.id === itemId) ||
+                           unifiedItems.find(item => item.id === itemId && isPhoneItem(item));
+        const isFavorited = (currentPhone as any)?.is_favorite || (currentPhone as any)?.is_favorited || false;
+
+        // 찜 상태에 따라 메서드 결정 (POST: 추가, DELETE: 제거)
+        const method = isFavorited ? 'DELETE' : 'POST';
+
+        const response = await fetch(apiUrl, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const newFavoriteState = !isFavorited;
+
+          // 휴대폰 상태 업데이트 - 모든 필드 통일
           setPhones(prev => prev.map(phone =>
             phone.id === itemId
-              ? { ...phone, is_favorite: newFavoriteState }
+              ? { ...phone, is_favorite: newFavoriteState, is_favorited: newFavoriteState }
               : phone
           ));
+
           // 통합 아이템도 업데이트
           setUnifiedItems(prev => prev.map(item =>
             item.id === itemId && isPhoneItem(item)
@@ -549,15 +564,15 @@ export default function UsedPhonesPage() {
           ));
 
           toast({
-            title: newFavoriteState ? '찜 완료' : '찜 해제',
-            description: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.'
+            title: newFavoriteState ? '찜 목록에 추가되었습니다.' : '찜 목록에서 제거되었습니다.',
+            duration: 1000
           });
         }
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }
-  }, [isAuthenticated, toast, router, activeTab]);
+  }, [isAuthenticated, toast, router]);
 
   // 폰 찜하기 핸들러 (기존 호환성)
   const handlePhoneFavorite = useCallback(async (phoneId: number) => {
