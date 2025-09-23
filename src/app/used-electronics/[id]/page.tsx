@@ -718,6 +718,32 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           </div>
         )}
 
+        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
+        {electronics.seller?.id === user?.id && electronics.status === 'active' && (
+          <div className="hidden lg:block mt-8 pt-6 border-t">
+            <div className="flex justify-start gap-6 ml-4">
+              <Button
+                onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 px-6"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                수정하기
+              </Button>
+              <Button
+                onClick={() => setShowDeleteModal(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                삭제하기
+              </Button>
+            </div>
+          </div>
+        )}
+
         </div>
 
         {/* 정보 섹션 */}
