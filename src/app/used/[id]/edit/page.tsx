@@ -1268,7 +1268,6 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     })));
                     setIsModified(true);
                   }}
-                  maxSelections={3}
                 />
               ) : (
                 <div className="p-3 bg-gray-100 rounded-md">
