@@ -397,7 +397,7 @@ export default function SalesActivityTab() {
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
         const apiUrl = itemType === 'phone'
           ? `${baseUrl}/used/phones/${itemId}/cancel-trade/`
           : `${baseUrl}/used/electronics/${itemId}/cancel-trade/`;
@@ -461,8 +461,7 @@ export default function SalesActivityTab() {
       if (isPhoneItem(item)) {
         data = await sellerAPI.getBuyerInfo(item.id);
       } else {
-        // 전자제품용 API가 필요하면 추가
-        data = await sellerAPI.getBuyerInfo(item.id); // 임시로 같은 API 사용
+        data = await electronicsApi.getBuyerInfo(item.id);
       }
       setSelectedBuyerInfo(data);
       setShowBuyerInfoModal(true);

@@ -491,7 +491,7 @@ export default function PurchaseActivityTab() {
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
         const apiUrl = baseUrl.includes('api.dungjimarket.com')
           ? `${baseUrl}/used/phones/${phoneId}/buyer-complete/`
           : `${baseUrl}/api/used/phones/${phoneId}/buyer-complete/`;
@@ -550,7 +550,7 @@ export default function PurchaseActivityTab() {
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
         const itemId = cancellingItem.phone?.id || cancellingItem.electronics?.id;
         if (!itemId) throw new Error('No item ID found');
 
