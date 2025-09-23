@@ -721,8 +721,9 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
           <Card className="mb-4">
             <CardContent className="p-4 space-y-4">
               <div>
-                <Label htmlFor="price">
-                  판매 가격 <span className="text-red-500">*</span>
+                <Label className="flex items-center gap-1">
+                  즉시 판매가 <span className="text-red-500">*</span>
+                  {!isFieldEditable('price') && <Lock className="w-3 h-3 text-gray-400" />}
                 </Label>
                 <div className="relative mt-1">
                   <Input
@@ -730,6 +731,14 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                     type="text"
                     value={formatPrice(formData.price)}
                     onChange={(e) => {
+                      if (!isFieldEditable('price')) {
+                        toast({
+                          title: '수정 불가',
+                          description: LOCKED_FIELDS_MESSAGE,
+                          variant: 'destructive'
+                        });
+                        return;
+                      }
                       const unformatted = unformatPrice(e.target.value);
                       // 최대 금액 제한 (1억원)
                       if (parseInt(unformatted) > 100000000) {
@@ -747,16 +756,14 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                         setFormData({ ...formData, price: rounded });
                       }
                     }}
-                    placeholder="판매 희망 가격"
-                    className="pr-8"
+                    placeholder="0"
+                    disabled={!isFieldEditable('price')}
+                    className={`pr-12 ${errors.price ? 'border-red-500' : ''}`}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    원
-                  </span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
                 </div>
-                {errors.price && (
-                  <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-                )}
+                {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
+                <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다</p>
               </div>
 
               {/* 가격 제안은 항상 받음 (토글 제거) */}
@@ -766,13 +773,24 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
 
               {/* 최소 제안가 (필수) */}
               <div>
-                <Label htmlFor="min_offer_price">최소 제안가 <span className="text-red-500">*</span></Label>
+                <Label className="flex items-center gap-1">
+                  최소 제안가 <span className="text-red-500">*</span>
+                  {!isFieldEditable('min_offer_price') && <Lock className="w-3 h-3 text-gray-400" />}
+                </Label>
                 <div className="relative mt-1">
                   <Input
                     id="min_offer_price"
                     type="text"
                     value={formatPrice(formData.min_offer_price || '')}
                     onChange={(e) => {
+                      if (!isFieldEditable('min_offer_price')) {
+                        toast({
+                          title: '수정 불가',
+                          description: LOCKED_FIELDS_MESSAGE,
+                          variant: 'destructive'
+                        });
+                        return;
+                      }
                       const unformatted = unformatPrice(e.target.value);
                       // 최대 금액 제한 (1억원)
                       if (parseInt(unformatted) > 100000000) {
@@ -793,19 +811,15 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                         setFormData({ ...formData, min_offer_price: rounded });
                       }
                     }}
-                    placeholder="최소 제안 가격"
-                    className="pr-8"
+                    placeholder="0"
+                    disabled={!isFieldEditable('min_offer_price')}
+                    className={`pr-12 ${errors.min_offer_price ? 'border-red-500' : ''}`}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    원
-                  </span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
                 </div>
-                {errors.min_offer_price && (
-                  <p className="text-red-500 text-sm mt-1">{errors.min_offer_price}</p>
-                )}
-                <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
-                </p>
+                {errors.min_offer_price && <p className="text-xs text-red-500 mt-1">{errors.min_offer_price}</p>}
+                <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)</p>
+                <p className="text-xs text-gray-500">구매자가 제안할 수 있는 최소 금액입니다</p>
               </div>
 
               {/* 가격 정보 표시 */}

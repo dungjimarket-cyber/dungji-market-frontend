@@ -528,8 +528,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   </div>
                   {electronics.accept_offers && electronics.min_offer_price && (
                     <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-                      <p className="text-sm font-medium text-blue-900">
-                        💰 최소 {electronics.min_offer_price?.toLocaleString() || electronics.min_offer_price}원부터 가격제안 가능
+                      <p className="text-sm font-medium text-dungji-primary-900">
+                        💰 가격 제안 가능
+                      </p>
+                      <p className="text-xs text-dungji-primary-700 mt-1">
+                        최소 제안가: {electronics.min_offer_price?.toLocaleString() || electronics.min_offer_price}원부터
                       </p>
                     </div>
                   )}
