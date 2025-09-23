@@ -1002,15 +1002,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="py-4 border-b">
                 <p className="text-sm text-gray-600 mb-2">구성품</p>
                 <div className="flex gap-3">
-                  <span className={`px-2 py-1 rounded text-sm ${phone.has_box ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
-                    박스
-                  </span>
-                  <span className={`px-2 py-1 rounded text-sm ${phone.has_charger ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
-                    충전기
-                  </span>
-                  <span className={`px-2 py-1 rounded text-sm ${phone.has_earphones ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
-                    이어폰
-                  </span>
+                  {phone.has_box && (
+                    <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+                      박스
+                    </span>
+                  )}
+                  {phone.has_charger && (
+                    <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+                      충전기
+                    </span>
+                  )}
+                  {phone.has_earphones && (
+                    <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+                      이어폰
+                    </span>
+                  )}
                 </div>
               </div>
 
