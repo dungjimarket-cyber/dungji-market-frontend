@@ -33,6 +33,8 @@ export interface UsedElectronics {
 
   // 상태 정보
   purchase_period?: string;  // 자유 텍스트 입력
+  usage_period?: string;     // 사용기간
+  is_unused: boolean;        // 미개봉
   condition_grade: ConditionGrade;
   condition_display?: string;
 
@@ -97,11 +99,9 @@ export interface ElectronicsImage {
  * 거래 지역
  */
 export interface ElectronicsRegion {
-  id: number;
-  sido?: string;
-  sigungu?: string;
-  dong?: string;
+  code: string;
   name: string;
+  full_name?: string;
 }
 
 /**
@@ -167,7 +167,7 @@ export interface ElectronicsFormData {
   accept_offers: boolean;
   min_offer_price?: string;  // string으로 변경 (폰과 통일)
   description: string;
-  regions: number[];
+  regions: string[];  // number[] -> string[] (지역 코드 배열)
   meeting_place: string;
   images?: File[];
 }

@@ -222,7 +222,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
 
     if (electronics?.min_offer_price && amount < electronics.min_offer_price) {
-      toast.error(`최소 제안 가격은 ${electronics.min_offer_price.toLocaleString()}원입니다.`);
+      toast.error(`최소 제안 가격은 ${electronics.min_offer_price?.toLocaleString() || electronics.min_offer_price}원입니다.`);
       return;
     }
 
@@ -468,7 +468,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             {/* 가격 */}
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-2xl font-bold">
-                {electronics.price.toLocaleString()}원
+                {electronics.price?.toLocaleString() || electronics.price}원
               </span>
               {electronics.accept_offers && (
                 <Badge variant="outline" className="text-blue-600">
@@ -629,7 +629,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 <div>
                   <p className="font-medium text-blue-900">내가 제안한 금액</p>
                   <p className="text-lg font-bold text-blue-900">
-                    {myOffer.offer_price.toLocaleString()}원
+                    {myOffer.offer_price?.toLocaleString() || myOffer.offer_price}원
                   </p>
                   {myOffer.message && (
                     <p className="text-sm text-gray-600 mt-1">{myOffer.message}</p>
@@ -740,7 +740,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   value={offerAmount}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^\d]/g, '');
-                    setOfferAmount(value ? Number(value).toLocaleString() : '');
+                    setOfferAmount(value ? Number(value)?.toLocaleString() || value : '');
                   }}
                   placeholder="제안 금액을 입력하세요"
                   className="pr-8"

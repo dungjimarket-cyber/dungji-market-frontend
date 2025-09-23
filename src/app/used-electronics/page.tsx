@@ -299,12 +299,12 @@ function UsedElectronicsListPageContent() {
                     <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
                       <span>{CONDITION_GRADES[item.condition_grade as keyof typeof CONDITION_GRADES]?.split(' ')[0]}</span>
                       <span>·</span>
-                      <span>{PURCHASE_PERIODS[item.purchase_period as keyof typeof PURCHASE_PERIODS]}</span>
+                      <span>{PURCHASE_PERIODS[item.purchase_period as keyof typeof PURCHASE_PERIODS] || '미입력'}</span>
                     </div>
 
                     {/* 가격 */}
                     <div className="font-bold text-base mb-2">
-                      {item.price.toLocaleString()}원
+                      {item.price?.toLocaleString() || item.price}원
                       {item.accept_offers && (
                         <span className="text-xs font-normal text-blue-600 ml-1">제안가능</span>
                       )}

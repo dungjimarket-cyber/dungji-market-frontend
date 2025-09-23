@@ -637,5 +637,56 @@ queryset.filter(regions__region__id=region)  # id 필드 없음!
    - Primary Key 필드명 특히 주의 (id가 아닐 수 있음)
    - Foreign Key 관계 확인
 
+## 🔴 개발 원칙: 복사-붙여넣기 우선 (2025-01-23)
+
+### 실패 사례: 전자제품 Region 오류
+**문제**: 휴대폰 코드 그대로 복사하면 5분에 끝날 작업을 독자적 구현으로 2시간 낭비
+
+#### 잘못된 접근 (독자적 구현)
+```python
+# ❌ 전자제품 - 잘못된 독자적 구현
+regions = serializers.ListField(
+    child=serializers.IntegerField()  # 틀림
+)
+Region.objects.get(id=region_id)  # 틀림
+fields = ['id', 'sido', 'sigungu', 'dong']  # 존재하지 않는 필드들
+```
+
+#### 올바른 접근 (복사 후 수정)
+```python
+# ✅ 휴대폰 코드 복사 → 필요한 부분만 수정
+regions = serializers.ListField(
+    child=serializers.CharField()  # 휴대폰과 동일
+)
+Region.objects.get(code=region_code)  # 휴대폰과 동일
+fields = ['code', 'name', 'full_name']  # 휴대폰과 동일
+```
+
+### 필수 작업 순서
+
+1. **기존 유사 코드 찾기**
+   - UsedPhone (중고폰) → UsedElectronics (전자제품)
+   - GroupBuy (공구) → Custom (커스텀특가)
+
+2. **전체 복사**
+   - 파일 전체 또는 클래스 전체를 먼저 복사
+   - 모델명만 일괄 변경 (Find & Replace)
+
+3. **최소한의 수정**
+   - 비즈니스 로직 차이점만 수정
+   - 필드명, 메서드 구조는 그대로 유지
+
+### 낭비 방지 체크리스트
+- [ ] 유사 기능이 이미 있는가? → **있으면 무조건 복사**
+- [ ] 새로 작성하려는가? → **중단하고 기존 코드 검색**
+- [ ] 수정 범위가 50% 이상인가? → **잘못된 접근, 다시 생각**
+
+### 교훈
+**"복사-붙여넣기는 나쁜 것이 아니라, 일관성과 효율성을 위한 최선의 방법"**
+
+- 독창성 ❌ → 일관성 ✅
+- 처음부터 작성 ❌ → 기존 코드 재사용 ✅
+- 부분 수정 반복 ❌ → 전체 복사 후 수정 ✅
+
 
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
