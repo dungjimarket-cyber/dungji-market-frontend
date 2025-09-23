@@ -923,7 +923,7 @@ export default function PurchaseActivityTab() {
                 return (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
-                      <Link href={itemUrl} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <Link href={itemUrl} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                         <Image
                           src={imageUrl || '/placeholder.png'}
                           alt={itemTitle}
@@ -936,7 +936,7 @@ export default function PurchaseActivityTab() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="min-w-0 flex-1">
-                            <Link href={itemUrl} className="hover:underline">
+                            <Link href={itemUrl} className="cursor-pointer hover:opacity-80 transition-opacity">
                               <h4 className="font-medium text-sm truncate">
                                 {itemTitle}
                               </h4>
@@ -1012,7 +1012,7 @@ export default function PurchaseActivityTab() {
                 return (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <Link href={getItemUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
                         <Image
                           src={imageUrl || '/placeholder.png'}
                           alt={itemTitle}
@@ -1020,14 +1020,16 @@ export default function PurchaseActivityTab() {
                           height={80}
                           className="object-cover w-full h-full"
                         />
-                      </div>
+                      </Link>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
-                            <h4 className="font-medium text-sm truncate">
-                              {itemTitle}
-                            </h4>
+                            <Link href={getItemUrl(item)} className="cursor-pointer hover:opacity-80 transition-opacity">
+                              <h4 className="font-medium text-sm truncate">
+                                {itemTitle}
+                              </h4>
+                            </Link>
                             <p className="text-base font-semibold text-green-600">
                               {item.offered_price.toLocaleString()}원
                             </p>

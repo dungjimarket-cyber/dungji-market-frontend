@@ -64,8 +64,8 @@ export default function UnifiedCreatePage() {
           variant: 'destructive',
         });
 
-        // 마이페이지로 이동
-        router.push('/mypage?tab=sales');
+        // 중고거래 마이페이지로 이동
+        router.push('/used/mypage');
         return;
       }
 
