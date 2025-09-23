@@ -730,9 +730,21 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           </div>
         )}
 
-        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
-        {electronics.seller?.id === user?.id && electronics.status === 'active' && (
+        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쫝 하단 배치 (판매완료 시 숨김) */}
+        {electronics.seller?.id === user?.id && electronics.status !== 'sold' && (
           <div className="hidden lg:block mt-8 pt-6 border-t">
+            {/* 제안이 있을 때 수정 제한 안내 */}
+            {electronics.offer_count > 0 && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-amber-900">제안이 있는 상품입니다</p>
+                    <p className="text-amber-800 mt-1">가격과 거래 요청사항만 수정 가능합니다.</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex justify-start gap-6 ml-4">
               <Button
                 onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
@@ -1180,6 +1192,43 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </div>
               </div>
             </div>
+
+            {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
+            {electronics.seller?.id === user?.id && electronics.status !== 'sold' && (
+              <div className="lg:hidden mt-6 pt-6 border-t">
+                {/* 제안이 있을 때 수정 제한 안내 */}
+                {electronics.offer_count > 0 && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-amber-900">제안이 있는 상품입니다</p>
+                        <p className="text-amber-800 mt-1">가격과 거래 요청사항만 수정 가능합니다.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-center gap-4">
+                  <Button
+                    onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 px-6"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    수정하기
+                  </Button>
+                <Button
+                  onClick={() => setShowDeleteModal(true)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  삭제하기
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         </div>
