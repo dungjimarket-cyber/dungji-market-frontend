@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
 
 // Axios 인스턴스 생성
 const api = axios.create({

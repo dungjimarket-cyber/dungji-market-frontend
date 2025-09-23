@@ -11,11 +11,11 @@ import type {
   ElectronicsFavorite
 } from '@/types/electronics';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
 
 // Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: `${API_URL}/api/used/electronics`,
+  baseURL: `${API_URL}/used/electronics`,
   headers: {
     'Content-Type': 'application/json',
   },
