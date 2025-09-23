@@ -109,7 +109,7 @@ export default function SalesActivityTab() {
       // 병렬로 휴대폰과 전자제품 데이터 가져오기
       const [phoneData, electronicsData] = await Promise.all([
         sellerAPI.getMyListings(status).catch(() => ({ results: [] })),
-        electronicsApi.getMyElectronics(status ? { status } : undefined).catch(() => ({ results: [] }))
+        electronicsApi.getMyElectronics({ status }).catch(() => ({ results: [] }))
       ]);
 
       // 데이터 정규화 및 타입 추가

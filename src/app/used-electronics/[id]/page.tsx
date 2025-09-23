@@ -571,7 +571,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         )}
 
         {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 가운데 배치 (판매완료 시 숨김) */}
-        {electronics.is_mine && electronics.status === 'active' && (
+        {(electronics.seller === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
           <div className="hidden lg:block mt-8 pt-6 border-t">
             <div className="flex justify-center gap-6">
               <Button
@@ -827,7 +827,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
         {(electronics.status === 'trading' || electronics.status === 'sold') &&
-         user && (electronics.is_mine || electronics.buyer_id === Number(user.id)) && (
+         user && (electronics.seller === Number(user?.id) || electronics.is_mine || electronics.buyer_id === Number(user.id)) && (
           <Card className="mb-4 border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -850,7 +850,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         )}
 
         {/* 받은 제안 목록 (판매자만) */}
-        {electronics.is_mine && electronics.offer_count > 0 && (
+        {(electronics.seller === Number(user?.id) || electronics.is_mine) && electronics.offer_count > 0 && (
           <Card className="mb-20 md:mb-4">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
@@ -875,7 +875,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       </div>
 
       {/* 하단 고정 버튼 */}
-      {!electronics.is_mine && electronics.status === 'active' && (
+      {electronics.seller !== Number(user?.id) && !electronics.is_mine && electronics.status === 'active' && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
           <div className="container mx-auto max-w-4xl flex gap-3">
             <button
@@ -905,7 +905,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       )}
 
       {/* 판매자용 하단 버튼 (모바일만) */}
-      {electronics.is_mine && (
+      {(electronics.seller === Number(user?.id) || electronics.is_mine) && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
           <div className="container mx-auto max-w-4xl flex gap-3">
             {electronics.status === 'active' && (
