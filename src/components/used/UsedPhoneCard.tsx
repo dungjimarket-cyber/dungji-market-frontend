@@ -160,16 +160,28 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
           ) : (
             // 판매중 상품 가격 표시
             <>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xs text-gray-500">즉시구매</span>
-                <span className="text-lg font-bold text-gray-900">
-                  {formatPrice(phone.price)}
-                </span>
-              </div>
-              {phone.accept_offers && phone.min_offer_price && (
-                <div className="mt-1 flex items-center gap-1">
-                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">
-                    가격제안 {formatPrice(phone.min_offer_price)}부터
+              {phone.accept_offers && phone.min_offer_price ? (
+                <>
+                  {/* 최소제안가를 먼저 크게 표시 */}
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xs text-blue-600 font-medium">가격제안</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {formatPrice(phone.min_offer_price)}~
+                    </span>
+                  </div>
+                  {/* 즉시구매가는 작게 부가정보로 */}
+                  <div className="mt-1 flex items-center gap-1">
+                    <span className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded">
+                      즉시구매 {formatPrice(phone.price)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                /* 제안불가 상품은 즉시구매가만 표시 */
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xs text-gray-500">즉시구매</span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {formatPrice(phone.price)}
                   </span>
                 </div>
               )}
