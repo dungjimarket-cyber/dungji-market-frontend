@@ -1373,10 +1373,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <h2 className="font-semibold mb-4">판매자 정보</h2>
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm text-gray-500">닉네임</span>
-                    <p className="font-semibold text-lg">{phone.seller?.nickname || phone.seller?.username || phone.seller?.name || '알 수 없음'}</p>
-                  </div>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <span className="text-gray-600">판매</span>

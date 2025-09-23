@@ -55,12 +55,18 @@ export default function UnifiedCreatePage() {
         createPath = '/used/create';
       }
 
+      console.log('Registration limit check response:', response);
+
       if (!response.can_register) {
+        // API 응답에 따라 적절한 필드 사용
+        const currentCount = response.active_count ?? response.current_count ?? 0;
+        const maxCount = response.max_count ?? 5;
+
         toast({
           title: '등록 제한',
           description: category === 'electronics'
-            ? `전자제품 최대 5개까지만 등록 가능합니다. (현재 ${response.active_count || 0}개)`
-            : `휴대폰 최대 5개까지만 등록 가능합니다. (현재 ${response.active_count || 0}개)`,
+            ? `전자제품 최대 ${maxCount}개까지만 등록 가능합니다. (현재 ${currentCount}개)`
+            : `휴대폰 최대 ${maxCount}개까지만 등록 가능합니다. (현재 ${currentCount}개)`,
           variant: 'destructive',
         });
 
