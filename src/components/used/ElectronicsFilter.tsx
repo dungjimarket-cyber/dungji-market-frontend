@@ -255,6 +255,19 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
             </SelectContent>
           </Select>
 
+          {/* 초기화 버튼 - PC에서만 표시 */}
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              className="h-8 px-2 text-xs"
+            >
+              <X className="w-3 h-3 mr-1" />
+              초기화
+            </Button>
+          )}
+
           {/* 세부 필터 (가격대, 거래완료 포함 등) */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
