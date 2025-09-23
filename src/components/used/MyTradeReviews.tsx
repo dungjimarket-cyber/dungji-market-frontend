@@ -76,24 +76,24 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         ]),
         // 전자제품 관련 데이터
         Promise.all([
-          // 전자제품 평가 통계
+          // 전자제품 평가 통계 (휴대폰과 동일한 엔드포인트 사용)
           axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/reviews/user-stats/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
             { headers: { 'Authorization': `Bearer ${token}` } }
           ).catch(() => ({ data: null })),
-          // 전자제품 받은 리뷰
+          // 전자제품 받은 리뷰 (휴대폰과 동일한 엔드포인트 사용)
           axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/reviews/received/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
             { headers: { 'Authorization': `Bearer ${token}` } }
           ).catch(() => ({ data: { results: [] } })),
-          // 전자제품 작성한 리뷰
+          // 전자제품 작성한 리뷰 (휴대폰과 동일한 엔드포인트 사용)
           axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/reviews/written/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
             { headers: { 'Authorization': `Bearer ${token}` } }
           ).catch(() => ({ data: { results: [] } })),
-          // 전자제품 거래 내역
+          // 전자제품 거래 내역 (휴대폰과 동일한 엔드포인트 사용)
           axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/transactions/my-transactions/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
             { headers: { 'Authorization': `Bearer ${token}` } }
           ).catch(() => ({ data: { results: [] } }))
         ])
@@ -104,10 +104,31 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       // 전자제품 데이터 처리
       const [elecStats, elecReceived, elecWritten, elecTransactions] = electronicsData;
 
-      // 통계 통합
+      // 통계 통합 (평균 계산 수정)
+      const phoneAvg = phoneStats.data?.average_rating || 0;
+      const elecAvg = elecStats.data?.average_rating || 0;
+      const phoneTotal = phoneStats.data?.total_reviews || 0;
+      const elecTotal = elecStats.data?.total_reviews || 0;
+      const totalReviews = phoneTotal + elecTotal;
+
+      // 가중평균 계산 (리뷰가 있는 경우에만)
+      let avgRating = 0;
+      if (totalReviews > 0) {
+        if (phoneTotal > 0 && elecTotal > 0) {
+          // 둘 다 리뷰가 있으면 가중평균
+          avgRating = (phoneAvg * phoneTotal + elecAvg * elecTotal) / totalReviews;
+        } else if (phoneTotal > 0) {
+          // 휴대폰 리뷰만 있으면
+          avgRating = phoneAvg;
+        } else if (elecTotal > 0) {
+          // 전자제품 리뷰만 있으면
+          avgRating = elecAvg;
+        }
+      }
+
       const combinedStats = {
-        average_rating: ((phoneStats.data?.average_rating || 0) + (elecStats.data?.average_rating || 0)) / 2,
-        total_reviews: (phoneStats.data?.total_reviews || 0) + (elecStats.data?.total_reviews || 0),
+        average_rating: avgRating,
+        total_reviews: totalReviews,
         rating_distribution: {
           5: (phoneStats.data?.rating_distribution?.['5'] || 0) + (elecStats.data?.rating_distribution?.['5'] || 0),
           4: (phoneStats.data?.rating_distribution?.['4'] || 0) + (elecStats.data?.rating_distribution?.['4'] || 0),
