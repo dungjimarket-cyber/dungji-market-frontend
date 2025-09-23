@@ -184,8 +184,12 @@ export const createOffer = async (
 /**
  * 내 제안 조회
  */
-export const getMyOffer = async (electronicsId: number): Promise<ElectronicsOffer> => {
+export const getMyOffer = async (electronicsId: number): Promise<ElectronicsOffer | null> => {
   const response = await api.get(`/${electronicsId}/my_offer/`);
+  // 백엔드에서 offer가 없을 때 {message: 'No offer found', offer: null} 반환
+  if (response.data.message === 'No offer found') {
+    return null;
+  }
   return response.data;
 };
 

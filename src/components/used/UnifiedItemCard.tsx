@@ -8,7 +8,7 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Edit3 } from 'lucide-react';
+import { Heart, Edit3, MapPin, Eye, MessageCircle, Clock } from 'lucide-react';
 import type { UnifiedMarketItem } from '@/types/market';
 import {
   isPhoneItem,
@@ -254,33 +254,47 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
           </div>
         )}
 
-        {/* 하단 정보 */}
-        <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-          {/* 지역 */}
-          <div className="flex items-center gap-4">
-            {item.regions && item.regions.length > 0 && (
-              <span>
-                {item.regions[0].dong || item.regions[0].sigungu || item.regions[0].name}
-                {item.regions.length > 1 && ` 외 ${item.regions.length - 1}곳`}
+        {/* 위치 정보 - 여러 지역 표시 */}
+        <div className="mt-2 text-xs text-gray-500">
+          {item.regions && item.regions.length > 0 ? (
+            <div className="space-y-0.5">
+              {item.regions.map((region: any, index: number) => (
+                <div key={index} className="flex items-center gap-1">
+                  {index === 0 && <MapPin className="w-3 h-3" />}
+                  {index > 0 && <span className="w-3" />}
+                  <span className="truncate">
+                    {region.full_name || region.name || '지역 미정'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              <span className="truncate">
+                지역 미정
               </span>
-            )}
-          </div>
-
-          {/* 시간 */}
-          <span>{formatDate(item.created_at)}</span>
+            </div>
+          )}
         </div>
 
-        {/* 조회수와 찜 수 */}
-        {((item.view_count && item.view_count > 0) || (item.favorite_count && item.favorite_count > 0)) && (
-          <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
-            {item.view_count && item.view_count > 0 && (
-              <span>조회 {item.view_count}</span>
-            )}
-            {item.favorite_count && item.favorite_count > 0 && (
-              <span>찜 {item.favorite_count}</span>
-            )}
+        {/* 하단 정보 */}
+        <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              {item.view_count || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <MessageCircle className="w-3 h-3" />
+              {item.offer_count || 0}
+            </span>
           </div>
-        )}
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {formatDate(item.created_at)}
+          </span>
+        </div>
       </div>
     </Link>
   );
