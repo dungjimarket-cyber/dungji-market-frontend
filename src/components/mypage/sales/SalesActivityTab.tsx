@@ -104,12 +104,12 @@ export default function SalesActivityTab() {
   }, [searchParams]);
 
   // 전체 목록 가져오기 (캐싱용) - 휴대폰과 전자제품 통합
-  const fetchAllListings = async () => {
+  const fetchAllListings = async (status?: string) => {
     try {
       // 병렬로 휴대폰과 전자제품 데이터 가져오기
       const [phoneData, electronicsData] = await Promise.all([
-        sellerAPI.getMyListings().catch(() => ({ results: [] })),
-        electronicsApi.getMyElectronics().catch(() => ({ results: [] }))
+        sellerAPI.getMyListings(status).catch(() => ({ results: [] })),
+        electronicsApi.getMyElectronics(status ? { status } : undefined).catch(() => ({ results: [] }))
       ]);
 
       // 데이터 정규화 및 타입 추가
@@ -135,19 +135,9 @@ export default function SalesActivityTab() {
   const fetchListings = async (status?: string) => {
     setLoading(true);
     try {
-      // 전체 목록이 없으면 먼저 가져오기
-      let allItems = allListings;
-      if (allItems.length === 0) {
-        allItems = await fetchAllListings();
-      }
-
-      // status에 따라 필터링
-      if (status) {
-        const filtered = allItems.filter(item => item.status === status);
-        setListings(filtered);
-      } else {
-        setListings(allItems);
-      }
+      // 직접 API 호출하여 상태별 데이터 가져오기
+      const allItems = await fetchAllListings(status);
+      setListings(allItems);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
       setListings([]);
@@ -252,7 +242,7 @@ export default function SalesActivityTab() {
     if (activeTab === 'trading') {
       // 거래중 탭에서만 폴링 (30초 간격, 유휴시 자동 증가)
       pollingManager.start(() => {
-        fetchAllListings();
+        fetchAllListings('trading');
       }, 30000);
     } else if (activeTab === 'offers') {
       // 제안 탭에서는 더 긴 간격 (1분)
@@ -317,9 +307,7 @@ export default function SalesActivityTab() {
           // 판매완료 탭으로 이동
           setTimeout(() => {
             setActiveTab('sold');
-            fetchAllListings().then(() => {
-              fetchListings('sold');
-            });
+            fetchListings('sold');
           }, 500);
         },
       }
@@ -401,13 +389,11 @@ export default function SalesActivityTab() {
             // 판매중 탭으로 이동
             setTimeout(() => {
               setActiveTab('active');
-              fetchAllListings().then(() => {
-                fetchListings('active');
-              });
+              fetchListings('active');
             }, 500);
           } else {
             // 새로고침만
-            fetchAllListings();
+            fetchListings(activeTab === 'active' ? 'active' : activeTab === 'trading' ? 'trading' : undefined);
           }
         },
       }

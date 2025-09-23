@@ -121,14 +121,29 @@ export default function ElectronicsCreatePage() {
         setCanRegister(response.can_register);
 
         if (!response.can_register) {
-          toast({
-            title: '등록 제한',
-            description: `최대 ${response.max_count}개까지만 등록 가능합니다. (현재 ${response.current_count}개)`,
-            variant: 'destructive',
-          });
+          if (response.penalty_end) {
+            const endTime = new Date(response.penalty_end);
+            const now = new Date();
+            const diff = endTime.getTime() - now.getTime();
+            const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
+            const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            toast({
+              title: '6시간 패널티 적용 중',
+              description: `${hoursLeft}시간 ${minutesLeft}분 후 등록 가능`,
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: '등록 제한',
+              description: `전자제품 최대 5개까지만 등록 가능합니다. (현재 ${response.active_count}개)`,
+              variant: 'destructive',
+            });
+          }
         }
       } catch (error) {
         console.error('Failed to check limit:', error);
+        setCanRegister(true); // 오류 시 등록 가능하도록
       }
     };
 

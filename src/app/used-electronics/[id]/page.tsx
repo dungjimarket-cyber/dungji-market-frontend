@@ -571,10 +571,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           </div>
         )}
 
-        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
+        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 가운데 배치 (판매완료 시 숨김) */}
         {electronics.is_mine && electronics.status === 'active' && (
           <div className="hidden lg:block mt-8 pt-6 border-t">
-            <div className="flex justify-start gap-6 ml-4">
+            <div className="flex justify-center gap-6">
               <Button
                 onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
                 variant="outline"

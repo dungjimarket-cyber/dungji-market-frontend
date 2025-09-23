@@ -146,7 +146,7 @@ export default function CreateUsedPhonePage() {
     }
   }, [isAuthenticated, checkProfile]);
 
-  // 등록 가능 여부 체크 (활성 상품 5개 제한 및 패널티)
+  // 등록 가능 여부 체크 (휴대폰 5개 제한 및 패널티)
   const checkRegistrationLimit = async () => {
     // 토큰이 없으면 체크하지 않음
     const token = localStorage.getItem('accessToken');
@@ -202,7 +202,7 @@ export default function CreateUsedPhonePage() {
         } else if (data.active_count >= 5) {
           toast({
             title: '등록 제한 (5개 초과)',
-            description: `판매 중 ${data.active_count}개. 기존 상품 삭제 필요`,
+            description: `휴대폰 판매 중 ${data.active_count}개. 기존 상품 삭제 필요`,
             variant: 'destructive',
           });
         }
@@ -570,8 +570,8 @@ export default function CreateUsedPhonePage() {
       if (price % 1000 !== 0) {
         newErrors.price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = priceRef;
-      } else if (price > 100000000) {
-        newErrors.price = '최대 판매 금액은 1억원입니다';
+      } else if (price > 9900000) {
+        newErrors.price = '최대 판매 금액은 990만원입니다';
         if (!firstErrorRef) firstErrorRef = priceRef;
       } else if (price < 1000) {
         newErrors.price = '최소 가격은 1,000원입니다';
@@ -588,8 +588,8 @@ export default function CreateUsedPhonePage() {
       if (minPrice % 1000 !== 0) {
         newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
-      } else if (minPrice > 100000000) {
-        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
+      } else if (minPrice > 9900000) {
+        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (minPrice < 1000) {
         newErrors.min_offer_price = '최소 가격은 1,000원입니다';
@@ -745,10 +745,13 @@ export default function CreateUsedPhonePage() {
 
       // 텍스트 필드 - 빈 문자열도 전송 (백엔드에서 처리)
       ['brand', 'model', 'color', 'condition_grade', 'battery_status',
-       'condition_description', 'description', 'meeting_place'].forEach(key => {
+       'condition_description', 'meeting_place'].forEach(key => {
         const value = formData[key as keyof typeof formData];
         uploadData.append(key, value ? value.toString() : '');
       });
+
+      // description 필드는 condition_description과 동일하게 설정 (백엔드 필수 필드)
+      uploadData.append('description', formData.condition_description || '');
 
       // 지역 정보 추가
       if (selectedRegions.length > 0) {
@@ -1321,7 +1324,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 1억원)
+                  가격은 천원 단위로 입력 가능합니다 (최대 990만원)
                 </p>
                 <p className="text-xs text-green-600 mt-1">
                   별도의 수락 과정 없이 즉시 거래가 진행됩니다
@@ -1363,7 +1366,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 1억원, 즉시 판매가보다 낮게)
+                  가격은 천원 단위로 입력 가능합니다 (최대 990만원, 즉시 판매가보다 낮게)
                 </p>
                 {errors.min_offer_price && (
                   <p className="text-xs text-red-500/70">{errors.min_offer_price}</p>
