@@ -884,21 +884,28 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     </p>
                   </div>
                 ) : (
-                  // 판매중/거래중 - 기존 표시
+                  // 판매중/거래중 - 최소제안가 강조
                   <>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-sm text-gray-600">즉시구매</span>
-                      <p className="text-3xl font-bold text-gray-900">
-                        {phone.price.toLocaleString()}원
-                      </p>
-                    </div>
-                    {phone.accept_offers && phone.min_offer_price && (
-                      <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-                        <p className="text-sm font-medium text-dungji-primary-900">
-                          💰 가격 제안 가능
-                        </p>
-                        <p className="text-xs text-dungji-primary-700 mt-1">
-                          최소 제안가: {phone.min_offer_price.toLocaleString()}원부터
+                    {phone.accept_offers && phone.min_offer_price ? (
+                      <>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-sm text-gray-600">최소 제안가</span>
+                          <p className="text-3xl font-bold text-dungji-primary">
+                            {phone.min_offer_price.toLocaleString()}원~
+                          </p>
+                        </div>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-xs text-gray-500">즉시구매가</span>
+                          <p className="text-lg font-medium text-gray-700">
+                            {phone.price.toLocaleString()}원
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="text-sm text-gray-600">판매가격</span>
+                        <p className="text-3xl font-bold text-gray-900">
+                          {phone.price.toLocaleString()}원
                         </p>
                       </div>
                     )}
