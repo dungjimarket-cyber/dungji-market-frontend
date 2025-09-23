@@ -364,8 +364,8 @@ export default function ElectronicsCreatePage() {
       } else if (price % 1000 !== 0) {
         newErrors.price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = priceRef;
-      } else if (price > 9900000) {
-        newErrors.price = '최대 판매 금액은 990만원입니다';
+      } else if (price > 100000000) {
+        newErrors.price = '최대 판매 금액은 1억원입니다';
         if (!firstErrorRef) firstErrorRef = priceRef;
       }
     }
@@ -382,8 +382,8 @@ export default function ElectronicsCreatePage() {
       } else if (minPrice % 1000 !== 0) {
         newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
-      } else if (minPrice > 9900000) {
-        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+      } else if (minPrice > 100000000) {
+        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (formData.price && minPrice >= parseInt(formData.price)) {
         newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
@@ -983,9 +983,12 @@ export default function ElectronicsCreatePage() {
                 value={formatPrice(formData.price)}
                 onChange={(e) => {
                   const unformatted = unformatPrice(e.target.value);
-                  // 최대 금액 제한 (990만원)
-                  if (parseInt(unformatted) > 9900000) {
+                  // 최대 금액 제한 (1억원)
+                  if (parseInt(unformatted) > 100000000) {
+                    setErrors(prev => ({...prev, price: '최대 1억원까지 입력 가능합니다'}));
                     return;
+                  } else {
+                    setErrors(prev => ({...prev, price: ''}));
                   }
                   handleInputChange('price', unformatted);
                 }}
@@ -1007,7 +1010,7 @@ export default function ElectronicsCreatePage() {
               <p className="text-sm text-red-500 mt-1">{errors.price}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              가격은 천원 단위로 입력 가능합니다
+              가격은 천원 단위로 입력 가능합니다 (최대 1억원)
             </p>
 
             {/* 가격 제안은 항상 받음 (토글 제거) */}
@@ -1026,9 +1029,12 @@ export default function ElectronicsCreatePage() {
                     value={formatPrice(formData.min_offer_price || '')}
                     onChange={(e) => {
                       const unformatted = unformatPrice(e.target.value);
-                      // 최대 금액 제한 (990만원)
-                      if (parseInt(unformatted) > 9900000) {
+                      // 최대 금액 제한 (1억원)
+                      if (parseInt(unformatted) > 100000000) {
+                        setErrors(prev => ({...prev, min_offer_price: '최대 1억원까지 입력 가능합니다'}));
                         return;
+                      } else {
+                        setErrors(prev => ({...prev, min_offer_price: ''}));
                       }
                       handleInputChange('min_offer_price', unformatted);
                     }}
@@ -1050,7 +1056,7 @@ export default function ElectronicsCreatePage() {
                   <p className="text-sm text-red-500 mt-1">{errors.min_offer_price}</p>
                 )}
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (판매가보다 낮게)
+                  가격은 천원 단위로 입력 가능합니다 (최대 1억원, 판매가보다 낮게)
                 </p>
             </div>
 
@@ -1084,11 +1090,10 @@ export default function ElectronicsCreatePage() {
               placeholder="상품에 대해 자세히 설명해주세요
 
 💻 상품 상태: 외관, 기능, 성능 등의 상세 설명
-📅 구매/사용 시기: 언제 구매했는지, 얼마나 사용했는지
 🔧 특이사항: 수리 이력, 업그레이드 내역, 문제점 등
-📦 구성품 정보: 포함된 액세서리, 박스, 설명서 등
-⚡ 성능 정보: 속도, 용량, 배터리 상태 등
+⚡ 성능 정보: 속도, 용량, 배터리 상태, 사양 등
 🎯 판매 이유: 왜 판매하는지 간단한 설명
+✨ 장점/특징: 제품의 특별한 장점이나 특징
 
 구매자가 충분히 검토할 수 있도록 솔직하고 자세하게 작성해주세요."
               rows={10}

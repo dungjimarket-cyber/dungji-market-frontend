@@ -465,15 +465,33 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               {electronics.brand} {electronics.model_name}
             </h1>
 
-            {/* 가격 */}
-            <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-2xl font-bold">
-                {electronics.price?.toLocaleString() || electronics.price}원
-              </span>
-              {electronics.accept_offers && (
-                <Badge variant="outline" className="text-blue-600">
-                  가격제안 가능
-                </Badge>
+            {/* 가격 정보 - 휴대폰과 동일한 스타일 */}
+            <div className="mb-4">
+              {electronics.status === 'completed' ? (
+                // 거래완료 상품
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-gray-700">
+                    {(electronics.final_price || electronics.price)?.toLocaleString() || electronics.final_price || electronics.price}원
+                  </span>
+                  <Badge variant="secondary">거래완료</Badge>
+                </div>
+              ) : (
+                // 판매중 상품
+                <>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-sm text-gray-500">즉시구매</span>
+                    <span className="text-2xl font-bold">
+                      {electronics.price?.toLocaleString() || electronics.price}원
+                    </span>
+                  </div>
+                  {electronics.accept_offers && electronics.min_offer_price && (
+                    <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                      <p className="text-sm font-medium text-blue-900">
+                        💰 최소 {electronics.min_offer_price?.toLocaleString() || electronics.min_offer_price}원부터 가격제안 가능
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -482,7 +500,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-gray-500" />
                 <span className="text-sm">
-                  상태: {CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES].split(' ')[0]}
+                  상태: {electronics.is_unused ? '미개봉' : CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]?.split(' ')[0]}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -491,6 +509,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   구매시기: {PURCHASE_PERIODS[electronics.purchase_period as keyof typeof PURCHASE_PERIODS]}
                 </span>
               </div>
+              {electronics.usage_period && (
+                <div className="flex items-center gap-2 col-span-2">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">
+                    사용기간: {electronics.usage_period}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* 구성품 */}

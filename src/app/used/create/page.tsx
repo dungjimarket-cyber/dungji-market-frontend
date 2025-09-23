@@ -570,8 +570,8 @@ export default function CreateUsedPhonePage() {
       if (price % 1000 !== 0) {
         newErrors.price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = priceRef;
-      } else if (price > 9900000) {
-        newErrors.price = '최대 판매 금액은 990만원입니다';
+      } else if (price > 100000000) {
+        newErrors.price = '최대 판매 금액은 1억원입니다';
         if (!firstErrorRef) firstErrorRef = priceRef;
       } else if (price < 1000) {
         newErrors.price = '최소 가격은 1,000원입니다';
@@ -588,8 +588,8 @@ export default function CreateUsedPhonePage() {
       if (minPrice % 1000 !== 0) {
         newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
-      } else if (minPrice > 9900000) {
-        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+      } else if (minPrice > 100000000) {
+        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (minPrice < 1000) {
         newErrors.min_offer_price = '최소 가격은 1,000원입니다';
@@ -1301,9 +1301,12 @@ export default function CreateUsedPhonePage() {
                   className={errors.price ? 'border-red-300' : ''}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
-                    // 최대 금액 제한 (990만원)
-                    if (parseInt(unformatted) > 9900000) {
+                    // 최대 금액 제한 (1억원)
+                    if (parseInt(unformatted) > 100000000) {
+                      setErrors(prev => ({...prev, price: '최대 1억원까지 입력 가능합니다'}));
                       return;
+                    } else {
+                      setErrors(prev => ({...prev, price: ''}));
                     }
                     handleInputChange('price', unformatted);
                   }}
@@ -1318,7 +1321,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다
+                  가격은 천원 단위로 입력 가능합니다 (최대 1억원)
                 </p>
                 <p className="text-xs text-green-600 mt-1">
                   별도의 수락 과정 없이 즉시 거래가 진행됩니다
@@ -1340,9 +1343,12 @@ export default function CreateUsedPhonePage() {
                   className={errors.min_offer_price ? 'border-red-300' : ''}
                   onChange={(e) => {
                     const unformatted = unformatPrice(e.target.value);
-                    // 최대 금액 제한 (990만원)
-                    if (parseInt(unformatted) > 9900000) {
+                    // 최대 금액 제한 (1억원)
+                    if (parseInt(unformatted) > 100000000) {
+                      setErrors(prev => ({...prev, min_offer_price: '최대 1억원까지 입력 가능합니다'}));
                       return;
+                    } else {
+                      setErrors(prev => ({...prev, min_offer_price: ''}));
                     }
                     handleInputChange('min_offer_price', unformatted);
                   }}
@@ -1357,7 +1363,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
+                  가격은 천원 단위로 입력 가능합니다 (최대 1억원, 즉시 판매가보다 낮게)
                 </p>
                 {errors.min_offer_price && (
                   <p className="text-xs text-red-500/70">{errors.min_offer_price}</p>

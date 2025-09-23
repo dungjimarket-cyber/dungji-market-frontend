@@ -26,6 +26,7 @@ import electronicsApi from '@/lib/api/electronics';
 import type { UsedElectronics } from '@/types/electronics';
 import { ELECTRONICS_SUBCATEGORIES, CONDITION_GRADES, PURCHASE_PERIODS } from '@/types/electronics';
 import Image from 'next/image';
+import { regions } from '@/lib/regions';
 
 function UsedElectronicsListPageContent() {
   const router = useRouter();
@@ -43,6 +44,9 @@ function UsedElectronicsListPageContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCondition, setSelectedCondition] = useState<string>('');
   const [sortBy, setSortBy] = useState('latest');
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [cities, setCities] = useState<string[]>([]);
 
   // 데이터 로드
   const loadElectronics = useCallback(async (resetList = false) => {
@@ -56,6 +60,12 @@ function UsedElectronicsListPageContent() {
 
       if (selectedCategory) params.subcategory = selectedCategory;
       if (selectedCondition) params.condition = selectedCondition;
+
+      // 지역 필터 추가 - 휴대폰과 동일한 방식
+      if (selectedProvince) {
+        const regionValue = selectedCity ? `${selectedProvince} ${selectedCity}` : selectedProvince;
+        params.region = regionValue;
+      }
 
       const response = await electronicsApi.getElectronicsList(params);
 
@@ -77,12 +87,23 @@ function UsedElectronicsListPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchTerm, selectedCategory, selectedCondition, sortBy, toast]);
+  }, [page, searchTerm, selectedCategory, selectedCondition, sortBy, selectedProvince, selectedCity, toast]);
+
+  // 시/도 선택 시 시/군/구 목록 업데이트
+  useEffect(() => {
+    if (selectedProvince) {
+      const region = regions.find(r => r.name === selectedProvince);
+      setCities(region?.cities || []);
+    } else {
+      setCities([]);
+      setSelectedCity('');
+    }
+  }, [selectedProvince]);
 
   // 초기 로드
   useEffect(() => {
     loadElectronics(true);
-  }, [selectedCategory, selectedCondition, sortBy, loadElectronics]);
+  }, [selectedCategory, selectedCondition, sortBy, selectedProvince, selectedCity]);
 
   // 검색
   const handleSearch = () => {
@@ -191,6 +212,61 @@ function UsedElectronicsListPageContent() {
 
           {/* 필터 */}
           <div className="flex gap-2 overflow-x-auto pb-2">
+            {/* 지역 필터 - 휴대폰과 동일한 방식 */}
+            <Select
+              value={selectedProvince || 'all'}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedProvince('');
+                  setSelectedCity('');
+                } else {
+                  setSelectedProvince(value);
+                  setSelectedCity('');
+                }
+              }}
+            >
+              <SelectTrigger className="w-[120px] h-9">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  <SelectValue placeholder="전국" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전국</SelectItem>
+                {regions.map(region => (
+                  <SelectItem key={region.name} value={region.name}>
+                    {region.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* 시/군/구 선택 */}
+            {selectedProvince && (
+              <Select
+                value={selectedCity || 'all'}
+                onValueChange={(value) => {
+                  if (value === 'all') {
+                    setSelectedCity('');
+                  } else {
+                    setSelectedCity(value);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[120px] h-9">
+                  <SelectValue placeholder="시/군/구" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-[140px] h-9">
                 <SelectValue placeholder="카테고리" />
@@ -302,11 +378,32 @@ function UsedElectronicsListPageContent() {
                       <span>{PURCHASE_PERIODS[item.purchase_period as keyof typeof PURCHASE_PERIODS] || '미입력'}</span>
                     </div>
 
-                    {/* 가격 */}
-                    <div className="font-bold text-base mb-2">
-                      {item.price?.toLocaleString() || item.price}원
-                      {item.accept_offers && (
-                        <span className="text-xs font-normal text-blue-600 ml-1">제안가능</span>
+                    {/* 가격 - 휴대폰과 동일한 스타일 */}
+                    <div className="mb-2">
+                      {item.status === 'completed' ? (
+                        // 거래완료 상품
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-base font-bold text-gray-700">
+                            {(item.final_price || item.price)?.toLocaleString() || item.final_price || item.price}원
+                          </span>
+                        </div>
+                      ) : (
+                        // 판매중 상품
+                        <>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xs text-gray-500">즉시구매</span>
+                            <span className="text-base font-bold text-gray-900">
+                              {item.price?.toLocaleString() || item.price}원
+                            </span>
+                          </div>
+                          {item.accept_offers && item.min_offer_price && (
+                            <div className="mt-1 flex items-center gap-1">
+                              <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-medium">
+                                가격제안 {item.min_offer_price?.toLocaleString() || item.min_offer_price}원부터
+                              </span>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
 

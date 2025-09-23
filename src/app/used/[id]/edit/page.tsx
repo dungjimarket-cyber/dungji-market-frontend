@@ -25,8 +25,8 @@ import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place', 'images'];
-const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 수정할 수 없습니다.';
+const EDITABLE_AFTER_OFFERS = ['price', 'min_offer_price', 'meeting_place'];
+const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 가격과 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -252,9 +252,16 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
     const value = e.target.value.replace(/[^\d]/g, '');
 
-    // 최대 금액 제한 (990만원)
-    if (parseInt(value) > 9900000) {
+    // 최대 금액 제한 (1억원)
+    if (parseInt(value) > 100000000) {
+      setErrors(prev => ({...prev, [field]: '최대 1억원까지 입력 가능합니다'}));
       return;
+    } else if (errors[field]?.includes('최대 1억원')) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
 
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -484,8 +491,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (price % 1000 !== 0) {
         newErrors.price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = priceRef;
-      } else if (price > 9900000) {
-        newErrors.price = '최대 판매 금액은 990만원입니다';
+      } else if (price > 100000000) {
+        newErrors.price = '최대 판매 금액은 1억원입니다';
         if (!firstErrorRef) firstErrorRef = priceRef;
       } else if (price < 1000) {
         newErrors.price = '최소 가격은 1,000원입니다';
@@ -502,8 +509,8 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       if (minPrice % 1000 !== 0) {
         newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
-      } else if (minPrice > 9900000) {
-        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+      } else if (minPrice > 100000000) {
+        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (minPrice < 1000) {
         newErrors.min_offer_price = '최소 가격은 1,000원입니다';

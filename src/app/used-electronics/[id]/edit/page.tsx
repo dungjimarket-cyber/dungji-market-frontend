@@ -36,8 +36,8 @@ import axios from 'axios';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 
 // 제안 받은 후 수정 가능한 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place', 'images'];
-const LOCKED_FIELDS_MESSAGE = '가격 제안을 받은 후에는 즉시구매가, 거래요청, 이미지만 수정 가능합니다.';
+const EDITABLE_AFTER_OFFERS = ['price', 'min_offer_price', 'meeting_requirements', 'images'];
+const LOCKED_FIELDS_MESSAGE = '가격 제안을 받은 후에는 즉시구매가, 최소제안가, 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedElectronicsEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -277,8 +277,8 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         newErrors.price = '최소 가격은 1,000원입니다';
       } else if (price % 1000 !== 0) {
         newErrors.price = '가격은 천원 단위로 입력해주세요';
-      } else if (price > 9900000) {
-        newErrors.price = '최대 판매 금액은 990만원입니다';
+      } else if (price > 100000000) {
+        newErrors.price = '최대 판매 금액은 1억원입니다';
       }
     }
 
@@ -290,8 +290,8 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         newErrors.min_offer_price = '최소 가격은 1,000원입니다';
       } else if (minPrice % 1000 !== 0) {
         newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
-      } else if (minPrice > 9900000) {
-        newErrors.min_offer_price = '최대 제안 금액은 990만원입니다';
+      } else if (minPrice > 100000000) {
+        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
       } else if (formData.price && minPrice >= parseInt(formData.price)) {
         newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
       }
@@ -731,6 +731,13 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                     value={formatPrice(formData.price)}
                     onChange={(e) => {
                       const unformatted = unformatPrice(e.target.value);
+                      // 최대 금액 제한 (1억원)
+                      if (parseInt(unformatted) > 100000000) {
+                        setErrors(prev => ({...prev, price: '최대 1억원까지 입력 가능합니다'}));
+                        return;
+                      } else {
+                        setErrors(prev => ({...prev, price: ''}));
+                      }
                       setFormData({ ...formData, price: unformatted });
                     }}
                     onBlur={(e) => {
@@ -767,6 +774,13 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                     value={formatPrice(formData.min_offer_price || '')}
                     onChange={(e) => {
                       const unformatted = unformatPrice(e.target.value);
+                      // 최대 금액 제한 (1억원)
+                      if (parseInt(unformatted) > 100000000) {
+                        setErrors(prev => ({...prev, min_offer_price: '최대 1억원까지 입력 가능합니다'}));
+                        return;
+                      } else {
+                        setErrors(prev => ({...prev, min_offer_price: ''}));
+                      }
                       setFormData({
                         ...formData,
                         min_offer_price: unformatted
@@ -825,11 +839,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                 placeholder="상품에 대해 자세히 설명해주세요
 
 💻 상품 상태: 외관, 기능, 성능 등의 상세 설명
-📅 구매/사용 시기: 언제 구매했는지, 얼마나 사용했는지
 🔧 특이사항: 수리 이력, 업그레이드 내역, 문제점 등
-📦 구성품 정보: 포함된 액세서리, 박스, 설명서 등
-⚡ 성능 정보: 속도, 용량, 배터리 상태 등
+⚡ 성능 정보: 속도, 용량, 배터리 상태, 사양 등
 🎯 판매 이유: 왜 판매하는지 간단한 설명
+✨ 장점/특징: 제품의 특별한 장점이나 특징
 
 구매자가 충분히 검토할 수 있도록 솔직하고 자세하게 작성해주세요."
                 rows={10}
