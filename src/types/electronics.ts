@@ -127,6 +127,7 @@ export interface ElectronicsOffer {
   message?: string;
   status: OfferStatus;
   created_at: string;
+  user_offer_count?: number; // 사용자의 총 제안 횟수
   electronics_info?: {
     id: number;
     brand: string;
