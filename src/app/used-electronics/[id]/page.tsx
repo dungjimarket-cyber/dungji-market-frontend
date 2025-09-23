@@ -531,6 +531,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             >
               목록
             </button>
+            <button
+              onClick={() => router.push('/used/mypage')}
+              className="text-xs px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+            >
+              거래내역
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={handleShare}>
@@ -560,6 +566,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               >
                 <ChevronLeft className="w-5 h-5" />
                 <span className="font-medium">목록으로</span>
+              </button>
+              <button
+                onClick={() => router.push('/used/mypage')}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100 transition-colors"
+              >
+                <span>거래내역</span>
               </button>
             </div>
             <div className="flex items-center gap-3">
