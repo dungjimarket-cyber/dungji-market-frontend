@@ -1038,6 +1038,46 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                         ? '제안 수정하기'
                         : '가격 제안하기'}
                     </Button>
+
+                    {/* 제안 취소 버튼 - 거래중/판매완료가 아닌 경우에만 표시 */}
+                    {myOffer && myOffer.status === 'pending' && electronics.status === 'active' && (
+                      <Button
+                        variant="outline"
+                        onClick={async () => {
+                          if (confirm('제안을 취소하시겠습니까?')) {
+                            try {
+                              const token = localStorage.getItem('accessToken');
+
+                              const response = await axios.post(
+                                `${process.env.NEXT_PUBLIC_API_URL}/used/offers/${myOffer.id}/cancel/`,
+                                {},
+                                {
+                                  headers: {
+                                    'Authorization': `Bearer ${token}`
+                                  }
+                                }
+                              );
+
+                              if (response.status === 200 || response.status === 204) {
+                                setMyOffer(null);
+                                // 취소해도 5회 카운팅은 원복하지 않음
+                                // setRemainingOffers(prev => Math.min(5, prev + 1));
+                                await fetchElectronicsDetail(); // 상품 정보 다시 조회
+                                toast.success('가격 제안이 취소되었습니다.', {
+                                  duration: 2000,
+                                });
+                              }
+                            } catch (error) {
+                              console.error('Failed to cancel offer:', error);
+                            }
+                          }
+                        }}
+                        size="sm"
+                        className="border-gray-300 hover:bg-dungji-danger hover:text-white hover:border-dungji-danger transition-colors"
+                      >
+                        제안 취소
+                      </Button>
+                    )}
                   </div>
                 </>
               </>
@@ -1108,143 +1148,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </div>
       </div>
 
-      {/* 하단 고정 버튼 */}
-      {electronics.seller?.id !== Number(user?.id) && !electronics.is_mine && electronics.status === 'active' && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
-          <div className="container mx-auto max-w-4xl flex gap-3">
-            <button
-              onClick={handleFavorite}
-              className="p-3 border rounded-lg"
-            >
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-            </button>
 
-            <Button
-              variant={myOffer ? "default" : "outline"}
-              className="flex-1"
-              onClick={handleOffer}
-              disabled={electronics.status !== 'active'}
-            >
-              <Banknote className="w-4 h-4 mr-2" />
-              {myOffer && myOffer.status === 'pending' ? (
-                <>
-                  <span>제안 수정하기</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="ml-2 border-red-300 text-red-600 hover:bg-red-50"
-                    onClick={handleCancelOffer}
-                  >
-                    제안 취소
-                  </Button>
-                </>
-              ) : '가격 제안하기'}
-            </Button>
-          </div>
-        </div>
-      )}
 
-      {/* 판매자용 하단 버튼 (모바일만) */}
-      {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
-          <div className="container mx-auto max-w-4xl flex gap-3">
-            {electronics.status === 'active' && (
-              <>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  수정
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  삭제
-                </Button>
-              </>
-            )}
-            {electronics.status === 'trading' && (
-              <>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowCancelModal(true)}
-                >
-                  거래 취소
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleCompleteTransaction}
-                >
-                  거래 완료
-                </Button>
-              </>
-            )}
-            {electronics.status === 'sold' && !reviewCompleted && (
-              <Button
-                className="flex-1"
-                onClick={() => {
-                  setReviewTarget('buyer');
-                  setShowTradeReviewModal(true);
-                }}
-              >
-                후기 작성하기
-              </Button>
-            )}
-            {electronics.status === 'sold' && reviewCompleted && (
-              <Button className="flex-1" disabled>
-                후기 작성 완료
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 구매자용 하단 버튼 */}
-      {user && electronics.buyer_id === Number(user.id) && !electronics.is_mine && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
-          <div className="container mx-auto max-w-4xl flex gap-3">
-            {electronics.status === 'trading' && (
-              <>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowCancelModal(true)}
-                >
-                  거래 취소
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => setShowTradeCompleteModal(true)}
-                >
-                  구매 확정
-                </Button>
-              </>
-            )}
-            {electronics.status === 'sold' && !reviewCompleted && (
-              <Button
-                className="flex-1"
-                onClick={() => {
-                  setReviewTarget('seller');
-                  setShowTradeReviewModal(true);
-                }}
-              >
-                후기 작성하기
-              </Button>
-            )}
-            {electronics.status === 'sold' && reviewCompleted && (
-              <Button className="flex-1" disabled>
-                후기 작성 완료
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
