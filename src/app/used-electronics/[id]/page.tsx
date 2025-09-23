@@ -76,6 +76,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [myOffer, setMyOffer] = useState<ElectronicsOffer | null>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
   const [remainingOffers, setRemainingOffers] = useState<number | null>(null);
+  const [offerCount, setOfferCount] = useState<number | null>(null); // 사용자의 총 제안 횟수
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -170,6 +171,15 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       setLoadingMyOffer(true);
       const offer = await electronicsApi.getMyOffer(Number(electronicsId));
       setMyOffer(offer);
+      // 사용자의 총 제안 횟수 가져오기 (API에서 제공한다면)
+      if (offer && offer.user_offer_count !== undefined) {
+        setOfferCount(offer.user_offer_count);
+        setRemainingOffers(Math.max(0, 5 - offer.user_offer_count));
+      } else if (offer) {
+        // offer가 있으면 최소 1개는 사용한 것
+        setOfferCount(1);
+        setRemainingOffers(4);
+      }
     } catch (error) {
       console.error('Failed to fetch my offer:', error);
     } finally {
@@ -298,6 +308,13 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
     if (amount > 9900000) {
       toast.error('최대 제안 가능 금액은 990만원입니다.', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (offerCount !== null && offerCount >= 5) {
+      toast.error('해당 상품에 최대 5회까지만 제안 가능합니다.', {
         duration: 3000,
       });
       return;
@@ -683,54 +700,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           </div>
         )}
 
-        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 가운데 배치 (판매완료 시 숨김) */}
-        {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
-          <div className="hidden lg:block mt-8 pt-6 border-t">
-            <div className="flex justify-center gap-6">
-              <Button
-                onClick={async () => {
-                  setCheckingOffers(true);
-                  try {
-                    // 수정 전 최신 제안 상태 확인
-                    const latestOfferCount = await checkLatestOffers();
-
-                    // 이전에 제안이 없었는데 새로 생긴 경우
-                    if (electronics.offer_count === 0 && latestOfferCount > 0) {
-                      toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
-                        duration: 3000,
-                      });
-                      // 상품 정보 새로고침
-                      await fetchElectronicsDetail();
-                    }
-
-                    router.push(`/used-electronics/${electronicsId}/edit`);
-                  } catch (error) {
-                    console.error('Failed to check offers:', error);
-                    router.push(`/used-electronics/${electronicsId}/edit`);
-                  } finally {
-                    setCheckingOffers(false);
-                  }
-                }}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 px-6"
-                disabled={checkingOffers}
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                {checkingOffers ? '확인중...' : '수정하기'}
-              </Button>
-              <Button
-                onClick={() => setShowDeleteModal(true)}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                삭제하기
-              </Button>
-            </div>
-          </div>
-        )}
         </div>
 
         {/* 정보 섹션 */}
@@ -1056,48 +1025,39 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               </>
             )}
 
-            {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
-            {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
-              <div className="lg:hidden mt-4 pt-4 border-t grid grid-cols-2 gap-3">
-                <Button
-                  onClick={async () => {
-                    setCheckingOffers(true);
-                    try {
-                      // 수정 전 최신 제안 상태 확인
-                      const latestOfferCount = await checkLatestOffers();
 
-                      // 이전에 제안이 없었는데 새로 생긴 경우
-                      if (electronics.offer_count === 0 && latestOfferCount > 0) {
-                        toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
-                          duration: 3000,
-                        });
-                        // 상품 정보 새로고침
-                        await fetchElectronicsDetail();
-                      }
+            {/* 내가 제안한 금액 표시 */}
+            {myOffer && myOffer.status !== 'cancelled' && (
+              <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">
+                      내가 제안한 금액
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {myOffer.offer_price?.toLocaleString()}원
+                    </p>
+                    {myOffer.message && (
+                      <p className="text-xs text-gray-600 mt-2 italic">
+                        "{myOffer.message}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
-                      router.push(`/used-electronics/${electronicsId}/edit`);
-                    } catch (error) {
-                      console.error('Failed to check offers:', error);
-                      router.push(`/used-electronics/${electronicsId}/edit`);
-                    } finally {
-                      setCheckingOffers(false);
-                    }
-                  }}
-                  variant="outline"
-                  className="flex items-center justify-center gap-2"
-                  disabled={checkingOffers}
-                >
-                  <Edit3 className="w-4 h-4" />
-                  {checkingOffers ? '확인중...' : '수정하기'}
-                </Button>
-                <Button
-                  onClick={() => setShowDeleteModal(true)}
-                  variant="outline"
-                  className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  삭제하기
-                </Button>
+            {/* 제안 횟수 표시 */}
+            {(myOffer || (offerCount !== null && offerCount > 0)) && (
+              <div className="mt-2 text-center">
+                <p className="text-sm text-gray-600">
+                  남은 제안 횟수: <span className="font-semibold text-dungji-primary">{remainingOffers !== null ? `${remainingOffers}/5회` : '로딩중...'}</span>
+                </p>
+                {remainingOffers !== null && remainingOffers === 0 && (
+                  <p className="text-xs text-red-500 mt-1">
+                    제안 횟수를 모두 사용하셨습니다
+                  </p>
+                )}
               </div>
             )}
 
@@ -1310,6 +1270,33 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </p>
               </div>
 
+            {/* 제안 횟수 표시 - 초컴팩트 */}
+            <div className="flex items-center justify-between mb-2 p-2 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">
+                남은 제안 횟수
+              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-lg sm:text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
+                <span className="text-xs sm:text-sm text-gray-600">/ 5회</span>
+              </div>
+            </div>
+
+            {remainingOffers !== null && remainingOffers === 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 mb-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-900">
+                      제안 횟수를 모두 사용하셨습니다
+                    </p>
+                    <p className="text-xs text-red-700 mt-1">
+                      이 상품에는 더 이상 제안을 할 수 없습니다
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="mb-2">
               <label className="block text-sm font-semibold mb-1.5 text-gray-900">
                 제안 금액 <span className="text-red-500">*</span>
@@ -1483,7 +1470,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   setOfferMessage(combinedMessage);
                   handleOfferConfirm();
                 }}
-                disabled={!offerAmount || Boolean(offerAmount && parseInt(offerAmount) < (electronics.min_offer_price || 0))}
+                disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || Boolean(offerAmount && parseInt(offerAmount) < (electronics.min_offer_price || 0))}
                 className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
                 {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '제안하기'}

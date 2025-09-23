@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com
 
 // Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}/used`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,22 +37,22 @@ export const sellerAPI = {
   // 내 판매 상품 목록 조회
   getMyListings: async (status?: string) => {
     const params = status ? { status } : {};
-    const response = await api.get('/used/phones/my-listings/', { params });
+    const response = await api.get('/phones/my-listings/', { params });
     return response.data;
   },
 
   // 받은 제안 목록 조회
   getReceivedOffers: async (phoneId?: number) => {
     const url = phoneId 
-      ? `/used/phones/${phoneId}/offers/` 
-      : '/used/offers/received/';
+      ? `/phones/${phoneId}/offers/` 
+      : '/offers/received/';
     const response = await api.get(url);
     return response.data;
   },
 
   // 제안 응답 (수락만 가능)
   respondToOffer: async (offerId: number, action: 'accept', message?: string) => {
-    const response = await api.post(`/used/offers/${offerId}/respond/`, {
+    const response = await api.post(`/offers/${offerId}/respond/`, {
       action,
       message,
     });
@@ -61,25 +61,25 @@ export const sellerAPI = {
 
   // 거래 진행 (수락된 제안을 거래중으로 전환)
   proceedTrade: async (offerId: number) => {
-    const response = await api.post(`/used/offers/${offerId}/proceed-trade/`);
+    const response = await api.post(`/offers/${offerId}/proceed-trade/`);
     return response.data;
   },
 
   // 상품 상태 변경
   updateListingStatus: async (phoneId: number, status: string) => {
-    const response = await api.patch(`/used/phones/${phoneId}/`, { status });
+    const response = await api.patch(`/phones/${phoneId}/`, { status });
     return response.data;
   },
   
   // 구매자 정보 조회 (거래중인 판매자용)
   getBuyerInfo: async (phoneId: number) => {
-    const response = await api.get(`/used/phones/${phoneId}/buyer-info/`);
+    const response = await api.get(`/phones/${phoneId}/buyer-info/`);
     return response.data;
   },
 
   // 거래 정보 조회 (후기 작성용)
   getTransactionInfo: async (phoneId: number) => {
-    const response = await api.get(`/used/phones/${phoneId}/transaction-info/`);
+    const response = await api.get(`/phones/${phoneId}/transaction-info/`);
     return response.data;
   },
 };
@@ -89,31 +89,31 @@ export const buyerAPI = {
   // 내가 보낸 제안 목록 조회
   getMySentOffers: async (status?: string) => {
     const params = status ? { status } : {};
-    const response = await api.get('/used/offers/sent/', { params });
+    const response = await api.get('/offers/sent/', { params });
     return response.data;
   },
   
   // 거래중인 아이템 목록 조회 (구매자용)
   getMyTradingItems: async () => {
-    const response = await api.get('/used/phones/my-trading/');
+    const response = await api.get('/phones/my-trading/');
     return response.data;
   },
 
   // 찜 목록 조회
   getFavorites: async () => {
-    const response = await api.get('/used/favorites/');
+    const response = await api.get('/favorites/');
     return response.data;
   },
 
   // 찜 추가/제거
   toggleFavorite: async (phoneId: number) => {
     try {
-      const response = await api.post(`/used/phones/${phoneId}/favorite/`);
+      const response = await api.post(`/phones/${phoneId}/favorite/`);
       return { added: true, ...response.data };
     } catch (error: any) {
       if (error.response?.status === 400) {
         // 이미 찜한 경우 제거
-        const response = await api.delete(`/used/phones/${phoneId}/favorite/`);
+        const response = await api.delete(`/phones/${phoneId}/favorite/`);
         return { added: false, ...response.data };
       }
       throw error;
@@ -122,7 +122,7 @@ export const buyerAPI = {
 
   // 가격 제안하기
   makeOffer: async (phoneId: number, offeredPrice: number, message?: string) => {
-    const response = await api.post(`/used/phones/${phoneId}/offer/`, {
+    const response = await api.post(`/phones/${phoneId}/offer/`, {
       offered_price: offeredPrice,
       message,
     });
@@ -131,19 +131,19 @@ export const buyerAPI = {
 
   // 제안 취소
   cancelOffer: async (offerId: number) => {
-    const response = await api.delete(`/used/offers/${offerId}/`);
+    const response = await api.delete(`/offers/${offerId}/`);
     return response.data;
   },
   
   // 판매자 정보 조회 (거래중인 구매자용)
   getSellerInfo: async (phoneId: number) => {
-    const response = await api.get(`/used/phones/${phoneId}/seller-info/`);
+    const response = await api.get(`/phones/${phoneId}/seller-info/`);
     return response.data;
   },
 
   // 거래 정보 조회 (후기 작성용)
   getTransactionInfo: async (phoneId: number) => {
-    const response = await api.get(`/used/phones/${phoneId}/transaction-info/`);
+    const response = await api.get(`/phones/${phoneId}/transaction-info/`);
     return response.data;
   },
 };

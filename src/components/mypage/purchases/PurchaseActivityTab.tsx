@@ -46,6 +46,13 @@ interface OfferItem {
       nickname: string;
     };
   };
+  electronics_info?: {
+    id: number;
+    brand: string;
+    model_name: string;
+    price: number;
+    status: string;
+  };
   offered_price: number;
   offer_price?: number; // 전자제품용 필드
   message?: string;
@@ -111,7 +118,7 @@ interface SellerInfo {
 
 // 헬퍼 함수들
 const getItemFromOffer = (offer: OfferItem) => {
-  return offer.phone || offer.electronics;
+  return offer.phone || offer.electronics || offer.electronics_info;
 };
 
 const getItemId = (offer: OfferItem) => {
@@ -124,6 +131,8 @@ const getItemTitle = (offer: OfferItem) => {
     return `${offer.phone.brand} ${offer.phone.model}`;
   } else if (offer.electronics) {
     return `${offer.electronics.brand} ${offer.electronics.model_name}`;
+  } else if (offer.electronics_info) {
+    return `${offer.electronics_info.brand} ${offer.electronics_info.model_name}`;
   }
   return '';
 };
@@ -133,6 +142,8 @@ const getItemPrice = (offer: OfferItem | TradingItem) => {
     return offer.phone.price;
   } else if ('electronics' in offer && offer.electronics) {
     return offer.electronics.price;
+  } else if ('electronics_info' in offer && offer.electronics_info) {
+    return offer.electronics_info.price;
   }
   return 0;
 };
@@ -146,6 +157,7 @@ const getItemImages = (offer: OfferItem | TradingItem) => {
       is_main: img.is_primary
     }));
   }
+  // electronics_info doesn't have images, return empty array
   return [];
 };
 
@@ -163,13 +175,15 @@ const getItemStatus = (offer: OfferItem | TradingItem) => {
     return offer.phone.status;
   } else if ('electronics' in offer && offer.electronics) {
     return offer.electronics.status;
+  } else if ('electronics_info' in offer && offer.electronics_info) {
+    return offer.electronics_info.status;
   }
   return 'active';
 };
 
 const getItemUrl = (offer: OfferItem | TradingItem) => {
   const itemType = offer.itemType || (offer.phone ? 'phone' : 'electronics');
-  const itemId = offer.phone?.id || offer.electronics?.id || 0;
+  const itemId = offer.phone?.id || offer.electronics?.id || offer.electronics_info?.id || 0;
   return itemType === 'phone' ? `/used/${itemId}` : `/used-electronics/${itemId}`;
 };
 
@@ -260,8 +274,40 @@ export default function PurchaseActivityTab() {
       const phoneOfferItems = (phoneOffers.results || phoneOffers || [])
         .map((item: any) => ({ ...item, itemType: 'phone' as const }));
 
-      const electronicsOfferItems = (electronicsOffers.results || electronicsOffers || [])
-        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
+      // Fetch electronics details for offers that only have electronics_info
+      const electronicsOfferItemsPromises = (electronicsOffers.results || electronicsOffers || [])
+        .map(async (item: any) => {
+          // If we have electronics_info but no full electronics data, fetch the detail
+          if (item.electronics_info && !item.electronics) {
+            try {
+              const detail = await electronicsApi.getElectronicsDetail(item.electronics_info.id);
+              return {
+                ...item,
+                itemType: 'electronics' as const,
+                electronics: {
+                  id: detail.id,
+                  brand: detail.brand,
+                  model_name: detail.model_name,
+                  price: detail.price,
+                  status: detail.status,
+                  images: detail.images,
+                  seller: detail.seller
+                }
+              };
+            } catch (error) {
+              console.error('Failed to fetch electronics detail:', error);
+              // Fallback to using electronics_info
+              return {
+                ...item,
+                itemType: 'electronics' as const,
+                electronics: item.electronics_info
+              };
+            }
+          }
+          return { ...item, itemType: 'electronics' as const };
+        });
+
+      const electronicsOfferItems = await Promise.all(electronicsOfferItemsPromises);
 
       const allOffers = [
         ...phoneOfferItems,
@@ -470,9 +516,14 @@ export default function PurchaseActivityTab() {
 
 
   // 판매자 정보 조회
-  const fetchSellerInfo = async (phoneId: number) => {
+  const fetchSellerInfo = async (itemId: number, itemType: 'phone' | 'electronics' = 'phone') => {
     try {
-      const data = await buyerAPI.getSellerInfo(phoneId);
+      let data;
+      if (itemType === 'electronics') {
+        data = await electronicsApi.getSellerInfo(itemId);
+      } else {
+        data = await buyerAPI.getSellerInfo(itemId);
+      }
       setSelectedSellerInfo(data);
       setShowSellerInfoModal(true);
     } catch (error) {
@@ -487,28 +538,33 @@ export default function PurchaseActivityTab() {
 
   // 거래 취소 모달 열기
   // 구매 완료 처리
-  const handleCompleteTransaction = async (phoneId: number) => {
+  const handleCompleteTransaction = async (phoneId: number, itemType: 'phone' | 'electronics' = 'phone') => {
     await executeTransactionAction(
       async () => {
-        const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
-        const apiUrl = baseUrl.includes('api.dungjimarket.com')
-          ? `${baseUrl}/used/phones/${phoneId}/buyer-complete/`
-          : `${baseUrl}/api/used/phones/${phoneId}/buyer-complete/`;
+        if (itemType === 'electronics') {
+          await electronicsApi.buyerCompleteTransaction(phoneId);
+        } else {
+          // Phone API doesn't have buyerComplete in the API module, use direct fetch
+          const token = localStorage.getItem('accessToken');
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
+          const apiUrl = baseUrl.includes('api.dungjimarket.com')
+            ? `${baseUrl}/used/phones/${phoneId}/buyer-complete/`
+            : `${baseUrl}/api/used/phones/${phoneId}/buyer-complete/`;
 
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw { response: { data: errorData } };
           }
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw { response: { data: errorData } };
+          return response;
         }
-        return response;
       },
       {
         successMessage: '구매가 완료되었습니다.',
@@ -549,33 +605,37 @@ export default function PurchaseActivityTab() {
 
     await executeTransactionAction(
       async () => {
-        const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
         const itemId = cancellingItem.phone?.id || cancellingItem.electronics?.id;
         if (!itemId) throw new Error('No item ID found');
 
-        const apiPath = cancellingItem.itemType === 'electronics'
-          ? `/used/electronics/${itemId}/cancel-trade/`
-          : `/used/phones/${itemId}/cancel-trade/`;
-        const apiUrl = `${baseUrl}${apiPath}`;
+        const cancellationData = {
+          reason: cancellationReason,
+          custom_reason: cancellationReason === 'other' ? customReason : null,
+        };
 
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            reason: cancellationReason,
-            custom_reason: cancellationReason === 'other' ? customReason : null,
-          }),
-        });
+        if (cancellingItem.itemType === 'electronics') {
+          await electronicsApi.cancelTrade(itemId, cancellationData);
+        } else {
+          // Phone API doesn't have cancelTrade in the API module, use direct fetch
+          const token = localStorage.getItem('accessToken');
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
+          const apiUrl = `${baseUrl}/used/phones/${itemId}/cancel-trade/`;
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw { response: { data: errorData } };
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(cancellationData),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw { response: { data: errorData } };
+          }
+          return response;
         }
-        return response;
       },
       {
         successMessage: '거래가 취소되었습니다.',
@@ -897,7 +957,7 @@ export default function PurchaseActivityTab() {
                         size="sm"
                         variant="outline"
                         className="flex items-center gap-1"
-                        onClick={() => fetchSellerInfo(itemId)}
+                        onClick={() => fetchSellerInfo(itemId, item.itemType || 'phone')}
                       >
                         <User className="w-3.5 h-3.5" />
                         판매자 정보

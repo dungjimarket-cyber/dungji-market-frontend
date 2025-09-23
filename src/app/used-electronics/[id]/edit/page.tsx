@@ -523,6 +523,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                 <MultiRegionDropdown
                   selectedRegions={selectedRegions}
                   onSelectionChange={setSelectedRegions}
+                  maxSelections={3}
                 />
                 {errors.regions && <p className="text-red-500 text-sm mt-1">{errors.regions}</p>}
               </div>

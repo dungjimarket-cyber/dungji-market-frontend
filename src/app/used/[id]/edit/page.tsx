@@ -1258,6 +1258,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     province: r.province || r.sido || '',
                     city: r.city || r.sigungu || ''
                   }))}
+                  maxSelections={3}
                   onSelectionChange={(regions) => {
                     setSelectedRegions(regions.map((r: any) => ({
                       ...r,
