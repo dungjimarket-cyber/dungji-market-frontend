@@ -159,10 +159,8 @@ const getItemImages = (offer: OfferItem | TradingItem) => {
   if ('phone' in offer && offer.phone) {
     return offer.phone.images;
   } else if ('electronics' in offer && offer.electronics) {
-    return offer.electronics.images.map(img => ({
-      image_url: img.imageUrl,
-      is_main: img.is_primary
-    }));
+    // 전자제품 이미지 배열 그대로 반환 (imageUrl, is_primary 사용)
+    return offer.electronics.images;
   }
   // electronics_info doesn't have images, return empty array
   return [];
@@ -803,7 +801,10 @@ export default function PurchaseActivityTab() {
                 const itemPrice = getItemPrice(offer);
                 const itemSeller = getItemSeller(offer);
                 const primaryImage = itemImages[0];
-                const imageUrl = offer.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
+                // 휴대폰은 image_url, 전자제품은 imageUrl 사용
+                const imageUrl = offer.phone
+                  ? primaryImage?.image_url
+                  : (primaryImage as any)?.imageUrl;
 
                 // 디버깅 로그
                 console.log('=== 구매내역 아이템 렌더링 ===');
@@ -850,12 +851,12 @@ export default function PurchaseActivityTab() {
                         <div className="space-y-1 text-sm">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-600">판매가</span>
-                            <span>{itemPrice.toLocaleString()}원</span>
+                            <span>{itemPrice?.toLocaleString() || '0'}원</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">제안가</span>
                         <span className="font-semibold text-dungji-primary">
-                          {offer.offered_price.toLocaleString()}원
+                          {offer.offered_price?.toLocaleString() || '0'}원
                         </span>
                       </div>
                     </div>
@@ -952,7 +953,7 @@ export default function PurchaseActivityTab() {
                         <div className="flex items-baseline gap-2">
                           <span className="text-xs text-gray-500">거래가격</span>
                           <p className="text-base font-semibold text-green-600">
-                            {item.offered_price.toLocaleString()}원
+                            {item.offered_price?.toLocaleString() || '0'}원
                           </p>
                         </div>
                       </div>
@@ -1039,7 +1040,7 @@ export default function PurchaseActivityTab() {
                               </h4>
                             </Link>
                             <p className="text-base font-semibold text-green-600">
-                              {item.offered_price.toLocaleString()}원
+                              {item.offered_price?.toLocaleString() || '0'}원
                             </p>
                           </div>
                         </div>
@@ -1216,7 +1217,7 @@ export default function PurchaseActivityTab() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-sm font-semibold text-green-800 mb-2">거래 진행중</p>
                 <p className="text-lg font-bold text-green-700">
-                  {selectedSellerInfo.accepted_price.toLocaleString()}원
+                  {selectedSellerInfo.accepted_price?.toLocaleString() || '0'}원
                 </p>
               </div>
               

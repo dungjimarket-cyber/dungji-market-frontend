@@ -365,7 +365,7 @@ export const getMyTradingItems = async (params?: {
  * 제안 취소
  */
 export const cancelOffer = async (offerId: number): Promise<{ message: string }> => {
-  // 백엔드 URL 패턴에 맞게 수정
+  // 백엔드 URL 패턴에 맞게 수정 - ViewSet의 action 경로
   const response = await api.post(`/offers/${offerId}/cancel/`);
   return response.data;
 };

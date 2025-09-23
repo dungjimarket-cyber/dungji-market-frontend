@@ -131,7 +131,7 @@ export const buyerAPI = {
 
   // 제안 취소
   cancelOffer: async (offerId: number) => {
-    const response = await api.delete(`/offers/${offerId}/`);
+    const response = await api.post(`/phones/offers/${offerId}/cancel/`);
     return response.data;
   },
   
