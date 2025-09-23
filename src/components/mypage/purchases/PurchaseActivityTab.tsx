@@ -99,6 +99,13 @@ interface TradingItem {
       region?: string;
     };
   };
+  electronics_info?: {
+    id: number;
+    brand: string;
+    model_name: string;
+    price: number;
+    status: string;
+  };
   offered_price: number;
   offer_price?: number;
   status: 'accepted' | 'cancelled';
@@ -610,7 +617,7 @@ export default function PurchaseActivityTab() {
 
         const cancellationData = {
           reason: cancellationReason,
-          custom_reason: cancellationReason === 'other' ? customReason : null,
+          custom_reason: cancellationReason === 'other' ? customReason : undefined,
         };
 
         if (cancellingItem.itemType === 'electronics') {
