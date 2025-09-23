@@ -22,8 +22,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -597,39 +595,39 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         )}
         </div>
 
-        {/* 상품 정보 섹션 */}
-        <div className="w-full space-y-4">
-        {/* 기본 정보 */}
-        <Card>
-          <CardContent className="p-6">
-            {/* 카테고리 */}
-            <div className="text-sm text-gray-500 mb-2">
-              {ELECTRONICS_SUBCATEGORIES[electronics.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES]}
+        {/* 정보 섹션 */}
+        <div className="w-full overflow-x-hidden">
+          {/* 기본 정보 */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-start justify-between mb-2">
+              <h1 className="text-2xl font-bold">{electronics.brand} {electronics.model_name}</h1>
+              {/* 수정됨 표시 */}
+              {electronics.offer_count > 0 && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
+                  <Edit3 className="w-3 h-3" />
+                  <span>제안 {electronics.offer_count}개</span>
+                </div>
+              )}
             </div>
 
-            {/* 제품명 */}
-            <h1 className="text-xl font-bold mb-3">
-              {electronics.brand} {electronics.model_name}
-            </h1>
-
-            {/* 가격 정보 - 휴대폰과 동일한 스타일 */}
+            {/* 가격 */}
             <div className="mb-4">
               {electronics.status === 'sold' ? (
-                // 거래완료 상품
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-gray-700">
-                    {electronics.price?.toLocaleString() || electronics.price}원
-                  </span>
-                  <Badge variant="secondary">거래완료</Badge>
+                // 판매완료 - 거래가격만 표시
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-sm text-gray-600">거래완료</span>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {electronics.price.toLocaleString()}원
+                  </p>
                 </div>
               ) : (
-                // 판매중 상품
+                // 판매중/거래중 - 기존 표시
                 <>
                   <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-sm text-gray-500">즉시구매</span>
-                    <span className="text-2xl font-bold">
-                      {electronics.price?.toLocaleString() || electronics.price}원
-                    </span>
+                    <span className="text-sm text-gray-600">즉시구매</span>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {electronics.price.toLocaleString()}원
+                    </p>
                   </div>
                   {electronics.accept_offers && electronics.min_offer_price && (
                     <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
@@ -637,238 +635,368 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                         💰 가격 제안 가능
                       </p>
                       <p className="text-xs text-dungji-primary-700 mt-1">
-                        최소 제안가: {electronics.min_offer_price?.toLocaleString() || electronics.min_offer_price}원부터
+                        최소 제안가: {electronics.min_offer_price.toLocaleString()}원부터
                       </p>
                     </div>
                   )}
+
+                  {/* 조회수 및 통계 */}
+                  <div className="pt-4 flex items-center justify-between text-sm text-gray-600">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        조회 {electronics.view_count}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Heart className="w-4 h-4" />
+                        찜 {electronics.favorite_count}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        제안 {electronics.offer_count || 0}
+                      </span>
+                    </div>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {formatDistanceToNow(new Date(electronics.created_at), { addSuffix: true, locale: ko })}
+                    </span>
+                  </div>
+
+                  {/* 액션 버튼 */}
+                  <div className="pt-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={handleFavorite}
+                        disabled={isFavorite === null}
+                        className={`flex items-center justify-center gap-2 h-12 ${
+                          isFavorite === null ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 ${
+                          isFavorite === null
+                            ? 'text-gray-300'
+                            : isFavorite === true
+                              ? 'fill-red-500 text-red-500'
+                              : 'text-gray-500'
+                        }`} />
+                        {isFavorite === null ? '로딩...' : (isFavorite === true ? '찜 해제' : '찜하기')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleShare}
+                        className="flex items-center justify-center gap-2 h-12"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        공유하기
+                      </Button>
+                    </div>
+                  </div>
                 </>
               )}
             </div>
 
             {/* 상태 정보 */}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-gray-500" />
-                <span className="text-sm">
-                  상태: {electronics.is_unused ? '미개봉' : CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]?.split(' ')[0]}
-                </span>
+            <div className="grid grid-cols-2 gap-4 py-4 border-y">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">제조사</p>
+                <p className="font-medium">{electronics.brand}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="text-sm">
-                  구매시기: {PURCHASE_PERIODS[electronics.purchase_period as keyof typeof PURCHASE_PERIODS]}
-                </span>
+              <div>
+                <p className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+                  상태
+                  <button
+                    onClick={() => setShowGradeInfo(true)}
+                    className="p-0.5 hover:bg-gray-100 rounded-full transition-colors"
+                    title="등급 안내 보기"
+                  >
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                  </button>
+                </p>
+                <p className="font-medium">
+                  {electronics.is_unused ? '미개봉' : CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">카테고리</p>
+                <p className="font-medium">{ELECTRONICS_SUBCATEGORIES[electronics.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES]}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">구매시기</p>
+                <p className="font-medium">{electronics.purchase_period || '-'}</p>
               </div>
               {electronics.usage_period && (
-                <div className="flex items-center gap-2 col-span-2">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm">
-                    사용기간: {electronics.usage_period}
-                  </span>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">사용기간</p>
+                  <p className="font-medium">{electronics.usage_period}</p>
                 </div>
               )}
             </div>
 
             {/* 구성품 */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {electronics.has_box && (
-                <Badge variant="secondary">
-                  <Box className="w-3 h-3 mr-1" />
+            <div className="py-4 border-b">
+              <p className="text-sm text-gray-600 mb-2">구성품</p>
+              <div className="flex gap-3">
+                <span className={`px-2 py-1 rounded text-sm ${electronics.has_box ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
                   박스
-                </Badge>
-              )}
-              {electronics.has_charger && (
-                <Badge variant="secondary">
-                  <Settings className="w-3 h-3 mr-1" />
+                </span>
+                <span className={`px-2 py-1 rounded text-sm ${electronics.has_charger ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
                   충전기
-                </Badge>
-              )}
-              {electronics.has_manual && (
-                <Badge variant="secondary">
-                  <FileCheck className="w-3 h-3 mr-1" />
+                </span>
+                <span className={`px-2 py-1 rounded text-sm ${electronics.has_manual ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'}`}>
                   설명서
-                </Badge>
-              )}
-              {electronics.other_accessories && (
-                <Badge variant="secondary">
-                  <Package className="w-3 h-3 mr-1" />
-                  {electronics.other_accessories}
-                </Badge>
-              )}
+                </span>
+                {electronics.other_accessories && (
+                  <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+                    {electronics.other_accessories}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* 추가 정보 */}
             {(electronics.has_receipt || electronics.has_warranty_card) && (
-              <div className="flex gap-2 mb-3">
-                {electronics.has_receipt && (
-                  <Badge variant="outline" className="text-green-600">
-                    영수증 보유
-                  </Badge>
-                )}
-                {electronics.has_warranty_card && (
-                  <Badge variant="outline" className="text-green-600">
-                    보증서 보유
-                  </Badge>
-                )}
-              </div>
-            )}
-
-            {/* 조회수, 찜, 제안 */}
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <span className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                {electronics.view_count}
-              </span>
-              <span className="flex items-center gap-1">
-                <Heart className="w-4 h-4" />
-                {electronics.favorite_count}
-              </span>
-              {electronics.offer_count > 0 && (
-                <span className="flex items-center gap-1">
-                  <MessageCircle className="w-4 h-4" />
-                  제안 {electronics.offer_count}
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {formatDistanceToNow(new Date(electronics.created_at), {
-                  addSuffix: true,
-                  locale: ko
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 상품 설명 */}
-        <Card className="mb-4">
-          <CardContent className="p-4">
-            <h2 className="font-semibold mb-3">상품 설명</h2>
-            <p className="whitespace-pre-wrap text-gray-700">
-              {electronics.description}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* 거래 희망 지역 */}
-        <Card className="mb-4">
-          <CardContent className="p-4">
-            <h2 className="font-semibold mb-3">거래 희망 지역</h2>
-            {electronics.regions && electronics.regions.length > 0 ? (
-              <div className="space-y-2">
-                {electronics.regions.map((region) => (
-                  <div key={region.code} className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm">{region.name}</span>
-                  </div>
-                ))}
-                {electronics.meeting_place && (
-                  <div className="mt-2 p-3 bg-gray-50 rounded">
-                    <p className="text-sm text-gray-600">거래 시 요청사항</p>
-                    <p className="text-sm mt-1">{electronics.meeting_place}</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-sm">지역 정보가 없습니다.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 판매자 정보 */}
-        {electronics.seller && (
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <h2 className="font-semibold mb-3">판매자 정보</h2>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-gray-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{electronics.seller.nickname}</p>
-                    <p className="text-sm text-gray-500">
-                      판매 {electronics.seller.sell_count || 0}건
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 내가 한 제안 표시 */}
-        {myOffer && (
-          <Card className="mb-4 border-blue-200 bg-blue-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-blue-900">내가 제안한 금액</p>
-                  <p className="text-lg font-bold text-blue-900">
-                    {myOffer.offer_price?.toLocaleString() || myOffer.offer_price}원
-                  </p>
-                  {myOffer.message && (
-                    <p className="text-sm text-gray-600 mt-1">{myOffer.message}</p>
+              <div className="py-4 border-b">
+                <p className="text-sm text-gray-600 mb-2">추가 정보</p>
+                <div className="flex gap-3">
+                  {electronics.has_receipt && (
+                    <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+                      영수증 보유
+                    </span>
+                  )}
+                  {electronics.has_warranty_card && (
+                    <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-700">
+                      보증서 보유
+                    </span>
                   )}
                 </div>
-                <Badge variant={
-                  myOffer.status === 'accepted' ? 'default' :
-                  myOffer.status === 'rejected' ? 'destructive' :
-                  'secondary'
-                }>
-                  {myOffer.status === 'pending' && '대기중'}
-                  {myOffer.status === 'accepted' && '수락됨'}
-                  {myOffer.status === 'rejected' && '거절됨'}
-                </Badge>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
 
-        {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
-        {(electronics.status === 'trading' || electronics.status === 'sold') &&
-         user && (electronics.seller?.id === Number(user?.id) || electronics.is_mine || electronics.buyer_id === Number(user.id)) && (
-          <Card className="mb-4 border-blue-200 bg-blue-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-blue-900">
-                    {electronics.status === 'trading' ? '거래 진행 중' : '거래 완료됨'}
-                  </p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    마이페이지에서 거래 상세 정보를 확인하세요
-                  </p>
+            {/* 제품상태 및 설명 - 모바일에서만 표시 */}
+            {electronics.description && (
+              <div className="lg:hidden py-4 border-b">
+                <p className="text-sm text-gray-600 mb-2">제품상태 및 설명</p>
+                <p className="text-gray-800 whitespace-pre-wrap break-all">{electronics.description}</p>
+              </div>
+            )}
+
+            {/* 모바일: 거래 가능 지역 */}
+            {(electronics.regions && electronics.regions.length > 0) && (
+              <div className="lg:hidden py-4 border-b">
+                <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  거래 가능 지역
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {electronics.regions.map((region, index) => (
+                    <span key={index} className="px-3 py-1 bg-dungji-primary text-white rounded-full text-sm font-medium">
+                      {region.name}
+                    </span>
+                  ))}
                 </div>
-                <Link href="/used/mypage?tab=trading">
-                  <Button variant="outline" size="sm">
-                    마이페이지로 이동
-                  </Button>
-                </Link>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
 
-        {/* 받은 제안 목록 (판매자만) */}
-        {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.offer_count > 0 && (
-          <Card className="mb-20 md:mb-4">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-semibold">받은 제안</h2>
+            {/* 모바일: 거래시 요청사항 */}
+            {electronics.meeting_place && (
+              <div className="lg:hidden py-4 border-b">
+                <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                  <Info className="w-4 h-4" />
+                  거래시 요청사항
+                </p>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{electronics.meeting_place}</p>
+              </div>
+            )}
+          </div>
+
+          {/* 액션 버튼 영역 */}
+          <div className="space-y-3">
+            {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
+            {(electronics.status === 'trading' || electronics.status === 'sold') &&
+             user && (Number(user.id) === electronics.seller?.id || Number(user.id) === electronics.buyer_id) && (
+              <Link href="/used/mypage?tab=trading">
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Info className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-800">
+                        {electronics.status === 'sold'
+                          ? '거래가 완료되었습니다. 마이페이지에서 후기를 작성할 수 있습니다.'
+                          : '거래내역 바로가기'
+                        }
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-blue-600" />
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* 본인이 등록한 상품인 경우 */}
+            {user?.id === electronics.seller?.id ? (
+              <>
+                {/* 거래중 상태일 때 거래완료 버튼 비활성화 */}
+                {electronics.status === 'trading' && (
+                  <Button
+                    disabled
+                    className="w-full h-14 text-lg font-semibold bg-gray-400 cursor-not-allowed text-white mb-3"
+                  >
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    거래중
+                  </Button>
+                )}
+
+                {/* 거래완료 상태일 때 후기 작성 버튼 표시 (판매자) */}
+                {electronics.status === 'sold' && electronics.transaction_id && (
+                  <>
+                    {!reviewCompleted ? (
+                      <Button
+                        onClick={() => {
+                          setReviewTarget('buyer');
+                          setShowTradeReviewModal(true);
+                        }}
+                        className="w-full h-14 text-lg font-semibold bg-green-600 hover:bg-green-700"
+                      >
+                        <MessageSquarePlus className="w-5 h-5 mr-2" />
+                        구매자 후기 작성하기
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled
+                        className="w-full h-14 text-lg font-semibold bg-gray-400 cursor-not-allowed text-white"
+                      >
+                        <Check className="w-5 h-5 mr-2" />
+                        후기 작성 완료
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {/* 받은 제안 보기 버튼 */}
+                {electronics.status === 'active' && electronics.offer_count > 0 && (
+                  <Button
+                    onClick={() => {
+                      fetchOffers();
+                      setShowOffersModal(true);
+                    }}
+                    className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Banknote className="w-5 h-5 mr-2" />
+                    받은 제안 확인 ({electronics.offer_count}개)
+                  </Button>
+                )}
+
+                {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
+                {electronics.status === 'active' && (
+                  <div className="lg:hidden grid grid-cols-2 gap-3 mt-6">
+                    <Button
+                      onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
+                      variant="outline"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      수정하기
+                    </Button>
+                    <Button
+                      onClick={() => setShowDeleteModal(true)}
+                      variant="outline"
+                      className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      삭제하기
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              // 방문자에게 표시
+              <>
+                {/* 가격 제안 버튼 */}
+                {electronics.status === 'active' && (
+                  <Button
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        toast.error('가격 제안은 로그인 후 이용 가능합니다.');
+                        router.push('/login');
+                        return;
+                      }
+                      if (!hasUsedPhoneProfile) {
+                        toast.error('중고거래 프로필 설정이 필요합니다.');
+                        router.push('/used/mypage');
+                        return;
+                      }
+                      setShowOfferModal(true);
+                    }}
+                    className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Banknote className="w-5 h-5 mr-2" />
+                    가격 제안하기
+                  </Button>
+                )}
+
+                {/* 구매자 - 거래완료 시 후기 작성 버튼 */}
+                {electronics.status === 'sold' && electronics.buyer_id === Number(user?.id) && (
+                  <>
+                    {!reviewCompleted ? (
+                      <Button
+                        onClick={() => {
+                          setReviewTarget('seller');
+                          setShowTradeReviewModal(true);
+                        }}
+                        className="w-full h-14 text-lg font-semibold bg-green-600 hover:bg-green-700"
+                      >
+                        <MessageSquarePlus className="w-5 h-5 mr-2" />
+                        판매자 후기 작성하기
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled
+                        className="w-full h-14 text-lg font-semibold bg-gray-400 cursor-not-allowed text-white"
+                      >
+                        <Check className="w-5 h-5 mr-2" />
+                        후기 작성 완료
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {/* 메시지 버튼 */}
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    fetchOffers();
-                    setShowOffersModal(true);
-                  }}
+                  onClick={() => toast.info('메시지 기능은 준비 중입니다.')}
+                  className="h-14 text-lg"
                 >
-                  전체 보기 ({electronics.offer_count})
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  문의하기
                 </Button>
+              </>
+            )}
+
+            {/* 안전 거래 안내 */}
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg p-4 mt-4">
+              <div className="flex gap-3">
+                <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-amber-900 mb-2">둥지마켓 안전거래 약속</p>
+                  <ul className="space-y-1.5 text-amber-800">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
+                      <span>공공장소에서 만나 안전하게 거래하세요</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
+                      <span>제품 상태를 꼼꼼히 확인 후 구매 결정하세요</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
+                      <span>현금 거래로 안전하게 진행하세요</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </div>
         </div>
         </div>
         </div>
@@ -1006,100 +1134,232 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </div>
       )}
 
-      {/* 가격 제안 모달 */}
+      {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
-          <div className="bg-white w-full md:max-w-lg md:mx-4 rounded-t-2xl md:rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">{myOffer ? '제안 수정하기' : '가격 제안하기'}</h3>
-
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-2 block">제안 금액</label>
-              <div className="relative">
-                <Input
-                  type="text"
-                  value={offerAmount}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d]/g, '');
-                    setOfferAmount(value ? Number(value)?.toLocaleString() || value : '');
-                  }}
-                  placeholder="제안 금액을 입력하세요"
-                  className="pr-8"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  원
-                </span>
-              </div>
-              {electronics.min_offer_price && (
-                <p className="text-xs text-gray-500 mt-1">
-                  최소 제안 가격: {electronics.min_offer_price.toLocaleString()}원
-                </p>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-2 block">메시지 템플릿</label>
-              <div className="space-y-2">
-                {Object.entries(messageTemplates).map(([category, messages]) => (
-                  <div key={category}>
-                    <p className="text-xs text-gray-500 mb-1">{category}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {messages.map((msg) => (
-                        <button
-                          key={msg}
-                          onClick={() => {
-                            if (selectedMessages.includes(msg)) {
-                              setSelectedMessages(selectedMessages.filter(m => m !== msg));
-                            } else {
-                              setSelectedMessages([...selectedMessages, msg]);
-                            }
-                          }}
-                          className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                            selectedMessages.includes(msg)
-                              ? 'bg-primary text-white border-primary'
-                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          {msg}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-2 block">추가 메시지 (선택)</label>
-              <Textarea
-                value={offerMessage}
-                onChange={(e) => setOfferMessage(e.target.value)}
-                placeholder="추가로 전달하고 싶은 메시지를 입력하세요"
-                rows={3}
-                maxLength={200}
-              />
-              <p className="text-xs text-gray-500 mt-1 text-right">
-                {offerMessage.length}/200
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
+        <div
+          className="fixed inset-0 bg-black/60 flex items-start sm:items-center justify-center z-50 px-4 pt-16 pb-8 sm:p-4 backdrop-blur-sm"
+          style={{
+            paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+            paddingTop: window.innerWidth < 640 ? 'max(4rem, env(safe-area-inset-top))' : 'max(2rem, env(safe-area-inset-top))'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowOfferModal(false);
+              setOfferAmount('');
+              setOfferMessage('');
+              setSelectedMessages([]);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-sm sm:max-w-md w-[calc(100%-2rem)] sm:w-full p-3 sm:p-4 md:p-6 flex flex-col shadow-2xl overflow-hidden"
+            style={{
+              maxHeight: 'min(85vh, calc(100vh - 6rem))'
+            }}
+          >
+            {/* 헤더 - 더 컴팩트 */}
+            <div className="flex items-center justify-between mb-2 pb-2 border-b">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">{myOffer ? '제안 수정하기' : '가격 제안하기'}</h3>
+              <button
                 onClick={() => {
                   setShowOfferModal(false);
                   setOfferAmount('');
                   setOfferMessage('');
                   setSelectedMessages([]);
                 }}
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* 컨텐츠 영역 - 스크롤 제거 */}
+            <div className="flex-1 px-1">
+              <div className="pb-3">
+              {/* 제품 정보 미리보기 - 2줄 구성 */}
+              <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-2">
+                <p className="font-bold text-sm sm:text-base text-gray-900 truncate">
+                  {electronics.brand} {electronics.model_name}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                  {ELECTRONICS_SUBCATEGORIES[electronics.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES]} | {CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]}
+                </p>
+              </div>
+
+              <div className="mb-2">
+                <label className="block text-sm font-semibold mb-1.5 text-gray-900">
+                  제안 금액 <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="금액을 입력해주세요"
+                    value={offerAmount}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      const numbersOnly = inputValue.replace(/[^\d]/g, '');
+
+                      if (numbersOnly === '') {
+                        setOfferAmount('');
+                        return;
+                      }
+
+                      const numValue = parseInt(numbersOnly);
+                      // 최대 금액 제한 (즉시구매가까지)
+                      if (numValue > electronics.price) {
+                        return;
+                      }
+
+                      setOfferAmount(numValue.toLocaleString('ko-KR'));
+                    }}
+                    className="pr-12 h-10 sm:h-11 text-sm sm:text-base font-semibold"
+                    inputMode="numeric"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-sm">원</span>
+                </div>
+                {offerAmount && parseInt(offerAmount.replace(/[^\d]/g, '')) < (electronics.min_offer_price || 0) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    최소제안가 {electronics.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요
+                  </p>
+                )}
+                <div className="flex items-center justify-between mt-1.5">
+                  <div className="inline-flex items-center px-2.5 py-1 bg-amber-100 border border-amber-300 rounded-full">
+                    <span className="text-xs font-semibold text-amber-800">
+                      최소제안가: {electronics.min_offer_price?.toLocaleString()}원
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOfferAmount(electronics.price.toLocaleString('ko-KR'));
+                    }}
+                    className="text-sm px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold shadow-sm"
+                  >
+                    즉시구매가 {electronics.price.toLocaleString()}원
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium">
+                    메시지 선택
+                    <span className="text-xs text-gray-500 ml-1">
+                      (선택사항, 최대 5개)
+                    </span>
+                  </label>
+                  {selectedMessages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMessages([])}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      초기화
+                    </button>
+                  )}
+                </div>
+
+                {/* 선택된 메시지 표시 - 컴팩트 */}
+                {selectedMessages.length > 0 && (
+                  <div className="mb-1.5 p-2 bg-gray-50 rounded border border-gray-200">
+                    <p className="text-xs text-gray-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
+                    <div className="space-y-0.5">
+                      {selectedMessages.map((msg, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <span className="text-xs text-gray-800">• {msg}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedMessages(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
+                <div className="border rounded-lg p-2 max-h-32 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {Object.entries(messageTemplates).map(([category, messages]) => (
+                    <details key={category} className="">
+                      <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
+                        {category}
+                      </summary>
+                      <div className="mt-1 grid grid-cols-1 gap-1">
+                        {messages.map((msg) => (
+                          <button
+                            key={msg}
+                            type="button"
+                            onClick={() => {
+                              if (selectedMessages.length < 5 && !selectedMessages.includes(msg)) {
+                                setSelectedMessages(prev => [...prev, msg]);
+                              }
+                            }}
+                            disabled={selectedMessages.length >= 5 && !selectedMessages.includes(msg)}
+                            className={`text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 transition-colors ${
+                              selectedMessages.includes(msg)
+                                ? 'bg-gray-200 text-gray-800 font-medium border border-gray-400'
+                                : 'text-gray-700 border border-gray-200'
+                            } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            title={msg}
+                          >
+                            {msg}
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+
+              {/* 제안 안내사항 - 컴팩트 */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                <div className="flex items-start gap-2">
+                  <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5" />
+                  <div className="text-xs text-amber-800">
+                    <p className="font-semibold mb-0.5">안내사항</p>
+                    <p className="text-amber-700">• 가격 제안은 신중하게 부탁드립니다</p>
+                    <p className="text-amber-700">• 판매자 수락 시 거래가 진행됩니다</p>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+
+            {/* 버튼 - 초컴팩트 하단 고정 */}
+            <div className="flex gap-2 pt-2.5 border-t bg-white shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowOfferModal(false);
+                  setOfferAmount('');
+                  setSelectedMessages([]);
+                }}
+                className="flex-1 h-9 sm:h-10 text-xs sm:text-sm"
               >
                 취소
               </Button>
               <Button
-                className="flex-1"
-                onClick={handleOfferSubmit}
+                onClick={() => {
+                  const numAmount = parseInt(offerAmount.replace(/[^\d]/g, ''));
+                  // 최소제안가 검증
+                  if (numAmount < (electronics.min_offer_price || 0)) {
+                    toast.error(`최소제안가 ${electronics.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요`);
+                    return;
+                  }
+                  // 선택된 메시지들을 합쳐서 하나의 메시지로 만들기
+                  const combinedMessage = selectedMessages.join(' / ');
+                  setOfferMessage(combinedMessage);
+                  handleOfferSubmit();
+                }}
+                disabled={!offerAmount || Boolean(offerAmount && parseInt(offerAmount.replace(/[^\d]/g, '')) < (electronics.min_offer_price || 0))}
+                className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
-                제안하기
+                {myOffer ? '제안 수정하기' : '제안하기'}
               </Button>
             </div>
           </div>
@@ -1127,43 +1387,41 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             ) : offers.length > 0 ? (
               <div className="space-y-3">
                 {offers.map((offer) => (
-                  <Card key={offer.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <p className="font-medium">
-                            {typeof offer.buyer === 'object' ? offer.buyer.nickname : '구매자'}
-                          </p>
-                          <p className="text-lg font-bold text-primary">
-                            {offer.offer_price.toLocaleString()}원
-                          </p>
-                        </div>
-                        {offer.status === 'pending' && electronics?.status === 'active' && (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedOfferId(offer.id);
-                              setShowAcceptModal(true);
-                            }}
-                          >
-                            수락
-                          </Button>
-                        )}
-                        {offer.status === 'accepted' && (
-                          <Badge>수락됨</Badge>
-                        )}
+                  <div key={offer.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-medium">
+                          {typeof offer.buyer === 'object' ? offer.buyer.nickname : '구매자'}
+                        </p>
+                        <p className="text-lg font-bold text-primary">
+                          {offer.offer_price.toLocaleString()}원
+                        </p>
                       </div>
-                      {offer.message && (
-                        <p className="text-sm text-gray-600">{offer.message}</p>
+                      {offer.status === 'pending' && electronics?.status === 'active' && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedOfferId(offer.id);
+                            setShowAcceptModal(true);
+                          }}
+                        >
+                          수락
+                        </Button>
                       )}
-                      <p className="text-xs text-gray-500 mt-2">
-                        {formatDistanceToNow(new Date(offer.created_at), {
-                          addSuffix: true,
-                          locale: ko
-                        })}
-                      </p>
-                    </CardContent>
-                  </Card>
+                      {offer.status === 'accepted' && (
+                        <Badge>수락됨</Badge>
+                      )}
+                    </div>
+                    {offer.message && (
+                      <p className="text-sm text-gray-600">{offer.message}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      {formatDistanceToNow(new Date(offer.created_at), {
+                        addSuffix: true,
+                        locale: ko
+                      })}
+                    </p>
+                  </div>
                 ))}
               </div>
             ) : (

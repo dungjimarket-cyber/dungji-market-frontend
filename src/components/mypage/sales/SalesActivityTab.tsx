@@ -104,13 +104,72 @@ export default function SalesActivityTab() {
   }, [searchParams]);
 
   // 전체 목록 가져오기 (캐싱용) - 휴대폰과 전자제품 통합
-  const fetchAllListings = async (status?: string) => {
+  const fetchAllListings = async () => {
     try {
-      // 병렬로 휴대폰과 전자제품 데이터 가져오기
+      console.log('=== fetchAllListings 호출 (status 없이 전체) ===');
+
+      // 병렬로 휴대폰과 전자제품 데이터 가져오기 (전체)
       const [phoneData, electronicsData] = await Promise.all([
-        sellerAPI.getMyListings(status).catch(() => ({ results: [] })),
-        electronicsApi.getMyElectronics({ status }).catch(() => ({ results: [] }))
+        sellerAPI.getMyListings().catch((err) => {
+          console.error('Phone API error:', err);
+          return { results: [] };
+        }),
+        electronicsApi.getMyElectronics().catch((err) => {
+          console.error('Electronics API error:', err);
+          return { results: [] };
+        })
       ]);
+
+      console.log('Phone data:', phoneData);
+      console.log('Electronics data:', electronicsData);
+
+      // 데이터 정규화 및 타입 추가
+      const phones: PhoneItem[] = (Array.isArray(phoneData) ? phoneData : (phoneData.results || []))
+        .map((item: any) => ({ ...item, itemType: 'phone' as const }));
+      const electronics: ElectronicsItem[] = (Array.isArray(electronicsData) ? electronicsData : (electronicsData.results || []))
+        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
+
+      console.log('Processed phones:', phones.length, phones);
+      console.log('Processed electronics:', electronics.length, electronics);
+
+      // 통합 및 날짜순 정렬
+      const allItems = [...phones, ...electronics].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      console.log('All items:', allItems.length, allItems);
+      setAllListings(allItems); // 전체 목록 캐싱
+      return allItems;
+    } catch (error) {
+      console.error('Failed to fetch all listings:', error);
+      return [];
+    }
+  };
+
+  // 판매 상품 목록 조회 (상태별 필터링)
+  const fetchListings = async (status?: string) => {
+    setLoading(true);
+    try {
+      console.log('=== fetchListings 호출 ===');
+      console.log('status 파라미터:', status);
+
+      // 전체 목록을 먼저 가져오기 (캐시 업데이트)
+      await fetchAllListings();
+
+      // 병렬로 휴대폰과 전자제품 데이터 가져오기 (상태별)
+      const [phoneData, electronicsData] = await Promise.all([
+        sellerAPI.getMyListings(status).catch((err) => {
+          console.error('Phone API error:', err);
+          return { results: [] };
+        }),
+        electronicsApi.getMyElectronics({ status }).catch((err) => {
+          console.error('Electronics API error:', err);
+          return { results: [] };
+        })
+      ]);
+
+      console.log('Status filtered phone data:', phoneData);
+      console.log('Status filtered electronics data:', electronicsData);
 
       // 데이터 정규화 및 타입 추가
       const phones: PhoneItem[] = (Array.isArray(phoneData) ? phoneData : (phoneData.results || []))
@@ -119,25 +178,12 @@ export default function SalesActivityTab() {
         .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
 
       // 통합 및 날짜순 정렬
-      const allItems = [...phones, ...electronics].sort((a, b) =>
+      const filteredItems = [...phones, ...electronics].sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
-      setAllListings(allItems);
-      return allItems;
-    } catch (error) {
-      console.error('Failed to fetch all listings:', error);
-      return [];
-    }
-  };
-
-  // 판매 상품 목록 조회
-  const fetchListings = async (status?: string) => {
-    setLoading(true);
-    try {
-      // 직접 API 호출하여 상태별 데이터 가져오기
-      const allItems = await fetchAllListings(status);
-      setListings(allItems);
+      console.log('Filtered items for listings:', filteredItems.length, filteredItems);
+      setListings(filteredItems);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
       setListings([]);
@@ -585,13 +631,13 @@ export default function SalesActivityTab() {
           <TabsContent value="active" className="space-y-3">
             {loading ? (
               <div className="text-center py-8">로딩중...</div>
-            ) : listings.filter(item => item.status === 'active').length === 0 ? (
+            ) : listings.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 판매중인 상품이 없습니다
               </div>
             ) : (
               <>
-                {getPaginatedItems(listings.filter(item => item.status === 'active')).map((item) => (
+                {getPaginatedItems(listings).map((item) => (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
                       <Link href={getItemDetailUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
@@ -655,7 +701,7 @@ export default function SalesActivityTab() {
                     </div>
                   </Card>
                 ))}
-                <Pagination items={listings.filter(item => item.status === 'active')} />
+                <Pagination items={listings} />
               </>
             )}
           </TabsContent>
@@ -680,7 +726,7 @@ export default function SalesActivityTab() {
                         className="object-cover w-full h-full"
                       />
                     </Link>
-                    
+
                     <div className="flex-1 min-w-0">
                       <Link href={getItemDetailUrl(item)} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
                         <h4 className="font-medium text-sm truncate">
@@ -694,7 +740,7 @@ export default function SalesActivityTab() {
                         <Badge variant="outline" className="text-xs">
                           제안 {item.offer_count}건
                         </Badge>
-                        <Button 
+                        <Button
                           size="sm"
                           onClick={() => {
                             setSelectedPhone(item);
@@ -715,13 +761,13 @@ export default function SalesActivityTab() {
 
           {/* 거래중 탭 */}
           <TabsContent value="trading" className="space-y-3">
-            {listings.filter(item => item.status === 'trading').length === 0 ? (
+            {listings.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 거래중인 상품이 없습니다
               </div>
             ) : (
               <>
-              {getPaginatedItems(listings.filter(item => item.status === 'trading')).map((item) => (
+              {getPaginatedItems(listings).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <Link href={getItemDetailUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -797,20 +843,20 @@ export default function SalesActivityTab() {
                   </div>
                 </Card>
               ))}
-              <Pagination items={listings.filter(item => item.status === 'trading')} />
+              <Pagination items={listings} />
               </>
             )}
           </TabsContent>
 
           {/* 판매완료 탭 */}
           <TabsContent value="sold" className="space-y-3">
-            {listings.filter(item => item.status === 'sold').length === 0 ? (
+            {listings.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 판매완료된 상품이 없습니다
               </div>
             ) : (
               <>
-              {getPaginatedItems(listings.filter(item => item.status === 'sold')).map((item) => (
+              {getPaginatedItems(listings).map((item) => (
                 <Card key={item.id} className="p-3 sm:p-4">
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -859,7 +905,7 @@ export default function SalesActivityTab() {
                   </div>
                 </Card>
               ))}
-              <Pagination items={listings.filter(item => item.status === 'sold')} />
+              <Pagination items={listings} />
               </>
             )}
           </TabsContent>

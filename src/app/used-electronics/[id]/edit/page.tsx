@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -446,8 +445,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       <form onSubmit={handleSubmit}>
         <div className="container mx-auto px-4 py-4 max-w-2xl">
           {/* 이미지 업로드 */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
               <Label className="mb-2 flex items-center gap-2">
                 상품 이미지 <span className="text-red-500">*</span>
                 <span className="text-sm text-gray-500">
@@ -524,12 +522,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
               {errors.images && (
                 <p className="text-red-500 text-sm mt-1">{errors.images}</p>
               )}
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 기본 정보 */}
-          <Card className="mb-4">
-            <CardContent className="p-4 space-y-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4 space-y-4">
               <div>
                 <Label htmlFor="subcategory" className="flex items-center gap-2">
                   카테고리 <span className="text-red-500">*</span>
@@ -590,12 +586,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   <p className="text-red-500 text-sm mt-1">{errors.model_name}</p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 상태 정보 */}
-          <Card className="mb-4">
-            <CardContent className="p-4 space-y-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="flex items-center gap-2">
@@ -640,12 +634,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                 </div>
               </div>
 
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 구성품 */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
               <Label className="mb-3 block">구성품</Label>
 
               <div className="space-y-3">
@@ -691,12 +683,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 추가 정보 */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
               <Label className="mb-3 block">추가 정보</Label>
 
               <div className="space-y-3">
@@ -714,12 +704,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   </Label>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 가격 정보 */}
-          <Card className="mb-4">
-            <CardContent className="p-4 space-y-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4 space-y-4">
               <div>
                 <Label className="flex items-center gap-1">
                   즉시 판매가 <span className="text-red-500">*</span>
@@ -835,12 +823,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 상품 설명 */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
               <Label htmlFor="description" className="flex items-center gap-2">
                 상품 설명 <span className="text-red-500">*</span>
                 {!isFieldEditable('description') && <Lock className="w-3 h-3 text-gray-500" />}
@@ -874,12 +860,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   {formData.description.length}/2000
                 </p>
               </div>
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 거래 지역 */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
+          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
               <Label className="mb-2 block">
                 거래 희망 지역 <span className="text-red-500">*</span>
                 <span className="text-sm text-gray-500 ml-1">(최대 3개)</span>
@@ -903,12 +887,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
               {errors.regions && (
                 <p className="text-red-500 text-sm mt-1">{errors.regions}</p>
               )}
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 거래 시 요청사항 */}
-          <Card className="mb-20">
-            <CardContent className="p-4">
+          <div className="bg-white rounded-lg shadow-sm mb-20 p-4">
               <Label htmlFor="meeting_place">거래 시 요청사항</Label>
               <Textarea
                 id="meeting_place"
@@ -922,8 +904,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
               <p className="text-xs text-gray-500 mt-1 text-right">
                 {formData.meeting_place.length}/200
               </p>
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 하단 버튼 */}
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
