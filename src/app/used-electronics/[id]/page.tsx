@@ -17,10 +17,18 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
@@ -65,6 +73,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [customCancelReason, setCustomCancelReason] = useState('');
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -210,6 +221,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       return;
     }
 
+    // 기존 제안이 있으면 값을 설정
+    if (myOffer) {
+      setOfferAmount(myOffer.offer_price?.toLocaleString() || '');
+      setOfferMessage(myOffer.message || '');
+    }
     setShowOfferModal(true);
   };
 
@@ -322,6 +338,32 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     } catch (error) {
       console.error('Failed to complete transaction:', error);
       toast.error('거래 완료 처리에 실패했습니다.');
+    }
+  };
+
+  // 거래 취소
+  const handleCancelTrade = async () => {
+    if (!cancelReason) {
+      toast.error('취소 사유를 선택해주세요.');
+      return;
+    }
+
+    if (cancelReason === 'other' && !customCancelReason.trim()) {
+      toast.error('취소 사유를 입력해주세요.');
+      return;
+    }
+
+    try {
+      await electronicsApi.cancelTrade(Number(electronicsId), {
+        reason: cancelReason,
+        custom_reason: cancelReason === 'other' ? customCancelReason : undefined,
+      });
+      toast.success('거래가 취소되었습니다.');
+      setShowCancelModal(false);
+      fetchElectronicsDetail();
+    } catch (error) {
+      console.error('Failed to cancel trade:', error);
+      toast.error('거래 취소에 실패했습니다.');
     }
   };
 
@@ -675,6 +717,30 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           </Card>
         )}
 
+        {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
+        {(electronics.status === 'trading' || electronics.status === 'sold') &&
+         user && (electronics.is_mine || electronics.buyer_id === Number(user.id)) && (
+          <Card className="mb-4 border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-blue-900">
+                    {electronics.status === 'trading' ? '거래 진행 중' : '거래 완료됨'}
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    마이페이지에서 거래 상세 정보를 확인하세요
+                  </p>
+                </div>
+                <Link href="/used/mypage?tab=trading">
+                  <Button variant="outline" size="sm">
+                    마이페이지로 이동
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 받은 제안 목록 (판매자만) */}
         {electronics.is_mine && electronics.offer_count > 0 && (
           <Card className="mb-20 md:mb-4">
@@ -710,11 +776,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
             {electronics.accept_offers && (
               <Button
-                variant="outline"
+                variant={myOffer ? "default" : "outline"}
                 className="flex-1"
                 onClick={handleOffer}
+                disabled={electronics.status !== 'active'}
               >
-                가격 제안하기
+                {myOffer ? '제안 수정하기' : '가격 제안하기'}
               </Button>
             )}
 
@@ -741,12 +808,68 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               </Button>
             )}
             {electronics.status === 'trading' && (
-              <Button
-                className="flex-1"
-                onClick={handleCompleteTransaction}
-              >
-                거래 완료
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowCancelModal(true)}
+                >
+                  거래 취소
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleCompleteTransaction}
+                >
+                  거래 완료
+                </Button>
+              </>
+            )}
+            {electronics.status === 'sold' && (
+              <Link href={`/review/create?type=electronics&id=${electronicsId}&role=seller`} className="flex-1">
+                <Button className="w-full">
+                  후기 작성하기
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 구매자용 하단 버튼 */}
+      {user && electronics.buyer_id === Number(user.id) && !electronics.is_mine && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+          <div className="container mx-auto max-w-4xl flex gap-3">
+            {electronics.status === 'trading' && (
+              <>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowCancelModal(true)}
+                >
+                  거래 취소
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={async () => {
+                    try {
+                      await electronicsApi.buyerCompleteTransaction(Number(electronicsId));
+                      toast.success('구매 확정되었습니다.');
+                      fetchElectronicsDetail();
+                    } catch (error) {
+                      toast.error('구매 확정에 실패했습니다.');
+                    }
+                  }}
+                >
+                  구매 확정
+                </Button>
+              </>
+            )}
+            {electronics.status === 'sold' && (
+              <Link href={`/review/create?type=electronics&id=${electronicsId}&role=buyer`} className="flex-1">
+                <Button className="w-full">
+                  후기 작성하기
+                </Button>
+              </Link>
             )}
           </div>
         </div>
@@ -756,7 +879,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       {showOfferModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
           <div className="bg-white w-full md:max-w-lg md:mx-4 rounded-t-2xl md:rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">가격 제안하기</h3>
+            <h3 className="text-lg font-bold mb-4">{myOffer ? '제안 수정하기' : '가격 제안하기'}</h3>
 
             <div className="mb-4">
               <label className="text-sm font-medium mb-2 block">제안 금액</label>
@@ -997,6 +1120,75 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 disabled={deleting}
               >
                 {deleting ? '삭제 중...' : electronics?.offer_count > 0 ? '패널티 감수하고 삭제' : '삭제'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 거래 취소 모달 */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-md mx-4 rounded-2xl p-6">
+            <h3 className="text-lg font-bold mb-4">거래를 취소하시겠습니까?</h3>
+
+            <div className="mb-4">
+              <Label htmlFor="cancelReason">취소 사유</Label>
+              <Select value={cancelReason} onValueChange={setCancelReason}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="취소 사유를 선택해주세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="buyer_no_response">구매자 연락 두절</SelectItem>
+                  <SelectItem value="seller_no_response">판매자 연락 두절</SelectItem>
+                  <SelectItem value="changed_mind">구매 의사 변경</SelectItem>
+                  <SelectItem value="found_better_price">더 나은 조건 발견</SelectItem>
+                  <SelectItem value="product_issue">상품 문제 발견</SelectItem>
+                  <SelectItem value="other">기타</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {cancelReason === 'other' && (
+              <div className="mb-4">
+                <Label htmlFor="customReason">상세 사유</Label>
+                <Textarea
+                  id="customReason"
+                  value={customCancelReason}
+                  onChange={(e) => setCustomCancelReason(e.target.value)}
+                  placeholder="취소 사유를 입력해주세요"
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+            )}
+
+            <div className="bg-amber-50 border border-amber-200 rounded p-3 mb-4 text-sm">
+              <p className="text-amber-900 font-medium mb-1">⚠️ 주의사항</p>
+              <p className="text-amber-700">
+                거래 취소 시 상대방에게 알림이 발송되며,
+                빈번한 취소는 이용에 제한이 있을 수 있습니다.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setCancelReason('');
+                  setCustomCancelReason('');
+                }}
+              >
+                돌아가기
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleCancelTrade}
+              >
+                거래 취소
               </Button>
             </div>
           </div>

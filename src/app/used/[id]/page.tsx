@@ -1208,8 +1208,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               : phone.status === 'sold'
                               ? '거래완료된 상품입니다'
                               : myOffer && myOffer.status === 'pending'
-                              ? '￦제안 수정'
-                              : '￦가격제안'}
+                              ? '제안 수정하기'
+                              : '가격 제안하기'}
                           </Button>
                           
                           {/* 제안 취소 버튼 - 거래중/판매완료가 아닌 경우에만 표시 */}
@@ -1489,7 +1489,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           >
             {/* 헤더 - 더 컴팩트 */}
             <div className="flex items-center justify-between mb-2 pb-2 border-b">
-              <h3 className="text-base sm:text-lg font-bold text-gray-900">가격 제안하기</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">{myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}</h3>
               <button
                 onClick={() => {
                   setShowOfferModal(false);
@@ -1717,7 +1717,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || Boolean(offerAmount && parseInt(offerAmount) < (phone.min_offer_price || 0))}
                 className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
-                제안하기
+                {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '제안하기'}
               </Button>
             </div>
           </div>

@@ -75,6 +75,8 @@ export interface UsedElectronics {
   // 관계 데이터
   images?: ElectronicsImage[];
   seller_info?: SellerInfo;
+  buyer?: SellerInfo;  // 거래중/완료 상태일 때 구매자 정보
+  buyer_id?: number;   // 거래중일 때 구매자 ID
   is_favorited?: boolean;
   is_mine?: boolean;
   has_my_offer?: boolean;
