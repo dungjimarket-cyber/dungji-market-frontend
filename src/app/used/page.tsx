@@ -112,9 +112,9 @@ export default function UsedPhonesPage() {
         params.status = 'active';
       }
 
-      // 지역 필터
+      // 지역 필터 - 전자제품은 regions 파라미터 사용
       if (currentFilters.region) {
-        params.region = currentFilters.region;
+        params.regions = currentFilters.region;
       }
 
       const response = await electronicsApi.getElectronicsList(params);

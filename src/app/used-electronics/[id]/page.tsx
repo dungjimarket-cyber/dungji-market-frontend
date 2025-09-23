@@ -261,6 +261,24 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
   };
 
+  // 제안 취소
+  const handleCancelOffer = async () => {
+    if (!myOffer) return;
+
+    try {
+      // 전자제품 API는 offer ID만 필요
+      await electronicsApi.cancelOffer(myOffer.id);
+      setMyOffer(null);
+      toast.success('제안이 취소되었습니다.');
+      fetchMyOffer();
+      // offerCount 업데이트
+      setOfferCount(prev => prev !== null ? Math.max(0, prev - 1) : prev);
+    } catch (error) {
+      console.error('Failed to cancel offer:', error);
+      toast.error('제안 취소에 실패했습니다.');
+    }
+  };
+
   // 가격 제안
   const handleOffer = () => {
     if (!isAuthenticated) {
@@ -1108,7 +1126,19 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               disabled={electronics.status !== 'active'}
             >
               <Banknote className="w-4 h-4 mr-2" />
-              {myOffer ? '제안 수정하기' : '가격 제안하기'}
+              {myOffer && myOffer.status === 'pending' ? (
+                <>
+                  <span>제안 수정하기</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-2 border-red-300 text-red-600 hover:bg-red-50"
+                    onClick={handleCancelOffer}
+                  >
+                    제안 취소
+                  </Button>
+                </>
+              ) : '가격 제안하기'}
             </Button>
           </div>
         </div>
@@ -1276,7 +1306,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 남은 제안 횟수
               </span>
               <div className="flex items-center gap-1">
-                <span className="text-lg sm:text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
+                <span className="text-lg sm:text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '5'}</span>
                 <span className="text-xs sm:text-sm text-gray-600">/ 5회</span>
               </div>
             </div>
