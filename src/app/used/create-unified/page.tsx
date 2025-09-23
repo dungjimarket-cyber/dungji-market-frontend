@@ -57,27 +57,58 @@ export default function UnifiedCreatePage() {
 
       console.log('Registration limit check response:', response);
 
-      // active_count가 0인데 can_register가 false인 경우는 백엔드 버그일 가능성이 높음
-      // 이 경우 can_register를 무시하고 진행
-      const currentCount = response.active_count ?? response.current_count ?? 0;
-      const maxCount = response.max_count ?? 5;
+      if (!response.can_register) {
+        const currentCount = response.active_count ?? response.current_count ?? 0;
+        const maxCount = response.max_count ?? 5;
 
-      // active_count가 5 이상인 경우만 제한
-      if (currentCount >= maxCount) {
-        toast({
-          title: '등록 제한',
-          description: category === 'electronics'
-            ? `전자제품 최대 ${maxCount}개까지만 등록 가능합니다. (현재 ${currentCount}개)`
-            : `휴대폰 최대 ${maxCount}개까지만 등록 가능합니다. (현재 ${currentCount}개)`,
-          variant: 'destructive',
-        });
+        // 페널티가 있는 경우 우선 처리
+        if (response.penalty_end) {
+          const penaltyDate = new Date(response.penalty_end);
+          const now = new Date();
 
-        // 중고거래 마이페이지로 이동
-        router.push('/used/mypage');
-        return;
+          console.log('Penalty check:', {
+            penalty_end: response.penalty_end,
+            penaltyDate: penaltyDate.toISOString(),
+            now: now.toISOString(),
+            isPenalty: penaltyDate > now
+          });
+
+          // 패널티 시간이 미래인 경우 (아직 패널티 중)
+          if (penaltyDate > now) {
+            const diffMs = penaltyDate.getTime() - now.getTime();
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+            toast({
+              title: '등록 제한 (패널티)',
+              description: `제안받은 상품 삭제로 인한 패널티가 적용중입니다. ${hours > 0 ? `${hours}시간 ` : ''}${minutes}분 후 등록 가능합니다.`,
+              variant: 'destructive',
+            });
+
+            // 중고거래 마이페이지로 이동
+            router.push('/used/mypage');
+            return;
+          }
+        }
+
+        // 패널티가 없는 경우에만 개수 제한 체크
+        if (currentCount >= maxCount) {
+          toast({
+            title: '등록 제한',
+            description: category === 'electronics'
+              ? `전자제품 최대 ${maxCount}개까지만 등록 가능합니다. (현재 ${currentCount}개)`
+              : `휴대폰 최대 ${maxCount}개까지만 등록 가능합니다. (현재 ${currentCount}개)`,
+            variant: 'destructive',
+          });
+
+          // 중고거래 마이페이지로 이동
+          router.push('/used/mypage');
+          return;
+        }
+
+        // can_register가 false인데 위 조건들에 해당하지 않는 경우
+        console.warn('Unknown registration restriction:', response);
       }
-
-      // active_count가 5 미만이면 can_register 값과 관계없이 진행
 
       // 해당 카테고리 등록 페이지로 이동
       router.push(createPath);
