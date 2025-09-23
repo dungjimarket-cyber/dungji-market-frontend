@@ -57,11 +57,13 @@ export default function UnifiedCreatePage() {
 
       console.log('Registration limit check response:', response);
 
-      if (!response.can_register) {
-        // API 응답에 따라 적절한 필드 사용
-        const currentCount = response.active_count ?? response.current_count ?? 0;
-        const maxCount = response.max_count ?? 5;
+      // active_count가 0인데 can_register가 false인 경우는 백엔드 버그일 가능성이 높음
+      // 이 경우 can_register를 무시하고 진행
+      const currentCount = response.active_count ?? response.current_count ?? 0;
+      const maxCount = response.max_count ?? 5;
 
+      // active_count가 5 이상인 경우만 제한
+      if (currentCount >= maxCount) {
         toast({
           title: '등록 제한',
           description: category === 'electronics'
@@ -74,6 +76,8 @@ export default function UnifiedCreatePage() {
         router.push('/used/mypage');
         return;
       }
+
+      // active_count가 5 미만이면 can_register 값과 관계없이 진행
 
       // 해당 카테고리 등록 페이지로 이동
       router.push(createPath);
