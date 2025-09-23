@@ -58,7 +58,9 @@ export default function UnifiedCreatePage() {
       if (!response.can_register) {
         toast({
           title: '등록 제한',
-          description: `최대 ${response.max_count}개까지만 등록 가능합니다. (현재 ${response.current_count}개)`,
+          description: category === 'electronics'
+            ? `전자제품 최대 5개까지만 등록 가능합니다. (현재 ${response.active_count || 0}개)`
+            : `휴대폰 최대 5개까지만 등록 가능합니다. (현재 ${response.active_count || 0}개)`,
           variant: 'destructive',
         });
 
