@@ -149,11 +149,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
 
       // 이미지 설정
       if (data.images && data.images.length > 0) {
-        const formattedImages = data.images.map((img: any) => ({
+        setImages(data.images.map((img: any) => ({
           id: img.id,
-          preview: img.imageUrl || img.image,
-        }));
-        setImages(formattedImages);
+          preview: img.imageUrl
+        })));
       }
 
       // 지역 설정
@@ -267,23 +266,64 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         formDataToSend.append('regions', region.code);
       });
 
-      // 이미지 처리
+      // 이미지 처리 - 이미지가 변경된 경우에만 전송
       if (imagesModified) {
-        images.forEach((img, index) => {
-          if (img.file) {
-            formDataToSend.append('images', img.file);
-          } else if (img.id) {
-            formDataToSend.append('existing_images', img.id.toString());
+        const actualImages = images.filter(img => img && (img.file || img.preview));
+        const existingImages = actualImages.filter(img => img.preview && !img.file);
+        const newImages = actualImages.filter(img => img.file);
+
+        // 기존 이미지 ID들 전송 (유지할 이미지)
+        existingImages.forEach((image) => {
+          if (image.id) {
+            formDataToSend.append('existing_image_ids', image.id.toString());
           }
         });
+
+        // 새로 추가된 이미지만 업로드
+        if (newImages.length > 0) {
+          toast({
+            title: '이미지 처리 중...',
+            description: `새로운 이미지 ${newImages.length}개를 압축하고 있습니다.`,
+          });
+
+          for (const image of newImages) {
+            try {
+              const compressedBlob = await compressImageInBrowser(image.file!, {
+                maxWidth: 1200,
+                maxHeight: 1200,
+                quality: 0.85,
+                format: 'webp'
+              });
+
+              const compressedFile = new File(
+                [compressedBlob],
+                `image_${Date.now()}.webp`,
+                { type: 'image/webp' }
+              );
+
+              formDataToSend.append('new_images', compressedFile);
+            } catch (error) {
+              console.error('Failed to compress image:', error);
+              formDataToSend.append('new_images', image.file!);
+            }
+          }
+        }
       }
+
+      // 디버깅용 FormData 내용 출력
+      console.log('=== FormData 전송 내용 ===');
+      console.log('이미지 변경 여부:', imagesModified);
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+      console.log('========================');
 
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
         ? `${baseUrl}/used/electronics/${electronicsId}/`
         : `${baseUrl}/api/used/electronics/${electronicsId}/`;
 
       const response = await fetch(apiUrl, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
