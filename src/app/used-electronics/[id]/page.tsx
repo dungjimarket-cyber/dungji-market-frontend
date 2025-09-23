@@ -71,6 +71,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [loadingOffers, setLoadingOffers] = useState(false);
   const [myOffer, setMyOffer] = useState<ElectronicsOffer | null>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
+  const [remainingOffers, setRemainingOffers] = useState<number | null>(null);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);

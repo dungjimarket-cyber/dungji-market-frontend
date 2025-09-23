@@ -5,122 +5,118 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ChevronLeft, Upload, X, AlertCircle, Plus, Camera, Lock } from 'lucide-react';
+import Image from 'next/image';
+import {
+  ArrowLeft, Plus, X, Camera, AlertCircle, MapPin,
+  Banknote, Package, Smartphone, Info, Lock, Image as ImageIcon
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import electronicsApi from '@/lib/api/electronics';
-import type { UsedElectronics, ElectronicsFormData } from '@/types/electronics';
-import {
-  ELECTRONICS_SUBCATEGORIES,
-  CONDITION_GRADES,
-  PURCHASE_PERIODS
-} from '@/types/electronics';
-import Image from 'next/image';
-import axios from 'axios';
+import RequireAuth from '@/components/auth/RequireAuth';
+import { UsedElectronics, ELECTRONICS_SUBCATEGORIES, CONDITION_GRADES } from '@/types/electronics';
+import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
+import { searchRegionsByName } from '@/lib/api/regionService';
 
-// 제안 받은 후 수정 가능한 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'min_offer_price', 'meeting_requirements', 'images'];
-const LOCKED_FIELDS_MESSAGE = '가격 제안을 받은 후에는 즉시구매가, 최소제안가, 거래요청사항만 수정 가능합니다.';
+// 수정 가능/불가능 필드 정의
+const EDITABLE_AFTER_OFFERS = ['price', 'min_offer_price', 'meeting_place'];
+const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 가격과 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedElectronicsEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <UsedElectronicsEditClient electronicsId={id} />;
+  return (
+    <RequireAuth>
+      <UsedElectronicsEditClient electronicsId={id} />
+    </RequireAuth>
+  );
 }
 
 function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string }) {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [electronics, setElectronics] = useState<UsedElectronics | null>(null);
   const [hasOffers, setHasOffers] = useState(false);
   const [isModified, setIsModified] = useState(false);
+  const [imagesModified, setImagesModified] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const [formData, setFormData] = useState<ElectronicsFormData>({
+  // 폼 데이터
+  const [formData, setFormData] = useState({
     subcategory: 'laptop',
     brand: '',
     model_name: '',
-    purchase_period: '6months',
-    condition_grade: 'B',
-    has_box: false,
-    has_charger: true,
-    other_accessories: '',
-    has_warranty_card: false,
+    condition_grade: 'A',
     price: '',
-    accept_offers: true,  // 항상 true로 고정
     min_offer_price: '',
     description: '',
-    regions: [],
     meeting_place: '',
-    images: []
+    has_box: false,
+    has_charger: false,
+    has_manual: false,
+    other_accessories: '',
+    purchase_period: '',
+    usage_period: '',
+    is_unused: false,
+    has_receipt: false,
+    has_warranty_card: false,
   });
 
-  const [existingImages, setExistingImages] = useState<any[]>([]);
-  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [images, setImages] = useState<Array<{ file?: File; preview: string; id?: number }>>([]);
   const [selectedRegions, setSelectedRegions] = useState<any[]>([]);
-  const [availableRegions, setAvailableRegions] = useState<any[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 필드 수정 가능 여부 체크
-  const isFieldEditable = (fieldName: string) => {
-    if (!hasOffers) return true;
-    return EDITABLE_AFTER_OFFERS.includes(fieldName);
-  };
-
-  // 천원 단위로 맞추기
-  const roundToThousand = (value: string) => {
-    const num = parseInt(value);
-    if (isNaN(num)) return '';
-    const rounded = Math.round(num / 1000) * 1000;
-    return rounded.toString();
-  };
-
-  // 가격 포맷팅 (콤마 추가)
-  const formatPrice = (value: string) => {
-    const num = value.replace(/[^0-9]/g, '');
-    if (!num) return '';
-    return parseInt(num).toLocaleString();
-  };
-
-  // 가격 언포맷팅 (콤마 제거)
-  const unformatPrice = (value: string) => {
-    return value.replace(/[^0-9]/g, '');
-  };
-
-  // 상품 정보 조회
+  // 기존 상품 정보 로드
   useEffect(() => {
-    fetchElectronicsDetail();
-    fetchRegions();
-  }, [electronicsId]);
+    if (user !== undefined) {
+      fetchElectronicsDetail();
+    }
+  }, [electronicsId, user]);
 
   const fetchElectronicsDetail = async () => {
     try {
       setLoading(true);
-      const data = await electronicsApi.getElectronicsDetail(Number(electronicsId));
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used-electronics/${electronicsId}/`
+        : `${baseUrl}/api/used-electronics/${electronicsId}/`;
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast({
+            title: '상품을 찾을 수 없습니다',
+            variant: 'destructive',
+          });
+          router.push('/used-electronics');
+          return;
+        }
+        throw new Error('Failed to fetch');
+      }
+
+      const data = await response.json();
 
       // 권한 체크
-      if (!data.is_mine) {
+      if (user && data.seller?.id !== user.id) {
         toast({
-          title: '수정 권한이 없습니다.',
+          title: '수정 권한이 없습니다',
+          description: '본인이 등록한 상품만 수정할 수 있습니다.',
           variant: 'destructive',
         });
         router.push(`/used-electronics/${electronicsId}`);
@@ -128,49 +124,56 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       }
 
       setElectronics(data);
-
-      // 제안 여부 확인
       setHasOffers(data.offer_count > 0);
 
       // 폼 데이터 설정
       setFormData({
-        subcategory: data.subcategory as any,
-        brand: data.brand,
-        model_name: data.model_name,
-        purchase_period: data.purchase_period as any,
-        condition_grade: data.condition_grade as any,
-        has_box: data.has_box,
-        has_charger: data.has_charger,
+        subcategory: data.subcategory || 'laptop',
+        brand: data.brand || '',
+        model_name: data.model_name || '',
+        condition_grade: data.condition_grade || 'A',
+        price: data.price?.toString() || '',
+        min_offer_price: data.min_offer_price?.toString() || '',
+        description: data.description || '',
+        meeting_place: data.meeting_place || '',
+        has_box: data.has_box || false,
+        has_charger: data.has_charger || false,
+        has_manual: data.has_manual || false,
         other_accessories: data.other_accessories || '',
+        purchase_period: data.purchase_period || '',
+        usage_period: data.usage_period || '',
+        is_unused: data.is_unused || false,
+        has_receipt: data.has_receipt || false,
         has_warranty_card: data.has_warranty_card || false,
-        price: data.price.toString(),
-        accept_offers: true,  // 항상 true로 고정
-        min_offer_price: data.min_offer_price ? data.min_offer_price.toString() : '',
-        description: data.description,
-        regions: data.regions?.map(r => r.code) || [],
-        meeting_place: data.meeting_place,
-        images: []
       });
 
-      // 기존 이미지 설정
-      setExistingImages(data.images || []);
+      // 이미지 설정
+      if (data.images && data.images.length > 0) {
+        const formattedImages = data.images.map((img: any) => ({
+          id: img.id,
+          preview: img.imageUrl || img.image,
+        }));
+        setImages(formattedImages);
+      }
 
-      // 지역 설정 - 휴대폰과 동일한 방식
-      if (data.regions && data.regions.length > 0) {
+      // 지역 설정
+      if (Array.isArray(data.regions) && data.regions.length > 0) {
         const formattedRegions = data.regions.map((region: any) => ({
           id: region.id,
           code: region.code,
           province: region.full_name?.split(' ')[0] || region.name?.split(' ')[0] || '',
           city: region.full_name?.split(' ')[1] || region.name?.split(' ')[1] || '',
+          district: region.full_name?.split(' ')[2] || region.name?.split(' ')[2] || '',
+          name: region.name,
           full_name: region.full_name || region.name,
-          name: region.name
         }));
         setSelectedRegions(formattedRegions);
       }
+
     } catch (error) {
       console.error('Failed to fetch electronics:', error);
       toast({
-        title: '상품 정보를 불러오는데 실패했습니다.',
+        title: '상품 정보를 불러오는데 실패했습니다',
         variant: 'destructive',
       });
       router.push('/used-electronics');
@@ -179,218 +182,154 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     }
   };
 
-  const fetchRegions = async () => {
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
-      setAvailableRegions(response.data);
-    } catch (error) {
-      console.error('Failed to fetch regions:', error);
+  // 입력값 변경 처리
+  const handleInputChange = useCallback((field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setIsModified(true);
+
+    // 에러 메시지 제거
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
-  };
+  }, [errors]);
 
-  // 이미지 삭제
-  const handleRemoveExistingImage = (imageId: number) => {
-    setExistingImages(prev => prev.filter(img => img.id !== imageId));
-    setDeletedImageIds(prev => [...prev, imageId]);
-  };
-
-  // 새 이미지 추가
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const totalImages = existingImages.length - deletedImageIds.length + newImages.length + files.length;
-
-    if (totalImages > 10) {
+  // 이미지 처리
+  const handleImageUpload = useCallback(async (files: FileList) => {
+    if (images.length + files.length > 10) {
       toast({
-        title: '이미지는 최대 10개까지 등록 가능합니다.',
+        title: '이미지는 최대 10장까지 업로드 가능합니다',
         variant: 'destructive',
       });
       return;
     }
 
-    const validFiles: File[] = [];
-    const previews: string[] = [];
+    const newImages: Array<{ file: File; preview: string }> = [];
 
-    Array.from(files).forEach(file => {
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: `${file.name}은 10MB를 초과합니다.`,
-          variant: 'destructive',
-        });
-        return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      if (!file.type.startsWith('image/')) {
+        continue;
       }
 
-      validFiles.push(file);
-      previews.push(URL.createObjectURL(file));
+      try {
+        const compressedFile = await compressImageInBrowser(file);
+        const preview = URL.createObjectURL(compressedFile);
+        // Blob을 File로 변환
+        const fileFromBlob = new File([compressedFile], file.name, { type: compressedFile.type });
+        newImages.push({ file: fileFromBlob, preview });
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        const preview = URL.createObjectURL(file);
+        newImages.push({ file, preview });
+      }
+    }
+
+    setImages(prev => [...prev, ...newImages]);
+    setImagesModified(true);
+    setIsModified(true);
+  }, [images.length, toast]);
+
+  const removeImage = useCallback((index: number) => {
+    setImages(prev => {
+      const newImages = [...prev];
+      const removed = newImages.splice(index, 1)[0];
+      if (removed.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(removed.preview);
+      }
+      return newImages;
     });
-
-    setNewImages(prev => [...prev, ...validFiles]);
-    setImagePreviews(prev => [...prev, ...previews]);
-  };
-
-  // 새 이미지 제거
-  const handleRemoveNewImage = (index: number) => {
-    setNewImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => {
-      URL.revokeObjectURL(prev[index]);
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  // 지역 선택 - 휴대폰과 동일한 방식으로 처리
-  const handleRegionToggle = (region: any) => {
-    setSelectedRegions(prev => {
-      const existingIndex = prev.findIndex(r => r.code === region.code);
-      if (existingIndex >= 0) {
-        return prev.filter((_, idx) => idx !== existingIndex);
-      }
-      if (prev.length >= 3) {
-        toast({
-          title: '거래 지역은 최대 3개까지 선택 가능합니다.',
-          variant: 'destructive',
-        });
-        return prev;
-      }
-      return [...prev, region];
-    });
-  };
-
-  // 유효성 검사
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.brand || formData.brand.length > 50) {
-      newErrors.brand = '브랜드를 50자 이내로 입력해주세요';
-    }
-
-    if (!formData.model_name || formData.model_name.length > 100) {
-      newErrors.model_name = '모델명을 100자 이내로 입력해주세요';
-    }
-
-    if (!formData.price) {
-      newErrors.price = '즉시 판매가를 입력해주세요';
-    } else {
-      const price = parseInt(formData.price);
-      if (price < 1000) {
-        newErrors.price = '최소 가격은 1,000원입니다';
-      } else if (price % 1000 !== 0) {
-        newErrors.price = '가격은 천원 단위로 입력해주세요';
-      } else if (price > 100000000) {
-        newErrors.price = '최대 판매 금액은 1억원입니다';
-      }
-    }
-
-    if (!formData.min_offer_price) {
-      newErrors.min_offer_price = '최소 제안가를 입력해주세요';
-    } else {
-      const minPrice = parseInt(formData.min_offer_price);
-      if (minPrice < 1000) {
-        newErrors.min_offer_price = '최소 가격은 1,000원입니다';
-      } else if (minPrice % 1000 !== 0) {
-        newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
-      } else if (minPrice > 100000000) {
-        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
-      } else if (formData.price && minPrice >= parseInt(formData.price)) {
-        newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
-      }
-    }
-
-    if (!formData.description || formData.description.length < 10) {
-      newErrors.description = '상품 설명을 10자 이상 입력해주세요';
-    } else if (formData.description.length > 2000) {
-      newErrors.description = '상품 설명은 2000자 이내로 입력해주세요';
-    }
-
-    if (formData.meeting_place.length > 200) {
-      newErrors.meeting_place = '거래 시 요청사항은 200자 이내로 입력해주세요';
-    }
-
-    if (selectedRegions.length === 0) {
-      newErrors.regions = '거래 지역을 1개 이상 선택해주세요';
-    }
-
-    const totalImages = existingImages.length - deletedImageIds.length + newImages.length;
-    if (totalImages === 0) {
-      newErrors.images = '이미지를 1개 이상 등록해주세요';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setImagesModified(true);
+    setIsModified(true);
+  }, []);
 
   // 폼 제출
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      toast({
-        title: '입력 정보를 확인해주세요.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
 
     try {
       setSubmitting(true);
 
-      // 새 이미지 압축
-      let compressedImages: File[] = [];
-      if (newImages.length > 0) {
-        toast({
-          title: '이미지 압축 중',
-          description: `새로운 이미지 ${newImages.length}개를 압축하고 있습니다.`,
-        });
+      const token = localStorage.getItem('accessToken');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
 
-        for (const image of newImages) {
-          try {
-            const compressedBlob = await compressImageInBrowser(image, {
-              maxWidth: 1200,
-              maxHeight: 1200,
-              quality: 0.85,
-              format: 'webp'
-            });
+      const formDataToSend = new FormData();
 
-            const compressedFile = new File(
-              [compressedBlob],
-              `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.webp`,
-              { type: 'image/webp' }
-            );
-
-            compressedImages.push(compressedFile);
-          } catch (error) {
-            console.error('Failed to compress image:', error);
-            // 압축 실패 시 원본 이미지 사용
-            compressedImages.push(image);
-          }
+      // 기본 필드 추가
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formDataToSend.append(key, value.toString());
         }
+      });
+
+      // 지역 추가
+      selectedRegions.forEach(region => {
+        formDataToSend.append('regions', region.code);
+      });
+
+      // 이미지 처리
+      if (imagesModified) {
+        images.forEach((img, index) => {
+          if (img.file) {
+            formDataToSend.append('images', img.file);
+          } else if (img.id) {
+            formDataToSend.append('existing_images', img.id.toString());
+          }
+        });
       }
 
-      // 지역 데이터를 코드 배열로 변환 (백엔드 요구사항)
-      const regionCodes = selectedRegions.map((region: any) => region.code || region.id);
+      const apiUrl = baseUrl.includes('api.dungjimarket.com')
+        ? `${baseUrl}/used-electronics/${electronicsId}/`
+        : `${baseUrl}/api/used-electronics/${electronicsId}/`;
 
-      const updateData: any = {
-        ...formData,
-        regions: regionCodes,
-        deleted_image_ids: deletedImageIds,
-        images: compressedImages
-      };
-
-      await electronicsApi.updateElectronics(Number(electronicsId), updateData);
-
-      toast({
-        title: hasOffers ? '상품이 수정되었습니다. (수정됨 표시)' : '상품이 수정되었습니다.',
+      const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formDataToSend,
       });
-      router.push(`/used-electronics/${electronicsId}`);
-    } catch (error: any) {
-      console.error('Failed to update electronics:', error);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '수정에 실패했습니다');
+      }
+
       toast({
-        title: error.response?.data?.message || '수정에 실패했습니다.',
+        title: '상품이 수정되었습니다',
+        description: '변경사항이 저장되었습니다.',
+      });
+
+      router.push(`/used-electronics/${electronicsId}`);
+
+    } catch (error: any) {
+      console.error('Update failed:', error);
+      toast({
+        title: '수정에 실패했습니다',
+        description: error.message || '다시 시도해주세요.',
         variant: 'destructive',
       });
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.brand.trim()) newErrors.brand = '브랜드를 입력해주세요';
+    if (!formData.model_name.trim()) newErrors.model_name = '모델명을 입력해주세요';
+    if (!formData.price) newErrors.price = '가격을 입력해주세요';
+    if (!formData.description.trim()) newErrors.description = '상품 설명을 입력해주세요';
+    if (selectedRegions.length === 0) newErrors.regions = '거래 지역을 선택해주세요';
+    if (images.length === 0) newErrors.images = '이미지를 1장 이상 업로드해주세요';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isFieldLocked = (field: string) => {
+    return hasOffers && !EDITABLE_AFTER_OFFERS.includes(field);
   };
 
   if (loading) {
@@ -405,9 +344,9 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <p className="text-gray-500 mb-4">상품을 찾을 수 없습니다.</p>
-        <Link href="/used-electronics">
-          <Button>목록으로 돌아가기</Button>
-        </Link>
+        <Button onClick={() => router.push('/used-electronics')}>
+          목록으로 돌아가기
+        </Button>
       </div>
     );
   }
@@ -415,520 +354,214 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <div className="sticky top-0 z-40 bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+      <div className="bg-white border-b sticky top-0 z-40">
+        <div className="container max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.back()} className="p-2 -ml-2">
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <h1 className="text-lg font-semibold">상품 수정</h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                뒤로
+              </Button>
+              <h1 className="text-lg font-semibold">전자제품 수정</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/used-electronics/${electronicsId}`)}
+              >
+                취소
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting || !isModified}
+                className="min-w-[80px]"
+              >
+                {submitting ? '저장중...' : '저장'}
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 제안 후 수정 제한 안내 */}
-      {hasOffers && (
-        <div className="bg-amber-50 border-b border-amber-200">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-              <p className="text-sm text-amber-800">
-                {LOCKED_FIELDS_MESSAGE}
-              </p>
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        {hasOffers && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Lock className="w-5 h-5 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-900 mb-1">수정 제한 안내</p>
+                <p className="text-sm text-amber-700">{LOCKED_FIELDS_MESSAGE}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="container mx-auto px-4 py-4 max-w-2xl">
-          {/* 이미지 업로드 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
-              <Label className="mb-2 flex items-center gap-2">
-                상품 이미지 <span className="text-red-500">*</span>
-                <span className="text-sm text-gray-500">
-                  ({existingImages.length - deletedImageIds.length + newImages.length}/10)
-                </span>
-                {!isFieldEditable('images') && <Lock className="w-3 h-3 text-gray-500" />}
-              </Label>
-
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {/* 기존 이미지 */}
-                {existingImages
-                  .filter(img => !deletedImageIds.includes(img.id))
-                  .map((image) => (
-                    <div key={image.id} className="relative flex-shrink-0">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden border">
-                        <Image
-                          src={image.imageUrl || '/images/no-image.png'}
-                          alt="상품 이미지"
-                          width={80}
-                          height={80}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveExistingImage(image.id)}
-                        className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-
-                {/* 새 이미지 미리보기 */}
-                {imagePreviews.map((preview, index) => (
-                  <div key={`new-${index}`} className="relative flex-shrink-0">
-                    <div className="w-20 h-20 rounded-lg overflow-hidden border">
-                      <Image
-                        src={preview}
-                        alt="상품 이미지"
-                        width={80}
-                        height={80}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveNewImage(index)}
-                      className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-
-                {/* 추가 버튼 */}
-                {existingImages.length - deletedImageIds.length + newImages.length < 10 && (
-                  <label className="flex-shrink-0">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <div className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
-                      <Camera className="w-6 h-6 text-gray-400" />
-                      <span className="text-xs text-gray-500 mt-1">추가</span>
-                    </div>
-                  </label>
-                )}
-              </div>
-
-              {errors.images && (
-                <p className="text-red-500 text-sm mt-1">{errors.images}</p>
-              )}
-          </div>
-
+        <div className="space-y-6">
           {/* 기본 정보 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4 space-y-4">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">기본 정보</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="subcategory" className="flex items-center gap-2">
-                  카테고리 <span className="text-red-500">*</span>
-                  {!isFieldEditable('subcategory') && <Lock className="w-3 h-3 text-gray-500" />}
-                </Label>
-                <Select
+                <Label htmlFor="subcategory">카테고리 *</Label>
+                <select
+                  id="subcategory"
                   value={formData.subcategory}
-                  onValueChange={(value) => setFormData({ ...formData, subcategory: value as any })}
-                  disabled={!isFieldEditable('subcategory')}
+                  onChange={(e) => handleInputChange('subcategory', e.target.value)}
+                  disabled={isFieldLocked('subcategory')}
+                  className="w-full p-2 border rounded-md disabled:bg-gray-100"
                 >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="카테고리를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ELECTRONICS_SUBCATEGORIES).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {Object.entries(ELECTRONICS_SUBCATEGORIES).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+                {errors.subcategory && <p className="text-red-500 text-sm mt-1">{errors.subcategory}</p>}
               </div>
 
               <div>
-                <Label htmlFor="brand" className="flex items-center gap-2">
-                  브랜드 <span className="text-red-500">*</span>
-                  {!isFieldEditable('brand') && <Lock className="w-3 h-3 text-gray-500" />}
-                </Label>
+                <Label htmlFor="brand">브랜드 *</Label>
                 <Input
                   id="brand"
                   value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  disabled={!isFieldEditable('brand')}
+                  onChange={(e) => handleInputChange('brand', e.target.value)}
+                  disabled={isFieldLocked('brand')}
                   placeholder="예: 삼성, LG, 애플"
-                  maxLength={50}
-                  className="mt-1"
                 />
-                {errors.brand && (
-                  <p className="text-red-500 text-sm mt-1">{errors.brand}</p>
-                )}
+                {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand}</p>}
               </div>
 
-              <div>
-                <Label htmlFor="model_name" className="flex items-center gap-2">
-                  모델명 <span className="text-red-500">*</span>
-                  {!isFieldEditable('model_name') && <Lock className="w-3 h-3 text-gray-500" />}
-                </Label>
+              <div className="md:col-span-2">
+                <Label htmlFor="model_name">모델명 *</Label>
                 <Input
                   id="model_name"
                   value={formData.model_name}
-                  onChange={(e) => setFormData({ ...formData, model_name: e.target.value })}
-                  disabled={!isFieldEditable('model_name')}
-                  placeholder="예: 갤럭시북3 프로, 맥북 프로 14"
-                  maxLength={100}
-                  className="mt-1"
+                  onChange={(e) => handleInputChange('model_name', e.target.value)}
+                  disabled={isFieldLocked('model_name')}
+                  placeholder="정확한 모델명을 입력해주세요"
                 />
-                {errors.model_name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.model_name}</p>
-                )}
+                {errors.model_name && <p className="text-red-500 text-sm mt-1">{errors.model_name}</p>}
               </div>
-          </div>
-
-          {/* 상태 정보 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="flex items-center gap-2">
-                    구매 시기 <span className="text-red-500">*</span>
-                    {!isFieldEditable('purchase_period') && <Lock className="w-3 h-3 text-gray-500" />}
-                  </Label>
-                  <Select
-                    value={formData.purchase_period}
-                    onValueChange={(value) => setFormData({ ...formData, purchase_period: value as any })}
-                    disabled={!isFieldEditable('purchase_period')}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(PURCHASE_PERIODS).map(([key, value]) => (
-                        <SelectItem key={key} value={key}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>상태 등급 <span className="text-red-500">*</span></Label>
-                  <Select
-                    value={formData.condition_grade}
-                    onValueChange={(value) => setFormData({ ...formData, condition_grade: value as any })}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(CONDITION_GRADES).map(([key, value]) => (
-                        <SelectItem key={key} value={key}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-          </div>
-
-          {/* 구성품 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
-              <Label className="mb-3 block">구성품</Label>
-
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="has_box"
-                    checked={formData.has_box}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, has_box: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="has_box" className="font-normal">
-                    박스
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="has_charger"
-                    checked={formData.has_charger}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, has_charger: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="has_charger" className="font-normal">
-                    충전기/어댑터
-                  </Label>
-                </div>
-
-
-                <div>
-                  <Label htmlFor="other_accessories">기타 구성품</Label>
-                  <Input
-                    id="other_accessories"
-                    value={formData.other_accessories}
-                    onChange={(e) => setFormData({ ...formData, other_accessories: e.target.value })}
-                    placeholder="예: 키보드, 마우스, 케이스"
-                    maxLength={200}
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-gray-500 mt-1 text-right">
-                    {formData.other_accessories?.length || 0}/200
-                  </p>
-                </div>
-              </div>
-          </div>
-
-          {/* 추가 정보 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
-              <Label className="mb-3 block">추가 정보</Label>
-
-              <div className="space-y-3">
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="has_warranty_card"
-                    checked={formData.has_warranty_card}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, has_warranty_card: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="has_warranty_card" className="font-normal">
-                    보증서 보유
-                  </Label>
-                </div>
-              </div>
+            </div>
           </div>
 
           {/* 가격 정보 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4 space-y-4">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">가격 정보</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="flex items-center gap-1">
-                  즉시 판매가 <span className="text-red-500">*</span>
-                  {!isFieldEditable('price') && <Lock className="w-3 h-3 text-gray-400" />}
-                </Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="price"
-                    type="text"
-                    value={formatPrice(formData.price)}
-                    onChange={(e) => {
-                      if (!isFieldEditable('price')) {
-                        toast({
-                          title: '수정 불가',
-                          description: LOCKED_FIELDS_MESSAGE,
-                          variant: 'destructive'
-                        });
-                        return;
-                      }
-                      const unformatted = unformatPrice(e.target.value);
-                      // 최대 금액 제한 (1억원)
-                      if (parseInt(unformatted) > 100000000) {
-                        setErrors(prev => ({...prev, price: '최대 1억원까지 입력 가능합니다'}));
-                        return;
-                      } else {
-                        setErrors(prev => ({...prev, price: ''}));
-                      }
-                      setFormData({ ...formData, price: unformatted });
-                    }}
-                    onBlur={(e) => {
-                      const unformatted = unformatPrice(e.target.value);
-                      if (unformatted) {
-                        const rounded = roundToThousand(unformatted);
-                        setFormData({ ...formData, price: rounded });
-                      }
-                    }}
-                    placeholder="0"
-                    disabled={!isFieldEditable('price')}
-                    className={`pr-12 ${errors.price ? 'border-red-500' : ''}`}
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
-                </div>
-                {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
-                <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다</p>
+                <Label htmlFor="price">판매가 *</Label>
+                <Input
+                  id="price"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="0"
+                />
+                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
               </div>
 
-              {/* 가격 제안은 항상 받음 (토글 제거) */}
-              <p className="text-xs text-gray-500 mt-2 mb-3">
-                구매자가 가격을 제안할 수 있습니다. 즉시 구매도 가능합니다.
-              </p>
-
-              {/* 최소 제안가 (필수) */}
               <div>
-                <Label className="flex items-center gap-1">
-                  최소 제안가 <span className="text-red-500">*</span>
-                  {!isFieldEditable('min_offer_price') && <Lock className="w-3 h-3 text-gray-400" />}
-                </Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="min_offer_price"
-                    type="text"
-                    value={formatPrice(formData.min_offer_price || '')}
-                    onChange={(e) => {
-                      if (!isFieldEditable('min_offer_price')) {
-                        toast({
-                          title: '수정 불가',
-                          description: LOCKED_FIELDS_MESSAGE,
-                          variant: 'destructive'
-                        });
-                        return;
-                      }
-                      const unformatted = unformatPrice(e.target.value);
-                      // 최대 금액 제한 (1억원)
-                      if (parseInt(unformatted) > 100000000) {
-                        setErrors(prev => ({...prev, min_offer_price: '최대 1억원까지 입력 가능합니다'}));
-                        return;
-                      } else {
-                        setErrors(prev => ({...prev, min_offer_price: ''}));
-                      }
-                      setFormData({
-                        ...formData,
-                        min_offer_price: unformatted
-                      });
-                    }}
-                    onBlur={(e) => {
-                      const unformatted = unformatPrice(e.target.value);
-                      if (unformatted) {
-                        const rounded = roundToThousand(unformatted);
-                        setFormData({ ...formData, min_offer_price: rounded });
-                      }
-                    }}
-                    placeholder="0"
-                    disabled={!isFieldEditable('min_offer_price')}
-                    className={`pr-12 ${errors.min_offer_price ? 'border-red-500' : ''}`}
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
-                </div>
-                {errors.min_offer_price && <p className="text-xs text-red-500 mt-1">{errors.min_offer_price}</p>}
-                <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)</p>
-                <p className="text-xs text-gray-500">구매자가 제안할 수 있는 최소 금액입니다</p>
+                <Label htmlFor="min_offer_price">최소 제안가</Label>
+                <Input
+                  id="min_offer_price"
+                  value={formData.min_offer_price}
+                  onChange={(e) => handleInputChange('min_offer_price', e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="0"
+                />
               </div>
-
-              {/* 가격 정보 표시 */}
-              {formData.price && formData.min_offer_price && (
-                <div className="bg-gray-50 p-3 rounded-lg mt-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">즉시 판매가:</span>
-                    <span className="font-medium">{parseInt(formData.price).toLocaleString('ko-KR')}원</span>
-                  </div>
-                  <div className="flex justify-between text-sm mt-1">
-                    <span className="text-gray-600">최소 제안가:</span>
-                    <span className="font-medium">{parseInt(formData.min_offer_price).toLocaleString('ko-KR')}원</span>
-                  </div>
-                </div>
-              )}
+            </div>
           </div>
 
           {/* 상품 설명 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
-              <Label htmlFor="description" className="flex items-center gap-2">
-                상품 설명 <span className="text-red-500">*</span>
-                {!isFieldEditable('description') && <Lock className="w-3 h-3 text-gray-500" />}
-              </Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                disabled={!isFieldEditable('description')}
-                placeholder="상품에 대해 자세히 설명해주세요
-
-💻 상품 상태: 외관, 기능, 성능 등의 상세 설명
-🔧 특이사항: 수리 이력, 업그레이드 내역, 문제점 등
-⚡ 성능 정보: 속도, 용량, 배터리 상태, 사양 등
-🎯 판매 이유: 왜 판매하는지 간단한 설명
-✨ 장점/특징: 제품의 특별한 장점이나 특징
-
-구매자가 충분히 검토할 수 있도록 솔직하고 자세하게 작성해주세요."
-                rows={10}
-                minLength={10}
-                maxLength={2000}
-                className={`min-h-[250px] resize-y mt-1 ${!isFieldEditable('description') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              />
-              <div className="flex justify-between items-center mt-1">
-                {errors.description ? (
-                  <p className="text-red-500 text-sm">{errors.description}</p>
-                ) : (
-                  <p className="text-xs text-gray-500">최소 10자 이상 입력해주세요</p>
-                )}
-                <p className="text-xs text-gray-500">
-                  {formData.description.length}/2000
-                </p>
-              </div>
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">상품 설명</h2>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              disabled={isFieldLocked('description')}
+              placeholder="상품의 상태, 특징 등을 자세히 설명해주세요"
+              rows={5}
+            />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
           </div>
 
-          {/* 거래 지역 */}
-          <div className="bg-white rounded-lg shadow-sm mb-4 p-4">
-              <Label className="mb-2 block">
-                거래 희망 지역 <span className="text-red-500">*</span>
-                <span className="text-sm text-gray-500 ml-1">(최대 3개)</span>
-              </Label>
+          {/* 이미지 */}
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">상품 이미지</h2>
 
-              <div className="space-y-2">
-                {availableRegions.map((region) => (
-                  <div key={region.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`region-${region.id}`}
-                      checked={selectedRegions.includes(region.id)}
-                      onCheckedChange={() => handleRegionToggle(region.id)}
-                    />
-                    <Label htmlFor={`region-${region.id}`} className="font-normal cursor-pointer">
-                      {region.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {images.map((img, index) => (
+                <div key={index} className="relative aspect-square border rounded-lg overflow-hidden">
+                  <Image
+                    src={img.preview}
+                    alt={`상품 이미지 ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    onClick={() => removeImage(index)}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
 
-              {errors.regions && (
-                <p className="text-red-500 text-sm mt-1">{errors.regions}</p>
+              {images.length < 10 && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-gray-400"
+                >
+                  <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                  <span className="text-xs text-gray-500">추가</span>
+                </button>
               )}
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+            />
+            {errors.images && <p className="text-red-500 text-sm mt-2">{errors.images}</p>}
           </div>
 
-          {/* 거래 시 요청사항 */}
-          <div className="bg-white rounded-lg shadow-sm mb-20 p-4">
-              <Label htmlFor="meeting_place">거래 시 요청사항</Label>
-              <Textarea
-                id="meeting_place"
-                value={formData.meeting_place}
-                onChange={(e) => setFormData({ ...formData, meeting_place: e.target.value })}
-                placeholder="예: 강남역 2번 출구, 저녁 7시 이후 가능"
-                rows={3}
-                maxLength={200}
-                className="mt-1"
-              />
-              <p className="text-xs text-gray-500 mt-1 text-right">
-                {formData.meeting_place.length}/200
-              </p>
-          </div>
+          {/* 거래 정보 */}
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
 
-          {/* 하단 버튼 */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
-            <div className="container mx-auto max-w-2xl flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => router.back()}
-                disabled={submitting}
-              >
-                취소
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                disabled={submitting}
-              >
-                {submitting ? '수정 중...' : '수정 완료'}
-              </Button>
+            <div className="space-y-4">
+              <div>
+                <Label>거래 가능 지역 *</Label>
+                <MultiRegionDropdown
+                  selectedRegions={selectedRegions}
+                  onSelectionChange={setSelectedRegions}
+                />
+                {errors.regions && <p className="text-red-500 text-sm mt-1">{errors.regions}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="meeting_place">거래 요청사항</Label>
+                <Textarea
+                  id="meeting_place"
+                  value={formData.meeting_place}
+                  onChange={(e) => handleInputChange('meeting_place', e.target.value)}
+                  placeholder="만날 장소, 시간대 등 거래 관련 요청사항을 입력하세요"
+                  rows={3}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
