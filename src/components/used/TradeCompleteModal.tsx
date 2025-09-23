@@ -20,6 +20,7 @@ interface TradeCompleteModalProps {
   phoneId: number;
   phoneModel: string;
   isSeller: boolean;
+  itemType?: 'phone' | 'electronics';
   onComplete?: () => void;
 }
 
@@ -29,6 +30,7 @@ export default function TradeCompleteModal({
   phoneId,
   phoneModel,
   isSeller,
+  itemType = 'phone',
   onComplete,
 }: TradeCompleteModalProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,8 +39,12 @@ export default function TradeCompleteModal({
     setIsLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
+      const apiPath = itemType === 'electronics'
+        ? `used/electronics/${phoneId}/complete_transaction/`
+        : `used/phones/${phoneId}/complete-trade/`;
+
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/complete-trade/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/${apiPath}`,
         {},
         {
           headers: {

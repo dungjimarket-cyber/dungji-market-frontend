@@ -24,6 +24,7 @@ interface TradeReviewModalProps {
   isSeller: boolean;
   partnerName: string;
   phoneModel: string;
+  itemType?: 'phone' | 'electronics';
   onReviewComplete?: () => void;
 }
 
@@ -34,6 +35,7 @@ export default function TradeReviewModal({
   isSeller,
   partnerName,
   phoneModel,
+  itemType = 'phone',
   onReviewComplete,
 }: TradeReviewModalProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -78,11 +80,14 @@ export default function TradeReviewModal({
       };
 
       console.log('Review POST request data:', requestData);
-      console.log('Review POST URL:', `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/simple/`);
+      const apiPath = itemType === 'electronics'
+        ? 'used/electronics/reviews/simple/'
+        : 'used/reviews/simple/';
+      console.log('Review POST URL:', `${process.env.NEXT_PUBLIC_API_URL}/${apiPath}`);
 
       // 새로운 간단한 API 사용
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/simple/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/${apiPath}`,
         requestData,
         {
           headers: {

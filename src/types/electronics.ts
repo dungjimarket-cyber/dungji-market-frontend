@@ -77,6 +77,7 @@ export interface UsedElectronics {
   seller_info?: SellerInfo;
   buyer?: SellerInfo;  // 거래중/완료 상태일 때 구매자 정보
   buyer_id?: number;   // 거래중일 때 구매자 ID
+  transaction_id?: number;  // 거래 ID
   is_favorited?: boolean;
   is_mine?: boolean;
   has_my_offer?: boolean;
@@ -186,9 +187,9 @@ export interface ElectronicsListResponse {
 }
 
 export interface ElectronicsCheckLimitResponse {
-  current_count: number;
-  max_count: number;
+  active_count: number;
   can_register: boolean;
+  penalty_end: string | null;
 }
 
 // ============================================

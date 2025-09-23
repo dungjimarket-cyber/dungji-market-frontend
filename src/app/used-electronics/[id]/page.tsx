@@ -15,6 +15,8 @@ import {
   CheckCircle2, MessageSquarePlus, Calendar, Tag, Box, FileCheck, Settings
 } from 'lucide-react';
 import Link from 'next/link';
+import TradeCompleteModal from '@/components/used/TradeCompleteModal';
+import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -76,6 +78,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [customCancelReason, setCustomCancelReason] = useState('');
+  const [showTradeCompleteModal, setShowTradeCompleteModal] = useState(false);
+  const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
+  const [reviewCompleted, setReviewCompleted] = useState(false);
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -348,16 +354,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
   };
 
-  // 거래 완료
-  const handleCompleteTransaction = async () => {
-    try {
-      await electronicsApi.completeTransaction(Number(electronicsId));
-      toast.success('거래가 완료되었습니다.');
-      fetchElectronicsDetail();
-    } catch (error) {
-      console.error('Failed to complete transaction:', error);
-      toast.error('거래 완료 처리에 실패했습니다.');
-    }
+  // 거래 완료 - 모달 열기로 변경
+  const handleCompleteTransaction = () => {
+    setShowTradeCompleteModal(true);
   };
 
   // 거래 취소
@@ -946,12 +945,21 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </Button>
               </>
             )}
-            {electronics.status === 'sold' && (
-              <Link href={`/review/create?type=electronics&id=${electronicsId}&role=seller`} className="flex-1">
-                <Button className="w-full">
-                  후기 작성하기
-                </Button>
-              </Link>
+            {electronics.status === 'sold' && !reviewCompleted && (
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  setReviewTarget('buyer');
+                  setShowTradeReviewModal(true);
+                }}
+              >
+                후기 작성하기
+              </Button>
+            )}
+            {electronics.status === 'sold' && reviewCompleted && (
+              <Button className="flex-1" disabled>
+                후기 작성 완료
+              </Button>
             )}
           </div>
         </div>
@@ -972,26 +980,27 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </Button>
                 <Button
                   className="flex-1"
-                  onClick={async () => {
-                    try {
-                      await electronicsApi.buyerCompleteTransaction(Number(electronicsId));
-                      toast.success('구매 확정되었습니다.');
-                      fetchElectronicsDetail();
-                    } catch (error) {
-                      toast.error('구매 확정에 실패했습니다.');
-                    }
-                  }}
+                  onClick={() => setShowTradeCompleteModal(true)}
                 >
                   구매 확정
                 </Button>
               </>
             )}
-            {electronics.status === 'sold' && (
-              <Link href={`/review/create?type=electronics&id=${electronicsId}&role=buyer`} className="flex-1">
-                <Button className="w-full">
-                  후기 작성하기
-                </Button>
-              </Link>
+            {electronics.status === 'sold' && !reviewCompleted && (
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  setReviewTarget('seller');
+                  setShowTradeReviewModal(true);
+                }}
+              >
+                후기 작성하기
+              </Button>
+            )}
+            {electronics.status === 'sold' && reviewCompleted && (
+              <Button className="flex-1" disabled>
+                후기 작성 완료
+              </Button>
             )}
           </div>
         </div>
@@ -1370,6 +1379,47 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             )}
           </div>
         </div>
+      )}
+
+      {/* 거래완료 모달 */}
+      {showTradeCompleteModal && electronics && (
+        <TradeCompleteModal
+          isOpen={showTradeCompleteModal}
+          onClose={() => setShowTradeCompleteModal(false)}
+          phoneId={parseInt(electronicsId)}
+          phoneModel={electronics.model_name || ''}
+          isSeller={user?.id === electronics.seller_info?.id || electronics.is_mine === true}
+          itemType="electronics"
+          onComplete={() => {
+            fetchElectronicsDetail();
+            setShowTradeCompleteModal(false);
+            toast.success('거래가 완료되었습니다. 후기를 작성해주세요!');
+          }}
+        />
+      )}
+
+      {/* 후기 작성 모달 */}
+      {showTradeReviewModal && reviewTarget && electronics && (
+        <TradeReviewModal
+          isOpen={showTradeReviewModal}
+          onClose={() => {
+            setShowTradeReviewModal(false);
+            setReviewTarget(null);
+          }}
+          transactionId={electronics.transaction_id || 0}
+          isSeller={reviewTarget === 'buyer'}
+          partnerName={reviewTarget === 'buyer' ?
+            (electronics.buyer?.nickname || electronics.buyer?.username || '구매자') :
+            (electronics.seller_info?.nickname || electronics.seller_info?.username || '판매자')}
+          phoneModel={electronics.model_name || ''}
+          itemType="electronics"
+          onReviewComplete={() => {
+            setReviewCompleted(true);
+            fetchElectronicsDetail();
+            setShowTradeReviewModal(false);
+            toast.success('후기가 작성되었습니다.');
+          }}
+        />
       )}
     </div>
   );
