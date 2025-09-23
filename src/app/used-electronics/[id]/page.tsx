@@ -1526,7 +1526,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               </p>
               {parseInt(offerAmount) === electronics.price && (
                 <div className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full mb-2">
-                  판매자가 설정한 즉시구매가
+                  판매자가 설정한 즉시판매가
                 </div>
               )}
               <p className="text-sm text-gray-600">
