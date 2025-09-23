@@ -467,11 +467,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
             {/* 가격 정보 - 휴대폰과 동일한 스타일 */}
             <div className="mb-4">
-              {electronics.status === 'completed' ? (
+              {electronics.status === 'sold' ? (
                 // 거래완료 상품
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-bold text-gray-700">
-                    {(electronics.final_price || electronics.price)?.toLocaleString() || electronics.final_price || electronics.price}원
+                    {electronics.price?.toLocaleString() || electronics.price}원
                   </span>
                   <Badge variant="secondary">거래완료</Badge>
                 </div>

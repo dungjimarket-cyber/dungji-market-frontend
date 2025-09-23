@@ -380,11 +380,11 @@ function UsedElectronicsListPageContent() {
 
                     {/* 가격 - 휴대폰과 동일한 스타일 */}
                     <div className="mb-2">
-                      {item.status === 'completed' ? (
+                      {item.status === 'sold' ? (
                         // 거래완료 상품
                         <div className="flex items-baseline gap-1">
                           <span className="text-base font-bold text-gray-700">
-                            {(item.final_price || item.price)?.toLocaleString() || item.final_price || item.price}원
+                            {item.price?.toLocaleString() || item.price}원
                           </span>
                         </div>
                       ) : (
