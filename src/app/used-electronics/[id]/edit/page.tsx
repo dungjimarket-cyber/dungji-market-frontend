@@ -542,29 +542,30 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
           </div>
         </div>
 
-        {/* 하단 버튼 영역 - 모바일 최적화 */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-[100]">
-          <div className="p-4 pb-6">
-            <div className="container mx-auto max-w-3xl flex gap-3">
-              <Button
-                type="button"
-                onClick={() => router.back()}
-                variant="outline"
-                className="flex-1 h-12 text-base font-medium"
-              >
-                취소
-              </Button>
-              <Button
-                type="submit"
-                onClick={handleSubmit}
-                disabled={submitting || !isModified}
-                className="flex-1 h-12 text-base font-medium"
-              >
-                {submitting ? '저장중...' : '저장'}
-              </Button>
-            </div>
+        {/* 하단 버튼 영역 */}
+        <div className="mt-8 border-t pt-6">
+          <div className="container mx-auto max-w-3xl flex gap-3 px-4">
+            <Button
+              type="button"
+              onClick={() => router.back()}
+              variant="outline"
+              className="flex-1 h-12 text-base font-medium"
+            >
+              취소
+            </Button>
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={submitting || !isModified}
+              className="flex-1 h-12 text-base font-medium"
+            >
+              {submitting ? '저장중...' : '저장'}
+            </Button>
           </div>
         </div>
+
+        {/* 하단 여백 */}
+        <div className="pb-8"></div>
       </div>
     </div>
   );
