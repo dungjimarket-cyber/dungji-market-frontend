@@ -570,6 +570,32 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             ))}
           </div>
         )}
+
+        {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
+        {electronics.is_mine && electronics.status === 'active' && (
+          <div className="hidden lg:block mt-8 pt-6 border-t">
+            <div className="flex justify-start gap-6 ml-4">
+              <Button
+                onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 px-6"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                수정하기
+              </Button>
+              <Button
+                onClick={() => setShowDeleteModal(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                삭제하기
+              </Button>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* 상품 정보 섹션 */}
@@ -879,19 +905,29 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </div>
       )}
 
-      {/* 판매자용 하단 버튼 */}
+      {/* 판매자용 하단 버튼 (모바일만) */}
       {electronics.is_mine && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
           <div className="container mx-auto max-w-4xl flex gap-3">
             {electronics.status === 'active' && (
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                삭제
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  수정
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  삭제
+                </Button>
+              </>
             )}
             {electronics.status === 'trading' && (
               <>
