@@ -805,6 +805,14 @@ export default function PurchaseActivityTab() {
                 const primaryImage = itemImages[0];
                 const imageUrl = offer.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
 
+                // 디버깅 로그
+                console.log('=== 구매내역 아이템 렌더링 ===');
+                console.log('Offer:', offer);
+                console.log('Item Type:', offer.itemType || (offer.phone ? 'phone' : 'electronics'));
+                console.log('Item URL:', itemUrl);
+                console.log('Phone ID:', offer.phone?.id);
+                console.log('Electronics ID:', offer.electronics?.id || offer.electronics_info?.id);
+
                 return (
                   <Card key={offer.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">

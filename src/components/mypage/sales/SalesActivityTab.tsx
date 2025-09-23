@@ -127,7 +127,10 @@ export default function SalesActivityTab() {
       const phones: PhoneItem[] = (Array.isArray(phoneData) ? phoneData : (phoneData.results || []))
         .map((item: any) => ({ ...item, itemType: 'phone' as const }));
       const electronics: ElectronicsItem[] = (Array.isArray(electronicsData) ? electronicsData : (electronicsData.results || []))
-        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
+        .map((item: any) => {
+          console.log('Processing electronics item:', item);
+          return { ...item, itemType: 'electronics' as const };
+        });
 
       console.log('Processed phones:', phones.length, phones);
       console.log('Processed electronics:', electronics.length, electronics);
@@ -175,7 +178,10 @@ export default function SalesActivityTab() {
       const phones: PhoneItem[] = (Array.isArray(phoneData) ? phoneData : (phoneData.results || []))
         .map((item: any) => ({ ...item, itemType: 'phone' as const }));
       const electronics: ElectronicsItem[] = (Array.isArray(electronicsData) ? electronicsData : (electronicsData.results || []))
-        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
+        .map((item: any) => {
+          console.log('Processing electronics item:', item);
+          return { ...item, itemType: 'electronics' as const };
+        });
 
       // 통합 및 날짜순 정렬
       const filteredItems = [...phones, ...electronics].sort((a, b) =>
@@ -691,7 +697,16 @@ export default function SalesActivityTab() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => router.push(getItemEditUrl(item))}
+                            onClick={() => {
+                              const editUrl = getItemEditUrl(item);
+                              console.log('=== 판매내역 상품 수정 버튼 클릭 ===');
+                              console.log('Item:', item);
+                              console.log('Item Type:', item.itemType);
+                              console.log('Edit URL:', editUrl);
+                              console.log('Is Phone Item:', isPhoneItem(item));
+                              console.log('Is Electronics Item:', isElectronicsItem(item));
+                              router.push(editUrl);
+                            }}
                           >
                             상품 수정
                           </Button>
