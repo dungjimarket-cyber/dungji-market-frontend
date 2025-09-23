@@ -403,7 +403,7 @@ export default function SalesActivityTab() {
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
         const apiUrl = itemType === 'phone'
           ? `${baseUrl}/used/phones/${itemId}/cancel-trade/`
           : `${baseUrl}/used/electronics/${itemId}/cancel-trade/`;
