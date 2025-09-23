@@ -884,128 +884,92 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 )}
 
                 {/* 거래완료 상태일 때 후기 작성 버튼 표시 (판매자) */}
-                {electronics.status === 'sold' && electronics.transaction_id && (
-                  <>
-                    {!reviewCompleted ? (
-                      <Button
-                        onClick={() => {
-                          setReviewTarget('buyer');
-                          setShowTradeReviewModal(true);
-                        }}
-                        className="w-full h-14 text-lg font-semibold bg-green-600 hover:bg-green-700"
-                      >
-                        <MessageSquarePlus className="w-5 h-5 mr-2" />
-                        구매자 후기 작성하기
-                      </Button>
-                    ) : (
-                      <Button
-                        disabled
-                        className="w-full h-14 text-lg font-semibold bg-gray-400 cursor-not-allowed text-white"
-                      >
-                        <Check className="w-5 h-5 mr-2" />
-                        후기 작성 완료
-                      </Button>
-                    )}
-                  </>
+                {electronics.status === 'sold' && electronics.seller?.id === user?.id && (
+                  <Button
+                    disabled
+                    className="w-full h-14 text-lg font-semibold mb-3 bg-gray-400 cursor-not-allowed text-white"
+                  >
+                    <Check className="w-5 h-5 mr-2" />
+                    판매완료
+                  </Button>
                 )}
 
-                {/* 받은 제안 보기 버튼 */}
-                {electronics.status === 'active' && electronics.offer_count > 0 && (
+                {/* 판매중일 때만 제안 보기 버튼 표시 */}
+                {electronics.status === 'active' && (
                   <Button
                     onClick={() => {
                       fetchOffers();
                       setShowOffersModal(true);
                     }}
-                    className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
+                    className="w-full h-14 text-lg font-semibold bg-dungji-secondary hover:bg-dungji-secondary-dark"
+                    disabled={loadingOffers}
                   >
-                    <Banknote className="w-5 h-5 mr-2" />
-                    받은 제안 확인 ({electronics.offer_count}개)
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    받은 제안 보기 {electronics.offer_count > 0 && `(${electronics.offer_count})`}
                   </Button>
                 )}
 
-                {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
-                {electronics.status === 'active' && (
-                  <div className="lg:hidden grid grid-cols-2 gap-3 mt-6">
-                    <Button
-                      onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
-                      variant="outline"
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      수정하기
-                    </Button>
-                    <Button
-                      onClick={() => setShowDeleteModal(true)}
-                      variant="outline"
-                      className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      삭제하기
-                    </Button>
-                  </div>
-                )}
               </>
             ) : (
-              // 방문자에게 표시
+              /* 다른 사람의 상품인 경우 */
               <>
-                {/* 가격 제안 버튼 */}
-                {electronics.status === 'active' && (
-                  <Button
-                    onClick={() => {
-                      if (!isAuthenticated) {
-                        toast.error('가격 제안은 로그인 후 이용 가능합니다.');
-                        router.push('/login');
-                        return;
-                      }
-                      if (!hasUsedPhoneProfile) {
-                        toast.error('중고거래 프로필 설정이 필요합니다.');
-                        router.push('/used/mypage');
-                        return;
-                      }
-                      setShowOfferModal(true);
-                    }}
-                    className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Banknote className="w-5 h-5 mr-2" />
-                    가격 제안하기
-                  </Button>
+                {/* 거래가 완료된 경우 안내 메시지 (제3자에게만 표시, 구매자는 위에서 이미 표시) */}
+                {electronics.status === 'sold' && electronics.buyer?.id !== user?.id && (
+                  <div className="p-4 bg-gray-100 rounded-lg mb-3">
+                    <p className="text-center text-gray-600 font-medium">
+                      거래가 완료된 상품입니다
+                    </p>
+                  </div>
                 )}
 
-                {/* 구매자 - 거래완료 시 후기 작성 버튼 */}
-                {electronics.status === 'sold' && electronics.buyer_id === Number(user?.id) && (
-                  <>
-                    {!reviewCompleted ? (
-                      <Button
-                        onClick={() => {
-                          setReviewTarget('seller');
-                          setShowTradeReviewModal(true);
-                        }}
-                        className="w-full h-14 text-lg font-semibold bg-green-600 hover:bg-green-700"
-                      >
-                        <MessageSquarePlus className="w-5 h-5 mr-2" />
-                        판매자 후기 작성하기
-                      </Button>
-                    ) : (
-                      <Button
-                        disabled
-                        className="w-full h-14 text-lg font-semibold bg-gray-400 cursor-not-allowed text-white"
-                      >
-                        <Check className="w-5 h-5 mr-2" />
-                        후기 작성 완료
-                      </Button>
-                    )}
-                  </>
-                )}
+                <>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => {
+                        // 로그인 체크
+                        if (!isAuthenticated) {
+                          toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
+                            duration: 3000,
+                          });
+                          router.push('/login');
+                          return;
+                        }
 
-                {/* 메시지 버튼 */}
-                <Button
-                  variant="outline"
-                  onClick={() => toast.info('메시지 기능은 준비 중입니다.')}
-                  className="h-14 text-lg"
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  문의하기
-                </Button>
+                        // 프로필 체크
+                        if (!hasUsedPhoneProfile) {
+                          toast.error('중고거래 프로필 설정이 필요합니다.', {
+                            duration: 3000,
+                          });
+                          return;
+                        }
+
+                        if (myOffer && myOffer.status === 'pending') {
+                          // 수정 제안 - 기존 금액과 메시지 설정
+                          setOfferAmount(myOffer.offer_price?.toLocaleString() || '');
+                          setOfferMessage(myOffer.message || '');
+                          setShowOfferModal(true);
+                        } else {
+                          // 신규 제안
+                          setShowOfferModal(true);
+                        }
+                      }}
+                      className={`w-full h-14 text-lg font-semibold ${
+                        electronics.status !== 'active'
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      } text-white`}
+                      disabled={electronics.status !== 'active' || (remainingOffers !== null && remainingOffers <= 0 && !myOffer)}
+                    >
+                      {electronics.status === 'trading'
+                        ? '거래중인 상품입니다'
+                        : electronics.status === 'sold'
+                        ? '거래완료된 상품입니다'
+                        : myOffer && myOffer.status === 'pending'
+                        ? '제안 수정하기'
+                        : '가격 제안하기'}
+                    </Button>
+                  </div>
+                </>
               </>
             )}
 
@@ -1049,20 +1013,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
             </button>
 
-            {electronics.accept_offers && (
-              <Button
-                variant={myOffer ? "default" : "outline"}
-                className="flex-1"
-                onClick={handleOffer}
-                disabled={electronics.status !== 'active'}
-              >
-                {myOffer ? '제안 수정하기' : '가격 제안하기'}
-              </Button>
-            )}
-
-            <Button className="flex-1">
-              <MessageSquarePlus className="w-4 h-4 mr-2" />
-              문의하기
+            <Button
+              variant={myOffer ? "default" : "outline"}
+              className="flex-1"
+              onClick={handleOffer}
+              disabled={electronics.status !== 'active'}
+            >
+              <Banknote className="w-4 h-4 mr-2" />
+              {myOffer ? '제안 수정하기' : '가격 제안하기'}
             </Button>
           </div>
         </div>
