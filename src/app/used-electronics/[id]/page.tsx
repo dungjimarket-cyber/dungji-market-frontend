@@ -414,7 +414,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
       // TODO: 백엔드에서 패널티 정보 반환 시 처리
       toast.success('상품이 삭제되었습니다.');
-      router.push('/used-electronics');
+      router.push('/used/mypage?tab=sales');
     } catch (error: any) {
       console.error('Failed to delete electronics:', error);
 

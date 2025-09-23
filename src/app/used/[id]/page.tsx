@@ -533,7 +533,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       }
 
       setShowDeleteModal(false);
-      router.push('/used');
+      router.push('/used/mypage?tab=sales');
 
     } catch (error) {
       console.error('Failed to delete phone:', error);

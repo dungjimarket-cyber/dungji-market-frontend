@@ -104,7 +104,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
             title: '상품을 찾을 수 없습니다',
             variant: 'destructive',
           });
-          router.push('/used/electronics');
+          router.push('/used-electronics');
           return;
         }
         throw new Error('Failed to fetch');
@@ -300,7 +300,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         description: '변경사항이 저장되었습니다.',
       });
 
-      router.push(`/used/electronics/${electronicsId}`);
+      router.push(`/used-electronics/${electronicsId}`);
 
     } catch (error: any) {
       console.error('Update failed:', error);
@@ -344,7 +344,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <p className="text-gray-500 mb-4">상품을 찾을 수 없습니다.</p>
-        <Button onClick={() => router.push('/used/electronics')}>
+        <Button onClick={() => router.push('/used-electronics')}>
           목록으로 돌아가기
         </Button>
       </div>
@@ -372,7 +372,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => router.push(`/used/electronics/${electronicsId}`)}
+                onClick={() => router.push(`/used-electronics/${electronicsId}`)}
               >
                 취소
               </Button>
