@@ -21,7 +21,7 @@ export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
  */
 export interface UsedElectronics {
   id: number;
-  seller: number;
+  seller?: SellerInfo;  // seller 객체로 변경
 
   // 카테고리
   subcategory: ElectronicsSubcategory;
@@ -74,7 +74,6 @@ export interface UsedElectronics {
 
   // 관계 데이터
   images?: ElectronicsImage[];
-  seller_info?: SellerInfo;
   buyer?: SellerInfo;  // 거래중/완료 상태일 때 구매자 정보
   buyer_id?: number;   // 거래중일 때 구매자 ID
   transaction_id?: number;  // 거래 ID

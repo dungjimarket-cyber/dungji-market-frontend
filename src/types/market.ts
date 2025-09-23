@@ -110,11 +110,7 @@ export function getItemTitle(item: UnifiedMarketItem): string {
 
 // 판매자 닉네임 가져오기
 export function getSellerNickname(item: UnifiedMarketItem): string {
-  // seller_info가 있으면 우선 사용
-  if ('seller_info' in item && item.seller_info?.nickname) {
-    return item.seller_info.nickname;
-  }
-  // UsedPhone의 seller 필드 체크
+  // seller 필드 체크 (휴대폰과 전자제품 모두 동일)
   if ('seller' in item && item.seller) {
     return (item.seller as any).nickname || (item.seller as any).username || '알 수 없음';
   }

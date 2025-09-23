@@ -571,7 +571,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         )}
 
         {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 가운데 배치 (판매완료 시 숨김) */}
-        {(electronics.seller === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
+        {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
           <div className="hidden lg:block mt-8 pt-6 border-t">
             <div className="flex justify-center gap-6">
               <Button
@@ -776,7 +776,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </Card>
 
         {/* 판매자 정보 */}
-        {electronics.seller_info && (
+        {electronics.seller && (
           <Card className="mb-4">
             <CardContent className="p-4">
               <h2 className="font-semibold mb-3">판매자 정보</h2>
@@ -786,9 +786,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                     <User className="w-5 h-5 text-gray-500" />
                   </div>
                   <div>
-                    <p className="font-medium">{electronics.seller_info.nickname}</p>
+                    <p className="font-medium">{electronics.seller.nickname}</p>
                     <p className="text-sm text-gray-500">
-                      판매 {electronics.seller_info.sell_count || 0}건
+                      판매 {electronics.seller.sell_count || 0}건
                     </p>
                   </div>
                 </div>
@@ -827,7 +827,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
         {(electronics.status === 'trading' || electronics.status === 'sold') &&
-         user && (electronics.seller === Number(user?.id) || electronics.is_mine || electronics.buyer_id === Number(user.id)) && (
+         user && (electronics.seller?.id === Number(user?.id) || electronics.is_mine || electronics.buyer_id === Number(user.id)) && (
           <Card className="mb-4 border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -850,7 +850,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         )}
 
         {/* 받은 제안 목록 (판매자만) */}
-        {(electronics.seller === Number(user?.id) || electronics.is_mine) && electronics.offer_count > 0 && (
+        {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.offer_count > 0 && (
           <Card className="mb-20 md:mb-4">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
@@ -875,7 +875,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       </div>
 
       {/* 하단 고정 버튼 */}
-      {electronics.seller !== Number(user?.id) && !electronics.is_mine && electronics.status === 'active' && (
+      {electronics.seller?.id !== Number(user?.id) && !electronics.is_mine && electronics.status === 'active' && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
           <div className="container mx-auto max-w-4xl flex gap-3">
             <button
@@ -905,7 +905,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       )}
 
       {/* 판매자용 하단 버튼 (모바일만) */}
-      {(electronics.seller === Number(user?.id) || electronics.is_mine) && (
+      {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
           <div className="container mx-auto max-w-4xl flex gap-3">
             {electronics.status === 'active' && (
@@ -1388,7 +1388,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           onClose={() => setShowTradeCompleteModal(false)}
           phoneId={parseInt(electronicsId)}
           phoneModel={electronics.model_name || ''}
-          isSeller={user?.id === electronics.seller_info?.id || electronics.is_mine === true}
+          isSeller={Number(user?.id) === electronics.seller?.id || electronics.is_mine === true}
           itemType="electronics"
           onComplete={() => {
             fetchElectronicsDetail();
@@ -1410,7 +1410,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           isSeller={reviewTarget === 'buyer'}
           partnerName={reviewTarget === 'buyer' ?
             (electronics.buyer?.nickname || electronics.buyer?.username || '구매자') :
-            (electronics.seller_info?.nickname || electronics.seller_info?.username || '판매자')}
+            (electronics.seller?.nickname || electronics.seller?.username || '판매자')}
           phoneModel={electronics.model_name || ''}
           itemType="electronics"
           onReviewComplete={() => {
