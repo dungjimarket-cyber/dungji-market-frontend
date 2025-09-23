@@ -288,7 +288,7 @@ export default function SalesActivityTab() {
     if (activeTab === 'trading') {
       // 거래중 탭에서만 폴링 (30초 간격, 유휴시 자동 증가)
       pollingManager.start(() => {
-        fetchAllListings('trading');
+        fetchAllListings();
       }, 30000);
     } else if (activeTab === 'offers') {
       // 제안 탭에서는 더 긴 간격 (1분)

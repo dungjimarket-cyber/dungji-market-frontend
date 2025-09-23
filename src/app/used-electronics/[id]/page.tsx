@@ -568,6 +568,42 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           </div>
         )}
 
+        {/* PC에서만 제품상태 및 설명을 사진 아래로 이동 */}
+        {electronics.description && (
+          <div className="hidden lg:block mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold text-gray-900 mb-3">제품상태 및 설명</h3>
+            <p className="text-gray-700 whitespace-pre-wrap break-all">{electronics.description}</p>
+          </div>
+        )}
+
+        {/* PC에서만 거래 가능 지역 - 제품상태 설명 아래로 이동 */}
+        {(electronics.regions && electronics.regions.length > 0) && (
+          <div className="hidden lg:block mt-4 p-4 bg-dungji-primary-50 rounded-lg border border-dungji-primary-200">
+            <p className="text-sm font-medium text-dungji-primary-900 mb-2 flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              거래 가능 지역
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {electronics.regions.map((region, index) => (
+                <span key={index} className="px-3 py-1 bg-dungji-primary text-white rounded-full text-sm font-medium">
+                  {region.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PC에서만 거래시 요청사항 - 제품상태 설명 아래로 이동 */}
+        {electronics.meeting_place && (
+          <div className="hidden lg:block mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+              <Info className="w-4 h-4" />
+              거래시 요청사항
+            </p>
+            <p className="text-sm text-gray-800 whitespace-pre-wrap break-all">{electronics.meeting_place}</p>
+          </div>
+        )}
+
         {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 가운데 배치 (판매완료 시 숨김) */}
         {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
           <div className="hidden lg:block mt-8 pt-6 border-t">
