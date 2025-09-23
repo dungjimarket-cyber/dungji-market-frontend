@@ -25,7 +25,7 @@ import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'min_offer_price', 'meeting_place'];
+const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
 const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 가격과 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {

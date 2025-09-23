@@ -688,13 +688,36 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="hidden lg:block mt-8 pt-6 border-t">
             <div className="flex justify-center gap-6">
               <Button
-                onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
+                onClick={async () => {
+                  setCheckingOffers(true);
+                  try {
+                    // 수정 전 최신 제안 상태 확인
+                    const latestOfferCount = await checkLatestOffers();
+
+                    // 이전에 제안이 없었는데 새로 생긴 경우
+                    if (electronics.offer_count === 0 && latestOfferCount > 0) {
+                      toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
+                        duration: 3000,
+                      });
+                      // 상품 정보 새로고침
+                      await fetchElectronicsDetail();
+                    }
+
+                    router.push(`/used-electronics/${electronicsId}/edit`);
+                  } catch (error) {
+                    console.error('Failed to check offers:', error);
+                    router.push(`/used-electronics/${electronicsId}/edit`);
+                  } finally {
+                    setCheckingOffers(false);
+                  }
+                }}
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 px-6"
+                disabled={checkingOffers}
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                수정하기
+                {checkingOffers ? '확인중...' : '수정하기'}
               </Button>
               <Button
                 onClick={() => setShowDeleteModal(true)}
@@ -1025,6 +1048,51 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   </div>
                 </>
               </>
+            )}
+
+            {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
+            {(electronics.seller?.id === Number(user?.id) || electronics.is_mine) && electronics.status === 'active' && (
+              <div className="lg:hidden mt-4 pt-4 border-t grid grid-cols-2 gap-3">
+                <Button
+                  onClick={async () => {
+                    setCheckingOffers(true);
+                    try {
+                      // 수정 전 최신 제안 상태 확인
+                      const latestOfferCount = await checkLatestOffers();
+
+                      // 이전에 제안이 없었는데 새로 생긴 경우
+                      if (electronics.offer_count === 0 && latestOfferCount > 0) {
+                        toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
+                          duration: 3000,
+                        });
+                        // 상품 정보 새로고침
+                        await fetchElectronicsDetail();
+                      }
+
+                      router.push(`/used-electronics/${electronicsId}/edit`);
+                    } catch (error) {
+                      console.error('Failed to check offers:', error);
+                      router.push(`/used-electronics/${electronicsId}/edit`);
+                    } finally {
+                      setCheckingOffers(false);
+                    }
+                  }}
+                  variant="outline"
+                  className="flex items-center justify-center gap-2"
+                  disabled={checkingOffers}
+                >
+                  <Edit3 className="w-4 h-4" />
+                  {checkingOffers ? '확인중...' : '수정하기'}
+                </Button>
+                <Button
+                  onClick={() => setShowDeleteModal(true)}
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  삭제하기
+                </Button>
+              </div>
             )}
 
             {/* 안전 거래 안내 */}

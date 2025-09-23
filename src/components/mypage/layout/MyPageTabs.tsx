@@ -110,9 +110,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           ...(electronicsItems || []).map((item: any) => ({ ...item, itemType: 'electronics' as const }))
         ];
 
+        // 카운트 계산 - 전체 아이템 기준
         const salesCount = {
           active: allSalesItems.filter((item: any) => item.status === 'active').length,
-          offers: allSalesItems.filter((item: any) => item.status === 'active' && item.offer_count > 0).length,
+          offers: allSalesItems.filter((item: any) => item.status !== 'trading' && item.status !== 'sold' && (item.offer_count || 0) > 0).length,
           trading: allSalesItems.filter((item: any) => item.status === 'trading').length,
           sold: allSalesItems.filter((item: any) => item.status === 'sold').length,
         };
@@ -122,25 +123,41 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
         console.error('Failed to fetch sales counts:', error);
       }
 
-      // 구매 내역 카운트
+      // 구매 내역 카운트 (휴대폰 + 전자제품 통합)
       try {
-        // 구매제안 카운트 (sent API)
-        const purchaseData = await buyerAPI.getMySentOffers();
-        const purchaseItems = purchaseData.results || purchaseData.items || [];
-        const offersCount = purchaseItems.filter((item: any) => item.status === 'pending').length;
+        // 구매제안 카운트 - 병렬로 휴대폰과 전자제품 가져오기
+        const [phoneOffersData, electronicsOffersData] = await Promise.all([
+          buyerAPI.getMySentOffers().catch(() => ({ results: [] })),
+          electronicsApi.getMySentOffers().catch(() => ({ results: [] }))
+        ]);
 
-        // 거래중/거래완료 카운트 (my-trading API)
-        const tradingData = await buyerAPI.getMyTradingItems();
-        const tradingItems = Array.isArray(tradingData) ? tradingData : tradingData.results || [];
+        const phoneOffers = phoneOffersData.results || phoneOffersData.items || [];
+        const electronicsOffers = electronicsOffersData.results || [];
+        const allOffers = [...phoneOffers, ...electronicsOffers];
+        const offersCount = allOffers.filter((item: any) => item.status === 'pending').length;
+
+        // 거래중/거래완료 카운트 - 병렬로 가져오기
+        const [phoneTradingData, electronicsTradingData] = await Promise.all([
+          buyerAPI.getMyTradingItems().catch(() => ({ results: [] })),
+          electronicsApi.getMyTradingItems().catch(() => ({ results: [] }))
+        ]);
+
+        const phoneTrading = Array.isArray(phoneTradingData) ? phoneTradingData : phoneTradingData.results || [];
+        const electronicsTrading = Array.isArray(electronicsTradingData) ? electronicsTradingData : electronicsTradingData.results || [];
+        const allTrading = [...phoneTrading, ...electronicsTrading];
 
         const purchaseCount = {
           offers: offersCount,
-          trading: tradingItems.filter((item: any) =>
-            item.phone?.status === 'trading'
-          ).length,
-          completed: tradingItems.filter((item: any) =>
-            item.phone?.status === 'sold'
-          ).length,
+          trading: allTrading.filter((item: any) => {
+            // 휴대폰과 전자제품 모두 고려
+            const itemStatus = item.phone?.status || item.electronics?.status;
+            return itemStatus === 'trading';
+          }).length,
+          completed: allTrading.filter((item: any) => {
+            // 휴대폰과 전자제품 모두 고려
+            const itemStatus = item.phone?.status || item.electronics?.status;
+            return itemStatus === 'sold';
+          }).length,
         };
 
         setStatusCounts(prev => ({ ...prev, purchases: purchaseCount }));
@@ -158,7 +175,13 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
         const phoneFavItems = (phoneFavorites as any).items || (phoneFavorites as any).results || [];
         const elecFavItems = (electronicsFavorites as any).results || [];
 
-        setFavoritesCount(phoneFavItems.length + elecFavItems.length);
+        const totalFavorites = phoneFavItems.length + elecFavItems.length;
+        setFavoritesCount(totalFavorites);
+
+        // 부모 컴포넌트에 전달
+        if (onCountsUpdate) {
+          onCountsUpdate(totalFavorites, 0);
+        }
       } catch (error) {
         console.error('Failed to fetch favorites count:', error);
       }
@@ -185,18 +208,31 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     try {
       let data: any[] = [];
 
-      // 판매 내역
+      // 판매 내역 (휴대폰 + 전자제품 통합)
       if (section.startsWith('sales-')) {
         const status = section.replace('sales-', '');
-        const salesData = await sellerAPI.getMyListings();
-        const allItems = salesData.results || salesData.items || [];
+
+        // 병렬로 휴대폰과 전자제품 데이터 가져오기
+        const [phoneData, electronicsData] = await Promise.all([
+          sellerAPI.getMyListings().catch(() => ({ results: [] })),
+          electronicsApi.getMyElectronics().catch(() => ({ results: [] }))
+        ]);
+
+        const phoneItems = Array.isArray(phoneData) ? phoneData : (phoneData.results || []);
+        const electronicsItems = Array.isArray(electronicsData) ? electronicsData : (electronicsData.results || []);
+
+        // 타입 정보 추가하여 통합
+        const allItems = [
+          ...phoneItems.map((item: any) => ({ ...item, itemType: 'phone' as const })),
+          ...electronicsItems.map((item: any) => ({ ...item, itemType: 'electronics' as const }))
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
         switch(status) {
           case 'active':
             data = allItems.filter((item: any) => item.status === 'active');
             break;
           case 'offers':
-            data = allItems.filter((item: any) => item.status === 'active' && item.offer_count > 0);
+            data = allItems.filter((item: any) => item.status !== 'trading' && item.status !== 'sold' && (item.offer_count || 0) > 0);
             break;
           case 'trading':
             data = allItems.filter((item: any) => item.status === 'trading');
@@ -208,28 +244,54 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       }
 
       // 구매 내역
+      // 구매 내역 (휴대폰 + 전자제품 통합)
       else if (section.startsWith('purchase-')) {
         const status = section.replace('purchase-', '');
 
         if (status === 'completed' || status === 'trading') {
           // 거래중/거래완료는 my-trading API 사용 (has_review 포함)
-          const tradingData = await buyerAPI.getMyTradingItems();
-          const tradingItems = Array.isArray(tradingData) ? tradingData : tradingData.results || [];
+          const [phoneTradingData, electronicsTradingData] = await Promise.all([
+            buyerAPI.getMyTradingItems().catch(() => ({ results: [] })),
+            electronicsApi.getMyTradingItems().catch(() => ({ results: [] }))
+          ]);
+
+          const phoneTrading = Array.isArray(phoneTradingData) ? phoneTradingData : phoneTradingData.results || [];
+          const electronicsTrading = Array.isArray(electronicsTradingData) ? electronicsTradingData : electronicsTradingData.results || [];
+
+          // 타입 정보 추가하여 통합
+          const allTradingItems = [
+            ...phoneTrading.map((item: any) => ({ ...item, itemType: 'phone' as const })),
+            ...electronicsTrading.map((item: any) => ({ ...item, itemType: 'electronics' as const }))
+          ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
           if (status === 'trading') {
-            data = tradingItems.filter((item: any) =>
-              item.phone?.status === 'trading'
-            );
+            data = allTradingItems.filter((item: any) => {
+              const itemStatus = item.phone?.status || item.electronics?.status;
+              return itemStatus === 'trading';
+            });
           } else {
-            data = tradingItems.filter((item: any) =>
-              item.phone?.status === 'sold'
-            );
+            data = allTradingItems.filter((item: any) => {
+              const itemStatus = item.phone?.status || item.electronics?.status;
+              return itemStatus === 'sold';
+            });
           }
         } else {
           // 구매제안은 sent API 사용
-          const purchaseData = await buyerAPI.getMySentOffers();
-          const allItems = purchaseData.results || purchaseData.items || [];
-          data = allItems.filter((item: any) => item.status === 'pending');
+          const [phoneOffersData, electronicsOffersData] = await Promise.all([
+            buyerAPI.getMySentOffers().catch(() => ({ results: [] })),
+            electronicsApi.getMySentOffers().catch(() => ({ results: [] }))
+          ]);
+
+          const phoneOffers = phoneOffersData.results || phoneOffersData.items || [];
+          const electronicsOffers = electronicsOffersData.results || [];
+
+          // 타입 정보 추가하여 통합
+          const allOffers = [
+            ...phoneOffers.map((item: any) => ({ ...item, itemType: 'phone' as const })),
+            ...electronicsOffers.map((item: any) => ({ ...item, itemType: 'electronics' as const }))
+          ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+          data = allOffers.filter((item: any) => item.status === 'pending');
         }
       }
 
@@ -442,14 +504,24 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
               {/* 섹션별 상세 리스트 */}
               <div className="space-y-3">
                 {paginatedData.map((item: any) => {
-                  // 판매중 상품
+                  // 판매중 상품 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'sales-active') {
+                    // 타입에 따른 데이터 처리
+                    const itemTitle = item.itemType === 'phone'
+                      ? item.title || `${item.brand} ${item.model}`
+                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? item.images
+                      : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.find((img: any) => img.is_main) || itemImages?.[0];
+                    const editUrl = item.itemType === 'phone' ? `/used/${item.id}/edit` : `/used-electronics/${item.id}/edit`;
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex gap-3">
-                          {item.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded flex-shrink-0"
                             />
@@ -457,7 +529,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <h4 className="font-medium truncate">{item.title}</h4>
+                                <h4 className="font-medium truncate">{itemTitle}</h4>
                                 <p className="text-sm text-gray-600">
                                   {item.price.toLocaleString()}원
                                 </p>
@@ -485,7 +557,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 onClick={async () => {
                                   setSelectedPhone(item);
                                   try {
-                                    const data = await sellerAPI.getReceivedOffers(item.id);
+                                    // 타입에 따른 API 호출
+                                    const data = item.itemType === 'phone'
+                                      ? await sellerAPI.getReceivedOffers(item.id)
+                                      : await electronicsApi.getOffers(item.id);
                                     setReceivedOffers(Array.isArray(data) ? data : (data.results || []));
                                     setShowOffersModal(true);
                                   } catch (error) {
@@ -499,7 +574,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => router.push(`/used/${item.id}/edit`)}
+                                onClick={() => router.push(editUrl)}
                               >
                                 상품 수정
                               </Button>
@@ -510,25 +585,35 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     );
                   }
 
-                  // 받은 제안
+                  // 받은 제안 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'sales-offers') {
+                    // 타입에 따른 데이터 처리
+                    const itemTitle = item.itemType === 'phone'
+                      ? item.title || `${item.brand} ${item.model}`
+                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? item.images
+                      : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.find((img: any) => img.is_main) || itemImages?.[0];
+                    const detailUrl = item.itemType === 'phone' ? `/used/${item.id}` : `/used-electronics/${item.id}`;
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          {item.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
-                              onClick={() => router.push(`/used/${item.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             />
                           )}
                           <div className="flex-1">
                             <h4
                               className="font-medium truncate cursor-pointer hover:text-blue-600"
-                              onClick={() => router.push(`/used/${item.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             >
-                              {(item.title || `${item.brand} ${item.model}`).slice(0, 30)}
+                              {itemTitle.slice(0, 30)}
                             </h4>
                             <p className="text-sm text-gray-600">
                               판매가: {item.price.toLocaleString()}원
@@ -542,7 +627,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 onClick={async () => {
                                   setSelectedPhone(item);
                                   try {
-                                    const data = await sellerAPI.getReceivedOffers(item.id);
+                                    // 타입에 따른 API 호출
+                                    const data = item.itemType === 'phone'
+                                      ? await sellerAPI.getReceivedOffers(item.id)
+                                      : await electronicsApi.getOffers(item.id);
                                     setReceivedOffers(Array.isArray(data) ? data : (data.results || []));
                                     setShowOffersModal(true);
                                   } catch (error) {
@@ -560,21 +648,30 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     );
                   }
 
-                  // 판매자 거래중
+                  // 판매자 거래중 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'sales-trading') {
+                    // 타입에 따른 데이터 처리
+                    const itemTitle = item.itemType === 'phone'
+                      ? item.title || `${item.brand} ${item.model}`
+                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? item.images
+                      : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.find((img: any) => img.is_main) || itemImages?.[0];
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          {item.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded"
                             />
                           )}
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-medium truncate">{item.title}</h4>
+                              <h4 className="font-medium truncate">{itemTitle}</h4>
                               <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
                             </div>
                             <p className="text-sm text-gray-600">
@@ -613,25 +710,35 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     );
                   }
 
-                  // 판매완료
+                  // 판매완료 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'sales-sold') {
+                    // 타입에 따른 데이터 처리
+                    const itemTitle = item.itemType === 'phone'
+                      ? item.title || `${item.brand} ${item.model}`
+                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? item.images
+                      : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.find((img: any) => img.is_main) || itemImages?.[0];
+                    const detailUrl = item.itemType === 'phone' ? `/used/${item.id}` : `/used-electronics/${item.id}`;
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          {item.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
-                              onClick={() => router.push(`/used/${item.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             />
                           )}
                           <div className="flex-1">
                             <h4
                               className="font-medium truncate cursor-pointer hover:text-blue-600"
-                              onClick={() => router.push(`/used/${item.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             >
-                              {(item.title || `${item.brand} ${item.model}`).slice(0, 30)}
+                              {itemTitle.slice(0, 30)}
                             </h4>
                             <p className="text-sm text-gray-600">
                               {(item.final_price || item.final_offer_price || item.price).toLocaleString()}원
@@ -656,7 +763,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                       revieweeName: buyerName,
                                       productInfo: {
                                         brand: item.brand || '',
-                                        model: item.model || '',
+                                        model: item.itemType === 'phone' ? (item.model || '') : (item.model_name || item.model || ''),
                                         price: item.price
                                       }
                                     });
@@ -668,34 +775,45 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="flex-shrink-0">판매완료</Badge>
+                          <Badge variant="outline" className="flex-shrink-0">판매완룼</Badge>
                         </div>
                       </div>
                     );
                   }
 
-                  // 구매제안
+                  // 구매제안 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'purchase-offers') {
+                    // 타입에 따른 데이터 처리
+                    const targetItem = item.phone || item.electronics;
+                    const itemTitle = item.itemType === 'phone'
+                      ? targetItem?.title || `${targetItem?.brand} ${targetItem?.model}`
+                      : `${targetItem?.brand} ${targetItem?.model_name || targetItem?.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? targetItem?.images
+                      : targetItem?.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.[0];
+                    const detailUrl = item.itemType === 'phone' ? `/used/${targetItem?.id}` : `/used-electronics/${targetItem?.id}`;
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          {item.phone?.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.phone.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
-                              onClick={() => router.push(`/used/${item.phone.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             />
                           )}
                           <div className="flex-1">
                             <h4
                               className="font-medium truncate cursor-pointer hover:text-blue-600"
-                              onClick={() => router.push(`/used/${item.phone?.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             >
-                              {item.phone?.title?.slice(0, 30)}
+                              {itemTitle?.slice(0, 30)}
                             </h4>
                             <p className="text-sm text-gray-600">
-                              제안가: {item.offered_price.toLocaleString()}원
+                              제안가: {(item.offered_price || item.offer_price || 0).toLocaleString()}원
                             </p>
                             {item.message && (
                               <div className="mt-2">
@@ -739,14 +857,25 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     );
                   }
 
-                  // 구매자 거래중
+                  // 구매자 거래중 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'purchase-trading') {
+                    // 타입에 따른 데이터 처리
+                    const targetItem = item.phone || item.electronics;
+                    const itemTitle = item.itemType === 'phone'
+                      ? targetItem?.title || `${targetItem?.brand} ${targetItem?.model}`
+                      : `${targetItem?.brand} ${targetItem?.model_name || targetItem?.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? targetItem?.images
+                      : targetItem?.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.[0];
+                    const detailUrl = item.itemType === 'phone' ? `/used/${targetItem?.id}` : `/used-electronics/${targetItem?.id}`;
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          {item.phone?.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.phone.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded"
                             />
@@ -755,20 +884,20 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <div className="flex items-center gap-2">
                               <h4
                                 className="font-medium truncate cursor-pointer hover:text-blue-600"
-                                onClick={() => router.push(`/used/${item.phone?.id}`)}
+                                onClick={() => router.push(detailUrl)}
                               >
-                                {item.phone?.title?.slice(0, 30)}
+                                {itemTitle?.slice(0, 30)}
                               </h4>
                               <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
                             </div>
                             <p className="text-sm text-gray-600">
-                              거래가격: {item.offered_price.toLocaleString()}원
+                              거래가격: {(item.offered_price || item.offer_price || 0).toLocaleString()}원
                             </p>
                             <div className="flex gap-2 mt-2">
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => fetchSellerInfo(item.phone?.id || item.id)}
+                                onClick={() => fetchSellerInfo(targetItem?.id || item.id)}
                               >
                                 판매자 정보
                               </Button>
@@ -776,7 +905,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700"
                                 onClick={() => {
-                                  setSelectedCompleteId(item.phone?.id || item.id);
+                                  setSelectedCompleteId(targetItem?.id || item.id);
                                   setIsBuyerComplete(true);
                                   setShowCompleteDialog(true);
                                 }}
@@ -787,7 +916,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
-                                onClick={() => handleCancelTransaction(item.phone?.id || item.id)}
+                                onClick={() => handleCancelTransaction(targetItem?.id || item.id)}
                               >
                                 거래 취소
                               </Button>
@@ -798,28 +927,39 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     );
                   }
 
-                  // 구매완료
+                  // 구매완료 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'purchase-completed') {
+                    // 타입에 따른 데이터 처리
+                    const targetItem = item.phone || item.electronics;
+                    const itemTitle = item.itemType === 'phone'
+                      ? targetItem?.title || `${targetItem?.brand} ${targetItem?.model}`
+                      : `${targetItem?.brand} ${targetItem?.model_name || targetItem?.model || ''}`;
+                    const itemImages = item.itemType === 'phone'
+                      ? targetItem?.images
+                      : targetItem?.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                    const mainImage = itemImages?.[0];
+                    const detailUrl = item.itemType === 'phone' ? `/used/${targetItem?.id}` : `/used-electronics/${targetItem?.id}`;
+
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          {item.phone?.images?.[0] && (
+                          {mainImage && (
                             <img
-                              src={item.phone.images[0].image_url}
+                              src={mainImage.image_url}
                               alt=""
                               className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
-                              onClick={() => router.push(`/used/${item.phone.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             />
                           )}
                           <div className="flex-1">
                             <h4
                               className="font-medium truncate cursor-pointer hover:text-blue-600"
-                              onClick={() => router.push(`/used/${item.phone?.id}`)}
+                              onClick={() => router.push(detailUrl)}
                             >
-                              {item.phone?.title?.slice(0, 30)}
+                              {itemTitle?.slice(0, 30)}
                             </h4>
                             <p className="text-sm text-gray-600">
-                              거래가: {(item.offered_price || item.phone?.price).toLocaleString()}원
+                              거래가: {(item.offered_price || item.offer_price || targetItem?.price || 0).toLocaleString()}원
                             </p>
                             <div className="mt-2">
                               {item.has_review ? (
@@ -835,11 +975,11 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
                                     setReviewTarget({
                                       transactionId: transactionId,
-                                      revieweeName: item.phone?.seller?.nickname || '판매자',
+                                      revieweeName: targetItem?.seller?.nickname || '판매자',
                                       productInfo: {
-                                        brand: item.phone?.brand || '',
-                                        model: item.phone?.model || '',
-                                        price: item.offered_price || item.phone?.price // 구매자는 offered_price 우선
+                                        brand: targetItem?.brand || '',
+                                        model: item.itemType === 'phone' ? (targetItem?.model || '') : (targetItem?.model_name || targetItem?.model || ''),
+                                        price: item.offered_price || item.offer_price || targetItem?.price || 0 // 구매자는 offered_price 우선
                                       }
                                     });
                                     setShowReviewModal(true);
@@ -850,7 +990,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="flex-shrink-0">거래완료</Badge>
+                          <Badge variant="outline" className="flex-shrink-0">거래완룼</Badge>
                         </div>
                       </div>
                     );

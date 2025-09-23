@@ -114,7 +114,7 @@ export default function SalesActivityTab() {
           console.error('Phone API error:', err);
           return { results: [] };
         }),
-        electronicsApi.getMyElectronics().catch((err) => {
+        electronicsApi.getMyListings().catch((err) => {
           console.error('Electronics API error:', err);
           return { results: [] };
         })
@@ -162,7 +162,7 @@ export default function SalesActivityTab() {
           console.error('Phone API error:', err);
           return { results: [] };
         }),
-        electronicsApi.getMyElectronics({ status }).catch((err) => {
+        electronicsApi.getMyListings({ status }).catch((err) => {
           console.error('Electronics API error:', err);
           return { results: [] };
         })

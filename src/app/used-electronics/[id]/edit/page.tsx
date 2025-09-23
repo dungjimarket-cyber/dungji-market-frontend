@@ -1,6 +1,6 @@
 /**
  * 전자제품/가전 수정 페이지
- * /used-electronics/[id]/edit
+ * /used/electronics/[id]/edit
  */
 
 'use client';
@@ -25,7 +25,7 @@ import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
-const EDITABLE_AFTER_OFFERS = ['price', 'min_offer_price', 'meeting_place'];
+const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
 const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 가격과 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedElectronicsEditPage({ params }: { params: Promise<{ id: string }> }) {
@@ -89,8 +89,8 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       const token = localStorage.getItem('accessToken');
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used-electronics/${electronicsId}/`
-        : `${baseUrl}/api/used-electronics/${electronicsId}/`;
+        ? `${baseUrl}/used/electronics/${electronicsId}/`
+        : `${baseUrl}/api/used/electronics/${electronicsId}/`;
 
       const response = await fetch(apiUrl, {
         headers: {
@@ -104,7 +104,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
             title: '상품을 찾을 수 없습니다',
             variant: 'destructive',
           });
-          router.push('/used-electronics');
+          router.push('/used/electronics');
           return;
         }
         throw new Error('Failed to fetch');
@@ -119,7 +119,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
           description: '본인이 등록한 상품만 수정할 수 있습니다.',
           variant: 'destructive',
         });
-        router.push(`/used-electronics/${electronicsId}`);
+        router.push(`/used/electronics/${electronicsId}`);
         return;
       }
 
@@ -176,7 +176,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         title: '상품 정보를 불러오는데 실패했습니다',
         variant: 'destructive',
       });
-      router.push('/used-electronics');
+      router.push('/used/electronics');
     } finally {
       setLoading(false);
     }
@@ -279,8 +279,8 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       }
 
       const apiUrl = baseUrl.includes('api.dungjimarket.com')
-        ? `${baseUrl}/used-electronics/${electronicsId}/`
-        : `${baseUrl}/api/used-electronics/${electronicsId}/`;
+        ? `${baseUrl}/used/electronics/${electronicsId}/`
+        : `${baseUrl}/api/used/electronics/${electronicsId}/`;
 
       const response = await fetch(apiUrl, {
         method: 'PUT',
@@ -300,7 +300,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         description: '변경사항이 저장되었습니다.',
       });
 
-      router.push(`/used-electronics/${electronicsId}`);
+      router.push(`/used/electronics/${electronicsId}`);
 
     } catch (error: any) {
       console.error('Update failed:', error);
@@ -344,7 +344,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <p className="text-gray-500 mb-4">상품을 찾을 수 없습니다.</p>
-        <Button onClick={() => router.push('/used-electronics')}>
+        <Button onClick={() => router.push('/used/electronics')}>
           목록으로 돌아가기
         </Button>
       </div>
@@ -372,7 +372,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => router.push(`/used-electronics/${electronicsId}`)}
+                onClick={() => router.push(`/used/electronics/${electronicsId}`)}
               >
                 취소
               </Button>
