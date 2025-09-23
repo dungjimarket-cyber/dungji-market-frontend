@@ -197,16 +197,6 @@ export default function UsedPhonesPage() {
             items = items.filter((item: UsedElectronics) => item.status === 'active');
           }
 
-          // 백엔드에서 지역 필터가 작동하지 않는 경우를 대비해 프론트엔드에서도 필터링
-          if (currentFilters.region) {
-            items = items.filter((item: UsedElectronics) => {
-              if (!item.regions || item.regions.length === 0) return false;
-              return item.regions.some(region =>
-                region.name && region.name.includes(currentFilters.region)
-              );
-            });
-          }
-
           return items;
         }).catch(() => [])
       ]);
