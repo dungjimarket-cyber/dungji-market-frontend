@@ -354,35 +354,14 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <div className="bg-white border-b sticky top-0 z-40">
-        <div className="container max-w-4xl mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.back()}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                뒤로
-              </Button>
+      <div className="sticky top-0 z-50 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <button onClick={() => router.back()}>
+                <ArrowLeft className="w-6 h-6" />
+              </button>
               <h1 className="text-lg font-semibold">전자제품 수정</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/used-electronics/${electronicsId}`)}
-              >
-                취소
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={submitting || !isModified}
-                className="min-w-[80px]"
-              >
-                {submitting ? '저장중...' : '저장'}
-              </Button>
             </div>
           </div>
         </div>
@@ -558,6 +537,30 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   rows={3}
                 />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단 버튼 영역 - 모바일 최적화 */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-[100]">
+          <div className="p-4 pb-6">
+            <div className="container mx-auto max-w-3xl flex gap-3">
+              <Button
+                type="button"
+                onClick={() => router.back()}
+                variant="outline"
+                className="flex-1 h-12 text-base font-medium"
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={submitting || !isModified}
+                className="flex-1 h-12 text-base font-medium"
+              >
+                {submitting ? '저장중...' : '저장'}
+              </Button>
             </div>
           </div>
         </div>
