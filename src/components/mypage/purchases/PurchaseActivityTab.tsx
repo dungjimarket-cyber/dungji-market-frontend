@@ -800,11 +800,11 @@ export default function PurchaseActivityTab() {
                 const itemImages = getItemImages(offer);
                 const itemPrice = getItemPrice(offer);
                 const itemSeller = getItemSeller(offer);
-                const primaryImage = itemImages[0];
+                const primaryImage = itemImages[0] as any;
                 // 휴대폰은 image_url, 전자제품은 imageUrl 사용
                 const imageUrl = offer.phone
                   ? primaryImage?.image_url
-                  : (primaryImage as any)?.imageUrl;
+                  : primaryImage?.imageUrl;
 
                 // 디버깅 로그
                 console.log('=== 구매내역 아이템 렌더링 ===');
@@ -925,8 +925,8 @@ export default function PurchaseActivityTab() {
                 const itemUrl = getItemUrl(item);
                 const itemTitle = getItemTitle(item);
                 const itemImages = getItemImages(item);
-                const primaryImage = itemImages[0];
-                const imageUrl = item.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
+                const primaryImage = itemImages[0] as any;
+                const imageUrl = item.phone ? primaryImage?.image_url : primaryImage?.imageUrl;
                 const product = item.phone || item.electronics;
 
                 return (
@@ -1015,8 +1015,8 @@ export default function PurchaseActivityTab() {
                 const itemTitle = getItemTitle(item);
                 const itemImages = getItemImages(item);
                 const itemSeller = getItemSeller(item);
-                const primaryImage = itemImages[0];
-                const imageUrl = item.phone ? primaryImage?.image_url : (primaryImage as any)?.imageUrl;
+                const primaryImage = itemImages[0] as any;
+                const imageUrl = item.phone ? primaryImage?.image_url : primaryImage?.imageUrl;
 
                 return (
                   <Card key={item.id} className="p-3 sm:p-4">
