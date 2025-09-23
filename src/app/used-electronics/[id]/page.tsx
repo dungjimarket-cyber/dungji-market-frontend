@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
 import electronicsApi from '@/lib/api/electronics';
 import type { UsedElectronics, ElectronicsOffer } from '@/types/electronics';
@@ -59,8 +60,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
+  const [displayAmount, setDisplayAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [checkingOffers, setCheckingOffers] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showGradeInfo, setShowGradeInfo] = useState(false);
@@ -81,6 +85,20 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
   const [reviewCompleted, setReviewCompleted] = useState(false);
+
+  // 가격 포맷팅 헬퍼 함수
+  const formatPrice = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers || numbers === '0') return '';
+    // 숫자를 원화 형식으로 변환
+    return Number(numbers).toLocaleString('ko-KR');
+  };
+
+  // 가격 언포맷팅 헬퍼 함수
+  const unformatPrice = (value: string) => {
+    return value.replace(/[^\d]/g, '');
+  };
 
   // 메시지 템플릿
   const messageTemplates = {
@@ -119,17 +137,19 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
   }, [electronicsId, isAuthenticated]);
 
-  // 모달 스크롤 방지
+  // 모달이 열렸을 때 배경 스크롤 방지
   useEffect(() => {
-    if (showOfferModal || showDeleteModal || showOffersModal || showAcceptModal) {
+    if (showOfferModal || showDeleteModal || showOffersModal || showAcceptModal || showConfirmModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
+
+    // cleanup 함수: 컴포넌트 언마운트 시 overflow 초기화
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showOfferModal, showDeleteModal, showOffersModal, showAcceptModal]);
+  }, [showOfferModal, showDeleteModal, showOffersModal, showAcceptModal, showConfirmModal]);
 
   const fetchElectronicsDetail = async () => {
     try {
@@ -247,39 +267,97 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
     // 기존 제안이 있으면 값을 설정
     if (myOffer) {
-      setOfferAmount(myOffer.offer_price?.toLocaleString() || '');
+      setOfferAmount(myOffer.offer_price?.toString() || '');
+      setDisplayAmount(myOffer.offer_price?.toLocaleString() || '');
       setOfferMessage(myOffer.message || '');
     }
     setShowOfferModal(true);
   };
 
-  const handleOfferSubmit = async () => {
-    const amount = parseInt(offerAmount.replace(/,/g, ''));
+  // 가격 제안 확인
+  const handleOfferConfirm = () => {
+    let amount = parseInt(offerAmount);
 
-    if (!amount) {
-      toast.error('제안 금액을 입력해주세요.');
+    if (!amount || amount < (electronics?.min_offer_price || 0)) {
+      toast.error(`최소 제안 금액은 ${electronics?.min_offer_price?.toLocaleString()}원입니다.`, {
+        duration: 3000,
+      });
       return;
     }
 
-    if (electronics?.min_offer_price && amount < electronics.min_offer_price) {
-      toast.error(`최소 제안 가격은 ${electronics.min_offer_price?.toLocaleString() || electronics.min_offer_price}원입니다.`);
+    // 천원 단위로 반올림 (1원 단위 입력 시 자동 반올림)
+    const roundedAmount = Math.round(amount / 1000) * 1000;
+    if (roundedAmount !== amount) {
+      amount = roundedAmount;
+      setOfferAmount(amount.toString());
+      setDisplayAmount(amount.toLocaleString('ko-KR'));
+      toast.info(`천원 단위로 조정되었습니다: ${amount.toLocaleString()}원`, {
+        duration: 2000,
+      });
+    }
+
+    if (amount > 9900000) {
+      toast.error('최대 제안 가능 금액은 990만원입니다.', {
+        duration: 3000,
+      });
       return;
     }
+
+    setShowConfirmModal(true);
+  };
+
+  // 가격 제안 실행
+  const handleSubmitOffer = async () => {
+    if (!isAuthenticated) {
+      toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
+        duration: 3000,
+      });
+      router.push('/login');
+      return;
+    }
+
+    const amount = parseInt(offerAmount);
+    // 수정인지 신규 제안인지 확인
+    const isModification = myOffer && myOffer.status === 'pending';
 
     try {
       const combinedMessage = [...selectedMessages, offerMessage].filter(Boolean).join(' ');
 
-      await electronicsApi.createOffer(Number(electronicsId), {
+      const response = await electronicsApi.createOffer(Number(electronicsId), {
         offer_price: amount,
         message: combinedMessage
       });
 
-      toast.success('가격 제안이 전송되었습니다.');
+      // 즉시구매 여부 확인 (가격이 즉시구매가와 같을 때)
+      if (electronics && amount === electronics.price) {
+        toast.success('즉시구매 완료! 거래가 시작되었습니다.', {
+          duration: 3000,
+        });
+
+        // 모달 닫기
+        setShowOfferModal(false);
+        setShowConfirmModal(false);
+
+        // 1초 후 구매내역 거래중 탭으로 이동
+        setTimeout(() => {
+          router.push('/used/mypage?tab=purchases&filter=trading');
+        }, 1000);
+
+        return;
+      }
+
+      // 일반 제안의 경우
+      toast.success(isModification ? '가격 제안이 수정되었습니다.' : '판매자에게 가격 제안이 전달되었습니다.');
       setShowOfferModal(false);
+      setShowConfirmModal(false);
       setOfferAmount('');
+      setDisplayAmount('');
       setOfferMessage('');
       setSelectedMessages([]);
-      fetchMyOffer();
+
+      // 내 제안 정보 다시 불러오기
+      await fetchMyOffer();
+      await fetchElectronicsDetail();
     } catch (error) {
       console.error('Failed to submit offer:', error);
       toast.error('가격 제안 전송에 실패했습니다.');
@@ -699,36 +777,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                     </span>
                   </div>
 
-                  {/* 액션 버튼 */}
-                  <div className="pt-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={handleFavorite}
-                        disabled={isFavorite === null}
-                        className={`flex items-center justify-center gap-2 h-12 ${
-                          isFavorite === null ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        <Heart className={`w-4 h-4 ${
-                          isFavorite === null
-                            ? 'text-gray-300'
-                            : isFavorite === true
-                              ? 'fill-red-500 text-red-500'
-                              : 'text-gray-500'
-                        }`} />
-                        {isFavorite === null ? '로딩...' : (isFavorite === true ? '찜 해제' : '찜하기')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={handleShare}
-                        className="flex items-center justify-center gap-2 h-12"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        공유하기
-                      </Button>
-                    </div>
-                  </div>
                 </>
               )}
             </div>
@@ -946,11 +994,16 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
                         if (myOffer && myOffer.status === 'pending') {
                           // 수정 제안 - 기존 금액과 메시지 설정
-                          setOfferAmount(myOffer.offer_price?.toLocaleString() || '');
+                          setOfferAmount(myOffer.offer_price?.toString() || '');
+                          setDisplayAmount(myOffer.offer_price?.toLocaleString() || '');
                           setOfferMessage(myOffer.message || '');
                           setShowOfferModal(true);
                         } else {
-                          // 신규 제안
+                          // 신규 제안 - 기존 값 초기화
+                          setOfferAmount('');
+                          setDisplayAmount('');
+                          setOfferMessage('');
+                          setSelectedMessages([]);
                           setShowOfferModal(true);
                         }
                       }}
@@ -1141,6 +1194,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             if (e.target === e.currentTarget) {
               setShowOfferModal(false);
               setOfferAmount('');
+              setDisplayAmount('');
               setOfferMessage('');
               setSelectedMessages([]);
             }
@@ -1154,11 +1208,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           >
             {/* 헤더 - 더 컴팩트 */}
             <div className="flex items-center justify-between mb-2 pb-2 border-b">
-              <h3 className="text-base sm:text-lg font-bold text-gray-900">{myOffer ? '제안 수정하기' : '가격 제안하기'}</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900">{myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}</h3>
               <button
                 onClick={() => {
                   setShowOfferModal(false);
                   setOfferAmount('');
+                  setDisplayAmount('');
                   setOfferMessage('');
                   setSelectedMessages([]);
                 }}
@@ -1174,153 +1229,156 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               {/* 제품 정보 미리보기 - 2줄 구성 */}
               <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-2">
                 <p className="font-bold text-sm sm:text-base text-gray-900 truncate">
-                  {electronics.brand} {electronics.model_name}
+                  {electronics.brand} {electronics.model_name.length > 25 ? electronics.model_name.slice(0, 25) + '...' : electronics.model_name}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
-                  {ELECTRONICS_SUBCATEGORIES[electronics.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES]} | {CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]}
+                  {ELECTRONICS_SUBCATEGORIES[electronics.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES]} | {electronics.is_unused ? '미개봉' : CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]}
                 </p>
               </div>
 
-              <div className="mb-2">
-                <label className="block text-sm font-semibold mb-1.5 text-gray-900">
-                  제안 금액 <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="금액을 입력해주세요"
-                    value={offerAmount}
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
-                      const numbersOnly = inputValue.replace(/[^\d]/g, '');
+            <div className="mb-2">
+              <label className="block text-sm font-semibold mb-1.5 text-gray-900">
+                제안 금액 <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="금액을 입력해주세요"
+                  value={displayAmount}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    const numbersOnly = inputValue.replace(/[^\d]/g, '');
 
-                      if (numbersOnly === '') {
-                        setOfferAmount('');
-                        return;
-                      }
+                    if (numbersOnly === '') {
+                      setOfferAmount('');
+                      setDisplayAmount('');
+                      return;
+                    }
 
-                      const numValue = parseInt(numbersOnly);
-                      // 최대 금액 제한 (즉시구매가까지)
-                      if (numValue > electronics.price) {
-                        return;
-                      }
+                    const numValue = parseInt(numbersOnly);
+                    // 최대 금액 제한 (즉시구매가까지)
+                    if (numValue > electronics.price) {
+                      return;
+                    }
 
-                      setOfferAmount(numValue.toLocaleString('ko-KR'));
-                    }}
-                    className="pr-12 h-10 sm:h-11 text-sm sm:text-base font-semibold"
-                    inputMode="numeric"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-sm">원</span>
+                    setOfferAmount(numbersOnly);
+                    setDisplayAmount(numValue.toLocaleString('ko-KR'));
+                  }}
+                  className="pr-12 h-10 sm:h-11 text-sm sm:text-base font-semibold"
+                  inputMode="numeric"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 font-medium text-sm">원</span>
+              </div>
+              {offerAmount && parseInt(offerAmount) < (electronics.min_offer_price || 0) && (
+                <p className="text-xs text-red-500 mt-1">
+                  최소제안가 {electronics.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요
+                </p>
+              )}
+              <div className="flex items-center justify-between mt-1.5">
+                <div className="inline-flex items-center px-2.5 py-1 bg-amber-100 border border-amber-300 rounded-full">
+                  <span className="text-xs font-semibold text-amber-800">
+                    최소제안가: {electronics.min_offer_price?.toLocaleString()}원
+                  </span>
                 </div>
-                {offerAmount && parseInt(offerAmount.replace(/[^\d]/g, '')) < (electronics.min_offer_price || 0) && (
-                  <p className="text-xs text-red-500 mt-1">
-                    최소제안가 {electronics.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요
-                  </p>
-                )}
-                <div className="flex items-center justify-between mt-1.5">
-                  <div className="inline-flex items-center px-2.5 py-1 bg-amber-100 border border-amber-300 rounded-full">
-                    <span className="text-xs font-semibold text-amber-800">
-                      최소제안가: {electronics.min_offer_price?.toLocaleString()}원
-                    </span>
-                  </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOfferAmount(electronics.price.toString());
+                    setDisplayAmount(electronics.price.toLocaleString('ko-KR'));
+                  }}
+                  className="text-sm px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold shadow-sm"
+                >
+                  즉시구매가 {electronics.price.toLocaleString()}원
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-2">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium">
+                  메시지 선택
+                  <span className="text-xs text-gray-500 ml-1">
+                    (선택사항, 최대 5개)
+                  </span>
+                </label>
+                {selectedMessages.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setOfferAmount(electronics.price.toLocaleString('ko-KR'));
-                    }}
-                    className="text-sm px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold shadow-sm"
+                    onClick={() => setSelectedMessages([])}
+                    className="text-xs text-gray-500 hover:text-gray-700"
                   >
-                    즉시구매가 {electronics.price.toLocaleString()}원
+                    초기화
                   </button>
-                </div>
+                )}
               </div>
 
-              <div className="mb-2">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-sm font-medium">
-                    메시지 선택
-                    <span className="text-xs text-gray-500 ml-1">
-                      (선택사항, 최대 5개)
-                    </span>
-                  </label>
-                  {selectedMessages.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMessages([])}
-                      className="text-xs text-gray-500 hover:text-gray-700"
-                    >
-                      초기화
-                    </button>
-                  )}
+              {/* 선택된 메시지 표시 - 컴팩트 */}
+              {selectedMessages.length > 0 && (
+                <div className="mb-1.5 p-2 bg-gray-50 rounded border border-gray-200">
+                  <p className="text-xs text-gray-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
+                  <div className="space-y-0.5">
+                    {selectedMessages.map((msg, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-xs text-gray-800">• {msg}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMessages(prev => prev.filter((_, i) => i !== index));
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                {/* 선택된 메시지 표시 - 컴팩트 */}
-                {selectedMessages.length > 0 && (
-                  <div className="mb-1.5 p-2 bg-gray-50 rounded border border-gray-200">
-                    <p className="text-xs text-gray-700 mb-1">선택된 메시지 ({selectedMessages.length}/5)</p>
-                    <div className="space-y-0.5">
-                      {selectedMessages.map((msg, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <span className="text-xs text-gray-800">• {msg}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedMessages(prev => prev.filter((_, i) => i !== index));
-                            }}
-                            className="text-xs text-red-500 hover:text-red-700"
-                          >
-                            삭제
-                          </button>
-                        </div>
+              {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
+              <div className="border rounded-lg p-2 max-h-32 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {Object.entries(messageTemplates).map(([category, messages]) => (
+                  <details key={category} className="">
+                    <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
+                      {category}
+                    </summary>
+                    <div className="mt-1 grid grid-cols-1 gap-1">
+                      {messages.map((msg) => (
+                        <button
+                          key={msg}
+                          type="button"
+                          onClick={() => {
+                            if (selectedMessages.length < 5 && !selectedMessages.includes(msg)) {
+                              setSelectedMessages(prev => [...prev, msg]);
+                            }
+                          }}
+                          disabled={selectedMessages.length >= 5 && !selectedMessages.includes(msg)}
+                          className={`text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 transition-colors ${
+                            selectedMessages.includes(msg)
+                              ? 'bg-gray-200 text-gray-800 font-medium border border-gray-400'
+                              : 'text-gray-700 border border-gray-200'
+                          } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={msg}
+                        >
+                          {msg}
+                        </button>
                       ))}
                     </div>
-                  </div>
-                )}
-
-                {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
-                <div className="border rounded-lg p-2 max-h-32 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {Object.entries(messageTemplates).map(([category, messages]) => (
-                    <details key={category} className="">
-                      <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
-                        {category}
-                      </summary>
-                      <div className="mt-1 grid grid-cols-1 gap-1">
-                        {messages.map((msg) => (
-                          <button
-                            key={msg}
-                            type="button"
-                            onClick={() => {
-                              if (selectedMessages.length < 5 && !selectedMessages.includes(msg)) {
-                                setSelectedMessages(prev => [...prev, msg]);
-                              }
-                            }}
-                            disabled={selectedMessages.length >= 5 && !selectedMessages.includes(msg)}
-                            className={`text-left text-xs py-1.5 px-2 rounded hover:bg-gray-100 transition-colors ${
-                              selectedMessages.includes(msg)
-                                ? 'bg-gray-200 text-gray-800 font-medium border border-gray-400'
-                                : 'text-gray-700 border border-gray-200'
-                            } ${selectedMessages.length >= 5 && !selectedMessages.includes(msg) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            title={msg}
-                          >
-                            {msg}
-                          </button>
-                        ))}
-                      </div>
-                    </details>
-                  ))}
-                </div>
+                  </details>
+                ))}
+              </div>
               </div>
 
               {/* 제안 안내사항 - 컴팩트 */}
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
-                <div className="flex items-start gap-2">
-                  <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5" />
-                  <div className="text-xs text-amber-800">
-                    <p className="font-semibold mb-0.5">안내사항</p>
-                    <p className="text-amber-700">• 가격 제안은 신중하게 부탁드립니다</p>
-                    <p className="text-amber-700">• 판매자 수락 시 거래가 진행됩니다</p>
-                  </div>
+              <div className="flex items-start gap-2">
+                <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5" />
+                <div className="text-xs text-amber-800">
+                  <p className="font-semibold mb-0.5">안내사항</p>
+                  <p className="text-amber-700">• 가격 제안은 신중하게 부탁드립니다</p>
+                  <p className="text-amber-700">• 판매자 수락 시 거래가 진행됩니다</p>
                 </div>
+              </div>
               </div>
               </div>
             </div>
@@ -1332,6 +1390,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 onClick={() => {
                   setShowOfferModal(false);
                   setOfferAmount('');
+                  setDisplayAmount('');
                   setSelectedMessages([]);
                 }}
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm"
@@ -1340,21 +1399,88 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               </Button>
               <Button
                 onClick={() => {
-                  const numAmount = parseInt(offerAmount.replace(/[^\d]/g, ''));
                   // 최소제안가 검증
-                  if (numAmount < (electronics.min_offer_price || 0)) {
+                  if (parseInt(offerAmount) < (electronics.min_offer_price || 0)) {
                     toast.error(`최소제안가 ${electronics.min_offer_price?.toLocaleString()}원 이상으로 입력해주세요`);
                     return;
                   }
                   // 선택된 메시지들을 합쳐서 하나의 메시지로 만들기
                   const combinedMessage = selectedMessages.join(' / ');
                   setOfferMessage(combinedMessage);
-                  handleOfferSubmit();
+                  handleOfferConfirm();
                 }}
-                disabled={!offerAmount || Boolean(offerAmount && parseInt(offerAmount.replace(/[^\d]/g, '')) < (electronics.min_offer_price || 0))}
+                disabled={!offerAmount || Boolean(offerAmount && parseInt(offerAmount) < (electronics.min_offer_price || 0))}
                 className="flex-1 h-9 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs sm:text-sm"
               >
-                {myOffer ? '제안 수정하기' : '제안하기'}
+                {myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '제안하기'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 제안 확인 모달 */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-lg max-w-sm w-full p-6">
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 ${parseInt(offerAmount) === electronics.price ? 'bg-green-100' : 'bg-blue-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <span className={`text-3xl font-bold ${parseInt(offerAmount) === electronics.price ? 'text-green-600' : 'text-blue-600'}`}>￦</span>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                {parseInt(offerAmount) === electronics.price ? '🎉 즉시구매 확인' : '가격 제안 확인'}
+              </h3>
+              <p className={`text-2xl font-bold ${parseInt(offerAmount) === electronics.price ? 'text-green-600' : 'text-blue-600'} mb-2`}>
+                {parseInt(offerAmount).toLocaleString()}원
+              </p>
+              {parseInt(offerAmount) === electronics.price && (
+                <div className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full mb-2">
+                  판매자가 설정한 즉시구매가
+                </div>
+              )}
+              <p className="text-sm text-gray-600">
+                {parseInt(offerAmount) === electronics.price
+                  ? '즉시구매 시 바로 거래가 시작됩니다'
+                  : '이 금액으로 제안하시겠습니까?'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                가격은 천원 단위로 입력 가능합니다
+              </p>
+              {offerMessage && (
+                <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700 text-left">
+                  <p className="font-medium mb-1">선택한 메시지:</p>
+                  <div className="space-y-1">
+                    {offerMessage.split(' / ').map((msg, index) => (
+                      <p key={index} className="text-xs">• {msg}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className={`${parseInt(offerAmount) === electronics.price ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'} border rounded-lg p-3 mb-4`}>
+              <p className={`text-xs ${parseInt(offerAmount) === electronics.price ? 'text-green-700' : 'text-amber-700'}`}>
+                {parseInt(offerAmount) === electronics.price
+                  ? '즉시구매 시 바로 거래중 상태로 전환되며, 판매자와 연락처가 공개됩니다.'
+                  : '구매 의사가 확실한 경우에만 제안 부탁드립니다. 판매자가 수락하기 전까지는 취소 가능합니다.'}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1"
+              >
+                아니오
+              </Button>
+              <Button
+                onClick={handleSubmitOffer}
+                className={`flex-1 ${parseInt(offerAmount) === electronics.price
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'}`}
+              >
+                {parseInt(offerAmount) === electronics.price ? '즉시구매' : '예, 제안합니다'}
               </Button>
             </div>
           </div>

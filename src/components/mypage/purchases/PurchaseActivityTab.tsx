@@ -246,15 +246,27 @@ export default function PurchaseActivityTab() {
     try {
       // 병렬로 휴대폰과 전자제품 제안 가져오기
       const [phoneOffers, electronicsOffers] = await Promise.all([
-        buyerAPI.getMySentOffers().catch(() => ({ results: [] })),
-        electronicsApi.getMySentOffers().catch(() => ({ results: [] }))
+        buyerAPI.getMySentOffers().catch((err) => {
+          console.error('Phone offers error:', err);
+          return { results: [] };
+        }),
+        electronicsApi.getMySentOffers().catch((err) => {
+          console.error('Electronics offers error:', err);
+          return { results: [] };
+        })
       ]);
 
-      const allOffers = [
-        ...(phoneOffers.results || phoneOffers || []),
-        ...(electronicsOffers.results || electronicsOffers || [])
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // 각 데이터에 itemType 추가
+      const phoneOfferItems = (phoneOffers.results || phoneOffers || [])
+        .map(item => ({ ...item, itemType: 'phone' as const }));
 
+      const electronicsOfferItems = (electronicsOffers.results || electronicsOffers || [])
+        .map(item => ({ ...item, itemType: 'electronics' as const }));
+
+      const allOffers = [
+        ...phoneOfferItems,
+        ...electronicsOfferItems
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setOffers(allOffers);
     } catch (error) {
       console.error('Failed to fetch offers:', error);
@@ -304,15 +316,27 @@ export default function PurchaseActivityTab() {
     try {
       // 병렬로 휴대폰과 전자제품 거래중 항목 가져오기
       const [phoneTrading, electronicsTrading] = await Promise.all([
-        buyerAPI.getMyTradingItems().catch(() => ({ results: [] })),
-        electronicsApi.getMyTradingItems().catch(() => ({ results: [] }))
+        buyerAPI.getMyTradingItems().catch((err) => {
+          console.error('Phone trading items error:', err);
+          return { results: [] };
+        }),
+        electronicsApi.getMyTradingItems().catch((err) => {
+          console.error('Electronics trading items error:', err);
+          return { results: [] };
+        })
       ]);
 
-      const allTrading = [
-        ...(Array.isArray(phoneTrading) ? phoneTrading : phoneTrading.results || []),
-        ...(Array.isArray(electronicsTrading) ? electronicsTrading : electronicsTrading.results || [])
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // 각 데이터에 itemType 추가
+      const phoneItems = (Array.isArray(phoneTrading) ? phoneTrading : phoneTrading.results || [])
+        .map(item => ({ ...item, itemType: 'phone' as const }));
 
+      const electronicsItems = (Array.isArray(electronicsTrading) ? electronicsTrading : electronicsTrading.results || [])
+        .map(item => ({ ...item, itemType: 'electronics' as const }));
+
+      const allTrading = [
+        ...phoneItems,
+        ...electronicsItems
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setTradingItems(allTrading);
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
