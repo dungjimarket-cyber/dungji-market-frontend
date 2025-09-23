@@ -141,9 +141,21 @@ export default function ElectronicsCreatePage() {
             });
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to check limit:', error);
-        setCanRegister(true); // 오류 시 등록 가능하도록
+        // 404 에러일 경우 엔드포인트가 없는 것이므로 등록 가능하게 처리
+        if (error?.response?.status === 404) {
+          console.log('Registration limit endpoint not found, allowing registration');
+          setCanRegister(true);
+        } else {
+          // 다른 에러의 경우에도 일단 등록 가능하게 하되 에러 표시
+          setCanRegister(true);
+          toast({
+            title: '등록 제한 확인 실패',
+            description: '등록 제한을 확인할 수 없습니다. 계속 진행하세요.',
+            variant: 'default',
+          });
+        }
       }
     };
 
