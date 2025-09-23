@@ -258,10 +258,10 @@ export default function PurchaseActivityTab() {
 
       // 각 데이터에 itemType 추가
       const phoneOfferItems = (phoneOffers.results || phoneOffers || [])
-        .map(item => ({ ...item, itemType: 'phone' as const }));
+        .map((item: any) => ({ ...item, itemType: 'phone' as const }));
 
       const electronicsOfferItems = (electronicsOffers.results || electronicsOffers || [])
-        .map(item => ({ ...item, itemType: 'electronics' as const }));
+        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
 
       const allOffers = [
         ...phoneOfferItems,
@@ -328,10 +328,10 @@ export default function PurchaseActivityTab() {
 
       // 각 데이터에 itemType 추가
       const phoneItems = (Array.isArray(phoneTrading) ? phoneTrading : phoneTrading.results || [])
-        .map(item => ({ ...item, itemType: 'phone' as const }));
+        .map((item: any) => ({ ...item, itemType: 'phone' as const }));
 
       const electronicsItems = (Array.isArray(electronicsTrading) ? electronicsTrading : electronicsTrading.results || [])
-        .map(item => ({ ...item, itemType: 'electronics' as const }));
+        .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
 
       const allTrading = [
         ...phoneItems,
