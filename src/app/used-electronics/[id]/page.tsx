@@ -180,6 +180,25 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     );
   };
 
+  // 공유하기
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${electronics?.brand} ${electronics?.model_name}`,
+          text: `${electronics?.price?.toLocaleString()}원`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log('Share failed:', error);
+      }
+    } else {
+      // 클립보드에 복사
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('링크가 복사되었습니다.');
+    }
+  };
+
   // 찜하기
   const handleFavorite = async () => {
     if (!isAuthenticated) {
@@ -387,34 +406,92 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      {/* 헤더 */}
-      <div className="sticky top-0 z-40 bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <button onClick={() => router.back()} className="p-2 -ml-2">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      {/* 모바일 헤더 */}
+      <div className="lg:hidden sticky top-0 z-50 bg-white border-b">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-2">
+            <button onClick={() => router.back()}>
               <ChevronLeft className="w-6 h-6" />
             </button>
+            <button
+              onClick={() => router.push('/used-electronics')}
+              className="text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              목록
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleShare}>
+              <Share2 className="w-5 h-5" />
+            </button>
+            <button onClick={handleFavorite} disabled={isFavorite === null}>
+              <Heart className={`w-5 h-5 ${
+                isFavorite === null
+                  ? 'text-gray-300'
+                  : isFavorite === true
+                    ? 'fill-red-500 text-red-500'
+                    : 'text-gray-500 hover:text-red-500'
+              }`} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* PC 헤더 */}
+      <div className="hidden lg:block bg-white border-b sticky top-0 z-50">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-2">
-              <button className="p-2">
-                <Share2 className="w-5 h-5" />
+              <button
+                onClick={() => router.push('/used-electronics')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span className="font-medium">목록으로</span>
               </button>
-              {electronics.is_mine && (
-                <Link href={`/used-electronics/${electronicsId}/edit`}>
-                  <Button variant="outline" size="sm">
-                    <Edit3 className="w-4 h-4 mr-1" />
-                    수정
-                  </Button>
-                </Link>
-              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="text-sm">공유</span>
+              </button>
+              <button
+                onClick={handleFavorite}
+                disabled={isFavorite === null || electronics?.status === 'sold'}
+                className={`flex items-center gap-2 px-3 py-2 transition-colors ${
+                  isFavorite === null || electronics?.status === 'sold'
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title={electronics?.status === 'sold' ? '거래 완료된 상품은 찜할 수 없습니다' : ''}
+              >
+                <Heart className={`w-4 h-4 ${
+                  isFavorite === null || electronics?.status === 'sold'
+                    ? 'text-gray-300'
+                    : isFavorite === true
+                      ? 'fill-red-500 text-red-500'
+                      : 'text-gray-500 hover:text-red-500'
+                }`} />
+                <span className="text-sm">
+                  {electronics?.status === 'sold' ? '거래완료' : (isFavorite === null ? '로딩...' : (isFavorite ? '찜됨' : '찜하기'))}
+                </span>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-4 max-w-4xl">
-        {/* 이미지 갤러리 */}
-        <div className="relative aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
+      <div className="w-full overflow-x-hidden">
+        <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* 이미지 섹션 */}
+          <div className="w-full">
+            {/* 메인 이미지 */}
+            <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden group shadow-sm border border-gray-200">
           {electronics.images && electronics.images.length > 0 ? (
             <>
               <Image
@@ -474,7 +551,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         {/* 썸네일 */}
         {electronics.images && electronics.images.length > 1 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto">
+          <div className="flex gap-2 mt-4 overflow-x-auto">
             {electronics.images.map((image, idx) => (
               <button
                 key={idx}
@@ -493,10 +570,13 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             ))}
           </div>
         )}
+        </div>
 
+        {/* 상품 정보 섹션 */}
+        <div className="w-full space-y-4">
         {/* 기본 정보 */}
-        <Card className="mb-4">
-          <CardContent className="p-4">
+        <Card>
+          <CardContent className="p-6">
             {/* 카테고리 */}
             <div className="text-sm text-gray-500 mb-2">
               {ELECTRONICS_SUBCATEGORIES[electronics.subcategory as keyof typeof ELECTRONICS_SUBCATEGORIES]}
@@ -764,6 +844,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             </CardContent>
           </Card>
         )}
+        </div>
+        </div>
+        </div>
       </div>
 
       {/* 하단 고정 버튼 */}
