@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   verification: {
     other: {
-      'naver-site-verification': '', // 네이버 서치어드바이저에서 발급받은 코드 입력
+      'naver-site-verification': 'b84da89efc7c43a863ca22364b524d19', // 네이버 서치어드바이저 인증 코드
     },
   },
   manifest: "/manifest.json",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     siteName: '둥지마켓',
     images: [
       {
-        url: '/logos/dungji_logo_text.jpg',
+        url: '/logos/dunji_logo.jpg',
         width: 1200,
         height: 630,
         alt: '둥지마켓',
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "둥지마켓 - 통신상품비교견적/지역기반중고거래",
     description: "둥지마켓 - 국내 유일 휴대폰·인터넷 비교견적 플랫폼\n★지원금 혜택 NO.1 공동구매 플랫폼\n✓전국 판매점이 다~ 모였다!\n▶지역기반 중고직거래 서비스 오픈",
-    images: ['/logos/dungji_logo_text.jpg'],
+    images: ['/logos/dunji_logo.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
   icons: {
