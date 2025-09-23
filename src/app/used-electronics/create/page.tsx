@@ -548,7 +548,7 @@ export default function ElectronicsCreatePage() {
 
       // 데이터 준비
       // 지역 처리 - 휴대폰과 동일한 방식 사용
-      let regionIds: number[] = [];
+      let regionCodes: string[] = [];
       if (selectedRegions.length > 0) {
         // 지역명으로 실제 지역 코드 찾기
         for (const region of selectedRegions) {
@@ -563,25 +563,25 @@ export default function ElectronicsCreatePage() {
                 r.full_name.includes(region.city)
               ) || regions[0];
 
-              regionIds.push(Number(exactMatch.code));
+              regionCodes.push(exactMatch.code);
               console.log('Region found:', exactMatch.code, exactMatch.full_name);
             }
           } catch (error) {
             console.error('Failed to find region:', error);
             // 실패시 기본값 사용
-            regionIds.push(11); // 서울특별시
+            regionCodes.push('11'); // 서울특별시
           }
         }
       }
 
-      // 지역 ID가 없으면 기본값 추가
-      if (regionIds.length === 0) {
-        regionIds = [11]; // 서울특별시
+      // 지역 코드가 없으면 기본값 추가
+      if (regionCodes.length === 0) {
+        regionCodes = ['11']; // 서울특별시
       }
 
       const submitData: ElectronicsFormData = {
         ...formData,
-        regions: regionIds,
+        regions: regionCodes,
         images: compressedImages,
       };
 

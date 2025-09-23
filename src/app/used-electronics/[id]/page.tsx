@@ -581,7 +581,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             {electronics.regions && electronics.regions.length > 0 ? (
               <div className="space-y-2">
                 {electronics.regions.map((region) => (
-                  <div key={region.id} className="flex items-center gap-2">
+                  <div key={region.code} className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-gray-500" />
                     <span className="text-sm">{region.name}</span>
                   </div>

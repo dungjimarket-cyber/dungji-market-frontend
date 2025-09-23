@@ -78,7 +78,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
   const [newImages, setNewImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedRegions, setSelectedRegions] = useState<number[]>([]);
+  const [selectedRegions, setSelectedRegions] = useState<any[]>([]);
   const [availableRegions, setAvailableRegions] = useState<any[]>([]);
 
   // 필드 수정 가능 여부 체크
@@ -148,7 +148,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         accept_offers: true,  // 항상 true로 고정
         min_offer_price: data.min_offer_price ? data.min_offer_price.toString() : '',
         description: data.description,
-        regions: data.regions?.map(r => r.id) || [],
+        regions: data.regions?.map(r => r.code) || [],
         meeting_place: data.meeting_place,
         images: []
       });
@@ -156,8 +156,18 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       // 기존 이미지 설정
       setExistingImages(data.images || []);
 
-      // 지역 설정
-      setSelectedRegions(data.regions?.map(r => r.id) || []);
+      // 지역 설정 - 휴대폰과 동일한 방식
+      if (data.regions && data.regions.length > 0) {
+        const formattedRegions = data.regions.map((region: any) => ({
+          id: region.id,
+          code: region.code,
+          province: region.full_name?.split(' ')[0] || region.name?.split(' ')[0] || '',
+          city: region.full_name?.split(' ')[1] || region.name?.split(' ')[1] || '',
+          full_name: region.full_name || region.name,
+          name: region.name
+        }));
+        setSelectedRegions(formattedRegions);
+      }
     } catch (error) {
       console.error('Failed to fetch electronics:', error);
       toast({
@@ -229,11 +239,12 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     });
   };
 
-  // 지역 선택
-  const handleRegionToggle = (regionId: number) => {
+  // 지역 선택 - 휴대폰과 동일한 방식으로 처리
+  const handleRegionToggle = (region: any) => {
     setSelectedRegions(prev => {
-      if (prev.includes(regionId)) {
-        return prev.filter(id => id !== regionId);
+      const existingIndex = prev.findIndex(r => r.code === region.code);
+      if (existingIndex >= 0) {
+        return prev.filter((_, idx) => idx !== existingIndex);
       }
       if (prev.length >= 3) {
         toast({
@@ -242,7 +253,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         });
         return prev;
       }
-      return [...prev, regionId];
+      return [...prev, region];
     });
   };
 
@@ -356,9 +367,12 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         }
       }
 
+      // 지역 데이터를 코드 배열로 변환 (백엔드 요구사항)
+      const regionCodes = selectedRegions.map((region: any) => region.code || region.id);
+
       const updateData: any = {
         ...formData,
-        regions: selectedRegions,
+        regions: regionCodes,
         deleted_image_ids: deletedImageIds,
         images: compressedImages
       };
