@@ -1741,50 +1741,42 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
       {/* 이미지 라이트박스 */}
       {showImageLightbox && electronics.images && (
-        <div
-          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
-          onClick={() => setShowImageLightbox(false)}
-        >
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60] p-4">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowImageLightbox(false);
-            }}
-            className="absolute top-4 right-4 p-2 bg-white/20 rounded-full"
+            onClick={() => setShowImageLightbox(false)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
           >
-            <X className="w-6 h-6 text-white" />
+            <X className="w-8 h-8" />
           </button>
 
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full flex items-center justify-center">
             <Image
               src={electronics.images[lightboxImageIndex]?.imageUrl || '/images/no-image.png'}
-              alt={electronics.model_name}
-              fill
-              className="object-contain"
-              onClick={(e) => e.stopPropagation()}
+              alt={electronics.model_name || '전자제품 이미지'}
+              width={1200}
+              height={1200}
+              className="object-contain max-w-full max-h-full"
             />
 
             {electronics.images.length > 1 && (
               <>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setLightboxImageIndex(prev =>
                       prev > 0 ? prev - 1 : electronics.images!.length - 1
                     );
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 rounded-full"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6 text-white" />
                 </button>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setLightboxImageIndex(prev =>
                       prev < electronics.images!.length - 1 ? prev + 1 : 0
                     );
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 rounded-full"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                 >
                   <ChevronRight className="w-6 h-6 text-white" />
                 </button>

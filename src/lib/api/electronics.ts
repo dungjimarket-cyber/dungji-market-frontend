@@ -11,11 +11,11 @@ import type {
   ElectronicsFavorite
 } from '@/types/electronics';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com';
 
 // Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: `${API_URL}/used/electronics`,
+  baseURL: `${API_URL}/api/used/electronics`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -365,6 +365,7 @@ export const getMyTradingItems = async (params?: {
  * 제안 취소
  */
 export const cancelOffer = async (offerId: number): Promise<{ message: string }> => {
+  // 백엔드 URL 패턴에 맞게 수정
   const response = await api.post(`/offers/${offerId}/cancel/`);
   return response.data;
 };
