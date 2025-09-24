@@ -681,29 +681,29 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       setLightboxImageIndex(currentImageIndex);
                       setShowImageLightbox(true);
                     }}
-                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md transition-all group-hover:opacity-100 opacity-0"
+                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md transition-all group-hover:opacity-100 opacity-0 z-20"
                   >
                     <ZoomIn className="w-5 h-5" />
                   </button>
-                  
+
                   {/* 이미지 네비게이션 */}
                   {phone.images.length > 1 && (
                     <>
                       <button
                         onClick={handlePrevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white z-20"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
                       <button
                         onClick={handleNextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white z-20"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
-                      
+
                       {/* 이미지 인디케이터 */}
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                         {phone.images.map((_, index) => (
                           <button
                             key={index}
@@ -726,7 +726,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 상태 뱃지 */}
               {phone.status === 'sold' && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
                   <span className="text-white text-2xl font-bold">거래완료</span>
                 </div>
               )}
