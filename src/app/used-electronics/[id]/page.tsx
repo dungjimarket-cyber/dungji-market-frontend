@@ -202,19 +202,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     }
   };
 
-  // 이미지 네비게이션
-  const handlePrevImage = () => {
-    setCurrentImageIndex(prev =>
-      prev > 0 ? prev - 1 : (electronics?.images?.length || 1) - 1
-    );
-  };
-
-  const handleNextImage = () => {
-    setCurrentImageIndex(prev =>
-      prev < (electronics?.images?.length || 1) - 1 ? prev + 1 : 0
-    );
-  };
-
   // 공유하기
   const handleShare = async () => {
     if (navigator.share) {
