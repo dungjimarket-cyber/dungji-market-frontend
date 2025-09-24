@@ -154,7 +154,7 @@ export default function UserProfileRating({
                         {renderStars(Math.round(userRating.average_rating))}
                       </div>
                       <span className="text-sm font-medium">
-                        {userRating.average_rating}
+                        {userRating.average_rating.toFixed(1)}
                       </span>
                       <span className="text-sm text-gray-500">
                         ({userRating.total_reviews}개 평가)
@@ -196,6 +196,49 @@ export default function UserProfileRating({
                     </p>
                   )}
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        )}
+
+        {/* 세부 평가 항목 통계 */}
+        {userRating.review_stats && userRating.total_reviews > 0 && (
+          <CardContent className="pt-0">
+            <Separator className="mb-4" />
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">평가 항목 통계</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {(() => {
+                  const tags = [
+                    { key: 'is_punctual' as const, label: '약속을지켜요', icon: Clock },
+                    { key: 'is_friendly' as const, label: '친절해요', icon: ThumbsUp },
+                    { key: 'is_honest' as const, label: '믿을만해요', icon: UserCheck },
+                    { key: 'is_fast_response' as const, label: '응답이빨라요', icon: MessageCircle },
+                  ];
+
+                  return tags.map(tag => {
+                    const stats = userRating.review_stats![tag.key];
+                    const Icon = tag.icon;
+
+                    return (
+                      <div key={tag.key} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                        <Icon className="h-4 w-4 text-gray-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-600 truncate">{tag.label}</p>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                              <div
+                                className="bg-blue-500 h-1.5 rounded-full"
+                                style={{ width: `${stats.percentage}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-500">{stats.percentage}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </CardContent>

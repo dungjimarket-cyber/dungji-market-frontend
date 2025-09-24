@@ -77,6 +77,12 @@ export interface UserRating {
     end_date?: string;
     reason?: string;
   };
+  review_stats?: {
+    is_punctual: { count: number; percentage: number };
+    is_friendly: { count: number; percentage: number };
+    is_honest: { count: number; percentage: number };
+    is_fast_response: { count: number; percentage: number };
+  };
 }
 
 // 신고 생성
