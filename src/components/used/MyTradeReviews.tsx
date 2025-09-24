@@ -50,7 +50,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       }
 
       // 통합 데이터 병렬 호출
-      const [statsResponse, receivedResponse, writtenResponse, transactionsResponse] = await Promise.all([
+      const [statsResponse, receivedResponse, writtenResponse, phoneTransactionsResponse, electronicsTransactionsResponse] = await Promise.all([
         // 통합 평가 통계 (휴대폰 + 전자제품)
         axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
@@ -66,11 +66,16 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
           { headers: { 'Authorization': `Bearer ${token}` } }
         ).catch(() => ({ data: { results: [] } })),
-        // 통합 거래 내역
+        // 휴대폰 거래 내역
         axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
           { headers: { 'Authorization': `Bearer ${token}` } }
-        ).catch(() => ({ data: { results: [] } }))
+        ).catch(() => ({ data: { results: [] } })),
+        // 전자제품 거래 내역 (my-trading 엔드포인트 사용)
+        axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/my-trading/`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        ).catch(() => ({ data: [] }))
       ]);
 
       // 통계 데이터 설정 (이미 통합됨)
@@ -89,11 +94,34 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       setMyWrittenReviews(writtenReviews);
 
       // 거래 내역 설정 및 평가 대기 필터링
-      const allTransactions = transactionsResponse.data?.results || transactionsResponse.data || [];
-      const completed = allTransactions.filter((t: any) =>
+      const phoneTransactions = phoneTransactionsResponse.data?.results || phoneTransactionsResponse.data || [];
+      const electronicsTransactions = electronicsTransactionsResponse.data || [];
+
+      // 휴대폰 거래 중 평가대기 필터링
+      const phonePending = phoneTransactions.filter((t: any) =>
         t.status === 'completed' && !writtenReviews.some((r: any) => r.transaction === t.id)
-      );
-      setPendingReviews(completed);
+      ).map((t: any) => ({ ...t, itemType: 'phone' }));
+
+      // 전자제품 거래 중 평가대기 필터링
+      const electronicsPending = electronicsTransactions.filter((t: any) => {
+        // 전자제품의 경우 electronics 객체 내부의 status 확인
+        const status = t.electronics?.status || t.status;
+        const transactionId = t.transaction_id || t.id;
+        return status === 'sold' && !t.has_review && transactionId;
+      }).map((t: any) => ({
+        ...t,
+        itemType: 'electronics',
+        // 필요한 필드 정규화
+        id: t.transaction_id || t.id,
+        phone: t.electronics, // 전자제품 정보를 phone 필드에 매핑 (호환성을 위해)
+        buyer: t.electronics?.seller,
+        price: t.offered_price || t.electronics?.price
+      }));
+
+      // 전체 평가대기 목록 합치기
+      const allPending = [...phonePending, ...electronicsPending];
+      console.log('평가대기 - 휴대폰:', phonePending.length, '개, 전자제품:', electronicsPending.length, '개');
+      setPendingReviews(allPending);
 
     } catch (error) {
       console.error('=== 후기 데이터 fetch 에러 ===');
@@ -229,14 +257,16 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                     )}
                     <p className="text-sm font-medium">
                       {transaction.itemType === 'electronics'
-                        ? transaction.product_name || '전자제품'
-                        : transaction.phone_model || '휴대폰'}
+                        ? (transaction.electronics?.model_name || transaction.phone?.model_name || '전자제품')
+                        : (transaction.phone_model || transaction.phone?.model || '휴대폰')}
                     </p>
                   </div>
                   <p className="text-xs text-gray-500">
-                    {transaction.seller === userId
-                      ? transaction.buyer_username
-                      : transaction.seller_username}님과 거래
+                    {transaction.itemType === 'electronics'
+                      ? `${transaction.electronics?.brand || '브랜드'} • ${transaction.electronics?.seller?.nickname || '판매자'}님과 거래`
+                      : `${transaction.seller === currentUserId
+                          ? transaction.buyer_username
+                          : transaction.seller_username || '판매자'}님과 거래`}
                   </p>
                 </div>
                 <Button
@@ -500,16 +530,23 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
             setSelectedTransaction(null);
           }}
           transactionId={selectedTransaction.id}
+          offerId={selectedTransaction.offer_id}
           itemType={selectedTransaction.itemType}
           revieweeName={
-            selectedTransaction.seller === userId
-              ? selectedTransaction.buyer_username
-              : selectedTransaction.seller_username
+            selectedTransaction.itemType === 'electronics'
+              ? (selectedTransaction.electronics?.seller?.nickname || '판매자')
+              : (selectedTransaction.seller === currentUserId
+                  ? selectedTransaction.buyer_username
+                  : selectedTransaction.seller_username)
           }
           productInfo={{
-            brand: selectedTransaction.phone_brand || '',
-            model: selectedTransaction.phone_model || '',
-            price: selectedTransaction.price || 0
+            brand: selectedTransaction.itemType === 'electronics'
+              ? (selectedTransaction.electronics?.brand || selectedTransaction.phone?.brand || '')
+              : (selectedTransaction.phone_brand || ''),
+            model: selectedTransaction.itemType === 'electronics'
+              ? (selectedTransaction.electronics?.model_name || selectedTransaction.phone?.model_name || '')
+              : (selectedTransaction.phone_model || selectedTransaction.phone?.model || ''),
+            price: selectedTransaction.price || selectedTransaction.offered_price || selectedTransaction.electronics?.price || 0
           }}
           onSuccess={() => {
             fetchData();
