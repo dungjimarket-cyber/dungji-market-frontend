@@ -77,8 +77,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   const [reviewTarget, setReviewTarget] = useState<any>(null);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [selectedCompleteId, setSelectedCompleteId] = useState<number | null>(null);
-  const [selectedCancelId, setSelectedCancelId] = useState<number | null>(null);
+  const [selectedCompleteItem, setSelectedCompleteItem] = useState<UnifiedMarketItem | null>(null);
+  const [selectedCancelItem, setSelectedCancelItem] = useState<UnifiedMarketItem | null>(null);
   const [isBuyerComplete, setIsBuyerComplete] = useState(false);
   const [showOfferCancelDialog, setShowOfferCancelDialog] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
@@ -681,7 +681,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => fetchBuyerInfo(item.id)}
+                                onClick={() => fetchBuyerInfo(item)}
                               >
                                 구매자 정보
                               </Button>
@@ -689,7 +689,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700"
                                 onClick={() => {
-                                  setSelectedCompleteId(item.id);
+                                  setSelectedCompleteItem(item);
                                   setShowCompleteDialog(true);
                                 }}
                               >
@@ -699,7 +699,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
-                                onClick={() => handleCancelTransaction(item.id)}
+                                onClick={() => handleCancelTransaction(item)}
                               >
                                 거래 취소
                               </Button>
@@ -897,7 +897,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => fetchSellerInfo(targetItem?.id || item.id)}
+                                onClick={() => fetchSellerInfo(targetItem || item)}
                               >
                                 판매자 정보
                               </Button>
@@ -905,7 +905,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700"
                                 onClick={() => {
-                                  setSelectedCompleteId(targetItem?.id || item.id);
+                                  setSelectedCompleteItem(targetItem || item);
                                   setIsBuyerComplete(true);
                                   setShowCompleteDialog(true);
                                 }}
@@ -916,7 +916,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
-                                onClick={() => handleCancelTransaction(targetItem?.id || item.id)}
+                                onClick={() => handleCancelTransaction(targetItem || item)}
                               >
                                 거래 취소
                               </Button>
@@ -1211,15 +1211,15 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => {
-              setSelectedCompleteId(null);
+              setSelectedCompleteItem(null);
               setIsBuyerComplete(false);
             }}>
               아니오
             </AlertDialogCancel>
             <AlertDialogAction onClick={() => {
-              if (selectedCompleteId) {
-                handleCompleteTransaction(selectedCompleteId, !isBuyerComplete);
-                setSelectedCompleteId(null);
+              if (selectedCompleteItem) {
+                handleCompleteTransaction(selectedCompleteItem, !isBuyerComplete);
+                setSelectedCompleteItem(null);
                 setIsBuyerComplete(false);
               }
             }}>
@@ -1230,7 +1230,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       </AlertDialog>
 
       {/* 거래 취소 모달 */}
-      {showCancelDialog && selectedCancelId && (
+      {showCancelDialog && selectedCancelItem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
@@ -1241,7 +1241,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
               <button
                 onClick={() => {
                   setShowCancelDialog(false);
-                  setSelectedCancelId(null);
+                  setSelectedCancelItem(null);
                   setCancellationReason('');
                   setCustomReason('');
                   setReturnToSale(true);
@@ -1340,7 +1340,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                 variant="outline"
                 onClick={() => {
                   setShowCancelDialog(false);
-                  setSelectedCancelId(null);
+                  setSelectedCancelItem(null);
                   setCancellationReason('');
                   setCustomReason('');
                   setReturnToSale(true);
@@ -1360,8 +1360,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     toast('기타 사유를 입력해주세요.');
                     return;
                   }
-                  if (selectedCancelId) {
-                    handleCancelTransactionWithReason(selectedCancelId);
+                  if (selectedCancelItem) {
+                    handleCancelTransactionWithReason(selectedCancelItem);
                   }
                 }}
                 className="flex-1"
@@ -1423,12 +1423,13 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function handleCompleteTransaction(phoneId: number, isSeller: boolean) {
+  async function handleCompleteTransaction(item: UnifiedMarketItem, isSeller: boolean) {
     try {
       const token = localStorage.getItem('accessToken');
       const endpoint = isSeller ? 'complete-trade' : 'buyer-complete';
+      const basePath = item.itemType === 'phone' ? 'phones' : 'electronics';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/${endpoint}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${item.id}/${endpoint}/`,
         {
           method: 'POST',
           headers: {
@@ -1448,19 +1449,20 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function handleCancelTransaction(phoneId: number) {
-    setSelectedCancelId(phoneId);
+  async function handleCancelTransaction(item: UnifiedMarketItem) {
+    setSelectedCancelItem(item);
     setShowCancelDialog(true);
   }
 
-  async function handleCancelTransactionWithReason(phoneId: number) {
+  async function handleCancelTransactionWithReason(item: UnifiedMarketItem) {
     try {
       const token = localStorage.getItem('accessToken');
       // 판매자와 구매자 구분
       const isSeller = activeSection?.startsWith('sales-');
+      const basePath = item.itemType === 'phone' ? 'phones' : 'electronics';
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/cancel-trade/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${item.id}/cancel-trade/`,
         {
           method: 'POST',
           headers: {
@@ -1495,9 +1497,14 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function fetchBuyerInfo(phoneId: number) {
+  async function fetchBuyerInfo(item: UnifiedMarketItem) {
     try {
-      const data = await sellerAPI.getBuyerInfo(phoneId);
+      let data;
+      if (item.itemType === 'phone') {
+        data = await sellerAPI.getBuyerInfo(item.id);
+      } else {
+        data = await electronicsApi.getBuyerInfo(item.id);
+      }
       setSelectedUserInfo(data);
       setShowBuyerInfoModal(true);
     } catch (error) {
@@ -1506,9 +1513,14 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function fetchSellerInfo(phoneId: number) {
+  async function fetchSellerInfo(item: UnifiedMarketItem) {
     try {
-      const data = await buyerAPI.getSellerInfo(phoneId);
+      let data;
+      if (item.itemType === 'phone') {
+        data = await buyerAPI.getSellerInfo(item.id);
+      } else {
+        data = await electronicsApi.getSellerInfo(item.id);
+      }
       setSelectedUserInfo(data);
       setShowSellerInfoModal(true);
     } catch (error) {
