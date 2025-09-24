@@ -123,7 +123,7 @@ export interface ElectronicsOffer {
   id: number;
   electronics: number;
   buyer: number | SellerInfo;
-  offer_price: number;
+  offered_price: number;  // 휴대폰과 일치하도록 변경
   message?: string;
   status: OfferStatus;
   created_at: string;

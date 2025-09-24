@@ -295,8 +295,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
     // 기존 제안이 있으면 값을 설정
     if (myOffer) {
-      setOfferAmount(myOffer.offer_price?.toString() || '');
-      setDisplayAmount(myOffer.offer_price?.toLocaleString() || '');
+      setOfferAmount(myOffer.offered_price?.toString() || '');
+      setDisplayAmount(myOffer.offered_price?.toLocaleString() || '');
       setOfferMessage(myOffer.message || '');
     }
     setShowOfferModal(true);
@@ -359,7 +359,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       const combinedMessage = [...selectedMessages, offerMessage].filter(Boolean).join(' ');
 
       const response = await electronicsApi.createOffer(Number(electronicsId), {
-        offer_price: amount,
+        offered_price: amount,
         message: combinedMessage
       });
 
@@ -1067,8 +1067,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
                         if (myOffer && myOffer.status === 'pending') {
                           // 수정 제안 - 기존 금액과 메시지 설정
-                          setOfferAmount(myOffer.offer_price?.toString() || '');
-                          setDisplayAmount(myOffer.offer_price?.toLocaleString() || '');
+                          setOfferAmount(myOffer.offered_price?.toString() || '');
+                          setDisplayAmount(myOffer.offered_price?.toLocaleString() || '');
                           setOfferMessage(myOffer.message || '');
                           setShowOfferModal(true);
                         } else {
@@ -1150,7 +1150,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                       내가 제안한 금액
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {myOffer.offer_price?.toLocaleString()}원
+                      {myOffer.offered_price?.toLocaleString()}원
                     </p>
                     {myOffer.message && (
                       <p className="text-xs text-gray-600 mt-2 italic">
@@ -1606,7 +1606,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                           {typeof offer.buyer === 'object' ? offer.buyer.nickname : '구매자'}
                         </p>
                         <p className="text-lg font-bold text-primary">
-                          {offer.offer_price.toLocaleString()}원
+                          {offer.offered_price.toLocaleString()}원
                         </p>
                       </div>
                       {offer.status === 'pending' && electronics?.status === 'active' && (
