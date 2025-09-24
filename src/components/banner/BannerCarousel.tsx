@@ -93,11 +93,30 @@ export default function BannerCarousel() {
           {/* 배너 이미지 */}
           {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
             <Link
-              href={
-                currentBanner.target_url.startsWith('/')
-                  ? currentBanner.target_url
-                  : `/${currentBanner.target_url}`
-              }
+              href={(() => {
+                const url = currentBanner.target_url;
+
+                // 외부 링크는 처리하지 않음
+                if (url.startsWith('http')) {
+                  return '#';
+                }
+
+                // 현재 도메인이 포함된 URL 처리
+                const currentDomain = window?.location?.origin || '';
+                if (url.includes(currentDomain)) {
+                  // 도메인 부분을 제거하고 경로만 추출
+                  const pathOnly = url.replace(currentDomain, '');
+                  return pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+                }
+
+                // 이미 /로 시작하는 경우 그대로 사용
+                if (url.startsWith('/')) {
+                  return url;
+                }
+
+                // 상대 경로인 경우 /를 앞에 추가
+                return `/${url}`;
+              })()}
               className="block absolute inset-0"
             >
               <BannerImage currentBanner={currentBanner} currentIndex={currentIndex} />

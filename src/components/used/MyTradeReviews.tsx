@@ -49,125 +49,49 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         console.log('props에서 받은 사용자 ID:', userId);
       }
 
-      // 병렬로 휴대폰과 전자제품 데이터 가져오기
-      const [phoneData, electronicsData] = await Promise.all([
-        // 휴대폰 관련 데이터
-        Promise.all([
-          // 휴대폰 평가 통계
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: null })),
-          // 휴대폰 받은 리뷰
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: { results: [] } })),
-          // 휴대폰 작성한 리뷰
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: { results: [] } })),
-          // 휴대폰 거래 내역
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: { results: [] } }))
-        ]),
-        // 전자제품 관련 데이터
-        Promise.all([
-          // 전자제품 평가 통계 (휴대폰과 동일한 엔드포인트 사용)
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: null })),
-          // 전자제품 받은 리뷰 (휴대폰과 동일한 엔드포인트 사용)
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: { results: [] } })),
-          // 전자제품 작성한 리뷰 (휴대폰과 동일한 엔드포인트 사용)
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: { results: [] } })),
-          // 전자제품 거래 내역 (휴대폰과 동일한 엔드포인트 사용)
-          axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          ).catch(() => ({ data: { results: [] } }))
-        ])
+      // 통합 데이터 병렬 호출
+      const [statsResponse, receivedResponse, writtenResponse, transactionsResponse] = await Promise.all([
+        // 통합 평가 통계 (휴대폰 + 전자제품)
+        axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/user-stats/`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        ).catch(() => ({ data: null })),
+        // 통합 받은 리뷰
+        axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/received/`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        ).catch(() => ({ data: { results: [] } })),
+        // 통합 작성한 리뷰
+        axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/used/reviews/written/`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        ).catch(() => ({ data: { results: [] } })),
+        // 통합 거래 내역
+        axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/used/transactions/my-transactions/`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        ).catch(() => ({ data: { results: [] } }))
       ]);
 
-      // 휴대폰 데이터 처리
-      const [phoneStats, phoneReceived, phoneWritten, phoneTransactions] = phoneData;
-      // 전자제품 데이터 처리
-      const [elecStats, elecReceived, elecWritten, elecTransactions] = electronicsData;
+      // 통계 데이터 설정 (이미 통합됨)
+      const statsData = statsResponse.data || {};
+      console.log('통합 평가 통계:', statsData);
+      setStats(statsData);
 
-      // 통계 통합 (평균 계산 수정)
-      const phoneAvg = phoneStats.data?.average_rating || 0;
-      const elecAvg = elecStats.data?.average_rating || 0;
-      const phoneTotal = phoneStats.data?.total_reviews || 0;
-      const elecTotal = elecStats.data?.total_reviews || 0;
-      const totalReviews = phoneTotal + elecTotal;
+      // 받은 리뷰 설정
+      const receivedReviews = receivedResponse.data?.results || receivedResponse.data || [];
+      console.log('통합 받은 리뷰:', receivedReviews.length, '개');
+      setReviews(receivedReviews);
 
-      // 가중평균 계산 (리뷰가 있는 경우에만)
-      let avgRating = 0;
-      if (totalReviews > 0) {
-        if (phoneTotal > 0 && elecTotal > 0) {
-          // 둘 다 리뷰가 있으면 가중평균
-          avgRating = (phoneAvg * phoneTotal + elecAvg * elecTotal) / totalReviews;
-        } else if (phoneTotal > 0) {
-          // 휴대폰 리뷰만 있으면
-          avgRating = phoneAvg;
-        } else if (elecTotal > 0) {
-          // 전자제품 리뷰만 있으면
-          avgRating = elecAvg;
-        }
-      }
+      // 작성한 리뷰 설정
+      const writtenReviews = writtenResponse.data?.results || writtenResponse.data || [];
+      console.log('통합 작성한 리뷰:', writtenReviews.length, '개');
+      setMyWrittenReviews(writtenReviews);
 
-      const combinedStats = {
-        average_rating: avgRating,
-        total_reviews: totalReviews,
-        rating_distribution: {
-          5: (phoneStats.data?.rating_distribution?.['5'] || 0) + (elecStats.data?.rating_distribution?.['5'] || 0),
-          4: (phoneStats.data?.rating_distribution?.['4'] || 0) + (elecStats.data?.rating_distribution?.['4'] || 0),
-          3: (phoneStats.data?.rating_distribution?.['3'] || 0) + (elecStats.data?.rating_distribution?.['3'] || 0),
-          2: (phoneStats.data?.rating_distribution?.['2'] || 0) + (elecStats.data?.rating_distribution?.['2'] || 0),
-          1: (phoneStats.data?.rating_distribution?.['1'] || 0) + (elecStats.data?.rating_distribution?.['1'] || 0),
-        }
-      };
-      console.log('통합 평가 통계:', combinedStats);
-      setStats(combinedStats);
-
-      // 받은 리뷰 통합 (itemType 추가)
-      const phoneReceivedReviews = (phoneReceived.data?.results || phoneReceived.data || []).map((r: any) => ({ ...r, itemType: 'phone' }));
-      const elecReceivedReviews = (elecReceived.data?.results || elecReceived.data || []).map((r: any) => ({ ...r, itemType: 'electronics' }));
-      const allReceivedReviews = [...phoneReceivedReviews, ...elecReceivedReviews].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      console.log('통합 받은 리뷰:', allReceivedReviews.length, '개');
-      setReviews(allReceivedReviews);
-
-      // 작성한 리뷰 통합 (itemType 추가)
-      const phoneWrittenReviews = (phoneWritten.data?.results || phoneWritten.data || []).map((r: any) => ({ ...r, itemType: 'phone' }));
-      const elecWrittenReviews = (elecWritten.data?.results || elecWritten.data || []).map((r: any) => ({ ...r, itemType: 'electronics' }));
-      const allWrittenReviews = [...phoneWrittenReviews, ...elecWrittenReviews].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      console.log('통합 작성한 리뷰:', allWrittenReviews.length, '개');
-      setMyWrittenReviews(allWrittenReviews);
-
-      // 거래 내역 통합 (itemType 추가)
-      const phoneTransactionsList = phoneTransactions.data?.results || phoneTransactions.data || [];
-      const elecTransactionsList = elecTransactions.data?.results || elecTransactions.data || [];
-      const phoneTransactionsWithType = phoneTransactionsList.map((t: any) => ({ ...t, itemType: 'phone' }));
-      const elecTransactionsWithType = elecTransactionsList.map((t: any) => ({ ...t, itemType: 'electronics' }));
-
-      // 완료된 거래 중 내가 리뷰를 작성하지 않은 거래 통합
-      const allTransactions = [...phoneTransactionsWithType, ...elecTransactionsWithType];
+      // 거래 내역 설정 및 평가 대기 필터링
+      const allTransactions = transactionsResponse.data?.results || transactionsResponse.data || [];
       const completed = allTransactions.filter((t: any) =>
-        t.status === 'completed' && !allWrittenReviews.some((r: any) => r.transaction === t.id)
+        t.status === 'completed' && !writtenReviews.some((r: any) => r.transaction === t.id)
       );
       setPendingReviews(completed);
 
@@ -218,7 +142,14 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
               <div className="flex-1">
                 <div className="space-y-1">
                   {[5, 4, 3, 2, 1].map((rating) => {
-                    const count = stats[`${['five', 'four', 'three', 'two', 'one'][5-rating]}_star`] || 0;
+                    const starFieldMap: { [key: number]: string } = {
+                      5: 'five_star',
+                      4: 'four_star',
+                      3: 'three_star',
+                      2: 'two_star',
+                      1: 'one_star'
+                    };
+                    const count = stats[starFieldMap[rating]] || 0;
                     const percentage = stats.total_reviews > 0
                       ? (count / stats.total_reviews) * 100
                       : 0;
