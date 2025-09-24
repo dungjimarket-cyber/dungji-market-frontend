@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import UsedPhoneCard from '@/components/used/UsedPhoneCard';
+import ElectronicsCard from '@/components/used/ElectronicsCard';
 import UsedPhoneFilter from '@/components/used/UsedPhoneFilter';
 import ElectronicsFilter from '@/components/used/ElectronicsFilter';
 import UnifiedTabs, { TabType } from '@/components/used/UnifiedTabs';
@@ -857,18 +858,15 @@ export default function UsedPhonesPage() {
               />
             ))
           ) : (
-            // 전자제품 탭: 통합 카드로 표시
-            electronics.map((item, index) => {
-              const unifiedItem: ElectronicsItem = { ...item, itemType: 'electronics' as const };
-              return (
-                <UnifiedItemCard
-                  key={item.id}
-                  item={unifiedItem}
-                  priority={index < 10}
-                  onFavorite={(id) => handleFavorite(id, 'electronics')}
-                />
-              );
-            })
+            // 전자제품 탭: ElectronicsCard 사용
+            electronics.map((item, index) => (
+              <ElectronicsCard
+                key={item.id}
+                electronics={item}
+                priority={index < 10}
+                onFavorite={(id) => handleFavorite(id, 'electronics')}
+              />
+            ))
           )}
 
           {/* 로딩 스켈레톤 */}

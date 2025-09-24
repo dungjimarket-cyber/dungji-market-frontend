@@ -658,12 +658,31 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </>
               )}
 
-              {/* 상태 뱃지 */}
-              <div className="absolute top-4 left-4">
-                <Badge variant={electronics.status === 'active' ? 'default' : 'secondary'}>
-                  {ELECTRONICS_STATUS[electronics.status]}
-                </Badge>
-              </div>
+              {/* 거래중 오버레이 */}
+              {electronics.status === 'trading' && (
+                <>
+                  <div className="absolute inset-0 bg-black/30 z-10" />
+                  <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1.5 text-sm rounded font-medium z-20">
+                    거래중
+                  </div>
+                </>
+              )}
+
+              {/* 거래완료 오버레이 */}
+              {electronics.status === 'sold' && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">거래완료</span>
+                </div>
+              )}
+
+              {/* 판매중 상태 뱃지 */}
+              {electronics.status === 'active' && (
+                <div className="absolute top-4 left-4">
+                  <Badge variant="default">
+                    판매중
+                  </Badge>
+                </div>
+              )}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
