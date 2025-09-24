@@ -108,9 +108,9 @@ export default function UsedPhonesPage() {
         max_price: currentFilters.maxPrice,
       };
 
-      // includeCompleted가 false인 경우만 status 필터 추가
-      if (!currentFilters.includeCompleted) {
-        params.status = 'active';
+      // includeCompleted 파라미터 추가
+      if (currentFilters.includeCompleted !== false) {
+        params.include_completed = 'true';
       }
 
       // 지역 필터
@@ -188,17 +188,10 @@ export default function UsedPhonesPage() {
         electronicsApi.getElectronicsList({
           search: currentFilters.search,
           region: currentFilters.region,
-          // 거래완료 포함 옵션을 전자제품 API에도 적용
-          ...(currentFilters.includeCompleted === false && { status: 'active' })
+          // 거래완료 포함 여부를 명시적으로 전달
+          include_completed: currentFilters.includeCompleted !== false ? 'true' : undefined
         }).then(res => {
-          let items = res.results || [];
-
-          // includeCompleted가 false인 경우 active 상태만 필터링
-          if (!currentFilters.includeCompleted) {
-            items = items.filter((item: UsedElectronics) => item.status === 'active');
-          }
-
-          return items;
+          return res.results || [];
         }).catch(() => [])
       ]);
 

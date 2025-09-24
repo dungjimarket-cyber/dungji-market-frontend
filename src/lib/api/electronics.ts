@@ -47,8 +47,14 @@ export const getElectronicsList = async (params?: {
   search?: string;
   ordering?: string;
   status?: string;  // status 파라미터 추가
+  include_completed?: string | boolean;  // 거래완료 포함 파라미터 추가
 }): Promise<ElectronicsListResponse> => {
-  const response = await api.get('/', { params });
+  // boolean을 string으로 변환
+  const apiParams = { ...params };
+  if (apiParams.include_completed !== undefined) {
+    apiParams.include_completed = String(apiParams.include_completed);
+  }
+  const response = await api.get('/', { params: apiParams });
   return response.data;
 };
 

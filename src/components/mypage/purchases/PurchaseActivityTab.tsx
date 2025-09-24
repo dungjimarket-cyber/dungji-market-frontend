@@ -386,10 +386,26 @@ export default function PurchaseActivityTab() {
       const electronicsItems = (Array.isArray(electronicsTrading) ? electronicsTrading : electronicsTrading.results || [])
         .map((item: any) => ({ ...item, itemType: 'electronics' as const }));
 
+      // 디버깅: 전자제품 sold 상태 확인
+      console.log('[DEBUG] Electronics trading items:', electronicsItems);
+      const electronicsSoldCount = electronicsItems.filter((item: any) =>
+        item.electronics?.status === 'sold' ||
+        (item.electronics_info?.status === 'sold')
+      ).length;
+      console.log('[DEBUG] Electronics sold count:', electronicsSoldCount);
+
       const allTrading = [
         ...phoneItems,
         ...electronicsItems
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      // 디버깅: 전체 sold 상태 확인
+      const totalSoldCount = allTrading.filter(item => {
+        const status = getItemStatus(item);
+        return status === 'sold';
+      }).length;
+      console.log('[DEBUG] Total sold count:', totalSoldCount);
+
       setTradingItems(allTrading);
     } catch (error) {
       console.error('Failed to fetch trading items:', error);
