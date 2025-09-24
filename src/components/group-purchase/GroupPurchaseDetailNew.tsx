@@ -1382,7 +1382,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
               {/* 9-10만원대 요금제 프리미엄 안내 */}
               {(groupBuy.telecom_detail.plan_info === '5G_special' ||
-                groupBuy.telecom_detail.plan_info === '5G_platinum') && (
+                groupBuy.telecom_detail.plan_info === '5G_platinum' ||
+                groupBuy.telecom_detail.plan_info === '9만원대' ||
+                groupBuy.telecom_detail.plan_info === '10만원이상') && (
                 <div className="mt-2 p-2.5 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-start gap-2">
                     <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
