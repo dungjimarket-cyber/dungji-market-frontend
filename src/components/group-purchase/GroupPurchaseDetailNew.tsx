@@ -1388,7 +1388,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                     <div className="text-xs space-y-1">
                       <p className="font-semibold text-blue-800">
-                        최고지원금 도전을 원하신다면 9~10만원대 요금제를 선택하세요
+                        최고지원금 도전
                       </p>
                       <p className="text-gray-700">차원이 다른 비교견적 가능</p>
                     </div>
@@ -1396,7 +1396,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   <div className="flex items-start gap-2 mt-2">
                     <Clock className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-gray-700">
-                      개통유형별 4개월 최대 6개월 요금제 필수유지조건
+                      개통유형별 4~6개월 필수유지
                     </p>
                   </div>
                 </div>
