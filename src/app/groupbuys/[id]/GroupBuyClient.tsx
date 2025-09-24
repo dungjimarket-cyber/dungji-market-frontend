@@ -839,7 +839,7 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                     <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs font-medium text-gray-900">
-                        최고지원금 비교견적 가능
+                        최고지원금 도전 가능
                       </p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />

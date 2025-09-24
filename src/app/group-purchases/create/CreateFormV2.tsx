@@ -955,7 +955,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                               </div>
                               <div className="flex-1 space-y-1.5">
                                 <p className="text-xs sm:text-sm font-medium text-gray-900">
-                                  최고지원금 비교견적
+                                  최고지원금 도전
                                 </p>
                                 <p className="text-xs text-gray-700">
                                   차원이 다른 비교견적이 가능합니다
