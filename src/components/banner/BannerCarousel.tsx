@@ -96,17 +96,25 @@ export default function BannerCarousel() {
               href={(() => {
                 const url = currentBanner.target_url;
 
-                // 외부 링크는 처리하지 않음
-                if (url.startsWith('http')) {
-                  return '#';
-                }
+                // 현재 사이트 도메인들 (dungjimarket.com)
+                const siteHosts = ['dungjimarket.com', 'www.dungjimarket.com', 'localhost'];
 
-                // 현재 도메인이 포함된 URL 처리
-                const currentDomain = window?.location?.origin || '';
-                if (url.includes(currentDomain)) {
-                  // 도메인 부분을 제거하고 경로만 추출
-                  const pathOnly = url.replace(currentDomain, '');
-                  return pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+                // HTTP/HTTPS로 시작하는 경우
+                if (url.startsWith('http')) {
+                  try {
+                    const urlObj = new URL(url);
+                    // 현재 사이트 도메인인지 확인
+                    if (siteHosts.some(host => urlObj.hostname === host || urlObj.hostname.endsWith('.' + host))) {
+                      // 내부 링크: 경로만 반환
+                      return urlObj.pathname + urlObj.search + urlObj.hash;
+                    } else {
+                      // 외부 링크: 처리하지 않음
+                      return '#';
+                    }
+                  } catch (e) {
+                    // URL 파싱 실패시 처리하지 않음
+                    return '#';
+                  }
                 }
 
                 // 이미 /로 시작하는 경우 그대로 사용
