@@ -46,6 +46,7 @@ export const getElectronicsList = async (params?: {
   page?: number;
   search?: string;
   ordering?: string;
+  status?: string;  // status 파라미터 추가
 }): Promise<ElectronicsListResponse> => {
   const response = await api.get('/', { params });
   return response.data;

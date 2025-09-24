@@ -82,7 +82,7 @@ export default function TradeReviewModal({
       console.log('Review POST request data:', requestData);
       const apiPath = itemType === 'electronics'
         ? 'used/electronics/reviews/simple/'
-        : 'reviews/simple/';
+        : 'used/reviews/simple/';
       console.log('Review POST URL:', `${process.env.NEXT_PUBLIC_API_URL}/${apiPath}`);
 
       // 새로운 간단한 API 사용
