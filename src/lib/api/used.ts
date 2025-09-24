@@ -198,7 +198,7 @@ export const reviewAPI = {
     console.log('Full URL will be:', `${api.defaults.baseURL}/used/reviews/simple/`);
 
     // 새로운 간단한 API 사용
-    const response = await api.post('/used/reviews/simple/', {
+    const response = await api.post('/reviews/simple/', {
       transaction: transactionId,
       ...data,
     });
