@@ -26,7 +26,7 @@ import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
-const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 가격과 거래요청사항만 수정 가능합니다.';
+const LOCKED_FIELDS_MESSAGE = '제안을 받은 이후에는 즉시판매가와 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedElectronicsEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -474,7 +474,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="price">판매가 *</Label>
+                <Label htmlFor="price">즉시판매가 *</Label>
                 <Input
                   id="price"
                   value={formData.price}
@@ -491,7 +491,13 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   value={formData.min_offer_price}
                   onChange={(e) => handleInputChange('min_offer_price', e.target.value.replace(/[^\d]/g, ''))}
                   placeholder="0"
+                  disabled={hasOffers}
                 />
+                {hasOffers && (
+                  <p className="text-amber-600 text-xs mt-1">
+                    제안을 받은 후에는 최소 제안가를 수정할 수 없습니다
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -558,15 +564,38 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
             <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
 
             <div className="space-y-4">
-              <div>
-                <Label>거래 가능 지역 *</Label>
-                <MultiRegionDropdown
-                  selectedRegions={selectedRegions}
-                  onSelectionChange={setSelectedRegions}
-                  maxSelections={3}
-                />
-                {errors.regions && <p className="text-red-500 text-sm mt-1">{errors.regions}</p>}
-              </div>
+              {/* 제안 이후 지역 변경 불가 */}
+              {!hasOffers && (
+                <div>
+                  <Label>거래 가능 지역 *</Label>
+                  <MultiRegionDropdown
+                    selectedRegions={selectedRegions}
+                    onSelectionChange={setSelectedRegions}
+                    maxSelections={3}
+                  />
+                  {errors.regions && <p className="text-red-500 text-sm mt-1">{errors.regions}</p>}
+                </div>
+              )}
+              {hasOffers && (
+                <div>
+                  <Label>거래 가능 지역</Label>
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRegions.map((region) => (
+                        <span
+                          key={region.code}
+                          className="px-3 py-1.5 bg-white rounded-lg border border-gray-300 text-sm text-gray-700"
+                        >
+                          {region.name}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-amber-600 text-xs mt-2">
+                      제안을 받은 후에는 거래 지역을 변경할 수 없습니다
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="meeting_place">거래 요청사항</Label>

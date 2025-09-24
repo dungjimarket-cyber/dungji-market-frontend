@@ -26,7 +26,7 @@ import { searchRegionsByName } from '@/lib/api/regionService';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
-const LOCKED_FIELDS_MESSAGE = '견적이 제안된 이후에는 가격과 거래요청사항만 수정 가능합니다.';
+const LOCKED_FIELDS_MESSAGE = '제안을 받은 이후에는 즉시판매가와 거래요청사항만 수정 가능합니다.';
 
 export default async function UsedPhoneEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -768,7 +768,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
               <div>
                 <p className="text-sm font-medium text-amber-900">수정 제한 안내</p>
                 <p className="text-sm text-amber-700 mt-1">
-                  견적이 제안된 상품입니다. 즉시 판매가와 거래시 요청사항만 수정 가능합니다.
+                  제안을 받은 상품입니다. 즉시판매가와 거래시 요청사항만 수정 가능합니다.
                 </p>
                 <p className="text-xs text-amber-600 mt-1">
                   수정 시 구매자에게 "수정됨" 표시가 나타납니다.
@@ -1052,7 +1052,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           <div className="space-y-4">
             <div>
               <Label className="flex items-center gap-2">
-                즉시 판매가 <span className="text-red-500">*</span>
+                즉시판매가 <span className="text-red-500">*</span>
                 {isFieldEditable('price') ? (
                   <span className="text-xs text-green-600 font-normal">수정 가능</span>
                 ) : (
@@ -1080,7 +1080,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
             <div>
               <Label className="flex items-center gap-1">
                 최소 제안가 <span className="text-red-500">*</span>
-                {!isFieldEditable('min_offer_price') && <Lock className="w-3 h-3 text-gray-400" />}
+                {hasOffers && <Lock className="w-3 h-3 text-gray-400" />}
               </Label>
               <div className="relative">
                 <Input
@@ -1090,21 +1090,27 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   onChange={(e) => handlePriceChange(e, 'min_offer_price')}
                   onBlur={() => handlePriceBlur('min_offer_price')}
                   placeholder="0"
-                  disabled={!isFieldEditable('min_offer_price')}
+                  disabled={hasOffers}
                   className={`pr-12 ${errors.min_offer_price ? 'border-red-500' : ''}`}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">원</span>
               </div>
               {errors.min_offer_price && <p className="text-xs text-red-500 mt-1">{errors.min_offer_price}</p>}
-              <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)</p>
-              <p className="text-xs text-gray-500">구매자가 제안할 수 있는 최소 금액입니다</p>
+              {hasOffers ? (
+                <p className="text-amber-600 text-xs mt-1">제안을 받은 후에는 최소 제안가를 수정할 수 없습니다</p>
+              ) : (
+                <>
+                  <p className="text-xs text-gray-500 mt-1">가격은 천원 단위로 입력 가능합니다 (즉시판매가보다 낮게)</p>
+                  <p className="text-xs text-gray-500">구매자가 제안할 수 있는 최소 금액입니다</p>
+                </>
+              )}
             </div>
 
             {/* 가격 정보 표시 */}
             {formData.price && formData.min_offer_price && (
               <div className="bg-gray-50 p-3 rounded-lg mt-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">즉시 판매가:</span>
+                  <span className="text-gray-600">즉시판매가:</span>
                   <span className="font-medium">{parseInt(formData.price).toLocaleString('ko-KR')}원</span>
                 </div>
                 <div className="flex justify-between text-sm mt-1">
@@ -1247,12 +1253,12 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
           <h2 className="text-lg font-semibold mb-4">거래 정보</h2>
           
           <div className="space-y-4">
-            <div ref={regionRef}>
-              <Label className="flex items-center gap-1">
-                거래 가능 지역 <span className="text-red-500">*</span>
-                {!isFieldEditable('regions') && <Lock className="w-3 h-3 text-gray-400" />}
-              </Label>
-              {isFieldEditable('regions') ? (
+            {/* 제안 이후 지역 변경 불가 */}
+            {!hasOffers ? (
+              <div ref={regionRef}>
+                <Label className="flex items-center gap-1">
+                  거래 가능 지역 <span className="text-red-500">*</span>
+                </Label>
                 <MultiRegionDropdown
                   selectedRegions={selectedRegions.map(r => ({
                     province: r.province || r.sido || '',
@@ -1269,17 +1275,29 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     setIsModified(true);
                   }}
                 />
-              ) : (
-                <div className="p-3 bg-gray-100 rounded-md">
-                  {selectedRegions.map((region, index) => (
-                    <div key={index} className="text-sm text-gray-700">
-                      {region.full_name || region.name}
-                    </div>
-                  ))}
+                {errors.regions && <p className="text-xs text-red-500 mt-1">{errors.regions}</p>}
+                <p className="text-xs text-gray-500 mt-1">대면 거래 가능한 지역을 최대 3곳까지 선택할 수 있습니다</p>
+              </div>
+            ) : (
+              <div>
+                <Label>거래 가능 지역</Label>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRegions.map((region: any) => (
+                      <span
+                        key={region.id || region.code || Math.random()}
+                        className="px-3 py-1.5 bg-white rounded-lg border border-gray-300 text-sm text-gray-700"
+                      >
+                        {region.name || region.full_name}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-amber-600 text-xs mt-2">
+                    제안을 받은 후에는 거래 지역을 변경할 수 없습니다
+                  </p>
                 </div>
-              )}
-              {errors.regions && <p className="text-xs text-red-500 mt-1">{errors.regions}</p>}
-            </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label className="flex items-center gap-2">

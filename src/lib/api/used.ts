@@ -52,7 +52,7 @@ export const sellerAPI = {
 
   // 제안 응답 (수락만 가능)
   respondToOffer: async (offerId: number, action: 'accept', message?: string) => {
-    const response = await api.post(`/offers/${offerId}/respond/`, {
+    const response = await api.post(`/phones/offers/${offerId}/respond/`, {
       action,
       message,
     });
@@ -61,7 +61,7 @@ export const sellerAPI = {
 
   // 거래 진행 (수락된 제안을 거래중으로 전환)
   proceedTrade: async (offerId: number) => {
-    const response = await api.post(`/offers/${offerId}/proceed-trade/`);
+    const response = await api.post(`/phones/offers/${offerId}/proceed-trade/`);
     return response.data;
   },
 

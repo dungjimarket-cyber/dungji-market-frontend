@@ -160,7 +160,10 @@ export async function executeTransactionAction(
   try {
     const result = await action();
 
-    if (options.successMessage) {
+    // 즉시구매 성공인 경우 toast를 건너뜀 (action 내부에서 이미 처리)
+    if (result?.type === 'instant_purchase') {
+      // 즉시구매는 별도 메시지를 이미 표시했으므로 건너뜀
+    } else if (options.successMessage) {
       toast({
         title: '성공',
         description: options.successMessage,
