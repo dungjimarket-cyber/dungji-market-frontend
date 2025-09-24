@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
-import { ArrowLeft, Share2, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy } from 'lucide-react';
+import { ArrowLeft, Share2, Clock, Users, MapPin, Calendar, Star, ChevronRight, Gavel, AlertCircle, TrendingUp, Crown, Trophy, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
@@ -1369,15 +1369,39 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         <div className="mb-4">
           {/* 휴대폰 상품 정보 */}
           {groupBuy.product_info?.category_detail_type === 'telecom' && groupBuy.telecom_detail && (
-            <ServiceInfoCards
-              category={groupBuy.product_details?.category_name || '휴대폰'}
-              carrier={groupBuy.telecom_detail.telecom_carrier}
-              subscriptionType={groupBuy.telecom_detail.subscription_type_display || 
-                               groupBuy.telecom_detail.subscription_type_korean ||
-                               groupBuy.telecom_detail.subscription_type}
-              planInfo={groupBuy.telecom_detail.plan_info ? getPlanDisplay(groupBuy.telecom_detail.plan_info) : undefined}
-              variant="detail"
-            />
+            <>
+              <ServiceInfoCards
+                category={groupBuy.product_details?.category_name || '휴대폰'}
+                carrier={groupBuy.telecom_detail.telecom_carrier}
+                subscriptionType={groupBuy.telecom_detail.subscription_type_display ||
+                                 groupBuy.telecom_detail.subscription_type_korean ||
+                                 groupBuy.telecom_detail.subscription_type}
+                planInfo={groupBuy.telecom_detail.plan_info ? getPlanDisplay(groupBuy.telecom_detail.plan_info) : undefined}
+                variant="detail"
+              />
+
+              {/* 9-10만원대 요금제 프리미엄 안내 */}
+              {(groupBuy.telecom_detail.plan_info === '5G_special' ||
+                groupBuy.telecom_detail.plan_info === '5G_platinum') && (
+                <div className="mt-2 p-2.5 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-2">
+                    <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs space-y-1">
+                      <p className="font-semibold text-blue-800">
+                        최고지원금 비교를 원하신다면 9~10만원대 요금제를 선택하세요
+                      </p>
+                      <p className="text-gray-700">차원이 다른 비교견적 가능</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 mt-2">
+                    <Clock className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-700">
+                      개통유형별 4개월 최대 6개월 요금제 필수유지조건
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
           
           {/* 인터넷/TV 상품 정보 */}
