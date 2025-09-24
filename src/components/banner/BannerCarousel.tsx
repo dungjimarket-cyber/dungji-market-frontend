@@ -92,17 +92,13 @@ export default function BannerCarousel() {
         <div className="relative w-full aspect-[5/2] md:aspect-[21/7] lg:aspect-[21/6] max-h-[240px] md:max-h-[320px] lg:max-h-[380px] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
           {/* 배너 이미지 */}
           {currentBanner.target_url && currentBanner.target_url !== '#' && currentBanner.target_url !== '' ? (
-            <Link 
+            <Link
               href={
-                currentBanner.target_url.startsWith('http') 
-                  ? currentBanner.target_url 
-                  : currentBanner.target_url.startsWith('/') 
-                    ? currentBanner.target_url 
-                    : `/${currentBanner.target_url}`
+                currentBanner.target_url.startsWith('/')
+                  ? currentBanner.target_url
+                  : `/${currentBanner.target_url}`
               }
               className="block absolute inset-0"
-              target={currentBanner.target_url.startsWith('http') ? '_blank' : '_self'}
-              rel={currentBanner.target_url.startsWith('http') ? 'noopener noreferrer' : undefined}
             >
               <BannerImage currentBanner={currentBanner} currentIndex={currentIndex} />
             </Link>
