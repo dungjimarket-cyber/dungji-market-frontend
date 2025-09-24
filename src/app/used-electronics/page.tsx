@@ -56,6 +56,7 @@ function UsedElectronicsListPageContent() {
         page: resetList ? 1 : page,
         search: searchTerm,
         ordering: sortBy === 'latest' ? '-created_at' : sortBy === 'price_low' ? 'price' : '-price',
+        include_completed: 'true'  // 거래완료 상품도 포함
       };
 
       if (selectedCategory) params.subcategory = selectedCategory;
