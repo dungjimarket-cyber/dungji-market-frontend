@@ -1485,7 +1485,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           toast('거래가 취소되었습니다. 상품이 다시 판매중 상태가 되었습니다.');
         }
         setShowCancelDialog(false);
-        setSelectedCancelId(null);
+        setSelectedCancelItem(null);
         setCancellationReason('');
         setCustomReason('');
         setReturnToSale(true);
