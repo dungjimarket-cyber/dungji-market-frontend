@@ -903,17 +903,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               </Button>
                               <Button
                                 size="sm"
-                                className="bg-green-600 hover:bg-green-700"
-                                onClick={() => {
-                                  setSelectedCompleteItem(targetItem || item);
-                                  setIsBuyerComplete(true);
-                                  setShowCompleteDialog(true);
-                                }}
-                              >
-                                구매 완료
-                              </Button>
-                              <Button
-                                size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
                                 onClick={() => handleCancelTransaction(targetItem || item)}
