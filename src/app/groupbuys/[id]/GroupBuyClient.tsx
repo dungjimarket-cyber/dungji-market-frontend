@@ -5,7 +5,7 @@ import { getCarrierDisplay, getSubscriptionTypeDisplay, getPlanDisplay } from '@
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, AlertTriangle, Info, Share2, PlusCircle, History, Edit, Settings } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Info, Share2, PlusCircle, History, Edit, Settings, Zap, Clock } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -818,17 +818,40 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
           </div>
           
           {/* 요금제 정보 - 하단에 별도 표시 (휴대폰만) */}
-          {groupBuy.telecom_detail?.plan_info && 
+          {groupBuy.telecom_detail?.plan_info &&
            groupBuy.product_details?.category_name !== '인터넷' &&
            groupBuy.product_details?.category_name !== '인터넷+TV' && (
-            <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-green-700">희망요금제</span>
-                <span className="text-base font-bold text-green-900">
-                  {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
-                </span>
+            <>
+              <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-green-700">희망요금제</span>
+                  <span className="text-base font-bold text-green-900">
+                    {getPlanDisplay(groupBuy.telecom_detail.plan_info)}
+                  </span>
+                </div>
               </div>
-            </div>
+
+              {/* 9~10만원대 요금제 안내 */}
+              {(groupBuy.telecom_detail.plan_info === '5G_special' ||
+                groupBuy.telecom_detail.plan_info === '5G_platinum') && (
+                <div className="mt-2 p-2.5 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-2">
+                    <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-gray-900">
+                        최고지원금 비교견적 가능
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        <span className="text-xs text-gray-600">
+                          4~6개월 필수유지
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

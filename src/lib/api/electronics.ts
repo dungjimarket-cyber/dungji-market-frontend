@@ -173,7 +173,7 @@ export const checkRegistrationLimit = async (): Promise<ElectronicsCheckLimitRes
 export const createOffer = async (
   electronicsId: number,
   data: {
-    offer_price: number;
+    offered_price: number;  // 백엔드와 일치하도록 변경
     message?: string;
   }
 ): Promise<ElectronicsOffer> => {

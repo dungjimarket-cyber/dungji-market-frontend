@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { tokenUtils } from '@/lib/tokenUtils';
 import { toKSTString } from '@/lib/utils';
-import { SmartphoneIcon, WifiIcon, MonitorIcon, AlertCircleIcon, CheckCircle2, Info, PhoneCall, RefreshCw, UserPlus } from "lucide-react";
+import { SmartphoneIcon, WifiIcon, MonitorIcon, AlertCircleIcon, CheckCircle2, Info, PhoneCall, RefreshCw, UserPlus, Zap, Clock } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -940,11 +940,36 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                             <SelectItem value="5G_basic_plus">6만원대</SelectItem>
                             <SelectItem value="5G_premium">7만원대</SelectItem>
                             <SelectItem value="5G_premium_plus">8만원대</SelectItem>
-                            <SelectItem value="5G_special">9만원대</SelectItem>
-                            <SelectItem value="5G_platinum">10만원이상</SelectItem>
+                            <SelectItem value="5G_special">9만원대 (요금제 유지조건)</SelectItem>
+                            <SelectItem value="5G_platinum">10만원이상 (요금제 유지조건)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
+
+                        {/* 9~10만원대 선택 시 프리미엄 안내 */}
+                        {(field.value === '5G_special' || field.value === '5G_platinum') && (
+                          <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-start gap-2">
+                              <div className="p-1.5 bg-white rounded-full shadow-sm">
+                                <Zap className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div className="flex-1 space-y-1.5">
+                                <p className="text-xs sm:text-sm font-medium text-gray-900">
+                                  최고지원금 비교견적
+                                </p>
+                                <p className="text-xs text-gray-700">
+                                  차원이 다른 비교견적이 가능합니다
+                                </p>
+                                <div className="flex items-center gap-1.5 pt-1">
+                                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                  <span className="text-xs text-gray-600">
+                                    개통유형별 4~6개월 필수유지
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </FormItem>
                     )}
                   />
