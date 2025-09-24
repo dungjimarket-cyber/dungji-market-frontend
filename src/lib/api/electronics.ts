@@ -242,7 +242,7 @@ export const getReceivedOffers = async (electronicsId?: number): Promise<any> =>
  * 제안 응답 (수락/거절)
  */
 export const respondToOffer = async (offerId: number, action: 'accept' | 'reject', message?: string): Promise<any> => {
-  const response = await api.post(`/electronics/offers/${offerId}/respond/`, {
+  const response = await api.post(`/offers/${offerId}/respond/`, {
     action,
     message,
   });
@@ -253,7 +253,7 @@ export const respondToOffer = async (offerId: number, action: 'accept' | 'reject
  * 거래 진행 (수락된 제안을 거래중으로 전환)
  */
 export const proceedTrade = async (offerId: number): Promise<any> => {
-  const response = await api.post(`/electronics/offers/${offerId}/proceed-trade/`);
+  const response = await api.post(`/offers/${offerId}/proceed-trade/`);
   return response.data;
 };
 
@@ -366,7 +366,7 @@ export const getMyTradingItems = async (params?: {
  */
 export const cancelOffer = async (offerId: number): Promise<{ message: string }> => {
   // 백엔드 URL 패턴에 맞게 수정 - ViewSet의 action 경로
-  const response = await api.post(`/electronics/offers/${offerId}/cancel/`);
+  const response = await api.post(`/offers/${offerId}/cancel/`);
   return response.data;
 };
 
