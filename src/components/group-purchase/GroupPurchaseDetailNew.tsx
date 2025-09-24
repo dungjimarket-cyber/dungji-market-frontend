@@ -1397,8 +1397,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                   </div>
                   <div className="flex items-start gap-2 mt-2">
                     <Clock className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-gray-700">
-                      개통유형별 4~6개월 필수유지
+                    <p className="text-[11px] text-gray-600">
+                      가입유형별 4~6개월 가입요금제 필수유지 조건
                     </p>
                   </div>
                 </div>

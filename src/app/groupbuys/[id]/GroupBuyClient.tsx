@@ -845,8 +845,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                       </p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                        <span className="text-xs text-gray-600">
-                          4~6개월 필수유지
+                        <span className="text-[11px] text-gray-600">
+                          가입유형별 4~6개월 가입요금제 필수유지 조건
                         </span>
                       </div>
                     </div>

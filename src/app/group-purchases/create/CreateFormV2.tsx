@@ -940,8 +940,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                             <SelectItem value="5G_basic_plus">6만원대</SelectItem>
                             <SelectItem value="5G_premium">7만원대</SelectItem>
                             <SelectItem value="5G_premium_plus">8만원대</SelectItem>
-                            <SelectItem value="5G_special">9만원대 (요금제 유지조건)</SelectItem>
-                            <SelectItem value="5G_platinum">10만원이상 (요금제 유지조건)</SelectItem>
+                            <SelectItem value="5G_special">9만원대 (유지기간4~6개월)</SelectItem>
+                            <SelectItem value="5G_platinum">10만원이상 (유지기간4~6개월)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -962,8 +962,8 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                                 </p>
                                 <div className="flex items-center gap-1.5 pt-1">
                                   <Clock className="w-3.5 h-3.5 text-amber-500" />
-                                  <span className="text-xs text-gray-600">
-                                    개통유형별 4~6개월 필수유지
+                                  <span className="text-[11px] text-gray-600">
+                                    가입유형별 4~6개월 가입요금제 필수유지 조건
                                   </span>
                                 </div>
                               </div>
