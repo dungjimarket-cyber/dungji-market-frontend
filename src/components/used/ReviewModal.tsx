@@ -12,6 +12,7 @@ interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   transactionId: number;
+  offerId?: number; // offer_id 추가
   revieweeName: string;
   productInfo?: {
     brand: string;
@@ -26,6 +27,7 @@ export default function ReviewModal({
   isOpen,
   onClose,
   transactionId,
+  offerId,
   revieweeName,
   productInfo,
   itemType = 'phone',
@@ -42,6 +44,7 @@ export default function ReviewModal({
 
   const handleSubmit = async () => {
     console.log('ReviewModal handleSubmit - transactionId:', transactionId);
+    console.log('ReviewModal handleSubmit - offerId:', offerId);
     console.log('ReviewModal handleSubmit - itemType:', itemType);
 
     try {
@@ -58,7 +61,10 @@ export default function ReviewModal({
 
       // 아이템 타입에 따라 다른 API 호출
       if (itemType === 'electronics') {
-        await electronicsApi.createReview(transactionId, reviewData);
+        await electronicsApi.createReview(transactionId, {
+          ...reviewData,
+          offer_id: offerId, // 전자제품의 경우 offer_id 추가
+        });
       } else {
         await reviewAPI.createReview(transactionId, reviewData);
       }

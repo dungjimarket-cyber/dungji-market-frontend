@@ -14,13 +14,15 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import axios from 'axios';
+import { reviewAPI } from '@/lib/api/used';
+import electronicsApi from '@/lib/api/electronics';
 import { toast } from 'sonner';
 
 interface TradeReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   transactionId: number;
+  offerId?: number; // offer_id 추가
   isSeller: boolean;
   partnerName: string;
   phoneModel: string;
@@ -32,6 +34,7 @@ export default function TradeReviewModal({
   isOpen,
   onClose,
   transactionId,
+  offerId,
   isSeller,
   partnerName,
   phoneModel,
@@ -64,8 +67,6 @@ export default function TradeReviewModal({
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-
       // 선택된 태그를 boolean 필드로 변환
       const tagData: any = {};
       getReviewTags().forEach(tag => {
@@ -73,31 +74,26 @@ export default function TradeReviewModal({
       });
 
       const requestData = {
-        transaction: transactionId,
         rating,
         comment: comment.trim() || undefined,
         ...tagData,
       };
 
       console.log('Review POST request data:', requestData);
-      const apiPath = itemType === 'electronics'
-        ? '/electronics/reviews/simple/'
-        : '/reviews/simple/';
+      console.log('Transaction ID:', transactionId);
+      console.log('Item type:', itemType);
 
-      const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
-      const fullURL = `${baseURL}/used${apiPath}`;
-      console.log('Review POST URL:', fullURL);
-
-      // 새로운 간단한 API 사용
-      const response = await axios.post(
-        fullURL,
-        requestData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      // itemType에 따라 다른 API 사용
+      let response;
+      if (itemType === 'electronics') {
+        // 전자제품의 경우 offer_id도 함께 전달
+        response = await electronicsApi.createReview(transactionId, {
+          ...requestData,
+          offer_id: offerId,
+        });
+      } else {
+        response = await reviewAPI.createReview(transactionId, requestData);
+      }
 
       toast.success('평가가 완료되었습니다!');
       onReviewComplete?.();

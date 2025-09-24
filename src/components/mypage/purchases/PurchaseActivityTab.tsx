@@ -240,6 +240,8 @@ export default function PurchaseActivityTab() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<{
     transactionId: number;
+    offerId?: number; // offer_id 추가
+    itemType?: 'phone' | 'electronics'; // itemType 추가
     sellerName: string;
     phoneInfo: {
       brand: string;
@@ -669,6 +671,7 @@ export default function PurchaseActivityTab() {
     if (item.phone) {
       setReviewTarget({
         transactionId: transactionId, // transaction_id 우선 사용
+        itemType: 'phone',
         sellerName: item.phone.seller.nickname,
         phoneInfo: {
           brand: item.phone.brand,
@@ -679,6 +682,8 @@ export default function PurchaseActivityTab() {
     } else if (item.electronics) {
       setReviewTarget({
         transactionId: transactionId, // transaction_id 우선 사용
+        offerId: (item as any).offer_id || item.id, // offer_id도 전달
+        itemType: 'electronics',
         sellerName: item.electronics.seller.nickname,
         phoneInfo: {
           brand: item.electronics.brand,
@@ -1279,6 +1284,8 @@ export default function PurchaseActivityTab() {
             setReviewTarget(null);
           }}
           transactionId={reviewTarget.transactionId}
+          offerId={reviewTarget.offerId}
+          itemType={reviewTarget.itemType}
           revieweeName={reviewTarget.sellerName}
           productInfo={reviewTarget.phoneInfo}
           onSuccess={handleReviewSuccess}

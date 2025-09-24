@@ -393,11 +393,18 @@ export const createReview = async (transactionId: number, data: {
   is_friendly?: boolean;
   is_honest?: boolean;
   is_fast_response?: boolean;
+  offer_id?: number;
 }): Promise<any> => {
   // 휴대폰과 동일한 simple 엔드포인트 사용
   const response = await api.post('/reviews/simple/', {
-    transaction: transactionId,
-    ...data,
+    transaction: transactionId || 0,  // 트랜잭션 ID가 없으면 0
+    offer_id: data.offer_id,  // offer_id 추가
+    rating: data.rating,
+    comment: data.comment,
+    is_punctual: data.is_punctual,
+    is_friendly: data.is_friendly,
+    is_honest: data.is_honest,
+    is_fast_response: data.is_fast_response,
   });
   return response.data;
 };
