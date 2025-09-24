@@ -1062,14 +1062,20 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           phone={selectedPhone}
           offers={receivedOffers}
           onRespond={async (offerId, action) => {
-            // 제안 수락 처리
+            // 제안 수락 처리 - 타입에 따른 API 호출
             try {
-              await sellerAPI.respondToOffer(offerId, action);
+              if (selectedPhone?.itemType === 'phone') {
+                await sellerAPI.respondToOffer(offerId, action);
+              } else if (selectedPhone?.itemType === 'electronics') {
+                // 전자제품용 API 호출
+                await electronicsApi.respondToOffer(offerId, action);
+              }
               toast('제안을 수락했습니다. 거래가 시작됩니다.');
               setShowOffersModal(false);
               // 페이지 새로고침
               setTimeout(() => window.location.reload(), 500);
             } catch (error) {
+              console.error('제안 응답 오류:', error);
               toast('제안 응답 중 오류가 발생했습니다.');
             }
           }}
