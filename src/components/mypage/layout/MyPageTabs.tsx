@@ -1507,9 +1507,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       }
       setSelectedUserInfo(data);
       setShowBuyerInfoModal(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch buyer info:', error);
-      toast('구매자 정보를 불러올 수 없습니다.');
+      const errorMessage = error.response?.data?.error || '구매자 정보를 불러올 수 없습니다.';
+      toast(errorMessage);
     }
   }
 
@@ -1523,9 +1524,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       }
       setSelectedUserInfo(data);
       setShowSellerInfoModal(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch seller info:', error);
-      toast('판매자 정보를 불러올 수 없습니다.');
+      const errorMessage = error.response?.data?.error || '판매자 정보를 불러올 수 없습니다.';
+      toast(errorMessage);
     }
   }
 });
