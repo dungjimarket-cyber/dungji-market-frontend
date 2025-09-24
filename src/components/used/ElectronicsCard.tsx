@@ -9,7 +9,7 @@
 import React, { memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MapPin, Clock, Eye, MessageCircle, Edit3 } from 'lucide-react';
+import { Heart, MapPin, Clock, Eye, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { UsedElectronics } from '@/types/electronics';
@@ -34,7 +34,7 @@ const ElectronicsCard = memo(function ElectronicsCard({
   onFavorite
 }: ElectronicsCardProps) {
   // 기본 이미지 설정
-  const imageUrl = electronics.images?.[0]?.imageUrl || electronics.images?.[0]?.image_url;
+  const imageUrl = electronics.images?.[0]?.imageUrl;
   const hasImage = !!imageUrl;
 
   // 가격 포맷팅
@@ -61,7 +61,7 @@ const ElectronicsCard = memo(function ElectronicsCard({
     e.preventDefault();
     e.stopPropagation();
     // 거래 완료 상품은 찜하기 불가
-    if (electronics.status === 'sold' || electronics.status === 'completed') {
+    if (electronics.status === 'sold') {
       return;
     }
     if (electronics.id && onFavorite) {
@@ -70,10 +70,10 @@ const ElectronicsCard = memo(function ElectronicsCard({
   };
 
   // 거래완료 상태 확인
-  const isCompleted = electronics.status === 'sold' || electronics.status === 'completed';
+  const isCompleted = electronics.status === 'sold';
 
   // 제품명 생성
-  const productName = `${electronics.brand || ''} ${electronics.model_name || electronics.model || ''}`.trim() || '전자제품';
+  const productName = `${electronics.brand || ''} ${electronics.model_name || ''}`.trim() || '전자제품';
 
   return (
     <Link
@@ -132,23 +132,16 @@ const ElectronicsCard = memo(function ElectronicsCard({
           <button
             onClick={handleFavorite}
             className={`absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full transition-all duration-200 hover:bg-white ${
-              electronics.is_favorited || electronics.is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              electronics.is_favorited ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
             }`}
             aria-label="찜하기"
           >
             <Heart
-              className={`w-4 h-4 ${(electronics.is_favorited || electronics.is_favorite) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
+              className={`w-4 h-4 ${electronics.is_favorited ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
             />
           </button>
         )}
 
-        {/* 수정됨 표시 */}
-        {electronics.is_modified && electronics.offer_count && electronics.offer_count > 0 && (
-          <div className="absolute bottom-2 right-2 bg-yellow-500/90 backdrop-blur-sm text-white px-2 py-1 text-xs rounded font-medium flex items-center gap-1">
-            <Edit3 className="w-3 h-3" />
-            수정됨
-          </div>
-        )}
       </div>
 
       {/* 정보 영역 */}
@@ -158,20 +151,14 @@ const ElectronicsCard = memo(function ElectronicsCard({
           {productName}
         </h3>
 
-        {/* 카테고리 */}
-        {electronics.category && (
-          <div className="text-xs text-gray-500 mt-0.5">
-            {electronics.category}
-          </div>
-        )}
 
         {/* 가격 */}
         <div className="mt-2">
           {isCompleted ? (
-            // 거래완료 상품 - 거래가격만 표시
+            // 거래완료 상품 - 가격만 표시
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-gray-700">
-                {formatPrice(electronics.final_price || electronics.price)}
+                {formatPrice(electronics.price)}
               </span>
             </div>
           ) : (
@@ -208,16 +195,16 @@ const ElectronicsCard = memo(function ElectronicsCard({
 
         {/* 상태 정보 */}
         <div className="mt-2 flex items-center gap-3 text-xs text-gray-600">
-          {electronics.condition && (
+          {electronics.condition_grade && (
             <span className="inline-flex items-center">
               <span className={`
                 px-1.5 py-0.5 rounded font-medium
-                ${electronics.condition === 'S' ? 'bg-blue-100 text-blue-700' : ''}
-                ${electronics.condition === 'A' ? 'bg-green-100 text-green-700' : ''}
-                ${electronics.condition === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
-                ${electronics.condition === 'C' ? 'bg-orange-100 text-orange-700' : ''}
+                ${electronics.condition_grade === 'S' ? 'bg-blue-100 text-blue-700' : ''}
+                ${electronics.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
+                ${electronics.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
+                ${electronics.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
               `}>
-                {CONDITION_GRADES[electronics.condition as keyof typeof CONDITION_GRADES] || electronics.condition}
+                {CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES] || electronics.condition_grade}
               </span>
             </span>
           )}
