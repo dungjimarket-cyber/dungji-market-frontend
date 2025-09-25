@@ -400,6 +400,14 @@ export default function SalesActivityTab() {
     const itemId = cancellingItem.id;
     const itemType = isPhoneItem(cancellingItem) ? 'phone' : 'electronics';
 
+    // 디버그 로그 추가
+    console.log('=== SalesActivityTab 취소 요청 데이터 ===');
+    console.log('itemType:', itemType);
+    console.log('itemId:', itemId);
+    console.log('cancellationReason:', cancellationReason);
+    console.log('customReason:', customReason);
+    console.log('returnToSale:', returnToSale);
+
     await executeTransactionAction(
       async () => {
         const token = localStorage.getItem('accessToken');
@@ -408,27 +416,38 @@ export default function SalesActivityTab() {
           ? `${baseUrl}/used/phones/${itemId}/cancel-trade/`
           : `${baseUrl}/used/electronics/${itemId}/cancel-trade/`;
 
+        console.log('API URL:', apiUrl);
+
+        const requestData = {
+          reason: cancellationReason,
+          custom_reason: cancellationReason === 'other' ? customReason : null,
+          return_to_sale: returnToSale
+        };
+
+        console.log('Request data:', requestData);
+
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            reason: cancellationReason,
-            custom_reason: cancellationReason === 'other' ? customReason : null,
-            return_to_sale: returnToSale
-          })
+          body: JSON.stringify(requestData)
         });
+
+        console.log('Response status:', response.status);
 
         if (!response.ok) {
           const errorData = await response.json();
+          console.log('Error data:', errorData);
           throw { response: { data: errorData } };
         }
 
-        // 응답을 JSON으로 파싱하여 반환
-        const data = await response.json();
-        return data;
+        const responseData = await response.json();
+        console.log('Success response data:', responseData);
+
+        // 응답 데이터 반환
+        return responseData;
       },
       {
         successMessage: returnToSale ? '거래가 취소되고 상품이 판매중으로 변경되었습니다.' : '거래가 취소되었습니다.',

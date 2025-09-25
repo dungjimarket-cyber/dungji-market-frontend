@@ -27,6 +27,7 @@ interface TradeCancelModalProps {
   isSeller: boolean;
   sellerConfirmed: boolean;
   onCancel?: () => void;
+  itemType?: 'phone' | 'electronics'; // 추가: 아이템 타입
 }
 
 export default function TradeCancelModal({
@@ -37,6 +38,7 @@ export default function TradeCancelModal({
   isSeller,
   sellerConfirmed,
   onCancel,
+  itemType = 'phone', // 기본값: 휴대폰 (기존 호환성)
 }: TradeCancelModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [reason, setReason] = useState<CancellationReason>('other');
@@ -77,19 +79,42 @@ export default function TradeCancelModal({
     setIsLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
+
+      // 디버그 로그 추가
+      console.log('=== 취소 요청 데이터 ===');
+      console.log('itemType:', itemType);
+      console.log('phoneId:', phoneId);
+      console.log('reason:', reason);
+      console.log('customReason:', customReason);
+      console.log('isSeller:', isSeller);
+
+      // itemType에 따라 올바른 API 엔드포인트 사용
+      const apiEndpoint = itemType === 'electronics'
+        ? `${process.env.NEXT_PUBLIC_API_URL}/used/electronics/${phoneId}/cancel-trade/`
+        : `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/cancel-trade/`;
+
+      console.log('API endpoint:', apiEndpoint);
+
+      const requestData = {
+        reason,
+        custom_reason: reason === 'other' ? customReason : undefined,
+        return_to_sale: isSeller ? returnToSale : undefined,
+      };
+
+      console.log('Request data:', requestData);
+
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/phones/${phoneId}/cancel-trade/`,
-        {
-          reason,
-          custom_reason: reason === 'other' ? customReason : undefined,
-          return_to_sale: isSeller ? returnToSale : undefined,
-        },
+        apiEndpoint,
+        requestData,
         {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         }
       );
+
+      console.log('=== 서버 응답 ===');
+      console.log('response:', response.data);
 
       toast.success(response.data.message);
       onCancel?.();
