@@ -2755,78 +2755,82 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </>
         )}
 
-        {/* 통신사별 요금제 확인 링크 - 인터넷/인터넷+TV 카테고리 */}
-        {(groupBuy.product_details?.category_name === '인터넷' ||
+        {/* 통신사별 요금제 확인 링크 - 컴팩트 호버 디자인 */}
+        {(groupBuy.product_details?.category_name === '휴대폰' ||
+          groupBuy.product_details?.category_name === '인터넷' ||
           groupBuy.product_details?.category_name === '인터넷+TV') && (
           <div className="mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
-              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
-              <div className="flex flex-col gap-1">
-                <a
-                  href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>SK브로드밴드</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>KT 인터넷</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>LG유플러스</span>
-                  <span className="ml-2">→</span>
-                </a>
+            <div className="group relative">
+              <div className="text-sm text-blue-600 underline decoration-dotted underline-offset-2 cursor-pointer hover:text-blue-700 hover:decoration-solid transition-all inline-flex items-center">
+                <span>통신사별 요금제 확인하기</span>
+                <svg className="ml-1 w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* 통신사별 요금제 확인 링크 - 휴대폰 카테고리 */}
-        {groupBuy.product_details?.category_name === '휴대폰' && (
-          <div className="mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
-              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
-              <div className="flex flex-col gap-1">
-                <a
-                  href="https://www.tworld.co.kr/web/product/plan/list"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>SKT 요금제</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://product.kt.com/wDic/index.do?CateCode=6002"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>KT 요금제</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>LG U+ 요금제</span>
-                  <span className="ml-2">→</span>
-                </a>
+              <div className="absolute left-0 top-6 bg-white border border-gray-200 rounded-lg shadow-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                <div className="flex flex-col gap-2">
+                  {groupBuy.product_details?.category_name === '휴대폰' ? (
+                    <>
+                      <a
+                        href="https://www.tworld.co.kr/web/product/plan/list"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
+                        title="SKT 요금제"
+                      >
+                        <img src="/logos/skt.png" alt="SKT" className="h-5 w-auto" />
+                      </a>
+                      <a
+                        href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
+                        title="KT 요금제"
+                      >
+                        <img src="/logos/kt.png" alt="KT" className="h-5 w-auto" />
+                      </a>
+                      <a
+                        href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
+                        title="LG U+ 요금제"
+                      >
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-5 w-auto" />
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a
+                        href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
+                        title="SK브로드밴드"
+                      >
+                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-5 w-auto" />
+                      </a>
+                      <a
+                        href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
+                        title="KT 인터넷"
+                      >
+                        <img src="/logos/kt.png" alt="KT" className="h-5 w-auto" />
+                      </a>
+                      <a
+                        href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
+                        title="LG유플러스"
+                      >
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-5 w-auto" />
+                      </a>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
