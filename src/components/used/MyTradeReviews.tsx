@@ -109,11 +109,13 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
         return status === 'sold' && !t.has_review; // transactionId 체크 제거
       }).map((t: any) => ({
         ...t,
-        itemType: 'electronics',
+        itemType: t.type || 'electronics', // 백엔드의 type 필드 우선 사용
         // 필요한 필드 정규화
         id: t.transaction_id || t.offer_id || t.id, // transaction_id 우선, 없으면 offer_id 사용
-        phone: t.electronics, // 전자제품 정보를 phone 필드에 매핑 (호환성을 위해)
-        buyer: t.electronics?.seller,
+        electronics: t.electronics, // electronics는 electronics 필드에 올바르게 매핑
+        phone: null, // phone은 null로 설정
+        buyer: t.buyer, // buyer는 buyer 그대로
+        seller: t.electronics?.seller, // seller는 seller 그대로
         price: t.offered_price || t.electronics?.price
       }));
 
@@ -256,13 +258,13 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                     )}
                     <p className="text-sm font-medium">
                       {transaction.itemType === 'electronics'
-                        ? (transaction.electronics?.model_name || transaction.phone?.model_name || '전자제품')
+                        ? (transaction.electronics?.model_name || '전자제품')
                         : (transaction.phone_model || transaction.phone?.model || '휴대폰')}
                     </p>
                   </div>
                   <p className="text-xs text-gray-500">
                     {transaction.itemType === 'electronics'
-                      ? `${transaction.electronics?.brand || '브랜드'} • ${transaction.electronics?.seller?.nickname || '판매자'}님과 거래`
+                      ? `${transaction.electronics?.brand || '브랜드'} • ${transaction.seller?.nickname || '판매자'}님과 거래`
                       : `${transaction.seller === currentUserId
                           ? transaction.buyer_username
                           : transaction.seller_username || '판매자'}님과 거래`}
