@@ -297,18 +297,15 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
       setSectionData(data);
 
-      // 모바일에서 판매내역 섹션으로 스크롤 (데이터 유무 관계없이)
+      // 판매내역 섹션으로 스크롤 (PC, 모바일 모두)
       setTimeout(() => {
-        const isMobile = window.innerWidth < 640; // sm breakpoint
-        if (isMobile) {
-          const salesElement = document.getElementById('sales-section');
-          if (salesElement) {
-            const offsetTop = salesElement.offsetTop - 80; // 헤더 높이 고려
-            window.scrollTo({
-              top: offsetTop,
-              behavior: 'smooth'
-            });
-          }
+        const salesElement = document.getElementById('sales-section');
+        if (salesElement) {
+          const offsetTop = salesElement.offsetTop - 80; // 헤더 높이 고려
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
         }
       }, 100);
     } catch (error) {
