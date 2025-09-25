@@ -97,6 +97,8 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       const phoneTransactions = phoneTransactionsResponse.data?.results || phoneTransactionsResponse.data || [];
       const electronicsTransactions = electronicsTransactionsResponse.data || [];
 
+      console.log('전자제품 거래 내역 원본:', electronicsTransactions);
+
       // 휴대폰 거래 중 평가대기 필터링
       const phonePending = phoneTransactions.filter((t: any) =>
         t.status === 'completed' && !writtenReviews.some((r: any) => r.transaction === t.id)
@@ -106,6 +108,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       const electronicsPending = electronicsTransactions.filter((t: any) => {
         // 전자제품의 경우 electronics 객체 내부의 status 확인
         const status = t.electronics?.status || t.status;
+        console.log(`전자제품 ID: ${t.id}, Status: ${status}, has_review: ${t.has_review}`);
         return status === 'sold' && !t.has_review; // transactionId 체크 제거
       }).map((t: any) => ({
         ...t,
