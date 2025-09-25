@@ -675,36 +675,39 @@ export default function PurchaseActivityTab() {
   // 후기 작성 모달 열기
   const openReviewModal = async (item: TradingItem) => {
     console.log('openReviewModal - item:', item);
-    console.log('openReviewModal - item.id:', item.id);
+    console.log('openReviewModal - item.type:', (item as any).type);
     console.log('openReviewModal - item.transaction_id:', (item as any).transaction_id);
     console.log('openReviewModal - item.offer_id:', (item as any).offer_id);
 
     // transaction_id 우선, 없으면 0 (백엔드가 offer_id로 처리)
     const transactionId = (item as any).transaction_id || 0;
+    const itemType = (item as any).type || 'phone';  // type 필드로 구분
     console.log('Using transactionId:', transactionId);
+    console.log('Using itemType:', itemType);
 
-    // 거래 정보는 이미 item에 있으므로 직접 사용
-    if (item.phone) {
+    // type 필드로 명확하게 구분
+    if (itemType === 'electronics') {
+      console.log('Setting reviewTarget for electronics');
       setReviewTarget({
-        transactionId: transactionId, // transaction_id 우선 사용
-        itemType: 'phone',
-        sellerName: item.phone.seller.nickname,
-        phoneInfo: {
-          brand: item.phone.brand,
-          model: item.phone.model,
-          price: item.offered_price,
-        },
-      });
-    } else if (item.electronics) {
-      console.log('Setting reviewTarget for electronics - itemType: electronics');
-      setReviewTarget({
-        transactionId: transactionId, // transaction_id 사용
-        offerId: (item as any).offer_id, // offer_id 사용 (백엔드가 제공)
+        transactionId: transactionId,
+        offerId: (item as any).offer_id,
         itemType: 'electronics',
         sellerName: item.electronics.seller.nickname,
         phoneInfo: {
           brand: item.electronics.brand,
           model: item.electronics.model_name,
+          price: item.offered_price,
+        },
+      });
+    } else if (itemType === 'phone') {
+      console.log('Setting reviewTarget for phone');
+      setReviewTarget({
+        transactionId: transactionId,
+        itemType: 'phone',
+        sellerName: item.phone.seller.nickname,
+        phoneInfo: {
+          brand: item.phone.brand,
+          model: item.phone.model,
           price: item.offered_price,
         },
       });
