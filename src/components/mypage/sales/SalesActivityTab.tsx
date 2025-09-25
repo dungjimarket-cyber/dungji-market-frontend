@@ -668,10 +668,9 @@ export default function SalesActivityTab() {
                 {getPaginatedItems(listings).map((item) => (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
-                      {/* 이미지 링크 */}
-                      <Link
-                        href={getItemDetailUrl(item)}
-                        className="block w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0"
+                      <div
+                        className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => router.push(getItemDetailUrl(item))}
                       >
                         <Image
                           src={getMainImageUrl(item)}
@@ -680,14 +679,13 @@ export default function SalesActivityTab() {
                           height={80}
                           className="object-cover w-full h-full"
                         />
-                      </Link>
+                      </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          {/* 상품명 링크 */}
-                          <Link
-                            href={getItemDetailUrl(item)}
-                            className="block min-w-0 flex-1"
+                          <div
+                            className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => router.push(getItemDetailUrl(item))}
                           >
                             <h4 className="font-medium text-sm truncate hover:text-blue-600">
                               {getItemTitle(item)}
@@ -695,7 +693,7 @@ export default function SalesActivityTab() {
                             <p className="text-base sm:text-lg font-semibold">
                               {item.price.toLocaleString()}원
                             </p>
-                          </Link>
+                          </div>
                           {getStatusBadge(item.status)}
                         </div>
 
