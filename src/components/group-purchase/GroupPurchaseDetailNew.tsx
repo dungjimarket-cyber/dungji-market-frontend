@@ -1421,16 +1421,151 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           )}
         </div>
 
+        {/* 통신사별 요금제 확인 링크 - PC/모바일 공통 */}
+        {(groupBuy.product_details?.category_name === '휴대폰' ||
+          groupBuy.product_details?.category_name === '인터넷' ||
+          groupBuy.product_details?.category_name === '인터넷+TV') && (
+          <div className="mt-4 mb-4">
+            <div className="group relative inline-block">
+              <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow">
+                <span className="text-sm font-medium text-blue-700">
+                  {groupBuy.product_details?.category_name === '휴대폰' ? '📱' : '🌐'}
+                  통신사별 요금제 확인하기
+                </span>
+                <svg className="w-4 h-4 text-blue-600 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="flex flex-col">
+                  {groupBuy.product_details?.category_name === '휴대폰' ? (
+                    <>
+                      <a
+                        href="https://www.tworld.co.kr/web/product/plan/list"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 rounded-lg transition-all duration-200 group/item"
+                        title="SKT 요금제"
+                      >
+                        <img src="/logos/skt.png" alt="SKT" className="h-6 w-auto group-hover/item:scale-110 transition-transform" />
+                        <span className="text-sm text-gray-600 group-hover/item:text-gray-900">요금제 보기</span>
+                      </a>
+                      <a
+                        href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 rounded-lg transition-all duration-200 group/item"
+                        title="KT 요금제"
+                      >
+                        <img src="/logos/kt.png" alt="KT" className="h-6 w-auto group-hover/item:scale-110 transition-transform" />
+                        <span className="text-sm text-gray-600 group-hover/item:text-gray-900">요금제 보기</span>
+                      </a>
+                      <a
+                        href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 rounded-lg transition-all duration-200 group/item"
+                        title="LG U+ 요금제"
+                      >
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-6 w-auto group-hover/item:scale-110 transition-transform" />
+                        <span className="text-sm text-gray-600 group-hover/item:text-gray-900">요금제 보기</span>
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a
+                        href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 rounded-lg transition-all duration-200 group/item"
+                        title="SK브로드밴드"
+                      >
+                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-6 w-auto group-hover/item:scale-110 transition-transform" />
+                        <span className="text-sm text-gray-600 group-hover/item:text-gray-900">요금제 보기</span>
+                      </a>
+                      <a
+                        href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 rounded-lg transition-all duration-200 group/item"
+                        title="KT 인터넷"
+                      >
+                        <img src="/logos/kt.png" alt="KT" className="h-6 w-auto group-hover/item:scale-110 transition-transform" />
+                        <span className="text-sm text-gray-600 group-hover/item:text-gray-900">요금제 보기</span>
+                      </a>
+                      <a
+                        href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 rounded-lg transition-all duration-200 group/item"
+                        title="LG유플러스"
+                      >
+                        <img src="/logos/lgu.png" alt="LG U+" className="h-6 w-auto group-hover/item:scale-110 transition-transform" />
+                        <span className="text-sm text-gray-600 group-hover/item:text-gray-900">요금제 보기</span>
+                      </a>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
-          공구 등록일: {new Date(groupBuy.start_time).toLocaleString('ko-KR', { 
-            year: 'numeric', 
-            month: 'long', 
+          공구 등록일: {new Date(groupBuy.start_time).toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
           })}
+        </div>
+
+        {/* 중요 안내사항 - PC에서만 표시 */}
+        <div className="hidden lg:block mb-6">
+          {(groupBuy.product_details?.category_name === '휴대폰' ||
+            groupBuy.product_details?.category_name === '인터넷' ||
+            groupBuy.product_details?.category_name === '인터넷+TV') && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                <span>⚠️</span> 중요 안내사항
+              </h4>
+              <div className="space-y-2 text-sm text-amber-700">
+                {groupBuy.product_details?.category_name === '휴대폰' ? (
+                  <>
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>기존 기기의 남은 할부금과 위약금은 본인 부담입니다.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>기존 서비스의 위약금은 본인 부담입니다.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>설치비, 철거비 등 추가 비용이 발생할 수 있습니다.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-start gap-2 mt-3 pt-3 border-t border-amber-200">
+                  <span className="text-amber-600 mt-0.5">•</span>
+                  <span className="font-medium">가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 최종선택 타이머 - 공구 상태 정보 섹션으로 통합 이동 */}
@@ -1680,6 +1815,65 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           {/* 모바일에서는 하단 고정, PC에서는 오른쪽 사이드바 */}
           <div className="mt-6 lg:mt-0 px-4 lg:px-0">
             <div className="bg-white lg:rounded-lg lg:p-6">
+              {/* 최고 지원금/최종 낙찰 지원금 - PC에서만 오른쪽 상단에 표시 */}
+              <div className="hidden lg:block mb-6">
+                {isFinalSelection || groupBuyData.status === 'completed' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' ? (
+                  // 최종선택 상태일 때 낙찰 정보 표시
+                  <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-6 border border-orange-200 shadow-sm">
+                    <div className="text-center">
+                      {/* 구매자 최종선택 단계부터는 중앙에 "견적이 최종 선정되었습니다" 문구 추가 - 판매자와 참여자만 표시 */}
+                      {(groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller) && (
+                        <div className="mb-4">
+                          <p className="text-lg font-bold text-center text-green-700 mb-2">
+                            <span className="inline-block">🎉</span>
+                            <span className="inline-block mx-1">
+                              {isSeller && (hasWinningBid || isMyBidSelected || myBidInfo?.status === 'won') ? '공구에 최종 선정되셨습니다!' : '견적이 최종 선정되었습니다!'}
+                            </span>
+                            <span className="inline-block">🎉</span>
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <Crown className="h-5 w-5 text-orange-500" />
+                        <p className="text-lg font-bold text-gray-800">최종 지원금</p>
+                      </div>
+                      <p className="text-3xl font-bold text-orange-600 mb-1">
+                        {/* 최종선택 단계 이후부터는 참여자와 판매회원에게 정상 금액 표시, 미참여자는 마스킹 */}
+                        {((groupBuyData.status === 'final_selection_buyers' || groupBuyData.status === 'final_selection_seller' || groupBuyData.status === 'in_progress' || groupBuyData.status === 'completed') && (isParticipant || isSeller)) || (isSeller && hasWinningBid) ? (
+                          <>
+                            <span>{
+                              groupBuyData.winning_bid_amount?.toLocaleString() ||
+                              (groupBuyData.bid_ranking?.[0]?.amount ? groupBuyData.bid_ranking?.[0]?.amount?.toLocaleString() : '0')
+                            }원</span>
+                          </>
+                        ) : (
+                          <span>{groupBuyData.winning_bid_amount_masked || '***,***원'}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  // 진행중인 상태일 때 기존 표시
+                  <div className="bg-yellow-50 rounded-lg p-5">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 mb-2">현재 최고 지원금</p>
+                      <p className="text-3xl font-bold text-black">
+                        {(highestBidAmount ?? 0) > 0 ? (
+                          `${highestBidAmount?.toLocaleString()}원`
+                        ) : (
+                          '입찰 대기중'
+                        )}
+                      </p>
+                      {highestBidAmount && highestBidAmount > 100000 && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          🌟 10만원 이상 달성!
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* 참여인원 카드 */}
               <div className="bg-gray-50 lg:bg-white rounded-lg p-3 mb-2">
                 <div className="flex justify-between items-center mb-1">
@@ -2755,86 +2949,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </>
         )}
 
-        {/* 통신사별 요금제 확인 링크 - 컴팩트 호버 디자인 */}
-        {(groupBuy.product_details?.category_name === '휴대폰' ||
-          groupBuy.product_details?.category_name === '인터넷' ||
-          groupBuy.product_details?.category_name === '인터넷+TV') && (
-          <div className="mb-6">
-            <div className="group relative">
-              <div className="text-sm text-blue-600 underline decoration-dotted underline-offset-2 cursor-pointer hover:text-blue-700 hover:decoration-solid transition-all inline-flex items-center">
-                <span>통신사별 요금제 확인하기</span>
-                <svg className="ml-1 w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              <div className="absolute left-0 top-6 bg-white border border-gray-200 rounded-lg shadow-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                <div className="flex flex-col gap-2">
-                  {groupBuy.product_details?.category_name === '휴대폰' ? (
-                    <>
-                      <a
-                        href="https://www.tworld.co.kr/web/product/plan/list"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        title="SKT 요금제"
-                      >
-                        <img src="/logos/skt.png" alt="SKT" className="h-5 w-auto" />
-                      </a>
-                      <a
-                        href="https://product.kt.com/wDic/index.do?CateCode=6002"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        title="KT 요금제"
-                      >
-                        <img src="/logos/kt.png" alt="KT" className="h-5 w-auto" />
-                      </a>
-                      <a
-                        href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        title="LG U+ 요금제"
-                      >
-                        <img src="/logos/lgu.png" alt="LG U+" className="h-5 w-auto" />
-                      </a>
-                    </>
-                  ) : (
-                    <>
-                      <a
-                        href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        title="SK브로드밴드"
-                      >
-                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-5 w-auto" />
-                      </a>
-                      <a
-                        href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        title="KT 인터넷"
-                      >
-                        <img src="/logos/kt.png" alt="KT" className="h-5 w-auto" />
-                      </a>
-                      <a
-                        href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        title="LG유플러스"
-                      >
-                        <img src="/logos/lgu.png" alt="LG U+" className="h-5 w-auto" />
-                      </a>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 중요 안내사항 및 약정기간 안내 */}
         <div className="mb-6">
