@@ -316,7 +316,7 @@ export default function SalesActivityTab() {
     const badges = {
       active: <Badge variant="default">판매중</Badge>,
       trading: <Badge variant="warning">거래중</Badge>,
-      sold: <Badge variant="soft">판매완료</Badge>,
+      sold: <Badge variant="soft">거래완료</Badge>,
     };
     return badges[status as keyof typeof badges];
   };
@@ -356,7 +356,7 @@ export default function SalesActivityTab() {
       {
         successMessage: '거래가 완료되었습니다.',
         onSuccess: () => {
-          // 판매완료 탭으로 이동
+          // 거래완료 탭으로 이동
           setTimeout(() => {
             setActiveTab('sold');
             fetchListings('sold');
@@ -651,7 +651,7 @@ export default function SalesActivityTab() {
               거래중 ({getTabCount('trading')})
             </TabsTrigger>
             <TabsTrigger value="sold" className="text-xs sm:text-sm">
-              판매완료 ({getTabCount('sold')})
+              거래완료 ({getTabCount('sold')})
             </TabsTrigger>
           </TabsList>
 
@@ -885,11 +885,11 @@ export default function SalesActivityTab() {
             )}
           </TabsContent>
 
-          {/* 판매완료 탭 */}
+          {/* 거래완료 탭 */}
           <TabsContent value="sold" className="space-y-3">
             {listings.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                판매완료된 상품이 없습니다
+                거래완료된 상품이 없습니다
               </div>
             ) : (
               <>

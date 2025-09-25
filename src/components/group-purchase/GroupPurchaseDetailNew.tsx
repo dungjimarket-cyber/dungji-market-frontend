@@ -1361,7 +1361,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
          groupBuy.product_details?.category_name !== '인터넷+TV' && (
           <div className="flex items-baseline gap-2 mb-4">
             <span className="text-sm text-gray-500">출고가</span>
-            <span className="text-lg font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원</span>
+            <span className="text-lg font-bold">￦{groupBuy.product_details?.base_price?.toLocaleString() || '0'}원~</span>
           </div>
         )}
 
@@ -1384,7 +1384,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               {(groupBuy.telecom_detail.plan_info === '5G_special' ||
                 groupBuy.telecom_detail.plan_info === '5G_platinum' ||
                 groupBuy.telecom_detail.plan_info === '9만원대' ||
-                groupBuy.telecom_detail.plan_info === '10만원이상') && (
+                (groupBuy.telecom_detail.plan_info && groupBuy.telecom_detail.plan_info.includes('10만'))) && (
                 <div className="mt-2 p-2.5 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-start gap-2">
                     <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />

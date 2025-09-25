@@ -78,7 +78,7 @@ export default function SalesTab() {
       case 'trading':
         return <Badge className="bg-orange-500 text-white">거래중</Badge>;
       case 'sold':
-        return <Badge variant="secondary">판매완료</Badge>;
+        return <Badge variant="secondary">거래완료</Badge>;
       default:
         return null;
     }
