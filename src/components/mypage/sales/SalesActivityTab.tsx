@@ -377,6 +377,7 @@ export default function SalesActivityTab() {
 
   // 거래 취소 처리
   const handleCancelTransaction = async () => {
+    console.log('🔥 handleCancelTransaction 함수가 호출되었습니다!');
     if (!cancellingItem) return;
 
     if (!cancellationReason) {
@@ -407,6 +408,9 @@ export default function SalesActivityTab() {
     console.log('cancellationReason:', cancellationReason);
     console.log('customReason:', customReason);
     console.log('returnToSale:', returnToSale);
+
+    // 새로고침 전에 확인 가능한 alert
+    alert(`취소 요청 데이터:\nitemType: ${itemType}\nreason: ${cancellationReason}\ncustomReason: ${customReason}`);
 
     await executeTransactionAction(
       async () => {

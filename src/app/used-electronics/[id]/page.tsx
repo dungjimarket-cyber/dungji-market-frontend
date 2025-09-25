@@ -473,6 +473,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
   // 거래 취소
   const handleCancelTrade = async () => {
+    console.log('🔥 전자제품 거래 취소 시작!');
+    console.log('electronicsId:', electronicsId);
+    console.log('cancelReason:', cancelReason);
+    console.log('customCancelReason:', customCancelReason);
+
     if (!cancelReason) {
       toast.error('취소 사유를 선택해주세요.');
       return;
@@ -483,11 +488,19 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       return;
     }
 
+    // 새로고침 전에 확인 가능한 alert
+    alert(`전자제품 취소 데이터:\nelectronicsId: ${electronicsId}\nreason: ${cancelReason}\ncustomReason: ${customCancelReason}`);
+
+    const requestData = {
+      reason: cancelReason,
+      custom_reason: cancelReason === 'other' ? customCancelReason : undefined,
+    };
+
+    console.log('전송할 데이터:', requestData);
+
     try {
-      await electronicsApi.cancelTrade(Number(electronicsId), {
-        reason: cancelReason,
-        custom_reason: cancelReason === 'other' ? customCancelReason : undefined,
-      });
+      const response = await electronicsApi.cancelTrade(Number(electronicsId), requestData);
+      console.log('취소 응답:', response);
       toast.success('거래가 취소되었습니다.');
       setShowCancelModal(false);
       fetchElectronicsDetail();
@@ -1772,11 +1785,24 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   <SelectValue placeholder="취소 사유를 선택해주세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="buyer_no_response">구매자 연락 두절</SelectItem>
+                  {/* 구매자 취소 사유 */}
+                  <SelectItem value="change_mind">단순 변심</SelectItem>
+                  <SelectItem value="found_better">다른 상품 구매 결정</SelectItem>
                   <SelectItem value="seller_no_response">판매자 연락 두절</SelectItem>
-                  <SelectItem value="changed_mind">구매 의사 변경</SelectItem>
-                  <SelectItem value="found_better_price">더 나은 조건 발견</SelectItem>
-                  <SelectItem value="product_issue">상품 문제 발견</SelectItem>
+                  <SelectItem value="condition_mismatch">상품 상태가 설명과 다름</SelectItem>
+                  <SelectItem value="price_disagreement">추가 비용 요구</SelectItem>
+                  <SelectItem value="seller_cancel_request">판매자 취소 요청</SelectItem>
+                  {/* 판매자 취소 사유 */}
+                  <SelectItem value="product_sold">다른 경로로 판매됨</SelectItem>
+                  <SelectItem value="buyer_no_response">구매자 연락 두절</SelectItem>
+                  <SelectItem value="buyer_no_show">구매자 약속 불이행</SelectItem>
+                  <SelectItem value="payment_issue">결제 문제 발생</SelectItem>
+                  <SelectItem value="buyer_unreasonable">구매자 무리한 요구</SelectItem>
+                  <SelectItem value="buyer_cancel_request">구매자 취소 요청</SelectItem>
+                  <SelectItem value="personal_reason">개인 사정으로 판매 불가</SelectItem>
+                  {/* 공통 */}
+                  <SelectItem value="schedule_conflict">거래 일정 조율 실패</SelectItem>
+                  <SelectItem value="location_issue">거래 장소 문제</SelectItem>
                   <SelectItem value="other">기타</SelectItem>
                 </SelectContent>
               </Select>
