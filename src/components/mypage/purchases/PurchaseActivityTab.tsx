@@ -696,6 +696,7 @@ export default function PurchaseActivityTab() {
         },
       });
     } else if (item.electronics) {
+      console.log('Setting reviewTarget for electronics - itemType: electronics');
       setReviewTarget({
         transactionId: transactionId, // transaction_id 사용
         offerId: (item as any).offer_id, // offer_id 사용 (백엔드가 제공)
@@ -1293,19 +1294,23 @@ export default function PurchaseActivityTab() {
 
       {/* 후기 작성 모달 */}
       {showReviewModal && reviewTarget && (
-        <ReviewModal
-          isOpen={showReviewModal}
-          onClose={() => {
-            setShowReviewModal(false);
-            setReviewTarget(null);
-          }}
-          transactionId={reviewTarget.transactionId}
-          offerId={reviewTarget.offerId}
-          itemType={reviewTarget.itemType}
-          revieweeName={reviewTarget.sellerName}
-          productInfo={reviewTarget.phoneInfo}
-          onSuccess={handleReviewSuccess}
-        />
+        <>
+          {console.log('Rendering ReviewModal with reviewTarget:', reviewTarget)}
+          {console.log('reviewTarget.itemType:', reviewTarget.itemType)}
+          <ReviewModal
+            isOpen={showReviewModal}
+            onClose={() => {
+              setShowReviewModal(false);
+              setReviewTarget(null);
+            }}
+            transactionId={reviewTarget.transactionId}
+            offerId={reviewTarget.offerId}
+            itemType={reviewTarget.itemType}
+            revieweeName={reviewTarget.sellerName}
+            productInfo={reviewTarget.phoneInfo}
+            onSuccess={handleReviewSuccess}
+          />
+        </>
       )}
     </div>
   );
