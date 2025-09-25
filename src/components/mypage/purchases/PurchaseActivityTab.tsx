@@ -686,7 +686,7 @@ export default function PurchaseActivityTab() {
     console.log('Using itemType:', itemType);
 
     // type 필드로 명확하게 구분
-    if (itemType === 'electronics') {
+    if (itemType === 'electronics' && item.electronics) {
       console.log('Setting reviewTarget for electronics');
       setReviewTarget({
         transactionId: transactionId,
@@ -699,7 +699,7 @@ export default function PurchaseActivityTab() {
           price: item.offered_price,
         },
       });
-    } else if (itemType === 'phone') {
+    } else if (itemType === 'phone' && item.phone) {
       console.log('Setting reviewTarget for phone');
       setReviewTarget({
         transactionId: transactionId,
