@@ -336,6 +336,14 @@ export const cancelTrade = async (electronicsId: number, data: {
 };
 
 /**
+ * 활성 제안 수 조회 (취소된 제안 제외, 중복 사용자 제외)
+ */
+export const getActiveOffersCount = async (electronicsId: number): Promise<{ count: number }> => {
+  const response = await api.get(`/${electronicsId}/active-offers-count/`);
+  return response.data;
+};
+
+/**
  * 거래 정보 조회 (후기 작성용)
  */
 export const getTransactionInfo = async (electronicsId: number): Promise<any> => {
@@ -458,6 +466,7 @@ export const buyerAPI = {
   getSellerInfo,
   buyerCompleteTransaction,
   cancelTrade,
+  getActiveOffersCount,
 };
 
 export default {
@@ -493,6 +502,7 @@ export default {
   completeTransaction,
   buyerCompleteTransaction,
   cancelTrade,
+  getActiveOffersCount,
   getTransactionInfo,
   // 리뷰
   createReview,

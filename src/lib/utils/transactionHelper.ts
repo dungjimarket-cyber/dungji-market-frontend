@@ -68,7 +68,7 @@ export function parseTransactionError(error: any): TransactionError {
     case TRANSACTION_ERROR_CODES.PHONE_ALREADY_SOLD:
       return {
         code: errorCode,
-        message: '이미 판매완료된 상품입니다.',
+        message: '이미 거래완료된 상품입니다.',
         shouldRefresh: true,
         redirectTab: 'sold',
       };

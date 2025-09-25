@@ -82,6 +82,12 @@ export const sellerAPI = {
     const response = await api.get(`/phones/${phoneId}/transaction-info/`);
     return response.data;
   },
+
+  // 활성 제안 수 조회 (취소된 제안 제외, 중복 사용자 제외)
+  getActiveOffersCount: async (phoneId: number) => {
+    const response = await api.get(`/phones/${phoneId}/active-offers-count/`);
+    return response.data;
+  },
 };
 
 // 구매 관련 API
