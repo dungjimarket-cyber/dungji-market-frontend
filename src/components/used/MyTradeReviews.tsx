@@ -106,13 +106,12 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       const electronicsPending = electronicsTransactions.filter((t: any) => {
         // 전자제품의 경우 electronics 객체 내부의 status 확인
         const status = t.electronics?.status || t.status;
-        const transactionId = t.transaction_id || t.id;
-        return status === 'sold' && !t.has_review && transactionId;
+        return status === 'sold' && !t.has_review; // transactionId 체크 제거
       }).map((t: any) => ({
         ...t,
         itemType: 'electronics',
         // 필요한 필드 정규화
-        id: t.transaction_id || t.id,
+        id: t.transaction_id || t.offer_id || t.id, // transaction_id 우선, 없으면 offer_id 사용
         phone: t.electronics, // 전자제품 정보를 phone 필드에 매핑 (호환성을 위해)
         buyer: t.electronics?.seller,
         price: t.offered_price || t.electronics?.price

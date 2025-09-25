@@ -677,10 +677,10 @@ export default function PurchaseActivityTab() {
     console.log('openReviewModal - item:', item);
     console.log('openReviewModal - item.id:', item.id);
     console.log('openReviewModal - item.transaction_id:', (item as any).transaction_id);
-    console.log('openReviewModal - typeof item.id:', typeof item.id);
+    console.log('openReviewModal - item.offer_id:', (item as any).offer_id);
 
-    // transaction_id가 있으면 사용, 없으면 item.id 사용
-    const transactionId = (item as any).transaction_id || item.id;
+    // transaction_id 우선, 없으면 0 (백엔드가 offer_id로 처리)
+    const transactionId = (item as any).transaction_id || 0;
     console.log('Using transactionId:', transactionId);
 
     // 거래 정보는 이미 item에 있으므로 직접 사용
@@ -697,8 +697,8 @@ export default function PurchaseActivityTab() {
       });
     } else if (item.electronics) {
       setReviewTarget({
-        transactionId: transactionId, // transaction_id 우선 사용
-        offerId: (item as any).offer_id || item.id, // offer_id도 전달
+        transactionId: transactionId, // transaction_id 사용
+        offerId: (item as any).offer_id, // offer_id 사용 (백엔드가 제공)
         itemType: 'electronics',
         sellerName: item.electronics.seller.nickname,
         phoneInfo: {
