@@ -23,6 +23,7 @@ import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, BATTERY_STATUS_DESC
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
+import { sellerAPI } from '@/lib/api/used';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
@@ -140,7 +141,16 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
       // user가 없는 경우는 RequireAuth에서 처리되므로 제거
       
       setPhone(data);
-      setHasOffers(data.offer_count > 0);
+
+      // 활성 제안 수 조회 (취소된 제안 제외)
+      try {
+        const offersResult = await sellerAPI.getActiveOffersCount(parseInt(phoneId));
+        setHasOffers(offersResult.count > 0);
+      } catch (error) {
+        console.error('Failed to fetch active offers count:', error);
+        // 에러 시 기본값 사용
+        setHasOffers(data.offer_count > 0);
+      }
       
       // 폼 데이터 설정
       setFormData({

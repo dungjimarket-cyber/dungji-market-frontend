@@ -28,6 +28,7 @@ import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, PHONE_BRANDS } from
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { executeTransactionAction } from '@/lib/utils/transactionHelper';
+import { sellerAPI } from '@/lib/api/used';
 
 export default async function UsedPhoneDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -77,6 +78,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [myOffer, setMyOffer] = useState<any>(null);
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
   const [remainingOffers, setRemainingOffers] = useState<number | null>(null); // null로 초기화하여 로딩 상태 표시
+  const [activeOffersCount, setActiveOffersCount] = useState<number>(0); // 취소된 제안 제외한 활성 제안 수
   const [showTradeCompleteModal, setShowTradeCompleteModal] = useState(false);
   const [showTradeReviewModal, setShowTradeReviewModal] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<'buyer' | 'seller' | null>(null);
@@ -112,9 +114,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     ]
   };
 
+  // 활성 제안 수 조회 (취소된 제안 제외)
+  const fetchActiveOffersCount = async () => {
+    try {
+      const result = await sellerAPI.getActiveOffersCount(parseInt(phoneId));
+      setActiveOffersCount(result.count);
+    } catch (error) {
+      console.error('Failed to fetch active offers count:', error);
+      setActiveOffersCount(0);
+    }
+  };
+
   // 상품 정보 조회
   useEffect(() => {
     fetchPhoneDetail();
+    fetchActiveOffersCount(); // 활성 제안 수 조회
     // 로그인한 경우 내가 제안한 금액 확인
     if (isAuthenticated) {
       fetchMyOffer();
@@ -408,6 +422,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           // 내 제안 정보 다시 불러오기
           await fetchMyOffer();
           await fetchPhoneDetail();
+          await fetchActiveOffersCount(); // 활성 제안 수 업데이트
         },
         onTabChange: (tab) => {
           if (tab === 'list') {
@@ -482,6 +497,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         });
         // 상품 정보 새로고침
         await fetchPhoneDetail();
+        await fetchActiveOffersCount();
         return;
       }
 
@@ -820,12 +836,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         const latestOfferCount = await checkLatestOffers();
 
                         // 이전에 제안이 없었는데 새로 생긴 경우
-                        if (phone.offer_count === 0 && latestOfferCount > 0) {
+                        if (activeOffersCount === 0 && latestOfferCount > 0) {
                           toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
                             duration: 3000,
                           });
                           // 상품 정보 새로고침
                           await fetchPhoneDetail();
+                          await fetchActiveOffersCount();
                         }
 
                         router.push(`/used/${phoneId}/edit`);
@@ -865,7 +882,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="flex items-start justify-between mb-2">
                 <h1 className="text-2xl font-bold">{phone.model}</h1>
                 {/* 수정됨 표시 */}
-                {phone.is_modified && phone.offer_count > 0 && (
+                {phone.is_modified && activeOffersCount > 0 && (
                   <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
                     <Edit3 className="w-3 h-3" />
                     <span>수정됨</span>
@@ -923,7 +940,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </span>
                         <span className="flex items-center gap-1">
                           <MessageCircle className="w-4 h-4" />
-                          제안 {phone.offer_count || 0}
+                          제안 {activeOffersCount}
                         </span>
                       </div>
                       <span className="flex items-center gap-1">
@@ -1151,7 +1168,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         disabled={loadingOffers}
                       >
                         <MessageCircle className="w-5 h-5 mr-2" />
-                        받은 제안 보기 {phone.offer_count > 0 && `(${phone.offer_count})`}
+                        받은 제안 보기 {activeOffersCount > 0 && `(${activeOffersCount})`}
                       </Button>
                     )}
 
@@ -1251,6 +1268,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                       // 취소해도 5회 카운팅은 원복하지 않음
                                       // setRemainingOffers(prev => Math.min(5, prev + 1));
                                       await fetchPhoneDetail(); // 상품 정보 다시 조회
+                                      await fetchActiveOffersCount(); // 활성 제안 수 업데이트
                                       toast.success('가격 제안이 취소되었습니다.', {
                                         duration: 2000,
                                       });
@@ -1411,12 +1429,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         const latestOfferCount = await checkLatestOffers();
 
                         // 이전에 제안이 없었는데 새로 생긴 경우
-                        if (phone.offer_count === 0 && latestOfferCount > 0) {
+                        if (activeOffersCount === 0 && latestOfferCount > 0) {
                           toast.info('새로운 제안이 도착했습니다. 일부 항목만 수정 가능합니다.', {
                             duration: 3000,
                           });
                           // 상품 정보 새로고침
                           await fetchPhoneDetail();
+                          await fetchActiveOffersCount();
                         }
 
                         router.push(`/used/${phoneId}/edit`);
@@ -1741,10 +1760,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           <div className="bg-white rounded-lg max-w-sm w-full p-5">
             <h3 className="text-lg font-semibold mb-3">상품 삭제</h3>
 
-            {phone.offer_count > 0 && (
+            {activeOffersCount > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded p-3 mb-3 text-sm">
                 <p className="font-medium text-amber-900 mb-1">
-                  ⚠️ 제안 {phone.offer_count}개 있음
+                  ⚠️ 제안 {activeOffersCount}개 있음
                 </p>
                 <p className="text-amber-700">
                   6시간 패널티 (
@@ -1764,7 +1783,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
             <p className="text-sm text-gray-600 mb-4">
               삭제 후 복구 불가능합니다.
-              {phone.offer_count > 0 && ' 모든 제안이 취소됩니다.'}
+              {activeOffersCount > 0 && ' 모든 제안이 취소됩니다.'}
             </p>
 
             <div className="flex gap-3">
@@ -1779,9 +1798,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <Button
                 onClick={handleDelete}
                 disabled={deleting}
-                className={`flex-1 ${phone.offer_count > 0 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
+                className={`flex-1 ${activeOffersCount > 0 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
               >
-                {deleting ? '삭제 중...' : phone.offer_count > 0 ? '패널티 감수하고 삭제' : '삭제하기'}
+                {deleting ? '삭제 중...' : activeOffersCount > 0 ? '패널티 감수하고 삭제' : '삭제하기'}
               </Button>
             </div>
           </div>
@@ -1916,6 +1935,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           isSeller={user?.id === phone.seller?.id}
           onComplete={() => {
             fetchPhoneDetail();
+            fetchActiveOffersCount();
             setShowTradeCompleteModal(false);
             toast.success('거래가 완료되었습니다. 후기를 작성해주세요!', {
               duration: 3000,
@@ -1948,6 +1968,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           onReviewComplete={() => {
             setReviewCompleted(true);  // 후기 작성 완료 상태 업데이트
             fetchPhoneDetail();
+            fetchActiveOffersCount();
             setShowTradeReviewModal(false);
             setReviewTarget(null);
             toast.success('거래 후기가 등록되었습니다.', {

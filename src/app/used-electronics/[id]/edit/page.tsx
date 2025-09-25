@@ -23,6 +23,7 @@ import { UsedElectronics, ELECTRONICS_SUBCATEGORIES, CONDITION_GRADES } from '@/
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import { searchRegionsByName } from '@/lib/api/regionService';
+import electronicsApi from '@/lib/api/electronics';
 
 // 수정 가능/불가능 필드 정의
 const EDITABLE_AFTER_OFFERS = ['price', 'meeting_place'];
@@ -124,7 +125,16 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       }
 
       setElectronics(data);
-      setHasOffers(data.offer_count > 0);
+
+      // 활성 제안 수 조회 (취소된 제안 제외)
+      try {
+        const offersResult = await electronicsApi.getActiveOffersCount(parseInt(electronicsId));
+        setHasOffers(offersResult.count > 0);
+      } catch (error) {
+        console.error('Failed to fetch active offers count:', error);
+        // 에러 시 기본값 사용
+        setHasOffers(data.offer_count > 0);
+      }
 
       // 폼 데이터 설정
       setFormData({

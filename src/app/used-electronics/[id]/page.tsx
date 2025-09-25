@@ -77,6 +77,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [loadingMyOffer, setLoadingMyOffer] = useState(false);
   const [remainingOffers, setRemainingOffers] = useState<number | null>(null);
   const [offerCount, setOfferCount] = useState<number | null>(null); // 사용자의 총 제안 횟수
+  const [activeOffersCount, setActiveOffersCount] = useState<number>(0); // 취소된 제안 제외한 활성 제안 수
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -130,9 +131,21 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     ]
   };
 
+  // 활성 제안 수 조회 (취소된 제안 제외)
+  const fetchActiveOffersCount = async () => {
+    try {
+      const result = await electronicsApi.getActiveOffersCount(parseInt(electronicsId));
+      setActiveOffersCount(result.count);
+    } catch (error) {
+      console.error('Failed to fetch active offers count:', error);
+      setActiveOffersCount(0);
+    }
+  };
+
   // 상품 정보 조회
   useEffect(() => {
     fetchElectronicsDetail();
+    fetchActiveOffersCount(); // 활성 제안 수 조회
     if (isAuthenticated) {
       fetchMyOffer();
     }
@@ -393,6 +406,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       // 내 제안 정보 다시 불러오기
       await fetchMyOffer();
       await fetchElectronicsDetail();
+      await fetchActiveOffersCount(); // 활성 제안 수 업데이트
     } catch (error) {
       console.error('Failed to submit offer:', error);
       toast.error('가격 제안 전송에 실패했습니다.');
@@ -409,6 +423,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       setShowAcceptModal(false);
       setShowOffersModal(false);
       fetchElectronicsDetail();
+      fetchActiveOffersCount();
     } catch (error) {
       console.error('Failed to accept offer:', error);
       toast.error('제안 수락에 실패했습니다.');
@@ -437,11 +452,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       const latestOfferCount = await checkLatestOffers();
 
       // 이전에 제안이 없었는데 새로 생긴 경우
-      if (electronics.offer_count === 0 && latestOfferCount > 0) {
+      if (activeOffersCount === 0 && latestOfferCount > 0) {
         setDeleting(false);
         toast.error('방금 새로운 제안이 도착했습니다. 제안이 있는 상품은 삭제 시 6시간 패널티가 적용됩니다.');
         // 상품 정보 새로고침
         await fetchElectronicsDetail();
+        await fetchActiveOffersCount();
         return;
       }
 
@@ -504,6 +520,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       toast.success('거래가 취소되었습니다.');
       setShowCancelModal(false);
       fetchElectronicsDetail();
+      fetchActiveOffersCount();
     } catch (error) {
       console.error('Failed to cancel trade:', error);
       toast.error('거래 취소에 실패했습니다.');
@@ -777,7 +794,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         {electronics.seller?.id === user?.id && electronics.status !== 'sold' && (
           <div className="hidden lg:block mt-8 pt-6 border-t">
             {/* 제안이 있을 때 수정 제한 안내 */}
-            {electronics.offer_count > 0 && (
+            {activeOffersCount > 0 && (
               <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
@@ -820,10 +837,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             <div className="flex items-start justify-between mb-2">
               <h1 className="text-2xl font-bold">{electronics.brand} {electronics.model_name}</h1>
               {/* 수정됨 표시 */}
-              {electronics.offer_count > 0 && (
+              {activeOffersCount > 0 && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
                   <Edit3 className="w-3 h-3" />
-                  <span>제안 {electronics.offer_count}개</span>
+                  <span>제안 {activeOffersCount}개</span>
                 </div>
               )}
             </div>
@@ -878,7 +895,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                       </span>
                       <span className="flex items-center gap-1">
                         <MessageCircle className="w-4 h-4" />
-                        제안 {electronics.offer_count || 0}
+                        제안 {activeOffersCount}
                       </span>
                     </div>
                     <span className="flex items-center gap-1">
@@ -1070,7 +1087,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                     disabled={loadingOffers}
                   >
                     <MessageCircle className="w-5 h-5 mr-2" />
-                    받은 제안 보기 {electronics.offer_count > 0 && `(${electronics.offer_count})`}
+                    받은 제안 보기 {activeOffersCount > 0 && `(${activeOffersCount})`}
                   </Button>
                 )}
 
@@ -1165,6 +1182,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                                 // 취소해도 5회 카운팅은 원복하지 않음
                                 // setRemainingOffers(prev => Math.min(5, prev + 1));
                                 await fetchElectronicsDetail(); // 상품 정보 다시 조회
+                                await fetchActiveOffersCount(); // 활성 제안 수 업데이트
                                 toast.success('가격 제안이 취소되었습니다.', {
                                   duration: 2000,
                                 });
@@ -1249,7 +1267,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             {electronics.seller?.id === user?.id && electronics.status !== 'sold' && (
               <div className="lg:hidden mt-6 pt-6 border-t">
                 {/* 제안이 있을 때 수정 제한 안내 */}
-                {electronics.offer_count > 0 && (
+                {activeOffersCount > 0 && (
                   <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
@@ -1730,7 +1748,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             {electronics?.offer_count > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded p-3 mb-3 text-sm">
                 <p className="font-medium text-amber-900 mb-1">
-                  ⚠️ 제안 {electronics.offer_count}개 있음
+                  ⚠️ 제안 {activeOffersCount}개 있음
                 </p>
                 <p className="text-amber-700">
                   6시간 패널티 (
@@ -1961,6 +1979,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           itemType="electronics"
           onComplete={() => {
             fetchElectronicsDetail();
+            fetchActiveOffersCount();
             setShowTradeCompleteModal(false);
             toast.success('거래가 완료되었습니다. 후기를 작성해주세요!');
           }}
@@ -1985,6 +2004,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           onReviewComplete={() => {
             setReviewCompleted(true);
             fetchElectronicsDetail();
+            fetchActiveOffersCount();
             setShowTradeReviewModal(false);
             toast.success('후기가 작성되었습니다.');
           }}
