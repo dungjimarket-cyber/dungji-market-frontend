@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import SalesActivityTab from '../sales/SalesActivityTab';
+// SalesActivityTab 컴포넌트는 사용하지 않음 - MyPageTabs 내부에서 직접 구현
 import PurchaseActivityTab from '../purchases/PurchaseActivityTab';
 import ReviewsTab from '../reviews/ReviewsTab';
 import FavoritesTab from '../favorites/FavoritesTab';
@@ -512,6 +512,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                       : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
                     const mainImage = itemImages?.find((img: any) => img.is_main) || itemImages?.[0];
                     const editUrl = item.itemType === 'phone' ? `/used/${item.id}/edit` : `/used-electronics/${item.id}/edit`;
+                    const detailUrl = item.itemType === 'phone' ? `/used/${item.id}` : `/used-electronics/${item.id}`;
 
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
@@ -520,13 +521,19 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={mainImage.image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded flex-shrink-0"
+                              className="w-16 h-16 object-cover rounded flex-shrink-0 cursor-pointer hover:opacity-80"
+                              onClick={() => router.push(detailUrl)}
                             />
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <h4 className="font-medium truncate">{itemTitle}</h4>
+                                <h4
+                                  className="font-medium truncate cursor-pointer hover:text-blue-600"
+                                  onClick={() => router.push(detailUrl)}
+                                >
+                                  {itemTitle}
+                                </h4>
                                 <p className="text-sm text-gray-600">
                                   {item.price.toLocaleString()}원
                                 </p>
