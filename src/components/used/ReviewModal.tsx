@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { X, Star, Check, Smartphone, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { reviewAPI } from '@/lib/api/used';
-import electronicsApi from '@/lib/api/electronics';
 import { useToast } from '@/hooks/use-toast';
+import axios from 'axios';
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -47,10 +46,25 @@ export default function ReviewModal({
     console.log('ReviewModal handleSubmit - offerId:', offerId);
     console.log('ReviewModal handleSubmit - itemType:', itemType);
 
+    if (rating === 0) {
+      toast({
+        title: '평점을 선택해주세요',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
+      // 통합 API 사용
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
+      const token = localStorage.getItem('accessToken');
+
       const reviewData = {
+        item_type: itemType || 'phone',  // 기본값 'phone'
+        transaction_id: transactionId || 0,
+        offer_id: offerId,  // 전자제품용
         rating,
         comment: comment.trim() || '좋은 거래였습니다.',
         is_punctual: isPunctual,
@@ -59,15 +73,16 @@ export default function ReviewModal({
         is_fast_response: isFastResponse,
       };
 
-      // 아이템 타입에 따라 다른 API 호출
-      if (itemType === 'electronics') {
-        await electronicsApi.createReview(transactionId, {
-          ...reviewData,
-          offer_id: offerId, // 전자제품의 경우 offer_id 추가
-        });
-      } else {
-        await reviewAPI.createReview(transactionId, reviewData);
-      }
+      await axios.post(
+        `${API_URL}/unified/reviews/create/`,
+        reviewData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       toast({
         title: '후기 작성 완료',
