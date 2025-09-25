@@ -61,8 +61,12 @@ export default function ReviewModal({
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
       const token = localStorage.getItem('accessToken');
 
+      console.log('ReviewModal - itemType:', itemType);  // 디버깅용
+      console.log('ReviewModal - transactionId:', transactionId);
+      console.log('ReviewModal - offerId:', offerId);
+
       const reviewData = {
-        item_type: itemType || 'phone',  // 기본값 'phone'
+        item_type: itemType,  // props의 기본값 사용
         transaction_id: transactionId || 0,
         offer_id: offerId,  // 전자제품용
         rating,
