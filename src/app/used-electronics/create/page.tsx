@@ -137,7 +137,7 @@ export default function ElectronicsCreatePage() {
           } else {
             toast({
               title: '등록 제한',
-              description: `전자제품 최대 5개까지만 등록 가능합니다. (현재 ${response.active_count || 0}개)`,
+              description: `전자제품 최대 5개까지만 등록 가능합니다. (판매중/거래중 ${response.active_count || 0}개)`,
               variant: 'destructive',
             });
           }

@@ -483,7 +483,7 @@ export default function CreateUsedPhonePage() {
           } else if (limitData.active_count >= 5) {
             toast({
               title: '등록 제한 (5개 초과)',
-              description: `판매 중 ${limitData.active_count}개. 기존 상품 삭제 필요`,
+              description: `판매중/거래중 ${limitData.active_count}개. 기존 거래 완료 필요`,
               variant: 'destructive',
             });
           }

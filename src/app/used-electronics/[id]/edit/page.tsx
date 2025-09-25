@@ -120,7 +120,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
           description: '본인이 등록한 상품만 수정할 수 있습니다.',
           variant: 'destructive',
         });
-        router.push(`/used/electronics/${electronicsId}`);
+        router.push(`/used-electronics/${electronicsId}`);
         return;
       }
 
@@ -185,7 +185,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
         title: '상품 정보를 불러오는데 실패했습니다',
         variant: 'destructive',
       });
-      router.push('/used/electronics');
+      router.push('/used-electronics');
     } finally {
       setLoading(false);
     }
