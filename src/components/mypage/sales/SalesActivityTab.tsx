@@ -665,12 +665,22 @@ export default function SalesActivityTab() {
               </div>
             ) : (
               <>
-                {getPaginatedItems(listings).map((item) => (
+                {getPaginatedItems(listings).map((item) => {
+                  // URL을 미리 생성
+                  const detailUrl = isPhoneItem(item) ? `/used/${item.id}` : `/used-electronics/${item.id}`;
+                  console.log('판매중 아이템 URL:', detailUrl, 'item:', item);
+
+                  return (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
-                      <div
+                      <a
+                        href={detailUrl}
                         className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => router.push(getItemDetailUrl(item))}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log('이미지 클릭:', detailUrl);
+                          router.push(detailUrl);
+                        }}
                       >
                         <Image
                           src={getMainImageUrl(item)}
@@ -679,13 +689,18 @@ export default function SalesActivityTab() {
                           height={80}
                           className="object-cover w-full h-full"
                         />
-                      </div>
+                      </a>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <div
+                          <a
+                            href={detailUrl}
                             className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => router.push(getItemDetailUrl(item))}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              console.log('제목 클릭:', detailUrl);
+                              router.push(detailUrl);
+                            }}
                           >
                             <h4 className="font-medium text-sm truncate hover:text-blue-600">
                               {getItemTitle(item)}
@@ -693,7 +708,7 @@ export default function SalesActivityTab() {
                             <p className="text-base sm:text-lg font-semibold">
                               {item.price.toLocaleString()}원
                             </p>
-                          </div>
+                          </a>
                           {getStatusBadge(item.status)}
                         </div>
 
@@ -713,6 +728,16 @@ export default function SalesActivityTab() {
                         </div>
 
                         <div className="flex items-center gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const url = isPhoneItem(item) ? `/used/${item.id}` : `/used-electronics/${item.id}`;
+                              router.push(url);
+                            }}
+                          >
+                            상품 보기
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
@@ -743,7 +768,8 @@ export default function SalesActivityTab() {
                       </div>
                     </div>
                   </Card>
-                ))}
+                  );
+                })}
                 <Pagination items={listings} />
               </>
             )}
