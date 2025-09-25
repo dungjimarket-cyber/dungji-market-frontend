@@ -668,7 +668,11 @@ export default function SalesActivityTab() {
                 {getPaginatedItems(listings).map((item) => (
                   <Card key={item.id} className="p-3 sm:p-4">
                     <div className="flex gap-3 sm:gap-4">
-                      <Link href={getItemDetailUrl(item)} className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                      {/* 이미지 링크 */}
+                      <Link
+                        href={getItemDetailUrl(item)}
+                        className="block w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0"
+                      >
                         <Image
                           src={getMainImageUrl(item)}
                           alt={getItemTitle(item)}
@@ -680,8 +684,12 @@ export default function SalesActivityTab() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <Link href={getItemDetailUrl(item)} className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
-                            <h4 className="font-medium text-sm truncate">
+                          {/* 상품명 링크 */}
+                          <Link
+                            href={getItemDetailUrl(item)}
+                            className="block min-w-0 flex-1"
+                          >
+                            <h4 className="font-medium text-sm truncate hover:text-blue-600">
                               {getItemTitle(item)}
                             </h4>
                             <p className="text-base sm:text-lg font-semibold">
