@@ -324,8 +324,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       });
     }
 
-    if (amount > 9900000) {
-      toast.error('최대 제안 가능 금액은 990만원입니다.', {
+    if (amount > 100000000) {
+      toast.error('최대 제안 가능 금액은 1억원입니다.', {
         duration: 3000,
       });
       return;

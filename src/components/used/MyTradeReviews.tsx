@@ -86,11 +86,13 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
       // 받은 리뷰 설정
       const receivedReviews = receivedResponse.data?.results || receivedResponse.data || [];
       console.log('통합 받은 리뷰:', receivedReviews.length, '개');
+      console.log('받은 리뷰 상세:', receivedReviews);
       setReviews(receivedReviews);
 
       // 작성한 리뷰 설정
       const writtenReviews = writtenResponse.data?.results || writtenResponse.data || [];
       console.log('통합 작성한 리뷰:', writtenReviews.length, '개');
+      console.log('작성한 리뷰 상세:', writtenReviews);
       setMyWrittenReviews(writtenReviews);
 
       // 거래 내역 설정 및 평가 대기 필터링
