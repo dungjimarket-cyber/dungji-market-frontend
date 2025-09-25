@@ -681,9 +681,10 @@ export default function PurchaseActivityTab() {
 
     // transaction_id 우선, 없으면 0 (백엔드가 offer_id로 처리)
     const transactionId = (item as any).transaction_id || 0;
-    const itemType = (item as any).type || 'phone';  // type 필드로 구분
+    // 백엔드의 type 필드 우선, 없으면 프론트엔드의 itemType, 그것도 없으면 'phone'
+    const itemType = (item as any).type || item.itemType || 'phone';
     console.log('Using transactionId:', transactionId);
-    console.log('Using itemType:', itemType);
+    console.log('Using itemType from type/itemType:', itemType);
 
     // type 필드로 명확하게 구분
     if (itemType === 'electronics' && item.electronics) {
