@@ -1421,120 +1421,6 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           )}
         </div>
 
-        {/* 통신사별 요금제 확인 링크 - 인터넷/인터넷+TV 카테고리 */}
-        {(groupBuy.product_details?.category_name === '인터넷' ||
-          groupBuy.product_details?.category_name === '인터넷+TV') && (
-          <div className="mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
-              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
-              <div className="flex flex-col gap-1">
-                <a
-                  href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>SK브로드밴드</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>KT 인터넷</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>LG유플러스</span>
-                  <span className="ml-2">→</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* 통신사별 요금제 확인 링크 - 휴대폰 카테고리 */}
-        {groupBuy.product_details?.category_name === '휴대폰' && (
-          <div className="mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
-              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
-              <div className="flex flex-col gap-1">
-                <a
-                  href="https://www.tworld.co.kr/web/product/plan/list"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>SKT 요금제</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://product.kt.com/wDic/index.do?CateCode=6002"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>KT 요금제</span>
-                  <span className="ml-2">→</span>
-                </a>
-                <a
-                  href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
-                >
-                  <span>LG U+ 요금제</span>
-                  <span className="ml-2">→</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 중요 안내사항 및 약정기간 안내 */}
-        <div className="mb-6">
-            {(groupBuy.product_details?.category_name === '휴대폰' ||
-              groupBuy.product_details?.category_name === '인터넷' ||
-              groupBuy.product_details?.category_name === '인터넷+TV') && (
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500">
-                  ⚠️ 중요 안내사항
-                </div>
-                {groupBuy.product_details?.category_name === '휴대폰' ? (
-                  <>
-                    <div className="text-sm text-gray-500">
-                      • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-sm text-gray-500">
-                      • 기존 서비스의 위약금은 본인 부담입니다.
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
-                    </div>
-                  </>
-                )}
-                <div className="text-sm text-gray-500 mt-4">
-                  • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
-                </div>
-              </div>
-            )}
-        </div>
 
         {/* 날짜 정보 */}
         <div className="text-sm text-gray-500 mb-1">
@@ -2868,7 +2754,122 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
             )}
           </>
         )}
-        
+
+        {/* 통신사별 요금제 확인 링크 - 인터넷/인터넷+TV 카테고리 */}
+        {(groupBuy.product_details?.category_name === '인터넷' ||
+          groupBuy.product_details?.category_name === '인터넷+TV') && (
+          <div className="mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
+              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
+              <div className="flex flex-col gap-1">
+                <a
+                  href="https://www.bworld.co.kr/product/internet/charge.do?menu_id=P02010000"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                >
+                  <span>SK브로드밴드</span>
+                  <span className="ml-2">→</span>
+                </a>
+                <a
+                  href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                >
+                  <span>KT 인터넷</span>
+                  <span className="ml-2">→</span>
+                </a>
+                <a
+                  href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                >
+                  <span>LG유플러스</span>
+                  <span className="ml-2">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 통신사별 요금제 확인 링크 - 휴대폰 카테고리 */}
+        {groupBuy.product_details?.category_name === '휴대폰' && (
+          <div className="mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 w-fit">
+              <p className="text-xs font-medium text-blue-800 mb-2">통신사별 요금제 확인하기</p>
+              <div className="flex flex-col gap-1">
+                <a
+                  href="https://www.tworld.co.kr/web/product/plan/list"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                >
+                  <span>SKT 요금제</span>
+                  <span className="ml-2">→</span>
+                </a>
+                <a
+                  href="https://product.kt.com/wDic/index.do?CateCode=6002"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                >
+                  <span>KT 요금제</span>
+                  <span className="ml-2">→</span>
+                </a>
+                <a
+                  href="https://www.lguplus.com/mobile/plan/mplan/plan-all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors min-w-[150px]"
+                >
+                  <span>LG U+ 요금제</span>
+                  <span className="ml-2">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 중요 안내사항 및 약정기간 안내 */}
+        <div className="mb-6">
+            {(groupBuy.product_details?.category_name === '휴대폰' ||
+              groupBuy.product_details?.category_name === '인터넷' ||
+              groupBuy.product_details?.category_name === '인터넷+TV') && (
+              <div className="space-y-2">
+                <div className="text-sm text-gray-500">
+                  ⚠️ 중요 안내사항
+                </div>
+                {groupBuy.product_details?.category_name === '휴대폰' ? (
+                  <>
+                    <div className="text-sm text-gray-500">
+                      • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm text-gray-500">
+                      • 기존 서비스의 위약금은 본인 부담입니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
+                    </div>
+                  </>
+                )}
+                <div className="text-sm text-gray-500 mt-4">
+                  • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
+                </div>
+              </div>
+            )}
+        </div>
+
         {/* 가이드라인 링크 */}
         <div className="text-center mt-4 mb-2">
           <a href="https://doongji-market-1vi5n3i.gamma.site/" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 underline hover:text-blue-800">
