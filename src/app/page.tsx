@@ -129,11 +129,11 @@ function HomeContent() {
   useEffect(() => {
     setMounted(true);
     
-    // 인기 공구와 새로운 공구 데이터 가져오기
+    // 추천 공구와 새로운 공구 데이터 가져오기
     const fetchGroupBuys = async () => {
       try {
         const [popularResponse, newResponse] = await Promise.all([
-          // 인기순: recruiting,bidding 상태만, 참여자 많은 순으로 정렬
+          // 추천순: recruiting,bidding 상태만, 참여자 많은 순으로 정렬
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?status=recruiting,bidding&ordering=-current_participants&limit=10`, {
             next: { revalidate: 60 } // 1분 캐시
           }),
@@ -251,7 +251,7 @@ function HomeContent() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4">인기 공동구매</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4">추천 공동구매</h2>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
@@ -261,7 +261,7 @@ function HomeContent() {
               </div>
             ) : popularGroupBuys.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">인기 공동구매가 없습니다.</p>
+                <p className="text-gray-500">추천 공동구매가 없습니다.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
@@ -278,7 +278,7 @@ function HomeContent() {
             )}
             <div className="text-center mt-4">
               <Link href="/group-purchases?sort=popular" className="text-blue-600 hover:underline text-sm">
-                더 많은 인기 공구 보기 →
+                더 많은 추천 공구 보기 →
               </Link>
             </div>
           </div>
