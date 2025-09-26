@@ -2882,6 +2882,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           </>
         )}
 
+        {/* 구분선 - 모바일에서만 표시 */}
+        <div className="lg:hidden">
+          <hr className="border-gray-200 mx-4 my-4" />
+        </div>
 
         {/* 중요 안내사항 및 약정기간 안내 */}
         <div className="mb-6">
