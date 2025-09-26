@@ -926,7 +926,7 @@ export default function UsedPhonesPage() {
         }}
         missingFields={missingFields}
         onUpdateProfile={() => {
-          router.push('/mypage');
+          router.push('/mypage/settings');
         }}
       />
       

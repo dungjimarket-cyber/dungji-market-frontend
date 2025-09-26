@@ -1199,9 +1199,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="space-y-2">
                           <Button
                             onClick={async () => {
+                              console.log('Button clicked');
                               try {
                                 // 로그인 체크
                                 if (!isAuthenticated) {
+                                  console.log('Not authenticated');
                                   toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
                                     duration: 3000,
                                   });
@@ -1209,9 +1211,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   return;
                                 }
 
+                                console.log('Checking profile...');
                                 // 프로필 체크 - 실시간 검증
                                 const profileComplete = await checkUsedPhoneProfile();
+                                console.log('Profile complete:', profileComplete);
                                 if (!profileComplete) {
+                                  console.log('Opening modal...');
                                   setShowProfileModal(true);
                                   return;
                                 }
@@ -2201,7 +2206,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         }}
         missingFields={missingFields}
         onUpdateProfile={() => {
-          router.push('/mypage');
+          router.push('/mypage/settings');
         }}
       />
 
