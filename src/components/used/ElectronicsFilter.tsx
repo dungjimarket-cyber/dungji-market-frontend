@@ -6,10 +6,9 @@
 'use client';
 
 import React, { memo, useCallback, useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, X, Filter, Sparkles, MapPin } from 'lucide-react';
+import { Search, X, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -17,14 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { ELECTRONICS_SUBCATEGORIES, CONDITION_GRADES } from '@/types/electronics';
 import { regions } from '@/lib/regions';
 
@@ -210,10 +201,10 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
             onValueChange={(value) => updateFilter('subcategory', value === 'all' ? undefined : value)}
           >
             <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="카테고리" />
+              <SelectValue placeholder="제품군" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="all">제품군</SelectItem>
               {Object.entries(ELECTRONICS_SUBCATEGORIES).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}
@@ -231,7 +222,7 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
               <SelectValue placeholder="상태" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="all">상태</SelectItem>
               {Object.entries(CONDITION_GRADES).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label.split(' ')[0]}
@@ -255,74 +246,18 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
             </SelectContent>
           </Select>
 
-          {/* 초기화 버튼 - PC에서만 표시 */}
+          {/* 초기화 버튼 */}
           {activeFilterCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={resetFilters}
-              className="h-8 px-2 text-xs"
+              className="h-8 px-2 text-xs ml-auto"
             >
               <X className="w-3 h-3 mr-1" />
               초기화
             </Button>
           )}
-
-          {/* 세부 필터 (가격대, 거래완료 포함 등) */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-auto"
-              >
-                <SlidersHorizontal className="w-4 h-4 mr-1" />
-                필터
-                {activeFilterCount > 0 && (
-                  <span className="ml-1 bg-dungji-primary text-white px-1.5 py-0.5 rounded-full text-xs">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>상세 필터</SheetTitle>
-                <SheetDescription>
-                  원하는 조건으로 상품을 찾아보세요
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="py-6 space-y-6">
-                {/* 거래완료 포함 */}
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="include-completed" className="text-sm font-medium">
-                    거래완료 상품 포함
-                  </Label>
-                  <Button
-                    id="include-completed"
-                    variant={filters.includeCompleted ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => updateFilter('includeCompleted', !filters.includeCompleted)}
-                  >
-                    {filters.includeCompleted ? '포함' : '제외'}
-                  </Button>
-                </div>
-
-                {/* 초기화 버튼 */}
-                <div className="pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={resetFilters}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    필터 초기화
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
 
         {/* 결과 요약 */}
