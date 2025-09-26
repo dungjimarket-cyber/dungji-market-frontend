@@ -574,24 +574,38 @@ export default function UsedPhonesPage() {
 
   // 판매하기 버튼 핸들러 - 통합 등록 페이지로 이동
   const handleCreateClick = async () => {
-    if (!isAuthenticated) {
+    try {
+      if (!isAuthenticated) {
+        toast({
+          title: '로그인 필요',
+          description: '상품 등록은 로그인 후 이용 가능합니다.',
+          variant: 'destructive',
+        });
+        router.push('/login');
+        return;
+      }
+
+      const profileComplete = await checkProfile();
+      if (!profileComplete) {
+        toast({
+          title: '프로필 정보 필요',
+          description: '중고거래를 위해 프로필 정보를 먼저 입력해주세요.',
+          variant: 'destructive',
+        });
+        setShowProfileModal(true);
+        return;
+      }
+
+      // 통합 등록 선택 페이지로 이동
+      router.push('/used/create-unified');
+    } catch (error) {
+      console.error('Profile check error:', error);
       toast({
-        title: '로그인 필요',
-        description: '상품 등록은 로그인 후 이용 가능합니다.',
+        title: '오류',
+        description: '프로필 확인 중 오류가 발생했습니다.',
         variant: 'destructive',
       });
-      router.push('/login');
-      return;
     }
-
-    const profileComplete = await checkProfile();
-    if (!profileComplete) {
-      setShowProfileModal(true);
-      return;
-    }
-
-    // 통합 등록 선택 페이지로 이동
-    router.push('/used/create-unified');
   };
 
   return (
