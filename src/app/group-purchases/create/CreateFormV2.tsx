@@ -424,7 +424,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     // 상품 선택은 유지 (초기화하지 않음)
   };
 
-  // 공구 제목 자동 생성
+  // 견적요청 제목 자동 생성
   const generateTitle = () => {
     const productName = selectedProduct?.name || '공동구매';
     const regionText = selectedRegion?.name ? `[${selectedRegion.name}]` : '';
@@ -480,7 +480,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         toast({
           variant: 'destructive',
           title: '상품 선택 필요',
-          description: '공구에 등록할 상품을 선택해주세요.',
+          description: '견적요청할 상품을 선택해주세요.',
         });
         // 현재 탭에 따라 다른 product selection ID로 스크롤
         const productSelectionId = mainTab === 'phone' ? 'product-selection' : 'product-selection-category';
@@ -672,7 +672,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         console.error('API 오류:', errorData);
         
         // 특정 오류 메시지 처리
-        let errorMessage = '공구 등록 중 오류가 발생했습니다.';
+        let errorMessage = '견적요청 중 오류가 발생했습니다.';
         if (errorData.detail) {
           errorMessage = errorData.detail;
         } else if (errorData.message) {
@@ -696,7 +696,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
         // 중복 오류인 경우 전용 팝업 표시
         if (errorMessage.includes('중복') || errorMessage.includes('이미 존재') || 
             errorMessage.includes('duplicate') || errorMessage.includes('already exists') ||
-            errorMessage.includes('제한') || errorMessage.includes('공구등록이 제한') ||
+            errorMessage.includes('제한') || errorMessage.includes('견적요청이 제한') ||
             errorMessage.includes('같은 상품') || errorMessage.includes('동일한 상품') ||
             errorMessage.includes('이미 해당 상품으로 진행 중인') || errorMessage.includes('진행 중인 공동구매가 있습니다')) {
           setErrorDialogTitle('중복 상품 등록 제한');
@@ -706,7 +706,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
           // 일반 오류인 경우 토스트 메시지 표시
           toast({
             variant: 'destructive',
-            title: '공구 등록 실패',
+            title: '견적요청 실패',
             description: errorMessage,
           });
         }
@@ -715,7 +715,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       }
 
       const result = await response.json();
-      console.log('공구 등록 성공:', result);
+      console.log('견적요청 성공:', result);
       
       // 성공 시 처리
       setCreatedGroupBuyId(result.id);
@@ -724,11 +724,11 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
       setShowSuccessDialog(true);
 
     } catch (error) {
-      console.error('공구 등록 실패:', error);
+      console.error('견적요청 실패:', error);
       toast({
         variant: 'destructive',
-        title: '공구 등록 실패',
-        description: error instanceof Error ? error.message : '공구 등록 중 오류가 발생했습니다.',
+        title: '견적요청 실패',
+        description: error instanceof Error ? error.message : '견적요청 중 오류가 발생했습니다.',
       });
     } finally {
       setIsSubmitting(false);
@@ -771,7 +771,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
     <div className="max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>{mode === 'edit' ? '공구 수정' : '공구 등록'}</CardTitle>
+          <CardTitle>{mode === 'edit' ? '공구 수정' : '견적요청'}</CardTitle>
           <CardDescription className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             세상에 없던 견적 받기 시작
           </CardDescription>
@@ -1290,7 +1290,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-800">
                     💡 인원이 채워지지 않아도<br />
-                    공구모집과 견적받기가 동시에 진행됩니다<br />
+                    참여자 모집과 견적받기가 동시에 진행됩니다<br />
                     (혼자서도 가능)
                   </p>
                 </div>
@@ -1341,10 +1341,10 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-3 h-7 w-7 animate-spin" />
-                    등록 중...
+                    요청 중...
                   </>
                 ) : (
-                  '공구 등록'
+                  '견적요청'
                 )}
               </Button>
             </form>
