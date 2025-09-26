@@ -270,10 +270,10 @@ function UsedElectronicsListPageContent() {
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-[140px] h-9">
-                <SelectValue placeholder="카테고리" />
+                <SelectValue placeholder="제품군" className="whitespace-nowrap" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="">제품군</SelectItem>
                 {Object.entries(ELECTRONICS_SUBCATEGORIES).map(([key, value]) => (
                   <SelectItem key={key} value={key}>
                     {value}
@@ -284,10 +284,10 @@ function UsedElectronicsListPageContent() {
 
             <Select value={selectedCondition} onValueChange={setSelectedCondition}>
               <SelectTrigger className="w-[120px] h-9">
-                <SelectValue placeholder="상태" />
+                <SelectValue placeholder="상태" className="whitespace-nowrap" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="">상태</SelectItem>
                 {Object.entries(CONDITION_GRADES).map(([key, value]) => (
                   <SelectItem key={key} value={key}>
                     {value}
