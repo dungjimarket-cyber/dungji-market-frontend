@@ -71,7 +71,7 @@ interface GroupBuy {
 }
 
 /**
- * 공구 둘러보기 메인 페이지 컴포넌트
+ * 진행중인 공구 메인 페이지 컴포넌트
  */
 function GroupPurchasesPageContent() {
   const searchParams = useSearchParams();
@@ -780,7 +780,7 @@ function GroupPurchasesPageContent() {
     <div className="min-h-screen bg-gray-50">
       {/* PC에서 상단 영역 너비 제한 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-        <MainHeader title="공구 견적받기" />
+        <MainHeader title="진행중인 공구" />
 
         {/* 공구·견적 페이지 공지사항 */}
         <NoticeSection pageType="groupbuy" compact={true} />
@@ -918,10 +918,10 @@ function GroupPurchasesPageContent() {
                 ) : groupBuys.length === 0 ? (
                   <div className="col-span-full text-center py-8">
                     <p className="text-gray-500">
-                      {activeTab === 'all' && '공동구매가 없습니다.'}
-                      {activeTab === 'popular' && '인기 공동구매가 없습니다.'}
-                      {activeTab === 'newest' && '새로운 공동구매가 없습니다.'}
-                      {activeTab === 'completed' && '종료된 공동구매가 없습니다.'}
+                      {activeTab === 'all' && '진행중인 공구가 없습니다.'}
+                      {activeTab === 'popular' && '인기 공구가 없습니다.'}
+                      {activeTab === 'newest' && '새로운 공구가 없습니다.'}
+                      {activeTab === 'completed' && '종료된 공구가 없습니다.'}
                     </p>
                   </div>
                 ) : (
@@ -980,13 +980,13 @@ function GroupPurchasesPageContent() {
 }
 
 /**
- * 공구 둘러보기 메인 페이지
+ * 진행중인 공구 메인 페이지
  */
 export default function GroupPurchasesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50">
-        <MainHeader title="공구 견적받기" />
+        <MainHeader title="진행중인 공구" />
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>        

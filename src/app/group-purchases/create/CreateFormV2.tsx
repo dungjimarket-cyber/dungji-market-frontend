@@ -770,11 +770,18 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
   return (
     <div className="max-w-4xl mx-auto p-4">
       <Card>
-        <CardHeader>
-          <CardTitle>{mode === 'edit' ? '공구 수정' : '견적요청'}</CardTitle>
-          <CardDescription className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            세상에 없던 견적 받기 시작
-          </CardDescription>
+        <CardHeader className="pb-6">
+          <div className="space-y-2">
+            <CardTitle className="text-xl md:text-2xl font-bold text-gray-800">
+              {mode === 'edit' ? '공구 수정' : '견적요청'}
+            </CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <div className="w-8 h-[2px] bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              <span className="text-sm text-gray-600">
+                원하시는 상품의 견적을 받아보세요
+              </span>
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
