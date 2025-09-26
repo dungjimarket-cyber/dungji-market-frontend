@@ -32,7 +32,8 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
-import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
+import { useUsedProfileCheck } from '@/hooks/useUsedProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import electronicsApi from '@/lib/api/electronics';
 import type { UsedElectronics, ElectronicsOffer } from '@/types/electronics';
 import {
@@ -52,7 +53,13 @@ export default async function UsedElectronicsDetailPage({ params }: { params: Pr
 function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string }) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
-  const { isProfileComplete: hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
+  const {
+    isProfileComplete,
+    checkProfile,
+    missingFields,
+    showProfileModal,
+    setShowProfileModal
+  } = useUsedProfileCheck();
 
   const [electronics, setElectronics] = useState<UsedElectronics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -300,9 +307,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       return;
     }
 
-    if (!hasUsedPhoneProfile) {
-      toast.error('프로필을 완성해주세요.');
-      router.push('/mypage/profile');
+    const profileComplete = await checkProfile();
+    if (!profileComplete) {
+      setShowProfileModal(true);
       return;
     }
 
@@ -1119,11 +1126,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                           return;
                         }
 
-                        // 프로필 체크
-                        if (!hasUsedPhoneProfile) {
-                          toast.error('중고거래 프로필 설정이 필요합니다.', {
-                            duration: 3000,
-                          });
+                        // 프로필 체크 - 실시간 검증
+                        const profileComplete = await checkProfile();
+                        if (!profileComplete) {
+                          setShowProfileModal(true);
                           return;
                         }
 
@@ -2010,6 +2016,18 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           }}
         />
       )}
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => {
+          setShowProfileModal(false);
+        }}
+        missingFields={missingFields}
+        onUpdateProfile={() => {
+          router.push('/mypage/settings');
+        }}
+      />
     </div>
   );
 }
