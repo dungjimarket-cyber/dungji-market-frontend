@@ -153,7 +153,7 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 } else {
                   setSelectedProvince(value);
                   setSelectedCity('');
-                  updateFilter('region', value);
+                  updateFilter('region', value); // 시/도만 선택해도 필터 적용
                 }
               }}
             >
@@ -174,34 +174,33 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
             </Select>
 
             {/* 시/군/구 선택 */}
-            {selectedProvince && (
-              <Select
-                value={selectedCity || 'all'}
-                onValueChange={(value) => {
-                  if (value === 'all') {
-                    setSelectedCity('');
-                    const regionValue = selectedProvince;
-                    updateFilter('region', regionValue);
-                  } else {
-                    setSelectedCity(value);
-                    const regionValue = `${selectedProvince} ${value}`;
-                    updateFilter('region', regionValue);
-                  }
-                }}
-              >
-                <SelectTrigger className="flex-1 min-w-0">
+            <Select
+              value={selectedCity || 'all'}
+              disabled={!selectedProvince}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedCity('');
+                  updateFilter('region', selectedProvince); // 시/도만 유지
+                } else {
+                  setSelectedCity(value);
+                  updateFilter('region', `${selectedProvince} ${value}`);
+                }
+              }}
+            >
+              <SelectTrigger className="flex-1 min-w-0" disabled={!selectedProvince}>
+                <div className="flex items-center gap-1 truncate">
                   <SelectValue placeholder="시/군/구" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {cities.map(city => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                {cities.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -274,11 +273,11 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
               초기화
             </Button>
           )}
+        </div>
 
-          {/* 결과 수 */}
-          <div className="text-xs text-gray-600 whitespace-nowrap">
-            <span className="font-medium">{totalCount.toLocaleString()}</span>개
-          </div>
+        {/* 결과 요약 */}
+        <div className="text-sm text-gray-600">
+          총 <span className="font-semibold text-gray-900">{totalCount}개</span>의 상품
         </div>
       </div>
     </div>

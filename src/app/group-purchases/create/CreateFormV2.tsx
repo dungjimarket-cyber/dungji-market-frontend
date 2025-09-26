@@ -778,7 +778,7 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
             <CardDescription className="flex items-center gap-2">
               <div className="w-8 h-[2px] bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               <span className="text-sm text-gray-600">
-                원하시는 상품의 견적을 받아보세요
+                차원이 다른 비교견적 받기
               </span>
             </CardDescription>
           </div>
