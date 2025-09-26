@@ -1527,42 +1527,34 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           {(groupBuy.product_details?.category_name === '휴대폰' ||
             groupBuy.product_details?.category_name === '인터넷' ||
             groupBuy.product_details?.category_name === '인터넷+TV') && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
-                <span>⚠️</span> 중요 안내사항
-              </h4>
-              <div className="space-y-2 text-sm text-amber-700">
-                {groupBuy.product_details?.category_name === '휴대폰' ? (
-                  <>
-                    <div className="flex items-start gap-2">
-                      <span className="text-amber-600 mt-0.5">•</span>
-                      <span>기존 기기의 남은 할부금과 위약금은 본인 부담입니다.</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-amber-600 mt-0.5">•</span>
-                      <span>자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-start gap-2">
-                      <span className="text-amber-600 mt-0.5">•</span>
-                      <span>기존 서비스의 위약금은 본인 부담입니다.</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-amber-600 mt-0.5">•</span>
-                      <span>설치비, 철거비 등 추가 비용이 발생할 수 있습니다.</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-amber-600 mt-0.5">•</span>
-                      <span>자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.</span>
-                    </div>
-                  </>
-                )}
-                <div className="flex items-start gap-2 mt-3 pt-3 border-t border-amber-200">
-                  <span className="text-amber-600 mt-0.5">•</span>
-                  <span className="font-medium">가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다</span>
-                </div>
+            <div className="space-y-2">
+              <div className="text-sm text-gray-500">
+                ⚠️ 중요 안내사항
+              </div>
+              {groupBuy.product_details?.category_name === '휴대폰' ? (
+                <>
+                  <div className="text-sm text-gray-500">
+                    • 기존 기기의 남은 할부금과 위약금은 본인 부담입니다.
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-sm text-gray-500">
+                    • 기존 서비스의 위약금은 본인 부담입니다.
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    • 설치비, 철거비 등 추가 비용이 발생할 수 있습니다.
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    • 자세한 내용은 통신사 고객센터 또는 앱을 통해 확인 가능합니다.
+                  </div>
+                </>
+              )}
+              <div className="text-sm text-gray-500 mt-4">
+                • 가입약정 기간은 {(groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV') ? '36개월' : '24개월'} 입니다
               </div>
             </div>
           )}
