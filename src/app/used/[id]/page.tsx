@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
-import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
+import { useUsedProfileCheck } from '@/hooks/useUsedProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, PHONE_BRANDS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
@@ -40,12 +40,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const {
-    isProfileComplete: hasUsedPhoneProfile,
-    checkProfile: checkUsedPhoneProfile,
+    isProfileComplete,
+    checkProfile,
     missingFields,
     showProfileModal,
     setShowProfileModal
-  } = useUsedPhoneProfileCheck();
+  } = useUsedProfileCheck();
 
   // 가격 포맷팅 헬퍼 함수
   const formatPrice = (value: string) => {
@@ -1199,11 +1199,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="space-y-2">
                           <Button
                             onClick={async () => {
-                              console.log('Button clicked');
                               try {
                                 // 로그인 체크
                                 if (!isAuthenticated) {
-                                  console.log('Not authenticated');
                                   toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
                                     duration: 3000,
                                   });
@@ -1211,12 +1209,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                   return;
                                 }
 
-                                console.log('Checking profile...');
                                 // 프로필 체크 - 실시간 검증
-                                const profileComplete = await checkUsedPhoneProfile();
-                                console.log('Profile complete:', profileComplete);
+                                const profileComplete = await checkProfile();
                                 if (!profileComplete) {
-                                  console.log('Opening modal...');
                                   setShowProfileModal(true);
                                   return;
                                 }
