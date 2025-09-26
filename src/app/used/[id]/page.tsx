@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { useUsedPhoneProfileCheck } from '@/hooks/useUsedPhoneProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, PHONE_BRANDS } from '@/types/used';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -40,7 +41,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const { isAuthenticated, user } = useAuth();
   const {
     isProfileComplete: hasUsedPhoneProfile,
-    checkProfile: checkUsedPhoneProfile
+    checkProfile: checkUsedPhoneProfile,
+    missingFields,
+    showProfileModal,
+    setShowProfileModal
   } = useUsedPhoneProfileCheck();
 
   // 가격 포맷팅 헬퍼 함수
@@ -1208,9 +1212,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 // 프로필 체크 - 실시간 검증
                                 const profileComplete = await checkUsedPhoneProfile();
                                 if (!profileComplete) {
-                                  toast.error('중고폰 거래를 위해 프로필 등록이 필요합니다.', {
-                                    duration: 3000,
-                                  });
+                                  setShowProfileModal(true);
                                   return;
                                 }
 
@@ -2190,6 +2192,18 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           </div>
         </div>
       )}
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => {
+          setShowProfileModal(false);
+        }}
+        missingFields={missingFields}
+        onUpdateProfile={() => {
+          router.push('/mypage');
+        }}
+      />
 
       </div>
     </div>

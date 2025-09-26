@@ -587,11 +587,6 @@ export default function UsedPhonesPage() {
 
       const profileComplete = await checkProfile();
       if (!profileComplete) {
-        toast({
-          title: '프로필 정보 필요',
-          description: '중고거래를 위해 프로필 정보를 먼저 입력해주세요.',
-          variant: 'destructive',
-        });
         setShowProfileModal(true);
         return;
       }
