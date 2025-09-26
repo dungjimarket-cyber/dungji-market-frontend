@@ -1195,41 +1195,49 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="space-y-2">
                           <Button
                             onClick={async () => {
-                              // 로그인 체크
-                              if (!isAuthenticated) {
-                                toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
-                                  duration: 3000,
-                                });
-                                router.push('/login');
-                                return;
-                              }
-
-                              // 프로필 체크 - 실시간 검증
-                              const profileComplete = await checkUsedPhoneProfile();
-                              if (!profileComplete) {
-                                toast.error('중고폰 거래를 위해 프로필 등록이 필요합니다.', {
-                                  duration: 3000,
-                                });
-                                return;
-                              }
-
-                              if (myOffer && myOffer.status === 'pending') {
-                                // 수정 제안 - 기존 금액과 메시지 설정
-                                setOfferAmount(myOffer.offered_price.toString());
-                                setDisplayAmount(myOffer.offered_price.toLocaleString('ko-KR'));
-                                if (myOffer.message) {
-                                  setOfferMessage(myOffer.message);
+                              try {
+                                // 로그인 체크
+                                if (!isAuthenticated) {
+                                  toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
+                                    duration: 3000,
+                                  });
+                                  router.push('/login');
+                                  return;
                                 }
-                                setShowOfferModal(true);
-                                toast.info('기존 제안을 수정합니다.', {
-                                  duration: 2000,
+
+                                // 프로필 체크 - 실시간 검증
+                                const profileComplete = await checkUsedPhoneProfile();
+                                if (!profileComplete) {
+                                  toast.error('중고폰 거래를 위해 프로필 등록이 필요합니다.', {
+                                    duration: 3000,
+                                  });
+                                  return;
+                                }
+
+                                if (myOffer && myOffer.status === 'pending') {
+                                  // 수정 제안 - 기존 금액과 메시지 설정
+                                  setOfferAmount(myOffer.offered_price.toString());
+                                  setDisplayAmount(myOffer.offered_price.toLocaleString('ko-KR'));
+                                  if (myOffer.message) {
+                                    setOfferMessage(myOffer.message);
+                                  }
+                                  setShowOfferModal(true);
+                                  toast.info('기존 제안을 수정합니다.', {
+                                    duration: 2000,
+                                  });
+                                } else {
+                                  // 신규 제안 - 최소제안가를 기본값으로 설정
+                                  const defaultPrice = phone.min_offer_price || 0;
+                                  setOfferAmount(defaultPrice.toString());
+                                  setDisplayAmount(defaultPrice.toLocaleString('ko-KR'));
+                                  setShowOfferModal(true);
+                                }
+                              } catch (error) {
+                                console.error('Profile check error:', error);
+                                toast.error('프로필 확인 중 오류가 발생했습니다.', {
+                                  duration: 3000,
                                 });
-                              } else {
-                                // 신규 제안 - 최소제안가를 기본값으로 설정
-                                const defaultPrice = phone.min_offer_price || 0;
-                                setOfferAmount(defaultPrice.toString());
-                                setDisplayAmount(defaultPrice.toLocaleString('ko-KR'));
-                                setShowOfferModal(true);
+                                return;
                               }
                             }}
                             className={`w-full h-14 text-lg font-semibold ${
