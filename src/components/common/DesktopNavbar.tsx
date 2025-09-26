@@ -31,7 +31,7 @@ export default function DesktopNavbar() {
     clearCache 
   } = useProfileCheck();
   
-  // 공구 등록하기 버튼 클릭 핸들러
+  // 견적요청 버튼 클릭 핸들러
   const handleCreateClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault(); // 기본 링크 동작 방지
     
@@ -42,7 +42,7 @@ export default function DesktopNavbar() {
     }
     
     // 패널티 체크
-    console.log('🔴 DesktopNavbar - 공구 등록하기 클릭');
+    console.log('🔴 DesktopNavbar - 견적요청 클릭');
     console.log('🔴 User:', user);
     console.log('🔴 Penalty info:', user?.penalty_info);
     console.log('🔴 Is active:', user?.penalty_info?.is_active);
@@ -79,7 +79,7 @@ export default function DesktopNavbar() {
           
           <div className="flex space-x-8">
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
-              공구 견적받기
+              진행중인 공구
             </Link>
             <Link href="/used" className="text-gray-600 hover:text-gray-900">
               중고거래
@@ -92,7 +92,7 @@ export default function DesktopNavbar() {
             {!isAuthenticated && (
               <>
                 <Link href="/register" className="text-gray-600 hover:text-gray-900">
-                  공구 등록하기
+                  견적요청
                 </Link>
                 <Link href="/register" className="text-gray-600 hover:text-gray-900">
                   회원가입
@@ -103,12 +103,12 @@ export default function DesktopNavbar() {
             {/* 구매회원(buyer) 로그인 시 */}
             {isAuthenticated && (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type)) && (
               <>
-                <Link 
-                  href="/group-purchases/create" 
+                <Link
+                  href="/group-purchases/create"
                   className="text-gray-600 hover:text-gray-900"
                   onClick={handleCreateClick}
                 >
-                  공구 등록하기
+                  견적요청
                 </Link>
                 <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
                   마이페이지

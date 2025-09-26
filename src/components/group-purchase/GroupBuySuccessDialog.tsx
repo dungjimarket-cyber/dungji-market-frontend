@@ -87,7 +87,7 @@ export function GroupBuySuccessDialog({
     }}>
       <DialogContent className="max-w-sm p-6">
         <VisuallyHidden>
-          <DialogTitle>공구 등록 완료</DialogTitle>
+          <DialogTitle>견적요청 완료</DialogTitle>
         </VisuallyHidden>
         <button
           onClick={handleClose}
@@ -104,11 +104,11 @@ export function GroupBuySuccessDialog({
           </div>
 
           {/* Title */}
-          <h2 className="mb-4 text-2xl font-bold">등록 완료!</h2>
+          <h2 className="mb-4 text-2xl font-bold">요청 완료!</h2>
 
           {/* Description */}
           <p className="mb-2 text-gray-600">
-            공구 등록이 완료되었습니다!
+            견적요청이 완료되었습니다!
           </p>
           <p className="mb-8 text-gray-600">
             함께할 친구와 지인들을 초대해보세요~

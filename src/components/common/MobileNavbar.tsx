@@ -29,7 +29,7 @@ export default function MobileNavbar() {
     clearCache 
   } = useProfileCheck();
   
-  // 공구 등록 버튼 클릭 핸들러
+  // 견적요청 버튼 클릭 핸들러
   const handleCreateClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault(); // 기본 링크 동작 방지
     
@@ -40,7 +40,7 @@ export default function MobileNavbar() {
     }
     
     // 패널티 체크
-    console.log('🔴 MobileNavbar - 공구 등록하기 클릭');
+    console.log('🔴 MobileNavbar - 견적요청 클릭');
     console.log('🔴 User:', user);
     console.log('🔴 Penalty info:', user?.penalty_info);
     console.log('🔴 Is active:', user?.penalty_info?.is_active);
@@ -94,7 +94,7 @@ export default function MobileNavbar() {
         </Link>
         <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
           <FaSearch className="text-lg mb-1" />
-          <span className="text-[10px]">공구</span>
+          <span className="text-[10px]">진행중</span>
         </Link>
         {/* 가운데 버튼 - 본인 역할에 맞게 버튼 변경 */}
         <Link
@@ -116,7 +116,7 @@ export default function MobileNavbar() {
               <button className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md mb-1">
                 <span className="text-xl">+</span>
               </button>
-              <span className="text-[10px] mt-1">등록</span>
+              <span className="text-[10px] mt-1">견적요청</span>
             </>
           )}
         </Link>
