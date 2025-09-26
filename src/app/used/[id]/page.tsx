@@ -38,7 +38,10 @@ export default async function UsedPhoneDetailPage({ params }: { params: Promise<
 function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
-  const { isProfileComplete: hasUsedPhoneProfile } = useUsedPhoneProfileCheck();
+  const {
+    isProfileComplete: hasUsedPhoneProfile,
+    checkProfile: checkUsedPhoneProfile
+  } = useUsedPhoneProfileCheck();
 
   // 가격 포맷팅 헬퍼 함수
   const formatPrice = (value: string) => {
@@ -1191,7 +1194,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       <>
                         <div className="space-y-2">
                           <Button
-                            onClick={() => {
+                            onClick={async () => {
                               // 로그인 체크
                               if (!isAuthenticated) {
                                 toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
@@ -1201,8 +1204,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                                 return;
                               }
 
-                              // 프로필 체크
-                              if (!hasUsedPhoneProfile) {
+                              // 프로필 체크 - 실시간 검증
+                              const profileComplete = await checkUsedPhoneProfile();
+                              if (!profileComplete) {
                                 toast.error('중고폰 거래를 위해 프로필 등록이 필요합니다.', {
                                   duration: 3000,
                                 });

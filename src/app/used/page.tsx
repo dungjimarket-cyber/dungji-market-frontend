@@ -644,32 +644,6 @@ export default function UsedPhonesPage() {
           </div>
         </section>
 
-        {/* 프로필 미완성 안내 */}
-        {isAuthenticated && !isProfileComplete && missingFields.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 mb-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
-                <div>
-                  <p className="text-sm font-medium text-yellow-800">
-                    중고거래를 위한 필수 정보를 입력해주세요
-                  </p>
-                  <p className="text-xs text-yellow-600">
-                    {missingFields.join(', ')} 정보만 입력하면 바로 거래 가능합니다
-                  </p>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => router.push('/mypage')}
-                className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
-              >
-                정보 입력하기
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* 탭 섹션 */}
         <div className="mb-4">
