@@ -726,8 +726,8 @@ export default function GroupBuyClient({ groupBuy, id, isCreator: propIsCreator,
                               <Image
                                 src="/logos/sk-broadband.png"
                                 alt="SK브로드밴드"
-                                width={84}
-                                height={56}
+                                width={76}
+                                height={44}
                                 className="object-contain"
                               />
                             );

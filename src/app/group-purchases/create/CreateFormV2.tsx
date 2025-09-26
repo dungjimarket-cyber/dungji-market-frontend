@@ -1116,25 +1116,19 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                          target="_blank" 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
-                        • SK : 인터넷 요금제 확인하기
-                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-2.5 w-auto" />
-                        →
+                        • SK : 인터넷 요금제 확인하기 →
                       </a>
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
                          target="_blank" 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
-                        • KT : 인터넷 요금제 확인하기
-                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
-                        →
+                        • KT : 인터넷 요금제 확인하기 →
                       </a>
                       <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
                          target="_blank" 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline">
-                        • LG U+ : 인터넷 요금제 확인하기
-                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
-                        →
+                        • LG U+ : 인터넷 요금제 확인하기 →
                       </a>
                     </div>
                   </div>
@@ -1250,25 +1244,19 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                          target="_blank" 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
-                        • SK : 인터넷+TV 요금제 확인하기
-                        <img src="/logos/sk-broadband.png" alt="SK브로드밴드" className="h-2.5 w-auto" />
-                        →
+                        • SK : 인터넷+TV 요금제 확인하기 →
                       </a>
                       <a href="https://product.kt.com/wDic/productDetail.do?ItemCode=1505&CateCode=6005&filter_code=118&option_code=170&pageSize=10" 
                          target="_blank" 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
-                        • KT : 인터넷+TV 요금제 확인하기
-                        <img src="/logos/kt.png" alt="KT" className="h-3.5 w-auto" />
-                        →
+                        • KT : 인터넷+TV 요금제 확인하기 →
                       </a>
                       <a href="https://www.lguplus.com/internet/plan?tab=IN&subtab=all" 
                          target="_blank" 
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 text-sm text-dungji-primary hover:text-dungji-primary-dark hover:underline">
-                        • LG U+ : 인터넷+TV 요금제 확인하기
-                        <img src="/logos/lgu.png" alt="LG U+" className="h-3.5 w-auto" />
-                        →
+                        • LG U+ : 인터넷+TV 요금제 확인하기 →
                       </a>
                     </div>
                   </div>
