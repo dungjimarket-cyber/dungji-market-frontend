@@ -300,7 +300,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   };
 
   // 가격 제안
-  const handleOffer = () => {
+  const handleOffer = async () => {
     if (!isAuthenticated) {
       toast.error('가격 제안은 로그인 후 이용 가능합니다.');
       router.push('/login');
@@ -1116,7 +1116,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 <>
                   <div className="space-y-2">
                     <Button
-                      onClick={() => {
+                      onClick={async () => {
                         // 로그인 체크
                         if (!isAuthenticated) {
                           toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
