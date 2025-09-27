@@ -134,9 +134,22 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
     missingFields,
     clearCache 
   } = useProfileCheck();
-  
-  // 디버깅을 위한 로그 제거
-  
+
+  // 공구 상세 정보 디버깅
+  useEffect(() => {
+    console.log('[공구 상세] 기본 정보:', {
+      id: groupBuy.id,
+      title: groupBuy.title,
+      status: groupBuy.status,
+      creator: groupBuy.creator,
+      current_participants: groupBuy.current_participants,
+      max_participants: groupBuy.max_participants,
+      final_selection_end: groupBuy.final_selection_end,
+      seller_selection_end: groupBuy.seller_selection_end,
+      product_details: groupBuy.product_details,
+    });
+  }, [groupBuy]);
+
   const [isKakaoInAppBrowser, setIsKakaoInAppBrowser] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [isParticipant, setIsParticipant] = useState<boolean | undefined>(undefined);
