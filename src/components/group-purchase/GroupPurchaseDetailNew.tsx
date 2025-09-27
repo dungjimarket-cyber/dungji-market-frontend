@@ -982,10 +982,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
   const processFinalSelection = async () => {
     try {
-      const endpoint = isSeller 
+      const endpoint = isSeller
         ? `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/seller-decision/`
         : `${process.env.NEXT_PUBLIC_API_URL}/groupbuys/${groupBuy.id}/buyer-decision/`;
-      
+
+      console.log('[최종선택] 요청 정보:', {
+        groupBuyId: groupBuy.id,
+        endpoint,
+        decision: finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled',
+        isSeller,
+        groupBuyStatus: groupBuyData.status,
+        finalSelectionEnd: groupBuy.final_selection_end,
+        currentParticipants: groupBuy.current_participants
+      });
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -995,6 +1005,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         body: JSON.stringify({
           decision: finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled'
         })
+      });
+
+      console.log('[최종선택] 응답 상태:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
       });
 
       if (response.ok) {
@@ -1017,9 +1033,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         router.refresh();
       } else {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || '최종선택 처리 중 오류가 발생했습니다');
+        console.error('[최종선택] 에러 응답:', {
+          status: response.status,
+          errorData,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        throw new Error(errorData.message || errorData.error || errorData.detail || '최종선택 처리 중 오류가 발생했습니다');
       }
     } catch (error) {
+      console.error('[최종선택] 예외 발생:', error);
       toast({
         variant: 'destructive',
         title: '오류',
