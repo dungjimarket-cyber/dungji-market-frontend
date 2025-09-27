@@ -1051,6 +1051,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
           errorData,
           headers: Object.fromEntries(response.headers.entries())
         });
+
+        // 백엔드 상세 오류 정보 출력
+        if (errorData.detail || errorData.type || errorData.traceback) {
+          console.error('[최종선택] 백엔드 상세 오류:', {
+            에러타입: errorData.type,
+            에러메시지: errorData.detail,
+            스택트레이스: errorData.traceback
+          });
+        }
+
         throw new Error(errorData.message || errorData.error || errorData.detail || '최종선택 처리 중 오류가 발생했습니다');
       }
     } catch (error) {
