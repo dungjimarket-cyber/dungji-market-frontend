@@ -999,30 +999,31 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       if (response.ok) {
         toast({
-          title: finalSelectionType === 'confirm' 
+          title: finalSelectionType === 'confirm'
             ? (isSeller ? '판매를 확정했습니다' : '구매를 확정했습니다')
             : (isSeller ? '판매를 포기했습니다' : '구매를 포기했습니다'),
           description: finalSelectionType === 'confirm'
             ? (isSeller ? '구매자 정보를 확인할 수 있습니다' : '판매자 정보를 확인할 수 있습니다')
             : '마이페이지에서 취소된 공구를 확인할 수 있습니다'
         });
-        
+
         // 상태 업데이트
         if (isSeller) {
           setMyBidFinalDecision(finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled');
         } else {
           setMyParticipationFinalDecision(finalSelectionType === 'confirm' ? 'confirmed' : 'cancelled');
         }
-        
+
         router.refresh();
       } else {
-        throw new Error('최종선택 처리 중 오류가 발생했습니다');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || '최종선택 처리 중 오류가 발생했습니다');
       }
     } catch (error) {
       toast({
         variant: 'destructive',
         title: '오류',
-        description: '최종선택 처리 중 문제가 발생했습니다'
+        description: error instanceof Error ? error.message : '최종선택 처리 중 문제가 발생했습니다'
       });
     } finally {
       setShowFinalSelectionDialog(false);
