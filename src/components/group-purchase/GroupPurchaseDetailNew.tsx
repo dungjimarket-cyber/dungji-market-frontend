@@ -1562,9 +1562,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         </div>
 
         {/* 최종선택 타이머 - 공구 상태 정보 섹션으로 통합 이동 */}
-        
-        {/* 판매자 최종선택 UI */}
-        {isSeller && isSellerFinalSelection && hasWinningBid && (
+
+        {/* 판매자 최종선택 UI - 하단 버튼 영역과 중복되어 주석처리 */}
+        {/* {isSeller && isSellerFinalSelection && hasWinningBid && (
           <div className="bg-yellow-50 p-4 rounded-lg mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-lg">판매자 최종선택</h3>
@@ -1574,7 +1574,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               구매자가 모두 최종선택을 완료했습니다. 판매확정 또는 판매포기를 선택해주세요.
             </p>
             <div className="flex gap-2">
-              <Button 
+              <Button
                 onClick={() => setShowSellerFinalDecisionModal(true)}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
               >
@@ -1587,7 +1587,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
           </div>
-        )}
+        )} */}
 
           </div>
 
