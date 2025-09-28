@@ -203,8 +203,8 @@ export default function CreateCustomDealPage() {
 
       // 다중 업로드
       const actualImages = updated.filter(img => img && !img.isEmpty);
-      if (actualImages.length + files.length > 10) {
-        toast.error('최대 10장까지 업로드 가능합니다');
+      if (actualImages.length + files.length > 5) {
+        toast.error('최대 5장까지 업로드 가능합니다');
         return prev;
       }
 
@@ -213,7 +213,7 @@ export default function CreateCustomDealPage() {
       let insertIndex = lastFilledIndex + 1;
 
       files.forEach((file) => {
-        if (insertIndex < 10) {
+        if (insertIndex < 5) {
           if (updated[insertIndex] && updated[insertIndex].url) {
             URL.revokeObjectURL(updated[insertIndex].url);
           }
@@ -420,8 +420,8 @@ export default function CreateCustomDealPage() {
       newErrors.title = '제목을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = titleRef;
     }
-    if (formData.title.length > 50) {
-      newErrors.title = '제목은 최대 50자까지 입력 가능합니다';
+    if (formData.title.length > 150) {
+      newErrors.title = '제목은 최대 150자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = titleRef;
     }
     if (!formData.description.trim()) {
@@ -698,12 +698,12 @@ export default function CreateCustomDealPage() {
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 py-8">
         {/* 등록 안내 */}
         <Card className="mb-6 border-slate-200 bg-slate-50">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
+          <CardContent className="pt-4">
+            <div className="flex gap-2">
+              <Info className="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-slate-900 mb-2">등록 전 확인사항</h3>
-                <p className="text-sm text-slate-700 mb-2">
+                <h3 className="font-medium text-slate-900 mb-1">등록 전 확인사항</h3>
+                <p className="text-sm text-slate-700 mb-1">
                   오프라인 공구는 사업자 회원만 등록 가능합니다
                 </p>
                 <p className="text-sm text-slate-600">
@@ -721,7 +721,7 @@ export default function CreateCustomDealPage() {
               <Camera className="w-5 h-5" />
               상품 이미지 {errors.images && <span className="text-red-600 text-sm ml-2">{errors.images}</span>}
             </CardTitle>
-            <p className="text-sm text-slate-500">첫 번째 이미지가 대표 이미지로 설정됩니다 (최대 10장)</p>
+            <p className="text-sm text-slate-500">첫 번째 이미지가 대표 이미지로 설정됩니다 (최대 5장)</p>
           </CardHeader>
           <CardContent>
             <div
@@ -747,8 +747,8 @@ export default function CreateCustomDealPage() {
                 className="hidden"
               />
 
-              <div className="grid grid-cols-5 gap-3">
-                {Array.from({ length: 10 }).map((_, index) => {
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {Array.from({ length: 5 }).map((_, index) => {
                   const image = images[index];
                   const hasImage = image && !image?.isEmpty;
 
@@ -761,37 +761,42 @@ export default function CreateCustomDealPage() {
                     >
                       {hasImage ? (
                         <>
-                          <Image
-                            src={image.url}
-                            alt={`이미지 ${index + 1}`}
-                            fill
-                            className="object-cover"
-                          />
+                          <div
+                            className="absolute inset-0 cursor-pointer"
+                            onClick={() => window.open(image.url, '_blank')}
+                          >
+                            <Image
+                              src={image.url}
+                              alt={`이미지 ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
                           {image.isMain && (
-                            <Badge className="absolute top-2 left-2 bg-blue-600 text-white text-xs">
+                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 pointer-events-none">
                               대표
                             </Badge>
                           )}
-                          <div className="absolute top-2 right-2 flex gap-1">
+                          <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 hover:opacity-100 transition-opacity bg-black/30">
                             {!image.isMain && (
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="secondary"
-                                className="h-6 w-6 p-0"
+                                className="h-8 w-8 p-0 bg-white hover:bg-white shadow-lg"
                                 onClick={() => handleSetMainImage(index)}
                               >
-                                <Check className="w-3 h-3" />
+                                <Check className="w-4 h-4" />
                               </Button>
                             )}
                             <Button
                               type="button"
                               size="sm"
                               variant="destructive"
-                              className="h-6 w-6 p-0"
+                              className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 shadow-lg"
                               onClick={() => handleImageRemove(index)}
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-4 h-4" />
                             </Button>
                           </div>
                         </>
@@ -841,11 +846,11 @@ export default function CreateCustomDealPage() {
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="공구 제목을 입력하세요"
                 className={errors.title ? 'border-red-300' : ''}
-                maxLength={50}
+                maxLength={150}
               />
               <div className="flex justify-between mt-1">
                 {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
-                <p className="text-sm text-slate-500 ml-auto">{formData.title.length}/50</p>
+                <p className="text-sm text-slate-500 ml-auto">{formData.title.length}/150</p>
               </div>
             </div>
 
@@ -965,7 +970,7 @@ export default function CreateCustomDealPage() {
                     onChange={(e) => handleInputChange('product_name', e.target.value)}
                     placeholder="예: 둥지마켓 사과 1박스"
                     className={errors.product_name ? 'border-red-300' : ''}
-                    maxLength={150}
+                    maxLength={100}
                   />
                   {errors.product_name && <p className="text-sm text-red-600 mt-1">{errors.product_name}</p>}
                 </div>
@@ -1233,10 +1238,12 @@ export default function CreateCustomDealPage() {
                   <div>
                     <Label>할인 링크 *</Label>
                     <Input
+                      ref={discountUrlRef}
                       value={formData.discount_url}
                       onChange={(e) => handleInputChange('discount_url', e.target.value)}
                       placeholder="https://example.com/discount"
                       className={errors.discount_url ? 'border-red-300' : ''}
+                      maxLength={200}
                     />
                     {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
                   </div>
@@ -1261,7 +1268,7 @@ export default function CreateCustomDealPage() {
                           value={code}
                           onChange={(e) => updateDiscountCode(index, e.target.value)}
                           placeholder={`코드 ${index + 1}`}
-                          maxLength={50}
+                          maxLength={100}
                         />
                         {discountCodes.length > 1 && (
                           <Button
@@ -1308,6 +1315,7 @@ export default function CreateCustomDealPage() {
                     <SelectValue placeholder="선택 안함" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="">선택 안함</SelectItem>
                     <SelectItem value="3">3일</SelectItem>
                     <SelectItem value="7">7일</SelectItem>
                     <SelectItem value="14">14일</SelectItem>
@@ -1409,7 +1417,7 @@ export default function CreateCustomDealPage() {
                           value={code}
                           onChange={(e) => updateDiscountCode(index, e.target.value)}
                           placeholder={`코드 ${index + 1}`}
-                          maxLength={50}
+                          maxLength={100}
                         />
                         {discountCodes.length > 1 && (
                           <Button

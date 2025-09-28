@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Plus, AlertCircle, Info, ArrowLeft, Clock, Users, Tag, MapPin, Phone, Link as LinkIcon, Ticket, Lock } from 'lucide-react';
+import { Camera, X, Plus, AlertCircle, Info, ArrowLeft, Clock, Users, Tag, MapPin, Phone, Link as LinkIcon, Ticket, Lock, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -237,8 +237,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       }
 
       const actualImages = updated.filter(img => img && !img.isEmpty);
-      if (actualImages.length + files.length > 10) {
-        toast.error('최대 10장까지 업로드 가능합니다');
+      if (actualImages.length + files.length > 5) {
+        toast.error('최대 5장까지 업로드 가능합니다');
         return prev;
       }
 
@@ -247,7 +247,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       let insertIndex = lastFilledIndex + 1;
 
       files.forEach((file) => {
-        if (insertIndex < 10) {
+        if (insertIndex < 5) {
           if (updated[insertIndex] && updated[insertIndex].url) {
             URL.revokeObjectURL(updated[insertIndex].url);
           }
@@ -524,7 +524,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               <Camera className="w-5 h-5" />
               상품 이미지
             </CardTitle>
-            <p className="text-sm text-slate-500">첫 번째 이미지가 대표 이미지로 설정됩니다 (최대 10장)</p>
+            <p className="text-sm text-slate-500">첫 번째 이미지가 대표 이미지로 설정됩니다 (최대 5장)</p>
           </CardHeader>
           <CardContent>
             <div
@@ -545,8 +545,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 className="hidden"
               />
 
-              <div className="grid grid-cols-5 gap-3">
-                {Array.from({ length: 10 }).map((_, index) => {
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {Array.from({ length: 5 }).map((_, index) => {
                   const image = images[index];
                   const hasImage = image && !image?.isEmpty;
 
@@ -559,30 +559,35 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     >
                       {hasImage ? (
                         <>
-                          <Image src={image.url} alt={`이미지 ${index + 1}`} fill className="object-cover" />
+                          <div
+                            className="absolute inset-0 cursor-pointer"
+                            onClick={() => window.open(image.url, '_blank')}
+                          >
+                            <Image src={image.url} alt={`이미지 ${index + 1}`} fill className="object-cover" />
+                          </div>
                           {image.isMain && (
-                            <Badge className="absolute top-2 left-2 bg-blue-600 text-white text-xs">대표</Badge>
+                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 pointer-events-none">대표</Badge>
                           )}
-                          <div className="absolute top-2 right-2 flex gap-1">
+                          <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 hover:opacity-100 transition-opacity bg-black/30">
                             {!image.isMain && (
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="secondary"
-                                className="h-6 w-6 p-0"
+                                className="h-8 w-8 p-0 bg-white hover:bg-white shadow-lg"
                                 onClick={() => handleSetMainImage(index)}
                               >
-                                <Info className="w-3 h-3" />
+                                <Check className="w-4 h-4" />
                               </Button>
                             )}
                             <Button
                               type="button"
                               size="sm"
                               variant="destructive"
-                              className="h-6 w-6 p-0"
+                              className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 shadow-lg"
                               onClick={() => handleImageRemove(index)}
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-4 h-4" />
                             </Button>
                           </div>
                         </>
