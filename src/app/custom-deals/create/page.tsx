@@ -636,9 +636,12 @@ export default function CreateCustomDealPage() {
         }
       } else {
         // 지역 정보 (중고거래와 동일한 방식)
+        const regionStrings = selectedRegions.map(r => `${r.province} ${r.city}`);
         selectedRegions.forEach((region) => {
           submitFormData.append('regions', `${region.province} ${region.city}`);
         });
+        // Serializer 유효성 검사를 위해 region_codes도 전송
+        submitFormData.append('region_codes', JSON.stringify(regionStrings));
         submitFormData.append('location', formData.location);
         if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
         submitFormData.append('phone_number', formData.phone_number);
