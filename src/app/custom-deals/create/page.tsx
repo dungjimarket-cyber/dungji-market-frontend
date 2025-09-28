@@ -511,7 +511,6 @@ export default function CreateCustomDealPage() {
         type: formData.type,
         categories: selectedCategories,
         pricing_type: formData.pricing_type,
-        discount_rate: parseInt(formData.discount_rate),
         target_participants: parseInt(formData.target_participants),
         max_wait_hours: parseInt(formData.max_wait_hours),
         allow_partial_sale: formData.allow_partial_sale,
@@ -519,8 +518,15 @@ export default function CreateCustomDealPage() {
       };
 
       if (formData.pricing_type === 'single_product') {
-        requestBody.product_name = formData.product_name;
-        requestBody.original_price = parseInt(formData.original_price.replace(/,/g, ''));
+        // products 배열로 전송 (현재는 1개만)
+        requestBody.products = [{
+          name: formData.product_name,
+          original_price: parseInt(formData.original_price.replace(/,/g, '')),
+          discount_rate: parseInt(formData.discount_rate)
+        }];
+      } else {
+        // 전품목 할인은 discount_rate만
+        requestBody.discount_rate = parseInt(formData.discount_rate);
       }
 
       if (formData.type === 'online') {
