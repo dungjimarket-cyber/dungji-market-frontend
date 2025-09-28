@@ -63,7 +63,7 @@ export default function CreateCustomDealPage() {
 
   // 카테고리 목록
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   // 지역 선택 (오프라인용)
   const [selectedRegions, setSelectedRegions] = useState<SelectedRegion[]>([]);
@@ -290,18 +290,9 @@ export default function CreateCustomDealPage() {
     }
   }, [handleImageUpload]);
 
-  // 카테고리 토글
-  const toggleCategory = (value: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(value)) {
-        return prev.filter(c => c !== value);
-      } else if (prev.length >= 5) {
-        toast.error('카테고리는 최대 5개까지 선택 가능합니다');
-        return prev;
-      } else {
-        return [...prev, value];
-      }
-    });
+  // 카테고리 선택
+  const handleCategorySelect = (value: string) => {
+    setSelectedCategory(value);
     if (errors.categories) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -425,7 +416,7 @@ export default function CreateCustomDealPage() {
     }
 
     // 카테고리
-    if (selectedCategories.length === 0) newErrors.categories = '최소 1개 이상의 카테고리를 선택해주세요';
+    if (!selectedCategory) newErrors.categories = '카테고리를 선택해주세요';
 
     // 이미지
     const actualImages = images.filter(img => img && !img.isEmpty);
@@ -547,7 +538,7 @@ export default function CreateCustomDealPage() {
         description: formData.description,
         usage_guide: formData.usage_guide || undefined,
         type: formData.type,
-        categories: selectedCategories,
+        categories: [selectedCategory],
         pricing_type: formData.pricing_type,
         target_participants: parseInt(formData.target_participants),
         expired_at: calculateDeadline(),
@@ -634,6 +625,24 @@ export default function CreateCustomDealPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 py-8">
+        {/* 등록 안내 */}
+        <Card className="mb-6 border-slate-200 bg-slate-50">
+          <CardContent className="pt-6">
+            <div className="flex gap-3">
+              <Info className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-slate-900 mb-2">등록 전 확인사항</h3>
+                <p className="text-sm text-slate-700 mb-2">
+                  오프라인 공구는 사업자 회원만 등록 가능합니다
+                </p>
+                <p className="text-sm text-slate-600">
+                  등록 불가: 할부/약정 상품, 금융상품, 학원/강의, 방문 서비스, 청소년 유해상품
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 이미지 업로드 */}
         <Card className="mb-6 border-slate-200">
           <CardHeader>
@@ -827,30 +836,28 @@ export default function CreateCustomDealPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Tag className="w-5 h-5" />
-              카테고리 {errors.categories && <span className="text-red-600 text-sm ml-2">{errors.categories}</span>}
+              카테고리 * {errors.categories && <span className="text-red-600 text-sm ml-2">{errors.categories}</span>}
             </CardTitle>
-            <p className="text-sm text-slate-500">최소 1개, 최대 5개까지 선택 가능합니다</p>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {categories.map((cat) => (
-                <Button
+                <button
                   key={cat.value}
                   type="button"
-                  variant={selectedCategories.includes(cat.value) ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => toggleCategory(cat.value)}
-                  className={selectedCategories.includes(cat.value) ? 'bg-blue-600' : ''}
+                  onClick={() => handleCategorySelect(cat.value)}
+                  className={`
+                    py-2 px-3 rounded-lg border-2 font-medium transition-all text-sm
+                    ${selectedCategory === cat.value
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                    }
+                  `}
                 >
                   {cat.label}
-                </Button>
+                </button>
               ))}
             </div>
-            {selectedCategories.length > 0 && (
-              <p className="text-sm text-slate-600 mt-3">
-                선택됨: {selectedCategories.length}/5
-              </p>
-            )}
           </CardContent>
         </Card>
 
@@ -892,7 +899,7 @@ export default function CreateCustomDealPage() {
                   <Input
                     value={formData.product_name}
                     onChange={(e) => handleInputChange('product_name', e.target.value)}
-                    placeholder="예: 아이폰 15 Pro 256GB"
+                    placeholder="예: 둥지마켓 사과 1박스"
                     className={errors.product_name ? 'border-red-300' : ''}
                   />
                   {errors.product_name && <p className="text-sm text-red-600 mt-1">{errors.product_name}</p>}
