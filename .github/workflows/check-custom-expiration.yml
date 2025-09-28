@@ -1,0 +1,26 @@
+name: Check Custom Groupbuy Expiration
+
+on:
+  schedule:
+    # 5분마다 실행
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  check-expiration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call backend cron API
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            ${{ secrets.BACKEND_API_URL }}/api/cron/check-custom-groupbuys/ \
+            --fail-with-body \
+            --max-time 60
+        continue-on-error: false
+
+      - name: Check status
+        if: failure()
+        run: echo "Custom groupbuy expiration check failed"
