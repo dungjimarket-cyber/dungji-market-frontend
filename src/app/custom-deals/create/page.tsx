@@ -745,7 +745,6 @@ export default function CreateCustomDealPage() {
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
-                className={errors.description ? 'border-red-300' : ''}
                 rows={15}
                 maxLength={5000}
                 className={`min-h-[400px] ${errors.description ? 'border-red-300' : ''}`}
