@@ -6,8 +6,9 @@ import Link from '@tiptap/extension-link';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import Placeholder from '@tiptap/extension-placeholder';
+import { FontSize } from '@/lib/tiptap/fontSize';
 import {
-  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon, Palette
+  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon, Palette, Type
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -26,6 +27,7 @@ export default function RichTextEditor({
   maxLength = 5000
 }: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showFontSizePicker, setShowFontSizePicker] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -38,6 +40,7 @@ export default function RichTextEditor({
       }),
       TextStyle,
       Color,
+      FontSize,
       Placeholder.configure({
         placeholder,
       }),
@@ -135,6 +138,47 @@ export default function RichTextEditor({
         >
           <LinkIcon className="w-4 h-4" />
         </Button>
+
+        <div className="relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowFontSizePicker(!showFontSizePicker)}
+            className="h-8 w-8 p-0"
+          >
+            <Type className="w-4 h-4" />
+          </Button>
+
+          {showFontSizePicker && (
+            <div className="absolute top-10 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[120px]">
+              {['12px', '14px', '16px', '18px', '20px', '24px', '28px'].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 hover:bg-slate-100 rounded text-sm"
+                  style={{ fontSize: size }}
+                  onClick={() => {
+                    editor.chain().focus().setFontSize(size).run();
+                    setShowFontSizePicker(false);
+                  }}
+                >
+                  {size}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 hover:bg-slate-100 rounded text-xs text-slate-600 mt-1 border-t"
+                onClick={() => {
+                  editor.chain().focus().unsetFontSize().run();
+                  setShowFontSizePicker(false);
+                }}
+              >
+                기본 크기
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="relative">
           <Button
