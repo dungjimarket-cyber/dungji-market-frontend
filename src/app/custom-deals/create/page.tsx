@@ -305,9 +305,38 @@ export default function CreateCustomDealPage() {
     }
   };
 
+  // 랜덤 할인코드 생성 (5자리)
+  const generateRandomCode = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 혼동되는 문자 제외 (I, O, 0, 1)
+    let code = '';
+    for (let i = 0; i < 5; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
   // 할인코드 추가
   const addDiscountCode = () => {
     setDiscountCodes(prev => [...prev, '']);
+  };
+
+  // 랜덤 할인코드 자동 생성
+  const generateDiscountCodes = () => {
+    const targetCount = parseInt(formData.target_participants) || 1;
+    const newCodes: string[] = [];
+    const existingCodes = new Set(discountCodes.filter(code => code.trim()));
+
+    for (let i = 0; i < targetCount; i++) {
+      let code = generateRandomCode();
+      // 중복 방지
+      while (existingCodes.has(code) || newCodes.includes(code)) {
+        code = generateRandomCode();
+      }
+      newCodes.push(code);
+    }
+
+    setDiscountCodes(newCodes);
+    toast.success(`${targetCount}개의 할인코드가 생성되었습니다`);
   };
 
   // 할인코드 제거
@@ -930,16 +959,28 @@ export default function CreateCustomDealPage() {
                         )}
                       </div>
                     ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addDiscountCode}
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      코드 추가
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addDiscountCode}
+                        className="flex-1"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        코드 추가
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        onClick={generateDiscountCodes}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Ticket className="w-4 h-4 mr-2" />
+                        자동 생성
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1058,16 +1099,28 @@ export default function CreateCustomDealPage() {
                         )}
                       </div>
                     ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addDiscountCode}
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      코드 추가
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addDiscountCode}
+                        className="flex-1"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        코드 추가
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        onClick={generateDiscountCodes}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Ticket className="w-4 h-4 mr-2" />
+                        자동 생성
+                      </Button>
+                    </div>
                   </div>
                   <p className="text-sm text-slate-500 mt-2">
                     ⚠️ 배달 주문 시 사용 불가. 방문 포장 또는 매장 식사만 가능합니다.
