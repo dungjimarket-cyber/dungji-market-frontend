@@ -1,0 +1,620 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { CountdownTimer } from '@/components/ui/CountdownTimer';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+
+interface CustomDeal {
+  id: number;
+  title: string;
+  description: string;
+  type: 'online' | 'offline';
+  type_display: string;
+  categories: string[];
+  regions?: Array<{
+    code: string;
+    name: string;
+    full_name: string;
+  }>;
+  original_price: number;
+  discount_rate: number;
+  final_price: number;
+  target_participants: number;
+  current_participants: number;
+  is_completed: boolean;
+  status: string;
+  status_display: string;
+  expired_at: string;
+  completed_at: string | null;
+  seller_decision_deadline: string | null;
+  discount_valid_days: number | null;
+  discount_valid_until: string | null;
+  allow_partial_sale: boolean;
+  seller: number;
+  seller_name: string;
+  seller_type: string;
+  is_business_verified: boolean;
+  online_discount_type: string | null;
+  online_discount_type_display: string | null;
+  discount_url: string | null;
+  location: string | null;
+  location_detail: string | null;
+  phone_number: string | null;
+  usage_guide: string | null;
+  view_count: number;
+  favorite_count: number;
+  images: Array<{
+    id: number;
+    image_url: string;
+    order_index: number;
+    is_primary: boolean;
+  }>;
+  is_favorited: boolean;
+  is_participated: boolean;
+  created_at: string;
+}
+
+export default function CustomDealDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [deal, setDeal] = useState<CustomDeal | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isExpired, setIsExpired] = useState(false);
+
+  const {
+    checkProfile,
+    missingFields,
+    showProfileModal,
+    setShowProfileModal,
+  } = useCustomProfileCheck();
+
+  useEffect(() => {
+    if (params.id) {
+      fetchDeal();
+    }
+  }, [params.id]);
+
+  const fetchDeal = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/`);
+
+      if (response.status === 404) {
+        toast.error('존재하지 않는 특가입니다');
+        router.push('/custom-deals');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`서버 오류 (${response.status})`);
+      }
+
+      const data = await response.json();
+      setDeal(data);
+    } catch (error) {
+      console.error('로드 실패:', error);
+      toast.error('특가 정보를 불러오는데 실패했습니다');
+      router.push('/custom-deals');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFavorite = async () => {
+    if (!deal) return;
+
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+      toast.error('로그인이 필요합니다');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const method = deal.is_favorited ? 'DELETE' : 'POST';
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/favorite/`,
+        {
+          method,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 401) {
+        toast.error('로그인이 만료되었습니다');
+        localStorage.removeItem('accessToken');
+        router.push('/login');
+        return;
+      }
+
+      if (!response.ok) throw new Error('Failed to toggle favorite');
+
+      setDeal({
+        ...deal,
+        is_favorited: !deal.is_favorited,
+        favorite_count: deal.is_favorited ? deal.favorite_count - 1 : deal.favorite_count + 1,
+      });
+
+      toast.success(deal.is_favorited ? '찜 해제되었습니다' : '찜 목록에 추가되었습니다');
+    } catch (error) {
+      console.error('찜하기 실패:', error);
+      toast.error('찜하기에 실패했습니다');
+    }
+  };
+
+  const handleParticipate = async () => {
+    if (!deal) return;
+
+    if (deal.is_participated) {
+      toast.info('이미 참여하신 특가입니다');
+      return;
+    }
+
+    if (deal.status !== 'recruiting') {
+      toast.error('현재 참여할 수 없는 특가입니다');
+      return;
+    }
+
+    const isProfileComplete = await checkProfile(false);
+    if (!isProfileComplete) {
+      setShowProfileModal(true);
+      return;
+    }
+
+    if (!confirm(`${deal.title}\n\n정가: ${deal.original_price.toLocaleString()}원\n할인가: ${deal.final_price.toLocaleString()}원 (${deal.discount_rate}% 할인)\n\n참여하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        toast.error('로그인이 필요합니다');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/participate/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '참여 실패');
+      }
+
+      toast.success('참여가 완료되었습니다!');
+      fetchDeal();
+    } catch (error: any) {
+      console.error('참여 실패:', error);
+      toast.error(error.message || '참여에 실패했습니다');
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: deal?.title,
+          text: `${deal?.title} - ${deal?.final_price.toLocaleString()}원`,
+          url: url,
+        });
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          copyToClipboard(url);
+        }
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('링크가 복사되었습니다');
+  };
+
+  const getRemainingTime = (expiredAt: string) => {
+    const now = new Date();
+    const expire = new Date(expiredAt);
+    const diff = expire.getTime() - now.getTime();
+
+    if (diff <= 0) return '마감';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) return `${days}일 ${hours}시간 남음`;
+    if (hours > 0) return `${hours}시간 ${minutes}분 남음`;
+    return `${minutes}분 남음`;
+  };
+
+  const getStatusBadge = () => {
+    if (!deal) return null;
+
+    if (deal.status === 'completed') {
+      return <Badge className="bg-red-50 text-red-600 border-red-200">선착순 마감</Badge>;
+    }
+    if (deal.status === 'recruiting') {
+      const progress = (deal.current_participants / deal.target_participants) * 100;
+      if (progress >= 80) {
+        return <Badge className="bg-orange-50 text-orange-600 border-orange-200">마감 임박</Badge>;
+      }
+      return <Badge className="bg-blue-50 text-blue-600 border-blue-200">모집중</Badge>;
+    }
+    return <Badge variant="secondary">{deal.status_display}</Badge>;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!deal) {
+    return null;
+  }
+
+  const sortedImages = [...deal.images].sort((a, b) => a.order_index - b.order_index);
+  const progress = (deal.current_participants / deal.target_participants) * 100;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>목록으로</span>
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleShare}>
+              <Share2 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFavorite}
+              className={deal.is_favorited ? 'text-red-600 border-red-200' : ''}
+            >
+              <Heart className={`w-4 h-4 ${deal.is_favorited ? 'fill-current' : ''}`} />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Images */}
+          <div>
+            {/* Main Image */}
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4">
+              {sortedImages.length > 0 ? (
+                <img
+                  src={sortedImages[selectedImage].image_url}
+                  alt={deal.title}
+                  className="w-full aspect-square object-cover"
+                />
+              ) : (
+                <div className="w-full aspect-square bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                  <Tag className="w-24 h-24 text-slate-300" />
+                </div>
+              )}
+            </div>
+
+            {/* Thumbnail Grid */}
+            {sortedImages.length > 1 && (
+              <div className="grid grid-cols-5 gap-2">
+                {sortedImages.map((image, index) => (
+                  <button
+                    key={image.id}
+                    onClick={() => setSelectedImage(index)}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+                      selectedImage === index
+                        ? 'border-blue-600'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <img
+                      src={image.image_url}
+                      alt={`${deal.title} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column - Info */}
+          <div className="space-y-6">
+            {/* Title & Status */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className="bg-white/90 text-slate-700 border-0">
+                  {deal.type_display}
+                </Badge>
+                {getStatusBadge()}
+              </div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-3">{deal.title}</h1>
+
+              {/* Location (offline only) */}
+              {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
+                <div className="flex items-center gap-2 text-slate-600 mb-3">
+                  <MapPin className="w-5 h-5" />
+                  <span>{deal.regions.map(r => r.full_name).join(', ')}</span>
+                </div>
+              )}
+
+              {/* Seller Info */}
+              <div className="flex items-center gap-2 text-slate-600">
+                <span>{deal.seller_name}</span>
+                {deal.is_business_verified && (
+                  <Badge variant="outline" className="text-xs">사업자 인증</Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Price */}
+            <Card className="border-slate-200">
+              <CardContent className="p-6">
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="text-xl text-slate-500 line-through">
+                    {deal.original_price.toLocaleString()}원
+                  </span>
+                  <span className="text-3xl font-bold text-red-600">
+                    {deal.discount_rate}%
+                  </span>
+                </div>
+                <div className="text-4xl font-bold text-slate-900">
+                  {deal.final_price.toLocaleString()}원
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Progress */}
+            <Card className="border-slate-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Users className="w-5 h-5" />
+                    <span className="font-semibold">
+                      {deal.current_participants}명 / {deal.target_participants}명
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Clock className="w-5 h-5" />
+                    <CountdownTimer
+                      endTime={deal.expired_at}
+                      onExpire={() => setIsExpired(true)}
+                      format="compact"
+                      showLabel={false}
+                      className="font-medium"
+                    />
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-3">
+                  <div
+                    className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min(progress, 100)}%` }}
+                  />
+                </div>
+                <p className="text-sm text-slate-500 mt-2">
+                  {Math.round(progress)}% 달성
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Participate Button */}
+            {deal.status === 'recruiting' &&
+             !deal.is_participated &&
+             !isExpired &&
+             deal.current_participants < deal.target_participants && (
+              <Button
+                size="lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold"
+                onClick={handleParticipate}
+              >
+                참여하기
+              </Button>
+            )}
+
+            {deal.is_participated && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-green-900">참여 완료</p>
+                  <p className="text-sm text-green-700">특가 정보를 기다려주세요</p>
+                </div>
+              </div>
+            )}
+
+            {deal.status === 'completed' && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-red-900">마감된 특가</p>
+                  <p className="text-sm text-red-700">다른 특가를 확인해보세요</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Description & Details */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Description */}
+            <Card className="border-slate-200">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-bold text-slate-900 mb-4">상품 설명</h2>
+                <div className="prose prose-slate max-w-none">
+                  <p className="whitespace-pre-wrap text-slate-700">{deal.description}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Usage Guide */}
+            {deal.usage_guide && (
+              <Card className="border-slate-200">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-bold text-slate-900 mb-4">이용 안내</h2>
+                  <div className="prose prose-slate max-w-none">
+                    <p className="whitespace-pre-wrap text-slate-700">{deal.usage_guide}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Offline Details */}
+            {deal.type === 'offline' && (
+              <Card className="border-slate-200">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-bold text-slate-900 mb-4">매장 정보</h2>
+                  <div className="space-y-3">
+                    {deal.location && (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-slate-900">{deal.location}</p>
+                          {deal.location_detail && (
+                            <p className="text-sm text-slate-600">{deal.location_detail}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {deal.phone_number && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-400">📞</span>
+                        <a
+                          href={`tel:${deal.phone_number}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {deal.phone_number}
+                        </a>
+                      </div>
+                    )}
+                    {deal.discount_valid_days && (
+                      <div className="flex items-center gap-3">
+                        <Calendar className="w-5 h-5 text-slate-400" />
+                        <span className="text-slate-700">
+                          할인 유효기간: {deal.discount_valid_days}일
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Online Details */}
+            {deal.type === 'online' && (
+              <Card className="border-slate-200">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-bold text-slate-900 mb-4">할인 정보</h2>
+                  <div className="space-y-3">
+                    {deal.online_discount_type_display && (
+                      <div className="flex items-center gap-3">
+                        <Tag className="w-5 h-5 text-slate-400" />
+                        <span className="text-slate-700">{deal.online_discount_type_display}</span>
+                      </div>
+                    )}
+                    {deal.discount_url && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => window.open(deal.discount_url!, '_blank')}
+                      >
+                        할인 링크로 이동
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Categories */}
+            <Card className="border-slate-200">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-slate-900 mb-3">카테고리</h3>
+                <div className="flex flex-wrap gap-2">
+                  {deal.categories.map((category) => (
+                    <Badge key={category} variant="secondary">
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats */}
+            <Card className="border-slate-200">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-slate-900 mb-3">통계</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">조회수</span>
+                    <span className="font-medium text-slate-900">{deal.view_count}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">찜</span>
+                    <span className="font-medium text-slate-900">{deal.favorite_count}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">등록일</span>
+                    <span className="font-medium text-slate-900">
+                      {new Date(deal.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Check Modal */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+        onUpdateProfile={() => {
+          setShowProfileModal(false);
+          router.push('/mypage');
+        }}
+      />
+    </div>
+  );
+}

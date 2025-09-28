@@ -1,0 +1,355 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Search, Plus, Heart, Users, Clock, MapPin, Tag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface CustomDeal {
+  id: number;
+  title: string;
+  type: 'online' | 'offline';
+  type_display: string;
+  categories: string[];
+  regions?: Array<{
+    code: string;
+    name: string;
+    full_name: string;
+  }>;
+  original_price: number;
+  discount_rate: number;
+  final_price: number;
+  target_participants: number;
+  current_participants: number;
+  is_completed: boolean;
+  status: string;
+  status_display: string;
+  expired_at: string;
+  seller_name: string;
+  seller_type: string;
+  primary_image: string | null;
+  view_count: number;
+  favorite_count: number;
+  is_favorited: boolean;
+  created_at: string;
+}
+
+interface CategoryOption {
+  value: string;
+  label: string;
+}
+
+export default function CustomDealsPage() {
+  const router = useRouter();
+  const [deals, setDeals] = useState<CustomDeal[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 필터 상태
+  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchCategories();
+    fetchDeals();
+  }, [selectedType, selectedCategory]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom/categories/`);
+      const data = await response.json();
+      setCategories(data.categories);
+    } catch (error) {
+      console.error('카테고리 로드 실패:', error);
+    }
+  };
+
+  const fetchDeals = async () => {
+    try {
+      setLoading(true);
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`;
+      const params = new URLSearchParams();
+
+      if (selectedType !== 'all') {
+        params.append('type', selectedType);
+      }
+
+      if (selectedCategory !== 'all') {
+        params.append('category', selectedCategory);
+      }
+
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
+      setDeals(Array.isArray(data) ? data : data.results || []);
+    } catch (error) {
+      console.error('목록 로드 실패:', error);
+      setDeals([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchDeals();
+  };
+
+  const getRemainingTime = (expiredAt: string) => {
+    const now = new Date();
+    const expire = new Date(expiredAt);
+    const diff = expire.getTime() - now.getTime();
+
+    if (diff <= 0) return '마감';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days}일 남음`;
+    return `${hours}시간 남음`;
+  };
+
+  const getStatusBadge = (deal: CustomDeal) => {
+    if (deal.status === 'completed') {
+      return <Badge className="bg-red-50 text-red-600 border-red-200 whitespace-nowrap">선착순 마감</Badge>;
+    }
+    if (deal.status === 'recruiting') {
+      const progress = (deal.current_participants / deal.target_participants) * 100;
+      if (progress >= 80) {
+        return <Badge className="bg-orange-50 text-orange-600 border-orange-200 whitespace-nowrap">마감 임박</Badge>;
+      }
+      return <Badge className="bg-blue-50 text-blue-600 border-blue-200 whitespace-nowrap">모집중</Badge>;
+    }
+    return <Badge variant="secondary" className="whitespace-nowrap">{deal.status_display}</Badge>;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">커스텀 특가</h1>
+              <p className="text-slate-600">원하는 만큼 모여서, 함께 할인받아요</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => router.push('/custom-deals/my')}
+                className="shadow-md"
+              >
+                내 특가 관리
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => router.push('/custom-deals/create')}
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                특가 등록
+              </Button>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="찾고 계신 특가를 검색해보세요"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <Button type="submit" size="lg" variant="outline">
+              검색
+            </Button>
+          </form>
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3">
+            {/* Type Filter */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedType('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedType === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => setSelectedType('online')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedType === 'online'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                온라인
+              </button>
+              <button
+                onClick={() => setSelectedType('offline')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedType === 'offline'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                오프라인
+              </button>
+            </div>
+
+            {/* Category Filter */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">모든 카테고리</option>
+              {categories.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Deals Grid */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-slate-600">로딩 중...</p>
+          </div>
+        ) : deals.length === 0 ? (
+          <div className="text-center py-20">
+            <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <p className="text-lg text-slate-600 mb-2">진행 중인 특가가 없습니다</p>
+            <p className="text-sm text-slate-500">첫 번째 특가를 등록해보세요!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {deals.map((deal) => (
+              <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
+                <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden">
+                  {/* Image */}
+                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200">
+                    {deal.primary_image ? (
+                      <img
+                        src={deal.primary_image}
+                        alt={deal.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Tag className="w-16 h-16 text-slate-300" />
+                      </div>
+                    )}
+                    {/* Status Badge */}
+                    <div className="absolute top-3 right-3">
+                      {getStatusBadge(deal)}
+                    </div>
+                    {/* Type Badge */}
+                    <div className="absolute top-3 left-3">
+                      <Badge className="bg-white/90 text-slate-700 border-0 whitespace-nowrap">
+                        {deal.type_display}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <CardContent className="p-5">
+                    {/* Title */}
+                    <h3 className="font-bold text-lg text-slate-900 mb-2 line-clamp-2">
+                      {deal.title}
+                    </h3>
+
+                    {/* Location (offline only) */}
+                    {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
+                      <div className="flex items-center gap-1 text-sm text-slate-600 mb-3">
+                        <MapPin className="w-4 h-4" />
+                        <span className="line-clamp-1">
+                          {deal.regions.map(r => r.name).join(', ')}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Price */}
+                    <div className="mb-4">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm text-slate-500 line-through">
+                          {deal.original_price.toLocaleString()}원
+                        </span>
+                        <span className="text-lg font-bold text-red-600">
+                          {deal.discount_rate}%
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900">
+                        {deal.final_price.toLocaleString()}원
+                      </div>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-slate-600 flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          {deal.current_participants}/{deal.target_participants}명
+                        </span>
+                        <span className="text-slate-500 flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {getRemainingTime(deal.expired_at)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min(
+                              (deal.current_participants / deal.target_participants) * 100,
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                      <span className="text-sm text-slate-600">{deal.seller_name}</span>
+                      <div className="flex items-center gap-3 text-sm text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Heart className="w-4 h-4" />
+                          {deal.favorite_count}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
