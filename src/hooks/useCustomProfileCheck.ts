@@ -27,8 +27,19 @@ function checkMissingFieldsForCustom(profileData: any, requiresBusiness: boolean
     missing.push('활동지역');
   }
 
-  if (requiresBusiness && !profileData.is_business_verified) {
-    missing.push('사업자 인증');
+  // 사업자 인증 체크 (오프라인 공구일 때만)
+  if (requiresBusiness) {
+    console.log('[CustomProfileCheck] 사업자 인증 체크:', {
+      is_business_verified: profileData.is_business_verified,
+      business_number: profileData.business_number,
+      user_type: profileData.user_type,
+      role: profileData.role
+    });
+
+    // is_business_verified가 true이거나, business_number가 있으면 인증된 것으로 간주
+    if (!profileData.is_business_verified && !profileData.business_number) {
+      missing.push('사업자 인증');
+    }
   }
 
   return missing;

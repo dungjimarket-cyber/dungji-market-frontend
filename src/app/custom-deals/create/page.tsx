@@ -879,10 +879,18 @@ export default function CreateCustomDealPage() {
                     <Input
                       type="number"
                       value={formData.discount_rate}
-                      onChange={(e) => handleInputChange('discount_rate', e.target.value)}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        if (value <= 99) {
+                          handleInputChange('discount_rate', e.target.value);
+                        }
+                      }}
                       placeholder="0"
                       min="0"
                       max="99"
+                      onKeyDown={(e) => {
+                        if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
+                      }}
                       className={errors.discount_rate ? 'border-red-300' : ''}
                     />
                     {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
@@ -905,10 +913,18 @@ export default function CreateCustomDealPage() {
                 <Input
                   type="number"
                   value={formData.discount_rate}
-                  onChange={(e) => handleInputChange('discount_rate', e.target.value)}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (value <= 99) {
+                      handleInputChange('discount_rate', e.target.value);
+                    }
+                  }}
                   placeholder="0"
                   min="0"
                   max="99"
+                  onKeyDown={(e) => {
+                    if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
+                  }}
                   className={errors.discount_rate ? 'border-red-300' : ''}
                 />
                 {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
