@@ -80,6 +80,8 @@ export default function CreateCustomDealPage() {
     description: '',
     usage_guide: '',
     type: 'online' as 'online' | 'offline',
+    pricing_type: 'single_product' as 'single_product' | 'all_products',
+    product_name: '',
     original_price: '',
     discount_rate: '',
     target_participants: '2',
@@ -96,8 +98,9 @@ export default function CreateCustomDealPage() {
     offline_discount_valid_days: '7',
   });
 
-  // 최종 가격 계산
+  // 최종 가격 계산 (단일상품만)
   const calculateFinalPrice = () => {
+    if (formData.pricing_type !== 'single_product') return null;
     const original = parseInt(formData.original_price.replace(/,/g, '')) || 0;
     const discount = parseInt(formData.discount_rate) || 0;
     return Math.floor(original * (100 - discount) / 100);
@@ -393,7 +396,10 @@ export default function CreateCustomDealPage() {
     if (actualImages.length === 0) newErrors.images = '최소 1장 이상의 이미지를 등록해주세요';
 
     // 가격
-    if (!formData.original_price) newErrors.original_price = '정가를 입력해주세요';
+    if (formData.pricing_type === 'single_product') {
+      if (!formData.product_name.trim()) newErrors.product_name = '상품명을 입력해주세요';
+      if (!formData.original_price) newErrors.original_price = '정가를 입력해주세요';
+    }
     if (!formData.discount_rate) newErrors.discount_rate = '할인율을 입력해주세요';
     const discountRate = parseInt(formData.discount_rate);
     if (discountRate < 0 || discountRate > 100) newErrors.discount_rate = '할인율은 0~100% 사이여야 합니다';
@@ -473,7 +479,7 @@ export default function CreateCustomDealPage() {
           );
 
           const formData = new FormData();
-          formData.append('file', compressedFile);
+          formData.append('images', compressedFile);
 
           const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom/images/upload/`, {
             method: 'POST',
@@ -486,7 +492,9 @@ export default function CreateCustomDealPage() {
           if (!uploadResponse.ok) throw new Error('이미지 업로드 실패');
 
           const uploadData = await uploadResponse.json();
-          imageUrls.push(uploadData.url);
+          if (uploadData.urls && uploadData.urls.length > 0) {
+            imageUrls.push(uploadData.urls[0]);
+          }
         } catch (error) {
           console.error('이미지 처리 실패:', error);
           throw new Error('이미지 처리 중 오류가 발생했습니다');
@@ -502,13 +510,18 @@ export default function CreateCustomDealPage() {
         usage_guide: formData.usage_guide || undefined,
         type: formData.type,
         categories: selectedCategories,
-        original_price: parseInt(formData.original_price.replace(/,/g, '')),
+        pricing_type: formData.pricing_type,
         discount_rate: parseInt(formData.discount_rate),
         target_participants: parseInt(formData.target_participants),
         max_wait_hours: parseInt(formData.max_wait_hours),
         allow_partial_sale: formData.allow_partial_sale,
         images: imageUrls,
       };
+
+      if (formData.pricing_type === 'single_product') {
+        requestBody.product_name = formData.product_name;
+        requestBody.original_price = parseInt(formData.original_price.replace(/,/g, ''));
+      }
 
       if (formData.type === 'online') {
         requestBody.online_discount_type = formData.online_discount_type;
@@ -803,17 +816,80 @@ export default function CreateCustomDealPage() {
             <CardTitle>가격 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>정가 *</Label>
-                <Input
-                  value={formData.original_price}
-                  onChange={(e) => handleInputChange('original_price', formatPrice(e.target.value))}
-                  placeholder="0"
-                  className={errors.original_price ? 'border-red-300' : ''}
-                />
-                {errors.original_price && <p className="text-sm text-red-600 mt-1">{errors.original_price}</p>}
-              </div>
+            {/* 가격 유형 선택 */}
+            <div>
+              <Label>가격 유형 *</Label>
+              <RadioGroup
+                value={formData.pricing_type}
+                onValueChange={(value) => handleInputChange('pricing_type', value)}
+                className="flex gap-4 mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="single_product" id="single" />
+                  <Label htmlFor="single" className="cursor-pointer">단일상품</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all_products" id="all" />
+                  <Label htmlFor="all" className="cursor-pointer">전품목 할인</Label>
+                </div>
+              </RadioGroup>
+              <p className="text-xs text-slate-500 mt-1">
+                {formData.pricing_type === 'single_product'
+                  ? '특정 상품 1개에 대한 할인입니다'
+                  : '업체의 모든 상품에 적용되는 할인입니다'}
+              </p>
+            </div>
+
+            {/* 단일상품: 상품명, 정가, 할인율 */}
+            {formData.pricing_type === 'single_product' && (
+              <>
+                <div>
+                  <Label>상품명 *</Label>
+                  <Input
+                    value={formData.product_name}
+                    onChange={(e) => handleInputChange('product_name', e.target.value)}
+                    placeholder="예: 아이폰 15 Pro 256GB"
+                    className={errors.product_name ? 'border-red-300' : ''}
+                  />
+                  {errors.product_name && <p className="text-sm text-red-600 mt-1">{errors.product_name}</p>}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>정가 *</Label>
+                    <Input
+                      value={formData.original_price}
+                      onChange={(e) => handleInputChange('original_price', formatPrice(e.target.value))}
+                      placeholder="0"
+                      className={errors.original_price ? 'border-red-300' : ''}
+                    />
+                    {errors.original_price && <p className="text-sm text-red-600 mt-1">{errors.original_price}</p>}
+                  </div>
+                  <div>
+                    <Label>할인율 (%) *</Label>
+                    <Input
+                      type="number"
+                      value={formData.discount_rate}
+                      onChange={(e) => handleInputChange('discount_rate', e.target.value)}
+                      placeholder="0"
+                      min="0"
+                      max="100"
+                      className={errors.discount_rate ? 'border-red-300' : ''}
+                    />
+                    {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
+                  </div>
+                </div>
+
+                {finalPrice && finalPrice > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-slate-600 mb-1">최종 가격</p>
+                    <p className="text-2xl font-bold text-blue-600">{finalPrice.toLocaleString()}원</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 전품목 할인: 할인율만 */}
+            {formData.pricing_type === 'all_products' && (
               <div>
                 <Label>할인율 (%) *</Label>
                 <Input
@@ -826,13 +902,9 @@ export default function CreateCustomDealPage() {
                   className={errors.discount_rate ? 'border-red-300' : ''}
                 />
                 {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
-              </div>
-            </div>
-
-            {finalPrice > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-slate-600 mb-1">최종 가격</p>
-                <p className="text-2xl font-bold text-blue-600">{finalPrice.toLocaleString()}원</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  해당 업체의 모든 상품에 {formData.discount_rate}% 할인이 적용됩니다
+                </p>
               </div>
             )}
           </CardContent>
