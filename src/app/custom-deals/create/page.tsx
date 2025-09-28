@@ -657,13 +657,22 @@ export default function CreateCustomDealPage() {
         body: submitFormData
       });
 
+      console.log('API 응답 상태:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('서버 에러 응답:', errorData);
-        throw new Error(errorData.error || JSON.stringify(errorData) || '등록에 실패했습니다');
+        const errorText = await response.text();
+        console.error('서버 에러 응답 (raw):', errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          console.error('서버 에러 응답 (parsed):', errorData);
+          throw new Error(errorData.error || JSON.stringify(errorData) || '등록에 실패했습니다');
+        } catch (e) {
+          throw new Error(`등록 실패 (${response.status}): ${errorText.substring(0, 200)}`);
+        }
       }
 
       const data = await response.json();
+      console.log('등록 성공 응답:', data);
       toast.success('커스텀 공구가 등록되었습니다!');
       router.push(`/custom-deals/${data.id}`);
 
