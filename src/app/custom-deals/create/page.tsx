@@ -390,7 +390,7 @@ export default function CreateCustomDealPage() {
 
     // 기본 필드
     if (!formData.title.trim()) newErrors.title = '제목을 입력해주세요';
-    if (formData.title.length > 200) newErrors.title = '제목은 최대 200자까지 입력 가능합니다';
+    if (formData.title.length > 50) newErrors.title = '제목은 최대 50자까지 입력 가능합니다';
     if (!formData.description.trim()) newErrors.description = '설명을 입력해주세요';
     if (formData.description.length > 5000) newErrors.description = '설명은 최대 5,000자까지 입력 가능합니다';
     if (formData.usage_guide && formData.usage_guide.length > 1000) newErrors.usage_guide = '이용안내는 최대 1,000자까지 입력 가능합니다';
@@ -485,106 +485,68 @@ export default function CreateCustomDealPage() {
     try {
       setLoading(true);
 
-      // 1. 이미지 업로드 (압축 적용)
+      // FormData로 전송 (중고거래 방식)
       const actualImages = images.filter(img => img && !img.isEmpty);
-      const imageUrls: string[] = [];
+      const submitFormData = new FormData();
 
+      // 이미지 파일 추가 (원본 파일, 백엔드에서 압축 처리)
       for (const img of actualImages) {
-        if (!img.file) continue;
-
-        try {
-          // 이미지 압축 (85% 품질, 최대 1200x1200, WebP 변환)
-          const compressedBlob = await compressImageInBrowser(img.file, {
-            maxWidth: 1200,
-            maxHeight: 1200,
-            quality: 0.85,
-            format: 'webp'
-          });
-
-          const compressedFile = new File(
-            [compressedBlob],
-            img.file.name.replace(/\.[^/.]+$/, '.webp'),
-            { type: 'image/webp' }
-          );
-
-          const formData = new FormData();
-          formData.append('images', compressedFile);
-
-          const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom/images/upload/`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
-            body: formData
-          });
-
-          if (!uploadResponse.ok) throw new Error('이미지 업로드 실패');
-
-          const uploadData = await uploadResponse.json();
-          if (uploadData.urls && uploadData.urls.length > 0) {
-            imageUrls.push(uploadData.urls[0]);
-          }
-        } catch (error) {
-          console.error('이미지 처리 실패:', error);
-          throw new Error('이미지 처리 중 오류가 발생했습니다');
+        if (img.file) {
+          submitFormData.append('images', img.file);
         }
       }
 
-      // 2. 커스텀 공구 생성
+      // 기본 정보
+      submitFormData.append('title', formData.title);
+      submitFormData.append('description', formData.description);
+      if (formData.usage_guide) submitFormData.append('usage_guide', formData.usage_guide);
+      submitFormData.append('type', formData.type);
+      submitFormData.append('categories', JSON.stringify([selectedCategory]));
+      submitFormData.append('pricing_type', formData.pricing_type);
+      submitFormData.append('target_participants', formData.target_participants);
+      submitFormData.append('expired_at', calculateDeadline());
+      submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
+
+      // 가격 정보
       const validCodes = discountCodes.filter(c => c.trim());
 
-      const requestBody: any = {
-        title: formData.title,
-        description: formData.description,
-        usage_guide: formData.usage_guide || undefined,
-        type: formData.type,
-        categories: [selectedCategory],
-        pricing_type: formData.pricing_type,
-        target_participants: parseInt(formData.target_participants),
-        expired_at: calculateDeadline(),
-        allow_partial_sale: formData.allow_partial_sale,
-        images: imageUrls,
-      };
-
       if (formData.pricing_type === 'single_product') {
-        // products 배열로 전송 (현재는 1개만)
-        requestBody.products = [{
+        submitFormData.append('products', JSON.stringify([{
           name: formData.product_name,
           original_price: parseInt(formData.original_price.replace(/,/g, '')),
           discount_rate: parseInt(formData.discount_rate)
-        }];
+        }]));
       } else {
-        // 전품목 할인은 discount_rate만
-        requestBody.discount_rate = parseInt(formData.discount_rate);
+        submitFormData.append('discount_rate', formData.discount_rate);
       }
 
+      // 온라인/오프라인 특화 정보
       if (formData.type === 'online') {
-        requestBody.online_discount_type = formData.online_discount_type;
+        submitFormData.append('online_discount_type', formData.online_discount_type);
         if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
-          requestBody.discount_url = formData.discount_url;
+          submitFormData.append('discount_url', formData.discount_url);
         }
         if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
-          requestBody.discount_codes = validCodes;
+          submitFormData.append('discount_codes', JSON.stringify(validCodes));
         }
         if (formData.discount_valid_days) {
-          requestBody.discount_valid_days = parseInt(formData.discount_valid_days);
+          submitFormData.append('discount_valid_days', formData.discount_valid_days);
         }
       } else {
-        requestBody.region_codes = selectedRegions.map(r => r.city);
-        requestBody.location = formData.location;
-        requestBody.location_detail = formData.location_detail || undefined;
-        requestBody.phone_number = formData.phone_number;
-        requestBody.discount_valid_days = parseInt(formData.offline_discount_valid_days);
-        requestBody.discount_codes = validCodes;
+        submitFormData.append('region_codes', JSON.stringify(selectedRegions.map(r => r.city)));
+        submitFormData.append('location', formData.location);
+        if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
+        submitFormData.append('phone_number', formData.phone_number);
+        submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
+        submitFormData.append('discount_codes', JSON.stringify(validCodes));
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
-        body: JSON.stringify(requestBody)
+        body: submitFormData
       });
 
       if (!response.ok) {
@@ -768,11 +730,11 @@ export default function CreateCustomDealPage() {
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="공구 제목을 입력하세요"
                 className={errors.title ? 'border-red-300' : ''}
-                maxLength={200}
+                maxLength={50}
               />
               <div className="flex justify-between mt-1">
                 {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
-                <p className="text-sm text-slate-500 ml-auto">{formData.title.length}/200</p>
+                <p className="text-sm text-slate-500 ml-auto">{formData.title.length}/50</p>
               </div>
             </div>
 
@@ -784,8 +746,9 @@ export default function CreateCustomDealPage() {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
                 className={errors.description ? 'border-red-300' : ''}
-                rows={6}
+                rows={15}
                 maxLength={5000}
+                className={`min-h-[400px] ${errors.description ? 'border-red-300' : ''}`}
               />
               <div className="flex justify-between mt-1">
                 {errors.description && <p className="text-sm text-red-600">{errors.description}</p>}
