@@ -428,8 +428,8 @@ export default function CreateCustomDealPage() {
       newErrors.description = '설명을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = descriptionRef;
     }
-    if (formData.description.length > 5000) {
-      newErrors.description = '설명은 최대 5,000자까지 입력 가능합니다';
+    if (formData.description.length > 3000) {
+      newErrors.description = '설명은 최대 3,000자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = descriptionRef;
     }
     if (formData.usage_guide && formData.usage_guide.length > 1000) newErrors.usage_guide = '이용안내는 최대 1,000자까지 입력 가능합니다';
@@ -850,7 +850,7 @@ export default function CreateCustomDealPage() {
                 content={formData.description}
                 onChange={(content) => handleInputChange('description', content)}
                 placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
-                maxLength={5000}
+                maxLength={3000}
               />
               {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
             </div>
@@ -1366,8 +1366,14 @@ export default function CreateCustomDealPage() {
                     연락처 *
                   </Label>
                   <Input
+                    ref={phoneNumberRef}
                     value={formData.phone_number}
-                    onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9\-]/g, '');
+                      if (value.length <= 20) {
+                        handleInputChange('phone_number', value);
+                      }
+                    }}
                     placeholder="010-1234-5678"
                     className={errors.phone_number ? 'border-red-300' : ''}
                     maxLength={20}
