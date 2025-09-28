@@ -25,6 +25,8 @@ import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
+import RichTextEditor from '@/components/custom/RichTextEditor';
+import LinkPreview from '@/components/custom/LinkPreview';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -741,18 +743,13 @@ export default function CreateCustomDealPage() {
             {/* 설명 */}
             <div>
               <Label>상세 설명 *</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+              <RichTextEditor
+                content={formData.description}
+                onChange={(content) => handleInputChange('description', content)}
                 placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
-                rows={15}
                 maxLength={5000}
-                className={`min-h-[400px] ${errors.description ? 'border-red-300' : ''}`}
               />
-              <div className="flex justify-between mt-1">
-                {errors.description && <p className="text-sm text-red-600">{errors.description}</p>}
-                <p className="text-sm text-slate-500 ml-auto">{formData.description.length}/5,000</p>
-              </div>
+              {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
             </div>
 
             {/* 이용 안내 */}
@@ -1077,15 +1074,22 @@ export default function CreateCustomDealPage() {
               </RadioGroup>
 
               {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
-                <div>
-                  <Label>할인 링크 *</Label>
-                  <Input
-                    value={formData.discount_url}
-                    onChange={(e) => handleInputChange('discount_url', e.target.value)}
-                    placeholder="https://example.com/discount"
-                    className={errors.discount_url ? 'border-red-300' : ''}
-                  />
-                  {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
+                <div className="space-y-3">
+                  <div>
+                    <Label>할인 링크 *</Label>
+                    <Input
+                      value={formData.discount_url}
+                      onChange={(e) => handleInputChange('discount_url', e.target.value)}
+                      placeholder="https://example.com/discount"
+                      className={errors.discount_url ? 'border-red-300' : ''}
+                    />
+                    {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
+                  </div>
+
+                  {/* 링크 미리보기 */}
+                  {formData.discount_url && formData.discount_url.startsWith('http') && (
+                    <LinkPreview url={formData.discount_url} />
+                  )}
                 </div>
               )}
 

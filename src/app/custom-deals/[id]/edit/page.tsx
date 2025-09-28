@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
+import RichTextEditor from '@/components/custom/RichTextEditor';
+import LinkPreview from '@/components/custom/LinkPreview';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -620,15 +622,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
             <div>
               <Label>상세 설명 *</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+              <RichTextEditor
+                content={formData.description}
+                onChange={(content) => handleInputChange('description', content)}
                 placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
-                rows={15}
                 maxLength={5000}
-                className="min-h-[400px]"
               />
-              <p className="text-sm text-slate-500 mt-1 text-right">{formData.description.length}/5,000</p>
             </div>
 
             <div>
@@ -845,13 +844,20 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   </RadioGroup>
 
                   {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
-                    <div>
-                      <Label>할인 링크 *</Label>
-                      <Input
-                        value={formData.discount_url}
-                        onChange={(e) => handleInputChange('discount_url', e.target.value)}
-                        placeholder="https://example.com/discount"
-                      />
+                    <div className="space-y-3">
+                      <div>
+                        <Label>할인 링크 *</Label>
+                        <Input
+                          value={formData.discount_url}
+                          onChange={(e) => handleInputChange('discount_url', e.target.value)}
+                          placeholder="https://example.com/discount"
+                        />
+                      </div>
+
+                      {/* 링크 미리보기 */}
+                      {formData.discount_url && formData.discount_url.startsWith('http') && (
+                        <LinkPreview url={formData.discount_url} />
+                      )}
                     </div>
                   )}
 
