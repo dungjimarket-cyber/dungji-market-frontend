@@ -996,7 +996,7 @@ export default function CreateCustomDealPage() {
                       onKeyDown={(e) => {
                         if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
                       }}
-                      className={errors.discount_rate ? 'border-red-300' : ''
+                      className={errors.discount_rate ? 'border-red-300' : ''}
                     />
                     {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
                   </div>
@@ -1123,8 +1123,8 @@ export default function CreateCustomDealPage() {
                     </button>
                   </div>
 
-              {/* 자동 선택 */}
-              {formData.deadline_type === 'auto' && (
+                  {/* 자동 선택 */}
+                  {formData.deadline_type === 'auto' && (
                 <>
                   <p className="text-sm text-slate-500 mb-2">등록 시간 기준으로 자동 계산됩니다</p>
                   <div className="grid grid-cols-7 gap-2">
@@ -1146,10 +1146,10 @@ export default function CreateCustomDealPage() {
                     ))}
                   </div>
                 </>
-              )}
+                  )}
 
-              {/* 직접 선택 */}
-              {formData.deadline_type === 'manual' && (
+                  {/* 직접 선택 */}
+                  {formData.deadline_type === 'manual' && (
                 <>
                   <p className="text-sm text-slate-500 mb-2">최소 1시간 이후 ~ 최대 7일 이내로 설정해주세요</p>
                   <div className="grid grid-cols-2 gap-4">
@@ -1177,7 +1177,7 @@ export default function CreateCustomDealPage() {
                     </div>
                   </div>
                 </>
-              )}
+                  )}
                 </>
               )}
             </div>
