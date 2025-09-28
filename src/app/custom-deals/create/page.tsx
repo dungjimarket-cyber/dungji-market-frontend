@@ -945,11 +945,6 @@ export default function CreateCustomDealPage() {
                   <Label htmlFor="all" className="cursor-pointer">전품목 할인</Label>
                 </div>
               </RadioGroup>
-              <p className="text-xs text-slate-500 mt-1">
-                {formData.pricing_type === 'single_product'
-                  ? '특정 상품 1개에 대한 할인입니다'
-                  : '업체의 모든 상품에 적용되는 할인입니다'}
-              </p>
             </div>
 
             {/* 단일상품: 상품명, 정가, 할인율 */}
@@ -1004,7 +999,7 @@ export default function CreateCustomDealPage() {
 
                 {formData.original_price && formData.discount_rate && finalPrice !== null && finalPrice > 0 && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-slate-600 mb-1">최종 가격</p>
+                    <p className="text-sm text-slate-600 mb-1">공구특가</p>
                     <p className="text-2xl font-bold text-blue-600">{finalPrice.toLocaleString()}원</p>
                   </div>
                 )}
@@ -1033,9 +1028,11 @@ export default function CreateCustomDealPage() {
                   className={errors.discount_rate ? 'border-red-300' : ''}
                 />
                 {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
-                <p className="text-xs text-slate-500 mt-1">
-                  해당 업체의 모든 상품에 {formData.discount_rate}% 할인이 적용됩니다
-                </p>
+                {formData.discount_rate && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    해당 업체의 모든 상품에 {formData.discount_rate}% 할인이 적용됩니다
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
