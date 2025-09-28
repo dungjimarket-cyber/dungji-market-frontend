@@ -653,7 +653,8 @@ export default function CreateCustomDealPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '등록에 실패했습니다');
+        console.error('서버 에러 응답:', errorData);
+        throw new Error(errorData.error || JSON.stringify(errorData) || '등록에 실패했습니다');
       }
 
       const data = await response.json();
