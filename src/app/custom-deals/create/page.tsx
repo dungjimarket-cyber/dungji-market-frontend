@@ -85,7 +85,10 @@ export default function CreateCustomDealPage() {
     original_price: '',
     discount_rate: '',
     target_participants: '2',
-    max_wait_hours: '72',
+    deadline_type: 'auto' as 'auto' | 'manual',
+    deadline_days: '3',
+    deadline_date: '',
+    deadline_time: '',
     allow_partial_sale: false,
     // 온라인
     online_discount_type: 'link_only' as 'link_only' | 'code_only' | 'both',
@@ -370,11 +373,24 @@ export default function CreateCustomDealPage() {
     }
   };
 
-  // 가격 포맷팅
+  // 마감시간 계산
+  const calculateDeadline = () => {
+    if (formData.deadline_type === 'auto') {
+      const days = parseInt(formData.deadline_days);
+      const deadline = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      return deadline.toISOString();
+    } else {
+      return `${formData.deadline_date}T${formData.deadline_time}:00`;
+    }
+  };
+
+  // 가격 포맷팅 (최대 1억)
   const formatPrice = (value: string) => {
     const numbers = value.replace(/[^\d]/g, '');
     if (!numbers) return '';
-    return parseInt(numbers).toLocaleString('ko-KR');
+    const numValue = parseInt(numbers);
+    if (numValue > 100000000) return '100,000,000';
+    return numValue.toLocaleString('ko-KR');
   };
 
   // 유효성 검증
@@ -388,6 +404,26 @@ export default function CreateCustomDealPage() {
     if (formData.description.length > 5000) newErrors.description = '설명은 최대 5,000자까지 입력 가능합니다';
     if (formData.usage_guide && formData.usage_guide.length > 1000) newErrors.usage_guide = '이용안내는 최대 1,000자까지 입력 가능합니다';
 
+    // 마감시간 검증
+    if (formData.deadline_type === 'manual') {
+      if (!formData.deadline_date) newErrors.deadline_date = '마감 날짜를 선택해주세요';
+      if (!formData.deadline_time) newErrors.deadline_time = '마감 시간을 선택해주세요';
+
+      if (formData.deadline_date && formData.deadline_time) {
+        const deadline = new Date(`${formData.deadline_date}T${formData.deadline_time}`);
+        const now = new Date();
+        const minDeadline = new Date(now.getTime() + 60 * 60 * 1000); // 1시간 후
+        const maxDeadline = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7일 후
+
+        if (deadline < minDeadline) {
+          newErrors.deadline_time = '마감시간은 최소 1시간 이후로 설정해주세요';
+        }
+        if (deadline > maxDeadline) {
+          newErrors.deadline_date = '마감시간은 최대 7일 이내로 설정해주세요';
+        }
+      }
+    }
+
     // 카테고리
     if (selectedCategories.length === 0) newErrors.categories = '최소 1개 이상의 카테고리를 선택해주세요';
 
@@ -399,10 +435,12 @@ export default function CreateCustomDealPage() {
     if (formData.pricing_type === 'single_product') {
       if (!formData.product_name.trim()) newErrors.product_name = '상품명을 입력해주세요';
       if (!formData.original_price) newErrors.original_price = '정가를 입력해주세요';
+      const originalPrice = parseInt(formData.original_price.replace(/,/g, ''));
+      if (originalPrice > 100000000) newErrors.original_price = '정가는 최대 1억원까지 입력 가능합니다';
     }
     if (!formData.discount_rate) newErrors.discount_rate = '할인율을 입력해주세요';
     const discountRate = parseInt(formData.discount_rate);
-    if (discountRate < 0 || discountRate > 100) newErrors.discount_rate = '할인율은 0~100% 사이여야 합니다';
+    if (discountRate < 0 || discountRate > 99) newErrors.discount_rate = '할인율은 0~99% 사이여야 합니다';
 
     // 온라인 공구
     if (formData.type === 'online') {
@@ -512,7 +550,7 @@ export default function CreateCustomDealPage() {
         categories: selectedCategories,
         pricing_type: formData.pricing_type,
         target_participants: parseInt(formData.target_participants),
-        max_wait_hours: parseInt(formData.max_wait_hours),
+        expired_at: calculateDeadline(),
         allow_partial_sale: formData.allow_partial_sale,
         images: imageUrls,
       };
@@ -878,7 +916,7 @@ export default function CreateCustomDealPage() {
                       onChange={(e) => handleInputChange('discount_rate', e.target.value)}
                       placeholder="0"
                       min="0"
-                      max="100"
+                      max="99"
                       className={errors.discount_rate ? 'border-red-300' : ''}
                     />
                     {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
@@ -904,7 +942,7 @@ export default function CreateCustomDealPage() {
                   onChange={(e) => handleInputChange('discount_rate', e.target.value)}
                   placeholder="0"
                   min="0"
-                  max="100"
+                  max="99"
                   className={errors.discount_rate ? 'border-red-300' : ''}
                 />
                 {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
@@ -925,35 +963,107 @@ export default function CreateCustomDealPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>목표 인원 *</Label>
-                <Select value={formData.target_participants} onValueChange={(value) => handleInputChange('target_participants', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 9 }, (_, i) => i + 2).map(num => (
-                      <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
+            <div>
+              <Label>목표 인원 *</Label>
+              <Select value={formData.target_participants} onValueChange={(value) => handleInputChange('target_participants', value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 9 }, (_, i) => i + 2).map(num => (
+                    <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                모집 마감 시간 *
+              </Label>
+
+              {/* 자동/직접 선택 토글 */}
+              <div className="flex gap-2 mb-3 mt-2">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('deadline_type', 'auto')}
+                  className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${
+                    formData.deadline_type === 'auto'
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  자동 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('deadline_type', 'manual')}
+                  className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${
+                    formData.deadline_type === 'manual'
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  직접 선택
+                </button>
+              </div>
+
+              {/* 자동 선택 */}
+              {formData.deadline_type === 'auto' && (
+                <>
+                  <p className="text-sm text-slate-500 mb-2">등록 시간 기준으로 자동 계산됩니다</p>
+                  <div className="grid grid-cols-7 gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => handleInputChange('deadline_days', day.toString())}
+                        className={`
+                          py-3 px-2 rounded-lg border-2 font-medium transition-all text-center
+                          ${formData.deadline_days === day.toString()
+                            ? 'border-blue-600 bg-blue-50 text-blue-700'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          }
+                        `}
+                      >
+                        {day}일
+                      </button>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>모집 기간 *</Label>
-                <Select value={formData.max_wait_hours} onValueChange={(value) => handleInputChange('max_wait_hours', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="24">1일</SelectItem>
-                    <SelectItem value="72">3일</SelectItem>
-                    <SelectItem value="168">7일</SelectItem>
-                    <SelectItem value="336">14일</SelectItem>
-                    <SelectItem value="720">30일</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                </>
+              )}
+
+              {/* 직접 선택 */}
+              {formData.deadline_type === 'manual' && (
+                <>
+                  <p className="text-sm text-slate-500 mb-2">최소 1시간 이후 ~ 최대 7일 이내로 설정해주세요</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-slate-600">날짜</Label>
+                      <Input
+                        type="date"
+                        value={formData.deadline_date}
+                        onChange={(e) => handleInputChange('deadline_date', e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                        className={errors.deadline_date ? 'border-red-300' : ''}
+                      />
+                      {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">시간</Label>
+                      <Input
+                        type="time"
+                        value={formData.deadline_time}
+                        onChange={(e) => handleInputChange('deadline_time', e.target.value)}
+                        className={errors.deadline_time ? 'border-red-300' : ''}
+                      />
+                      {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
