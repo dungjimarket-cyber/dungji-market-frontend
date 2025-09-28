@@ -67,7 +67,7 @@ export default function MyCustomDeals() {
       setDeals(Array.isArray(data) ? data : data.results || []);
     } catch (error) {
       console.error('로드 실패:', error);
-      toast.error('목록을 불러오는데 실패했습니다');
+      toast.error('공구 목록을 불러오는데 실패했습니다');
     } finally {
       setLoading(false);
     }
@@ -198,7 +198,7 @@ export default function MyCustomDeals() {
           onClick={() => router.push('/custom-deals/create')}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          특가 등록
+          공구 등록
         </Button>
       </div>
 
@@ -263,13 +263,13 @@ export default function MyCustomDeals() {
       ) : deals.length === 0 ? (
         <div className="text-center py-20">
           <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <p className="text-lg text-slate-600 mb-2">등록한 특가가 없습니다</p>
+          <p className="text-lg text-slate-600 mb-2">등록한 공구가 없습니다</p>
           <Button
             variant="outline"
             onClick={() => router.push('/custom-deals/create')}
             className="mt-4"
           >
-            첫 특가 등록하기
+            첫 공구 등록하기
           </Button>
         </div>
       ) : (

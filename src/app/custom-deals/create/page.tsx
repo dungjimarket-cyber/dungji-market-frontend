@@ -464,7 +464,7 @@ export default function CreateCustomDealPage() {
         }
       }
 
-      // 2. 커스텀 특가 생성
+      // 2. 커스텀 공구 생성
       const validCodes = discountCodes.filter(c => c.trim());
 
       const requestBody: any = {
@@ -516,7 +516,7 @@ export default function CreateCustomDealPage() {
       }
 
       const data = await response.json();
-      toast.success('커스텀 특가가 등록되었습니다!');
+      toast.success('커스텀 공구가 등록되었습니다!');
       router.push(`/custom-deals/${data.id}`);
 
     } catch (error: any) {
@@ -542,7 +542,7 @@ export default function CreateCustomDealPage() {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-xl font-bold text-slate-900">커스텀 특가 등록</h1>
+            <h1 className="text-xl font-bold text-slate-900">커스텀 공구 등록</h1>
           </div>
         </div>
       </div>
@@ -671,7 +671,7 @@ export default function CreateCustomDealPage() {
               <Input
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="특가 제목을 입력하세요"
+                placeholder="공구 제목을 입력하세요"
                 className={errors.title ? 'border-red-300' : ''}
                 maxLength={200}
               />
@@ -687,7 +687,7 @@ export default function CreateCustomDealPage() {
               <Textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="특가 상품에 대한 자세한 설명을 입력하세요"
+                placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
                 className={errors.description ? 'border-red-300' : ''}
                 rows={6}
                 maxLength={5000}
@@ -717,7 +717,7 @@ export default function CreateCustomDealPage() {
 
             {/* 타입 선택 */}
             <div>
-              <Label>특가 유형 *</Label>
+              <Label>공구 유형 *</Label>
               <RadioGroup
                 value={formData.type}
                 onValueChange={(value) => handleInputChange('type', value as 'online' | 'offline')}

@@ -141,7 +141,7 @@ export default function CustomDealsPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">커스텀 특가</h1>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">커스텀 공구</h1>
               <p className="text-slate-600">원하는 만큼 모여서, 함께 할인받아요</p>
             </div>
             <div className="flex gap-2">
@@ -151,7 +151,7 @@ export default function CustomDealsPage() {
                 onClick={() => router.push('/custom-deals/my')}
                 className="shadow-md"
               >
-                내 특가 관리
+                내 공구 관리
               </Button>
               <Button
                 size="lg"
@@ -159,7 +159,7 @@ export default function CustomDealsPage() {
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
               >
                 <Plus className="w-5 h-5 mr-2" />
-                특가 등록
+                공구 등록
               </Button>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function CustomDealsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                placeholder="찾고 계신 특가를 검색해보세요"
+                placeholder="찾고 계신 공구를 검색해보세요"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -244,8 +244,8 @@ export default function CustomDealsPage() {
         ) : deals.length === 0 ? (
           <div className="text-center py-20">
             <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-lg text-slate-600 mb-2">진행 중인 특가가 없습니다</p>
-            <p className="text-sm text-slate-500">첫 번째 특가를 등록해보세요!</p>
+            <p className="text-lg text-slate-600 mb-2">진행 중인 공구가 없습니다</p>
+            <p className="text-sm text-slate-500">첫 번째 공구를 등록해보세요!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

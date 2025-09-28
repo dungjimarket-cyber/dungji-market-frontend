@@ -71,7 +71,7 @@ export default function MyCustomParticipations() {
       setParticipations(Array.isArray(data) ? data : data.results || []);
     } catch (error) {
       console.error('로드 실패:', error);
-      toast.error('목록을 불러오는데 실패했습니다');
+      toast.error('참여 목록을 불러오는데 실패했습니다');
     } finally {
       setLoading(false);
     }
@@ -173,7 +173,7 @@ export default function MyCustomParticipations() {
           variant="outline"
           onClick={() => router.push('/custom-deals')}
         >
-          특가 둘러보기
+          공구 둘러보기
         </Button>
       </div>
 
@@ -214,13 +214,13 @@ export default function MyCustomParticipations() {
       ) : participations.length === 0 ? (
         <div className="text-center py-20">
           <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <p className="text-lg text-slate-600 mb-2">참여한 특가가 없습니다</p>
+          <p className="text-lg text-slate-600 mb-2">참여한 공구가 없습니다</p>
           <Button
             variant="outline"
             onClick={() => router.push('/custom-deals')}
             className="mt-4"
           >
-            특가 둘러보기
+            공구 둘러보기
           </Button>
         </div>
       ) : (

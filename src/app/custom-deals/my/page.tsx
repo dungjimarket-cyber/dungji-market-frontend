@@ -25,13 +25,13 @@ export default function MyCustomDealsPage() {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-2xl font-bold text-slate-900">커스텀 특가 관리</h1>
+            <h1 className="text-2xl font-bold text-slate-900">내 커스텀 공구</h1>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="registered">내가 등록한 특가</TabsTrigger>
-              <TabsTrigger value="participated">참여한 특가</TabsTrigger>
+              <TabsTrigger value="registered">내가 만든 공구</TabsTrigger>
+              <TabsTrigger value="participated">참여한 공구</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

@@ -88,7 +88,7 @@ export default function CustomDealDetailPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/`);
 
       if (response.status === 404) {
-        toast.error('존재하지 않는 특가입니다');
+        toast.error('존재하지 않는 공구입니다');
         router.push('/custom-deals');
         return;
       }
@@ -101,7 +101,7 @@ export default function CustomDealDetailPage() {
       setDeal(data);
     } catch (error) {
       console.error('로드 실패:', error);
-      toast.error('특가 정보를 불러오는데 실패했습니다');
+      toast.error('공구 정보를 불러오는데 실패했습니다');
       router.push('/custom-deals');
     } finally {
       setLoading(false);
@@ -157,12 +157,12 @@ export default function CustomDealDetailPage() {
     if (!deal) return;
 
     if (deal.is_participated) {
-      toast.info('이미 참여하신 특가입니다');
+      toast.info('이미 참여하신 공구입니다');
       return;
     }
 
     if (deal.status !== 'recruiting') {
-      toast.error('현재 참여할 수 없는 특가입니다');
+      toast.error('현재 참여할 수 없는 공구입니다');
       return;
     }
 
@@ -453,7 +453,7 @@ export default function CustomDealDetailPage() {
                 <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-green-900">참여 완료</p>
-                  <p className="text-sm text-green-700">특가 정보를 기다려주세요</p>
+                  <p className="text-sm text-green-700">공구 정보를 기다려주세요</p>
                 </div>
               </div>
             )}
@@ -463,7 +463,7 @@ export default function CustomDealDetailPage() {
                 <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-red-900">마감된 특가</p>
-                  <p className="text-sm text-red-700">다른 특가를 확인해보세요</p>
+                  <p className="text-sm text-red-700">다른 공구를 확인해보세요</p>
                 </div>
               </div>
             )}
