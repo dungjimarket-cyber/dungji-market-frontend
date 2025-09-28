@@ -9,19 +9,12 @@
     },
     "src/app/api/cron/send-reminders/route.ts": {
       "maxDuration": 60
-    },
-    "src/app/api/cron/check-custom-groupbuys/route.ts": {
-      "maxDuration": 60
     }
   },
   "crons": [
     {
       "path": "/api/cron/update-status",
       "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/check-custom-groupbuys",
-      "schedule": "*/5 * * * *"
     }
   ]
 }
