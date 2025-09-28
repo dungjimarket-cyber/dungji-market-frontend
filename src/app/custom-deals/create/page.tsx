@@ -68,7 +68,7 @@ export default function CreateCustomDealPage() {
   const discountUrlRef = useRef<HTMLInputElement>(null);
   const discountCodesRef = useRef<HTMLDivElement>(null);
   const regionsRef = useRef<HTMLDivElement>(null);
-  const locationRef = useRef<HTMLTextAreaElement>(null);
+  const locationRef = useRef<HTMLInputElement>(null);
   const phoneNumberRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -525,8 +525,8 @@ export default function CreateCustomDealPage() {
         newErrors.location = '매장 위치를 입력해주세요';
         if (!firstErrorRef) firstErrorRef = locationRef;
       }
-      if (formData.location.length > 300) {
-        newErrors.location = '매장 위치는 최대 300자까지 입력 가능합니다';
+      if (formData.location.length > 150) {
+        newErrors.location = '매장 위치는 최대 150자까지 입력 가능합니다';
         if (!firstErrorRef) firstErrorRef = locationRef;
       }
       if (!formData.phone_number.trim()) {
@@ -635,7 +635,10 @@ export default function CreateCustomDealPage() {
           submitFormData.append('discount_valid_days', formData.discount_valid_days);
         }
       } else {
-        submitFormData.append('region_codes', JSON.stringify(selectedRegions.map(r => `${r.province} ${r.city}`)));
+        // 지역 정보 (중고거래와 동일한 방식)
+        selectedRegions.forEach((region) => {
+          submitFormData.append('regions', `${region.province} ${region.city}`);
+        });
         submitFormData.append('location', formData.location);
         if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
         submitFormData.append('phone_number', formData.phone_number);
@@ -959,6 +962,7 @@ export default function CreateCustomDealPage() {
                     onChange={(e) => handleInputChange('product_name', e.target.value)}
                     placeholder="예: 둥지마켓 사과 1박스"
                     className={errors.product_name ? 'border-red-300' : ''}
+                    maxLength={150}
                   />
                   {errors.product_name && <p className="text-sm text-red-600 mt-1">{errors.product_name}</p>}
                 </div>
@@ -1338,11 +1342,12 @@ export default function CreateCustomDealPage() {
                 <div>
                   <Label>매장 위치 *</Label>
                   <Input
+                    ref={locationRef}
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                     placeholder="서울시 강남구 테헤란로 123"
                     className={errors.location ? 'border-red-300' : ''}
-                    maxLength={300}
+                    maxLength={150}
                   />
                   <div className="flex justify-between mt-1">
                     {errors.location && <p className="text-sm text-red-600">{errors.location}</p>}
@@ -1357,6 +1362,7 @@ export default function CreateCustomDealPage() {
                     onChange={(e) => handleInputChange('location_detail', e.target.value)}
                     placeholder="건물명, 층수 등 추가 정보"
                     rows={2}
+                    maxLength={500}
                   />
                 </div>
 
