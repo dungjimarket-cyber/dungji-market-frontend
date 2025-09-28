@@ -635,7 +635,7 @@ export default function CreateCustomDealPage() {
           submitFormData.append('discount_valid_days', formData.discount_valid_days);
         }
       } else {
-        submitFormData.append('region_codes', JSON.stringify(selectedRegions.map(r => r.city)));
+        submitFormData.append('region_codes', JSON.stringify(selectedRegions.map(r => `${r.province} ${r.city}`)));
         submitFormData.append('location', formData.location);
         if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
         submitFormData.append('phone_number', formData.phone_number);
