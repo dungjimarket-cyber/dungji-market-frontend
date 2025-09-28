@@ -1315,7 +1315,6 @@ export default function CreateCustomDealPage() {
                     <SelectValue placeholder="선택 안함" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">선택 안함</SelectItem>
                     <SelectItem value="3">3일</SelectItem>
                     <SelectItem value="7">7일</SelectItem>
                     <SelectItem value="14">14일</SelectItem>
