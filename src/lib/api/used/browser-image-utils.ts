@@ -27,13 +27,30 @@ export async function compressImageInBrowser(
     format = 'webp'
   } = options;
 
+  // 브라우저 호환성 체크
+  if (typeof window === 'undefined' || typeof Image === 'undefined' || typeof document === 'undefined') {
+    console.warn('Browser APIs not available, returning original file');
+    return file;
+  }
+
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      const img = new Image();
-      
-      img.onload = () => {
+    try {
+      const reader = new FileReader();
+
+      reader.onerror = () => {
+        console.error('FileReader error');
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.onload = (e) => {
+        const img = new Image();
+
+        img.onerror = () => {
+          console.error('Image loading error');
+          reject(new Error('Failed to load image'));
+        };
+
+        img.onload = () => {
         // Canvas 생성
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -73,13 +90,20 @@ export async function compressImageInBrowser(
           quality
         );
       };
-      
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.src = e.target?.result as string;
+
+      // img.src 설정
+      if (e.target?.result) {
+        img.src = e.target.result as string;
+      } else {
+        reject(new Error('Failed to read file result'));
+      }
     };
-    
-    reader.onerror = () => reject(new Error('Failed to read file'));
+
     reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Image compression error:', error);
+      reject(error);
+    }
   });
 }
 
