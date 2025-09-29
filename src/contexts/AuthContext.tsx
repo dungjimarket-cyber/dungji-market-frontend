@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { toast } from '@/components/ui/use-toast';
 
 // 디버깅 유틸리티 함수
 const logDebug = (message: string, data?: any) => {
@@ -80,10 +82,50 @@ const decodeJwtPayload = (token: string): any | null => {
 };
 
 /**
+ * 토큰 만료 체크 함수
+ * @param token JWT 토큰 문자열
+ * @returns 토큰이 만료되었으면 true
+ */
+const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true;
+
+  try {
+    const payload = decodeJwtPayload(token);
+    if (!payload || !payload.exp) return true;
+
+    const currentTime = Date.now() / 1000;
+    return payload.exp < currentTime;
+  } catch {
+    return true;
+  }
+};
+
+/**
+ * 토큰이 곧 만료되는지 체크 (5분 이내)
+ * @param token JWT 토큰 문자열
+ * @returns 5분 이내 만료되면 true
+ */
+const isTokenExpiringSoon = (token: string | null): boolean => {
+  if (!token) return true;
+
+  try {
+    const payload = decodeJwtPayload(token);
+    if (!payload || !payload.exp) return true;
+
+    const currentTime = Date.now() / 1000;
+    const timeUntilExpiry = payload.exp - currentTime;
+    return timeUntilExpiry < 300; // 5분 = 300초
+  } catch {
+    return true;
+  }
+};
+
+/**
  * 인증 프로바이더 컴포넌트
  * 애플리케이션에 인증 상태와 관련 기능을 제공
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
@@ -173,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearInactivityTimeout();
     };
   }, [user, accessToken, resetInactivityTimer, clearInactivityTimeout]);
-  
+
   // 초기 로딩시 로컬 스토리지에서 토큰 및 사용자 정보 복원
   useEffect(() => {
     let isInitializing = false;
@@ -810,12 +852,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const refreshTokens = useCallback(async (): Promise<boolean> => {
     if (!refreshToken) return false;
-    
+
     try {
       logDebug('액세스 토큰 갱신 시도...');
       // 실제 백엔드 엔드포인트 사용
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/refresh/`;
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -823,42 +865,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify({ refresh: refreshToken }),
       });
-      
+
       if (!response.ok) {
+        if (response.status === 401) {
+          // 리프레시 토큰도 만료된 경우
+          logDebug('리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.');
+          toast({
+            title: '로그인 만료',
+            description: '로그인이 만료되었습니다. 다시 로그인해주세요.',
+            variant: 'destructive'
+          });
+          await logout();
+          router.push('/login');
+          return false;
+        }
         throw new Error(`토큰 갱신 실패: ${response.status}`);
       }
-      
+
       const data = await response.json();
       const newAccessToken = data.access;
-      
-      // 새 액세스 토큰 저장
+      const newRefreshToken = data.refresh || refreshToken; // 새 리프레시 토큰이 있으면 업데이트
+
+      // 새 토큰들 저장
       setAccessToken(newAccessToken);
-      
+      if (data.refresh) {
+        setRefreshToken(newRefreshToken);
+      }
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('dungji_auth_token', newAccessToken);
         localStorage.setItem('accessToken', newAccessToken);
         localStorage.setItem('auth.token', newAccessToken);
+        if (data.refresh) {
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
         localStorage.setItem('auth.status', 'authenticated');
-        
+
         // 세션 변경 이벤트 발생
         window.dispatchEvent(new Event('storage'));
       }
-      
+
       logDebug('토큰 갱신 성공');
       return true;
     } catch (error) {
       logDebug('토큰 갱신 오류:', error);
-      
-      // 리프레시 토큰도 만료된 경우 로그아웃 처리
-      if (error instanceof Error && error.message.includes('401')) {
-        logDebug('리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.');
-        console.warn('리프레시 토큰이 만료되었습니다. 재로그인이 필요합니다.');
-        await logout();
-      }
-      
+      toast({
+        title: '인증 오류',
+        description: '인증 오류가 발생했습니다. 다시 로그인해주세요.',
+        variant: 'destructive'
+      });
+      await logout();
+      router.push('/login');
       return false;
     }
-  }, [refreshToken, logout]);
+  }, [refreshToken, logout, router]);
 
   // Axios 인터셉터 설정 - 401 오류 시 토큰 갱신
   useEffect(() => {
@@ -884,18 +944,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 401 오류이고 재시도하지 않은 요청인 경우
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          
+
           try {
             // 토큰 갱신 시도
             const refreshed = await refreshTokens();
-            
+
             if (refreshed) {
               // 새 토큰으로 원래 요청 재시도
-              originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+              const newToken = localStorage.getItem('dungji_auth_token');
+              originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
               return axios(originalRequest);
+            } else {
+              // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
+              router.push('/login');
             }
           } catch (refreshError) {
             console.error('토큰 갱신 중 오류:', refreshError);
+            router.push('/login');
           }
         }
         
@@ -908,7 +973,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
     };
-  }, [accessToken, refreshTokens]);
+  }, [accessToken, refreshTokens, router]);
+
+  // 주기적으로 토큰 만료 체크 및 자동 갱신
+  useEffect(() => {
+    if (!accessToken || !refreshToken) return;
+
+    // 토큰 만료 임박 시 자동 갱신
+    if (isTokenExpiringSoon(accessToken)) {
+      logDebug('액세스 토큰 만료 임박, 자동 갱신 시도');
+      refreshTokens();
+    }
+
+    // 5분마다 토큰 상태 체크
+    const interval = setInterval(() => {
+      if (isTokenExpired(accessToken)) {
+        logDebug('액세스 토큰 만료, 자동 갱신 시도');
+        refreshTokens();
+      } else if (isTokenExpiringSoon(accessToken)) {
+        logDebug('액세스 토큰 만료 임박, 예방적 갓1신');
+        refreshTokens();
+      }
+    }, 5 * 60 * 1000); // 5분마다
+
+    return () => clearInterval(interval);
+  }, [accessToken, refreshToken, refreshTokens]);
 
   return (
     <AuthContext.Provider
