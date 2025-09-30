@@ -170,7 +170,7 @@ export function ServiceInfoCards({
           <div className="text-[9px] md:text-[7px] font-medium leading-tight text-center">
             <div className="text-gray-900">요금제유지</div>
             <div className="text-gray-900 font-bold">(4~6개월)</div>
-            <div className="text-blue-600">최대지원금</div>
+            <div className="text-blue-600">⚡최대지원금</div>
           </div>
         </div>
       )}
