@@ -14,14 +14,14 @@ interface Prize {
 }
 
 const prizes: Prize[] = [
-  { id: 1, name: '메가커피', probability: 50, color: '#FF6B6B', icon: '☕' },
-  { id: 2, name: '스타벅스', probability: 20, color: '#4ECDC4', icon: '⭐' },
-  { id: 3, name: '꽝', probability: 20, color: '#95A5A6', icon: '💨' },
-  { id: 4, name: '5만원권', probability: 8.9, color: '#F39C12', icon: '💰' },
-  { id: 5, name: '메가커피', probability: 50, color: '#FF6B6B', icon: '☕' },
-  { id: 6, name: '스타벅스', probability: 20, color: '#4ECDC4', icon: '⭐' },
-  { id: 7, name: '꽝', probability: 20, color: '#95A5A6', icon: '💨' },
-  { id: 8, name: '10만원권', probability: 0.1, color: '#9B59B6', icon: '🎁' },
+  { id: 1, name: '메가커피', probability: 10, color: '#FF6B6B', icon: '☕' },
+  { id: 2, name: '스타벅스', probability: 5, color: '#4ECDC4', icon: '⭐' },
+  { id: 3, name: '꽝', probability: 82.99, color: '#95A5A6', icon: '💨' },
+  { id: 4, name: '5만원권', probability: 2, color: '#F39C12', icon: '💰' },
+  { id: 5, name: '메가커피', probability: 10, color: '#FF6B6B', icon: '☕' },
+  { id: 6, name: '스타벅스', probability: 5, color: '#4ECDC4', icon: '⭐' },
+  { id: 7, name: '꽝', probability: 82.99, color: '#95A5A6', icon: '💨' },
+  { id: 8, name: '10만원권', probability: 0.01, color: '#9B59B6', icon: '🎁' },
 ];
 
 export default function DailyRoulette() {
@@ -130,16 +130,16 @@ export default function DailyRoulette() {
       }
     }
 
-    // 회전 계산 (최소 5바퀴 + 당첨 위치)
+    // 회전 계산 (최소 8바퀴 + 당첨 위치)
     const prizeIndex = prizes.findIndex(p => p.id === selectedPrize.id);
     const sliceAngle = 360 / prizes.length;
     const targetAngle = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
-    const spins = 5;
+    const spins = 8;
     const totalRotation = rotation + 360 * spins + targetAngle;
 
     setRotation(totalRotation);
 
-    // 3초 후 결과 표시
+    // 5초 후 결과 표시
     setTimeout(() => {
       setIsSpinning(false);
       setLastWin(selectedPrize.name);
@@ -151,7 +151,7 @@ export default function DailyRoulette() {
           duration: 5000,
         });
       }
-    }, 3000);
+    }, 5000);
   };
 
   return (
@@ -182,8 +182,11 @@ export default function DailyRoulette() {
             ref={canvasRef}
             width={400}
             height={400}
-            className="w-full h-auto transition-transform duration-[3000ms] ease-out"
-            style={{ transform: `rotate(${rotation}deg)` }}
+            className="w-full h-auto transition-transform duration-[5000ms]"
+            style={{
+              transform: `rotate(${rotation}deg)`,
+              transitionTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+            }}
           />
         </div>
       </div>
@@ -224,28 +227,28 @@ export default function DailyRoulette() {
             <div className="w-3 h-3 rounded-full bg-red-400" />
             <span className="font-semibold">메가커피</span>
           </div>
-          <p className="text-gray-600 text-xs">30잔 (50%)</p>
+          <p className="text-gray-600 text-xs">30잔 (10%)</p>
         </div>
         <div className="bg-white p-3 rounded-lg shadow">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-3 h-3 rounded-full bg-teal-400" />
             <span className="font-semibold">스타벅스</span>
           </div>
-          <p className="text-gray-600 text-xs">10장 (20%)</p>
+          <p className="text-gray-600 text-xs">10장 (5%)</p>
         </div>
         <div className="bg-white p-3 rounded-lg shadow">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-3 h-3 rounded-full bg-orange-400" />
             <span className="font-semibold">5만원권</span>
           </div>
-          <p className="text-gray-600 text-xs">2장 (1%)</p>
+          <p className="text-gray-600 text-xs">2장 (2%)</p>
         </div>
         <div className="bg-white p-3 rounded-lg shadow">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-3 h-3 rounded-full bg-purple-400" />
             <span className="font-semibold">10만원권</span>
           </div>
-          <p className="text-gray-600 text-xs">1장 (0.1%)</p>
+          <p className="text-gray-600 text-xs">1장 (0.01%)</p>
         </div>
       </div>
     </div>
