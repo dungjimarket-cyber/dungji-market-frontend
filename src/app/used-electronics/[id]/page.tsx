@@ -813,29 +813,29 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </div>
               </div>
             )}
-            <div className="flex justify-start gap-6 ml-4">
+            <div className="flex justify-start gap-2 ml-4">
               <BumpButton
                 item={electronics}
                 itemType="electronics"
-                size="default"
+                size="sm"
               />
               <Button
                 onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 px-6"
+                className="flex items-center gap-1 w-auto"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                수정하기
+                수정
               </Button>
               <Button
                 onClick={() => setShowDeleteModal(true)}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+                className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 w-auto"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                삭제하기
+                삭제
               </Button>
             </div>
           </div>
@@ -1290,7 +1290,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                     </div>
                   </div>
                 )}
-                <div className="flex justify-center gap-3">
+                <div className="flex justify-center gap-2">
                   <BumpButton
                     item={electronics}
                     itemType="electronics"
@@ -1300,19 +1300,19 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                     onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 px-6"
+                    className="flex items-center gap-1 w-auto"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    수정하기
+                    수정
                   </Button>
                   <Button
                     onClick={() => setShowDeleteModal(true)}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+                    className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 w-auto"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    삭제하기
+                    삭제
                   </Button>
                 </div>
               </div>

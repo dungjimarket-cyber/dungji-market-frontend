@@ -835,11 +835,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
             {phone.seller?.id === user?.id && phone.status === 'active' && (
               <div className="hidden lg:block mt-8 pt-6 border-t">
-                <div className="flex justify-start gap-6 ml-4">
+                <div className="flex justify-start gap-2 ml-4">
                   <BumpButton
                     item={phone}
                     itemType="phone"
-                    size="default"
+                    size="sm"
                   />
                   <Button
                     onClick={async () => {
@@ -868,20 +868,20 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     }}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 px-6"
+                    className="flex items-center gap-1 w-auto"
                     disabled={checkingOffers}
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    {checkingOffers ? '확인중...' : '수정하기'}
+                    {checkingOffers ? '확인중' : '수정'}
                   </Button>
                   <Button
                     onClick={() => setShowDeleteModal(true)}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 px-6"
+                    className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 w-auto"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    삭제하기
+                    삭제
                   </Button>
                 </div>
               </div>
@@ -1440,7 +1440,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
               {phone.seller?.id === user?.id && phone.status === 'active' && (
-                <div className="lg:hidden mt-4 pt-4 border-t grid grid-cols-3 gap-2">
+                <div className="lg:hidden mt-4 pt-4 border-t flex justify-center gap-2">
                   <BumpButton
                     item={phone}
                     itemType="phone"
@@ -1471,20 +1471,22 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         setCheckingOffers(false);
                       }
                     }}
+                    size="sm"
                     variant="outline"
-                    className="flex items-center justify-center gap-2"
+                    className="flex items-center gap-1 w-auto"
                     disabled={checkingOffers}
                   >
-                    <Edit3 className="w-4 h-4" />
-                    {checkingOffers ? '확인중...' : '수정하기'}
+                    <Edit3 className="w-3.5 h-3.5" />
+                    {checkingOffers ? '확인중' : '수정'}
                   </Button>
                   <Button
                     onClick={() => setShowDeleteModal(true)}
+                    size="sm"
                     variant="outline"
-                    className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+                    className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 w-auto"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    삭제하기
+                    <Trash2 className="w-3.5 h-3.5" />
+                    삭제
                   </Button>
                 </div>
               )}
