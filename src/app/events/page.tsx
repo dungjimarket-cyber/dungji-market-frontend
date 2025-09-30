@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+// import DailyRoulette from '@/components/events/DailyRoulette'; // 테스트 중
 
 interface Event {
   id: number;
@@ -64,6 +65,11 @@ export default function EventListPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl lg:max-w-5xl xl:max-w-6xl">
       <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">이벤트</h1>
+
+      {/* 매일 추첨 돌림판 - 테스트 중 */}
+      {/* <div className="mb-8">
+        <DailyRoulette />
+      </div> */}
 
       {events.length === 0 ? (
         <div className="text-center py-16">
