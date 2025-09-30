@@ -65,8 +65,9 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
       // 리다이렉트 옵션이 켜져있으면 해당 제품군 목록으로 이동
       if (redirectAfterBump) {
         setTimeout(() => {
-          const targetUrl = itemType === 'phone' ? '/used' : '/used-electronics';
-          router.push(targetUrl);
+          // 휴대폰은 /used?tab=phone, 전자제품은 /used?tab=electronics
+          const tab = itemType === 'phone' ? 'phone' : 'electronics';
+          router.push(`/used?tab=${tab}`);
         }, 1000); // 토스트 메시지를 잠시 보여준 후 이동
       } else {
         await fetchBumpStatus();
