@@ -3,7 +3,8 @@
  * 휴대폰과 전자제품 거래를 통합 관리하기 위한 타입
  */
 
-import type { UsedPhone, PHONE_BRANDS } from './used';
+import type { UsedPhone } from './used';
+import { PHONE_BRANDS } from './used';
 import type { UsedElectronics } from './electronics';
 
 // 아이템 타입 구분자
