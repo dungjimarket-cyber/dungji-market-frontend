@@ -90,25 +90,28 @@ export default function DailyRoulette() {
     // 중앙 원 (로고 영역)
     ctx.shadowBlur = 0;
     const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60);
-    gradient.addColorStop(0, '#8B5CF6');
-    gradient.addColorStop(1, '#6D28D9');
+    gradient.addColorStop(0, '#FFFFFF');
+    gradient.addColorStop(1, '#F3F4F6');
 
     ctx.beginPath();
     ctx.arc(centerX, centerY, 60, 0, 2 * Math.PI);
     ctx.fillStyle = gradient;
     ctx.fill();
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = '#8B5CF6';
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    // 둥지마켓 로고 텍스트
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('둥지', centerX, centerY - 10);
-    ctx.font = 'bold 18px Arial';
-    ctx.fillText('마켓', centerX, centerY + 10);
+    // 둥지마켓 로고 이미지
+    const logoImg = new Image();
+    logoImg.src = '/logos/dunji_logo.jpg';
+    logoImg.onload = () => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 55, 0, 2 * Math.PI);
+      ctx.clip();
+      ctx.drawImage(logoImg, centerX - 50, centerY - 50, 100, 100);
+      ctx.restore();
+    };
   };
 
   const spinWheel = () => {
