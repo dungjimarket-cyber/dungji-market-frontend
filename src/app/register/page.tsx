@@ -884,8 +884,7 @@ function RegisterPageContent() {
                     </svg>
                   </div>
                   <div className="font-semibold text-base sm:text-lg">
-                    <span className="block">구매하기</span>
-                    <span className="text-sm sm:text-base">(일반회원)</span>
+                    <span className="block">일반회원</span>
                     <span className="text-xs text-gray-600 block mt-1">(공구견적받기,중고거래)</span>
                   </div>
                 </button>
@@ -904,8 +903,7 @@ function RegisterPageContent() {
                     </svg>
                   </div>
                   <div className="font-semibold text-base sm:text-lg">
-                    <span className="block">판매하기</span>
-                    <span className="text-sm sm:text-base">(판매회원)</span>
+                    <span className="block">판매회원</span>
                     <span className="text-xs text-gray-600 block mt-1">(공구견적제안,중고거래)</span>
                   </div>
                 </button>
