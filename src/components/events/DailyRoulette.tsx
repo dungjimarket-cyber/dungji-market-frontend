@@ -13,16 +13,13 @@ interface Prize {
   icon: string;
 }
 
-// 돌림판 8칸 (각 칸의 확률은 전체 확률을 칸 개수로 나눔)
+// 돌림판 5칸 (각 칸 = 하나의 상품, 확률 총합 100%)
 const prizes: Prize[] = [
-  { id: 1, name: '메가커피', probability: 5, color: '#FF6B6B', icon: '☕' },      // 10% / 2칸 = 5%
-  { id: 2, name: '스타벅스', probability: 2.5, color: '#4ECDC4', icon: '⭐' },   // 5% / 2칸 = 2.5%
-  { id: 3, name: '꽝', probability: 41.495, color: '#95A5A6', icon: '💨' },      // 82.99% / 2칸 = 41.495%
-  { id: 4, name: '5만원권', probability: 2, color: '#F39C12', icon: '💰' },      // 2% / 1칸 = 2%
-  { id: 5, name: '메가커피', probability: 5, color: '#FF6B6B', icon: '☕' },      // 10% / 2칸 = 5%
-  { id: 6, name: '스타벅스', probability: 2.5, color: '#4ECDC4', icon: '⭐' },   // 5% / 2칸 = 2.5%
-  { id: 7, name: '꽝', probability: 41.495, color: '#95A5A6', icon: '💨' },      // 82.99% / 2칸 = 41.495%
-  { id: 8, name: '10만원권', probability: 0.01, color: '#9B59B6', icon: '🎁' },  // 0.01% / 1칸 = 0.01%
+  { id: 1, name: '메가커피', probability: 10, color: '#FF6B6B', icon: '☕' },
+  { id: 2, name: '스타벅스', probability: 5, color: '#4ECDC4', icon: '⭐' },
+  { id: 3, name: '꽝', probability: 82.99, color: '#95A5A6', icon: '💨' },
+  { id: 4, name: '5만원권', probability: 2, color: '#F39C12', icon: '💰' },
+  { id: 5, name: '10만원권', probability: 0.01, color: '#9B59B6', icon: '🎁' },
 ];
 
 export default function DailyRoulette() {
