@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle, Info, MapPin, Eye } from 'lucide-react';
+import { Package, ShoppingCart, MessageSquare, Heart, X, User, Phone, CheckCircle, XCircle, Info, MapPin, Eye, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,9 +23,11 @@ import ReviewsTab from '../reviews/ReviewsTab';
 import FavoritesTab from '../favorites/FavoritesTab';
 import { buyerAPI, sellerAPI } from '@/lib/api/used';
 import electronicsApi from '@/lib/api/electronics';
+import bumpAPI from '@/lib/api/bump';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import ReceivedOffersModal from '../sales/ReceivedOffersModal';
+import BumpButton from '../sales/BumpButton';
 import ReviewModal from '@/components/used/ReviewModal';
 import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
 import { isPhoneItem, isElectronicsItem, sortByDate, normalizeApiResponse } from '@/types/market';
@@ -537,6 +539,14 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 <p className="text-sm text-gray-600">
                                   {item.price.toLocaleString()}원
                                 </p>
+                                {item.last_bumped_at && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Flame className="w-3 h-3 text-orange-500" />
+                                    <span className="text-xs text-orange-600">
+                                      {bumpAPI.formatLastBumpTime(item.last_bumped_at)} 끌올
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                               <Badge variant="default" className="flex-shrink-0">판매중</Badge>
                             </div>
@@ -575,6 +585,14 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               >
                                 제안 확인
                               </Button>
+                              <BumpButton
+                                item={item}
+                                itemType={item.itemType}
+                                onBumpSuccess={() => {
+                                  // 끌올 성공 시 목록 새로고침
+                                  handleSectionClick('sales-active');
+                                }}
+                              />
                               <Button
                                 size="sm"
                                 variant="outline"
