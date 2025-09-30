@@ -132,16 +132,18 @@ export default function DailyRoulette() {
     const selectedPrize = prizes[selectedPrizeIndex];
 
     // 회전 계산 (최소 10바퀴 + 당첨 위치)
-    // 매번 0도에서 시작하여 누적 오차 제거
     const sliceAngle = 360 / prizes.length;
-    // 선택된 칸의 중앙이 화살표(12시 방향)에 오도록 계산
     const targetAngle = -(selectedPrizeIndex * sliceAngle + sliceAngle / 2);
     const spins = 10;
     const totalRotation = 360 * spins + targetAngle;
 
     console.log('Selected Prize:', selectedPrize.name, 'Index:', selectedPrizeIndex, 'Slice:', sliceAngle, 'Target:', targetAngle);
 
-    setRotation(totalRotation);
+    // 이전 회전 위치 초기화 후 애니메이션 시작
+    setRotation(0);
+    setTimeout(() => {
+      setRotation(totalRotation);
+    }, 50);
 
     // 6초 후 결과 표시
     setTimeout(() => {
