@@ -43,8 +43,8 @@ class BumpAPI {
    */
   async getStatus(itemType: 'phone' | 'electronics', itemId: number): Promise<BumpStatus> {
     const endpoint = itemType === 'phone'
-      ? `/api/used/phones/${itemId}/bump/status/`
-      : `/api/used/electronics/${itemId}/bump/status/`;
+      ? `/used/phones/${itemId}/bump/status/`
+      : `/used/electronics/${itemId}/bump/status/`;
 
     const response = await axios.get(
       `${API_BASE_URL}${endpoint}`,
@@ -58,8 +58,8 @@ class BumpAPI {
    */
   async performBump(itemType: 'phone' | 'electronics', itemId: number): Promise<BumpResult> {
     const endpoint = itemType === 'phone'
-      ? `/api/used/phones/${itemId}/bump/`
-      : `/api/used/electronics/${itemId}/bump/`;
+      ? `/used/phones/${itemId}/bump/`
+      : `/used/electronics/${itemId}/bump/`;
 
     const response = await axios.post(
       `${API_BASE_URL}${endpoint}`,
@@ -74,7 +74,7 @@ class BumpAPI {
    */
   async getTodayCount(): Promise<TodayBumpCount> {
     const response = await axios.get(
-      `${API_BASE_URL}/api/used/bump/today-count/`,
+      `${API_BASE_URL}/used/bump/today-count/`,
       { headers: getHeaders() }
     );
     return response.data;
