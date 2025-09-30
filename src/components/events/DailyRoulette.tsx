@@ -182,10 +182,10 @@ export default function DailyRoulette() {
             ref={canvasRef}
             width={400}
             height={400}
-            className="w-full h-auto transition-transform duration-[6000ms]"
+            className="w-full h-auto"
             style={{
               transform: `rotate(${rotation}deg)`,
-              transitionTimingFunction: 'cubic-bezier(0.17, 0.67, 0.35, 0.95)'
+              transition: 'transform 6000ms cubic-bezier(0.17, 0.67, 0.35, 0.95)'
             }}
           />
         </div>
