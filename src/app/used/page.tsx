@@ -144,6 +144,21 @@ export default function UsedPhonesPage() {
       setLoading(true);
       setHasLoadedAll(false);
 
+      // 한글 브랜드를 영어로 변환하는 매핑
+      const brandKoreanToEnglish: Record<string, string> = {
+        '삼성': 'samsung',
+        '애플': 'apple',
+        '엘지': 'lg',
+        '샤오미': 'xiaomi',
+        '기타': 'other'
+      };
+
+      // 검색어 변환 (한글 브랜드명이면 영어로 변환)
+      let searchTerm = currentFilters.search;
+      if (searchTerm && brandKoreanToEnglish[searchTerm.toLowerCase()]) {
+        searchTerm = brandKoreanToEnglish[searchTerm.toLowerCase()];
+      }
+
       // 병렬로 휴대폰과 전자제품 로드
       const [phoneData, electronicsData] = await Promise.all([
         // 휴대폰 API 호출
@@ -151,9 +166,9 @@ export default function UsedPhonesPage() {
           const params = new URLSearchParams();
           params.append('limit', '1000');
 
-          // 검색어
-          if (currentFilters.search) {
-            params.append('search', currentFilters.search);
+          // 검색어 (변환된 검색어 사용)
+          if (searchTerm) {
+            params.append('search', searchTerm);
           }
 
           // 지역
@@ -186,7 +201,7 @@ export default function UsedPhonesPage() {
         })(),
         // 전자제품 API 호출 - 휴대폰과 동일한 방식 적용
         electronicsApi.getElectronicsList({
-          search: currentFilters.search,
+          search: searchTerm,  // 변환된 검색어 사용
           region: currentFilters.region,
           // 거래완료 포함 여부를 명시적으로 전달
           include_completed: currentFilters.includeCompleted !== false ? 'true' : undefined

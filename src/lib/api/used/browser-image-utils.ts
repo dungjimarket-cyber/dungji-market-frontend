@@ -14,6 +14,23 @@ interface ImageCompressOptions {
 }
 
 /**
+ * DataURL을 Blob으로 변환 (호환성)
+ */
+function dataURLtoBlob(dataURL: string): Blob {
+  const arr = dataURL.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new Blob([u8arr], { type: mime });
+}
+
+/**
  * 브라우저에서 이미지 압축
  */
 export async function compressImageInBrowser(
@@ -77,18 +94,36 @@ export async function compressImageInBrowser(
         // 이미지 그리기
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Blob으로 변환
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to compress image'));
-            }
-          },
-          `image/${format}`,
-          quality
-        );
+        // Blob으로 변환 (Safari 호환성)
+        if (canvas.toBlob) {
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                // toBlob 실패 시 dataURL 방식 시도
+                try {
+                  const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                  const blob = dataURLtoBlob(dataUrl);
+                  resolve(blob);
+                } catch (e) {
+                  reject(new Error('Failed to compress image'));
+                }
+              }
+            },
+            `image/${format}`,
+            quality
+          );
+        } else {
+          // toBlob 미지원 브라우저 (매우 구형)
+          try {
+            const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+            const blob = dataURLtoBlob(dataUrl);
+            resolve(blob);
+          } catch (e) {
+            reject(new Error('Canvas API not supported'));
+          }
+        }
       };
 
       // img.src 설정

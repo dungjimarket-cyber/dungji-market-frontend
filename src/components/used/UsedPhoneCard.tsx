@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { Heart, MapPin, Clock, Eye, MessageCircle, Edit3 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS } from '@/types/used';
+import { UsedPhone, CONDITION_GRADES, BATTERY_STATUS_LABELS, PHONE_BRANDS } from '@/types/used';
 
 interface UsedPhoneCardProps {
   phone: Partial<UsedPhone>;
@@ -145,7 +145,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
       <div className="p-3">
         {/* 모델명 */}
         <h3 className="font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-          {phone.model}
+          {phone.brand && PHONE_BRANDS[phone.brand] ? `${PHONE_BRANDS[phone.brand]} ` : ''}{phone.model}
         </h3>
 
         {/* 가격 */}

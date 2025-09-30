@@ -814,37 +814,55 @@ export default function CreateUsedPhonePage() {
       }
       console.log('=============================')
 
-      // 타임아웃 설정 (30초)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
       let response;
       try {
-        response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: uploadData,
-          signal: controller.signal
-        });
-      } catch (fetchError: any) {
-        clearTimeout(timeoutId);
+        // AbortController 호환성 체크
+        if (typeof AbortController !== 'undefined') {
+          // 타임아웃 설정 (30초)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        // 네트워크 에러 상세 로깅
-        console.error('===== Fetch Error Details =====');
-        console.error('Error type:', fetchError.name);
-        console.error('Error message:', fetchError.message);
+          try {
+            response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              },
+              body: uploadData,
+              signal: controller.signal
+            });
+          } catch (fetchError: any) {
+            clearTimeout(timeoutId);
 
-        if (fetchError.name === 'AbortError') {
-          throw new Error('요청 시간이 초과되었습니다. 이미지 크기를 줄이거나 네트워크 연결을 확인해주세요.');
-        } else if (fetchError.message.includes('Failed to fetch')) {
-          throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+            // 네트워크 에러 상세 로깅
+            console.error('===== Fetch Error Details =====');
+            console.error('Error type:', fetchError.name);
+            console.error('Error message:', fetchError.message);
+
+            if (fetchError.name === 'AbortError') {
+              throw new Error('요청 시간이 초과되었습니다. 이미지 크기를 줄이거나 네트워크 연결을 확인해주세요.');
+            } else if (fetchError.message.includes('Failed to fetch')) {
+              throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
+            } else {
+              throw new Error(`네트워크 오류: ${fetchError.message}`);
+            }
+          } finally {
+            clearTimeout(timeoutId);
+          }
         } else {
-          throw new Error(`네트워크 오류: ${fetchError.message}`);
+          // AbortController 미지원 브라우저
+          console.warn('AbortController not supported, using simple fetch');
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: uploadData
+          });
         }
-      } finally {
-        clearTimeout(timeoutId);
+      } catch (fetchError: any) {
+        console.error('Fetch failed:', fetchError);
+        throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
       }
 
       console.log('Response status:', response.status);
