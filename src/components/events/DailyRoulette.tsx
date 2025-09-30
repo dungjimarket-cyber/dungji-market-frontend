@@ -26,6 +26,7 @@ export default function DailyRoulette() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [lastWin, setLastWin] = useState<string | null>(null);
+  const [enableTransition, setEnableTransition] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -139,9 +140,13 @@ export default function DailyRoulette() {
 
     console.log('Selected Prize:', selectedPrize.name, 'Index:', selectedPrizeIndex, 'Slice:', sliceAngle, 'Target:', targetAngle);
 
-    // 이전 회전 위치 초기화 후 애니메이션 시작
+    // 이전 회전 위치 초기화 (transition 없이)
+    setEnableTransition(false);
     setRotation(0);
+
+    // transition 켜고 회전 시작
     setTimeout(() => {
+      setEnableTransition(true);
       setRotation(totalRotation);
     }, 50);
 
@@ -191,7 +196,7 @@ export default function DailyRoulette() {
             className="w-full h-auto"
             style={{
               transform: `rotate(${rotation}deg)`,
-              transition: 'transform 6000ms cubic-bezier(0.17, 0.67, 0.35, 0.95)'
+              transition: enableTransition ? 'transform 6000ms cubic-bezier(0.17, 0.67, 0.35, 0.95)' : 'none'
             }}
           />
         </div>
