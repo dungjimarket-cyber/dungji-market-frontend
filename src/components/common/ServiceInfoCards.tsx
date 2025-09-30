@@ -164,20 +164,14 @@ export function ServiceInfoCards({
         </div>
       )}
 
-      {/* 요금제 유지조건 카드 (9-10만원대만) */}
-      {planInfo && (planInfo === '9만원대' || planInfo === '10만원대' || planInfo === '10만원이상') && (
-        <div className={`${cardClass} bg-gradient-to-r from-purple-50 to-pink-50 rounded-md border border-purple-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
-          {variant === 'detail' ? (
-            <div className="text-xs md:text-sm text-purple-700 font-medium text-center whitespace-nowrap">
-              요금제유지 4~6개월 · 최대지원금
-            </div>
-          ) : (
-            <div className="text-[8px] md:text-[6px] text-purple-700 font-medium leading-tight text-center">
-              <div>요금제유지</div>
-              <div className="font-bold">(4~6개월)</div>
-              <div>최대지원금</div>
-            </div>
-          )}
+      {/* 요금제 유지조건 카드 (9-10만원대만, 목록에서만 표시) */}
+      {planInfo && (planInfo === '9만원대' || planInfo === '10만원대' || planInfo === '10만원이상') && variant !== 'detail' && (
+        <div className={`${cardClass} bg-gradient-to-r from-purple-50 to-pink-50 rounded-md border border-purple-200 p-1.5 md:p-0.5 flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
+          <div className="text-[9px] md:text-[7px] font-medium leading-tight text-center">
+            <div className="text-gray-900">요금제유지</div>
+            <div className="text-gray-900 font-bold">(4~6개월)</div>
+            <div className="text-blue-600">최대지원금</div>
+          </div>
         </div>
       )}
     </div>

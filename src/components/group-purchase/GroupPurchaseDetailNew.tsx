@@ -1384,20 +1384,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 groupBuy.telecom_detail.plan_info === '5G_platinum' ||
                 groupBuy.telecom_detail.plan_info === '9만원대' ||
                 (groupBuy.telecom_detail.plan_info && groupBuy.telecom_detail.plan_info.includes('10만'))) && (
-                <div className="mt-2 p-2.5 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div className="text-xs space-y-1">
-                      <p className="font-semibold text-blue-800">
-                        최고지원금 도전
+                <div className="mt-3 p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-3">
+                    <Zap className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-2">
+                      <p className="text-base font-bold text-blue-800">
+                        🎯 최고지원금 도전
                       </p>
-                      <p className="text-gray-700">차원이 다른 비교견적 가능</p>
+                      <p className="text-sm text-gray-700">차원이 다른 비교견적 가능</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2 mt-2">
-                    <Clock className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-[11px] text-gray-600">
-                      가입유형별 4~6개월 가입요금제 필수유지 조건
+                  <div className="flex items-start gap-3 mt-3">
+                    <Clock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm font-medium text-gray-800">
+                      가입유형별 <span className="text-purple-700 font-bold">4~6개월</span> 가입요금제 필수유지 조건
                     </p>
                   </div>
                 </div>
