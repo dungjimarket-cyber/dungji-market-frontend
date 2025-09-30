@@ -60,14 +60,7 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
     try {
       const result = await bumpAPI.performBump(itemType, item.id);
 
-      toast.success(
-        <div>
-          <p className="font-semibold">끌올 완료!</p>
-          <p className="text-sm text-gray-600">
-            남은 무료 끌올: {result.remaining_free_bumps_today}회
-          </p>
-        </div>
-      );
+      toast.success("끌올 완료!");
 
       // 리다이렉트 옵션이 켜져있으면 해당 제품군 목록으로 이동
       if (redirectAfterBump) {
@@ -91,7 +84,7 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
   if (!bumpStatus) {
     return (
       <Button size={size} variant="outline" disabled className="w-auto">
-        <Clock className="w-3 h-3 mr-1" />
+        <Clock className="w-3 h-3 mr-0.5" />
         로딩...
       </Button>
     );
@@ -103,7 +96,7 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
     if (bumpStatus.remaining_free_bumps_today === 0) {
       return (
         <Button size={size} variant="outline" disabled className="w-auto">
-          <Clock className="w-3 h-3 mr-1" />
+          <Clock className="w-3 h-3 mr-0.5" />
           내일 가능
         </Button>
       );
@@ -112,7 +105,7 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
     // 쿨다운 중
     return (
       <Button size={size} variant="outline" disabled className="w-auto">
-        <Clock className="w-3 h-3 mr-1" />
+        <Clock className="w-3 h-3 mr-0.5" />
         {timeRemaining || '대기'}
       </Button>
     );
@@ -127,8 +120,8 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
       onClick={handleBump}
       disabled={loading}
     >
-      <Flame className="w-3 h-3 mr-1" />
-      {loading ? '처리중' : `끌올(${bumpStatus.remaining_free_bumps_today})`}
+      <Flame className="w-3 h-3 mr-0.5" />
+      {loading ? '처리중' : '끌올'}
     </Button>
   );
 }
