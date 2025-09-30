@@ -15,10 +15,10 @@ interface Prize {
 
 // 돌림판 5칸 (각 칸 = 하나의 상품, 확률 총합 100%)
 const prizes: Prize[] = [
-  { id: 1, name: '메가커피', probability: 10, color: '#FF6B6B', icon: '☕' },
-  { id: 2, name: '스타벅스', probability: 5, color: '#4ECDC4', icon: '⭐' },
-  { id: 3, name: '꽝', probability: 82.99, color: '#95A5A6', icon: '💨' },
-  { id: 4, name: '5만원권', probability: 2, color: '#F39C12', icon: '💰' },
+  { id: 1, name: '메가커피', probability: 20, color: '#FF6B6B', icon: '☕' },
+  { id: 2, name: '스타벅스', probability: 10, color: '#4ECDC4', icon: '⭐' },
+  { id: 3, name: '꽝', probability: 65.99, color: '#95A5A6', icon: '💨' },
+  { id: 4, name: '5만원권', probability: 4, color: '#F39C12', icon: '💰' },
   { id: 5, name: '10만원권', probability: 0.01, color: '#9B59B6', icon: '🎁' },
 ];
 
