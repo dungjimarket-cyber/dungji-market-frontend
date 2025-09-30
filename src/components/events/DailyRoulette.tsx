@@ -130,16 +130,16 @@ export default function DailyRoulette() {
       }
     }
 
-    // 회전 계산 (최소 8바퀴 + 당첨 위치)
+    // 회전 계산 (최소 10바퀴 + 당첨 위치)
     const prizeIndex = prizes.findIndex(p => p.id === selectedPrize.id);
     const sliceAngle = 360 / prizes.length;
     const targetAngle = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
-    const spins = 8;
+    const spins = 10;
     const totalRotation = rotation + 360 * spins + targetAngle;
 
     setRotation(totalRotation);
 
-    // 5초 후 결과 표시
+    // 6초 후 결과 표시
     setTimeout(() => {
       setIsSpinning(false);
       setLastWin(selectedPrize.name);
@@ -151,7 +151,7 @@ export default function DailyRoulette() {
           duration: 5000,
         });
       }
-    }, 5000);
+    }, 6000);
   };
 
   return (
@@ -182,10 +182,10 @@ export default function DailyRoulette() {
             ref={canvasRef}
             width={400}
             height={400}
-            className="w-full h-auto transition-transform duration-[5000ms]"
+            className="w-full h-auto transition-transform duration-[6000ms]"
             style={{
               transform: `rotate(${rotation}deg)`,
-              transitionTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+              transitionTimingFunction: 'cubic-bezier(0.17, 0.67, 0.35, 0.95)'
             }}
           />
         </div>
