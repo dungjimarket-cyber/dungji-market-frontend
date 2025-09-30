@@ -21,6 +21,8 @@ export interface BaseMarketItem {
   favorite_count: number;
   created_at: string;
   updated_at: string;
+  last_bumped_at?: string | null;
+  bump_count?: number;
   seller?: number;
   seller_info?: {
     id: number;

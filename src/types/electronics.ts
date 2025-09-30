@@ -84,6 +84,8 @@ export interface UsedElectronics {
   // 타임스탬프
   created_at: string;
   updated_at: string;
+  last_bumped_at?: string | null;
+  bump_count?: number;
 }
 
 /**

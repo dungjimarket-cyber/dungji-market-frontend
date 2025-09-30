@@ -91,6 +91,8 @@ export interface UsedPhone {
   trading_at?: string;
   sold_at?: string;
   deleted_at?: string;
+  last_bumped_at?: string | null;
+  bump_count?: number;
 }
 
 /**
