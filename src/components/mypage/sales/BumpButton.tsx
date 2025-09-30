@@ -81,35 +81,9 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
     }
   };
 
-  // 로딩 중이거나 상태를 모르는 경우
-  if (!bumpStatus) {
-    return (
-      <Button size={size} variant="outline" disabled className="w-auto">
-        <Clock className="w-3 h-3 mr-0.5" />
-        로딩...
-      </Button>
-    );
-  }
-
-  // 끌올 불가능한 경우
-  if (!bumpStatus.can_bump) {
-    // 오늘 끌올 소진
-    if (bumpStatus.remaining_free_bumps_today === 0) {
-      return (
-        <Button size={size} variant="outline" disabled className="w-auto">
-          <Clock className="w-3 h-3 mr-0.5" />
-          내일 가능
-        </Button>
-      );
-    }
-
-    // 쿨다운 중
-    return (
-      <Button size={size} variant="outline" disabled className="w-auto">
-        <Clock className="w-3 h-3 mr-0.5" />
-        {timeRemaining || '대기'}
-      </Button>
-    );
+  // 로딩 중이거나 끌올 불가능한 경우 버튼 숨김
+  if (!bumpStatus || !bumpStatus.can_bump) {
+    return null;
   }
 
   // 끌올 가능한 경우
@@ -117,11 +91,11 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm',
     <Button
       size={size}
       variant="outline"
-      className="w-auto text-orange-600 border-orange-300 hover:bg-orange-50"
+      className="w-auto text-orange-600 border-orange-300 hover:bg-orange-50 flex items-center gap-1"
       onClick={handleBump}
       disabled={loading}
     >
-      <Flame className="w-3 h-3 mr-0.5" />
+      <Flame className="w-3 h-3" />
       {loading ? '처리중' : '끌올'}
     </Button>
   );
