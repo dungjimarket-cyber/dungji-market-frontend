@@ -227,7 +227,12 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
         const allItems = [
           ...phoneItems.map((item: any) => ({ ...item, itemType: 'phone' as const })),
           ...electronicsItems.map((item: any) => ({ ...item, itemType: 'electronics' as const }))
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        ].sort((a, b) => {
+          // 끌올된 상품을 우선 정렬
+          const aDate = a.last_bumped_at || a.created_at;
+          const bDate = b.last_bumped_at || b.created_at;
+          return new Date(bDate).getTime() - new Date(aDate).getTime();
+        });
 
         switch(status) {
           case 'active':
