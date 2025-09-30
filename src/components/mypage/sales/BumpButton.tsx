@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Flame, Clock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,9 +12,11 @@ interface BumpButtonProps {
   itemType: 'phone' | 'electronics';
   onBumpSuccess?: () => void;
   size?: 'sm' | 'default';
+  redirectAfterBump?: boolean;
 }
 
-export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm' }: BumpButtonProps) {
+export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm', redirectAfterBump = true }: BumpButtonProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [bumpStatus, setBumpStatus] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -66,8 +69,16 @@ export default function BumpButton({ item, itemType, onBumpSuccess, size = 'sm' 
         </div>
       );
 
-      await fetchBumpStatus();
-      onBumpSuccess?.();
+      // 리다이렉트 옵션이 켜져있으면 해당 제품군 목록으로 이동
+      if (redirectAfterBump) {
+        setTimeout(() => {
+          const targetUrl = itemType === 'phone' ? '/used' : '/used-electronics';
+          router.push(targetUrl);
+        }, 1000); // 토스트 메시지를 잠시 보여준 후 이동
+      } else {
+        await fetchBumpStatus();
+        onBumpSuccess?.();
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || '끌올에 실패했습니다.';
       toast.error(errorMessage);

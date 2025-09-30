@@ -18,6 +18,7 @@ import Link from 'next/link';
 import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
+import BumpButton from '@/components/mypage/sales/BumpButton';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -813,6 +814,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               </div>
             )}
             <div className="flex justify-start gap-6 ml-4">
+              <BumpButton
+                item={electronics}
+                itemType="electronics"
+                size="default"
+              />
               <Button
                 onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
                 variant="outline"
@@ -1284,7 +1290,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                     </div>
                   </div>
                 )}
-                <div className="flex justify-center gap-4">
+                <div className="flex justify-center gap-3">
+                  <BumpButton
+                    item={electronics}
+                    itemType="electronics"
+                    size="sm"
+                  />
                   <Button
                     onClick={() => router.push(`/used-electronics/${electronicsId}/edit`)}
                     variant="outline"

@@ -593,6 +593,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               <BumpButton
                                 item={item}
                                 itemType={item.itemType}
+                                redirectAfterBump={false}
                                 onBumpSuccess={() => {
                                   // 끌올 성공 시 목록 새로고침
                                   handleSectionClick('sales-active');

@@ -18,6 +18,7 @@ import Link from 'next/link';
 import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
+import BumpButton from '@/components/mypage/sales/BumpButton';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -835,6 +836,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {phone.seller?.id === user?.id && phone.status === 'active' && (
               <div className="hidden lg:block mt-8 pt-6 border-t">
                 <div className="flex justify-start gap-6 ml-4">
+                  <BumpButton
+                    item={phone}
+                    itemType="phone"
+                    size="default"
+                  />
                   <Button
                     onClick={async () => {
                       setCheckingOffers(true);
@@ -1434,7 +1440,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
               {phone.seller?.id === user?.id && phone.status === 'active' && (
-                <div className="lg:hidden mt-4 pt-4 border-t grid grid-cols-2 gap-3">
+                <div className="lg:hidden mt-4 pt-4 border-t grid grid-cols-3 gap-2">
+                  <BumpButton
+                    item={phone}
+                    itemType="phone"
+                    size="sm"
+                  />
                   <Button
                     onClick={async () => {
                       setCheckingOffers(true);
