@@ -124,6 +124,28 @@ class BumpAPI {
 
     return bumped.toLocaleDateString('ko-KR');
   }
+
+  /**
+   * 다음 끌올 가능 시간까지 남은 시간 계산 (last_bumped_at 기준)
+   */
+  getTimeUntilNextBumpFromLast(lastBumpedAt: string | null): string {
+    if (!lastBumpedAt) return '';
+
+    const now = new Date();
+    const bumped = new Date(lastBumpedAt);
+    const nextAvailable = new Date(bumped.getTime() + 24 * 60 * 60 * 1000); // 24시간 후
+    const diff = nextAvailable.getTime() - now.getTime();
+
+    if (diff <= 0) return ''; // 끌올 가능
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 0) {
+      return `${hours}시간 후 끌올 가능`;
+    }
+    return `${minutes}분 후 끌올 가능`;
+  }
 }
 
 export const bumpAPI = new BumpAPI();

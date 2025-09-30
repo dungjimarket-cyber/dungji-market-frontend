@@ -544,11 +544,11 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 <p className="text-sm text-gray-600">
                                   {item.price.toLocaleString()}원
                                 </p>
-                                {item.last_bumped_at && (
+                                {item.last_bumped_at && bumpAPI.getTimeUntilNextBumpFromLast(item.last_bumped_at) && (
                                   <div className="flex items-center gap-1 mt-1">
-                                    <Flame className="w-3 h-3 text-orange-500" />
-                                    <span className="text-xs text-orange-600">
-                                      {bumpAPI.formatLastBumpTime(item.last_bumped_at)} 끌올
+                                    <Clock className="w-3 h-3 text-gray-500" />
+                                    <span className="text-xs text-gray-600">
+                                      {bumpAPI.getTimeUntilNextBumpFromLast(item.last_bumped_at)}
                                     </span>
                                   </div>
                                 )}

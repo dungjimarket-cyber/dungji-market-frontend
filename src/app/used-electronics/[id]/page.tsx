@@ -19,6 +19,7 @@ import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
 import BumpButton from '@/components/mypage/sales/BumpButton';
+import bumpAPI from '@/lib/api/bump';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -813,6 +814,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </div>
               </div>
             )}
+            {electronics.last_bumped_at && bumpAPI.getTimeUntilNextBumpFromLast(electronics.last_bumped_at) && (
+              <div className="flex items-center gap-1 mb-3 ml-4">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {bumpAPI.getTimeUntilNextBumpFromLast(electronics.last_bumped_at)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-start gap-2 ml-4">
               <BumpButton
                 item={electronics}
@@ -1288,6 +1297,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                         <p className="text-amber-800 mt-1">가격과 거래 요청사항만 수정 가능합니다.</p>
                       </div>
                     </div>
+                  </div>
+                )}
+                {electronics.last_bumped_at && bumpAPI.getTimeUntilNextBumpFromLast(electronics.last_bumped_at) && (
+                  <div className="flex items-center justify-center gap-1 mb-3">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">
+                      {bumpAPI.getTimeUntilNextBumpFromLast(electronics.last_bumped_at)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-center gap-2">

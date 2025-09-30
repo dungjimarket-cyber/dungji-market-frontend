@@ -19,6 +19,7 @@ import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
 import { Button } from '@/components/ui/button';
 import BumpButton from '@/components/mypage/sales/BumpButton';
+import bumpAPI from '@/lib/api/bump';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -835,6 +836,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {/* PC: 본인 등록 상품일 때 수정/삭제 버튼 왼쪽 하단 배치 (판매완료 시 숨김) */}
             {phone.seller?.id === user?.id && phone.status === 'active' && (
               <div className="hidden lg:block mt-8 pt-6 border-t">
+                {phone.last_bumped_at && bumpAPI.getTimeUntilNextBumpFromLast(phone.last_bumped_at) && (
+                  <div className="flex items-center gap-1 mb-3 ml-4">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">
+                      {bumpAPI.getTimeUntilNextBumpFromLast(phone.last_bumped_at)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-start gap-2 ml-4">
                   <BumpButton
                     item={phone}
@@ -1440,12 +1449,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 모바일: 본인 등록 상품일 때 수정/삭제 버튼 (판매완료 시 숨김) */}
               {phone.seller?.id === user?.id && phone.status === 'active' && (
-                <div className="lg:hidden mt-4 pt-4 border-t flex justify-center gap-2">
-                  <BumpButton
-                    item={phone}
-                    itemType="phone"
-                    size="sm"
-                  />
+                <div className="lg:hidden mt-4 pt-4 border-t">
+                  {phone.last_bumped_at && bumpAPI.getTimeUntilNextBumpFromLast(phone.last_bumped_at) && (
+                    <div className="flex items-center justify-center gap-1 mb-3">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">
+                        {bumpAPI.getTimeUntilNextBumpFromLast(phone.last_bumped_at)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-center gap-2">
+                    <BumpButton
+                      item={phone}
+                      itemType="phone"
+                      size="sm"
+                    />
                   <Button
                     onClick={async () => {
                       setCheckingOffers(true);
@@ -1488,6 +1506,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     <Trash2 className="w-3.5 h-3.5" />
                     삭제
                   </Button>
+                  </div>
                 </div>
               )}
             </div>
