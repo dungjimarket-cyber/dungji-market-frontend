@@ -163,6 +163,17 @@ export function ServiceInfoCards({
           </div>
         </div>
       )}
+
+      {/* 요금제 유지조건 카드 (9-10만원대만) */}
+      {planInfo && (planInfo === '9만원대' || planInfo === '10만원대' || planInfo === '10만원이상') && (
+        <div className={`${cardClass} bg-gradient-to-r from-purple-50 to-pink-50 rounded-md border border-purple-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1.5'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
+          <div className={`${variant === 'detail' ? 'text-[11px] md:text-xs' : 'text-[8px] md:text-[7px]'} text-purple-700 font-medium leading-tight text-center`}>
+            <div>요금제유지기간</div>
+            <div className="font-bold">(4~6개월)</div>
+            <div>최대지원금조건</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
