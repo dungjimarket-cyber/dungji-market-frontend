@@ -48,6 +48,8 @@ export const getElectronicsList = async (params?: {
   ordering?: string;
   status?: string;  // status 파라미터 추가
   include_completed?: string | boolean;  // 거래완료 포함 파라미터 추가
+  limit?: number;  // 페이지네이션 지원
+  offset?: number; // 페이지네이션 지원
 }): Promise<ElectronicsListResponse> => {
   // boolean을 string으로 변환
   const apiParams = { ...params };
