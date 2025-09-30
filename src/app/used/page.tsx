@@ -214,10 +214,12 @@ export default function UsedPhonesPage() {
       const phoneItems: PhoneItem[] = phoneData.map((phone: UsedPhone) => ({ ...phone, itemType: 'phone' as const }));
       const electronicsItems: ElectronicsItem[] = electronicsData.map((elec: UsedElectronics) => ({ ...elec, itemType: 'electronics' as const }));
 
-      // 날짜순 정렬
-      const allItems = [...phoneItems, ...electronicsItems].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+      // 끌올 우선, 날짜순 정렬
+      const allItems = [...phoneItems, ...electronicsItems].sort((a, b) => {
+        const aDate = a.last_bumped_at || a.created_at;
+        const bDate = b.last_bumped_at || b.created_at;
+        return new Date(bDate).getTime() - new Date(aDate).getTime();
+      });
 
       setPhones(phoneData);
       setElectronics(electronicsData);
