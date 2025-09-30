@@ -886,6 +886,7 @@ function RegisterPageContent() {
                   <div className="font-semibold text-base sm:text-lg">
                     <span className="block">구매하기</span>
                     <span className="text-sm sm:text-base">(일반회원)</span>
+                    <span className="text-xs text-gray-600 block mt-1">(공구견적받기,중고거래)</span>
                   </div>
                 </button>
                 <button
@@ -905,8 +906,17 @@ function RegisterPageContent() {
                   <div className="font-semibold text-base sm:text-lg">
                     <span className="block">판매하기</span>
                     <span className="text-sm sm:text-base">(판매회원)</span>
+                    <span className="text-xs text-gray-600 block mt-1">(공구견적제안,중고거래)</span>
                   </div>
                 </button>
+              </div>
+
+              {/* 중고거래 이용 안내 */}
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
+                  <span>ℹ️</span>
+                  <span>중고거래는 일반회원, 판매회원 누구나 이용 가능합니다</span>
+                </p>
               </div>
             </div>
           )}
