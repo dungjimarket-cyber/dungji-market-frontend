@@ -114,13 +114,20 @@ export default function UsedPhonesPage() {
       const params: any = {
         limit,
         offset,
-        ordering: currentFilters.sortBy === 'price_low' || currentFilters.sortBy === 'price' ? 'price' : currentFilters.sortBy === 'price_high' ? '-price' : '-created_at',
         search: currentFilters.search,
         subcategory: currentFilters.subcategory,
         condition: currentFilters.condition,
         min_price: currentFilters.minPrice,
         max_price: currentFilters.maxPrice,
       };
+
+      // 가격 정렬일 때만 ordering 파라미터 추가 (기본은 백엔드에서 끌올 정렬 적용)
+      if (currentFilters.sortBy === 'price_low' || currentFilters.sortBy === 'price') {
+        params.ordering = 'price';
+      } else if (currentFilters.sortBy === 'price_high') {
+        params.ordering = '-price';
+      }
+      // sortBy가 없거나 'latest'인 경우 ordering 파라미터를 보내지 않음 (백엔드 기본 끌올 정렬 사용)
 
       // includeCompleted 파라미터 추가
       if (currentFilters.includeCompleted !== false) {
