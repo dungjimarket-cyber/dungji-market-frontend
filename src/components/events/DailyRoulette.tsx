@@ -117,23 +117,25 @@ export default function DailyRoulette() {
 
     setIsSpinning(true);
 
-    // 확률 기반 당첨 결정
+    // 확률 기반 당첨 결정 - 실제 돌림판 칸 중에서 랜덤 선택
     const random = Math.random() * 100;
     let accumulated = 0;
-    let selectedPrize = prizes[0];
+    let selectedPrizeIndex = 0;
 
-    for (const prize of prizes) {
-      accumulated += prize.probability;
+    // 각 칸의 확률로 선택
+    for (let i = 0; i < prizes.length; i++) {
+      accumulated += prizes[i].probability;
       if (random <= accumulated) {
-        selectedPrize = prize;
+        selectedPrizeIndex = i;
         break;
       }
     }
 
+    const selectedPrize = prizes[selectedPrizeIndex];
+
     // 회전 계산 (최소 10바퀴 + 당첨 위치)
-    const prizeIndex = prizes.findIndex(p => p.id === selectedPrize.id);
     const sliceAngle = 360 / prizes.length;
-    const targetAngle = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
+    const targetAngle = 360 - (selectedPrizeIndex * sliceAngle + sliceAngle / 2);
     const spins = 10;
     const totalRotation = rotation + 360 * spins + targetAngle;
 
