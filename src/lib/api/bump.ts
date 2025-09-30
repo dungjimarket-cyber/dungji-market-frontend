@@ -96,9 +96,11 @@ class BumpAPI {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (hours > 0) {
-      return `${hours}시간 ${minutes}분 후`;
+      // 1시간 이상이면 시간만 표시
+      return `${hours}시간 후 끌올 가능`;
     }
-    return `${minutes}분 후`;
+    // 1시간 미만이면 분으로 표시
+    return `${minutes}분 후 끌올 가능`;
   }
 
   /**
