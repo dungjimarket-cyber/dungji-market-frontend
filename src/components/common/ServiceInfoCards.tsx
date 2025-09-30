@@ -88,21 +88,21 @@ export function ServiceInfoCards({
   // PC에서 detail variant일 때 더 큰 카드 크기
   const cardClass = variant === 'detail'
     ? "flex-1 min-w-0 md:min-w-[150px] max-w-none md:max-w-[200px]"
-    : "min-w-[75px] md:min-w-[65px] md:max-w-[70px] flex-shrink-0";
+    : "min-w-[75px] md:min-w-[60px] md:max-w-[65px] flex-shrink-0";
 
   // detail variant: 모바일은 한 줄, PC는 여백 확보
   const containerClass = variant === 'detail'
     ? "flex gap-2 md:gap-3 flex-nowrap md:flex-wrap max-w-none md:max-w-3xl"
-    : "flex gap-1.5 md:gap-1 flex-wrap md:flex-nowrap";
+    : "flex gap-1.5 md:gap-0.5 flex-wrap md:flex-nowrap";
 
   return (
     <div className={containerClass}>
       {/* 통신사 카드 */}
       {carrier && (
-        <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1.5'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
-          <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[8px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>통신사</div>
+        <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
+          <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[7px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>통신사</div>
           {carrierIcon ? (
-            <div className={`relative ${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-6 md:h-6'} mb-1.5 md:mb-2`}>
+            <div className={`relative ${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-5 md:h-5'} mb-1.5 md:mb-1`}>
               <Image
                 src={carrierIcon}
                 alt={carrier}
@@ -111,22 +111,22 @@ export function ServiceInfoCards({
               />
             </div>
           ) : (
-            <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-6 md:h-6'} mb-1.5 md:mb-2 flex items-center justify-center`}>
-              <Wifi className={`${variant === 'detail' ? 'w-8 h-8 md:w-12 md:h-12' : 'w-5 h-5 md:w-4 md:h-4'} text-gray-400`} />
+            <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-5 md:h-5'} mb-1.5 md:mb-1 flex items-center justify-center`}>
+              <Wifi className={`${variant === 'detail' ? 'w-8 h-8 md:w-12 md:h-12' : 'w-5 h-5 md:w-3.5 md:h-3.5'} text-gray-400`} />
             </div>
           )}
-          <div className={variant === 'detail' ? "text-sm md:text-xl font-bold text-gray-900 text-center leading-tight" : "text-[10px] md:text-[9px] font-bold text-gray-900 text-center leading-tight"}>{carrier}</div>
+          <div className={variant === 'detail' ? "text-sm md:text-xl font-bold text-gray-900 text-center leading-tight" : "text-[10px] md:text-[8px] font-bold text-gray-900 text-center leading-tight"}>{carrier}</div>
         </div>
       )}
 
       {/* 가입유형 카드 */}
       {subscriptionType && (
-        <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1.5'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
-          <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[8px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>가입유형</div>
-          <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-6 md:h-6'} mb-1.5 md:mb-2 flex items-center justify-center bg-blue-50 rounded`}>
+        <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
+          <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[7px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>가입유형</div>
+          <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-5 md:h-5'} mb-1.5 md:mb-1 flex items-center justify-center bg-blue-50 rounded`}>
             {getSubscriptionIcon(subscriptionType, variant === 'detail' ? 'large' : 'small')}
           </div>
-          <div className={variant === 'detail' ? "text-sm md:text-xl font-bold text-gray-900 text-center leading-tight" : "text-[10px] md:text-[9px] font-bold text-gray-900 text-center leading-tight"}>
+          <div className={variant === 'detail' ? "text-sm md:text-xl font-bold text-gray-900 text-center leading-tight" : "text-[10px] md:text-[8px] font-bold text-gray-900 text-center leading-tight"}>
             {getSubscriptionTypeLabel(subscriptionType)}
           </div>
         </div>
@@ -134,18 +134,18 @@ export function ServiceInfoCards({
 
       {/* 요금제/속도 카드 */}
       {(planInfo || speed) && (
-        <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1.5'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
-          <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[8px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>
+        <div className={`${cardClass} bg-white rounded-md border border-gray-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
+          <div className={variant === 'detail' ? "text-xs md:text-sm text-gray-500 mb-1.5 md:mb-2 font-medium" : "text-[9px] md:text-[7px] text-gray-500 mb-1 md:mb-0.5 font-medium"}>
             {isInternet ? '속도' : '희망요금제'}
           </div>
-          <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-6 md:h-6'} mb-1.5 md:mb-2 flex items-center justify-center bg-purple-50 rounded`}>
+          <div className={`${variant === 'detail' ? 'w-10 h-10 md:w-16 md:h-16' : 'w-7 h-7 md:w-5 md:h-5'} mb-1.5 md:mb-1 flex items-center justify-center bg-purple-50 rounded`}>
             {isInternet ? (
-              <Gauge className={`${variant === 'detail' ? 'w-6 h-6 md:w-10 md:h-10' : 'w-3.5 h-3.5 md:w-3 md:h-3'} text-purple-600`} />
+              <Gauge className={`${variant === 'detail' ? 'w-6 h-6 md:w-10 md:h-10' : 'w-3.5 h-3.5 md:w-2.5 md:h-2.5'} text-purple-600`} />
             ) : (
-              <CreditCard className={`${variant === 'detail' ? 'w-6 h-6 md:w-10 md:h-10' : 'w-3.5 h-3.5 md:w-3 md:h-3'} text-purple-600`} />
+              <CreditCard className={`${variant === 'detail' ? 'w-6 h-6 md:w-10 md:h-10' : 'w-3.5 h-3.5 md:w-2.5 md:h-2.5'} text-purple-600`} />
             )}
           </div>
-          <div className={variant === 'detail' ? "text-sm md:text-xl font-bold text-gray-900 text-center leading-tight" : "text-[10px] md:text-[9px] font-bold text-gray-900 text-center leading-tight"}>
+          <div className={variant === 'detail' ? "text-sm md:text-xl font-bold text-gray-900 text-center leading-tight" : "text-[10px] md:text-[8px] font-bold text-gray-900 text-center leading-tight"}>
             {speed || planInfo || '-'}
           </div>
         </div>
@@ -166,12 +166,18 @@ export function ServiceInfoCards({
 
       {/* 요금제 유지조건 카드 (9-10만원대만) */}
       {planInfo && (planInfo === '9만원대' || planInfo === '10만원대' || planInfo === '10만원이상') && (
-        <div className={`${cardClass} bg-gradient-to-r from-purple-50 to-pink-50 rounded-md border border-purple-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1.5'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
-          <div className={`${variant === 'detail' ? 'text-[11px] md:text-xs' : 'text-[8px] md:text-[7px]'} text-purple-700 font-medium leading-tight text-center`}>
-            <div>요금제유지기간</div>
-            <div className="font-bold">(4~6개월)</div>
-            <div>최대지원금조건</div>
-          </div>
+        <div className={`${cardClass} bg-gradient-to-r from-purple-50 to-pink-50 rounded-md border border-purple-200 ${variant === 'detail' ? 'p-3 md:p-4' : 'p-2 md:p-1'} flex flex-col items-center justify-center hover:shadow-sm transition-shadow`}>
+          {variant === 'detail' ? (
+            <div className="text-xs md:text-sm text-purple-700 font-medium text-center whitespace-nowrap">
+              요금제유지 4~6개월 · 최대지원금
+            </div>
+          ) : (
+            <div className="text-[8px] md:text-[6px] text-purple-700 font-medium leading-tight text-center">
+              <div>요금제유지</div>
+              <div className="font-bold">(4~6개월)</div>
+              <div>최대지원금</div>
+            </div>
+          )}
         </div>
       )}
     </div>
