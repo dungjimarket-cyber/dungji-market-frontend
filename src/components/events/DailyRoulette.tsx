@@ -134,10 +134,14 @@ export default function DailyRoulette() {
     const selectedPrize = prizes[selectedPrizeIndex];
 
     // 회전 계산 (최소 10바퀴 + 당첨 위치)
+    // 화살표는 12시 방향(위)에 고정, 휠이 시계방향으로 회전
     const sliceAngle = 360 / prizes.length;
-    const targetAngle = 360 - (selectedPrizeIndex * sliceAngle + sliceAngle / 2);
+    // 선택된 칸이 화살표 위치에 오도록 계산 (반시계방향 각도)
+    const targetAngle = selectedPrizeIndex * sliceAngle;
     const spins = 10;
     const totalRotation = rotation + 360 * spins + targetAngle;
+
+    console.log('Selected Prize:', selectedPrize.name, 'Index:', selectedPrizeIndex, 'Target Angle:', targetAngle);
 
     setRotation(totalRotation);
 
