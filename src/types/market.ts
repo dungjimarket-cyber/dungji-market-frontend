@@ -3,7 +3,7 @@
  * 휴대폰과 전자제품 거래를 통합 관리하기 위한 타입
  */
 
-import type { UsedPhone } from './used';
+import type { UsedPhone, PHONE_BRANDS } from './used';
 import type { UsedElectronics } from './electronics';
 
 // 아이템 타입 구분자
@@ -102,7 +102,9 @@ export function getMainImageUrl(item: UnifiedMarketItem): string {
 export function getItemTitle(item: UnifiedMarketItem): string {
   if (isPhoneItem(item)) {
     const storage = item.storage ? `${item.storage}GB` : '';
-    return `${item.brand} ${item.model} ${storage}`.trim();
+    // 휴대폰 브랜드를 한글로 변환
+    const koreanBrand = item.brand && PHONE_BRANDS[item.brand] ? PHONE_BRANDS[item.brand] : item.brand;
+    return `${koreanBrand} ${item.model} ${storage}`.trim();
   } else {
     return `${item.brand} ${item.model_name}`.trim();
   }
