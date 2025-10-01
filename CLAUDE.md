@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 인프라 구조 - 절대 잊지 말 것
+
+### 배포 환경
+- **프론트엔드**: Vercel 서버리스
+- **백엔드**: AWS EC2 임대형 서버 (Django)
+- **데이터베이스**: PostgreSQL (AWS RDS)
+
+### 절대 하지 말아야 할 것
+❌ **Docker 명령어 실행 금지** - 로컬 Docker 없음
+❌ **파일 기반 설정 금지** - Vercel은 파일 시스템 없음, 환경변수만 사용
+❌ **로컬 마이그레이션 실행 금지** - 서버에서 직접 실행해야 함
+❌ **docker-compose 관련 작업 금지** - 배포 환경에 Docker 없음
+
+### 환경변수 설정 위치
+- **프론트엔드 환경변수**: Vercel 대시보드 → 프론트엔드 프로젝트 → Settings → Environment Variables
+- **백엔드 환경변수**: Vercel 대시보드 → 백엔드 프로젝트 → Settings → Environment Variables
+- **파일 대신 환경변수 사용**: Firebase 키, DB 설정 등 모두 환경변수로
+
+### 배포 후 적용
+- Git push → 자동 배포 (Vercel)
+- 환경변수 변경 시 → 수동 재배포 필요 (Vercel 대시보드에서 Redeploy)
+
 ## Project Overview
 Dungji Market (둥지마켓) is a Next.js-based group purchasing platform for telecommunications and internet services in Korea. Users can create and participate in group purchases to get better deals on mobile plans, internet services, and electronics.
 
