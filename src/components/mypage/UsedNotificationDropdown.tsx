@@ -173,16 +173,9 @@ const UsedNotificationDropdown: React.FC<UsedNotificationDropdownProps> = ({
       handleMarkAsRead(notification.id);
     }
 
-    // 알림 타입별 라우팅
-    if (notification.subType === '거래중' || notification.subType === '거래완료') {
-      if (type === 'sell') {
-        router.push(`/mypage?tab=sales&filter=${notification.subType === '거래중' ? 'trading' : 'sold'}`);
-      } else {
-        router.push(`/mypage?tab=purchases&filter=${notification.subType === '거래중' ? 'trading' : 'completed'}`);
-      }
-    } else {
-      router.push(`/used/${notification.phoneId}`);
-    }
+    // 모든 알림은 마이페이지로 이동
+    // 사용자가 직접 판매/구매 탭에서 확인
+    router.push('/mypage');
 
     onClose();
   };

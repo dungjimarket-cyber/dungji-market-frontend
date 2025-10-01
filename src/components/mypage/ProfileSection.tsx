@@ -253,6 +253,21 @@ export default function ProfileSection() {
     try {
       const newValue = !pushNotificationSettings[key];
 
+      // 알림을 켤 때 FCM 토큰 등록
+      if (newValue) {
+        try {
+          const { requestNotificationPermission, registerPushToken } = await import('@/lib/firebase');
+          const token = await requestNotificationPermission();
+          if (token) {
+            await registerPushToken(token);
+            console.log('푸시 토큰 재등록 완료');
+          }
+        } catch (tokenError) {
+          console.error('푸시 토큰 등록 실패:', tokenError);
+          // 토큰 등록 실패해도 설정은 저장
+        }
+      }
+
       const response = await fetchWithAuth('/notifications/settings/', {
         method: 'PATCH',
         headers: {
