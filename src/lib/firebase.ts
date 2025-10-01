@@ -45,6 +45,8 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
 
       if (token) {
         console.log('FCM 토큰:', token);
+        // 로컬스토리지에 토큰 저장
+        localStorage.setItem('fcm_token', token);
         return token;
       } else {
         console.log('토큰을 가져올 수 없습니다.');
