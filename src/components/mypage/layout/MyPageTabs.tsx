@@ -31,6 +31,7 @@ import BumpButton from '../sales/BumpButton';
 import ReviewModal from '@/components/used/ReviewModal';
 import type { UnifiedMarketItem, PhoneItem, ElectronicsItem } from '@/types/market';
 import { isPhoneItem, isElectronicsItem, sortByDate, normalizeApiResponse } from '@/types/market';
+import { getBrandNameKo } from '@/lib/brandNames';
 
 interface StatusCounts {
   sales: {
@@ -512,8 +513,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                   if (activeSection === 'sales-active') {
                     // 타입에 따른 데이터 처리
                     const itemTitle = item.itemType === 'phone'
-                      ? item.title || `${item.brand} ${item.model}`
-                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                      ? item.title || `${getBrandNameKo(item.brand)} ${item.model}`
+                      : `${getBrandNameKo(item.brand)} ${item.model_name || item.model || ''}`;
                     const itemImages = item.itemType === 'phone'
                       ? item.images
                       : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
@@ -534,9 +535,9 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <h4
-                                  className="font-medium truncate cursor-pointer hover:text-blue-600"
+                                  className="font-medium line-clamp-2 cursor-pointer hover:text-blue-600"
                                   onClick={() => router.push(detailUrl)}
                                 >
                                   {itemTitle}
@@ -617,8 +618,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                   if (activeSection === 'sales-offers') {
                     // 타입에 따른 데이터 처리
                     const itemTitle = item.itemType === 'phone'
-                      ? item.title || `${item.brand} ${item.model}`
-                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                      ? item.title || `${getBrandNameKo(item.brand)} ${item.model}`
+                      : `${getBrandNameKo(item.brand)} ${item.model_name || item.model || ''}`;
                     const itemImages = item.itemType === 'phone'
                       ? item.images
                       : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
@@ -632,16 +633,16 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={mainImage.image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                              className="w-16 h-16 object-cover rounded flex-shrink-0 cursor-pointer hover:opacity-80"
                               onClick={() => router.push(detailUrl)}
                             />
                           )}
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <h4
-                              className="font-medium truncate cursor-pointer hover:text-blue-600"
+                              className="font-medium line-clamp-2 cursor-pointer hover:text-blue-600"
                               onClick={() => router.push(detailUrl)}
                             >
-                              {itemTitle.slice(0, 30)}
+                              {itemTitle}
                             </h4>
                             <p className="text-sm text-gray-600">
                               판매가: {item.price.toLocaleString()}원
@@ -680,8 +681,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                   if (activeSection === 'sales-trading') {
                     // 타입에 따른 데이터 처리
                     const itemTitle = item.itemType === 'phone'
-                      ? item.title || `${item.brand} ${item.model}`
-                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                      ? item.title || `${getBrandNameKo(item.brand)} ${item.model}`
+                      : `${getBrandNameKo(item.brand)} ${item.model_name || item.model || ''}`;
                     const itemImages = item.itemType === 'phone'
                       ? item.images
                       : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
@@ -814,8 +815,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     // 타입에 따른 데이터 처리
                     const targetItem = item.phone || item.electronics;
                     const itemTitle = item.itemType === 'phone'
-                      ? targetItem?.title || `${targetItem?.brand} ${targetItem?.model}`
-                      : `${targetItem?.brand} ${targetItem?.model_name || targetItem?.model || ''}`;
+                      ? targetItem?.title || `${getBrandNameKo(targetItem?.brand)} ${targetItem?.model}`
+                      : `${getBrandNameKo(targetItem?.brand)} ${targetItem?.model_name || targetItem?.model || ''}`;
                     const itemImages = item.itemType === 'phone'
                       ? targetItem?.images
                       : targetItem?.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
@@ -829,16 +830,16 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                             <img
                               src={mainImage.image_url}
                               alt=""
-                              className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
+                              className="w-16 h-16 object-cover rounded flex-shrink-0 cursor-pointer hover:opacity-80"
                               onClick={() => router.push(detailUrl)}
                             />
                           )}
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <h4
-                              className="font-medium truncate cursor-pointer hover:text-blue-600"
+                              className="font-medium line-clamp-2 cursor-pointer hover:text-blue-600"
                               onClick={() => router.push(detailUrl)}
                             >
-                              {itemTitle?.slice(0, 30)}
+                              {itemTitle}
                             </h4>
                             <p className="text-sm text-gray-600">
                               제안가: {(item.offered_price || item.offer_price || 0).toLocaleString()}원
@@ -890,8 +891,8 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                     // 타입에 따른 데이터 처리
                     const targetItem = item.phone || item.electronics;
                     const itemTitle = item.itemType === 'phone'
-                      ? targetItem?.title || `${targetItem?.brand} ${targetItem?.model}`
-                      : `${targetItem?.brand} ${targetItem?.model_name || targetItem?.model || ''}`;
+                      ? targetItem?.title || `${getBrandNameKo(targetItem?.brand)} ${targetItem?.model}`
+                      : `${getBrandNameKo(targetItem?.brand)} ${targetItem?.model_name || targetItem?.model || ''}`;
                     const itemImages = item.itemType === 'phone'
                       ? targetItem?.images
                       : targetItem?.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
