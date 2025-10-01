@@ -4,11 +4,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { LogOut, ArrowLeft } from 'lucide-react';
+import { LogOut, ArrowLeft, Bell } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api/fetch';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -112,6 +117,14 @@ export default function ProfileSection() {
   const nicknameRef = useRef<HTMLDivElement>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
+  const { toast } = useToast();
+
+  // 푸시 알림 설정 상태
+  const [pushNotificationSettings, setPushNotificationSettings] = useState({
+    trade_notifications: true,
+    marketing_notifications: false,
+  });
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   
   // 컴포넌트 마운트시 AuthContext의 user 정보에서 프로필 데이터 설정
   useEffect(() => {
@@ -180,7 +193,7 @@ export default function ProfileSection() {
       try {
         const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
         if (!token) return;
-        
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -196,6 +209,31 @@ export default function ProfileSection() {
     fetchRegions();
   }, []);
 
+  // 푸시 알림 설정 가져오기
+  useEffect(() => {
+    const fetchNotificationSettings = async () => {
+      try {
+        setIsLoadingSettings(true);
+        const response = await fetchWithAuth('/notifications/settings/');
+        if (response.ok) {
+          const data = await response.json();
+          setPushNotificationSettings({
+            trade_notifications: data.trade_notifications ?? true,
+            marketing_notifications: data.marketing_notifications ?? false,
+          });
+        }
+      } catch (error) {
+        console.error('알림 설정 가져오기 실패:', error);
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchNotificationSettings();
+    }
+  }, [isAuthenticated]);
+
   /**
    * 이메일 주소 업데이트 함수
    * JWT 토큰을 활용하여 사용자 프로필 업데이트
@@ -206,6 +244,47 @@ export default function ProfileSection() {
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  /**
+   * 푸시 알림 설정 변경 핸들러
+   */
+  const handlePushNotificationChange = async (key: 'trade_notifications' | 'marketing_notifications') => {
+    try {
+      const newValue = !pushNotificationSettings[key];
+
+      const response = await fetchWithAuth('/notifications/settings/', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ [key]: newValue }),
+      });
+
+      if (response.ok) {
+        setPushNotificationSettings((prev) => ({
+          ...prev,
+          [key]: newValue,
+        }));
+        toast({
+          title: '설정이 변경되었습니다',
+          description: newValue ? '알림이 활성화되었습니다' : '알림이 비활성화되었습니다',
+        });
+      } else {
+        toast({
+          title: '설정 변경 실패',
+          description: '잠시 후 다시 시도해주세요',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('알림 설정 변경 실패:', error);
+      toast({
+        title: '오류가 발생했습니다',
+        description: '잠시 후 다시 시도해주세요',
+        variant: 'destructive',
+      });
+    }
   };
 
   /**
@@ -1045,17 +1124,65 @@ export default function ProfileSection() {
             <span>{error}</span>
           </div>
         )}
-        
-        {/* 로그아웃 버튼을 왼쪽 하단에 배치 */}
-        <div className="mt-8">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors text-sm text-gray-600"
-          >
-            <LogOut className="h-4 w-4" />
-            로그아웃
-          </button>
-        </div>
+      </div>
+
+      {/* 푸시 알림 설정 카드 - 프로필 정보 아래에 배치 */}
+      <Card className="p-6 mb-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Bell className="w-5 h-5" />
+          푸시 알림 설정
+        </h3>
+
+        {isLoadingSettings ? (
+          <div className="text-center py-4 text-gray-500">설정을 불러오는 중...</div>
+        ) : (
+          <div className="space-y-4">
+            {/* 거래 알림 */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex-1">
+                <Label htmlFor="trade-notifications" className="text-sm font-medium cursor-pointer">
+                  거래 알림
+                </Label>
+                <p className="text-xs text-gray-500 mt-1">
+                  공구, 중고거래 관련 알림 (가격제안, 거래확정 등)
+                </p>
+              </div>
+              <Switch
+                id="trade-notifications"
+                checked={pushNotificationSettings.trade_notifications}
+                onCheckedChange={() => handlePushNotificationChange('trade_notifications')}
+              />
+            </div>
+
+            {/* 마케팅 알림 */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex-1">
+                <Label htmlFor="marketing-notifications" className="text-sm font-medium cursor-pointer">
+                  마케팅 알림
+                </Label>
+                <p className="text-xs text-gray-500 mt-1">
+                  이벤트, 프로모션 등의 마케팅 알림
+                </p>
+              </div>
+              <Switch
+                id="marketing-notifications"
+                checked={pushNotificationSettings.marketing_notifications}
+                onCheckedChange={() => handlePushNotificationChange('marketing_notifications')}
+              />
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* 로그아웃 버튼을 왼쪽 하단에 배치 */}
+      <div className="mt-8">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors text-sm text-gray-600"
+        >
+          <LogOut className="h-4 w-4" />
+          로그아웃
+        </button>
       </div>
     </div>
   );

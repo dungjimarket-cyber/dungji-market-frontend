@@ -14,7 +14,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Phone, Upload, FileText, LogOut } from 'lucide-react';
+import { ArrowLeft, Loader2, Phone, Upload, FileText, LogOut, Bell } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { getSellerProfile, updateSellerProfile } from '@/lib/api/sellerService';
 import { getRegions } from '@/lib/api/regionService';
@@ -38,6 +38,8 @@ import {
 } from '@/components/ui/dialog';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
+import { fetchWithAuth } from '@/lib/api/fetch';
+import { Separator } from '@/components/ui/separator';
 
 export default function SellerSettings() {
   const router = useRouter();
@@ -86,11 +88,18 @@ export default function SellerSettings() {
   const [savingReferral, setSavingReferral] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  
+
   // 편집 모드 상태
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingRepresentativeName, setIsEditingRepresentativeName] = useState(false);
+
+  // 푸시 알림 설정
+  const [pushNotificationSettings, setPushNotificationSettings] = useState({
+    trade_notifications: true,
+    marketing_notifications: false,
+  });
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   // formatPhoneNumber 함수를 먼저 정의
   const formatPhoneNumber = (value: string) => {
@@ -128,6 +137,20 @@ export default function SellerSettings() {
 
         // 판매자 프로필 정보 가져오기
         const data = await getSellerProfile();
+
+        // 푸시 알림 설정 불러오기
+        try {
+          const response = await fetchWithAuth('/notifications/settings/');
+          const notifData = await response.json();
+          setPushNotificationSettings({
+            trade_notifications: notifData.trade_notifications,
+            marketing_notifications: notifData.marketing_notifications,
+          });
+        } catch (error) {
+          console.error('알림 설정 불러오기 실패:', error);
+        } finally {
+          setIsLoadingSettings(false);
+        }
         setProfile(data);
         
         // 추천인 정보 확인
@@ -462,6 +485,40 @@ export default function SellerSettings() {
     }
   };
 
+
+  // 푸시 알림 설정 변경
+  const handlePushNotificationChange = async (key: 'trade_notifications' | 'marketing_notifications') => {
+    const newValue = !pushNotificationSettings[key];
+
+    try {
+      await fetchWithAuth('/notifications/settings/', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          [key]: newValue,
+        }),
+      });
+
+      setPushNotificationSettings(prev => ({
+        ...prev,
+        [key]: newValue,
+      }));
+
+      toast({
+        title: '설정 변경 완료',
+        description: '알림 설정이 업데이트되었습니다.',
+      });
+    } catch (error) {
+      console.error('알림 설정 변경 실패:', error);
+      toast({
+        title: '설정 변경 실패',
+        description: '알림 설정을 변경하는 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // 개별 필드 저장 함수들
   const saveNickname = async () => {
@@ -1835,6 +1892,63 @@ export default function SellerSettings() {
                   <p className="text-xs text-gray-500">
                     * 추천인 코드는 회원가입 후 한 번만 등록 가능합니다.
                   </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 푸시 알림 설정 */}
+          <Card className="mt-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Bell className="h-5 w-5" />
+                푸시 알림 설정
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingSettings ? (
+                <div className="text-center py-4 text-gray-500 text-sm">설정을 불러오는 중...</div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="trade-notifications" className="text-sm font-medium">
+                        거래 알림
+                      </Label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        공구, 중고거래 관련 알림 (견적선정, 가격제안 등)
+                      </p>
+                    </div>
+                    <Switch
+                      id="trade-notifications"
+                      checked={pushNotificationSettings.trade_notifications}
+                      onCheckedChange={() => handlePushNotificationChange('trade_notifications')}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="marketing-notifications" className="text-sm font-medium">
+                        마케팅 알림
+                      </Label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        이벤트, 프로모션 등의 광고성 알림
+                      </p>
+                    </div>
+                    <Switch
+                      id="marketing-notifications"
+                      checked={pushNotificationSettings.marketing_notifications}
+                      onCheckedChange={() => handlePushNotificationChange('marketing_notifications')}
+                    />
+                  </div>
+
+                  <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                    <p className="text-xs text-gray-600">
+                      💡 푸시 알림은 브라우저 설정에서도 별도로 허용되어야 합니다.
+                    </p>
+                  </div>
                 </div>
               )}
             </CardContent>
