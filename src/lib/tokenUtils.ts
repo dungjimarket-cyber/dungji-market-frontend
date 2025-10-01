@@ -15,6 +15,7 @@ interface JwtUser {
 
 // 로컬 스토리지 키
 const TOKEN_STORAGE_KEY = 'dungji_auth_token';
+const REFRESH_TOKEN_STORAGE_KEY = 'dungji_refresh_token';
 
 /**
  * 인증 토큰 관련 유틸리티 함수
@@ -23,14 +24,32 @@ export const tokenUtils = {
   /**
    * 토큰을 로컬 스토리지에 저장합니다.
    */
-  saveToken: (token: string): void => {
+  saveToken: (token: string, refreshToken?: string): void => {
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        if (refreshToken) {
+          localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
+        }
         console.log('토큰이 로컬 스토리지에 저장되었습니다.');
       }
     } catch (error) {
       console.error('토큰 저장 오류:', error);
+    }
+  },
+
+  /**
+   * Refresh Token을 가져옵니다.
+   */
+  getRefreshToken: (): string | null => {
+    try {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+      }
+      return null;
+    } catch (error) {
+      console.error('Refresh Token 가져오기 오류:', error);
+      return null;
     }
   },
   
@@ -41,10 +60,53 @@ export const tokenUtils = {
     try {
       if (typeof window !== 'undefined') {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
         console.log('토큰이 로컬 스토리지에서 제거되었습니다.');
       }
     } catch (error) {
       console.error('토큰 제거 오류:', error);
+    }
+  },
+
+  /**
+   * Refresh Token을 사용하여 새로운 Access Token을 받아옵니다.
+   */
+  refreshAccessToken: async (): Promise<string | null> => {
+    try {
+      const refreshToken = tokenUtils.getRefreshToken();
+      if (!refreshToken) {
+        console.error('Refresh Token이 없습니다.');
+        return null;
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${baseUrl}/auth/token/refresh/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refresh: refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('토큰 갱신 실패:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      if (data.access) {
+        // 새 Access Token 저장
+        localStorage.setItem(TOKEN_STORAGE_KEY, data.access);
+        console.log('Access Token이 갱신되었습니다.');
+        return data.access;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('토큰 갱신 오류:', error);
+      return null;
     }
   },
   

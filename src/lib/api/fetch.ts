@@ -13,17 +13,21 @@ import { tokenUtils } from '../tokenUtils';
  * const data = await response.json();
  * ```
  */
+// 토큰 갱신 중인지 추적하는 플래그
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
 export const fetchWithAuth = async (
   url: string,
-  options: RequestInit & { skipAuthRedirect?: boolean } = {}
+  options: RequestInit & { skipAuthRedirect?: boolean; _isRetry?: boolean } = {}
 ): Promise<Response> => {
   try {
     const headers = await tokenUtils.getAuthHeaders();
-    
+
     // API URL 설정
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
     const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
-    
+
     const response = await fetch(fullUrl, {
       ...options,
       headers: {
@@ -31,23 +35,44 @@ export const fetchWithAuth = async (
         ...(options.headers || {}),
       },
     });
-    
+
     if (!response.ok) {
       // 응답 본문 텍스트로 받아서 확인
       const responseText = await response.text();
-      
+
       // JSON으로 파싱 시도
       let errorData;
       try {
         errorData = JSON.parse(responseText);
-        
-        // 토큰 만료 오류인 경우 (skipAuthRedirect가 true가 아닐 때만 리다이렉트)
-        if (response.status === 401 && 
-            errorData?.code === 'token_not_valid' && 
+
+        // 토큰 만료 오류인 경우
+        if (response.status === 401 &&
+            errorData?.code === 'token_not_valid' &&
             typeof window !== 'undefined' &&
-            !options.skipAuthRedirect) {
-          console.error('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
-          window.location.href = '/login';
+            !options.skipAuthRedirect &&
+            !options._isRetry) {  // 재시도가 아닐 때만
+
+          console.log('토큰 만료 감지, 갱신 시도...');
+
+          // 이미 갱신 중이면 기존 Promise를 기다림
+          if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = tokenUtils.refreshAccessToken();
+          }
+
+          const newToken = await refreshPromise;
+          isRefreshing = false;
+          refreshPromise = null;
+
+          if (newToken) {
+            // 토큰 갱신 성공 - 원래 요청 재시도
+            console.log('토큰 갱신 성공, 요청 재시도');
+            return fetchWithAuth(url, { ...options, _isRetry: true });
+          } else {
+            // 토큰 갱신 실패 - 로그인 페이지로
+            console.error('토큰 갱신 실패, 로그인 페이지로 이동');
+            window.location.href = '/login';
+          }
         }
       } catch (e) {
         // JSON 파싱 실패 시 원본 텍스트 사용

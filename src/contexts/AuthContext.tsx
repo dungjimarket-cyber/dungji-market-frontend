@@ -651,12 +651,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         // localStorage에 토큰 저장
         localStorage.setItem('accessToken', access);
-        localStorage.setItem('dungji_auth_token', access); 
+        localStorage.setItem('dungji_auth_token', access);
         localStorage.setItem('auth.token', access);
         localStorage.setItem('auth.status', 'authenticated');
-        
+
         if (refresh) {
           localStorage.setItem('refreshToken', refresh);
+          localStorage.setItem('dungji_refresh_token', refresh);  // tokenUtils에서 사용
         }
         
         // 쿠키에도 토큰 저장 (서버 컴포넌트에서 인식하기 위함)
