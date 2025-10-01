@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Mail, MessageSquare, Shield, Smartphone, User, LogOut, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,12 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { fetchWithAuth } from '@/lib/api/fetch';
 
 export default function SettingsTab() {
   const router = useRouter();
+  const { toast } = useToast();
   const [notifications, setNotifications] = useState({
     priceOffer: true,
     offerResponse: true,
@@ -21,6 +24,67 @@ export default function SettingsTab() {
     email: false,
     sms: false,
   });
+
+  // 실제 알림 설정 (백엔드 연동)
+  const [pushNotificationSettings, setPushNotificationSettings] = useState({
+    trade_notifications: true,
+    marketing_notifications: false,
+  });
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  // 알림 설정 불러오기
+  useEffect(() => {
+    const fetchNotificationSettings = async () => {
+      try {
+        const response = await fetchWithAuth('/notifications/settings/');
+        const data = await response.json();
+        setPushNotificationSettings({
+          trade_notifications: data.trade_notifications,
+          marketing_notifications: data.marketing_notifications,
+        });
+      } catch (error) {
+        console.error('알림 설정 불러오기 실패:', error);
+      } finally {
+        setIsLoadingSettings(false);
+      }
+    };
+
+    fetchNotificationSettings();
+  }, []);
+
+  // 알림 설정 변경
+  const handlePushNotificationChange = async (key: 'trade_notifications' | 'marketing_notifications') => {
+    const newValue = !pushNotificationSettings[key];
+
+    try {
+      await fetchWithAuth('/notifications/settings/', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          [key]: newValue,
+        }),
+      });
+
+      setPushNotificationSettings(prev => ({
+        ...prev,
+        [key]: newValue,
+      }));
+
+      toast({
+        title: '설정 변경 완료',
+        description: '알림 설정이 업데이트되었습니다.',
+      });
+    } catch (error) {
+      console.error('알림 설정 변경 실패:', error);
+      toast({
+        title: '설정 변경 실패',
+        description: '알림 설정을 변경하는 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
@@ -195,22 +259,76 @@ export default function SettingsTab() {
           </Button>
 
           <Separator />
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             className="w-full justify-start text-red-600 hover:text-red-700"
           >
             <LogOut className="w-4 h-4 mr-2" />
             로그아웃
           </Button>
-          
-          <Button 
-            variant="ghost" 
+
+          <Button
+            variant="ghost"
             className="w-full justify-start text-gray-500 hover:text-gray-600"
           >
             회원 탈퇴
           </Button>
         </div>
+      </Card>
+
+      {/* 푸시 알림 설정 */}
+      <Card className="p-4">
+        <h3 className="font-semibold mb-4 flex items-center gap-2">
+          <Bell className="w-5 h-5" />
+          푸시 알림 설정
+        </h3>
+
+        {isLoadingSettings ? (
+          <div className="text-center py-4 text-gray-500">설정을 불러오는 중...</div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="trade-notifications" className="text-sm font-medium">
+                  거래 알림
+                </Label>
+                <p className="text-xs text-gray-500 mt-1">
+                  공구, 중고거래 관련 알림 (가격제안, 거래확정 등)
+                </p>
+              </div>
+              <Switch
+                id="trade-notifications"
+                checked={pushNotificationSettings.trade_notifications}
+                onCheckedChange={() => handlePushNotificationChange('trade_notifications')}
+              />
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="marketing-notifications" className="text-sm font-medium">
+                  마케팅 알림
+                </Label>
+                <p className="text-xs text-gray-500 mt-1">
+                  이벤트, 프로모션 등의 광고성 알림
+                </p>
+              </div>
+              <Switch
+                id="marketing-notifications"
+                checked={pushNotificationSettings.marketing_notifications}
+                onCheckedChange={() => handlePushNotificationChange('marketing_notifications')}
+              />
+            </div>
+
+            <div className="mt-4 p-3 bg-gray-50 rounded-md">
+              <p className="text-xs text-gray-600">
+                💡 푸시 알림은 브라우저 설정에서도 별도로 허용되어야 합니다.
+              </p>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
