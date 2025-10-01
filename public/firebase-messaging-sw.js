@@ -4,14 +4,14 @@
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-// Firebase 설정 (환경 변수는 빌드 시 주입됨)
+// Firebase 설정
 const firebaseConfig = {
-  apiKey: "NEXT_PUBLIC_FIREBASE_API_KEY",
-  authDomain: "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-  projectId: "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-  storageBucket: "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "NEXT_PUBLIC_FIREBASE_APP_ID",
+  apiKey: "AIzaSyAakjFUJADtJegn5X6Wb2NKTbClH4WFyyc",
+  authDomain: "dungji-market-7c0e0.firebaseapp.com",
+  projectId: "dungji-market-7c0e0",
+  storageBucket: "dungji-market-7c0e0.firebasestorage.app",
+  messagingSenderId: "790362183739",
+  appId: "1:790362183739:web:f532f332d49c3e24d7a41e",
 };
 
 firebase.initializeApp(firebaseConfig);
