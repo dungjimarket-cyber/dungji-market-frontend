@@ -486,7 +486,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               </span>
             ) : (
               groupBuy.regions && groupBuy.regions.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex items-center gap-1 flex-nowrap overflow-x-auto scrollbar-hide">
                   {groupBuy.regions.slice(0, 3).map((region, index) => {
                     let displayName = region.name || region.full_name || '';
                     displayName = displayName
@@ -494,15 +494,15 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                       .replace('광역시', '')
                       .replace('특별자치시', '')
                       .replace('특별자치도', '');
-                    
+
                     return (
-                      <span key={index} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                      <span key={index} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap flex-shrink-0">
                         {displayName}
                       </span>
                     );
                   })}
                   {groupBuy.regions.length > 3 && (
-                    <span className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200">
+                    <span className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap flex-shrink-0">
                       +{groupBuy.regions.length - 3}
                     </span>
                   )}
