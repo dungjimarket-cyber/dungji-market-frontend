@@ -22,16 +22,9 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Background message received:', payload);
 
-  // data 페이로드에서 title, body 읽기 (중복 알림 방지)
-  const notificationTitle = payload.data?.title || '둥지마켓';
-  const notificationOptions = {
-    body: payload.data?.body || '',
-    icon: '/logos/dungji_logo.jpg',
-    badge: '/logos/dungji_logo.jpg',
-    data: payload.data,
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  // FCM이 notification 필드로 자동 알림을 표시하므로
+  // 여기서는 추가 처리 없이 로그만 남김 (중복 알림 방지)
+  // 알림 클릭은 notificationclick 이벤트에서 처리
 });
 
 // 알림 클릭 처리
