@@ -85,7 +85,19 @@ export const getActivePopups = async (pageType: string = 'main'): Promise<Popup[
     const response = await axios.get(`${API_URL}/popups/active_popups/`, {
       params: { page_type: pageType }
     });
-    return response.data;
+
+    // 디버그 정보가 있으면 콘솔에 출력
+    if (response.data.debug_info) {
+      console.log('[Popup Debug Info]', response.data.debug_info);
+
+      // 앱에서도 확인 가능하도록 alert (임시)
+      if (typeof window !== 'undefined' && response.data.debug_info.is_twa_detected !== undefined) {
+        alert(`TWA 감지: ${response.data.debug_info.is_twa_detected}\nUser-Agent: ${response.data.debug_info.user_agent.substring(0, 100)}`);
+      }
+    }
+
+    // results 배열이 있으면 그것을 반환, 없으면 기존 data 반환
+    return response.data.results || response.data;
   } catch (error) {
     console.error('활성 팝업 조회 실패:', error);
     throw error;
