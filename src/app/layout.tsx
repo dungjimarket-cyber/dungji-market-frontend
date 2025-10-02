@@ -9,6 +9,7 @@ import Footer from '@/components/common/Footer';
 import { Analytics } from "@vercel/analytics/next"
 import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
 import KakaoInAppBrowserHandler from '@/components/common/KakaoInAppBrowserHandler';
+import ServiceWorkerRegister from '@/components/common/ServiceWorkerRegister';
 import Script from 'next/script';
 
 const inter = Inter({ 
@@ -145,6 +146,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <ServiceWorkerRegister />
         <Providers>
           <KakaoInAppBrowserHandler />
           <Toaster />
