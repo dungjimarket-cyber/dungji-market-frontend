@@ -90,9 +90,18 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onC
     if (!notification.is_read) {
       handleMarkAsRead(notification.id);
     }
-    
-    // 공구 상세 페이지로 이동
-    router.push(`/groupbuys/${notification.groupbuy}`);
+
+    // 알림 타입에 따라 라우팅
+    if (notification.item_type === 'phone' || notification.item_type === 'electronics') {
+      // 중고거래 알림 → 중고거래 마이페이지
+      router.push('/used/mypage');
+    } else if (notification.groupbuy) {
+      // 공구 알림 → 공구 상세 페이지
+      router.push(`/groupbuys/${notification.groupbuy}`);
+    } else {
+      // 기타 알림 → 마이페이지
+      router.push('/mypage');
+    }
     onClose();
   };
 
