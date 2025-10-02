@@ -27,9 +27,15 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
       return null;
     }
 
-    // 알림 권한 요청
-    const permission = await Notification.requestPermission();
+    // 1. 먼저 현재 권한 상태 확인
+    let permission = Notification.permission;
 
+    // 2. 아직 결정되지 않은 경우에만 권한 요청
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
+
+    // 3. 권한 상태에 따라 처리
     if (permission === 'granted') {
       console.log('알림 권한이 허용되었습니다.');
 
