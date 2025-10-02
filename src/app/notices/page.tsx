@@ -190,16 +190,19 @@ export default function NoticesPage() {
                       <CardContent>
                         {notice.content.includes('<') ? (
                           <div
-                            className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:shadow-md prose-hr:border-gray-300 prose-table:border-collapse prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-th:bg-gray-50"
+                            className="prose prose-sm max-w-none whitespace-pre-wrap prose-headings:text-gray-800 prose-p:text-gray-700 prose-p:whitespace-pre-wrap prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-img:shadow-md prose-hr:border-gray-300 prose-table:border-collapse prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-th:bg-gray-50"
                             dangerouslySetInnerHTML={{
-                              __html: DOMPurify.sanitize(notice.content, {
-                                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                                             'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'hr', 'table', 'thead',
-                                             'tbody', 'tr', 'th', 'td', 'caption', 'span', 'div', 'pre', 'code'],
-                                ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'class', 'style',
-                                              'target', 'rel', 'colspan', 'rowspan'],
-                                ALLOW_DATA_ATTR: false
-                              })
+                              __html: DOMPurify.sanitize(
+                                notice.content.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>'),
+                                {
+                                  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                                               'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'hr', 'table', 'thead',
+                                               'tbody', 'tr', 'th', 'td', 'caption', 'span', 'div', 'pre', 'code'],
+                                  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'class', 'style',
+                                                'target', 'rel', 'colspan', 'rowspan'],
+                                  ALLOW_DATA_ATTR: false
+                                }
+                              )
                             }}
                           />
                         ) : (
