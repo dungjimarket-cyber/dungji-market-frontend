@@ -3,6 +3,8 @@ const withPWA = require('next-pwa')({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  // Firebase Messaging Service Worker 사용
+  sw: 'firebase-messaging-sw.js',
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,

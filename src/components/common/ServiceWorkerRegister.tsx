@@ -9,13 +9,14 @@ import { useEffect } from 'react';
 export default function ServiceWorkerRegister() {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/firebase-messaging-sw.js')
+      // next-pwa가 firebase-messaging-sw.js를 자동으로 등록하므로
+      // ready 상태만 확인
+      navigator.serviceWorker.ready
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
+          console.log('[SW] Service Worker ready:', registration.active?.scriptURL);
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+          console.error('[SW] Service Worker error:', error);
         });
     }
   }, []);
