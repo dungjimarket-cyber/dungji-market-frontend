@@ -21,52 +21,63 @@ if (typeof window !== 'undefined' && !getApps().length) {
 // FCM 토큰 가져오기
 export const requestNotificationPermission = async (): Promise<string | null> => {
   try {
+    console.log('[FCM] 🔔 알림 권한 요청 시작');
+    console.log('[FCM] User Agent:', navigator.userAgent);
+
     // 브라우저가 알림을 지원하는지 확인
     if (!('Notification' in window)) {
-      console.log('이 브라우저는 알림을 지원하지 않습니다.');
+      console.log('[FCM] ❌ 이 브라우저는 알림을 지원하지 않습니다.');
       return null;
     }
 
     // 1. 먼저 현재 권한 상태 확인
     let permission = Notification.permission;
+    console.log('[FCM] 현재 권한 상태:', permission);
 
     // 2. 아직 결정되지 않은 경우에만 권한 요청
     if (permission === 'default') {
+      console.log('[FCM] ⏳ 권한 팝업 표시 중...');
       permission = await Notification.requestPermission();
+      console.log('[FCM] 사용자 선택 결과:', permission);
     }
 
     // 3. 권한 상태에 따라 처리
     if (permission === 'granted') {
-      console.log('알림 권한이 허용되었습니다.');
+      console.log('[FCM] ✅ 알림 권한이 허용되었습니다.');
 
       // Firebase Messaging 초기화
       if (!messaging && typeof window !== 'undefined') {
+        console.log('[FCM] 🔥 Firebase Messaging 초기화 중...');
         messaging = getMessaging(app);
+        console.log('[FCM] ✅ Firebase Messaging 초기화 완료');
       }
 
       // FCM 토큰 가져오기
+      console.log('[FCM] 🔑 FCM 토큰 가져오는 중...');
+      console.log('[FCM] VAPID Key:', process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.substring(0, 20) + '...');
+
       const token = await getToken(messaging!, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
       });
 
       if (token) {
-        console.log('FCM 토큰:', token);
+        console.log('[FCM] ✅ FCM 토큰 생성 성공:', token.substring(0, 30) + '...');
         // 로컬스토리지에 토큰 저장
         localStorage.setItem('fcm_token', token);
         return token;
       } else {
-        console.log('토큰을 가져올 수 없습니다.');
+        console.log('[FCM] ❌ 토큰을 가져올 수 없습니다.');
         return null;
       }
     } else if (permission === 'denied') {
-      console.log('알림 권한이 거부되었습니다.');
+      console.log('[FCM] ❌ 알림 권한이 거부되었습니다.');
       return null;
     } else {
-      console.log('알림 권한 요청이 무시되었습니다.');
+      console.log('[FCM] ⚠️ 알림 권한 요청이 무시되었습니다.');
       return null;
     }
   } catch (error) {
-    console.error('FCM 토큰 가져오기 오류:', error);
+    console.error('[FCM] ❌ FCM 토큰 가져오기 오류:', error);
     return null;
   }
 };
