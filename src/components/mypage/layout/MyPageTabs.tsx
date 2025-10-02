@@ -937,7 +937,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => fetchSellerInfo(targetItem || item)}
+                                onClick={() => fetchSellerInfo(item)}
                               >
                                 판매자 정보
                               </Button>
@@ -945,7 +945,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                 size="sm"
                                 variant="outline"
                                 className="border-red-300 text-red-600 hover:bg-red-50"
-                                onClick={() => handleCancelTransaction(targetItem || item)}
+                                onClick={() => handleCancelTransaction(item)}
                               >
                                 거래 취소
                               </Button>
