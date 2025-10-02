@@ -5,26 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import { getActivePopups, recordPopupView, recordPopupClick } from '@/lib/api/popupService';
-
-interface Popup {
-  id: number;
-  title: string;
-  popup_type: 'image' | 'text' | 'mixed';
-  content?: string;
-  image?: string;
-  link_url?: string;
-  link_target: '_self' | '_blank';
-  position: 'center' | 'top' | 'bottom' | 'custom';
-  position_x?: number;
-  position_y?: number;
-  width: number;
-  height: number;
-  show_today_close: boolean;
-  show_week_close: boolean;
-  hide_on_twa_app?: boolean;
-  show_only_on_twa_app?: boolean;
-}
+import { getActivePopups, recordPopupView, recordPopupClick, Popup } from '@/lib/api/popupService';
 
 interface PopupDisplayProps {
   popup: Popup;
