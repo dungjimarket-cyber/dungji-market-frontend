@@ -30,6 +30,7 @@ const MobileNotificationButton: React.FC = () => {
     <div className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-full py-2 relative">
       <NotificationBell
         onClick={() => setShowNotifications(!showNotifications)}
+        unreadCount={unreadCount}
         onUnreadCountChange={setUnreadCount}
       />
       <span className="text-[10px]">알림</span>
