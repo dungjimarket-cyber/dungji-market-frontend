@@ -379,12 +379,12 @@ export default function PurchaseActivityTab() {
         })
       ]);
 
-      // 백엔드가 이미 type 필드를 반환하므로 그대로 사용 (type -> itemType으로 rename)
+      // 데이터 구조로 정확하게 타입 판단
       const phoneItems = (Array.isArray(phoneTrading) ? phoneTrading : phoneTrading.results || [])
-        .map((item: any) => ({ ...item, itemType: item.type || 'phone' }));
+        .map((item: any) => ({ ...item, itemType: item.phone ? 'phone' : 'electronics' }));
 
       const electronicsItems = (Array.isArray(electronicsTrading) ? electronicsTrading : electronicsTrading.results || [])
-        .map((item: any) => ({ ...item, itemType: item.type || 'electronics' }));
+        .map((item: any) => ({ ...item, itemType: item.electronics ? 'electronics' : 'phone' }));
 
       // 디버깅: 전자제품 sold 상태 확인
       console.log('[DEBUG] Electronics trading items:', electronicsItems);
