@@ -388,9 +388,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.setItem('user', userJson);
                 localStorage.setItem('auth.user', userJson);
                 localStorage.setItem('userRole', userData.role || 'buyer');
-                
+
                 // 상태 업데이트
                 setUser(userData);
+
+                // 푸시 토큰 등록 (OAuth 로그인 후 초기화 시에도 실행)
+                try {
+                  const { requestNotificationPermission, registerPushToken } = await import('@/lib/firebase');
+                  const pushToken = await requestNotificationPermission();
+                  if (pushToken) {
+                    await registerPushToken(pushToken);
+                    console.log('[Auth Init] 푸시 토큰 등록 완료');
+                  }
+                } catch (pushError) {
+                  console.error('[Auth Init] 푸시 토큰 등록 실패 (무시):', pushError);
+                }
               } else {
                 console.warn('프로필 정보 가져오기 실패:', response.status);
                 console.error('프로필 API 응답 상태:', response.status, response.statusText);
