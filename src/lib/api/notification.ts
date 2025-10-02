@@ -7,9 +7,12 @@ export interface Notification {
   id: number;
   user: number;
   user_name: string;
-  groupbuy: number;
+  groupbuy: number | null;
   groupbuy_title: string;
   message: string;
+  notification_type: string;
+  item_type: string | null;
+  item_id: number | null;
   created_at: string;
   is_read: boolean;
 }
