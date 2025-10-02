@@ -50,9 +50,6 @@ export default function ServiceWorkerRegister() {
               console.log('[Foreground] Message received:', payload);
               console.log('[Foreground] Notification permission:', Notification.permission);
 
-              // 디버깅용 alert (나중에 제거)
-              alert(`포그라운드 알림 수신!\nTitle: ${payload.notification?.title}\nPermission: ${Notification.permission}`);
-
               // 브라우저 알림 표시
               if (Notification.permission === 'granted') {
                 const notificationTitle = payload.notification?.title || '둥지마켓';
@@ -64,10 +61,18 @@ export default function ServiceWorkerRegister() {
                 };
 
                 console.log('[Foreground] Showing notification:', notificationTitle);
-                new Notification(notificationTitle, notificationOptions);
+
+                // Service Worker를 통해 알림 표시 (TWA 호환)
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification(notificationTitle, notificationOptions);
+                  });
+                } else {
+                  // Fallback: 직접 알림 표시
+                  new Notification(notificationTitle, notificationOptions);
+                }
               } else {
                 console.log('[Foreground] Notification permission denied');
-                alert('알림 권한이 거부되었습니다');
               }
             });
           }
