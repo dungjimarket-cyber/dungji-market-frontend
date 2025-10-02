@@ -27,6 +27,8 @@ export interface Popup {
   show_on_mobile: boolean;
   show_today_close: boolean;
   show_week_close: boolean;
+  hide_on_twa_app?: boolean;
+  show_only_on_twa_app?: boolean;
   show_pages: string[];
   exclude_pages: string[];
   view_count: number;
