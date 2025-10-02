@@ -266,16 +266,21 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           const phoneTrading = Array.isArray(phoneTradingData) ? phoneTradingData : phoneTradingData.results || [];
           const electronicsTrading = Array.isArray(electronicsTradingData) ? electronicsTradingData : electronicsTradingData.results || [];
 
+          console.log('[DEBUG] phoneTrading data:', phoneTrading);
+          console.log('[DEBUG] electronicsTrading data:', electronicsTrading);
+
           // 데이터 구조로 정확하게 타입 판단
           const allTradingItems = [
-            ...phoneTrading.map((item: any) => ({
-              ...item,
-              itemType: item.phone ? 'phone' : 'electronics'  // phone 객체 있으면 phone
-            })),
-            ...electronicsTrading.map((item: any) => ({
-              ...item,
-              itemType: item.electronics ? 'electronics' : 'phone'  // electronics 객체 있으면 electronics
-            }))
+            ...phoneTrading.map((item: any) => {
+              const itemType = item.phone ? 'phone' : 'electronics';
+              console.log('[DEBUG] Phone API item - has phone:', !!item.phone, 'has electronics:', !!item.electronics, 'itemType:', itemType);
+              return { ...item, itemType };
+            }),
+            ...electronicsTrading.map((item: any) => {
+              const itemType = item.electronics ? 'electronics' : 'phone';
+              console.log('[DEBUG] Electronics API item - has phone:', !!item.phone, 'has electronics:', !!item.electronics, 'itemType:', itemType);
+              return { ...item, itemType };
+            })
           ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
           if (status === 'trading') {
@@ -1558,23 +1563,33 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
 
   async function fetchSellerInfo(item: UnifiedMarketItem) {
     try {
+      console.log('[DEBUG] fetchSellerInfo - item:', item);
+      console.log('[DEBUG] fetchSellerInfo - item.itemType:', item.itemType);
+      console.log('[DEBUG] fetchSellerInfo - item.phone:', (item as any).phone);
+      console.log('[DEBUG] fetchSellerInfo - item.electronics:', (item as any).electronics);
+      console.log('[DEBUG] fetchSellerInfo - item.id:', item.id);
+
       let data;
       let itemId;
 
       if (item.itemType === 'phone') {
         // 판매내역: item.id, 구매내역: item.phone.id
         itemId = (item as any).phone?.id || item.id;
+        console.log('[DEBUG] Using phone API with itemId:', itemId);
         data = await buyerAPI.getSellerInfo(itemId);
       } else {
         // 판매내역: item.id, 구매내역: item.electronics.id
         itemId = (item as any).electronics?.id || item.id;
+        console.log('[DEBUG] Using electronics API with itemId:', itemId);
         data = await electronicsApi.getSellerInfo(itemId);
       }
 
       setSelectedUserInfo(data);
       setShowSellerInfoModal(true);
     } catch (error: any) {
-      console.error('Failed to fetch seller info:', error);
+      console.error('[ERROR] Failed to fetch seller info:', error);
+      console.error('[ERROR] Error response:', error.response);
+      console.error('[ERROR] Error data:', error.response?.data);
       const errorMessage = error.response?.data?.error || '판매자 정보를 불러올 수 없습니다.';
       toast(errorMessage);
     }
