@@ -1447,14 +1447,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       const endpoint = isSeller ? 'complete-trade' : 'buyer-complete';
       const basePath = item.itemType === 'phone' ? 'phones' : 'electronics';
 
-      // item.id는 transaction ID이므로, 실제 상품 ID를 사용해야 함
+      // 판매내역: item.id, 구매내역: item.phone.id / item.electronics.id
       const itemId = item.itemType === 'phone'
-        ? (item as any).phone?.id
-        : (item as any).electronics?.id;
-
-      if (!itemId) {
-        throw new Error('상품 ID를 찾을 수 없습니다.');
-      }
+        ? ((item as any).phone?.id || item.id)
+        : ((item as any).electronics?.id || item.id);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${itemId}/${endpoint}/`,
@@ -1489,14 +1485,10 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       const isSeller = activeSection?.startsWith('sales-');
       const basePath = item.itemType === 'phone' ? 'phones' : 'electronics';
 
-      // item.id는 transaction ID이므로, 실제 상품 ID를 사용해야 함
+      // 판매내역: item.id, 구매내역: item.phone.id / item.electronics.id
       const itemId = item.itemType === 'phone'
-        ? (item as any).phone?.id
-        : (item as any).electronics?.id;
-
-      if (!itemId) {
-        throw new Error('상품 ID를 찾을 수 없습니다.');
-      }
+        ? ((item as any).phone?.id || item.id)
+        : ((item as any).electronics?.id || item.id);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${itemId}/cancel-trade/`,
@@ -1537,16 +1529,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   async function fetchBuyerInfo(item: UnifiedMarketItem) {
     try {
       let data;
-      // item.id는 transaction ID이므로, 실제 상품 ID를 사용해야 함
+      let itemId;
+
       if (item.itemType === 'phone') {
-        const phoneId = (item as any).phone?.id;
-        if (!phoneId) throw new Error('Phone ID not found');
-        data = await sellerAPI.getBuyerInfo(phoneId);
+        // 판매내역: item.id, 구매내역: item.phone.id
+        itemId = (item as any).phone?.id || item.id;
+        data = await sellerAPI.getBuyerInfo(itemId);
       } else {
-        const electronicsId = (item as any).electronics?.id;
-        if (!electronicsId) throw new Error('Electronics ID not found');
-        data = await electronicsApi.getBuyerInfo(electronicsId);
+        // 판매내역: item.id, 구매내역: item.electronics.id
+        itemId = (item as any).electronics?.id || item.id;
+        data = await electronicsApi.getBuyerInfo(itemId);
       }
+
       setSelectedUserInfo(data);
       setShowBuyerInfoModal(true);
     } catch (error: any) {
@@ -1559,16 +1553,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   async function fetchSellerInfo(item: UnifiedMarketItem) {
     try {
       let data;
-      // item.id는 transaction ID이므로, 실제 상품 ID를 사용해야 함
+      let itemId;
+
       if (item.itemType === 'phone') {
-        const phoneId = (item as any).phone?.id;
-        if (!phoneId) throw new Error('Phone ID not found');
-        data = await buyerAPI.getSellerInfo(phoneId);
+        // 판매내역: item.id, 구매내역: item.phone.id
+        itemId = (item as any).phone?.id || item.id;
+        data = await buyerAPI.getSellerInfo(itemId);
       } else {
-        const electronicsId = (item as any).electronics?.id;
-        if (!electronicsId) throw new Error('Electronics ID not found');
-        data = await electronicsApi.getSellerInfo(electronicsId);
+        // 판매내역: item.id, 구매내역: item.electronics.id
+        itemId = (item as any).electronics?.id || item.id;
+        data = await electronicsApi.getSellerInfo(itemId);
       }
+
       setSelectedUserInfo(data);
       setShowSellerInfoModal(true);
     } catch (error: any) {
