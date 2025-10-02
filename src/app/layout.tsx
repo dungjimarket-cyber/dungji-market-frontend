@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     siteName: '둥지마켓',
     images: [
       {
-        url: '/logos/dunji_logo.jpg',
+        url: '/logos/dungji_logo.jpg',
         width: 1200,
         height: 630,
         alt: '둥지마켓',
@@ -62,17 +62,17 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "둥지마켓 - 통신상품비교견적/지역기반중고거래",
     description: "공동구매 비교견적과 중고거래를 한번에 제공하는 통합 플랫폼\n✓ 휴대폰·인터넷 비교견적 서비스\n✓ 전국 판매점 연결\n✓ 지역기반 중고직거래 서비스",
-    images: ['/logos/dunji_logo.jpg'],
+    images: ['/logos/dungji_logo.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
   icons: {
     icon: [
-      { url: '/logos/dunji_logo.jpg', type: 'image/jpeg' },
+      { url: '/logos/dungji_logo.jpg', type: 'image/jpeg' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: '/logos/dunji_logo.jpg', type: 'image/jpeg' },
+      { url: '/logos/dungji_logo.jpg', type: 'image/jpeg' },
       { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
     ],
@@ -114,8 +114,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="둥지마켓" />
-        <link rel="icon" href="/logos/dunji_logo.jpg" type="image/jpeg" />
-        <link rel="apple-touch-icon" href="/logos/dunji_logo.jpg" />
+        <link rel="icon" href="/logos/dungji_logo.jpg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/logos/dungji_logo.jpg" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
       </head>

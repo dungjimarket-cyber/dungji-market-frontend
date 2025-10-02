@@ -103,7 +103,7 @@ export default function DailyRoulette() {
 
     // 둥지마켓 로고 이미지
     const logoImg = new Image();
-    logoImg.src = '/logos/dunji_logo.jpg';
+    logoImg.src = '/logos/dungji_logo.jpg';
     logoImg.onload = () => {
       ctx.save();
       ctx.beginPath();

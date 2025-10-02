@@ -22,11 +22,12 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Background message received:', payload);
 
-  const notificationTitle = payload.notification?.title || '둥지마켓';
+  // data 페이로드에서 title, body 읽기 (중복 알림 방지)
+  const notificationTitle = payload.data?.title || '둥지마켓';
   const notificationOptions = {
-    body: payload.notification?.body || '',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    body: payload.data?.body || '',
+    icon: '/logos/dungji_logo.jpg',
+    badge: '/logos/dungji_logo.jpg',
     data: payload.data,
   };
 
