@@ -56,9 +56,11 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onC
     try {
       setLoading(true);
       const data = await getNotifications();
+      console.log('[NotificationDropdown] Fetched data:', data);
       setNotifications(data);
       // 카운트 변경을 상위 컴포넌트에 알림
       if (onUnreadCountChange) {
+        console.log('[NotificationDropdown] Calling onUnreadCountChange with:', data.unread_count);
         onUnreadCountChange(data.unread_count);
       }
     } catch (error) {

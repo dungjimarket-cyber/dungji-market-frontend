@@ -135,10 +135,13 @@ export default function DesktopNavbar() {
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
               <div className="relative">
-                <NotificationBell 
-                  onClick={() => setShowNotifications(!showNotifications)} 
+                <NotificationBell
+                  onClick={() => setShowNotifications(!showNotifications)}
                   unreadCount={unreadCount}
-                  onUnreadCountChange={setUnreadCount}
+                  onUnreadCountChange={(count) => {
+                    console.log('[DesktopNavbar] Received unreadCount update:', count);
+                    setUnreadCount(count);
+                  }}
                 />
                 {showNotifications && (
                   <>
