@@ -22,6 +22,7 @@ interface Popup {
   height: number;
   show_today_close: boolean;
   show_week_close: boolean;
+  hide_on_twa_app?: boolean;
 }
 
 interface PopupDisplayProps {
@@ -404,6 +405,14 @@ export function PopupManager({ pageType = 'main' }: PopupManagerProps) {
   const [popups, setPopups] = useState<Popup[]>([]);
   const [currentPopupIndex, setCurrentPopupIndex] = useState(0);
 
+  // TWA 앱 여부 감지
+  const isTWA = () => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           (window.navigator as any).standalone === true ||
+           document.referrer.includes('android-app://');
+  };
+
   useEffect(() => {
     loadPopups();
   }, [pageType]);
@@ -429,12 +438,17 @@ export function PopupManager({ pageType = 'main' }: PopupManagerProps) {
 
       const activePopups = await getActivePopups(currentPageType);
 
-      // 쿠키에서 숨김 처리된 팝업 필터링
+      // 쿠키에서 숨김 처리된 팝업 필터링 + TWA 앱 필터링
       const filteredPopups = activePopups.filter(popup => {
         const todayHidden = getCookie(`popup_hidden_today_${popup.id}`);
         const weekHidden = getCookie(`popup_hidden_week_${popup.id}`);
 
         if (todayHidden || weekHidden) {
+          return false;
+        }
+
+        // TWA 앱이고 hide_on_twa_app이 true인 경우 필터링
+        if (isTWA() && popup.hide_on_twa_app) {
           return false;
         }
 
