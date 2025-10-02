@@ -266,10 +266,16 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           const phoneTrading = Array.isArray(phoneTradingData) ? phoneTradingData : phoneTradingData.results || [];
           const electronicsTrading = Array.isArray(electronicsTradingData) ? electronicsTradingData : electronicsTradingData.results || [];
 
-          // 백엔드에서 보내는 type 필드를 itemType으로 사용
+          // 데이터 구조로 정확하게 타입 판단
           const allTradingItems = [
-            ...phoneTrading.map((item: any) => ({ ...item, itemType: item.type || 'phone' })),
-            ...electronicsTrading.map((item: any) => ({ ...item, itemType: item.type || 'electronics' }))
+            ...phoneTrading.map((item: any) => ({
+              ...item,
+              itemType: item.phone ? 'phone' : 'electronics'  // phone 객체 있으면 phone
+            })),
+            ...electronicsTrading.map((item: any) => ({
+              ...item,
+              itemType: item.electronics ? 'electronics' : 'phone'  // electronics 객체 있으면 electronics
+            }))
           ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
           if (status === 'trading') {
