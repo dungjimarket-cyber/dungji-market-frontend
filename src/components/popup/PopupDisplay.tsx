@@ -23,6 +23,7 @@ interface Popup {
   show_today_close: boolean;
   show_week_close: boolean;
   hide_on_twa_app?: boolean;
+  show_only_on_twa_app?: boolean;
 }
 
 interface PopupDisplayProps {
@@ -447,8 +448,15 @@ export function PopupManager({ pageType = 'main' }: PopupManagerProps) {
           return false;
         }
 
-        // TWA 앱이고 hide_on_twa_app이 true인 경우 필터링
-        if (isTWA() && popup.hide_on_twa_app) {
+        const isTWAApp = isTWA();
+
+        // TWA 앱이고 hide_on_twa_app이 true인 경우 필터링 (웹에서만 표시)
+        if (isTWAApp && popup.hide_on_twa_app) {
+          return false;
+        }
+
+        // 웹이고 show_only_on_twa_app이 true인 경우 필터링 (앱에서만 표시)
+        if (!isTWAApp && popup.show_only_on_twa_app) {
           return false;
         }
 
