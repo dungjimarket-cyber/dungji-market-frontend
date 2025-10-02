@@ -1141,8 +1141,8 @@ export default function ProfileSection() {
         )}
       </div>
 
-      {/* 푸시 알림 설정 카드 - 프로필 정보 아래에 배치 */}
-      <Card className="p-6 mb-6">
+      {/* 푸시 알림 설정 카드 - 마케팅 알림 시스템 구현 후 활성화 예정 */}
+      {/* <Card className="p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Bell className="w-5 h-5" />
           푸시 알림 설정
@@ -1152,7 +1152,6 @@ export default function ProfileSection() {
           <div className="text-center py-4 text-gray-500">설정을 불러오는 중...</div>
         ) : (
           <div className="space-y-4">
-            {/* 거래 알림 */}
             <div className="flex items-center justify-between py-2">
               <div className="flex-1">
                 <Label htmlFor="trade-notifications" className="text-sm font-medium cursor-pointer">
@@ -1169,7 +1168,6 @@ export default function ProfileSection() {
               />
             </div>
 
-            {/* 마케팅 알림 */}
             <div className="flex items-center justify-between py-2">
               <div className="flex-1">
                 <Label htmlFor="marketing-notifications" className="text-sm font-medium cursor-pointer">
@@ -1187,7 +1185,7 @@ export default function ProfileSection() {
             </div>
           </div>
         )}
-      </Card>
+      </Card> */}
 
       {/* 로그아웃 버튼을 왼쪽 하단에 배치 */}
       <div className="mt-8">
