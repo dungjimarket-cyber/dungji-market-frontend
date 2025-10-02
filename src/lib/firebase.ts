@@ -52,12 +52,18 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
         console.log('[FCM] ✅ Firebase Messaging 초기화 완료');
       }
 
+      // Firebase Messaging Service Worker 등록 확인
+      console.log('[FCM] 🔧 Service Worker 등록 확인 중...');
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      console.log('[FCM] ✅ Firebase SW 등록 완료:', registration.scope);
+
       // FCM 토큰 가져오기
       console.log('[FCM] 🔑 FCM 토큰 가져오는 중...');
       console.log('[FCM] VAPID Key:', process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.substring(0, 20) + '...');
 
       const token = await getToken(messaging!, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration,
       });
 
       if (token) {
