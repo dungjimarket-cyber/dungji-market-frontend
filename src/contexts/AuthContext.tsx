@@ -727,17 +727,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.setItem('userRole', userRole);
               }
 
-              // 푸시 토큰 등록 (비동기, 실패해도 로그인은 성공)
-              try {
-                const { requestNotificationPermission, registerPushToken } = await import('@/lib/firebase');
-                const token = await requestNotificationPermission();
-                if (token) {
-                  await registerPushToken(token);
-                  logDebug('푸시 토큰 등록 완료');
-                }
-              } catch (pushError) {
-                console.error('푸시 토큰 등록 실패 (무시):', pushError);
-              }
+              // 푸시 토큰 등록은 초기화 시에만 수행 (중복 팝업 방지)
+              // login() 후 페이지 로드 시 useEffect에서 자동으로 등록됨
 
               logDebug('로그인 성공 및 프로필 정보 로드 완료');
               setIsLoading(false);
