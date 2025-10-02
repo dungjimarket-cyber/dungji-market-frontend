@@ -28,6 +28,11 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, unreadCoun
   const unreadCount = propUnreadCount !== undefined ? propUnreadCount : localUnreadCount;
 
   useEffect(() => {
+    // prop으로 unreadCount를 받는 경우 자동 fetch 안 함
+    if (propUnreadCount !== undefined) {
+      return;
+    }
+
     // 로그인하지 않은 경우 알림을 가져오지 않음
     if (!isAuthenticated) {
       setLocalUnreadCount(0);
@@ -53,12 +58,12 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, unreadCoun
     };
 
     fetchNotifications();
-    
+
     // 30초마다 알림 수 업데이트
     const intervalId = setInterval(fetchNotifications, 30000);
-    
+
     return () => clearInterval(intervalId);
-  }, [isAuthenticated, onUnreadCountChange]);
+  }, [isAuthenticated, onUnreadCountChange, propUnreadCount]);
 
   return (
     <div className="relative cursor-pointer" onClick={onClick}>
