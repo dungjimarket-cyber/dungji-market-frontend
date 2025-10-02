@@ -48,6 +48,10 @@ export default function ServiceWorkerRegister() {
             // 계속해서 메시지 리스닝
             onMessage(messaging, (payload) => {
               console.log('[Foreground] Message received:', payload);
+              console.log('[Foreground] Notification permission:', Notification.permission);
+
+              // 디버깅용 alert (나중에 제거)
+              alert(`포그라운드 알림 수신!\nTitle: ${payload.notification?.title}\nPermission: ${Notification.permission}`);
 
               // 브라우저 알림 표시
               if (Notification.permission === 'granted') {
@@ -59,7 +63,11 @@ export default function ServiceWorkerRegister() {
                   data: payload.data,
                 };
 
+                console.log('[Foreground] Showing notification:', notificationTitle);
                 new Notification(notificationTitle, notificationOptions);
+              } else {
+                console.log('[Foreground] Notification permission denied');
+                alert('알림 권한이 거부되었습니다');
               }
             });
           }
