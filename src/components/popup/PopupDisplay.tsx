@@ -387,14 +387,6 @@ export function PopupManager({ pageType = 'main' }: PopupManagerProps) {
   const [popups, setPopups] = useState<Popup[]>([]);
   const [currentPopupIndex, setCurrentPopupIndex] = useState(0);
 
-  // TWA 앱 여부 감지
-  const isTWA = () => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone === true ||
-           document.referrer.includes('android-app://');
-  };
-
   useEffect(() => {
     loadPopups();
   }, [pageType]);
@@ -420,24 +412,12 @@ export function PopupManager({ pageType = 'main' }: PopupManagerProps) {
 
       const activePopups = await getActivePopups(currentPageType);
 
-      // 쿠키에서 숨김 처리된 팝업 필터링 + TWA 앱 필터링
+      // 쿠키에서 숨김 처리된 팝업만 필터링 (TWA 필터링은 백엔드에서 처리)
       const filteredPopups = activePopups.filter(popup => {
         const todayHidden = getCookie(`popup_hidden_today_${popup.id}`);
         const weekHidden = getCookie(`popup_hidden_week_${popup.id}`);
 
         if (todayHidden || weekHidden) {
-          return false;
-        }
-
-        const isTWAApp = isTWA();
-
-        // TWA 앱이고 hide_on_twa_app이 true인 경우 필터링 (웹에서만 표시)
-        if (isTWAApp && popup.hide_on_twa_app) {
-          return false;
-        }
-
-        // 웹이고 show_only_on_twa_app이 true인 경우 필터링 (앱에서만 표시)
-        if (!isTWAApp && popup.show_only_on_twa_app) {
           return false;
         }
 
