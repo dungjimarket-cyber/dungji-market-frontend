@@ -742,14 +742,15 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                   // 판매완료 (휴대폰 + 전자제품 통합)
                   if (activeSection === 'sales-sold') {
                     // 타입에 따른 데이터 처리
+                    const targetItem = item.phone || item.electronics;
                     const itemTitle = item.itemType === 'phone'
-                      ? item.title || `${item.brand} ${item.model}`
-                      : `${item.brand} ${item.model_name || item.model || ''}`;
+                      ? targetItem?.title || `${targetItem?.brand} ${targetItem?.model}`
+                      : `${targetItem?.brand} ${targetItem?.model_name || targetItem?.model || ''}`;
                     const itemImages = item.itemType === 'phone'
-                      ? item.images
-                      : item.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
+                      ? targetItem?.images
+                      : targetItem?.images?.map((img: any) => ({ image_url: img.imageUrl || img.image_url, is_main: img.is_primary || img.is_main }));
                     const mainImage = itemImages?.find((img: any) => img.is_main) || itemImages?.[0];
-                    const detailUrl = item.itemType === 'phone' ? `/used/${item.id}` : `/used-electronics/${item.id}`;
+                    const detailUrl = item.itemType === 'phone' ? `/used/${targetItem?.id}` : `/used-electronics/${targetItem?.id}`;
 
                     return (
                       <div key={item.id} className="p-3 border rounded-lg">
@@ -791,9 +792,9 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                       transactionId: transactionId,
                                       revieweeName: buyerName,
                                       productInfo: {
-                                        brand: item.brand || '',
-                                        model: item.itemType === 'phone' ? (item.model || '') : (item.model_name || item.model || ''),
-                                        price: item.price
+                                        brand: targetItem?.brand || '',
+                                        model: item.itemType === 'phone' ? (targetItem?.model || '') : (targetItem?.model_name || targetItem?.model || ''),
+                                        price: targetItem?.price || 0
                                       }
                                     });
                                     setShowReviewModal(true);
@@ -1441,13 +1442,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function handleCompleteTransaction(item: UnifiedMarketItem, isSeller: boolean) {
+  async function handleCompleteTransaction(item: any, isSeller: boolean) {
     try {
       const token = localStorage.getItem('accessToken');
       const endpoint = isSeller ? 'complete-trade' : 'buyer-complete';
-      const basePath = item.itemType === 'phone' ? 'phones' : 'electronics';
+
+      // 거래중 데이터는 item.phone 또는 item.electronics에 실제 상품 정보가 있음
+      const actualItem = item.phone || item.electronics || item;
+      const actualItemType = item.phone ? 'phone' : (item.electronics ? 'electronics' : item.itemType);
+      const basePath = actualItemType === 'phone' ? 'phones' : 'electronics';
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${item.id}/${endpoint}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${actualItem.id}/${endpoint}/`,
         {
           method: 'POST',
           headers: {
@@ -1472,15 +1478,19 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     setShowCancelDialog(true);
   }
 
-  async function handleCancelTransactionWithReason(item: UnifiedMarketItem) {
+  async function handleCancelTransactionWithReason(item: any) {
     try {
       const token = localStorage.getItem('accessToken');
       // 판매자와 구매자 구분
       const isSeller = activeSection?.startsWith('sales-');
-      const basePath = item.itemType === 'phone' ? 'phones' : 'electronics';
+
+      // 거래중 데이터는 item.phone 또는 item.electronics에 실제 상품 정보가 있음
+      const actualItem = item.phone || item.electronics || item;
+      const actualItemType = item.phone ? 'phone' : (item.electronics ? 'electronics' : item.itemType);
+      const basePath = actualItemType === 'phone' ? 'phones' : 'electronics';
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${item.id}/cancel-trade/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/used/${basePath}/${actualItem.id}/cancel-trade/`,
         {
           method: 'POST',
           headers: {
@@ -1532,13 +1542,17 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function fetchSellerInfo(item: UnifiedMarketItem) {
+  async function fetchSellerInfo(item: any) {
     try {
       let data;
-      if (item.itemType === 'phone') {
-        data = await buyerAPI.getSellerInfo(item.id);
+      // 거래중 데이터는 item.phone 또는 item.electronics에 실제 상품 정보가 있음
+      const actualItem = item.phone || item.electronics || item;
+      const actualItemType = item.phone ? 'phone' : (item.electronics ? 'electronics' : item.itemType);
+
+      if (actualItemType === 'phone') {
+        data = await buyerAPI.getSellerInfo(actualItem.id);
       } else {
-        data = await electronicsApi.getSellerInfo(item.id);
+        data = await electronicsApi.getSellerInfo(actualItem.id);
       }
       setSelectedUserInfo(data);
       setShowSellerInfoModal(true);
