@@ -28,17 +28,17 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onClick, unreadCoun
   const unreadCount = propUnreadCount !== undefined ? propUnreadCount : localUnreadCount;
 
   useEffect(() => {
-    // prop으로 unreadCount를 받는 경우 자동 fetch 안 함
-    if (propUnreadCount !== undefined) {
-      return;
-    }
-
     // 로그인하지 않은 경우 알림을 가져오지 않음
     if (!isAuthenticated) {
       setLocalUnreadCount(0);
       if (onUnreadCountChange) {
         onUnreadCountChange(0);
       }
+      return;
+    }
+
+    // prop으로 unreadCount를 받는 경우 자동 fetch 안 함
+    if (propUnreadCount !== undefined) {
       return;
     }
 
