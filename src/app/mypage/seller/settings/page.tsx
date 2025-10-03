@@ -1897,8 +1897,8 @@ export default function SellerSettings() {
             </CardContent>
           </Card>
 
-          {/* 푸시 알림 설정 */}
-          <Card className="mt-6">
+          {/* 푸시 알림 설정 - 임시 비활성화 */}
+          {/* <Card className="mt-6">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Bell className="h-5 w-5" />
@@ -1952,7 +1952,7 @@ export default function SellerSettings() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* 계정 관리 섹션 */}
           <div className="mt-8 pb-8">
