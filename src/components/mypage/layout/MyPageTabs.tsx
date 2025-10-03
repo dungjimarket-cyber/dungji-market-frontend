@@ -1162,9 +1162,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
               </div>
               <div className="space-y-3">
                 {selectedUserInfo.phone && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm">{selectedUserInfo.phone}</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm">{selectedUserInfo.phone}</span>
+                    </div>
+                    <a
+                      href={`tel:${selectedUserInfo.phone.replace(/-/g, '')}`}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs font-medium transition-colors"
+                    >
+                      <Phone className="w-3 h-3" />
+                      전화
+                    </a>
                   </div>
                 )}
                 {selectedUserInfo.region && (
@@ -1205,9 +1214,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
               </div>
               <div className="space-y-3">
                 {selectedUserInfo.phone && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm">{selectedUserInfo.phone}</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm">{selectedUserInfo.phone}</span>
+                    </div>
+                    <a
+                      href={`tel:${selectedUserInfo.phone.replace(/-/g, '')}`}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md text-xs font-medium transition-colors"
+                    >
+                      <Phone className="w-3 h-3" />
+                      전화
+                    </a>
                   </div>
                 )}
                 {selectedUserInfo.region && (
