@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -216,15 +216,26 @@ export default function SellerMyPageClient() {
       {/* 헤더 영역 */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">판매자 마이페이지</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push('/mypage/seller/settings')}
-          className="flex items-center"
-        >
-          <Settings className="w-4 h-4 mr-1" />
-          내 정보 설정
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/used/mypage')}
+            className="flex items-center"
+          >
+            <Smartphone className="w-4 h-4 mr-1" />
+            중고거래 내역
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/mypage/seller/settings')}
+            className="flex items-center"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            내 정보 설정
+          </Button>
+        </div>
       </div>
 
       {/* 프로필 섹션 */}

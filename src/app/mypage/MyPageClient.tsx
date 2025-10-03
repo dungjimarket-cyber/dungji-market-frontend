@@ -18,7 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X, Smartphone } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -258,15 +258,26 @@ export default function MyPageClient() {
       {/* 헤더 영역 */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">마이페이지</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push('/mypage/settings')}
-          className="flex items-center"
-        >
-          <Settings className="w-4 h-4 mr-1" />
-          내 정보 설정
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/used/mypage')}
+            className="flex items-center"
+          >
+            <Smartphone className="w-4 h-4 mr-1" />
+            중고거래 내역
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/mypage/settings')}
+            className="flex items-center"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            내 정보 설정
+          </Button>
+        </div>
       </div>
 
             {user ? (
