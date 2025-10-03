@@ -159,29 +159,29 @@ export default function TradeCancelModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>거래 취소</DialogTitle>
-          <DialogDescription className="truncate">{phoneModel}</DialogDescription>
+      <DialogContent className="max-w-[360px] sm:max-w-md p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm sm:text-base">거래 취소</DialogTitle>
+          <DialogDescription className="text-xs truncate">{phoneModel}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 py-3">
           {/* 경고 메시지 */}
-          <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-            <p className="text-sm text-amber-800">
+          <div className="flex items-center gap-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+            <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <p className="text-xs sm:text-sm text-amber-800">
               거래를 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.
             </p>
           </div>
 
           {/* 취소 사유 선택 */}
-          <div className="space-y-3">
-            <Label>취소 사유를 선택해주세요</Label>
+          <div className="space-y-2">
+            <Label className="text-xs sm:text-sm">취소 사유를 선택해주세요</Label>
             <RadioGroup value={reason} onValueChange={(value) => setReason(value as CancellationReason)}>
               {getCancellationReasons().map((r) => (
                 <div key={r} className="flex items-center space-x-2">
                   <RadioGroupItem value={r} id={r} />
-                  <Label htmlFor={r} className="font-normal cursor-pointer">
+                  <Label htmlFor={r} className="text-xs sm:text-sm font-normal cursor-pointer">
                     {CANCELLATION_REASON_LABELS[r]}
                   </Label>
                 </div>
@@ -191,21 +191,22 @@ export default function TradeCancelModal({
 
           {/* 기타 사유 입력 */}
           {reason === 'other' && (
-            <div className="space-y-2">
-              <Label htmlFor="custom-reason">상세 사유</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-reason" className="text-xs sm:text-sm">상세 사유</Label>
               <Textarea
                 id="custom-reason"
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
                 placeholder="취소 사유를 자세히 입력해주세요"
                 rows={3}
+                className="text-xs sm:text-sm"
               />
             </div>
           )}
 
           {/* 판매자의 경우 재판매 여부 선택 */}
           {isSeller && (
-            <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-2 p-2.5 bg-gray-50 rounded-lg">
               <Checkbox
                 id="return-to-sale"
                 checked={returnToSale}
@@ -213,7 +214,7 @@ export default function TradeCancelModal({
               />
               <Label
                 htmlFor="return-to-sale"
-                className="text-sm font-normal cursor-pointer"
+                className="text-xs sm:text-sm font-normal cursor-pointer"
               >
                 상품을 다시 판매중 상태로 전환
               </Label>
@@ -221,8 +222,8 @@ export default function TradeCancelModal({
           )}
 
           {/* 안내 메시지 */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs sm:text-sm text-blue-800">
               {isSeller
                 ? returnToSale
                   ? '거래가 취소되고 상품이 다시 판매중 상태로 변경됩니다.'
@@ -232,16 +233,18 @@ export default function TradeCancelModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex-row gap-2">
+          <Button variant="outline" onClick={onClose} size="sm" className="flex-1 text-xs py-2">
             취소
           </Button>
           <Button
             onClick={handleCancel}
             disabled={isLoading || (reason === 'other' && !customReason.trim())}
             variant="destructive"
+            size="sm"
+            className="flex-1 text-xs py-2"
           >
-            {isLoading ? '처리중...' : '거래 취소'}
+            {isLoading ? '처리중' : '거래 취소'}
           </Button>
         </DialogFooter>
       </DialogContent>

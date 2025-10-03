@@ -1558,14 +1558,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           }}
         >
           <div
-            className="bg-white rounded-2xl max-w-sm sm:max-w-md w-[calc(100%-2rem)] sm:w-full p-3 sm:p-4 md:p-6 flex flex-col shadow-2xl overflow-hidden"
+            className="bg-white rounded-xl max-w-[340px] sm:max-w-md w-full p-3 sm:p-4 flex flex-col shadow-2xl overflow-hidden"
             style={{
-              maxHeight: 'min(85vh, calc(100vh - 6rem))'
+              maxHeight: 'min(90vh, calc(100vh - 4rem))'
             }}
           >
             {/* 헤더 - 더 컴팩트 */}
-            <div className="flex items-center justify-between mb-2 pb-2 border-b">
-              <h3 className="text-base sm:text-lg font-bold text-gray-900">{myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}</h3>
+            <div className="flex items-center justify-between mb-2 pb-1.5 border-b">
+              <h3 className="text-sm sm:text-base font-bold text-gray-900">{myOffer && myOffer.status === 'pending' ? '제안 수정하기' : '가격 제안하기'}</h3>
               <button
                 onClick={() => {
                   setShowOfferModal(false);
@@ -1584,23 +1584,23 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             <div className="flex-1 px-1">
               <div className="pb-3">
               {/* 제품 정보 미리보기 - 2줄 구성 */}
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-2">
-                <p className="font-bold text-sm sm:text-base text-gray-900 truncate">
+              <div className="bg-gray-50 rounded-lg px-2.5 py-2 mb-2">
+                <p className="font-semibold text-xs sm:text-sm text-gray-900 truncate">
                   {phone.brand} {phone.model.length > 25 ? phone.model.slice(0, 25) + '...' : phone.model}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                <p className="text-xs text-gray-600 mt-0.5">
                   {phone.storage}GB | {phone.color}
                 </p>
               </div>
-            
+
             {/* 제안 횟수 표시 - 초컴팩트 */}
-            <div className="flex items-center justify-between mb-2 p-2 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">
+            <div className="flex items-center justify-between mb-2 p-1.5 bg-dungji-cream rounded-lg border border-dungji-cream-dark">
+              <span className="text-xs font-medium text-gray-700">
                 남은 제안 횟수
               </span>
               <div className="flex items-center gap-1">
-                <span className="text-lg sm:text-xl font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
-                <span className="text-xs sm:text-sm text-gray-600">/ 5회</span>
+                <span className="text-base sm:text-lg font-bold text-dungji-primary">{offerCount !== null ? (5 - offerCount) : '...'}</span>
+                <span className="text-xs text-gray-600">/ 5회</span>
               </div>
             </div>
             

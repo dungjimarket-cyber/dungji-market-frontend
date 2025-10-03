@@ -86,26 +86,26 @@ export default function TradeCompleteModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-base">거래완료</DialogTitle>
+      <DialogContent className="max-w-[320px] p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-sm">거래완료</DialogTitle>
           <DialogDescription className="text-xs line-clamp-1">{phoneModel}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="py-3">
           <p className="text-sm text-center text-gray-600">
             구매자에게 상품을 전달하셨나요?
           </p>
-          <p className="text-xs text-center text-gray-500 mt-2">
+          <p className="text-xs text-center text-gray-500 mt-1.5">
             거래완료 후에는 취소할 수 없습니다
           </p>
         </div>
 
         <DialogFooter className="flex-row gap-2">
-          <Button variant="outline" size="sm" onClick={onClose} className="flex-1">
+          <Button variant="outline" size="sm" onClick={onClose} className="flex-1 text-xs py-2">
             취소
           </Button>
-          <Button size="sm" onClick={handleComplete} disabled={isLoading} className="flex-1">
+          <Button size="sm" onClick={handleComplete} disabled={isLoading} className="flex-1 text-xs py-2">
             {isLoading ? '처리중' : '완료'}
           </Button>
         </DialogFooter>

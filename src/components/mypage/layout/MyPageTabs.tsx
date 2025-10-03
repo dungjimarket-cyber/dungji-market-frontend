@@ -1146,18 +1146,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       {/* 구매자 정보 모달 */}
       {showBuyerInfoModal && selectedUserInfo && (
         <Dialog open={showBuyerInfoModal} onOpenChange={setShowBuyerInfoModal}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>구매자 정보</DialogTitle>
+          <DialogContent className="max-w-[340px] p-4 sm:p-6">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-base">구매자 정보</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-gray-500" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-6 h-6 text-gray-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-lg">{selectedUserInfo.nickname}</p>
-                  <p className="text-sm text-gray-600">구매자</p>
+                  <p className="font-semibold text-base">{selectedUserInfo.nickname}</p>
+                  <p className="text-xs text-gray-600">구매자</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -1182,9 +1182,9 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                   </div>
                 )}
                 {selectedUserInfo.offered_price && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm font-semibold text-green-800 mb-2">거래 진행중</p>
-                    <p className="text-lg font-bold text-green-700">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-green-800 mb-1">거래 진행중</p>
+                    <p className="text-base font-bold text-green-700">
                       {selectedUserInfo.offered_price.toLocaleString()}원
                     </p>
                   </div>
@@ -1198,18 +1198,18 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
       {/* 판매자 정보 모달 */}
       {showSellerInfoModal && selectedUserInfo && (
         <Dialog open={showSellerInfoModal} onOpenChange={setShowSellerInfoModal}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>판매자 정보</DialogTitle>
+          <DialogContent className="max-w-[340px] p-4 sm:p-6">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-base">판매자 정보</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-gray-500" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-6 h-6 text-gray-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-lg">{selectedUserInfo.nickname}</p>
-                  <p className="text-sm text-gray-600">판매자</p>
+                  <p className="font-semibold text-base">{selectedUserInfo.nickname}</p>
+                  <p className="text-xs text-gray-600">판매자</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -1234,9 +1234,9 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                   </div>
                 )}
                 {selectedUserInfo.accepted_price && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm font-semibold text-green-800 mb-2">거래 진행중</p>
-                    <p className="text-lg font-bold text-green-700">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-green-800 mb-1">거래 진행중</p>
+                    <p className="text-base font-bold text-green-700">
                       {selectedUserInfo.accepted_price.toLocaleString()}원
                     </p>
                   </div>
