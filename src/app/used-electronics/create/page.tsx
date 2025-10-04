@@ -1029,7 +1029,7 @@ export default function ElectronicsCreatePage() {
                     handleInputChange('price', rounded);
                   }
                 }}
-                placeholder="판매 희망 가격"
+                placeholder="즉시 판매가 제안시 바로 거래가 진행됩니다"
                 className={errors.price ? 'border-red-300' : ''}
                 disabled={loading}
               />
@@ -1043,9 +1043,6 @@ export default function ElectronicsCreatePage() {
             </p>
 
             {/* 가격 제안은 항상 받음 (토글 제거) */}
-            <p className="text-xs text-gray-500 mt-2">
-              구매자가 가격을 제안할 수 있습니다. 즉시 구매도 가능합니다.
-            </p>
 
             {/* 최소 제안가 (필수) */}
             <div className="mt-4">

@@ -1358,7 +1358,7 @@ export default function CreateUsedPhonePage() {
                   ref={priceRef}
                   id="price"
                   type="text"
-                  placeholder="판매 희망 가격"
+                  placeholder="즉시 판매가 제안시 바로 거래가 진행됩니다"
                   value={formatPrice(formData.price)}
                   className={errors.price ? 'border-red-300' : ''}
                   onChange={(e) => {
