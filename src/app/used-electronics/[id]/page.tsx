@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -363,8 +364,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     setShowConfirmModal(true);
   };
 
-  // 가격 제안 실행
-  const handleSubmitOffer = async () => {
+  // 가격 제안 실행 (메시지를 매개변수로 받도록 수정)
+  const handleSubmitOffer = async (messageToSend?: string) => {
     if (!isAuthenticated) {
       toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
         duration: 3000,
@@ -376,13 +377,15 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
     const amount = parseInt(offerAmount);
     // 수정인지 신규 제안인지 확인
     const isModification = myOffer && myOffer.status === 'pending';
+    // 전달받은 메시지가 있으면 사용, 없으면 상태값 사용
+    const finalMessage = messageToSend !== undefined ? messageToSend : offerMessage;
 
     try {
-      const combinedMessage = [...selectedMessages, offerMessage].filter(Boolean).join(' ');
+      console.log('[제안 전송] 메시지:', finalMessage);
 
       const response = await electronicsApi.createOffer(Number(electronicsId), {
         offered_price: amount,
-        message: combinedMessage
+        message: finalMessage
       });
 
       // 즉시구매 여부 확인 (가격이 즉시구매가와 같을 때)
@@ -939,16 +942,29 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               <div>
                 <p className="text-sm text-gray-600 mb-1 flex items-center gap-1">
                   상태
-                  <button
-                    onClick={() => setShowGradeInfo(true)}
-                    className="p-0.5 hover:bg-gray-100 rounded-full transition-colors"
-                    title="등급 안내 보기"
-                  >
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
-                  </button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="p-0.5 hover:bg-gray-100 rounded-full transition-colors"
+                        title="등급 안내 보기"
+                      >
+                        <Info className="w-3.5 h-3.5 text-gray-400" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-3 text-xs" align="start">
+                      <div className="space-y-2">
+                        <div className="font-semibold text-sm mb-2">상태 등급 안내</div>
+                        <div><span className="font-medium">미개봉:</span> 새제품</div>
+                        <div><span className="font-medium">S급:</span> 거의 새것, 사용감 거의 없음</div>
+                        <div><span className="font-medium">A급:</span> 사용감 있으나 생활기스 수준</div>
+                        <div><span className="font-medium">B급:</span> 사용감 많지만 외관 및 기능 준수</div>
+                        <div><span className="font-medium">C급:</span> 사용감 많음, 외관 손상 있으나 기능 정상</div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </p>
                 <p className="font-medium">
-                  {electronics.is_unused ? '미개봉' : CONDITION_GRADES[electronics.condition_grade as keyof typeof CONDITION_GRADES]}
+                  {electronics.is_unused ? '미개봉' : `${electronics.condition_grade}급`}
                 </p>
               </div>
               <div>
@@ -1594,7 +1610,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   }
                   // 선택된 메시지들을 합쳐서 하나의 메시지로 만들기
                   const combinedMessage = selectedMessages.join(' / ');
+                  // 상태도 업데이트 (표시용)
                   setOfferMessage(combinedMessage);
+                  // 확인 모달로 전환
                   handleOfferConfirm();
                 }}
                 disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || Boolean(offerAmount && parseInt(offerAmount) < (electronics.min_offer_price || 0))}
@@ -1663,7 +1681,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 아니오
               </Button>
               <Button
-                onClick={handleSubmitOffer}
+                onClick={() => handleSubmitOffer(offerMessage)}
                 className={`flex-1 ${parseInt(offerAmount) === electronics.price
                   ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'}`}

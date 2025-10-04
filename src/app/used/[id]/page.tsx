@@ -22,6 +22,7 @@ import BumpButton from '@/components/mypage/sales/BumpButton';
 import bumpAPI from '@/lib/api/bump';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
@@ -1026,16 +1027,28 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 <div>
                   <p className="text-sm text-gray-600 mb-1 flex items-center gap-1">
                     상태
-                    <button
-                      onClick={() => setShowGradeInfo(true)}
-                      className="p-0.5 hover:bg-gray-100 rounded-full transition-colors"
-                      title="등급 안내 보기"
-                    >
-                      <Info className="w-3.5 h-3.5 text-gray-400" />
-                    </button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="p-0.5 hover:bg-gray-100 rounded-full transition-colors"
+                          title="등급 안내 보기"
+                        >
+                          <Info className="w-3.5 h-3.5 text-gray-400" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 p-3 text-xs" align="start">
+                        <div className="space-y-2">
+                          <div className="font-semibold text-sm mb-2">상태 등급 안내</div>
+                          <div><span className="font-medium">S급:</span> 거의 새것, 미세한 스크래치만 존재</div>
+                          <div><span className="font-medium">A급:</span> 가벼운 사용감, 정상 작동</div>
+                          <div><span className="font-medium">B급:</span> 눈에 띄는 외관 손상, 정상 작동</div>
+                          <div><span className="font-medium">C급:</span> 많은 외관 손상, 정상 작동</div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </p>
                   <p className="font-medium">
-                    {phone.condition_grade && CONDITION_GRADES[phone.condition_grade]}
+                    {phone.condition_grade ? `${phone.condition_grade}급` : '-'}
                   </p>
                 </div>
                 <div>

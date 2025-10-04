@@ -238,16 +238,18 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
             </>
           ) : (
             <>
-              {item.condition_grade && (
+              {/* 전자제품 상태: 미개봉 또는 등급 */}
+              {((item as any).is_unused || item.condition_grade) && (
                 <span className="inline-flex items-center">
                   <span className={`
                     px-1.5 py-0.5 rounded font-medium
-                    ${item.condition_grade === 'S' ? 'bg-blue-100 text-blue-700' : ''}
-                    ${item.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
-                    ${item.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
-                    ${item.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
+                    ${(item as any).is_unused ? 'bg-purple-100 text-purple-700' : ''}
+                    ${!((item as any).is_unused) && item.condition_grade === 'S' ? 'bg-blue-100 text-blue-700' : ''}
+                    ${!((item as any).is_unused) && item.condition_grade === 'A' ? 'bg-green-100 text-green-700' : ''}
+                    ${!((item as any).is_unused) && item.condition_grade === 'B' ? 'bg-yellow-100 text-yellow-700' : ''}
+                    ${!((item as any).is_unused) && item.condition_grade === 'C' ? 'bg-orange-100 text-orange-700' : ''}
                   `}>
-                    {ELEC_CONDITIONS[item.condition_grade as keyof typeof ELEC_CONDITIONS]?.split(' ')[0] || item.condition_grade}
+                    {(item as any).is_unused ? '미개봉' : `${item.condition_grade}급`}
                   </span>
                 </span>
               )}
