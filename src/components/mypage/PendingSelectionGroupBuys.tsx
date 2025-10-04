@@ -90,8 +90,11 @@ export default function PendingSelectionGroupBuys() {
         }
 
         const data = await response.json();
-        // 최종선택 기간이 지나지 않은 공구만 필터링
+        // 최종선택 기간이 지나지 않은 공구 + 포기하지 않은 공구만 필터링
         const activeGroupBuys = data.filter((groupBuy: GroupBuy) => {
+          // 포기한 공구는 숨김
+          if (groupBuy.my_final_decision === 'cancelled') return false;
+          // 최종선택 기간 체크
           if (!groupBuy.final_selection_deadline) return true;
           return new Date(groupBuy.final_selection_deadline) > new Date();
         });
