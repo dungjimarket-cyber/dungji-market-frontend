@@ -178,12 +178,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         const data = await response.json();
         if (data && data.offered_price) {
           setMyOffer(data);
-          // 사용자의 총 제안 횟수 가져오기
-          if (data.user_offer_count) {
-            setOfferCount(data.user_offer_count);
-            setRemainingOffers(Math.max(0, 5 - data.user_offer_count));
-          }
         }
+        // 사용자의 총 제안 횟수 가져오기 (제안이 없어도 0으로 설정)
+        const count = data?.user_offer_count || 0;
+        setOfferCount(count);
+        setRemainingOffers(Math.max(0, 5 - count));
+      } else {
+        // 제안이 없는 경우 (404 등) 0으로 초기화
+        setOfferCount(0);
+        setRemainingOffers(5);
       }
     } catch (error) {
       console.error('Failed to fetch my offer:', error);
