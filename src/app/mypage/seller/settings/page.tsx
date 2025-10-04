@@ -88,6 +88,7 @@ export default function SellerSettings() {
   const [savingReferral, setSavingReferral] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [autoFilledReferral, setAutoFilledReferral] = useState(false);
 
   // 편집 모드 상태
   const [isEditingAddress, setIsEditingAddress] = useState(false);
@@ -1889,9 +1890,20 @@ export default function SellerSettings() {
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    * 추천인 코드는 회원가입 후 한 번만 등록 가능합니다.
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-500">
+                      * 추천인 코드는 회원가입 후 한 번만 등록 가능합니다.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setReferralCode('PARTNER_B3DIT2')}
+                      disabled={hasReferral || savingReferral}
+                      className="h-6 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                      추천인이 없다면 클릭!
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
