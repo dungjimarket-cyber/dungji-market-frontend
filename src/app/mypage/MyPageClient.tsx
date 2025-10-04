@@ -257,7 +257,7 @@ export default function MyPageClient() {
     <div className="container mx-auto px-4 py-8">
       {/* 헤더 영역 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">마이페이지</h1>
+        <h1 className="text-xl font-bold">마이페이지</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
