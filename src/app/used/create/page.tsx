@@ -61,6 +61,7 @@ export default function CreateUsedPhonePage() {
     isProfileComplete,
     missingFields,
     checkProfile,
+    recheckProfile,
     showProfileModal,
     setShowProfileModal,
   } = useUsedPhoneProfileCheck();
@@ -145,6 +146,20 @@ export default function CreateUsedPhonePage() {
       checkRegistrationLimit();
     }
   }, [isAuthenticated, checkProfile]);
+
+  // 마이페이지에서 돌아왔을 때 프로필 재확인
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && sessionStorage.getItem('return_from_profile_update') === 'true') {
+        console.log('[CreatePage] 마이페이지에서 복귀 - 프로필 재확인');
+        sessionStorage.removeItem('return_from_profile_update');
+        await recheckProfile();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [recheckProfile]);
 
   // 등록 가능 여부 체크 (휴대폰 5개 제한 및 패널티)
   const checkRegistrationLimit = async () => {
@@ -1711,7 +1726,9 @@ export default function CreateUsedPhonePage() {
           router.push('/used');
         }}
         missingFields={missingFields}
-        onUpdateProfile={() => {
+        onUpdateProfile={async () => {
+          // 마이페이지로 이동 전 플래그 설정
+          sessionStorage.setItem('return_from_profile_update', 'true');
           router.push('/mypage');
         }}
       />

@@ -58,6 +58,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<boolean>;
+  refetchProfile: () => Promise<void>;
   setInactivityTimeout: (minutes: number) => void;
   clearInactivityTimeout: () => void;
 };
@@ -936,6 +937,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshToken, logout, router]);
 
+  /**
+   * 프로필 정보 다시 가져오기
+   * 프로필 업데이트 후 user 객체 갱신용
+   */
+  const refetchProfile = useCallback(async () => {
+    if (!accessToken) return;
+
+    try {
+      const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/auth/profile/`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setUser(prev => prev ? { ...prev, ...profileData } : null);
+        console.log('[AuthContext] 프로필 갱신 완료:', profileData);
+      }
+    } catch (error) {
+      console.error('[AuthContext] 프로필 갱신 오류:', error);
+    }
+  }, [accessToken]);
+
   // Axios 인터셉터 설정 - 401 오류 시 토큰 갱신
   useEffect(() => {
     if (typeof window === 'undefined' || !accessToken) return;
@@ -1027,6 +1053,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         refreshTokens,
+        refetchProfile,
         setInactivityTimeout,
         clearInactivityTimeout
       }}
