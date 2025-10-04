@@ -342,8 +342,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     setShowConfirmModal(true);
   };
 
-  // 가격 제안
-  const handleSubmitOffer = async () => {
+  // 가격 제안 (메시지를 매개변수로 받도록 수정)
+  const handleSubmitOffer = async (messageToSend?: string) => {
     if (!isAuthenticated) {
       toast.error('가격 제안은 로그인 후 이용 가능합니다.', {
         duration: 3000,
@@ -355,6 +355,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
     const amount = parseInt(offerAmount);
     // 수정인지 신규 제안인지 확인
     const isModification = myOffer && myOffer.status === 'pending';
+    // 전달받은 메시지가 있으면 사용, 없으면 상태값 사용
+    const finalMessage = messageToSend !== undefined ? messageToSend : offerMessage;
 
     await executeTransactionAction(
       async () => {
@@ -371,7 +373,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           },
           body: JSON.stringify({
             offered_price: amount,
-            message: offerMessage,
+            message: finalMessage,
           }),
         });
 
@@ -1790,7 +1792,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   }
                   // 선택된 메시지들을 합쳐서 하나의 메시지로 만들기
                   const combinedMessage = selectedMessages.join(' / ');
+                  // 상태도 업데이트 (표시용)
                   setOfferMessage(combinedMessage);
+                  // 확인 모달로 전환
                   handleOfferConfirm();
                 }}
                 disabled={!offerAmount || (remainingOffers !== null && remainingOffers === 0) || Boolean(offerAmount && parseInt(offerAmount) < (phone.min_offer_price || 0))}
@@ -1912,9 +1916,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 아니오
               </Button>
               <Button
-                onClick={handleSubmitOffer}
-                className={`flex-1 ${parseInt(offerAmount) === phone.price 
-                  ? 'bg-green-600 hover:bg-green-700' 
+                onClick={() => handleSubmitOffer(offerMessage)}
+                className={`flex-1 ${parseInt(offerAmount) === phone.price
+                  ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'}`}
               >
                 {parseInt(offerAmount) === phone.price ? '즉시구매' : '예, 제안합니다'}
