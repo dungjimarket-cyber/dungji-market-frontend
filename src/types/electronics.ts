@@ -6,7 +6,7 @@
 // 기본 Enum 타입
 // ============================================
 
-export type ElectronicsSubcategory = 'laptop' | 'tv' | 'game' | 'camera' | 'audio' | 'home' | 'etc';
+export type ElectronicsSubcategory = 'laptop' | 'tv' | 'game' | 'camera' | 'audio' | 'home' | 'pc_parts' | 'peripherals' | 'etc';
 export type ConditionGrade = 'S' | 'A' | 'B' | 'C';
 export type PurchasePeriod = '1month' | '3months' | '6months' | '1year' | 'over' | 'custom';  // custom 추가 for 자유 입력
 export type ElectronicsStatus = 'active' | 'trading' | 'sold' | 'deleted';
@@ -199,7 +199,9 @@ export interface ElectronicsCheckLimitResponse {
 // ============================================
 
 export const ELECTRONICS_SUBCATEGORIES = {
-  laptop: '노트북/컴퓨터',
+  laptop: '컴퓨터/노트북',
+  pc_parts: 'PC주요부품',
+  peripherals: 'PC주변기기',
   tv: 'TV/모니터',
   game: '게임기',
   camera: '카메라',
