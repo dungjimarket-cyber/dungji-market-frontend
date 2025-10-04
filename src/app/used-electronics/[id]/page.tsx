@@ -859,15 +859,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         <div className="w-full overflow-x-hidden">
           {/* 기본 정보 */}
           <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-            <div className="flex items-start justify-between mb-2">
+            <div className="mb-2">
               <h1 className="text-2xl font-bold">{electronics.brand} {electronics.model_name}</h1>
-              {/* 수정됨 표시 */}
-              {activeOffersCount > 0 && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
-                  <Edit3 className="w-3 h-3" />
-                  <span>제안 {activeOffersCount}개</span>
-                </div>
-              )}
             </div>
 
             {/* 가격 */}
