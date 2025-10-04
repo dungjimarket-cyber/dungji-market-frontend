@@ -1590,8 +1590,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               </button>
             </div>
             
-            {/* 컨텐츠 영역 - 스크롤 제거 */}
-            <div className="flex-1 px-1">
+            {/* 컨텐츠 영역 - 스크롤 가능 */}
+            <div className="flex-1 px-1 overflow-y-auto">
               <div className="pb-3">
               {/* 제품 정보 미리보기 - 2줄 구성 */}
               <div className="bg-gray-50 rounded-lg px-2.5 py-2 mb-2">
@@ -1727,7 +1727,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               )}
 
               {/* 컴팩트한 템플릿 선택 영역 - 2열 그리드 */}
-              <div className="border rounded-lg p-2 max-h-32 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="border rounded-lg p-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {Object.entries(messageTemplates).map(([category, messages]) => (
                   <details key={category} className="">
                     <summary className="cursor-pointer text-xs font-medium text-gray-700 hover:text-gray-900 py-0.5">
