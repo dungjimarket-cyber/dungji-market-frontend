@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { Plus, Smartphone, TrendingUp, Shield, Zap, AlertCircle, Info, User, Heart, Star, ShoppingBag, CheckCircle, Clock, MapPin, BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -831,9 +832,25 @@ export default function UsedPhonesPage() {
                   </div>
                 </div>
 
-                {/* 결과 요약 */}
-                <div className="text-sm text-gray-600">
-                  총 <span className="font-semibold text-gray-900">{totalCount}개</span>의 상품
+                {/* 완료포함 체크박스와 결과 요약 */}
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="include-completed-all"
+                      checked={!!filters.includeCompleted}
+                      onCheckedChange={(checked) => {
+                        const newFilters = { ...filters, includeCompleted: !!checked };
+                        setFilters(newFilters);
+                        fetchAllItems(newFilters);
+                      }}
+                    />
+                    <label htmlFor="include-completed-all" className="text-xs cursor-pointer">
+                      완료포함
+                    </label>
+                  </div>
+                  <div>
+                    총 <span className="font-semibold text-gray-900">{totalCount}개</span>의 상품
+                  </div>
                 </div>
               </div>
             </div>
