@@ -74,7 +74,7 @@ export default function MyPageClient() {
     // 구매확정/포기 선택하기 상품 개수 가져오기
     const fetchPendingSelectionCount = async () => {
       if (!isAuthenticated || !accessToken) return;
-      
+
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/pending_selection/`, {
           method: 'GET',
@@ -84,10 +84,12 @@ export default function MyPageClient() {
           },
           cache: 'no-store'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
-          setPendingSelectionCount(data.length);
+          // 포기하지 않은 공구만 카운트
+          const activeCount = data.filter((item: any) => item.my_final_decision !== 'cancelled').length;
+          setPendingSelectionCount(activeCount);
         }
       } catch (error) {
         console.error('구매확정/포기 선택하기 개수 조회 오류:', error);

@@ -66,10 +66,14 @@ export default function PendingSelectionGroupBuys() {
   // 데이터 로딩
   useEffect(() => {
     const fetchPendingSelectionGroupBuys = async () => {
-      if (!accessToken) return;
-      
+      if (!accessToken) {
+        console.log('[PendingSelection] accessToken 없음');
+        return;
+      }
+
       try {
         setLoading(true);
+        console.log('[PendingSelection] API 호출 시작, token:', accessToken?.substring(0, 20) + '...');
         // API 엔드포인트는 백엔드 구현에 따라 조정 필요
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/pending_selection/`, {
           method: 'GET',
@@ -80,12 +84,22 @@ export default function PendingSelectionGroupBuys() {
           cache: 'no-store'
         });
 
+        console.log('[PendingSelection] 응답 상태:', response.status);
+
         if (!response.ok) {
+          // 401 에러는 인증 문제
+          if (response.status === 401) {
+            console.error('[PendingSelection] 인증 실패 - 토큰 재확인 필요');
+            setGroupBuys([]);
+            return;
+          }
           // 404 에러는 단순히 데이터가 없는 것으로 처리
           if (response.status === 404) {
             setGroupBuys([]);
             return;
           }
+          const errorText = await response.text();
+          console.error('[PendingSelection] API 오류:', errorText);
           throw new Error('최종 선택 대기중인 공구 목록을 가져오는데 실패했습니다.');
         }
 
