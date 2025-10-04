@@ -176,6 +176,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('[내 제안 조회] API 응답:', data);
+        console.log('[내 제안 메시지]:', data?.message);
         if (data && data.offered_price) {
           setMyOffer(data);
         }
@@ -377,8 +379,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           }),
         });
 
+        console.log('[제안 전송] 메시지:', finalMessage);
+
         if (!response.ok) {
           const errorData = await response.json();
+          console.log('[API 에러 응답]:', errorData);
           if (errorData.message?.includes('5회')) {
             throw {
               response: {
