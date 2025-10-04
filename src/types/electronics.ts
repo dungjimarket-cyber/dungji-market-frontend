@@ -7,7 +7,7 @@
 // ============================================
 
 export type ElectronicsSubcategory = 'laptop' | 'tv' | 'game' | 'camera' | 'audio' | 'home' | 'pc_parts' | 'peripherals' | 'etc';
-export type ConditionGrade = 'S' | 'A' | 'B' | 'C';
+export type ConditionGrade = 'unopened' | 'S' | 'A' | 'B' | 'C';
 export type PurchasePeriod = '1month' | '3months' | '6months' | '1year' | 'over' | 'custom';  // custom 추가 for 자유 입력
 export type ElectronicsStatus = 'active' | 'trading' | 'sold' | 'deleted';
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
@@ -210,12 +210,13 @@ export const ELECTRONICS_SUBCATEGORIES = {
   etc: '기타',
 } as const;
 
-// 번개장터/당근마켓 스타일로 명확하게 정리
+// 전자제품 상태 등급
 export const CONDITION_GRADES = {
-  S: '미개봉',           // 포장 미개봉 새제품
-  A: '거의 새것',        // 사용감 없거나 1-2회 사용
-  B: '사용감 적음',      // 깨끗하게 사용, 생활기스 정도
-  C: '사용감 많음',      // 사용감 있지만 기능 정상
+  unopened: '미개봉',     // 새제품
+  S: '거의 새것',         // 사용감 거의 없음
+  A: '사용감 있으나',     // 생활기스 수준
+  B: '사용감 많지만',     // 외관 및 기능 준수
+  C: '사용감 많음',       // 외관 손상 있으나 기능 정상
 } as const;
 
 export const PURCHASE_PERIODS = {

@@ -870,11 +870,11 @@ export default function ElectronicsCreatePage() {
                 value={formData.condition_grade}
                 onValueChange={(value) => {
                   handleInputChange('condition_grade', value);
-                  // S급 선택시 자동으로 미개봉 설정
-                  if (value === 'S') {
+                  // 미개봉 선택시 자동 설정
+                  if (value === 'unopened') {
                     handleInputChange('usage_period', '미개봉');
                     handleInputChange('purchase_period', '');
-                  } else if (value === 'A') {
+                  } else if (value === 'S') {
                     handleInputChange('usage_period', '거의 사용 안함');
                   } else {
                     handleInputChange('usage_period', '');
@@ -894,10 +894,11 @@ export default function ElectronicsCreatePage() {
                 </SelectContent>
               </Select>
               <div className="mt-2 space-y-1 text-xs text-gray-600">
-                <p>• S급: 미개봉 - 포장 뜯지 않은 새제품</p>
-                <p>• A급: 거의 새것 - 개봉 후 1-2회 사용</p>
-                <p>• B급: 사용감 적음 - 생활기스 정도</p>
-                <p>• C급: 사용감 많음 - 기능은 정상</p>
+                <p>• 미개봉: 새제품</p>
+                <p>• S급: 거의 새것 (사용감 거의 없음)</p>
+                <p>• A급: 사용감 있으나 (생활기스 수준)</p>
+                <p>• B급: 사용감 많지만 (외관 및 기능 준수)</p>
+                <p>• C급: 사용감 많음 (외관 손상 있으나 기능 정상)</p>
               </div>
             </div>
 
@@ -916,10 +917,10 @@ export default function ElectronicsCreatePage() {
                   }}
                   placeholder="예: 2024년 3월"
                   maxLength={50}
-                  disabled={loading || formData.condition_grade === 'S'}
-                  className={formData.condition_grade === 'S' ? 'bg-gray-100' : ''}
+                  disabled={loading || formData.condition_grade === 'unopened'}
+                  className={formData.condition_grade === 'unopened' ? 'bg-gray-100' : ''}
                 />
-                {formData.condition_grade === 'S' && (
+                {formData.condition_grade === 'unopened' && (
                   <p className="text-xs text-gray-500 mt-1">미개봉 제품은 입력 불가</p>
                 )}
               </div>
@@ -938,10 +939,10 @@ export default function ElectronicsCreatePage() {
                   }}
                   placeholder="예: 6개월 사용"
                   maxLength={50}
-                  disabled={loading || formData.condition_grade === 'S'}
-                  className={formData.condition_grade === 'S' ? 'bg-gray-100' : ''}
+                  disabled={loading || formData.condition_grade === 'unopened'}
+                  className={formData.condition_grade === 'unopened' ? 'bg-gray-100' : ''}
                 />
-                {formData.condition_grade === 'S' && (
+                {formData.condition_grade === 'unopened' && (
                   <p className="text-xs text-blue-600 mt-1">미개봉 자동 설정</p>
                 )}
               </div>
