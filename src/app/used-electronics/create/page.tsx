@@ -886,11 +886,11 @@ export default function ElectronicsCreatePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(CONDITION_GRADES).map(([key, value]) => (
-                    <SelectItem key={key} value={key}>
-                      {value}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="unopened">미개봉</SelectItem>
+                  <SelectItem value="S">S급</SelectItem>
+                  <SelectItem value="A">A급</SelectItem>
+                  <SelectItem value="B">B급</SelectItem>
+                  <SelectItem value="C">C급</SelectItem>
                 </SelectContent>
               </Select>
               <div className="mt-2 space-y-1 text-xs text-gray-600">
