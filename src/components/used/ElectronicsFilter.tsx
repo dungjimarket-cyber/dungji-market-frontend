@@ -224,11 +224,11 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">상태</SelectItem>
-              {Object.entries(CONDITION_GRADES).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label.split(' ')[0]}
-                </SelectItem>
-              ))}
+              <SelectItem value="unopened">미개봉</SelectItem>
+              <SelectItem value="S">S급</SelectItem>
+              <SelectItem value="A">A급</SelectItem>
+              <SelectItem value="B">B급</SelectItem>
+              <SelectItem value="C">C급</SelectItem>
             </SelectContent>
           </Select>
 
