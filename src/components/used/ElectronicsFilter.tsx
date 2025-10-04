@@ -270,8 +270,9 @@ const ElectronicsFilter = memo(function ElectronicsFilter({
               onCheckedChange={(checked) => {
                 updateFilter('includeCompleted', !!checked);
               }}
+              className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
             />
-            <label htmlFor="include-completed-electronics" className="text-xs cursor-pointer">
+            <label htmlFor="include-completed-electronics" className="text-sm cursor-pointer text-green-600">
               완료포함
             </label>
           </div>

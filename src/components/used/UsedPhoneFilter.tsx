@@ -256,9 +256,9 @@ const UsedPhoneFilter = memo(function UsedPhoneFilter({
                 console.log('[필터] 체크박스 변경:', e.target.checked);
                 updateFilter('includeCompleted', e.target.checked);
               }}
-              className="rounded border-gray-300 w-3 h-3"
+              className="rounded border-green-600 w-3 h-3 text-green-600 focus:ring-green-600"
             />
-            <span className="text-xs">완료포함</span>
+            <span className="text-sm text-green-600">완료포함</span>
           </label>
 
           {/* 초기화 */}
