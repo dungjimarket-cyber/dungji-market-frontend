@@ -54,6 +54,7 @@ export interface UsedElectronics {
 
   // 가격 정보
   price: number;
+  final_price?: number;  // 거래완료 시 최종 거래 금액
   accept_offers: boolean;
   min_offer_price?: number;
 

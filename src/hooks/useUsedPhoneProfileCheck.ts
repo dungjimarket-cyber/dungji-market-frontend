@@ -74,30 +74,30 @@ export function useUsedPhoneProfileCheck(): UsedPhoneProfileCheckResult {
     console.log('[UsedPhoneProfileCheck] 프로필 재확인 시작');
     setIsCheckingProfile(true);
 
-    // 서버에서 최신 프로필 정보 가져오기
-    await refetchProfile();
+    try {
+      // 서버에서 최신 프로필 정보 가져오기
+      const updatedUser = await refetchProfile();
 
-    return new Promise((resolve) => {
-      // refetchProfile 완료 후 user가 업데이트되는 시간 대기
-      setTimeout(() => {
-        if (!user) {
-          setIsCheckingProfile(false);
-          resolve(false);
-          return;
-        }
-
-        const missing = checkMissingFieldsForUsedPhone(user);
-        setMissingFields(missing);
-
-        const isComplete = missing.length === 0;
-        setIsProfileComplete(isComplete);
-
-        console.log('[UsedPhoneProfileCheck] 재확인 완료:', { missing, isComplete });
+      if (!updatedUser) {
         setIsCheckingProfile(false);
-        resolve(isComplete);
-      }, 300); // refetchProfile 완료 대기
-    });
-  }, [user, refetchProfile]);
+        return false;
+      }
+
+      const missing = checkMissingFieldsForUsedPhone(updatedUser);
+      setMissingFields(missing);
+
+      const isComplete = missing.length === 0;
+      setIsProfileComplete(isComplete);
+
+      console.log('[UsedPhoneProfileCheck] 재확인 완료:', { missing, isComplete });
+      setIsCheckingProfile(false);
+      return isComplete;
+    } catch (error) {
+      console.error('[UsedPhoneProfileCheck] 재확인 오류:', error);
+      setIsCheckingProfile(false);
+      return false;
+    }
+  }, [refetchProfile]);
 
   // user 객체가 변경될 때마다 프로필 완성도 업데이트
   useEffect(() => {
