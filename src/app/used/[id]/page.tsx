@@ -760,12 +760,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                 </div>
               )}
 
-              {/* 상태 뱃지 */}
-              {phone.status === 'sold' && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
-                  <span className="text-white text-2xl font-bold">거래완료</span>
-                </div>
-              )}
+              {/* 상태 뱃지 - 거래완료는 가격 영역에 표시하므로 제거 */}
             </div>
 
             {/* 썸네일 - 최대 10개까지 모두 표시 */}
