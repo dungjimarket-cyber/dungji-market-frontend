@@ -927,12 +927,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="mb-4">
                 {phone.status === 'sold' ? (
                   // 판매완료 - 거래가격만 표시
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-sm text-gray-600">거래완료</span>
-                    <p className="text-3xl font-bold text-gray-700">
-                      {(phone.final_price || phone.price).toLocaleString()}원
-                    </p>
-                  </div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {(phone.final_price || phone.price).toLocaleString()}원
+                  </p>
                 ) : (
                   // 판매중/거래중 - 최소제안가 강조
                   <>
@@ -1127,8 +1124,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 액션 버튼 영역 - 이미 위로 이동함 */}
               <div className="space-y-3">
-                {/* 거래중/거래완료 시 거래 당사자에게 마이페이지 안내 */}
-                {(phone.status === 'trading' || phone.status === 'sold') &&
+                {/* 거래중 시 거래 당사자에게 마이페이지 안내 */}
+                {phone.status === 'trading' &&
                  user && (Number(user.id) === phone.seller?.id || Number(user.id) === phone.buyer?.id) && (
                   <Link href="/used/mypage?tab=trading">
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
@@ -1136,10 +1133,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         <div className="flex items-center gap-2">
                           <Info className="w-4 h-4 text-blue-600" />
                           <span className="text-sm font-medium text-blue-800">
-                            {phone.status === 'sold'
-                              ? '거래가 완료되었습니다. 마이페이지에서 후기를 작성할 수 있습니다.'
-                              : '거래내역 바로가기'
-                            }
+                            거래내역 바로가기
                           </span>
                         </div>
                         <ChevronRight className="w-4 h-4 text-blue-600" />
