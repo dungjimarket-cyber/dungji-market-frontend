@@ -541,7 +541,9 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
           itemType={selectedTransaction.itemType}
           revieweeName={
             selectedTransaction.itemType === 'electronics'
-              ? (selectedTransaction.electronics?.seller?.nickname || '판매자')
+              ? (selectedTransaction.electronics?.seller?.id === currentUserId
+                  ? (selectedTransaction.buyer?.nickname || '구매자')
+                  : (selectedTransaction.electronics?.seller?.nickname || '판매자'))
               : (selectedTransaction.seller === currentUserId
                   ? selectedTransaction.buyer_username
                   : selectedTransaction.seller_username)
