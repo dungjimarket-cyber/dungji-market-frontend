@@ -84,7 +84,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
   const [selectedCancelItem, setSelectedCancelItem] = useState<UnifiedMarketItem | null>(null);
   const [isBuyerComplete, setIsBuyerComplete] = useState(false);
   const [showOfferCancelDialog, setShowOfferCancelDialog] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
+  const [selectedOfferItem, setSelectedOfferItem] = useState<any>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [returnToSale, setReturnToSale] = useState(true);
@@ -880,7 +880,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                   variant="outline"
                                   className="text-red-600"
                                   onClick={() => {
-                                    setSelectedOfferId(item.id);
+                                    setSelectedOfferItem(item);
                                     setShowOfferCancelDialog(true);
                                   }}
                                 >
@@ -1430,13 +1430,13 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedOfferId(null)}>
+            <AlertDialogCancel onClick={() => setSelectedOfferItem(null)}>
               아니오
             </AlertDialogCancel>
             <AlertDialogAction onClick={() => {
-              if (selectedOfferId) {
-                handleCancelOffer(selectedOfferId);
-                setSelectedOfferId(null);
+              if (selectedOfferItem) {
+                handleCancelOffer(selectedOfferItem);
+                setSelectedOfferItem(null);
               }
             }}>
               네
@@ -1459,13 +1459,26 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
     }
   }
 
-  async function handleCancelOffer(offerId: number) {
+  async function handleCancelOffer(item: any) {
     try {
-      await buyerAPI.cancelOffer(offerId);
+      // type 필드 우선 사용 (백엔드에서 추가된 필드), 없으면 itemType, 그것도 없으면 객체로 판단
+      const itemType = item.type || item.itemType || (item.phone ? 'phone' : 'electronics');
+
+      console.log('[제안취소 - MyPageTabs] item:', item);
+      console.log('[제안취소 - MyPageTabs] itemType:', itemType);
+
+      // itemType에 따라 적절한 API 호출
+      if (itemType === 'electronics') {
+        await electronicsApi.cancelOffer(item.id);
+      } else {
+        await buyerAPI.cancelOffer(item.id);
+      }
+
       toast('제안이 취소되었습니다.');
       // 페이지 새로고침
       setTimeout(() => window.location.reload(), 500);
     } catch (error) {
+      console.error('[제안취소 오류]', error);
       toast('제안 취소 중 오류가 발생했습니다.');
     }
   }
