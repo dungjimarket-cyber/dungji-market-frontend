@@ -269,7 +269,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                   </div>
                   <p className="text-xs text-gray-500">
                     {transaction.itemType === 'electronics'
-                      ? `${transaction.electronics?.brand || '브랜드'} • ${transaction.seller?.nickname || '판매자'}님과 거래`
+                      ? `${transaction.seller?.nickname || transaction.buyer?.nickname || '거래상대'}님과 거래`
                       : `${transaction.seller === currentUserId
                           ? transaction.buyer_username
                           : transaction.seller_username || '판매자'}님과 거래`}

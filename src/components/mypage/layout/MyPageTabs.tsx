@@ -801,6 +801,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                     setReviewTarget({
                                       transactionId: transactionId,
                                       revieweeName: buyerName,
+                                      itemType: item.itemType,
                                       productInfo: {
                                         brand: item.brand || '',
                                         model: item.itemType === 'phone' ? (item.model || '') : (item.model_name || item.model || ''),
@@ -1005,6 +1006,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                                     setReviewTarget({
                                       transactionId: transactionId,
                                       revieweeName: targetItem?.seller?.nickname || '판매자',
+                                      itemType: item.itemType,
                                       productInfo: {
                                         brand: targetItem?.brand || '',
                                         model: item.itemType === 'phone' ? (targetItem?.model || '') : (targetItem?.model_name || targetItem?.model || ''),
@@ -1133,6 +1135,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
           }}
           transactionId={reviewTarget.transactionId}
           revieweeName={reviewTarget.revieweeName}
+          itemType={reviewTarget.itemType}
           productInfo={reviewTarget.productInfo}
           onSuccess={() => {
             setShowReviewModal(false);
