@@ -1,5 +1,5 @@
 /**
- * 전자제품/가전 목록 페이지
+ * 전자제품/PC 목록 페이지
  * /used-electronics
  */
 
@@ -183,7 +183,7 @@ function UsedElectronicsListPageContent() {
       <div className="sticky top-0 z-40 bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-bold">전자제품/가전</h1>
+            <h1 className="text-xl font-bold">전자제품/PC</h1>
             {user && (
               <Link href="/used-electronics/create">
                 <Button size="sm" className="flex items-center gap-1">

@@ -44,7 +44,7 @@ export default function UnifiedTabs({
         </TabsTrigger>
         <TabsTrigger value="electronics" className="flex items-center gap-1.5">
           <Monitor className="w-4 h-4" />
-          <span>전자제품/가전</span>
+          <span>전자제품/PC</span>
           {counts?.electronics !== undefined && (
             <span className="text-xs text-gray-500 ml-1">({counts.electronics})</span>
           )}

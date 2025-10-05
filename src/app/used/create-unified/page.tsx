@@ -182,7 +182,7 @@ export default function UnifiedCreatePage() {
                     <Monitor className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-base">전자제품/가전</h3>
+                    <h3 className="font-medium text-base">전자제품/PC</h3>
                     <p className="text-sm text-gray-500">노트북, 모니터, 게임기 등</p>
                   </div>
                 </div>

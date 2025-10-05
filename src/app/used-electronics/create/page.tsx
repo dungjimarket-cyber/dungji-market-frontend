@@ -1,5 +1,5 @@
 /**
- * 전자제품/가전 등록 페이지
+ * 전자제품/PC 등록 페이지
  * /used-electronics/create
  */
 
@@ -674,7 +674,7 @@ export default function ElectronicsCreatePage() {
       <div className="sticky top-0 z-40 bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">전자제품/가전 등록</h1>
+            <h1 className="text-xl font-bold">전자제품/PC 등록</h1>
             <Button
               variant="ghost"
               size="sm"

@@ -1,5 +1,5 @@
 /**
- * 전자제품/가전 수정 페이지
+ * 전자제품/PC 수정 페이지
  * /used/electronics/[id]/edit
  */
 
