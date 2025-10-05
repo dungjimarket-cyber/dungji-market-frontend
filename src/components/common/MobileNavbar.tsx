@@ -14,7 +14,7 @@ import PenaltyModal from '@/components/penalty/PenaltyModal';
  * 모바일용 하단 네비게이션 바 컴포넌트
  */
 export default function MobileNavbar() {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user, isLoading, accessToken } = useAuth();
   const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
@@ -80,7 +80,7 @@ export default function MobileNavbar() {
       hasUser: !!user,
       userRole: user?.role,
       userType: user?.user_type,
-      accessToken: !!user?.token,
+      hasAccessToken: !!accessToken,
       localStorage_token: typeof window !== 'undefined' ? !!localStorage.getItem('dungji_auth_token') : null,
       localStorage_user: typeof window !== 'undefined' ? !!localStorage.getItem('user') : null
     });
@@ -94,7 +94,7 @@ export default function MobileNavbar() {
       setIsSeller(false);
       setUserRole(null);
     }
-  }, [user, isAuthenticated, isLoading]);
+  }, [user, isAuthenticated, isLoading, accessToken]);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 pb-safe">
