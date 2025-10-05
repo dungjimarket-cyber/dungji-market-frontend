@@ -526,9 +526,15 @@ export default function PurchaseActivityTab() {
   };
 
   // 제안 취소
-  const handleCancelOffer = async (offerId: number) => {
+  const handleCancelOffer = async (offerId: number, itemType?: 'phone' | 'electronics') => {
     await executeTransactionAction(
-      () => buyerAPI.cancelOffer(offerId),
+      () => {
+        // itemType에 따라 적절한 API 호출
+        if (itemType === 'electronics') {
+          return electronicsApi.cancelOffer(offerId);
+        }
+        return buyerAPI.cancelOffer(offerId);
+      },
       {
         successMessage: '제안이 취소되었습니다.',
         onRefresh: fetchMyOffers,
@@ -919,10 +925,10 @@ export default function PurchaseActivityTab() {
                       </span>
                       <div className="flex gap-2">
                         {offer.status === 'pending' && (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
-                            onClick={() => handleCancelOffer(offer.id)}
+                            onClick={() => handleCancelOffer(offer.id, offer.itemType)}
                           >
                             제안 취소
                           </Button>
