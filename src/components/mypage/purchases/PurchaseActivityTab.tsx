@@ -526,14 +526,17 @@ export default function PurchaseActivityTab() {
   };
 
   // 제안 취소
-  const handleCancelOffer = async (offerId: number, itemType?: 'phone' | 'electronics') => {
+  const handleCancelOffer = async (offer: OfferItem) => {
+    // itemType이 없으면 offer 데이터로 판단 (getItemUrl과 동일한 로직)
+    const itemType = offer.itemType || (offer.phone ? 'phone' : 'electronics');
+
     await executeTransactionAction(
       () => {
         // itemType에 따라 적절한 API 호출
         if (itemType === 'electronics') {
-          return electronicsApi.cancelOffer(offerId);
+          return electronicsApi.cancelOffer(offer.id);
         }
-        return buyerAPI.cancelOffer(offerId);
+        return buyerAPI.cancelOffer(offer.id);
       },
       {
         successMessage: '제안이 취소되었습니다.',
@@ -928,7 +931,7 @@ export default function PurchaseActivityTab() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleCancelOffer(offer.id, offer.itemType)}
+                            onClick={() => handleCancelOffer(offer)}
                           >
                             제안 취소
                           </Button>
