@@ -527,8 +527,8 @@ export default function PurchaseActivityTab() {
 
   // 제안 취소
   const handleCancelOffer = async (offer: OfferItem) => {
-    // itemType이 없으면 offer 데이터로 판단 (getItemUrl과 동일한 로직)
-    const itemType = offer.itemType || (offer.phone ? 'phone' : 'electronics');
+    // type 우선, 없으면 itemType, 그것도 없으면 객체로 판단 (거래중/받은제안과 동일)
+    const itemType = (offer as any).type || offer.itemType || (offer.phone ? 'phone' : 'electronics');
 
     await executeTransactionAction(
       () => {
