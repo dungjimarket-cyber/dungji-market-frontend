@@ -45,6 +45,12 @@ export default function WithdrawPage() {
     setError('');
 
     try {
+      console.log('[회원탈퇴] 요청 시작:', {
+        url: `${process.env.NEXT_PUBLIC_API_URL}/auth/withdraw/`,
+        hasToken: !!accessToken,
+        reason: withdrawReason === '기타' ? otherReason : withdrawReason
+      });
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/withdraw/`, {
         method: 'POST',
         headers: {
@@ -57,7 +63,10 @@ export default function WithdrawPage() {
         })
       });
 
+      console.log('[회원탈퇴] 응답 상태:', response.status);
+
       if (response.ok) {
+        console.log('[회원탈퇴] 성공');
         // 카카오 사용자인 경우 추가 안내
         if (user?.sns_type === 'kakao') {
           alert('회원 탈퇴가 완료되었습니다.\n\n카카오톡 연결도 함께 해제되었습니다.\n그동안 이용해주셔서 감사합니다.');
@@ -68,9 +77,11 @@ export default function WithdrawPage() {
         router.push('/');
       } else {
         const data = await response.json();
+        console.error('[회원탈퇴] 실패:', data);
         setError(data.error || '회원 탈퇴 처리 중 오류가 발생했습니다.');
       }
     } catch (error) {
+      console.error('[회원탈퇴] 예외 발생:', error);
       setError('회원 탈퇴 처리 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
