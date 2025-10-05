@@ -527,8 +527,16 @@ export default function PurchaseActivityTab() {
 
   // 제안 취소
   const handleCancelOffer = async (offer: OfferItem) => {
+    // 디버깅: offer 객체 확인
+    console.log('[제안취소] offer 객체:', offer);
+    console.log('[제안취소] offer.type:', (offer as any).type);
+    console.log('[제안취소] offer.itemType:', offer.itemType);
+    console.log('[제안취소] offer.phone 존재:', !!offer.phone);
+    console.log('[제안취소] offer.electronics 존재:', !!(offer as any).electronics);
+
     // type 우선, 없으면 itemType, 그것도 없으면 객체로 판단 (거래중/받은제안과 동일)
     const itemType = (offer as any).type || offer.itemType || (offer.phone ? 'phone' : 'electronics');
+    console.log('[제안취소] 최종 itemType:', itemType);
 
     await executeTransactionAction(
       () => {
