@@ -528,7 +528,7 @@ export default function ProfileSection() {
       
       <div className="flex flex-col gap-4">
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">프로필 정보</h3>
+          <h3 className="text-base font-semibold mb-4">프로필 정보</h3>
           
           {/* 아이디 섹션 - 카카오 계정이 아닌 경우에만 표시 */}
           {user?.sns_type !== 'kakao' && (
@@ -775,7 +775,7 @@ export default function ProfileSection() {
               </div>
             ) : (
               <div className="p-2 bg-gray-50 rounded-md">
-                <span className="font-medium text-lg">{email || '이메일 정보 없음'}</span>
+                <span className="font-medium text-sm">{email || '이메일 정보 없음'}</span>
               </div>
             )}
           </div>
@@ -787,7 +787,7 @@ export default function ProfileSection() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">이름</label>
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <span className="font-medium text-lg">{firstName || '정보 없음'}</span>
+                  <span className="font-medium text-sm">{firstName || '정보 없음'}</span>
                 </div>
               </div>
             </>
@@ -846,7 +846,7 @@ export default function ProfileSection() {
               <>
                 {phoneNumber ? (
                   <>
-                    <span className="font-medium text-lg">
+                    <span className="font-medium text-sm">
                       {phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">
@@ -932,7 +932,7 @@ export default function ProfileSection() {
                 </div>
               ) : (
                 <div className="p-2 bg-gray-50 rounded-md">
-                  <div className="font-medium text-lg">
+                  <div className="font-medium text-sm">
                     {addressProvince && addressCity ? `${addressProvince} ${addressCity}` : '지역 정보 없음'}
                   </div>
                 </div>
@@ -1137,7 +1137,7 @@ export default function ProfileSection() {
 
       {/* 푸시 알림 설정 카드 - 마케팅 알림 시스템 구현 후 활성화 예정 */}
       {/* <Card className="p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
           <Bell className="w-5 h-5" />
           푸시 알림 설정
         </h3>

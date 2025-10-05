@@ -259,7 +259,7 @@ export default function MyPageClient() {
     <div className="container mx-auto px-4 py-8">
       {/* 헤더 영역 */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">마이페이지</h1>
+        <h1 className="text-lg font-bold">마이페이지</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -301,12 +301,12 @@ export default function MyPageClient() {
                 {/* 사용자 정보 - 수직 중앙 정렬 */}
                 <div className="flex-1 flex flex-col justify-center space-y-3">
                   <div>
-                    <p className="text-sm text-gray-500">닉네임</p>
-                    <p className="font-medium">{user.nickname || user.username || '설정 필요'}</p>
+                    <p className="text-xs text-gray-500">닉네임</p>
+                    <p className="text-sm font-medium">{user.nickname || user.username || '설정 필요'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">주요활동지역</p>
-                    <p className="font-medium">
+                    <p className="text-xs text-gray-500">주요활동지역</p>
+                    <p className="text-sm font-medium">
                       {user.address_region?.full_name || '설정 필요'}
                     </p>
                   </div>

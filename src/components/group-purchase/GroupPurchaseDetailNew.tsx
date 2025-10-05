@@ -1288,13 +1288,13 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       </div>
 
       {/* 메인 이미지 */}
-      <div className="relative w-full bg-gray-100">
-        <div className="relative aspect-square w-full md:max-w-md md:mx-auto lg:max-w-lg">
+      <div className="relative w-full bg-gradient-to-b from-gray-50/50 to-white/80 py-4 px-3">
+        <div className="relative aspect-square w-full max-w-sm mx-auto rounded-lg overflow-hidden border border-gray-100/80 shadow-sm bg-white/60 backdrop-blur-sm p-2">
           <Image
             src={groupBuy.product_details?.image_url || '/placeholder-product.jpg'}
             alt={groupBuy.product_details?.name || '상품 이미지'}
             fill
-            className="object-contain"
+            className="object-contain p-1"
             priority
           />
         </div>
