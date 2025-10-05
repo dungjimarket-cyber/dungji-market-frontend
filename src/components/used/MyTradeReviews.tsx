@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import axios from 'axios';
 import ReviewModal from './ReviewModal';
+import { getBrandNameKo } from '@/lib/brandNames';
 
 interface MyTradeReviewsProps {
   userId?: number;
@@ -103,7 +104,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
 
       // 휴대폰 거래 중 평가대기 필터링
       const phonePending = phoneTransactions.filter((t: any) =>
-        t.status === 'completed' && !writtenReviews.some((r: any) => r.transaction === t.id)
+        t.status === 'completed' && !t.has_review
       ).map((t: any) => ({ ...t, itemType: 'phone' }));
 
       // 전자제품 거래 중 평가대기 필터링
@@ -271,8 +272,8 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                     {transaction.itemType === 'electronics'
                       ? `${transaction.seller?.nickname || transaction.buyer?.nickname || '거래상대'}님과 거래`
                       : `${transaction.seller === currentUserId
-                          ? transaction.buyer_username
-                          : transaction.seller_username || '판매자'}님과 거래`}
+                          ? (transaction.buyer_nickname || transaction.buyer_username)
+                          : (transaction.seller_nickname || transaction.seller_username || '판매자')}님과 거래`}
                   </p>
                 </div>
                 <Button
@@ -340,7 +341,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                           <p className="text-xs text-gray-500">
                             {review.itemType === 'electronics'
                               ? (review.product_name || '전자제품')
-                              : `${review.phone_brand || ''} ${review.phone_model || '휴대폰'}`.trim()}
+                              : `${getBrandNameKo(review.phone_brand) || review.phone_brand || ''} ${review.phone_model || '휴대폰'}`.trim()}
                           </p>
                         </div>
                         {/* 후기 내용 표시 (있을 경우만) */}
@@ -454,7 +455,7 @@ export default function MyTradeReviews({ userId }: MyTradeReviewsProps) {
                           <p className="text-xs text-gray-500">
                             {review.itemType === 'electronics'
                               ? (review.product_name || '전자제품')
-                              : `${review.phone_brand || ''} ${review.phone_model || '휴대폰'}`.trim()}
+                              : `${getBrandNameKo(review.phone_brand) || review.phone_brand || ''} ${review.phone_model || '휴대폰'}`.trim()}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
