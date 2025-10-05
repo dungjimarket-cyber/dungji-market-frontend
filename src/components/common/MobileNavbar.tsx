@@ -14,7 +14,7 @@ import PenaltyModal from '@/components/penalty/PenaltyModal';
  * 모바일용 하단 네비게이션 바 컴포넌트
  */
 export default function MobileNavbar() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
   const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
@@ -74,6 +74,17 @@ export default function MobileNavbar() {
   
   // 사용자 역할 확인
   useEffect(() => {
+    console.log('[MobileNavbar] Auth 상태 체크:', {
+      isLoading,
+      isAuthenticated,
+      hasUser: !!user,
+      userRole: user?.role,
+      userType: user?.user_type,
+      accessToken: !!user?.token,
+      localStorage_token: typeof window !== 'undefined' ? !!localStorage.getItem('dungji_auth_token') : null,
+      localStorage_user: typeof window !== 'undefined' ? !!localStorage.getItem('user') : null
+    });
+
     // Auth context의 user 객체에서 직접 확인
     if (user) {
       const isSellerUser = user.role === 'seller' || user.user_type === '판매';
@@ -83,7 +94,7 @@ export default function MobileNavbar() {
       setIsSeller(false);
       setUserRole(null);
     }
-  }, [user]);
+  }, [user, isAuthenticated, isLoading]);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 pb-safe">
@@ -127,7 +138,16 @@ export default function MobileNavbar() {
         </Link>
         {/* 알림 버튼 - 로그인한 경우에만 활성화 */}
         <div className="w-1/6">
-          {isAuthenticated ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center text-gray-400 w-full py-2">
+              <div className="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <span className="text-[10px]">알림</span>
+            </div>
+          ) : isAuthenticated ? (
             <MobileNotificationButton />
           ) : (
             <Link href="/login" className="flex flex-col items-center justify-center text-gray-400 w-full py-2">
@@ -140,7 +160,12 @@ export default function MobileNavbar() {
             </Link>
           )}
         </div>
-        {isAuthenticated ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center text-gray-600 w-1/6 py-2">
+            <FaUser className="text-lg mb-1 animate-pulse" />
+            <span className="text-[10px]">...</span>
+          </div>
+        ) : isAuthenticated ? (
           <Link
             href={isSeller ? "/mypage/seller" : "/mypage"}
             className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2"
