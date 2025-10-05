@@ -816,7 +816,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="flex-shrink-0">판매완룼</Badge>
+                          <Badge variant="outline" className="flex-shrink-0">판매완료</Badge>
                         </div>
                       </div>
                     );
@@ -1021,7 +1021,7 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="flex-shrink-0">거래완룼</Badge>
+                          <Badge variant="outline" className="flex-shrink-0">거래완료</Badge>
                         </div>
                       </div>
                     );
