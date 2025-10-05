@@ -721,7 +721,12 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </>
               )}
 
-              {/* 거래완료는 가격 영역에 표시하므로 오버레이 제거 */}
+              {/* 거래완료 오버레이 */}
+              {electronics.status === 'sold' && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
+                  <span className="text-white text-2xl font-bold">거래완료</span>
+                </div>
+              )}
 
               {/* 판매중 상태 뱃지 */}
               {electronics.status === 'active' && (
