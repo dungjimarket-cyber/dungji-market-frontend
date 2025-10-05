@@ -82,7 +82,7 @@ export default function EventDetailPage() {
         <div className="p-6 md:p-8">
           <div className="mb-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-              <h1 className="text-2xl md:text-3xl font-bold">{event.title}</h1>
+              <h1 className="text-lg md:text-xl font-bold">{event.title}</h1>
               {event.is_active && (
                 <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap self-start">
                   진행중
