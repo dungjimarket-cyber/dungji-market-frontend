@@ -798,13 +798,10 @@ export default function ProfileSection() {
             <div className="flex justify-between items-start mb-2">
               <label className="block text-sm font-medium text-gray-700">
                 휴대폰 번호
-                {authUser?.sns_type === 'kakao' && !phoneNumber && (
-                  <>
-                    <span className="text-red-500 ml-1">⚠️</span>
-                    <span className="text-red-500 text-xs ml-2">
-                      {role === 'seller' ? '공구 입찰에 참여하기 위한 필수 입력 항목입니다.' : '공구에 참여하기 위한 필수 입력 항목입니다.'}
-                    </span>
-                  </>
+                {!phoneNumber && (
+                  <span className="text-orange-600 text-xs ml-2">
+                    필수 입력 항목입니다
+                  </span>
                 )}
               </label>
               {/* 휴대폰 번호가 없을 때만 등록 버튼 표시 */}
@@ -868,13 +865,10 @@ export default function ProfileSection() {
               <div className="flex justify-between items-start mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   {role === 'seller' ? '사업장 주소/영업활동 지역' : '주요활동지역'}
-                  {authUser?.sns_type === 'kakao' && (!addressProvince || !addressCity) && (
-                    <>
-                      <span className="text-red-500 ml-1">⚠️</span>
-                      <span className="text-red-500 text-xs ml-2">
-                        {role === 'seller' ? '공구 입찰에 참여하기 위한 필수 입력 항목입니다.' : '공구에 참여하기 위한 필수 입력 항목입니다.'}
-                      </span>
-                    </>
+                  {(!addressProvince || !addressCity) && (
+                    <span className="text-orange-600 text-xs ml-2">
+                      필수 입력 항목입니다
+                    </span>
                   )}
                 </label>
                 <button

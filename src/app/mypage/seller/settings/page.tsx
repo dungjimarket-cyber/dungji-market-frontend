@@ -1056,8 +1056,14 @@ export default function SellerSettings() {
                       <p className="text-xs text-gray-500">휴대폰번호 수정을 원하시면 고객센터로 문의 부탁드립니다</p>
                     </>
                   ) : (
-                    /* 휴대폰 번호가 없으면 PhoneVerification 컴포넌트가 자체 Label 표시 */
-                    <PhoneVerification
+                    <>
+                      <Label>
+                        휴대폰 번호
+                        <span className="text-orange-600 text-xs ml-2">
+                          필수 입력 항목입니다
+                        </span>
+                      </Label>
+                      <PhoneVerification
                       purpose="profile"
                       defaultValue={formData.phone}
                       currentUserToken={accessToken || undefined}
@@ -1091,6 +1097,7 @@ export default function SellerSettings() {
                         }
                       }}
                     />
+                    </>
                   )}
                 </div>
 
@@ -1160,7 +1167,12 @@ export default function SellerSettings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="businessAddress">
-                    사업장주소/영업활동지역 <span className="text-red-500">*</span>
+                    사업장주소/영업활동지역
+                    {(!formData.addressProvince || !formData.addressCity) && !profile?.addressRegion && (
+                      <span className="text-orange-600 text-xs ml-2">
+                        필수 입력 항목입니다
+                      </span>
+                    )}
                   </Label>
                   <div className="flex gap-2 items-start">
                     {!isEditingAddress && profile?.addressRegion ? (
@@ -1233,7 +1245,12 @@ export default function SellerSettings() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="representativeName">
-                      사업자등록증상 대표자명 <span className="text-red-500">*</span>
+                      사업자등록증상 대표자명
+                      {!formData.representativeName && !profile?.representativeName && (
+                        <span className="text-orange-600 text-xs ml-2">
+                          공구견적 이용시 필수 입력 항목입니다
+                        </span>
+                      )}
                     </Label>
                     <div className="flex gap-2 items-start">
                       {!isEditingRepresentativeName && profile?.representativeName ? (
@@ -1300,7 +1317,12 @@ export default function SellerSettings() {
 
                   <div className="space-y-2">
                     <Label htmlFor="businessNumber1">
-                      사업자등록번호 <span className="text-red-500">*</span>
+                      사업자등록번호
+                      {(!formData.businessNumber1 || !formData.businessNumber2 || !formData.businessNumber3) && !isBusinessNumberVerified && (
+                        <span className="text-orange-600 text-xs ml-2">
+                          공구견적 이용시 필수 입력 항목입니다
+                        </span>
+                      )}
                     </Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <div className="flex items-center gap-2 flex-1">
