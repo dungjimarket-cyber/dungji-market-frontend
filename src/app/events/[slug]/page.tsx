@@ -102,15 +102,15 @@ export default function EventDetailPage() {
           {event.content_image_url && (
             <div className="mb-6">
               <div className="bg-gray-50 rounded-lg p-2 md:p-3 lg:p-4">
-                <div className="relative w-full max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+                <div className="relative w-4/5 max-w-sm lg:max-w-md xl:max-w-lg mx-auto">
                   <Image
                     src={`${event.content_image_url}${event.content_image_url.includes('?') ? '&' : '?'}t=${Date.now()}`}
                     alt={`${event.title} 상세 이미지`}
-                    width={600}
-                    height={900}
+                    width={480}
+                    height={720}
                     className="w-full h-auto rounded-lg shadow-sm"
                     style={{ maxWidth: '100%', height: 'auto' }}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 500px, 600px"
+                    sizes="(max-width: 768px) 80vw, (max-width: 1024px) 400px, 480px"
                     quality={75}
                   />
                 </div>
