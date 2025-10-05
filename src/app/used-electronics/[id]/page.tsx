@@ -1194,32 +1194,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                         variant="outline"
                         onClick={async () => {
                           if (confirm('제안을 취소하시겠습니까?')) {
-                            try {
-                              const token = localStorage.getItem('accessToken');
-
-                              const response = await axios.post(
-                                `${process.env.NEXT_PUBLIC_API_URL}/used/offers/${myOffer.id}/cancel/`,
-                                {},
-                                {
-                                  headers: {
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                }
-                              );
-
-                              if (response.status === 200 || response.status === 204) {
-                                setMyOffer(null);
-                                // 취소해도 5회 카운팅은 원복하지 않음
-                                // setRemainingOffers(prev => Math.min(5, prev + 1));
-                                await fetchElectronicsDetail(); // 상품 정보 다시 조회
-                                await fetchActiveOffersCount(); // 활성 제안 수 업데이트
-                                toast.success('가격 제안이 취소되었습니다.', {
-                                  duration: 2000,
-                                });
-                              }
-                            } catch (error) {
-                              console.error('Failed to cancel offer:', error);
-                            }
+                            await handleCancelOffer();
+                            await fetchElectronicsDetail(); // 상품 정보 다시 조회
+                            await fetchActiveOffersCount(); // 활성 제안 수 업데이트
                           }
                         }}
                         size="sm"
