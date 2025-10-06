@@ -841,20 +841,21 @@ function RegisterPageContent() {
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">
-              <div className="grid grid-cols-2 gap-4 mb-6 relative">
-                {/* 중앙 로고와 텍스트 */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
-                  <Image
-                    src="/logos/dungji_logo.jpg"
-                    alt="둥지마켓"
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-lg"
-                  />
-                  <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap">
-                    둥지마켓
-                  </h2>
-                </div>
+              {/* 로고와 텍스트 */}
+              <div className="flex flex-col items-center gap-2 mb-8">
+                <Image
+                  src="/logos/dungji_logo.jpg"
+                  alt="둥지마켓"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-lg"
+                />
+                <h2 className="text-xl font-bold text-gray-900">
+                  둥지마켓
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 <button
                   type="button"
                   onClick={() => {

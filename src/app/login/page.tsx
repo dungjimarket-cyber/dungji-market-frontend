@@ -142,17 +142,15 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-lg w-full space-y-6">
-        <div className="relative py-8">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2">
-            <Image
-              src="/logos/dungji_logo.jpg"
-              alt="둥지마켓"
-              width={50}
-              height={50}
-              className="w-12 h-12 rounded-lg"
-            />
-          </div>
-          <h2 className="text-center text-xl font-bold text-gray-900">
+        <div className="flex items-center justify-center gap-3 py-8">
+          <Image
+            src="/logos/dungji_logo.jpg"
+            alt="둥지마켓"
+            width={50}
+            height={50}
+            className="w-12 h-12 rounded-lg"
+          />
+          <h2 className="text-xl font-bold text-gray-900">
             둥지마켓에 오신걸 환영합니다
           </h2>
         </div>
