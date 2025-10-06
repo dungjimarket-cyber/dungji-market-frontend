@@ -926,10 +926,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               {/* 가격 */}
               <div className="mb-4">
                 {phone.status === 'sold' ? (
-                  // 판매완료 - 거래가격만 표시
-                  <p className="text-3xl font-bold text-gray-700">
-                    {(phone.final_price || phone.price).toLocaleString()}원
-                  </p>
+                  // 판매완료 - 거래가격 표시
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm text-gray-500">거래금액</span>
+                    <p className="text-2xl font-bold text-gray-400 line-through">
+                      {(phone.final_price || phone.price).toLocaleString()}원
+                    </p>
+                  </div>
                 ) : (
                   // 판매중/거래중 - 최소제안가 강조
                   <>
