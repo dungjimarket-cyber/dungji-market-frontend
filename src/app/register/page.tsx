@@ -819,19 +819,6 @@ function RegisterPageContent() {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <Image
-              src="/logos/dungji_logo.jpg"
-              alt="둥지마켓"
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-lg"
-            />
-            <h2 className="text-2xl font-bold text-gray-900">
-              둥지마켓
-            </h2>
-          </div>
-
           {/* 카카오 로그인에서 온 경우 안내 메시지 */}
           {kakaoInfo && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -850,11 +837,24 @@ function RegisterPageContent() {
               </div>
             </div>
           )}
-          
+
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 mb-6 relative">
+                {/* 중앙 로고와 텍스트 */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
+                  <Image
+                    src="/logos/dungji_logo.jpg"
+                    alt="둥지마켓"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-lg"
+                  />
+                  <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                    둥지마켓
+                  </h2>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -867,7 +867,7 @@ function RegisterPageContent() {
                     개인회원
                   </div>
                   <div className="text-sm text-gray-600 leading-relaxed">
-                    견적 요청, 공구 참여<br/><span className="font-bold">중고거래</span>
+                    견적 요청, 공구 참여, <span className="font-bold">중고거래</span>
                   </div>
                 </button>
 
@@ -879,11 +879,11 @@ function RegisterPageContent() {
                   }}
                   className="group relative p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-orange-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
                 >
-                  <div className="font-bold text-lg mb-3 text-gray-900 group-hover:text-orange-600 transition-colors">
+                  <div className="font-bold text-lg mb-3 text-sky-500 group-hover:text-sky-600 transition-colors">
                     사업자회원
                   </div>
                   <div className="text-sm text-gray-600 leading-relaxed">
-                    통신·렌탈 판매활동<br/><span className="font-bold">중고거래</span>
+                    통신·렌탈 판매활동, <span className="font-bold">중고거래</span>
                   </div>
                 </button>
               </div>
