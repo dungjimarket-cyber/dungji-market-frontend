@@ -1138,7 +1138,8 @@ export default function ElectronicsCreatePage() {
 
           {/* 거래 지역 */}
           <div>
-            <Label>거래 희망 지역 <span className="text-red-500">*</span> (최대 3곳)</Label>
+            <Label>거래 희망 지역 <span className="text-red-500">*</span></Label>
+            <p className="text-sm text-gray-500 mb-2">최대 3개 지역 선택 가능</p>
             <MultiRegionDropdown
               selectedRegions={selectedRegions}
               onSelectionChange={setSelectedRegions}

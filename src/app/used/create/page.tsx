@@ -1630,7 +1630,7 @@ export default function CreateUsedPhonePage() {
             {/* 거래 가능 지역 선택 */}
             <div ref={regionRef} className="space-y-2">
               <Label>거래 가능 지역 <span className="text-red-500">*</span></Label>
-              <p className="text-sm text-gray-500 mb-2">최대 3개 지역까지 선택 가능합니다</p>
+              <p className="text-sm text-gray-500 mb-2">최대 3개 지역 선택 가능</p>
               <MultiRegionDropdown
                 maxSelections={3}
                 onSelectionChange={handleRegionSelectionChange}

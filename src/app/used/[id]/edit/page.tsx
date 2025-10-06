@@ -1286,7 +1286,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                   }}
                 />
                 {errors.regions && <p className="text-xs text-red-500 mt-1">{errors.regions}</p>}
-                <p className="text-xs text-gray-500 mt-1">대면 거래 가능한 지역을 최대 3곳까지 선택할 수 있습니다</p>
+                <p className="text-xs text-gray-500 mt-1">최대 3개 지역 선택 가능</p>
               </div>
             ) : (
               <div>
