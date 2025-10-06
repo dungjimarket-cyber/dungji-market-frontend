@@ -821,11 +821,11 @@ function RegisterPageContent() {
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex items-center justify-center gap-3 mb-8">
             <Image
-              src="/logo.svg"
+              src="/logos/dungji_logo.jpg"
               alt="둥지마켓"
               width={40}
               height={40}
-              className="w-10 h-10"
+              className="w-10 h-10 rounded-lg"
             />
             <h2 className="text-2xl font-bold text-gray-900">
               둥지마켓

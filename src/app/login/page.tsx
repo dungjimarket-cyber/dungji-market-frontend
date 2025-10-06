@@ -144,11 +144,11 @@ function LoginForm() {
       <div className="max-w-lg w-full space-y-6">
         <div className="flex flex-col items-center gap-4">
           <Image
-            src="/logo.svg"
+            src="/logos/dungji_logo.jpg"
             alt="둥지마켓"
             width={60}
             height={60}
-            className="w-15 h-15"
+            className="w-15 h-15 rounded-lg"
           />
           <h2 className="text-center text-xl font-bold text-gray-900">
             둥지마켓에 오신걸 환영합니다
