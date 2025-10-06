@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
-import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaMobileAlt } from 'react-icons/fa';
+import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaExchangeAlt } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
@@ -131,10 +131,10 @@ export default function MobileNavbar() {
             </>
           )}
         </Link>
-        {/* 중고 버튼 추가 */}
+        {/* 중고거래 버튼 추가 */}
         <Link href="/used" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
-          <FaMobileAlt className="text-lg mb-1" />
-          <span className="text-[10px]">중고</span>
+          <FaExchangeAlt className="text-lg mb-1" />
+          <span className="text-[10px]">중고거래</span>
         </Link>
         {/* 알림 버튼 - 로그인한 경우에만 활성화 */}
         <div className="w-1/6">
