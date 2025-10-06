@@ -872,7 +872,7 @@ export default function UsedPhonesPage() {
         {/* 상품 리스트 */}
         <section className="py-6">
         {/* 상품 그리드 */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {activeTab === 'all' ? (
             // 전체 탭: 통합 아이템 표시
             unifiedItems.map((item, index) => (

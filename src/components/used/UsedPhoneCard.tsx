@@ -143,13 +143,8 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
 
       {/* 정보 영역 */}
       <div className="p-3">
-        {/* 모델명 */}
-        <h3 className="font-medium text-gray-900 line-clamp-2 min-h-[3rem] group-hover:text-blue-600 transition-colors">
-          {phone.brand && PHONE_BRANDS[phone.brand] ? `${PHONE_BRANDS[phone.brand]} ` : ''}{phone.model}
-        </h3>
-
         {/* 가격 */}
-        <div className="mt-2">
+        <div>
           {isCompleted ? (
             // 거래완료 상품 - 거래가격만 표시
             <div className="flex items-baseline gap-1">
@@ -188,6 +183,11 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
             </>
           )}
         </div>
+
+        {/* 모델명 */}
+        <h3 className="mt-2 font-medium text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+          {phone.brand && PHONE_BRANDS[phone.brand] ? `${PHONE_BRANDS[phone.brand]} ` : ''}{phone.model}
+        </h3>
 
         {/* 상태 정보 */}
         <div className="mt-2 flex items-center gap-3 text-xs text-gray-600">
