@@ -116,15 +116,15 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
     if (isSignup) {
       // 회원가입 페이지
       if (memberType === 'seller') {
-        return '카카오로 가입하기(판매회원)';
+        return '카카오로 가입하기(사업자회원)';
       }
-      return '카카오로 가입하기(일반회원)';
+      return '카카오로 가입하기(개인회원)';
     } else {
       // 로그인 페이지
       if (memberType === 'seller') {
-        return '카카오로 계속하기(판매회원)';
+        return '카카오로 계속하기(사업자회원)';
       }
-      return '카카오로 계속하기(일반회원)';
+      return '카카오로 계속하기(개인회원)';
     }
   };
 

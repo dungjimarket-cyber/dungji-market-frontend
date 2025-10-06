@@ -128,9 +128,6 @@ function SignInForm() {
           <p className="mt-2 text-center text-sm text-gray-600">
             둥지마켓 이용을 위해 로그인해주세요
           </p>
-          <p className="mt-1 text-center text-xs text-gray-500">
-            스마트한 공동구매 플랫폼
-          </p>
         </div>
 
         {/* 탭 선택 UI */}
@@ -144,7 +141,7 @@ function SignInForm() {
             }`}
           >
             <span className="text-2xl">🛒</span>
-            <span className="text-lg">일반회원</span>
+            <span className="text-lg">개인회원</span>
           </button>
           <button
             onClick={() => setSelectedTab('seller')}
@@ -155,7 +152,7 @@ function SignInForm() {
             }`}
           >
             <span className="text-2xl">💼</span>
-            <span className="text-lg">판매회원</span>
+            <span className="text-lg">사업자회원</span>
           </button>
         </div>
 
@@ -166,7 +163,7 @@ function SignInForm() {
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-center mb-3">
                 <p className="text-xs text-gray-500 mt-1">
-                  🚀 공동구매 참여하고 💰 최고 지원금 받기!
+                  공구견적받기 / 중고거래 이용
                 </p>
               </div>
               <button
@@ -210,7 +207,7 @@ function SignInForm() {
             <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
               <div className="text-center mb-3">
                 <p className="text-xs text-gray-500 mt-1">
-                  🚀 신규 고객 만나고 💰 매출 올리기!
+                  통신·렌탈 판매 활동 / 중고거래 이용
                 </p>
               </div>
               <button

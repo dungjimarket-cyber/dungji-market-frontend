@@ -99,7 +99,7 @@ export default function SellerTermsPage() {
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
             <li><strong>필수 수집 항목:</strong> 이름, 생년월일, 성별, 휴대폰번호, 이메일, 사업자등록번호, 사업장 주소, 대표자명</li>
             <li><strong>선택 수집 항목:</strong> 사업자등록증 사본, 비대면 판매 가능 여부, 택배거래 기록 등</li>
-            <li><strong>수집 목적:</strong> 본인확인, 사업자 인증, 입찰 자격 부여, 낙찰 및 정산 안내, 고객 민원 대응, 법령상 고지</li>
+            <li><strong>수집 목적:</strong> 본인확인, 사업자 인증, 견적제안 자격 부여, 견적 선정 및 정산 안내, 고객 민원 대응, 법령상 고지</li>
           </ul>
           
           <h3 className="text-lg font-semibold mb-2 mt-4">보관 및 이용기간</h3>
@@ -154,7 +154,7 @@ export default function SellerTermsPage() {
           <h3 className="text-lg font-semibold mb-3">2. 수집 및 이용 목적</h3>
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
             <li>판매회원 자격 확인 및 입점 심사</li>
-            <li>공동구매 입찰 참여 및 낙찰 결과 안내</li>
+            <li>공동구매 견적제안 참여 및 견적 선정 결과 안내</li>
             <li>고객 응대 및 민원 처리</li>
             <li>세금계산서 발행 등 정산 업무</li>
             <li>비대면 판매 인증 절차</li>
