@@ -882,10 +882,10 @@ function RegisterPageContent() {
                     🏢
                   </div>
                   <div className="font-semibold text-base sm:text-lg mb-1">
-                    판매회원
+                    사업자회원
                   </div>
                   <div className="text-xs font-medium text-orange-600 mb-2">
-                    (사업자)
+                    (통신,렌탈 판매)
                   </div>
                   <div className="text-xs text-gray-600">
                     공구 견적 제안, 중고거래
@@ -897,7 +897,7 @@ function RegisterPageContent() {
               <div className="mt-4 space-y-2">
                 <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                   <p className="text-sm text-gray-700 text-center">
-                    💡 사업자 → <strong className="text-gray-900">판매회원</strong> / 개인 → <strong className="text-gray-900">개인회원</strong>
+                    💡 통신·렌탈 등 사업자 → <strong className="text-gray-900">사업자회원</strong> / 개인 이용자 → <strong className="text-gray-900">개인회원</strong>
                   </p>
                 </div>
 
