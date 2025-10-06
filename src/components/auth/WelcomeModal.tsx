@@ -38,6 +38,11 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
     router.push('/group-purchases?tab=popular');
   };
 
+  const handleBrowseUsed = () => {
+    onClose();
+    router.push('/used');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
@@ -105,7 +110,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                     <Gavel className="mr-2 h-5 w-5" />
                     견적 제안하기
                   </Button>
-                  
+
                   <Button
                     onClick={handleBrowseGroupBuys}
                     variant="ghost"
@@ -115,6 +120,26 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                     <Eye className="mr-2 h-5 w-5" />
                     공구 둘러보기
                   </Button>
+                </div>
+
+                {/* 중고거래 섹션 - 모든 회원 공통 */}
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">📱</span>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900 mb-1">중고거래</h4>
+                      <p className="text-sm text-gray-600 mb-3">
+                        쉽고 빠른 중고거래
+                      </p>
+                      <Button
+                        onClick={handleBrowseUsed}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        size="sm"
+                      >
+                        중고 둘러보기
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (
@@ -144,7 +169,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                     <Gift className="mr-2 h-5 w-5" />
                     공구 만들기
                   </Button>
-                  
+
                   <Button
                     onClick={handleBrowseGroupBuys}
                     variant="ghost"
@@ -154,6 +179,26 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
                     <Eye className="mr-2 h-5 w-5" />
                     공구 둘러보기
                   </Button>
+                </div>
+
+                {/* 중고거래 섹션 - 모든 회원 공통 */}
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">📱</span>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900 mb-1">중고거래</h4>
+                      <p className="text-sm text-gray-600 mb-3">
+                        쉽고 빠른 중고거래
+                      </p>
+                      <Button
+                        onClick={handleBrowseUsed}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        size="sm"
+                      >
+                        중고 둘러보기
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </>
             )}

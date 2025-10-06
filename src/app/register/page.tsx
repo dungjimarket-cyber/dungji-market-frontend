@@ -845,30 +845,12 @@ function RegisterPageContent() {
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">
-              <div className="bg-gray-50 p-6 rounded-xl mb-6">
-                <h3 className="text-lg font-bold text-gray-900 text-center mb-3 relative">
-                  <span className="inline-block">어떤 회원이 되고 싶으신가요?</span>
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  어떤 회원으로 시작할까요?
                 </h3>
-                <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 mx-auto mb-4 rounded-full"></div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/50 transition-colors">
-                    <span className="text-xl">🛒</span>
-                    <div className="flex-1">
-                      <span className="font-semibold text-blue-600 text-sm">일반회원</span>
-                      <span className="text-gray-600 text-xs ml-1">공동구매 참여하고 견적 받기</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/50 transition-colors">
-                    <span className="text-xl">💼</span>
-                    <div className="flex-1">
-                      <span className="font-semibold text-green-600 text-sm">판매회원</span>
-                      <span className="text-gray-600 text-xs ml-1">견적 제안, 판매 활동</span>
-                    </div>
-                  </div>
-                </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
@@ -878,14 +860,14 @@ function RegisterPageContent() {
                   }}
                   className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
                 >
-                  <div className="mb-2">
-                    <svg className="w-10 h-10 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
+                  <div className="mb-3 text-4xl">
+                    👤
                   </div>
-                  <div className="font-semibold text-base sm:text-lg">
-                    <span className="block">일반회원</span>
-                    <span className="text-xs text-gray-600 block mt-1">(공구견적받기,중고거래)</span>
+                  <div className="font-semibold text-base sm:text-lg mb-2">
+                    개인회원
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    공구 견적 요청, 중고거래
                   </div>
                 </button>
                 <button
@@ -893,28 +875,37 @@ function RegisterPageContent() {
                   onClick={() => {
                     setMemberType('seller');
                     setFormData(prev => ({ ...prev, role: 'seller' }));
-                    // 판매회원도 이제 가입 방식 선택 가능
                   }}
                   className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
                 >
-                  <div className="mb-2">
-                    <svg className="w-10 h-10 mx-auto text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                  <div className="mb-3 text-4xl">
+                    🏢
                   </div>
-                  <div className="font-semibold text-base sm:text-lg">
-                    <span className="block">판매회원</span>
-                    <span className="text-xs text-gray-600 block mt-1">(공구견적제안,중고거래)</span>
+                  <div className="font-semibold text-base sm:text-lg mb-1">
+                    판매회원
+                  </div>
+                  <div className="text-xs font-medium text-orange-600 mb-2">
+                    (사업자)
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    공구 견적 제안, 중고거래
                   </div>
                 </button>
               </div>
 
-              {/* 중고거래 이용 안내 */}
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
-                  <span>ℹ️</span>
-                  <span>중고거래는 일반회원, 판매회원 누구나 이용 가능합니다</span>
-                </p>
+              {/* 회원 선택 가이드 */}
+              <div className="mt-4 space-y-2">
+                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                  <p className="text-sm text-gray-700 text-center">
+                    💡 사업자 → <strong className="text-gray-900">판매회원</strong> / 개인 → <strong className="text-gray-900">개인회원</strong>
+                  </p>
+                </div>
+
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-gray-700 text-center">
+                    📱 <strong className="text-gray-900">중고거래</strong>는 모든 회원이 자유롭게 이용 가능
+                  </p>
+                </div>
               </div>
             </div>
           )}
