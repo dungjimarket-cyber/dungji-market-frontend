@@ -868,7 +868,7 @@ function RegisterPageContent() {
                     개인회원
                   </div>
                   <div className="text-sm text-gray-600 leading-relaxed">
-                    견적 요청, 공구 참여, <span className="font-bold">중고거래</span>
+                    견적요청, 공구참여<br/><span className="font-bold">중고거래</span>
                   </div>
                 </button>
 
@@ -884,7 +884,7 @@ function RegisterPageContent() {
                     사업자회원
                   </div>
                   <div className="text-sm text-gray-600 leading-relaxed">
-                    통신·렌탈 판매활동, <span className="font-bold">중고거래</span>
+                    통신·렌탈 판매활동<br/><span className="font-bold">중고거래</span>
                   </div>
                 </button>
               </div>
