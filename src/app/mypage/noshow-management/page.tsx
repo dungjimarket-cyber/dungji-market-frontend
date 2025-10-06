@@ -117,9 +117,9 @@ function NoShowManagementContent() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle>노쇼 신고 관리</CardTitle>
-              <span className="text-xs text-gray-500">노쇼신고는 거래종료 후 진행가능합니다</span>
+            <div className="flex flex-col gap-1">
+              <CardTitle className="text-lg">노쇼신고관리</CardTitle>
+              <span className="text-xs text-gray-500">노쇼신고는 거래종료 후<br/>진행가능합니다</span>
             </div>
             <Button
               variant="ghost"
