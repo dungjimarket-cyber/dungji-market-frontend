@@ -819,9 +819,18 @@ function RegisterPageContent() {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
-            둥지마켓 회원가입
-          </h2>
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <Image
+              src="/logo.svg"
+              alt="둥지마켓"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+            <h2 className="text-2xl font-bold text-gray-900">
+              둥지마켓
+            </h2>
+          </div>
 
           {/* 카카오 로그인에서 온 경우 안내 메시지 */}
           {kakaoInfo && (
@@ -845,67 +854,48 @@ function RegisterPageContent() {
           {/* 회원 유형 선택 (소셜 로그인이 아닌 경우에만 표시) */}
           {!socialProvider && !memberType && (
             <div className="mb-6">
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  어떤 회원으로 시작할까요?
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 <button
                   type="button"
                   onClick={() => {
                     setMemberType('buyer');
                     setFormData(prev => ({ ...prev, role: 'buyer' }));
                   }}
-                  className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
+                  className="group relative p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-blue-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
                 >
-                  <div className="mb-3 text-4xl">
-                    👤
-                  </div>
-                  <div className="font-semibold text-base sm:text-lg mb-2">
+                  <div className="font-bold text-lg mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
                     개인회원
                   </div>
-                  <div className="text-xs text-gray-600">
-                    공구 견적 요청, 중고거래
+                  <div className="text-sm text-gray-600 leading-relaxed">
+                    공구 견적 요청<br/><span className="font-bold">중고거래</span>
                   </div>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
                     setMemberType('seller');
                     setFormData(prev => ({ ...prev, role: 'seller' }));
                   }}
-                  className="relative p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg border-gray-300 hover:border-gray-400 bg-white hover:scale-105"
+                  className="group relative p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-orange-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
                 >
-                  <div className="mb-3 text-4xl">
-                    🏢
-                  </div>
-                  <div className="font-semibold text-base sm:text-lg mb-1">
+                  <div className="font-bold text-lg mb-1 text-gray-900 group-hover:text-orange-600 transition-colors">
                     사업자회원
                   </div>
-                  <div className="text-xs font-medium text-orange-600 mb-2">
-                    (통신,렌탈 판매)
+                  <div className="text-xs font-medium text-orange-600 mb-3">
+                    통신·렌탈 판매
                   </div>
-                  <div className="text-xs text-gray-600">
-                    공구 견적 제안, 중고거래
+                  <div className="text-sm text-gray-600 leading-relaxed">
+                    공구 견적 제안<br/><span className="font-bold">중고거래</span>
                   </div>
                 </button>
               </div>
 
               {/* 회원 선택 가이드 */}
-              <div className="mt-4 space-y-2">
-                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <p className="text-sm text-gray-700 text-center">
-                    💡 통신·렌탈 등 사업자 → <strong className="text-gray-900">사업자회원</strong> / 개인 이용자 → <strong className="text-gray-900">개인회원</strong>
-                  </p>
-                </div>
-
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-gray-700 text-center">
-                    📱 <strong className="text-gray-900">중고거래</strong>는 모든 회원이 자유롭게 이용 가능
-                  </p>
-                </div>
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <p className="text-sm text-gray-700 text-center leading-relaxed">
+                  중고거래는 모든 회원이 자유롭게 이용 가능합니다
+                </p>
               </div>
             </div>
           )}

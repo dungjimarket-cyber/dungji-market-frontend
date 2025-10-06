@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import FindAccountModals from '@/components/auth/FindAccountModals';
+import Image from 'next/image';
 
 export default function LoginPage() {
   return (
@@ -141,13 +142,17 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-lg w-full space-y-6">
-        <div>
-          <h2 className="mt-4 text-center text-2xl font-bold text-gray-900 sm:text-3xl">
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            src="/logo.svg"
+            alt="둥지마켓"
+            width={60}
+            height={60}
+            className="w-15 h-15"
+          />
+          <h2 className="text-center text-xl font-bold text-gray-900">
             둥지마켓에 오신걸 환영합니다
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            세상없던 중개 플랫폼!
-          </p>
         </div>
 
         {/* 사용자 구분 섹션 */}
@@ -210,15 +215,15 @@ function LoginForm() {
 
         {/* 둥지마켓 이용안내 */}
         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">🛡️ 둥지마켓 이용안내</h4>
+          <h4 className="font-medium text-blue-900 mb-2">둥지마켓 이용안내</h4>
           <div className="space-y-2 text-sm text-blue-800">
-            <div className="flex items-center gap-2">
-              <span className="text-blue-600">🔒</span>
-              <span><strong>일반회원:</strong> 공동구매 참여, 견적 받기</span>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-600 mt-0.5">•</span>
+              <span><strong>개인회원:</strong> 공구 견적 요청, <strong>중고거래</strong></span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-green-600">🏪</span>
-              <span><strong>판매회원:</strong> 견적 제안, 판매 활동</span>
+            <div className="flex items-start gap-2">
+              <span className="text-blue-600 mt-0.5">•</span>
+              <span><strong>사업자회원:</strong> 통신·렌탈 판매활동, <strong>중고거래</strong></span>
             </div>
           </div>
         </div>
