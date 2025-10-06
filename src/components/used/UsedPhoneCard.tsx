@@ -144,7 +144,7 @@ const UsedPhoneCard = memo(function UsedPhoneCard({
       {/* 정보 영역 */}
       <div className="p-3">
         {/* 모델명 */}
-        <h3 className="font-medium text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <h3 className="font-medium text-gray-900 line-clamp-2 min-h-[3rem] group-hover:text-blue-600 transition-colors">
           {phone.brand && PHONE_BRANDS[phone.brand] ? `${PHONE_BRANDS[phone.brand]} ` : ''}{phone.model}
         </h3>
 
