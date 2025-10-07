@@ -194,17 +194,15 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
       setLoadingMyOffer(true);
       const offer = await electronicsApi.getMyOffer(Number(electronicsId));
       setMyOffer(offer);
-      // 사용자의 총 제안 횟수 가져오기 (API에서 제공한다면)
-      if (offer && offer.user_offer_count !== undefined) {
-        setOfferCount(offer.user_offer_count);
-        setRemainingOffers(Math.max(0, 5 - offer.user_offer_count));
-      } else if (offer) {
-        // offer가 있으면 최소 1개는 사용한 것
-        setOfferCount(1);
-        setRemainingOffers(4);
-      }
+      // 사용자의 총 제안 횟수 가져오기 (제안이 없어도 0으로 설정)
+      const count = offer?.user_offer_count || 0;
+      setOfferCount(count);
+      setRemainingOffers(Math.max(0, 5 - count));
     } catch (error) {
       console.error('Failed to fetch my offer:', error);
+      // 제안이 없는 경우 (404 등) 0으로 초기화
+      setOfferCount(0);
+      setRemainingOffers(5);
     } finally {
       setLoadingMyOffer(false);
     }
