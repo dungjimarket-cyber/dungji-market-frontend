@@ -516,7 +516,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
             {groupBuy.telecom_detail?.plan_info &&
              (getPlanDisplay(groupBuy.telecom_detail.plan_info) === '9만원대' ||
               getPlanDisplay(groupBuy.telecom_detail.plan_info) === '10만원이상') && (
-              <span className="inline-flex items-center gap-1 px-2.5 md:px-2 py-1 md:py-0.5 rounded-full text-sm md:text-[10px] font-bold bg-white text-purple-700 border border-purple-300 whitespace-nowrap flex-shrink-0">
+              <span className="inline-flex items-center gap-1 px-2.5 md:px-2 py-1 md:py-0.5 rounded-full text-sm md:text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 whitespace-nowrap flex-shrink-0">
                 ⚡최대 지원금 조건
               </span>
             )}
