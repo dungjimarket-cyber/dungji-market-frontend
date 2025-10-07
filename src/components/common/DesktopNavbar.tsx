@@ -79,7 +79,7 @@ export default function DesktopNavbar() {
           
           <div className="flex space-x-8">
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
-              진행중인 공구
+              같이 견적받기
             </Link>
             {/* <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900">
               커스텀 특가
