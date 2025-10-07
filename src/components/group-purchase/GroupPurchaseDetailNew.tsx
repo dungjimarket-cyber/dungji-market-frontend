@@ -1398,6 +1398,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                     <Clock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                     <p className="text-sm font-medium text-gray-800">
                       가입유형별 <span className="text-purple-700 font-bold">4~6개월</span> 가입요금제 필수유지 조건
+                      <span className="text-purple-700 font-bold ml-1">
+                        ({groupBuy.telecom_detail.plan_info === '9만원대' ? '9만원대' : '10만원대'})
+                      </span>
                     </p>
                   </div>
                 </div>
