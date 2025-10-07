@@ -176,8 +176,8 @@ export function CategoryTabFilters({ initialCategory, onFiltersChange, onCategor
               key={category.id}
               variant={isSelected ? "default" : "outline"}
               className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 transition-all duration-200 whitespace-nowrap text-xs sm:text-sm flex-shrink-0 ${
-                isSelected 
-                  ? 'bg-purple-600 text-white border-purple-600 hover:bg-purple-700 font-semibold shadow-md' 
+                isSelected
+                  ? 'bg-gray-100 text-gray-900 border-gray-300 hover:bg-gray-200 font-semibold shadow-sm'
                   : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
               }`}
               onClick={() => handleCategoryChange(category.id)}
