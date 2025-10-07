@@ -947,8 +947,12 @@ export default function CreateFormV2({ mode = 'create', initialData, groupBuyId 
                             <SelectItem value="5G_basic_plus">6만원대</SelectItem>
                             <SelectItem value="5G_premium">7만원대</SelectItem>
                             <SelectItem value="5G_premium_plus">8만원대</SelectItem>
-                            <SelectItem value="5G_special">9만원대 (최고 지원금 조건)</SelectItem>
-                            <SelectItem value="5G_platinum">10만원이상 (최고 지원금 조건)</SelectItem>
+                            <SelectItem value="5G_special">
+                              9만원대 (<span className="font-bold">최고 지원금 조건</span>)
+                            </SelectItem>
+                            <SelectItem value="5G_platinum">
+                              10만원이상 (<span className="font-bold">최고 지원금 조건</span>)
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
