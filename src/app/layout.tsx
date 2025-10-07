@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
 import KakaoInAppBrowserHandler from '@/components/common/KakaoInAppBrowserHandler';
 import ServiceWorkerRegister from '@/components/common/ServiceWorkerRegister';
+import NotificationPermissionHandler from '@/components/notification/NotificationPermissionHandler';
 import Script from 'next/script';
 
 const inter = Inter({ 
@@ -151,6 +152,7 @@ export default function RootLayout({
           <KakaoInAppBrowserHandler />
           <Toaster />
           <RoleUpdateNotice />
+          <NotificationPermissionHandler />
           <DesktopNavbar />
           <main className="flex-grow pb-16 md:pb-0">
             {children}
