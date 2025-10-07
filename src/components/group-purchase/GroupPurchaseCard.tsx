@@ -478,36 +478,47 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         
         {/* 지역 정보 */}
         <div className="mb-1.5 md:mb-1 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-base md:text-xs font-semibold text-gray-600 whitespace-nowrap">공구지역</span>
-            {groupBuy.region_type === 'nationwide' ? (
-              <span className="inline-flex items-center px-3 md:px-2 py-1 md:py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                전국 비대면
-              </span>
-            ) : (
-              groupBuy.regions && groupBuy.regions.length > 0 && (
-                <div className="flex items-center gap-1 flex-nowrap overflow-x-auto scrollbar-hide">
-                  {groupBuy.regions.slice(0, 3).map((region, index) => {
-                    let displayName = region.name || region.full_name || '';
-                    displayName = displayName
-                      .replace('특별시', '')
-                      .replace('광역시', '')
-                      .replace('특별자치시', '')
-                      .replace('특별자치도', '');
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-base md:text-xs font-semibold text-gray-600 whitespace-nowrap">공구지역</span>
+              {groupBuy.region_type === 'nationwide' ? (
+                <span className="inline-flex items-center px-3 md:px-2 py-1 md:py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                  전국 비대면
+                </span>
+              ) : (
+                groupBuy.regions && groupBuy.regions.length > 0 && (
+                  <div className="flex items-center gap-1 flex-nowrap overflow-x-auto scrollbar-hide">
+                    {groupBuy.regions.slice(0, 3).map((region, index) => {
+                      let displayName = region.name || region.full_name || '';
+                      displayName = displayName
+                        .replace('특별시', '')
+                        .replace('광역시', '')
+                        .replace('특별자치시', '')
+                        .replace('특별자치도', '');
 
-                    return (
-                      <span key={index} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap flex-shrink-0">
-                        {displayName}
+                      return (
+                        <span key={index} className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap flex-shrink-0">
+                          {displayName}
+                        </span>
+                      );
+                    })}
+                    {groupBuy.regions.length > 3 && (
+                      <span className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap flex-shrink-0">
+                        +{groupBuy.regions.length - 3}
                       </span>
-                    );
-                  })}
-                  {groupBuy.regions.length > 3 && (
-                    <span className="inline-flex items-center px-2.5 md:px-1.5 py-0.5 rounded-full text-sm md:text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap flex-shrink-0">
-                      +{groupBuy.regions.length - 3}
-                    </span>
-                  )}
-                </div>
-              )
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* 9-10만원대일 때만 표시 */}
+            {groupBuy.telecom_detail?.plan_info &&
+             (getPlanDisplay(groupBuy.telecom_detail.plan_info) === '9만원대' ||
+              getPlanDisplay(groupBuy.telecom_detail.plan_info) === '10만원이상') && (
+              <span className="inline-flex items-center gap-1 px-2.5 md:px-2 py-1 md:py-0.5 rounded-full text-sm md:text-[10px] font-bold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200 whitespace-nowrap flex-shrink-0">
+                ⚡최대 지원금 조건
+              </span>
             )}
           </div>
         </div>
