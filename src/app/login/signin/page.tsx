@@ -195,7 +195,7 @@ function SignInForm() {
                   <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
                     <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
                   </svg>
-                  <span className="font-medium text-sm">카카오로 계속하기(구매전용)</span>
+                  <span className="font-medium text-sm">카카오로 계속하기(개인회원)</span>
                 </>
               )}
             </button>
@@ -241,7 +241,7 @@ function SignInForm() {
                   <svg className="w-4 h-4" fill="#3C1E1E" viewBox="0 0 24 24">
                     <path d="M12 3c-5.52 0-10 3.36-10 7.5 0 2.65 1.84 4.98 4.61 6.31-.2.72-.73 2.62-.76 2.78-.04.2.07.35.24.35.14 0 .29-.09.47-.26l2.94-2.51c.78.13 1.62.2 2.5.2 5.52 0 10-3.36 10-7.5S17.52 3 12 3z"/>
                   </svg>
-                  <span className="font-medium text-sm">카카오로 계속하기(판매전용)</span>
+                  <span className="font-medium text-sm">카카오로 계속하기(사업자회원)</span>
                 </>
               )}
             </button>
