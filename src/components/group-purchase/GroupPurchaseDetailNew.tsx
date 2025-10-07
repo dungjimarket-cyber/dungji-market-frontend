@@ -1386,20 +1386,20 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                 (groupBuy.telecom_detail.plan_info && groupBuy.telecom_detail.plan_info.includes('10만'))) && (
                 <div className="mt-3 p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-start gap-3">
-                    <Zap className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Zap className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                     <div className="space-y-2">
-                      <p className="text-base font-bold text-blue-700">
+                      <p className="text-base font-bold text-purple-700">
                         최고지원금 도전
                       </p>
                       <p className="text-sm text-gray-700">차원이 다른 비교견적 가능</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 mt-3">
-                    <Clock className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                     <p className="text-sm font-medium text-gray-800">
-                      가입유형별 <span className="text-purple-700 font-bold">4~6개월</span> 가입요금제 필수유지 조건
+                      가입유형별 <span className="text-blue-700 font-bold">4~6개월</span> 가입요금제 필수유지 조건
                       <br className="md:hidden" />
-                      <span className="text-purple-700 font-bold md:ml-1">
+                      <span className="text-blue-700 font-bold md:ml-1">
                         ({groupBuy.telecom_detail.plan_info === '9만원대' ? '9만원대' : '10만원대'})
                       </span>
                     </p>
