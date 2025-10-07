@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import NotificationPermissionModal from './NotificationPermissionModal';
 import { requestNotificationPermission } from '@/lib/firebase';
+import { isPWA } from '@/lib/utils/pwa';
 
 /**
  * 로그인 후 알림 권한 요청 핸들러
@@ -16,6 +17,12 @@ export default function NotificationPermissionHandler() {
   useEffect(() => {
     // 브라우저에서 Notification API 지원 여부 확인
     if (typeof window === 'undefined' || !('Notification' in window)) {
+      return;
+    }
+
+    // PWA 환경이 아니면 알림 팝업 표시 안함
+    if (!isPWA()) {
+      console.log('[알림] PWA 환경이 아니므로 알림 팝업을 표시하지 않습니다.');
       return;
     }
 
