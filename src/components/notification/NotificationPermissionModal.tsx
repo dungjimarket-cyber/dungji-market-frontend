@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import Image from 'next/image';
 
 interface NotificationPermissionModalProps {
   isOpen: boolean;
@@ -36,10 +37,16 @@ export default function NotificationPermissionModal({
           <X className="w-5 h-5" />
         </button>
 
-        {/* 아이콘 */}
+        {/* 로고 */}
         <div className="flex justify-center mb-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-            <span className="text-2xl">📬</span>
+          <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden">
+            <Image
+              src="/logos/dungji_logo.jpg"
+              alt="둥지마켓"
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
           </div>
         </div>
 
