@@ -26,6 +26,7 @@ interface ImagePreview {
   isMain: boolean;
   isEmpty?: boolean;
   existingUrl?: string; // 기존 S3 URL
+  id?: number; // 기존 이미지 ID
 }
 
 // 선택된 지역 타입
@@ -47,10 +48,11 @@ export default async function CustomDealEditPage({ params }: { params: Promise<{
 
 function CustomDealEditClient({ dealId }: { dealId: string }) {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
+  const [imagesModified, setImagesModified] = useState(false); // 이미지 변경 추적
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,13 +99,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
   // 기존 데이터 로드
   useEffect(() => {
+    if (authLoading) return; // 인증 로딩 중이면 대기
+
     if (!isAuthenticated) {
       toast.error('로그인이 필요합니다');
       router.push('/login');
       return;
     }
     fetchDealDetail();
-  }, [dealId, isAuthenticated]);
+  }, [dealId, isAuthenticated, authLoading]);
 
   const fetchDealDetail = async () => {
     try {
@@ -168,7 +172,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           url: img.image_url,
           isMain: idx === 0,
           isEmpty: false,
-          existingUrl: img.image_url
+          existingUrl: img.image_url,
+          id: img.id // 이미지 ID 저장
         })));
       }
 
@@ -228,15 +233,22 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
       if (targetIndex !== undefined && files.length === 1) {
         const file = files[0];
-        if (updated[targetIndex] && updated[targetIndex].url) {
-          URL.revokeObjectURL(updated[targetIndex].url);
+        const existingImage = updated[targetIndex];
+
+        // 기존 blob URL 해제 (existingUrl은 S3 URL이므로 해제 안 함)
+        if (existingImage && existingImage.url && !existingImage.existingUrl) {
+          URL.revokeObjectURL(existingImage.url);
         }
+
+        // 새 이미지로 교체 (existingUrl과 id 제거)
         updated[targetIndex] = {
           file,
           url: URL.createObjectURL(file),
           isMain: targetIndex === 0,
           isEmpty: false
+          // existingUrl과 id는 의도적으로 포함하지 않음 (새 파일로 교체)
         };
+        setImagesModified(true); // 이미지 수정됨 표시
         return updated;
       }
 
@@ -265,6 +277,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
       });
 
+      setImagesModified(true); // 이미지 수정됨 표시
       return updated;
     });
 
@@ -295,6 +308,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
       return updated;
     });
+    setImagesModified(true); // 이미지 수정됨 표시
   }, []);
 
   // 대표 이미지 설정
@@ -394,20 +408,29 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // FormData로 전송
       const submitFormData = new FormData();
 
-      // 이미지 처리
-      const existingImageUrls: string[] = [];
-      for (const img of images) {
-        if (img && !img.isEmpty) {
-          if (img.file) {
-            // 새로 추가된 이미지
-            submitFormData.append('images', img.file);
-          } else if (img.existingUrl) {
-            // 기존 이미지 URL 유지
-            existingImageUrls.push(img.existingUrl);
+      // 이미지 처리 - 이미지가 변경된 경우에만 전송
+      if (imagesModified) {
+        const actualImages = images.filter(img => img && !img.isEmpty);
+        const existingImages = actualImages.filter(img => img.existingUrl && !img.file && img.id);
+        const newImages = actualImages.filter(img => img.file);
+
+        // 기존 이미지 ID들 전송 (유지할 이미지)
+        existingImages.forEach((image) => {
+          if (image.id) {
+            submitFormData.append('existing_image_ids', image.id.toString());
+          }
+        });
+
+        // 새로 추가된 이미지만 업로드 (압축 적용)
+        if (newImages.length > 0) {
+          // 이미지 압축 로직은 생략 (백엔드에서 처리)
+          for (const image of newImages) {
+            if (image.file) {
+              submitFormData.append('new_images', image.file);
+            }
           }
         }
       }
-      submitFormData.append('existing_images', JSON.stringify(existingImageUrls));
 
       // 기본 정보 (참여자 있을 때는 제목/설명/이용안내만)
       submitFormData.append('title', formData.title);
@@ -459,6 +482,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
       }
 
+      // 디버깅: 이미지 수정 여부 로그
+      console.log('[EDIT] 이미지 변경 여부:', imagesModified);
       console.log('[EDIT] API 호출 직전');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${dealId}/`, {
         method: 'PATCH',
