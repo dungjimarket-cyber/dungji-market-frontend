@@ -680,16 +680,26 @@ export default function CreateCustomDealPage() {
       console.log('가격 유형:', formData.pricing_type);
       console.log('이미지 개수:', actualImages.length);
 
-      // FormData 내용 출력
-      const formDataEntries: Record<string, any> = {};
+      // FormData 내용 출력 (multiple values 고려)
+      const formDataEntries: Record<string, any[]> = {};
       for (const [key, value] of submitFormData.entries()) {
+        if (!formDataEntries[key]) {
+          formDataEntries[key] = [];
+        }
         if (value instanceof File) {
-          formDataEntries[key] = `[File: ${value.name}, ${(value.size / 1024).toFixed(2)}KB]`;
+          formDataEntries[key].push(`[File: ${value.name}, ${(value.size / 1024).toFixed(2)}KB]`);
         } else {
-          formDataEntries[key] = value;
+          formDataEntries[key].push(value);
         }
       }
       console.log('전송 데이터:', formDataEntries);
+
+      // images 키의 모든 파일 확인
+      const imageFiles = submitFormData.getAll('images');
+      console.log('[DEBUG] FormData.getAll("images") 개수:', imageFiles.length);
+      console.log('[DEBUG] FormData.getAll("images") 상세:', imageFiles.map((f: any) =>
+        f instanceof File ? `${f.name} (${f.size} bytes)` : f
+      ));
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`, {
         method: 'POST',
