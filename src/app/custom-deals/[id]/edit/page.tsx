@@ -116,13 +116,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       if (!response.ok) throw new Error('데이터 로드 실패');
 
       const data = await response.json();
+      console.log('[EDIT] 데이터 로드:', { seller: data.seller, userId: user?.id });
 
-      // 권한 체크
-      if (data.seller?.id !== parseInt(user?.id || '0')) {
+      // 권한 체크 (seller는 ID 자체)
+      if (data.seller !== parseInt(user?.id || '0')) {
+        console.log('[EDIT] 권한 없음:', data.seller, '!==', parseInt(user?.id || '0'));
         toast.error('수정 권한이 없습니다');
         router.push(`/custom-deals/${dealId}`);
         return;
       }
+
+      console.log('[EDIT] 권한 확인 완료');
 
       setOriginalData(data);
       setHasParticipants(data.current_participants > 0);
