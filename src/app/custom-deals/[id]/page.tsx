@@ -338,7 +338,7 @@ export default function CustomDealDetailPage() {
                   <button
                     key={image.id}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
                       selectedImage === index
                         ? 'border-blue-600'
                         : 'border-slate-200 hover:border-slate-300'
@@ -349,6 +349,11 @@ export default function CustomDealDetailPage() {
                       alt={`${deal.title} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
+                    {index === 0 && (
+                      <div className="absolute top-1 left-1 bg-dungji-primary text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                        대표
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>

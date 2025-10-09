@@ -151,7 +151,7 @@ export default function RichTextEditor({
           </Button>
 
           {showFontSizePicker && (
-            <div className="absolute top-10 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10 min-w-[120px]">
+            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-50 min-w-[120px]">
               {['12px', '14px', '16px', '18px', '20px', '24px', '28px'].map((size) => (
                 <button
                   key={size}
@@ -192,7 +192,7 @@ export default function RichTextEditor({
           </Button>
 
           {showColorPicker && (
-            <div className="absolute top-10 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-10">
+            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-50">
               <div className="grid grid-cols-5 gap-1">
                 {colors.map((color) => (
                   <button
