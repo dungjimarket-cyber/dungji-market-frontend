@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 
@@ -64,6 +65,7 @@ interface CustomDeal {
 export default function CustomDealDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [deal, setDeal] = useState<CustomDeal | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -172,7 +174,17 @@ export default function CustomDealDetailPage() {
       return;
     }
 
-    if (!confirm(`${deal.title}\n\n정가: ${deal.original_price.toLocaleString()}원\n할인가: ${deal.final_price.toLocaleString()}원 (${deal.discount_rate}% 할인)\n\n참여하시겠습니까?`)) {
+    // 내가 만든 공구는 참여 불가
+    if (user && deal.seller === parseInt(user.id)) {
+      toast.error('본인이 등록한 공구는 참여할 수 없습니다');
+      return;
+    }
+
+    const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
+      ? ((deal.final_price as any).min || 0).toLocaleString()
+      : (deal.final_price || 0).toLocaleString();
+
+    if (!confirm(`${deal.title}\n\n정가: ${deal.original_price.toLocaleString()}원\n할인가: ${finalPriceStr}원 (${deal.discount_rate}% 할인)\n\n참여하시겠습니까?`)) {
       return;
     }
 
@@ -230,6 +242,55 @@ export default function CustomDealDetailPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('링크가 복사되었습니다');
+  };
+
+  const handleDelete = async () => {
+    if (!deal) return;
+
+    if (!confirm('정말 삭제하시겠습니까?\n삭제된 공구는 복구할 수 없습니다.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        toast.error('로그인이 필요합니다');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 401) {
+        toast.error('로그인이 만료되었습니다');
+        localStorage.removeItem('accessToken');
+        router.push('/login');
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.error('삭제 권한이 없습니다');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('삭제 실패');
+      }
+
+      toast.success('공구가 삭제되었습니다');
+      router.push('/custom-deals');
+    } catch (error) {
+      console.error('삭제 실패:', error);
+      toast.error('삭제에 실패했습니다');
+    }
   };
 
   const getRemainingTime = (expiredAt: string) => {
@@ -297,6 +358,28 @@ export default function CustomDealDetailPage() {
             <span>목록으로</span>
           </Button>
           <div className="flex items-center gap-2">
+            {user && deal.seller === parseInt(user.id) && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
+                  className="flex items-center gap-1.5"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span className="hidden sm:inline">수정</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="flex items-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">삭제</span>
+                </Button>
+              </>
+            )}
             <Button variant="outline" size="sm" onClick={handleShare}>
               <Share2 className="w-4 h-4" />
             </Button>
@@ -350,9 +433,9 @@ export default function CustomDealDetailPage() {
                       className="w-full h-full object-cover"
                     />
                     {index === 0 && (
-                      <div className="absolute top-1 left-1 bg-dungji-primary text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                      <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 pointer-events-none">
                         대표
-                      </div>
+                      </Badge>
                     )}
                   </button>
                 ))}
@@ -401,7 +484,9 @@ export default function CustomDealDetailPage() {
                   </span>
                 </div>
                 <div className="text-4xl font-bold text-slate-900">
-                  {deal.final_price.toLocaleString()}원
+                  {typeof deal.final_price === 'object' && deal.final_price !== null
+                    ? ((deal.final_price as any).min || 0).toLocaleString()
+                    : (deal.final_price || 0).toLocaleString()}원
                 </div>
               </CardContent>
             </Card>
@@ -483,7 +568,7 @@ export default function CustomDealDetailPage() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold text-slate-900 mb-4">상품 설명</h2>
                 <div className="prose prose-slate max-w-none">
-                  <p className="whitespace-pre-wrap text-slate-700">{deal.description}</p>
+                  <div className="text-slate-700" dangerouslySetInnerHTML={{ __html: deal.description }} />
                 </div>
               </CardContent>
             </Card>
