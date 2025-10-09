@@ -1394,12 +1394,12 @@ export default function CreateCustomDealPage() {
 
               <div>
                 <Label>할인 유효기간 (선택)</Label>
-                <Select value={formData.discount_valid_days} onValueChange={(value) => handleInputChange('discount_valid_days', value)}>
+                <Select value={formData.discount_valid_days || 'none'} onValueChange={(value) => handleInputChange('discount_valid_days', value === 'none' ? '' : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="선택 안함" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">선택 안함</SelectItem>
+                    <SelectItem value="none">선택 안함</SelectItem>
                     <SelectItem value="3">3일</SelectItem>
                     <SelectItem value="7">7일</SelectItem>
                     <SelectItem value="14">14일</SelectItem>
