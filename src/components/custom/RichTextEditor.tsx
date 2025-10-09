@@ -194,17 +194,14 @@ export default function RichTextEditor({
           </Button>
 
           {showColorPicker && (
-            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-50 max-w-[200px]">
-              <div className="flex flex-wrap gap-1">
-                {colors.map((color, index) => (
+            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-50">
+              <div className="grid grid-cols-7 gap-2">
+                {colors.map((color) => (
                   <button
                     key={color}
                     type="button"
-                    className="w-8 h-8 rounded-full border-2 border-white shadow-sm hover:scale-125 hover:z-10 transition cursor-pointer flex-shrink-0"
-                    style={{
-                      backgroundColor: color,
-                      marginLeft: index > 0 ? '-4px' : '0'
-                    }}
+                    className="w-8 h-8 rounded-full border-2 border-slate-200 hover:scale-125 hover:z-10 hover:border-blue-500 transition cursor-pointer"
+                    style={{ backgroundColor: color }}
                     onClick={() => {
                       editor.chain().focus().setColor(color).run();
                       setShowColorPicker(false);

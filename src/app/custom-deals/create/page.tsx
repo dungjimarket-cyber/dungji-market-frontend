@@ -834,36 +834,45 @@ export default function CreateCustomDealPage() {
 
                           {/* 액션 버튼들 - 모바일에서는 X만, PC에서는 전체 버튼 */}
                           <div className="absolute bottom-2 right-2 sm:left-2 sm:right-2 flex gap-1 z-20">
-                            {/* PC에서만 대표 버튼 표시 */}
+                            {/* PC에서만 변경/대표 버튼 표시 */}
                             <div className="hidden sm:flex gap-1 flex-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <label
+                                htmlFor={`image-replace-${index}`}
+                                className="flex-1 bg-white/90 backdrop-blur text-slate-900 text-xs py-1 rounded hover:bg-white text-center cursor-pointer"
+                              >
+                                변경
+                              </label>
+                              <input
+                                type="file"
+                                id={`image-replace-${index}`}
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(e, index)}
+                                className="hidden"
+                              />
                               {!image.isMain && (
-                                <Button
+                                <button
                                   type="button"
-                                  size="sm"
-                                  variant="secondary"
-                                  className="flex-1 bg-white/90 backdrop-blur text-xs py-1 h-auto hover:bg-white"
+                                  className="flex-1 bg-white/90 backdrop-blur text-slate-900 text-xs py-1 rounded hover:bg-white"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleSetMainImage(index);
                                   }}
                                 >
                                   대표
-                                </Button>
+                                </button>
                               )}
                             </div>
                             {/* X 버튼은 모바일/PC 모두 표시 */}
-                            <Button
+                            <button
                               type="button"
-                              size="sm"
-                              variant="destructive"
-                              className="bg-red-500/90 backdrop-blur text-white px-2 py-1 h-auto rounded hover:bg-red-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                              className="bg-red-500/90 backdrop-blur text-white px-2 py-1 rounded hover:bg-red-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleImageRemove(index);
                               }}
                             >
                               <X className="w-3 h-3" />
-                            </Button>
+                            </button>
                           </div>
                         </>
                       ) : (
@@ -1390,6 +1399,7 @@ export default function CreateCustomDealPage() {
                     <SelectValue placeholder="선택 안함" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="">선택 안함</SelectItem>
                     <SelectItem value="3">3일</SelectItem>
                     <SelectItem value="7">7일</SelectItem>
                     <SelectItem value="14">14일</SelectItem>
