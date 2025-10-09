@@ -822,30 +822,28 @@ export default function CreateCustomDealPage() {
                     >
                       {hasImage ? (
                         <>
-                          <div
-                            className="absolute inset-0 cursor-pointer"
-                            onClick={() => window.open(image.url, '_blank')}
-                          >
-                            <Image
-                              src={image.url}
-                              alt={`이미지 ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
+                          <Image
+                            src={image.url}
+                            alt={`이미지 ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
                           {image.isMain && (
-                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[11px] px-2 py-0.5 pointer-events-none whitespace-nowrap leading-none font-medium">
+                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[11px] px-2 py-0.5 pointer-events-none whitespace-nowrap leading-none font-medium z-10">
                               대표
                             </Badge>
                           )}
-                          <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 hover:opacity-100 transition-opacity bg-black/30">
+                          <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 hover:opacity-100 transition-opacity bg-black/40 z-20">
                             {!image.isMain && (
                               <Button
                                 type="button"
                                 size="sm"
                                 variant="secondary"
                                 className="h-8 w-8 p-0 bg-white hover:bg-white shadow-lg"
-                                onClick={() => handleSetMainImage(index)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSetMainImage(index);
+                                }}
                               >
                                 <Check className="w-4 h-4" />
                               </Button>
@@ -855,7 +853,10 @@ export default function CreateCustomDealPage() {
                               size="sm"
                               variant="destructive"
                               className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 shadow-lg"
-                              onClick={() => handleImageRemove(index)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleImageRemove(index);
+                              }}
                             >
                               <X className="w-4 h-4" />
                             </Button>
