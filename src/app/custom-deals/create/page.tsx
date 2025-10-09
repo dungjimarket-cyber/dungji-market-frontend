@@ -656,6 +656,23 @@ export default function CreateCustomDealPage() {
         submitFormData.append('discount_codes', JSON.stringify(validCodes));
       }
 
+      // 디버깅: 전송할 데이터 로그 출력
+      console.log('=== 커스텀 공구 등록 데이터 ===');
+      console.log('타입:', formData.type);
+      console.log('가격 유형:', formData.pricing_type);
+      console.log('이미지 개수:', actualImages.length);
+
+      // FormData 내용 출력
+      const formDataEntries: Record<string, any> = {};
+      for (const [key, value] of submitFormData.entries()) {
+        if (value instanceof File) {
+          formDataEntries[key] = `[File: ${value.name}, ${(value.size / 1024).toFixed(2)}KB]`;
+        } else {
+          formDataEntries[key] = value;
+        }
+      }
+      console.log('전송 데이터:', formDataEntries);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`, {
         method: 'POST',
         headers: {
