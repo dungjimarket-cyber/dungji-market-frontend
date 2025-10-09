@@ -321,14 +321,22 @@ export default function CreateCustomDealPage() {
     }
   };
 
-  // 랜덤 할인코드 생성 (5자리)
+  // 랜덤 할인코드 생성 (ABC-123 형식)
   const generateRandomCode = () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 혼동되는 문자 제외 (I, O, 0, 1)
-    let code = '';
-    for (let i = 0; i < 5; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // 혼동되는 문자 제외 (I, O)
+    const numbers = '23456789'; // 혼동되는 숫자 제외 (0, 1)
+
+    let letterPart = '';
+    for (let i = 0; i < 3; i++) {
+      letterPart += letters.charAt(Math.floor(Math.random() * letters.length));
     }
-    return code;
+
+    let numberPart = '';
+    for (let i = 0; i < 3; i++) {
+      numberPart += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    }
+
+    return `${letterPart}-${numberPart}`;
   };
 
   // 할인코드 추가
