@@ -596,14 +596,29 @@ export default function CreateCustomDealPage() {
 
       // FormData로 전송 (중고거래 방식)
       const actualImages = images.filter(img => img && !img.isEmpty);
+      console.log('[DEBUG] actualImages 개수:', actualImages.length);
+      console.log('[DEBUG] actualImages:', actualImages.map((img, i) => ({
+        index: i,
+        hasFile: !!img.file,
+        fileName: img.file?.name,
+        fileSize: img.file?.size,
+        isFile: img.file instanceof File
+      })));
+
       const submitFormData = new FormData();
 
       // 이미지 파일 추가 (원본 파일, 백엔드에서 압축 처리)
+      let appendedCount = 0;
       for (const img of actualImages) {
         if (img.file) {
+          console.log('[DEBUG] Appending image:', img.file.name, img.file.size);
           submitFormData.append('images', img.file);
+          appendedCount++;
+        } else {
+          console.warn('[DEBUG] Image without file:', img);
         }
       }
+      console.log('[DEBUG] Total images appended:', appendedCount);
 
       // 기본 정보
       submitFormData.append('title', formData.title);
