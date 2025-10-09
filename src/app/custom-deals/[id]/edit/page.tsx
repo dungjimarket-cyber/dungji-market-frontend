@@ -440,6 +440,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           if (formData.discount_valid_days) {
             submitFormData.append('discount_valid_days', formData.discount_valid_days);
           }
+          if (formData.phone_number) {
+            submitFormData.append('phone_number', formData.phone_number);
+          }
         } else {
           submitFormData.append('region_codes', JSON.stringify(selectedRegions.map(r => r.city)));
           submitFormData.append('location', formData.location);
@@ -926,6 +929,27 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         <SelectItem value="90">90일</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      연락처 (선택)
+                    </Label>
+                    <Input
+                      value={formData.phone_number}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9\-]/g, '');
+                        if (value.length <= 20) {
+                          handleInputChange('phone_number', value);
+                        }
+                      }}
+                      placeholder="010-1234-5678"
+                      maxLength={20}
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      문의가 필요한 경우 입력해주세요
+                    </p>
                   </div>
                 </CardContent>
               </Card>

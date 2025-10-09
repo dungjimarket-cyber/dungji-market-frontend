@@ -562,6 +562,17 @@ export default function CustomDealDetailPage() {
                         할인 링크로 이동
                       </Button>
                     )}
+                    {deal.phone_number && (
+                      <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
+                        <span className="text-slate-400">📞</span>
+                        <a
+                          href={`tel:${deal.phone_number}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {deal.phone_number}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
