@@ -26,7 +26,6 @@ import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import RichTextEditor from '@/components/custom/RichTextEditor';
-import LinkPreview from '@/components/custom/LinkPreview';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -50,7 +49,7 @@ interface Category {
 
 export default function CreateCustomDealPage() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -143,13 +142,13 @@ export default function CreateCustomDealPage() {
     fetchCategories();
   }, []);
 
-  // 페이지 진입 시 인증 체크
+  // 페이지 진입 시 인증 체크 (로딩 완료 후에만)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       toast.error('로그인이 필요합니다');
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
   // 이미지 업로드 핸들러 (중고거래 로직 복사)
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
@@ -1257,9 +1256,18 @@ export default function CreateCustomDealPage() {
                     {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
                   </div>
 
-                  {/* 링크 미리보기 */}
+                  {/* 링크 테스트 버튼 */}
                   {formData.discount_url && formData.discount_url.startsWith('http') && (
-                    <LinkPreview url={formData.discount_url} />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(formData.discount_url, '_blank', 'noopener,noreferrer')}
+                      className="flex items-center gap-2"
+                    >
+                      <LinkIcon className="w-4 h-4" />
+                      링크 테스트
+                    </Button>
                   )}
                 </div>
               )}
