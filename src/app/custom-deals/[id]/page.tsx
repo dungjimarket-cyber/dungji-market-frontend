@@ -433,7 +433,7 @@ export default function CustomDealDetailPage() {
                       className="w-full h-full object-cover"
                     />
                     {index === 0 && (
-                      <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 pointer-events-none">
+                      <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[11px] px-2 py-0.5 pointer-events-none whitespace-nowrap leading-none font-medium">
                         대표
                       </Badge>
                     )}

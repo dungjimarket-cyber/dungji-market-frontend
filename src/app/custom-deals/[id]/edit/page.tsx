@@ -569,7 +569,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                             <Image src={image.url} alt={`이미지 ${index + 1}`} fill className="object-cover" />
                           </div>
                           {image.isMain && (
-                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 pointer-events-none">대표</Badge>
+                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[11px] px-2 py-0.5 pointer-events-none whitespace-nowrap leading-none font-medium">대표</Badge>
                           )}
                           <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 hover:opacity-100 transition-opacity bg-black/30">
                             {!image.isMain && (
