@@ -118,7 +118,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       const data = await response.json();
 
       // 권한 체크
-      if (data.seller?.id !== user?.id) {
+      if (data.seller?.id !== parseInt(user?.id || '0')) {
         toast.error('수정 권한이 없습니다');
         router.push(`/custom-deals/${dealId}`);
         return;
