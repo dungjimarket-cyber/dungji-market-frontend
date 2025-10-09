@@ -482,8 +482,18 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
       }
 
-      // 디버깅: 이미지 수정 여부 로그
-      console.log('[EDIT] 이미지 변경 여부:', imagesModified);
+      // 디버깅: FormData 전송 내용 출력
+      console.log('=== FormData 전송 내용 ===');
+      console.log('이미지 변경 여부:', imagesModified);
+      console.log('현재 images 상태:', images);
+      for (let [key, value] of submitFormData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: [File] ${value.name}`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+      console.log('========================');
       console.log('[EDIT] API 호출 직전');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${dealId}/`, {
         method: 'PATCH',
