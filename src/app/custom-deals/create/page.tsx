@@ -427,8 +427,8 @@ export default function CreateCustomDealPage() {
       newErrors.title = '제목을 입력해주세요';
       if (!firstErrorRef) firstErrorRef = titleRef;
     }
-    if (formData.title.length > 150) {
-      newErrors.title = '제목은 최대 150자까지 입력 가능합니다';
+    if (formData.title.length > 50) {
+      newErrors.title = '제목은 최대 50자까지 입력 가능합니다';
       if (!firstErrorRef) firstErrorRef = titleRef;
     }
     if (!formData.description.trim()) {
@@ -862,11 +862,11 @@ export default function CreateCustomDealPage() {
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="공구 제목을 입력하세요"
                 className={errors.title ? 'border-red-300' : ''}
-                maxLength={150}
+                maxLength={50}
               />
               <div className="flex justify-between mt-1">
                 {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
-                <p className="text-sm text-slate-500 ml-auto">{formData.title.length}/150</p>
+                <p className="text-sm text-slate-500 ml-auto">{formData.title.length}/50</p>
               </div>
             </div>
 
