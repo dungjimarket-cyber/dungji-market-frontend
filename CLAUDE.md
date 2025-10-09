@@ -648,6 +648,72 @@ const handleFavorite = async () => {
 };
 ```
 
+### 사례 연구 2: 커스텀 공구 이미지 업로드 문제 (2025-10-10)
+
+#### 문제 상황
+- 중고폰 이미지: 업로드 정상 작동 ✅
+- 커스텀 공구 이미지: 업로드 안 됨 ❌
+- 프론트엔드에서 이미지 전송 확인, API 201 응답, **그러나 DB에 이미지 0개**
+
+#### 실패한 접근 (3시간 낭비)
+1. settings.py의 `DEFAULT_PARSER_CLASSES` 확인
+2. Serializer의 `create()` 메서드 수정
+3. ViewSet 코드 확인
+4. Migration 확인
+5. 이미지 URL 필드 수정
+6. 배포 문제 의심
+7. **결과: 3시간 낭비, 문제 미해결**
+
+#### 올바른 접근 (5분이면 끝났을 일)
+1. **즉시 두 모델 직접 비교**:
+   ```python
+   # UsedPhoneImage (작동 ✅)
+   class UsedPhoneImage(models.Model):
+       image = models.ImageField(...)
+
+       def save(self, *args, **kwargs):
+           super().save(*args, **kwargs)
+           if settings.USE_S3 and self.image:
+               self.image_url = self.image.url
+               super().save(update_fields=['image_url'])
+
+   # CustomGroupBuyImage (작동 ❌)
+   class CustomGroupBuyImage(models.Model):
+       image = models.ImageField(...)
+       # save() 메서드 없음! ← 문제
+   ```
+
+2. **즉시 해결**: UsedPhoneImage의 `save()` 메서드를 CustomGroupBuyImage에 복사
+
+#### 근본 원인
+- S3에 이미지는 업로드되지만 `image_url` 필드가 비어있음
+- `save()` 메서드가 없어서 S3 URL을 DB에 저장하지 못함
+
+#### 왜 실패했는가
+1. **CLAUDE.md 참조 안 함**: "되던걸 기준으로 안되는걸 맞춰나가기" 가이드 무시
+2. **사용자 힌트 무시**: "중고는 잘되지"라고 힌트를 줬는데도 무시
+3. **추측으로 해결 시도**: 비교 분석 대신 추측으로 여기저기 수정
+4. **근본 원인 탐색 안 함**: 표면적 증상만 보고 엉뚱한 곳만 확인
+
+#### 올바른 디버깅 절차
+```
+문제 발생
+  ↓
+"A는 되고 B는 안 됨"
+  ↓
+즉시 A와 B 코드 나란히 비교 (처음 1분 안에!)
+  ↓
+차이점 체계적으로 찾기
+  ↓
+차이점이 원인 → 복사 → 해결
+```
+
+#### 교훈
+1. **작업 시작 전 CLAUDE.md 필수 확인**
+2. **"A는 되고 B는 안 됨" → 무조건 처음부터 두 코드 비교**
+3. **추측 금지, 비교로 답 찾기**
+4. **과거 실수를 문서화한 이유: 반복하지 않기 위해**
+
 ## 🚨 Region 모델 필드 오류 (2025-01-23)
 
 ### 문제 상황
