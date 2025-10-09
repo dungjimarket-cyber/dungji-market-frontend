@@ -86,13 +86,13 @@ export default function RichTextEditor({
   return (
     <div className="border border-slate-300 rounded-lg overflow-hidden">
       {/* 툴바 */}
-      <div className="border-b border-slate-200 bg-slate-50 p-2 flex flex-wrap gap-1">
+      <div className="border-b border-slate-200 bg-slate-50 p-2 sm:p-3 flex flex-wrap gap-2 sm:gap-1.5">
         <Button
           type="button"
           variant={editor.isActive('bold') ? 'default' : 'ghost'}
           size="sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <Bold className="w-4 h-4" />
         </Button>
@@ -102,19 +102,19 @@ export default function RichTextEditor({
           variant={editor.isActive('italic') ? 'default' : 'ghost'}
           size="sm"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <Italic className="w-4 h-4" />
         </Button>
 
-        <div className="w-px h-8 bg-slate-300 mx-1" />
+        <div className="w-px h-8 bg-slate-300 mx-1 sm:mx-0.5" />
 
         <Button
           type="button"
           variant={editor.isActive('bulletList') ? 'default' : 'ghost'}
           size="sm"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <List className="w-4 h-4" />
         </Button>
@@ -124,19 +124,19 @@ export default function RichTextEditor({
           variant={editor.isActive('orderedList') ? 'default' : 'ghost'}
           size="sm"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <ListOrdered className="w-4 h-4" />
         </Button>
 
-        <div className="w-px h-8 bg-slate-300 mx-1" />
+        <div className="w-px h-8 bg-slate-300 mx-1 sm:mx-0.5" />
 
         <Button
           type="button"
           variant={editor.isActive('link') ? 'default' : 'ghost'}
           size="sm"
           onClick={setLink}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <LinkIcon className="w-4 h-4" />
         </Button>
@@ -147,18 +147,18 @@ export default function RichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => setShowFontSizePicker(!showFontSizePicker)}
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 sm:h-8 sm:w-8 p-0"
           >
             <Type className="w-4 h-4" />
           </Button>
 
           {showFontSizePicker && (
-            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-50 min-w-[120px]">
+            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-2 z-50 min-w-[140px] sm:min-w-[120px]">
               {['12px', '14px', '16px', '18px', '20px', '24px', '28px'].map((size) => (
                 <button
                   key={size}
                   type="button"
-                  className="w-full text-left px-3 py-1.5 hover:bg-slate-100 rounded text-sm"
+                  className="w-full text-left px-4 py-2 sm:px-3 sm:py-1.5 hover:bg-slate-100 rounded text-sm"
                   style={{ fontSize: size }}
                   onClick={() => {
                     editor.chain().focus().setFontSize(size).run();
@@ -188,19 +188,19 @@ export default function RichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className="h-8 w-8 p-0"
+            className="h-9 w-9 sm:h-8 sm:w-8 p-0"
           >
             <Palette className="w-4 h-4" />
           </Button>
 
           {showColorPicker && (
-            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-50">
-              <div className="grid grid-cols-5 gap-2">
+            <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-4 sm:p-3 z-50">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 sm:gap-2">
                 {colors.map((color) => (
                   <button
                     key={color}
                     type="button"
-                    className="w-7 h-7 rounded border border-slate-300 hover:scale-110 transition cursor-pointer"
+                    className="w-9 h-9 sm:w-7 sm:h-7 rounded border border-slate-300 hover:scale-110 transition cursor-pointer"
                     style={{ backgroundColor: color }}
                     onClick={() => {
                       editor.chain().focus().setColor(color).run();
@@ -223,7 +223,7 @@ export default function RichTextEditor({
           )}
         </div>
 
-        <div className="w-px h-8 bg-slate-300 mx-1" />
+        <div className="w-px h-8 bg-slate-300 mx-1 sm:mx-0.5" />
 
         <Button
           type="button"
@@ -231,7 +231,7 @@ export default function RichTextEditor({
           size="sm"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <Undo className="w-4 h-4" />
         </Button>
@@ -242,7 +242,7 @@ export default function RichTextEditor({
           size="sm"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <Redo className="w-4 h-4" />
         </Button>

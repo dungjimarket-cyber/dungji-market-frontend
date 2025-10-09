@@ -568,42 +568,53 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   return (
                     <div
                       key={index}
-                      className={`relative aspect-square rounded-lg border-2 overflow-hidden ${
+                      className={`relative aspect-square rounded-lg border-2 overflow-hidden group ${
                         hasImage ? 'border-slate-300' : 'border-dashed border-slate-200'
                       }`}
                     >
                       {hasImage ? (
                         <>
-                          <Image src={image.url} alt={`이미지 ${index + 1}`} fill className="object-cover" />
+                          <Image src={image.url} alt={`이미지 ${index + 1}`} fill className="object-cover rounded-lg" />
+
+                          {/* 호버 시 오버레이 */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-lg pointer-events-none" />
+
+                          {/* 대표 이미지 표시 */}
                           {image.isMain && (
-                            <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[11px] px-2 py-0.5 pointer-events-none whitespace-nowrap leading-none font-medium z-10">대표</Badge>
+                            <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs rounded font-medium z-10">대표</div>
                           )}
-                          <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 hover:opacity-100 transition-opacity bg-black/40 z-20">
-                            {!image.isMain && (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="secondary"
-                                className="h-8 w-8 p-0 bg-white hover:bg-white shadow-lg"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSetMainImage(index);
-                                }}
-                              >
-                                <Check className="w-4 h-4" />
-                              </Button>
-                            )}
+
+                          {/* 액션 버튼들 - 모바일에서는 X만, PC에서는 전체 버튼 */}
+                          <div className="absolute bottom-2 right-2 sm:left-2 sm:right-2 flex gap-1 z-20">
+                            {/* PC에서만 대표 버튼 표시 */}
+                            <div className="hidden sm:flex gap-1 flex-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {!image.isMain && (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="secondary"
+                                  className="flex-1 bg-white/90 backdrop-blur text-xs py-1 h-auto hover:bg-white"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSetMainImage(index);
+                                  }}
+                                >
+                                  대표
+                                </Button>
+                              )}
+                            </div>
+                            {/* X 버튼은 모바일/PC 모두 표시 */}
                             <Button
                               type="button"
                               size="sm"
                               variant="destructive"
-                              className="h-8 w-8 p-0 bg-red-600 hover:bg-red-700 shadow-lg"
+                              className="bg-red-500/90 backdrop-blur text-white px-2 py-1 h-auto rounded hover:bg-red-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleImageRemove(index);
                               }}
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3 h-3" />
                             </Button>
                           </div>
                         </>
