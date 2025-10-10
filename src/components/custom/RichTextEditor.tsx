@@ -195,7 +195,7 @@ export default function RichTextEditor({
 
           {showColorPicker && (
             <div className="absolute top-full mt-1 left-0 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-50">
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-5 gap-4">
                 {colors.map((color) => (
                   <button
                     key={color}
