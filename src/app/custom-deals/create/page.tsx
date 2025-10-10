@@ -49,6 +49,9 @@ export default function CreateCustomDealPage() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 사업자 회원 여부 확인
+  const isBusinessUser = user?.is_business_verified === true;
+
   // 입력 필드 refs (포커싱용)
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -564,6 +567,12 @@ export default function CreateCustomDealPage() {
 
     if (loading) return;
 
+    // 개인회원의 오프라인 공구 등록 방지
+    if (formData.type === 'offline' && !isBusinessUser) {
+      toast.error('오프라인판매는 사업자 회원만 등록할 수 있습니다');
+      return;
+    }
+
     const requiresBusiness = formData.type === 'offline';
     const isProfileComplete = await checkProfile(requiresBusiness);
     if (!isProfileComplete) {
@@ -744,7 +753,7 @@ export default function CreateCustomDealPage() {
               <div>
                 <h3 className="font-medium text-slate-900 mb-1">등록 전 확인사항</h3>
                 <p className="text-sm text-slate-700 mb-1">
-                  오프라인 공구는 사업자 회원만 등록 가능합니다
+                  오프라인판매는 사업자 회원만 등록 가능합니다
                 </p>
                 <p className="text-sm text-slate-600">
                   등록 불가: 할부/약정 상품, 금융상품, 학원/강의, 방문 서비스, 청소년 유해상품
@@ -947,13 +956,22 @@ export default function CreateCustomDealPage() {
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="online" id="online" />
-                  <Label htmlFor="online" className="font-normal cursor-pointer">온라인</Label>
+                  <Label htmlFor="online" className="font-normal cursor-pointer">온라인판매</Label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="offline" id="offline" />
-                  <Label htmlFor="offline" className="font-normal cursor-pointer">오프라인</Label>
-                </div>
+                {isBusinessUser && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="offline" id="offline" />
+                    <Label htmlFor="offline" className="font-normal cursor-pointer">오프라인판매</Label>
+                  </div>
+                )}
               </RadioGroup>
+              {!isBusinessUser && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    💡 오프라인판매는 사업자 회원만 이용 가능합니다
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
