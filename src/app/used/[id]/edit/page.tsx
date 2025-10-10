@@ -381,6 +381,26 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     setImagesModified(true); // 이미지 변경됨 표시
   };
 
+  // 대표 이미지 설정 (배열 순서 변경)
+  const handleSetMainImage = (index: number) => {
+    if (!isFieldEditable('images')) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setImages(prev => {
+      const updated = [...prev];
+      const [mainImage] = updated.splice(index, 1);
+      return [mainImage, ...updated];
+    });
+    setIsModified(true);
+    setImagesModified(true);
+  };
+
   // 드래그 앤 드롭 핸들러
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -1010,7 +1030,7 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
 
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
               {images.map((image, index) => (
-                <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
                   <Image
                     src={image.preview}
                     alt={`상품 이미지 ${index + 1}`}
@@ -1018,13 +1038,32 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
                     className="object-cover"
                   />
                   {isFieldEditable('images') && (
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+
+                      {/* 대표 이미지 표시 및 설정 */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                        {index === 0 ? (
+                          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                            대표
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetMainImage(index)}
+                            className="bg-white text-gray-700 px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-50 hover:text-blue-600"
+                          >
+                            대표
+                          </button>
+                        )}
+                      </div>
+                    </>
                   )}
                 </div>
               ))}

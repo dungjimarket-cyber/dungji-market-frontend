@@ -412,10 +412,18 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // 이미지 처리 - 이미지가 변경된 경우에만 전송
       if (imagesModified) {
         const actualImages = images.filter(img => img && !img.isEmpty);
-        const existingImages = actualImages.filter(img => img.existingUrl && !img.file && img.id);
-        const newImages = actualImages.filter(img => img.file);
 
-        // 기존 이미지 ID들 전송 (유지할 이미지)
+        // 대표 이미지(isMain)를 맨 앞으로 정렬
+        const sortedImages = [...actualImages].sort((a, b) => {
+          if (a.isMain) return -1;
+          if (b.isMain) return 1;
+          return 0;
+        });
+
+        const existingImages = sortedImages.filter(img => img.existingUrl && !img.file && img.id);
+        const newImages = sortedImages.filter(img => img.file);
+
+        // 기존 이미지 ID들 전송 (유지할 이미지) - 정렬된 순서대로
         existingImages.forEach((image) => {
           if (image.id) {
             submitFormData.append('existing_image_ids', image.id.toString());
