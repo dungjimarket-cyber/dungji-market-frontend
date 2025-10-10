@@ -45,10 +45,20 @@ export default function MyCustomParticipations() {
   const [participations, setParticipations] = useState<CustomParticipation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     fetchParticipations();
   }, [filter]);
+
+  // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // 1분마다
+
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchParticipations = async () => {
     try {
@@ -112,14 +122,31 @@ export default function MyCustomParticipations() {
 
   const getValidUntilDisplay = (validUntil: string | null) => {
     if (!validUntil) return null;
-    const date = new Date(validUntil);
-    const now = new Date();
-    const diff = date.getTime() - now.getTime();
-    const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (daysLeft < 0) return <span className="text-red-600">유효기간 만료</span>;
-    if (daysLeft === 0) return <span className="text-orange-600">오늘까지</span>;
-    return <span className="text-slate-600">{daysLeft}일 남음</span>;
+    const endDate = new Date(validUntil);
+    const diff = endDate.getTime() - currentTime.getTime();
+
+    // 만료됨
+    if (diff <= 0) {
+      return <span className="text-red-600 font-medium">유효기간 만료</span>;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    // 1일 이상
+    if (days > 0) {
+      return <span className="text-slate-600">{days}일 남음</span>;
+    }
+
+    // 1시간 이상 ~ 1일 미만
+    if (hours > 0) {
+      return <span className="text-orange-600 font-medium">{hours}시간 남음</span>;
+    }
+
+    // 1시간 미만
+    return <span className="text-red-600 font-medium">{minutes}분 남음</span>;
   };
 
   const getStatusBadge = (participation: CustomParticipation) => {

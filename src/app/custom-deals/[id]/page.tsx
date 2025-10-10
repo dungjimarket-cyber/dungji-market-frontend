@@ -200,11 +200,21 @@ export default function CustomDealDetailPage() {
       return;
     }
 
-    const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
-      ? ((deal.final_price as any).min || 0).toLocaleString()
-      : (deal.final_price || 0).toLocaleString();
+    // 가격 정보 처리
+    let confirmMessage = `${deal.title}\n\n`;
 
-    if (!confirm(`${deal.title}\n\n정가: ${deal.original_price.toLocaleString()}원\n할인가: ${finalPriceStr}원 (${deal.discount_rate}% 할인)\n\n참여하시겠습니까?`)) {
+    if (deal.original_price && deal.final_price) {
+      const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
+        ? ((deal.final_price as any).min || 0).toLocaleString()
+        : deal.final_price.toLocaleString();
+      confirmMessage += `정가: ${deal.original_price.toLocaleString()}원\n할인가: ${finalPriceStr}원 (${deal.discount_rate}% 할인)\n\n`;
+    } else {
+      confirmMessage += `전품목 ${deal.discount_rate}% 할인\n\n`;
+    }
+
+    confirmMessage += '참여하시겠습니까?';
+
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -242,11 +252,15 @@ export default function CustomDealDetailPage() {
   const handleShare = async () => {
     const url = window.location.href;
 
+    const shareText = deal?.final_price
+      ? `${deal.title} - ${typeof deal.final_price === 'object' ? ((deal.final_price as any).min || 0) : deal.final_price}원`
+      : `${deal?.title} - ${deal?.discount_rate}% 할인`;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: deal?.title,
-          text: `${deal?.title} - ${deal?.final_price.toLocaleString()}원`,
+          text: shareText,
           url: url,
         });
       } catch (error) {
@@ -595,19 +609,30 @@ export default function CustomDealDetailPage() {
             {/* Price */}
             <Card className="border-slate-200 bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="p-5">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-sm text-slate-500 line-through">
-                    {deal.original_price.toLocaleString()}원
-                  </span>
-                  <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
-                    {deal.discount_rate}%
-                  </Badge>
-                </div>
-                <div className="text-3xl font-bold text-slate-900">
-                  {typeof deal.final_price === 'object' && deal.final_price !== null
-                    ? ((deal.final_price as any).min || 0).toLocaleString()
-                    : (deal.final_price || 0).toLocaleString()}원
-                </div>
+                {deal.original_price && deal.final_price ? (
+                  <>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-sm text-slate-500 line-through">
+                        {deal.original_price.toLocaleString()}원
+                      </span>
+                      <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
+                        {deal.discount_rate}%
+                      </Badge>
+                    </div>
+                    <div className="text-3xl font-bold text-slate-900">
+                      {typeof deal.final_price === 'object' && deal.final_price !== null
+                        ? ((deal.final_price as any).min || 0).toLocaleString()
+                        : deal.final_price.toLocaleString()}원
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600 mb-1">
+                      전품목 {deal.discount_rate}% 할인
+                    </div>
+                    <p className="text-xs text-slate-600">매장에서 직접 할인 받으세요</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -641,6 +666,43 @@ export default function CustomDealDetailPage() {
                 <p className="text-xs text-slate-500 mt-1.5">
                   {Math.round(progress)}% 달성
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Categories */}
+            <Card className="border-slate-200">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-slate-900 mb-2 text-sm">카테고리</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {deal.categories.map((category) => (
+                    <Badge key={category} variant="secondary" className="text-xs">
+                      {getCategoryLabel(category)}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats */}
+            <Card className="border-slate-200">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-slate-900 mb-2 text-sm">통계</h3>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">조회수</span>
+                    <span className="font-medium text-slate-900">{deal.view_count}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">찜</span>
+                    <span className="font-medium text-slate-900">{deal.favorite_count}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">등록일</span>
+                    <span className="font-medium text-slate-900">
+                      {new Date(deal.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -682,143 +744,104 @@ export default function CustomDealDetailPage() {
         </div>
 
         {/* Description & Details */}
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 space-y-4">
-            {/* Description */}
+        <div className="mt-6 space-y-4">
+          {/* Description */}
+          <Card className="border-slate-200">
+            <CardContent className="p-5">
+              <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
+              <div className="prose prose-slate prose-sm max-w-none">
+                <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: deal.description }} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Usage Guide */}
+          {deal.usage_guide && (
             <Card className="border-slate-200">
               <CardContent className="p-5">
-                <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
+                <h2 className="text-lg font-bold text-slate-900 mb-3">이용 안내</h2>
                 <div className="prose prose-slate prose-sm max-w-none">
-                  <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: deal.description }} />
+                  <p className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">{deal.usage_guide}</p>
                 </div>
               </CardContent>
             </Card>
+          )}
 
-            {/* Usage Guide */}
-            {deal.usage_guide && (
-              <Card className="border-slate-200">
-                <CardContent className="p-5">
-                  <h2 className="text-lg font-bold text-slate-900 mb-3">이용 안내</h2>
-                  <div className="prose prose-slate prose-sm max-w-none">
-                    <p className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">{deal.usage_guide}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Offline Details */}
-            {deal.type === 'offline' && (
-              <Card className="border-slate-200">
-                <CardContent className="p-5">
-                  <h2 className="text-lg font-bold text-slate-900 mb-3">매장 정보</h2>
-                  <div className="space-y-2.5">
-                    {deal.location && (
-                      <div className="flex items-start gap-2.5">
-                        <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-slate-900 text-sm">{deal.location}</p>
-                          {deal.location_detail && (
-                            <p className="text-xs text-slate-600">{deal.location_detail}</p>
-                          )}
-                        </div>
+          {/* Offline - 매장 정보 */}
+          {deal.type === 'offline' && (
+            <Card className="border-slate-200">
+              <CardContent className="p-5">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">매장 정보</h2>
+                <div className="space-y-2.5">
+                  {deal.location && (
+                    <div className="flex items-start gap-2.5">
+                      <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{deal.location}</p>
+                        {deal.location_detail && (
+                          <p className="text-xs text-slate-600">{deal.location_detail}</p>
+                        )}
                       </div>
-                    )}
-                    {deal.phone_number && (
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <span className="text-slate-400">📞</span>
-                        <a
-                          href={`tel:${deal.phone_number}`}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {deal.phone_number}
-                        </a>
-                      </div>
-                    )}
-                    {deal.discount_valid_days && (
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <Calendar className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-700">
-                          할인 유효기간: {deal.discount_valid_days}일
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Online Details - 할인코드만 있는 경우 제외 */}
-            {deal.type === 'online' && (deal.discount_url || deal.phone_number) && (
-              <Card className="border-slate-200">
-                <CardContent className="p-5">
-                  <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
-                  <div className="space-y-2.5">
-                    {deal.discount_url && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => window.open(deal.discount_url!, '_blank')}
+                    </div>
+                  )}
+                  {deal.phone_number && (
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <span className="text-slate-400">📞</span>
+                      <a
+                        href={`tel:${deal.phone_number}`}
+                        className="text-blue-600 hover:underline"
                       >
-                        할인 링크로 이동
-                      </Button>
-                    )}
-                    {deal.phone_number && (
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <span className="text-slate-400">📞</span>
-                        <a
-                          href={`tel:${deal.phone_number}`}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {deal.phone_number}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-4">
-            {/* Categories */}
-            <Card className="border-slate-200">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-slate-900 mb-2 text-sm">카테고리</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {deal.categories.map((category) => (
-                    <Badge key={category} variant="secondary" className="text-xs">
-                      {getCategoryLabel(category)}
-                    </Badge>
-                  ))}
+                        {deal.phone_number}
+                      </a>
+                    </div>
+                  )}
+                  {deal.discount_valid_days && (
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      <span className="text-slate-700">
+                        할인 유효기간: {deal.discount_valid_days}일
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
+          )}
 
-            {/* Stats */}
+          {/* Online - 할인 정보 (할인 링크만) */}
+          {deal.type === 'online' && deal.discount_url && (
             <Card className="border-slate-200">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-slate-900 mb-2 text-sm">통계</h3>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">조회수</span>
-                    <span className="font-medium text-slate-900">{deal.view_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">찜</span>
-                    <span className="font-medium text-slate-900">{deal.favorite_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">등록일</span>
-                    <span className="font-medium text-slate-900">
-                      {new Date(deal.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
+              <CardContent className="p-5">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => window.open(deal.discount_url!, '_blank')}
+                >
+                  할인 링크로 이동
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Online - 상품 문의 (전화번호, 있을 때만) */}
+          {deal.type === 'online' && deal.phone_number && (
+            <Card className="border-slate-200">
+              <CardContent className="p-5">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">상품 문의</h2>
+                <div className="flex items-center gap-2.5 text-sm">
+                  <span className="text-slate-400">📞</span>
+                  <a
+                    href={`tel:${deal.phone_number}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {deal.phone_number}
+                  </a>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          )}
         </div>
       </div>
 
