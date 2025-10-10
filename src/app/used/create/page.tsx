@@ -135,7 +135,7 @@ export default function CreateUsedPhonePage() {
   // 천원 단위로 맞추기
   const roundToThousand = (value: string) => {
     const num = parseInt(value);
-    if (isNaN(num)) return '0';
+    if (isNaN(num)) return 0;
     return Math.round(num / 1000) * 1000;
   };
 

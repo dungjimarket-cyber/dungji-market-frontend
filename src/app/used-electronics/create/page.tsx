@@ -1029,7 +1029,7 @@ export default function ElectronicsCreatePage() {
                     handleInputChange('price', rounded);
 
                     // 실시간 가격 비교 검증
-                    const minPrice = parseInt(formData.min_offer_price);
+                    const minPrice = formData.min_offer_price ? parseInt(formData.min_offer_price) : 0;
                     if (minPrice && parseInt(rounded) && minPrice >= parseInt(rounded)) {
                       setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
                     } else {
@@ -1086,7 +1086,7 @@ export default function ElectronicsCreatePage() {
                         handleInputChange('min_offer_price', rounded);
 
                         // 실시간 가격 비교 검증
-                        const price = parseInt(formData.price);
+                        const price = formData.price ? parseInt(formData.price) : 0;
                         if (price && parseInt(rounded) && parseInt(rounded) >= price) {
                           setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
                         } else {
