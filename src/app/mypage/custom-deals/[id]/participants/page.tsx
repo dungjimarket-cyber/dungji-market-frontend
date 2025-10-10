@@ -120,7 +120,8 @@ export default function ParticipantsManagePage() {
     try {
       const token = localStorage.getItem('accessToken');
 
-      const response = await fetch(
+      // 1단계: 할인코드 검증
+      const verifyResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/verify_discount/`,
         {
           method: 'POST',
@@ -135,16 +136,48 @@ export default function ParticipantsManagePage() {
         }
       );
 
-      const result = await response.json();
+      const verifyResult = await verifyResponse.json();
 
-      if (result.valid) {
-        toast.success(`할인코드 인증 완료: ${result.user_name}`);
-        setShowQRScanner(false);
-        // 참여자 목록 리프레시
-        fetchData();
-      } else {
-        toast.error(result.error || '유효하지 않은 할인코드입니다');
+      if (!verifyResult.valid) {
+        toast.error(verifyResult.error || '유효하지 않은 할인코드입니다');
+        return;
       }
+
+      // 2단계: 자동으로 사용 처리
+      const participant = participants.find(p => p.discount_code === data.discountCode);
+      if (!participant) {
+        toast.error('참여자 정보를 찾을 수 없습니다');
+        return;
+      }
+
+      // 이미 사용된 경우 체크
+      if (participant.discount_used) {
+        toast.warning(`${verifyResult.user_name}님은 이미 사용 처리되었습니다`);
+        setShowQRScanner(false);
+        return;
+      }
+
+      // 사용 처리 API 호출
+      const toggleResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/${participant.id}/toggle-used/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!toggleResponse.ok) {
+        throw new Error('사용 처리 실패');
+      }
+
+      // 성공
+      toast.success(`✅ ${verifyResult.user_name}님 할인코드 사용 처리 완료!`);
+      setShowQRScanner(false);
+
+      // 참여자 목록 리프레시
+      fetchData();
     } catch (error) {
       console.error('QR 인증 실패:', error);
       toast.error('QR 인증에 실패했습니다');

@@ -38,7 +38,9 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
               fps: 10,
               qrbox: { width: 250, height: 250 },
               aspectRatio: 1.0,
-              facingMode: "environment", // 후방 카메라 우선
+              videoConstraints: {
+                facingMode: { ideal: "environment" } // 후방 카메라 우선
+              }
             },
             false // verbose를 false로 설정
           );
