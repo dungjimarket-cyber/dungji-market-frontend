@@ -54,9 +54,8 @@ export const conversionEvent = (conversionLabel: string, parameters?: Record<str
 // 회원가입 전환 이벤트
 export const trackSignupConversion = (userId?: string) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'ads_conversion___1', {
-      user_id: userId,
-      conversion_time: new Date().toISOString(),
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-17509206142/lgYiCMrmrKobEP6QhZ1B'
     });
   }
 };
