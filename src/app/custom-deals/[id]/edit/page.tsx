@@ -528,12 +528,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       submitFormData.append('description', formData.description);
       if (formData.usage_guide) submitFormData.append('usage_guide', formData.usage_guide);
 
-      // 참여자가 없을 때만 다른 필드 수정 가능
+      // 참여자가 없을 때만 다른 필드 수정 가능 (단, type/target_participants/discount_codes는 제외)
       if (!hasParticipants) {
-        submitFormData.append('type', formData.type);
+        // ❌ 수정 불가능 필드는 전송하지 않음: type, target_participants, discount_codes
         submitFormData.append('categories', JSON.stringify([selectedCategory]));
         submitFormData.append('pricing_type', formData.pricing_type);
-        submitFormData.append('target_participants', formData.target_participants);
         submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
         // 가격 정보
@@ -548,15 +547,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
 
         // 온라인/오프라인 특화 정보
-        const validCodes = discountCodes.filter(c => c.trim());
         if (formData.type === 'online') {
           submitFormData.append('online_discount_type', formData.online_discount_type);
           if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
             submitFormData.append('discount_url', formData.discount_url);
           }
-          if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
-            submitFormData.append('discount_codes', JSON.stringify(validCodes));
-          }
+          // ❌ discount_codes는 수정 불가이므로 전송하지 않음
           if (formData.discount_valid_days) {
             submitFormData.append('discount_valid_days', formData.discount_valid_days);
           }
@@ -569,7 +565,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
           submitFormData.append('phone_number', formData.phone_number);
           submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
-          submitFormData.append('discount_codes', JSON.stringify(validCodes));
+          // ❌ discount_codes는 수정 불가이므로 전송하지 않음
         }
       }
 
@@ -844,24 +840,27 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </CardContent>
             </Card>
 
-            {/* 공구 유형 */}
-            <Card className="mb-6 border-slate-200">
+            {/* 공구 유형 (수정 불가) */}
+            <Card className="mb-6 border-slate-200 bg-slate-50">
               <CardHeader>
-                <CardTitle>공구 유형</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  공구 유형
+                  <Badge variant="secondary" className="text-xs">수정불가</Badge>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup
                   value={formData.type}
-                  onValueChange={(value) => handleInputChange('type', value as 'online' | 'offline')}
-                  className="flex gap-4"
+                  disabled
+                  className="flex gap-4 opacity-60"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="online" id="edit-online" />
-                    <Label htmlFor="edit-online" className="font-normal cursor-pointer">온라인</Label>
+                    <RadioGroupItem value="online" id="edit-online" disabled />
+                    <Label htmlFor="edit-online" className="font-normal">온라인</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="offline" id="edit-offline" />
-                    <Label htmlFor="edit-offline" className="font-normal cursor-pointer">오프라인</Label>
+                    <RadioGroupItem value="offline" id="edit-offline" disabled />
+                    <Label htmlFor="edit-offline" className="font-normal">오프라인</Label>
                   </div>
                 </RadioGroup>
               </CardContent>
@@ -956,9 +955,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>목표 인원 *</Label>
-                  <Select value={formData.target_participants} onValueChange={(value) => handleInputChange('target_participants', value)}>
-                    <SelectTrigger>
+                  <Label className="flex items-center gap-2">
+                    목표 인원 *
+                    <Badge variant="secondary" className="text-xs">수정불가</Badge>
+                  </Label>
+                  <Select value={formData.target_participants} disabled>
+                    <SelectTrigger className="opacity-60 bg-slate-50">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1033,43 +1035,23 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <Label className="flex items-center gap-2">
                         <Ticket className="w-4 h-4" />
                         할인 코드 *
+                        <Badge variant="secondary" className="text-xs">수정불가</Badge>
                       </Label>
                       <div className="space-y-2 mt-2">
                         {discountCodes.map((code, index) => (
                           <div key={index} className="flex gap-2">
                             <Input
                               value={code}
-                              onChange={(e) => setDiscountCodes(prev => {
-                                const updated = [...prev];
-                                updated[index] = e.target.value;
-                                return updated;
-                              })}
+                              disabled
                               placeholder={`코드 ${index + 1}`}
-                              maxLength={50}
+                              className="opacity-60 bg-slate-50"
                             />
-                            {discountCodes.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setDiscountCodes(prev => prev.filter((_, i) => i !== index))}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            )}
                           </div>
                         ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDiscountCodes(prev => [...prev, ''])}
-                          className="w-full"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          코드 추가
-                        </Button>
                       </div>
+                      <p className="text-sm text-slate-500 mt-2">
+                        할인코드는 등록 후 수정할 수 없습니다
+                      </p>
                     </div>
                   )}
 
@@ -1171,7 +1153,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   </CardContent>
                 </Card>
 
-                <Card className="mb-6 border-slate-200">
+                <Card className="mb-6 border-slate-200 bg-slate-50">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Ticket className="w-5 h-5" />
@@ -1180,45 +1162,24 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label>할인 코드 *</Label>
+                      <Label className="flex items-center gap-2">
+                        할인 코드 *
+                        <Badge variant="secondary" className="text-xs">수정불가</Badge>
+                      </Label>
                       <div className="space-y-2 mt-2">
                         {discountCodes.map((code, index) => (
                           <div key={index} className="flex gap-2">
                             <Input
                               value={code}
-                              onChange={(e) => setDiscountCodes(prev => {
-                                const updated = [...prev];
-                                updated[index] = e.target.value;
-                                return updated;
-                              })}
+                              disabled
                               placeholder={`코드 ${index + 1}`}
-                              maxLength={50}
+                              className="opacity-60 bg-slate-100"
                             />
-                            {discountCodes.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setDiscountCodes(prev => prev.filter((_, i) => i !== index))}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            )}
                           </div>
                         ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDiscountCodes(prev => [...prev, ''])}
-                          className="w-full"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          코드 추가
-                        </Button>
                       </div>
                       <p className="text-sm text-slate-500 mt-2">
-                        ⚠️ 배달 주문 시 사용 불가. 방문 포장 또는 매장 식사만 가능합니다.
+                        할인코드는 등록 후 수정할 수 없습니다
                       </p>
                     </div>
 
