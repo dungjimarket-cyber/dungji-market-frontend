@@ -275,9 +275,10 @@ export default function MyCustomDeals() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {deals.map((deal) => (
-            <Card key={deal.id} className="border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={deal.id} className="border-slate-200 overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
               <Link href={`/custom-deals/${deal.id}`}>
-                <div className="relative h-36 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group">
+                {/* Image - 고정 높이 */}
+                <div className="relative h-36 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group flex-shrink-0">
                   {deal.primary_image ? (
                     <img
                       src={deal.primary_image}
@@ -293,32 +294,35 @@ export default function MyCustomDeals() {
                     {getStatusBadge(deal)}
                   </div>
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-white/90 text-slate-700 border-0 text-xs px-2 py-0.5">
+                    <Badge className="bg-white/90 text-slate-700 border-0 text-xs px-2 py-0.5 whitespace-nowrap">
                       {deal.type_display}
                     </Badge>
                   </div>
                 </div>
               </Link>
 
-              <CardContent className="p-3">
+              <CardContent className="p-3 flex flex-col flex-1">
                 <Link href={`/custom-deals/${deal.id}`}>
-                  <h3 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight">
+                  {/* Title - 고정 높이 (2줄) */}
+                  <h3 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
                     {deal.title}
                   </h3>
                 </Link>
 
-                {/* 위치 */}
-                {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
-                  <div className="flex items-center gap-1 text-xs text-slate-500 mb-2">
-                    <MapPin className="w-3 h-3 flex-shrink-0" />
-                    <span className="line-clamp-1">
-                      {deal.regions.map(r => r.name).join(', ')}
-                    </span>
-                  </div>
-                )}
+                {/* Location - 고정 높이 */}
+                <div className="h-5 mb-2">
+                  {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="line-clamp-1">
+                        {deal.regions.map(r => r.name).join(', ')}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                {/* 가격 */}
-                <div className="mb-3">
+                {/* Price - 고정 높이 */}
+                <div className="mb-3 h-14">
                   {deal.original_price && deal.final_price ? (
                     <>
                       <div className="flex items-baseline gap-1.5">
@@ -342,15 +346,15 @@ export default function MyCustomDeals() {
                   )}
                 </div>
 
-                {/* 진행률 */}
+                {/* Progress - 고정 높이 */}
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="text-slate-600 flex items-center gap-1">
-                      <Users className="w-3 h-3" />
+                    <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
+                      <Users className="w-3 h-3 flex-shrink-0" />
                       {deal.current_participants}/{deal.target_participants}
                     </span>
-                    <span className="text-slate-500 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                    <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                      <Clock className="w-3 h-3 flex-shrink-0" />
                       {getRemainingTime(deal.expired_at)}
                     </span>
                   </div>
@@ -367,28 +371,28 @@ export default function MyCustomDeals() {
                   </div>
                 </div>
 
-                {/* 통계 */}
-                <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 pt-2 border-t border-slate-100">
-                  <span className="flex items-center gap-0.5">
-                    <Eye className="w-3 h-3" />
+                {/* Stats - 고정 높이 */}
+                <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 pt-2 border-t border-slate-100 h-8">
+                  <span className="flex items-center gap-0.5 whitespace-nowrap">
+                    <Eye className="w-3 h-3 flex-shrink-0" />
                     {deal.view_count}
                   </span>
-                  <span className="flex items-center gap-0.5">
-                    <Heart className="w-3 h-3" />
+                  <span className="flex items-center gap-0.5 whitespace-nowrap">
+                    <Heart className="w-3 h-3 flex-shrink-0" />
                     {deal.favorite_count}
                   </span>
-                  <span className="flex items-center gap-0.5 text-slate-400">
+                  <span className="flex items-center gap-0.5 text-slate-400 truncate">
                     {new Date(deal.created_at).toLocaleDateString('ko', { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
 
-                {/* 액션 버튼 */}
-                <div className="flex flex-col gap-1">
+                {/* Action Buttons - 하단 고정 */}
+                <div className="flex flex-col gap-1 mt-auto">
                   {deal.status === 'recruiting' && deal.current_participants >= 1 && (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full text-xs h-7 text-orange-600 border-orange-300 hover:bg-orange-50"
+                      className="w-full text-xs h-7 text-orange-600 border-orange-300 hover:bg-orange-50 whitespace-nowrap"
                       onClick={(e) => {
                         e.preventDefault();
                         handleEarlyClose(deal.id);
@@ -402,25 +406,25 @@ export default function MyCustomDeals() {
                     <div className="flex gap-1">
                       <Button
                         size="sm"
-                        className="flex-1 text-xs h-7 bg-green-600 hover:bg-green-700 text-white"
+                        className="flex-1 text-xs h-7 bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
                         onClick={(e) => {
                           e.preventDefault();
                           handleConfirmSale(deal.id);
                         }}
                       >
-                        <CheckCircle className="w-3 h-3 mr-1" />
+                        <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
                         확정
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 text-xs h-7 text-red-600 border-red-300 hover:bg-red-50"
+                        className="flex-1 text-xs h-7 text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
                         onClick={(e) => {
                           e.preventDefault();
                           handleCancelSale(deal.id);
                         }}
                       >
-                        <XCircle className="w-3 h-3 mr-1" />
+                        <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
                         취소
                       </Button>
                     </div>
@@ -430,7 +434,7 @@ export default function MyCustomDeals() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full text-xs h-7"
+                      className="w-full text-xs h-7 whitespace-nowrap"
                       onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
                     >
                       참여자 관리
@@ -440,7 +444,7 @@ export default function MyCustomDeals() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full text-xs h-7"
+                    className="w-full text-xs h-7 whitespace-nowrap"
                     onClick={() => router.push(`/custom-deals/${deal.id}`)}
                   >
                     상세보기

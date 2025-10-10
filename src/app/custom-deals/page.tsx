@@ -267,9 +267,9 @@ export default function CustomDealsPage() {
                 const isClosed = deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired';
                 return (
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden">
-                  {/* Image */}
-                  <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200">
+                <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden flex flex-col">
+                  {/* Image - 고정 높이 */}
+                  <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0">
                     {deal.primary_image ? (
                       <img
                         src={deal.primary_image}
@@ -308,24 +308,26 @@ export default function CustomDealsPage() {
                     </div>
                   </div>
 
-                  <CardContent className="p-4">
-                    {/* Title */}
-                    <h3 className="font-bold text-base text-slate-900 mb-1.5 line-clamp-2">
+                  <CardContent className="p-4 flex flex-col flex-1">
+                    {/* Title - 고정 높이 (2줄) */}
+                    <h3 className="font-bold text-base text-slate-900 mb-1.5 line-clamp-2 h-12">
                       {deal.title}
                     </h3>
 
-                    {/* Location (offline only) */}
-                    {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-slate-600 mb-2">
-                        <MapPin className="w-3 h-3" />
-                        <span className="line-clamp-1">
-                          {deal.regions.map(r => r.name).join(', ')}
-                        </span>
-                      </div>
-                    )}
+                    {/* Location (offline only) - 고정 높이 */}
+                    <div className="h-5 mb-2">
+                      {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-slate-600">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          <span className="line-clamp-1">
+                            {deal.regions.map(r => r.name).join(', ')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Price */}
-                    <div className="mb-3">
+                    {/* Price - 고정 높이 */}
+                    <div className="mb-3 h-16">
                       {deal.original_price && deal.final_price ? (
                         <>
                           <div className="flex items-baseline gap-1.5">
@@ -347,15 +349,15 @@ export default function CustomDealsPage() {
                       )}
                     </div>
 
-                    {/* Progress */}
+                    {/* Progress - 고정 높이 */}
                     <div className="mb-3">
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-slate-600 flex items-center gap-1">
-                          <Users className="w-3 h-3" />
+                        <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
+                          <Users className="w-3 h-3 flex-shrink-0" />
                           {deal.current_participants}/{deal.target_participants}명
                         </span>
-                        <span className="text-slate-500 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                        <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                          <Clock className="w-3 h-3 flex-shrink-0" />
                           {getRemainingTime(deal.expired_at)}
                         </span>
                       </div>
@@ -372,12 +374,12 @@ export default function CustomDealsPage() {
                       </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                      <span className="text-xs text-slate-600">{deal.seller_name}</span>
+                    {/* Footer - 하단 고정 */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-auto">
+                      <span className="text-xs text-slate-600 truncate">{deal.seller_name}</span>
                       <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span className="flex items-center gap-0.5">
-                          <Heart className="w-3 h-3" />
+                        <span className="flex items-center gap-0.5 whitespace-nowrap">
+                          <Heart className="w-3 h-3 flex-shrink-0" />
                           {deal.favorite_count}
                         </span>
                       </div>
