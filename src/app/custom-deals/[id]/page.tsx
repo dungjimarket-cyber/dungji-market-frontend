@@ -444,44 +444,46 @@ export default function CustomDealDetailPage() {
           </div>
 
           {/* Right Column - Info */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Title & Status */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Badge className="bg-white/90 text-slate-700 border-0">
+            <div className="bg-white rounded-lg border border-slate-200 p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-slate-100 text-slate-700 border-0 text-xs">
                   {deal.type_display}
                 </Badge>
                 {getStatusBadge()}
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">{deal.title}</h1>
+              <h1 className="text-2xl font-bold text-slate-900 mb-3 leading-tight">{deal.title}</h1>
 
-              {/* Location (offline only) */}
-              {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
-                <div className="flex items-center gap-1.5 text-sm text-slate-600 mb-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{deal.regions.map(r => r.full_name).join(', ')}</span>
-                </div>
-              )}
-
-              {/* Seller Info */}
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <span>{deal.seller_name}</span>
-                {deal.is_business_verified && (
-                  <Badge variant="outline" className="text-[11px] py-0 px-1.5">사업자 인증</Badge>
+              <div className="space-y-1.5">
+                {/* Location (offline only) */}
+                {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{deal.regions.map(r => r.full_name).join(', ')}</span>
+                  </div>
                 )}
+
+                {/* Seller Info */}
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <span>{deal.seller_name}</span>
+                  {deal.is_business_verified && (
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5">사업자 인증</Badge>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Price */}
-            <Card className="border-slate-200">
+            <Card className="border-slate-200 bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="p-5">
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-base text-slate-500 line-through">
+                  <span className="text-sm text-slate-500 line-through">
                     {deal.original_price.toLocaleString()}원
                   </span>
-                  <span className="text-2xl font-bold text-red-600">
+                  <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
                     {deal.discount_rate}%
-                  </span>
+                  </Badge>
                 </div>
                 <div className="text-3xl font-bold text-slate-900">
                   {typeof deal.final_price === 'object' && deal.final_price !== null
@@ -532,7 +534,7 @@ export default function CustomDealDetailPage() {
              (!user || deal.seller !== parseInt(user.id)) && (
               <Button
                 size="lg"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6"
                 onClick={handleParticipate}
               >
                 참여하기
@@ -540,21 +542,21 @@ export default function CustomDealDetailPage() {
             )}
 
             {deal.is_participated && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2.5">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-green-900">참여 완료</p>
-                  <p className="text-sm text-green-700">공구 정보를 기다려주세요</p>
+                  <p className="font-semibold text-green-900 text-sm">참여 완료</p>
+                  <p className="text-xs text-green-700">공구 정보를 기다려주세요</p>
                 </div>
               </div>
             )}
 
-            {deal.status === 'completed' && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+            {deal.status === 'completed' && !deal.is_participated && (
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-2.5">
+                <AlertCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-red-900">마감된 특가</p>
-                  <p className="text-sm text-red-700">다른 공구를 확인해보세요</p>
+                  <p className="font-semibold text-slate-900 text-sm">마감된 특가</p>
+                  <p className="text-xs text-slate-600">다른 공구를 확인해보세요</p>
                 </div>
               </div>
             )}
@@ -562,8 +564,8 @@ export default function CustomDealDetailPage() {
         </div>
 
         {/* Description & Details */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2 space-y-4">
             {/* Description */}
             <Card className="border-slate-200">
               <CardContent className="p-5">
@@ -627,18 +629,12 @@ export default function CustomDealDetailPage() {
               </Card>
             )}
 
-            {/* Online Details */}
-            {deal.type === 'online' && (
+            {/* Online Details - 할인코드만 있는 경우 제외 */}
+            {deal.type === 'online' && (deal.discount_url || deal.phone_number) && (
               <Card className="border-slate-200">
                 <CardContent className="p-5">
                   <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
                   <div className="space-y-2.5">
-                    {deal.online_discount_type_display && (
-                      <div className="flex items-center gap-2.5 text-sm">
-                        <Tag className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-700">{deal.online_discount_type_display}</span>
-                      </div>
-                    )}
                     {deal.discount_url && (
                       <Button
                         variant="outline"
@@ -650,7 +646,7 @@ export default function CustomDealDetailPage() {
                       </Button>
                     )}
                     {deal.phone_number && (
-                      <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200 text-sm">
+                      <div className="flex items-center gap-2.5 text-sm">
                         <span className="text-slate-400">📞</span>
                         <a
                           href={`tel:${deal.phone_number}`}
