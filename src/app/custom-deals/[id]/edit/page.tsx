@@ -569,18 +569,28 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
       }
 
-      // 디버깅: FormData 전송 내용 출력
-      console.log('=== FormData 전송 내용 ===');
-      console.log('이미지 변경 여부:', imagesModified);
-      console.log('현재 images 상태:', images);
+      // 디버깅: FormData 전송 내용 상세 출력
+      console.log('====================================');
+      console.log('📦 FormData 전송 내용 상세 디버깅');
+      console.log('====================================');
+      console.log('🔸 참여자 여부:', hasParticipants);
+      console.log('🔸 이미지 변경 여부:', imagesModified);
+      console.log('🔸 현재 images 상태:', images);
+      console.log('');
+      console.log('📋 전송될 필드 목록:');
+      const formDataEntries: Array<[string, any]> = [];
       for (let [key, value] of submitFormData.entries()) {
+        formDataEntries.push([key, value]);
         if (value instanceof File) {
-          console.log(`${key}: [File] ${value.name}`);
+          console.log(`  ✅ ${key}: [File] ${value.name} (${(value.size / 1024).toFixed(2)}KB)`);
         } else {
-          console.log(`${key}: ${value}`);
+          console.log(`  ✅ ${key}: ${value}`);
         }
       }
-      console.log('========================');
+      console.log('');
+      console.log('📊 전송 필드 개수:', formDataEntries.length);
+      console.log('====================================');
+
       console.log('[EDIT] API 호출 직전');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${dealId}/`, {
         method: 'PATCH',
@@ -590,12 +600,30 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         body: submitFormData
       });
 
-      console.log('[EDIT] API 응답 상태:', response.status);
+      console.log('');
+      console.log('🔻 API 응답 정보 🔻');
+      console.log('상태 코드:', response.status);
+      console.log('상태 텍스트:', response.statusText);
+      console.log('Content-Type:', response.headers.get('content-type'));
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.log('[EDIT] API 에러:', errorData);
-        throw new Error(errorData.error || '수정에 실패했습니다');
+        console.error('❌ API 오류 발생');
+
+        // 응답 텍스트 먼저 가져오기
+        const responseText = await response.text();
+        console.log('원본 응답 (처음 500자):', responseText.substring(0, 500));
+
+        // JSON 파싱 시도
+        let errorData: any = {};
+        try {
+          errorData = JSON.parse(responseText);
+          console.log('파싱된 에러 데이터:', errorData);
+        } catch (e) {
+          console.error('⚠️ 응답이 JSON이 아닙니다. HTML 또는 텍스트 응답:', e);
+          errorData = { error: '서버 에러 (500)' };
+        }
+
+        throw new Error(errorData.error || errorData.detail || '수정에 실패했습니다');
       }
 
       const data = await response.json();
