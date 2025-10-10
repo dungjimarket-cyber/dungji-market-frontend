@@ -926,6 +926,25 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         />
                       </div>
                     </div>
+                    {/* 최종 가격 표시 */}
+                    {formData.original_price && formData.discount_rate && (
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-slate-600">최종 판매가</span>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-blue-600">
+                              {Math.floor(
+                                parseInt(formData.original_price.replace(/,/g, '')) *
+                                (100 - parseInt(formData.discount_rate || '0')) / 100
+                              ).toLocaleString()}원
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">
+                              ({formData.discount_rate}% 할인 적용)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -986,31 +1005,22 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
             {/* 온라인 전용 필드 */}
             {formData.type === 'online' && (
-              <Card className="mb-6 border-slate-200">
+              <Card className="mb-6 border-slate-200 bg-slate-50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <LinkIcon className="w-5 h-5" />
                     할인 제공 방식
+                    <Badge variant="secondary" className="text-xs">수정불가</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <RadioGroup
-                    value={formData.online_discount_type}
-                    onValueChange={(value) => handleInputChange('online_discount_type', value)}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="link_only" id="edit-link-only" />
-                      <Label htmlFor="edit-link-only" className="font-normal cursor-pointer">링크만</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="code_only" id="edit-code-only" />
-                      <Label htmlFor="edit-code-only" className="font-normal cursor-pointer">코드만</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="both" id="edit-both" />
-                      <Label htmlFor="edit-both" className="font-normal cursor-pointer">링크 + 코드</Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="p-3 bg-white rounded-lg border border-slate-200">
+                    <p className="text-sm text-slate-600">
+                      {formData.online_discount_type === 'link_only' && '할인 링크만 제공'}
+                      {formData.online_discount_type === 'code_only' && '할인 코드만 제공'}
+                      {formData.online_discount_type === 'both' && '할인 링크 + 할인 코드 제공'}
+                    </p>
+                  </div>
 
                   {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                     <div className="space-y-3">
