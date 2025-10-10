@@ -57,6 +57,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
   const [hasParticipants, setHasParticipants] = useState(false);
   const [originalData, setOriginalData] = useState<any>(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
   // 카테고리 목록
   const [categories, setCategories] = useState<Category[]>([]);
@@ -209,6 +210,100 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     };
     fetchCategories();
   }, []);
+
+  // 변경사항 감지
+  useEffect(() => {
+    if (!originalData) return;
+
+    // 이미지 변경 체크
+    if (imagesModified) {
+      setHasChanges(true);
+      return;
+    }
+
+    // 기본 정보 변경 체크 (항상 수정 가능)
+    const basicFieldsChanged =
+      formData.title !== originalData.title ||
+      formData.description !== originalData.description ||
+      (formData.usage_guide || '') !== (originalData.usage_guide || '');
+
+    if (basicFieldsChanged) {
+      setHasChanges(true);
+      return;
+    }
+
+    // 참여자가 없을 때만 다른 필드 체크
+    if (!hasParticipants) {
+      // 카테고리 변경
+      const categoryChanged = selectedCategory !== (originalData.categories?.[0] || '');
+      if (categoryChanged) {
+        setHasChanges(true);
+        return;
+      }
+
+      // 가격 정보 변경
+      const priceChanged =
+        formData.pricing_type !== originalData.pricing_type ||
+        formData.product_name !== (originalData.products?.[0]?.name || originalData.product_name || '') ||
+        formData.original_price !== (originalData.products?.[0]?.original_price?.toLocaleString() || originalData.original_price?.toLocaleString() || '') ||
+        formData.discount_rate !== (originalData.products?.[0]?.discount_rate || originalData.discount_rate || '').toString() ||
+        formData.allow_partial_sale !== originalData.allow_partial_sale;
+
+      if (priceChanged) {
+        setHasChanges(true);
+        return;
+      }
+
+      // 온라인 공구 설정 변경
+      if (formData.type === 'online') {
+        const onlineChanged =
+          formData.online_discount_type !== originalData.online_discount_type ||
+          formData.discount_url !== (originalData.discount_url || '') ||
+          formData.discount_valid_days !== (originalData.discount_valid_days?.toString() || '') ||
+          formData.phone_number !== (originalData.phone_number || '');
+
+        if (onlineChanged) {
+          setHasChanges(true);
+          return;
+        }
+      }
+
+      // 오프라인 공구 설정 변경
+      if (formData.type === 'offline') {
+        const offlineChanged =
+          formData.location !== (originalData.location || '') ||
+          formData.location_detail !== (originalData.location_detail || '') ||
+          formData.phone_number !== (originalData.phone_number || '') ||
+          formData.offline_discount_valid_days !== (originalData.discount_valid_days?.toString() || '7');
+
+        if (offlineChanged) {
+          setHasChanges(true);
+          return;
+        }
+
+        // 지역 변경 체크
+        const originalRegionCodes = originalData.regions?.map((r: any) => r.code).sort() || [];
+        const currentRegionCodes = selectedRegions.map(r => r.city).sort();
+        const regionsChanged = JSON.stringify(originalRegionCodes) !== JSON.stringify(currentRegionCodes);
+
+        if (regionsChanged) {
+          setHasChanges(true);
+          return;
+        }
+      }
+    }
+
+    // 변경사항 없음
+    setHasChanges(false);
+  }, [
+    originalData,
+    imagesModified,
+    formData,
+    selectedCategory,
+    selectedRegions,
+    discountCodes,
+    hasParticipants
+  ]);
 
   // 이미지 업로드 핸들러 (중고거래 로직 복사)
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
@@ -1168,8 +1263,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           <Button
             type="submit"
             size="lg"
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            disabled={submitting}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-400 disabled:cursor-not-allowed"
+            disabled={submitting || !hasChanges}
+            title={!hasChanges ? '변경사항이 없습니다' : ''}
           >
             {submitting ? '수정 중...' : '수정하기'}
           </Button>
