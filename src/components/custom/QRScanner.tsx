@@ -38,6 +38,7 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
               fps: 10,
               qrbox: { width: 250, height: 250 },
               aspectRatio: 1.0,
+              facingMode: "environment", // 후방 카메라 우선
             },
             false // verbose를 false로 설정
           );
@@ -81,21 +82,54 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
             const qrReaderElement = document.getElementById('qr-reader');
             if (!qrReaderElement) return;
 
-            // 파일 선택 버튼 한글화
+            // 파일 선택 버튼 한글화 (숨김 처리)
             const fileButton = qrReaderElement.querySelector('#html5-qrcode-button-file-selection') as HTMLElement;
-            if (fileButton && !fileButton.textContent?.includes('파일')) {
-              fileButton.textContent = '파일에서 선택';
+            if (fileButton) {
+              fileButton.style.display = 'none';
             }
 
-            // 카메라 시작/중지 버튼 한글화
+            // 권한 요청 버튼 한글화 (중앙 정렬)
+            const permissionButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-permission') as HTMLElement;
+            if (permissionButton && !permissionButton.textContent?.includes('허용')) {
+              permissionButton.textContent = '카메라 허용';
+              permissionButton.style.display = 'block';
+              permissionButton.style.margin = '20px auto';
+              permissionButton.style.padding = '12px 24px';
+              permissionButton.style.fontSize = '16px';
+            }
+
+            // 카메라 시작 버튼 한글화 (중앙 정렬)
             const cameraStartButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-start') as HTMLElement;
-            if (cameraStartButton && !cameraStartButton.textContent?.includes('카메라')) {
-              cameraStartButton.textContent = '카메라 시작';
+            if (cameraStartButton) {
+              if (!cameraStartButton.textContent?.includes('스캔')) {
+                cameraStartButton.textContent = '스캔하기';
+                cameraStartButton.style.display = 'block';
+                cameraStartButton.style.margin = '20px auto';
+                cameraStartButton.style.padding = '12px 24px';
+                cameraStartButton.style.fontSize = '16px';
+              }
+              // 권한 허용 후 권한 요청 메시지 숨기기
+              const permissionSection = qrReaderElement.querySelector('#html5-qrcode-button-camera-permission');
+              if (permissionSection?.parentElement) {
+                permissionSection.parentElement.style.display = 'none';
+              }
             }
 
+            // 카메라 중지 버튼 한글화
             const cameraStopButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-stop') as HTMLElement;
             if (cameraStopButton && !cameraStopButton.textContent?.includes('중지')) {
-              cameraStopButton.textContent = '카메라 중지';
+              cameraStopButton.textContent = '스캔 중지';
+              cameraStopButton.style.display = 'block';
+              cameraStopButton.style.margin = '10px auto';
+            }
+
+            // 카메라 선택 드롭다운 숨기기 (후방 카메라 고정)
+            const cameraSelect = qrReaderElement.querySelector('select') as HTMLSelectElement;
+            if (cameraSelect) {
+              const selectContainer = cameraSelect.parentElement;
+              if (selectContainer) {
+                selectContainer.style.display = 'none';
+              }
             }
 
             // 모든 span 텍스트 한글화
@@ -103,9 +137,6 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
             selectTexts.forEach(span => {
               const text = span.textContent || '';
 
-              if (text.includes('Select Camera') && !text.includes('카메라')) {
-                span.textContent = '카메라 선택';
-              }
               if (text.includes('Choose Image') && !text.includes('이미지')) {
                 span.textContent = '이미지 선택';
               }
@@ -119,8 +150,12 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
               if (text.includes('Scanning')) {
                 span.textContent = '스캔 중...';
               }
-              if (text.includes('Request Camera Permissions')) {
-                span.textContent = '카메라 권한을 요청하세요';
+              if (text.includes('Request Camera Permissions') && !text.includes('카메라')) {
+                span.textContent = '카메라 권한 요청';
+                span.style.textAlign = 'center';
+                span.style.display = 'block';
+                span.style.marginTop = '10px';
+                span.style.fontSize = '14px';
               }
             });
           };
