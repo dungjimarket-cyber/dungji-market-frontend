@@ -347,15 +347,15 @@ export default function CustomDealDetailPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.back()}
-            className="flex items-center gap-2"
+            onClick={() => router.push('/custom-deals')}
+            className="flex items-center gap-1.5 text-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span>목록으로</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>목록</span>
           </Button>
           <div className="flex items-center gap-2">
             {user && deal.seller === parseInt(user.id) && (
@@ -453,37 +453,37 @@ export default function CustomDealDetailPage() {
                 </Badge>
                 {getStatusBadge()}
               </div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-3">{deal.title}</h1>
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">{deal.title}</h1>
 
               {/* Location (offline only) */}
               {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
-                <div className="flex items-center gap-2 text-slate-600 mb-3">
-                  <MapPin className="w-5 h-5" />
+                <div className="flex items-center gap-1.5 text-sm text-slate-600 mb-2">
+                  <MapPin className="w-4 h-4" />
                   <span>{deal.regions.map(r => r.full_name).join(', ')}</span>
                 </div>
               )}
 
               {/* Seller Info */}
-              <div className="flex items-center gap-2 text-slate-600">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
                 <span>{deal.seller_name}</span>
                 {deal.is_business_verified && (
-                  <Badge variant="outline" className="text-xs">사업자 인증</Badge>
+                  <Badge variant="outline" className="text-[11px] py-0 px-1.5">사업자 인증</Badge>
                 )}
               </div>
             </div>
 
             {/* Price */}
             <Card className="border-slate-200">
-              <CardContent className="p-6">
-                <div className="flex items-baseline gap-3 mb-2">
-                  <span className="text-xl text-slate-500 line-through">
+              <CardContent className="p-5">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-base text-slate-500 line-through">
                     {deal.original_price.toLocaleString()}원
                   </span>
-                  <span className="text-3xl font-bold text-red-600">
+                  <span className="text-2xl font-bold text-red-600">
                     {deal.discount_rate}%
                   </span>
                 </div>
-                <div className="text-4xl font-bold text-slate-900">
+                <div className="text-3xl font-bold text-slate-900">
                   {typeof deal.final_price === 'object' && deal.final_price !== null
                     ? ((deal.final_price as any).min || 0).toLocaleString()
                     : (deal.final_price || 0).toLocaleString()}원
@@ -493,16 +493,16 @@ export default function CustomDealDetailPage() {
 
             {/* Progress */}
             <Card className="border-slate-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Users className="w-5 h-5" />
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5 text-slate-700 text-sm">
+                    <Users className="w-4 h-4" />
                     <span className="font-semibold">
                       {deal.current_participants}명 / {deal.target_participants}명
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Clock className="w-5 h-5" />
+                  <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                    <Clock className="w-4 h-4" />
                     <CountdownTimer
                       endTime={deal.expired_at}
                       onExpire={() => setIsExpired(true)}
@@ -512,13 +512,13 @@ export default function CustomDealDetailPage() {
                     />
                   </div>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-3">
+                <div className="w-full bg-slate-200 rounded-full h-2.5">
                   <div
-                    className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
+                <p className="text-xs text-slate-500 mt-1.5">
                   {Math.round(progress)}% 달성
                 </p>
               </CardContent>
@@ -565,10 +565,10 @@ export default function CustomDealDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Description */}
             <Card className="border-slate-200">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-bold text-slate-900 mb-4">상품 설명</h2>
-                <div className="prose prose-slate max-w-none">
-                  <div className="text-slate-700" dangerouslySetInnerHTML={{ __html: deal.description }} />
+              <CardContent className="p-5">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
+                <div className="prose prose-slate prose-sm max-w-none">
+                  <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: deal.description }} />
                 </div>
               </CardContent>
             </Card>
@@ -576,10 +576,10 @@ export default function CustomDealDetailPage() {
             {/* Usage Guide */}
             {deal.usage_guide && (
               <Card className="border-slate-200">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">이용 안내</h2>
-                  <div className="prose prose-slate max-w-none">
-                    <p className="whitespace-pre-wrap text-slate-700">{deal.usage_guide}</p>
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-bold text-slate-900 mb-3">이용 안내</h2>
+                  <div className="prose prose-slate prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">{deal.usage_guide}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -588,22 +588,22 @@ export default function CustomDealDetailPage() {
             {/* Offline Details */}
             {deal.type === 'offline' && (
               <Card className="border-slate-200">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">매장 정보</h2>
-                  <div className="space-y-3">
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-bold text-slate-900 mb-3">매장 정보</h2>
+                  <div className="space-y-2.5">
                     {deal.location && (
-                      <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex items-start gap-2.5">
+                        <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="font-medium text-slate-900">{deal.location}</p>
+                          <p className="font-medium text-slate-900 text-sm">{deal.location}</p>
                           {deal.location_detail && (
-                            <p className="text-sm text-slate-600">{deal.location_detail}</p>
+                            <p className="text-xs text-slate-600">{deal.location_detail}</p>
                           )}
                         </div>
                       </div>
                     )}
                     {deal.phone_number && (
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5 text-sm">
                         <span className="text-slate-400">📞</span>
                         <a
                           href={`tel:${deal.phone_number}`}
@@ -614,8 +614,8 @@ export default function CustomDealDetailPage() {
                       </div>
                     )}
                     {deal.discount_valid_days && (
-                      <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-slate-400" />
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <Calendar className="w-4 h-4 text-slate-400" />
                         <span className="text-slate-700">
                           할인 유효기간: {deal.discount_valid_days}일
                         </span>
@@ -629,18 +629,19 @@ export default function CustomDealDetailPage() {
             {/* Online Details */}
             {deal.type === 'online' && (
               <Card className="border-slate-200">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">할인 정보</h2>
-                  <div className="space-y-3">
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
+                  <div className="space-y-2.5">
                     {deal.online_discount_type_display && (
-                      <div className="flex items-center gap-3">
-                        <Tag className="w-5 h-5 text-slate-400" />
+                      <div className="flex items-center gap-2.5 text-sm">
+                        <Tag className="w-4 h-4 text-slate-400" />
                         <span className="text-slate-700">{deal.online_discount_type_display}</span>
                       </div>
                     )}
                     {deal.discount_url && (
                       <Button
                         variant="outline"
+                        size="sm"
                         className="w-full"
                         onClick={() => window.open(deal.discount_url!, '_blank')}
                       >
@@ -648,7 +649,7 @@ export default function CustomDealDetailPage() {
                       </Button>
                     )}
                     {deal.phone_number && (
-                      <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
+                      <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200 text-sm">
                         <span className="text-slate-400">📞</span>
                         <a
                           href={`tel:${deal.phone_number}`}
@@ -665,14 +666,14 @@ export default function CustomDealDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Categories */}
             <Card className="border-slate-200">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-slate-900 mb-3">카테고리</h3>
-                <div className="flex flex-wrap gap-2">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-slate-900 mb-2 text-sm">카테고리</h3>
+                <div className="flex flex-wrap gap-1.5">
                   {deal.categories.map((category) => (
-                    <Badge key={category} variant="secondary">
+                    <Badge key={category} variant="secondary" className="text-xs">
                       {category}
                     </Badge>
                   ))}
@@ -682,9 +683,9 @@ export default function CustomDealDetailPage() {
 
             {/* Stats */}
             <Card className="border-slate-200">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-slate-900 mb-3">통계</h3>
-                <div className="space-y-2 text-sm">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-slate-900 mb-2 text-sm">통계</h3>
+                <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-600">조회수</span>
                     <span className="font-medium text-slate-900">{deal.view_count}</span>

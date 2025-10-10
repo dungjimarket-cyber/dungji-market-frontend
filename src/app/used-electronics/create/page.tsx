@@ -1053,7 +1053,7 @@ export default function ElectronicsCreatePage() {
               <p className="text-sm text-red-500 mt-1">{errors.price}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              가격은 천원 단위로 입력 가능합니다 (최대 1억원)
+              가격은 천원 단위로 입력 가능합니다
             </p>
 
             {/* 가격 제안은 항상 받음 (토글 제거) */}
@@ -1110,7 +1110,7 @@ export default function ElectronicsCreatePage() {
                   <p className="text-sm text-red-500 mt-1">{errors.min_offer_price}</p>
                 )}
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 1억원, 판매가보다 낮게)
+                  가격은 천원 단위로 입력 가능합니다 (판매가보다 낮게)
                 </p>
             </div>
 

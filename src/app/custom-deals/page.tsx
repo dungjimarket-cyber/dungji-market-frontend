@@ -138,56 +138,55 @@ export default function CustomDealsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">커스텀 공구</h1>
-              <p className="text-slate-600">원하는 만큼 모여서, 함께 할인받아요</p>
+              <h1 className="text-2xl font-bold text-slate-900 mb-1">커스텀 공구</h1>
+              <p className="text-sm text-slate-600">원하는 만큼 모여서, 함께 할인받아요</p>
             </div>
             <div className="flex gap-2">
               <Button
-                size="lg"
+                size="sm"
                 variant="outline"
                 onClick={() => router.push('/custom-deals/my')}
-                className="shadow-md"
               >
                 내 공구 관리
               </Button>
               <Button
-                size="lg"
+                size="sm"
                 onClick={() => router.push('/custom-deals/create')}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="w-4 h-4 mr-1.5" />
                 공구 등록
               </Button>
             </div>
           </div>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="찾고 계신 공구를 검색해보세요"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <Button type="submit" size="lg" variant="outline">
+            <Button type="submit" size="sm" variant="outline">
               검색
             </Button>
           </form>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {/* Type Filter */}
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedType('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'all'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
@@ -197,7 +196,7 @@ export default function CustomDealsPage() {
               </button>
               <button
                 onClick={() => setSelectedType('online')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'online'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
@@ -207,7 +206,7 @@ export default function CustomDealsPage() {
               </button>
               <button
                 onClick={() => setSelectedType('offline')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'offline'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
@@ -221,7 +220,7 @@ export default function CustomDealsPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">모든 카테고리</option>
               {categories.map((cat) => (
@@ -253,7 +252,7 @@ export default function CustomDealsPage() {
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden">
                   {/* Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200">
+                  <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200">
                     {deal.primary_image ? (
                       <img
                         src={deal.primary_image}
@@ -262,31 +261,31 @@ export default function CustomDealsPage() {
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
-                        <Tag className="w-16 h-16 text-slate-300" />
+                        <Tag className="w-12 h-12 text-slate-300" />
                       </div>
                     )}
                     {/* Status Badge */}
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-2 right-2">
                       {getStatusBadge(deal)}
                     </div>
                     {/* Type Badge */}
-                    <div className="absolute top-3 left-3">
-                      <Badge className="bg-white/90 text-slate-700 border-0 whitespace-nowrap">
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-white/90 text-slate-700 border-0 whitespace-nowrap text-xs">
                         {deal.type_display}
                       </Badge>
                     </div>
                   </div>
 
-                  <CardContent className="p-5">
+                  <CardContent className="p-4">
                     {/* Title */}
-                    <h3 className="font-bold text-lg text-slate-900 mb-2 line-clamp-2">
+                    <h3 className="font-bold text-base text-slate-900 mb-1.5 line-clamp-2">
                       {deal.title}
                     </h3>
 
                     {/* Location (offline only) */}
                     {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
-                      <div className="flex items-center gap-1 text-sm text-slate-600 mb-3">
-                        <MapPin className="w-4 h-4" />
+                      <div className="flex items-center gap-1 text-xs text-slate-600 mb-2">
+                        <MapPin className="w-3 h-3" />
                         <span className="line-clamp-1">
                           {deal.regions.map(r => r.name).join(', ')}
                         </span>
@@ -294,43 +293,43 @@ export default function CustomDealsPage() {
                     )}
 
                     {/* Price */}
-                    <div className="mb-4">
+                    <div className="mb-3">
                       {deal.original_price && deal.final_price ? (
                         <>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-sm text-slate-500 line-through">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-xs text-slate-500 line-through">
                               {deal.original_price.toLocaleString()}원
                             </span>
-                            <span className="text-lg font-bold text-red-600">
+                            <span className="text-base font-bold text-red-600">
                               {deal.discount_rate}%
                             </span>
                           </div>
-                          <div className="text-2xl font-bold text-slate-900">
+                          <div className="text-xl font-bold text-slate-900">
                             {deal.final_price.toLocaleString()}원
                           </div>
                         </>
                       ) : (
-                        <div className="text-xl font-bold text-blue-600">
+                        <div className="text-lg font-bold text-blue-600">
                           전품목 {deal.discount_rate}% 할인
                         </div>
                       )}
                     </div>
 
                     {/* Progress */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm mb-2">
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-slate-600 flex items-center gap-1">
-                          <Users className="w-4 h-4" />
+                          <Users className="w-3 h-3" />
                           {deal.current_participants}/{deal.target_participants}명
                         </span>
                         <span className="text-slate-500 flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
+                          <Clock className="w-3 h-3" />
                           {getRemainingTime(deal.expired_at)}
                         </span>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="w-full bg-slate-200 rounded-full h-1.5">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                           style={{
                             width: `${Math.min(
                               (deal.current_participants / deal.target_participants) * 100,
@@ -342,11 +341,11 @@ export default function CustomDealsPage() {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                      <span className="text-sm text-slate-600">{deal.seller_name}</span>
-                      <div className="flex items-center gap-3 text-sm text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Heart className="w-4 h-4" />
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                      <span className="text-xs text-slate-600">{deal.seller_name}</span>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span className="flex items-center gap-0.5">
+                          <Heart className="w-3 h-3" />
                           {deal.favorite_count}
                         </span>
                       </div>

@@ -1397,7 +1397,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 990만원)
+                  가격은 천원 단위로 입력 가능합니다
                 </p>
                 <p className="text-xs text-green-600 mt-1">
                   별도의 수락 과정 없이 즉시 거래가 진행됩니다
@@ -1453,7 +1453,7 @@ export default function CreateUsedPhonePage() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 990만원, 즉시 판매가보다 낮게)
+                  가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
                 </p>
                 {errors.min_offer_price && (
                   <p className="text-xs text-red-500/70">{errors.min_offer_price}</p>

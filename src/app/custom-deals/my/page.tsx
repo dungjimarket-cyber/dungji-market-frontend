@@ -16,29 +16,30 @@ export default function MyCustomDealsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-2 mb-3">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.back()}
+              onClick={() => router.push('/custom-deals')}
+              className="p-1.5"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-2xl font-bold text-slate-900">내 커스텀 공구</h1>
+            <h1 className="text-lg font-bold text-slate-900">내 커스텀 공구</h1>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="registered">내가 만든 공구</TabsTrigger>
-              <TabsTrigger value="participated">참여한 공구</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-2 h-9">
+              <TabsTrigger value="registered" className="text-sm">내가 만든 공구</TabsTrigger>
+              <TabsTrigger value="participated" className="text-sm">참여한 공구</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsContent value="registered" className="mt-0">
             <MyCustomDeals />

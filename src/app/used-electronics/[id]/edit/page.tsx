@@ -662,7 +662,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   className={errors.price ? 'border-red-300' : ''}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 1억원)
+                  가격은 천원 단위로 입력 가능합니다
                 </p>
                 {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
               </div>
@@ -681,7 +681,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                   className={errors.min_offer_price ? 'border-red-300' : ''}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  가격은 천원 단위로 입력 가능합니다 (최대 1억원, 즉시 판매가보다 낮게)
+                  가격은 천원 단위로 입력 가능합니다 (즉시 판매가보다 낮게)
                 </p>
                 {hasOffers && (
                   <p className="text-amber-600 text-xs mt-1">
