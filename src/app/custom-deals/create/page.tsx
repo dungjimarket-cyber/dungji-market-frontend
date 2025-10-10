@@ -1148,9 +1148,9 @@ export default function CreateCustomDealPage() {
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  모집 마감 시간 (선택)
+                <Label className="flex items-center gap-2 text-blue-700">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  공구 모집 기간
                 </Label>
                 <Button
                   type="button"
@@ -1166,14 +1166,15 @@ export default function CreateCustomDealPage() {
                       handleInputChange('deadline_time', '');
                     }
                   }}
+                  className={useDeadline ? 'bg-blue-600 hover:bg-blue-700' : 'border-blue-300 text-blue-600 hover:bg-blue-50'}
                 >
-                  {useDeadline ? '설정 해제' : '모집기간 설정'}
+                  {useDeadline ? '설정 해제' : '모집기간 수동 설정'}
                 </Button>
               </div>
 
               {!useDeadline && (
-                <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">
-                  모집기간을 설정하지 않으면 <span className="font-medium text-slate-700">등록 시간 기준 7일 후</span> 자동으로 마감 처리됩니다
+                <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  모집기간을 설정하지 않으면 <span className="font-medium text-blue-700">등록 시간 기준 7일 후</span> 자동으로 마감 처리됩니다
                 </p>
               )}
 
@@ -1187,7 +1188,7 @@ export default function CreateCustomDealPage() {
                       className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${
                         formData.deadline_type === 'auto'
                           ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          : 'border-blue-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50'
                       }`}
                     >
                       자동 선택
@@ -1198,7 +1199,7 @@ export default function CreateCustomDealPage() {
                       className={`flex-1 py-2 px-4 rounded-lg border-2 font-medium transition-all ${
                         formData.deadline_type === 'manual'
                           ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          : 'border-blue-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50'
                       }`}
                     >
                       직접 선택
@@ -1208,7 +1209,7 @@ export default function CreateCustomDealPage() {
                   {/* 자동 선택 */}
                   {formData.deadline_type === 'auto' && (
                 <>
-                  <p className="text-sm text-slate-500 mb-2">등록 시간 기준으로 자동 계산됩니다</p>
+                  <p className="text-sm text-blue-600 mb-2">등록 시간 기준으로 자동 계산됩니다</p>
                   <div className="grid grid-cols-7 gap-2">
                     {[1, 2, 3, 4, 5, 6, 7].map((day) => (
                       <button
@@ -1219,7 +1220,7 @@ export default function CreateCustomDealPage() {
                           py-3 px-2 rounded-lg border-2 font-medium transition-all text-center
                           ${formData.deadline_days === day.toString()
                             ? 'border-blue-600 bg-blue-50 text-blue-700'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                            : 'border-blue-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50'
                           }
                         `}
                       >
@@ -1233,7 +1234,7 @@ export default function CreateCustomDealPage() {
                   {/* 직접 선택 */}
                   {formData.deadline_type === 'manual' && (
                 <>
-                  <p className="text-sm text-slate-500 mb-2">최소 1시간 이후 ~ 최대 7일 이내로 설정해주세요</p>
+                  <p className="text-sm text-blue-600 mb-2">최소 1시간 이후 ~ 최대 7일 이내로 설정해주세요</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm text-slate-600">날짜</Label>
