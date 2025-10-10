@@ -1027,6 +1027,20 @@ export default function ElectronicsCreatePage() {
                   if (unformatted) {
                     const rounded = roundToThousand(unformatted);
                     handleInputChange('price', rounded);
+
+                    // 실시간 가격 비교 검증
+                    const minPrice = parseInt(formData.min_offer_price);
+                    if (minPrice && parseInt(rounded) && minPrice >= parseInt(rounded)) {
+                      setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
+                    } else {
+                      // 가격이 정상이면 에러 제거
+                      setErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.price;
+                        delete newErrors.min_offer_price;
+                        return newErrors;
+                      });
+                    }
                   }
                 }}
                 placeholder="즉시 판매가 제안시 바로 거래가 진행됩니다"
@@ -1070,6 +1084,20 @@ export default function ElectronicsCreatePage() {
                       if (unformatted) {
                         const rounded = roundToThousand(unformatted);
                         handleInputChange('min_offer_price', rounded);
+
+                        // 실시간 가격 비교 검증
+                        const price = parseInt(formData.price);
+                        if (price && parseInt(rounded) && parseInt(rounded) >= price) {
+                          setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
+                        } else {
+                          // 가격이 정상이면 에러 제거
+                          setErrors(prev => {
+                            const newErrors = { ...prev };
+                            delete newErrors.price;
+                            delete newErrors.min_offer_price;
+                            return newErrors;
+                          });
+                        }
                       }
                     }}
                     placeholder="최소 제안 가격"

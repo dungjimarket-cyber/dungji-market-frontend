@@ -1378,6 +1378,20 @@ export default function CreateUsedPhonePage() {
                     if (unformatted) {
                       const rounded = roundToThousand(unformatted);
                       handleInputChange('price', rounded.toString());
+
+                      // 실시간 가격 비교 검증
+                      const minPrice = parseInt(formData.min_offer_price);
+                      if (minPrice && rounded && minPrice >= rounded) {
+                        setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
+                      } else {
+                        // 가격이 정상이면 에러 제거
+                        setErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.price;
+                          delete newErrors.min_offer_price;
+                          return newErrors;
+                        });
+                      }
                     }
                   }}
                   required
@@ -1420,6 +1434,20 @@ export default function CreateUsedPhonePage() {
                     if (unformatted) {
                       const rounded = roundToThousand(unformatted);
                       handleInputChange('min_offer_price', rounded.toString());
+
+                      // 실시간 가격 비교 검증
+                      const price = parseInt(formData.price);
+                      if (price && rounded && rounded >= price) {
+                        setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
+                      } else {
+                        // 가격이 정상이면 에러 제거
+                        setErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.price;
+                          delete newErrors.min_offer_price;
+                          return newErrors;
+                        });
+                      }
                     }
                   }}
                   required

@@ -77,6 +77,10 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
   const [selectedRegions, setSelectedRegions] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // 입력 필드 refs
+  const priceRef = useRef<HTMLInputElement>(null);
+  const minOfferPriceRef = useRef<HTMLInputElement>(null);
+
   // 기존 상품 정보 로드
   useEffect(() => {
     if (user !== undefined) {
@@ -201,6 +205,88 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   }, [errors]);
+
+  // 가격 포맷팅
+  const formatCurrency = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers) return '';
+    return parseInt(numbers).toLocaleString();
+  };
+
+  // 천원 단위로 맞추기
+  const roundToThousand = (value: string) => {
+    const num = parseInt(value);
+    if (isNaN(num)) return '0';
+    return Math.round(num / 1000) * 1000;
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'price' | 'min_offer_price') => {
+    if (!isFieldEditable(field)) {
+      toast({
+        title: '수정 불가',
+        description: LOCKED_FIELDS_MESSAGE,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const value = e.target.value.replace(/[^\d]/g, '');
+
+    // 최대 금액 제한 (1억원)
+    if (parseInt(value) > 100000000) {
+      setErrors(prev => ({...prev, [field]: '최대 1억원까지 입력 가능합니다'}));
+      return;
+    } else if (errors[field]?.includes('최대 1억원')) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+
+    setFormData(prev => ({ ...prev, [field]: value }));
+
+    // 입력 시 해당 필드 에러 제거
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+
+    setIsModified(true);
+  };
+
+  const handlePriceBlur = (field: 'price' | 'min_offer_price') => {
+    // 포커스 아웃 시 천원 단위로 자동 조정
+    const value = formData[field];
+    if (value) {
+      const rounded = roundToThousand(value);
+      setFormData(prev => ({ ...prev, [field]: rounded.toString() }));
+
+      // 실시간 가격 비교 검증
+      const price = field === 'price' ? rounded : parseInt(formData.price);
+      const minPrice = field === 'min_offer_price' ? rounded : parseInt(formData.min_offer_price);
+
+      if (price && minPrice && minPrice >= price) {
+        // 제안이 있을 때는 즉시판매가만 수정 가능하므로, 에러를 즉시판매가에 표시
+        if (hasOffers) {
+          setErrors(prev => ({ ...prev, price: '즉시판매가는 최소 제안가보다 높아야 합니다' }));
+        } else {
+          setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
+        }
+      } else {
+        // 가격이 정상이면 에러 제거
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.price;
+          delete newErrors.min_offer_price;
+          return newErrors;
+        });
+      }
+    }
+  };
 
   // 이미지 처리
   const handleImageUpload = useCallback(async (files: FileList) => {
@@ -386,6 +472,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    let firstErrorRef: React.RefObject<any> | null = null;
 
     if (!formData.brand.trim()) newErrors.brand = '브랜드를 입력해주세요';
     if (!formData.model_name.trim()) newErrors.model_name = '모델명을 입력해주세요';
@@ -393,28 +480,41 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     // 가격 검증
     if (!formData.price) {
       newErrors.price = '즉시판매가를 입력해주세요';
+      if (!firstErrorRef) firstErrorRef = priceRef;
     } else {
       const price = parseInt(formData.price);
-      if (price < 1000) {
+      if (price % 1000 !== 0) {
+        newErrors.price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = priceRef;
+      } else if (price < 1000) {
         newErrors.price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
       } else if (price > 100000000) {
         newErrors.price = '최대 판매 금액은 1억원입니다';
+        if (!firstErrorRef) firstErrorRef = priceRef;
       }
     }
 
     // 최소 제안가 검증
     if (formData.min_offer_price) {
       const minPrice = parseInt(formData.min_offer_price);
-      if (minPrice < 1000) {
+      if (minPrice % 1000 !== 0) {
+        newErrors.min_offer_price = '가격은 천원 단위로 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+      } else if (minPrice < 1000) {
         newErrors.min_offer_price = '최소 가격은 1,000원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (minPrice > 100000000) {
         newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
+        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (formData.price && minPrice >= parseInt(formData.price)) {
         // 제안이 있을 때는 즉시판매가만 수정 가능하므로, 에러를 즉시판매가에 표시
         if (hasOffers) {
           newErrors.price = '즉시판매가는 최소 제안가보다 높아야 합니다';
+          if (!firstErrorRef) firstErrorRef = priceRef;
         } else {
           newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+          if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
         }
       }
     }
@@ -424,6 +524,18 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     if (images.length === 0) newErrors.images = '이미지를 1장 이상 업로드해주세요';
 
     setErrors(newErrors);
+
+    // 첫 번째 에러 필드로 포커스 및 스크롤
+    if (Object.keys(newErrors).length > 0 && firstErrorRef?.current) {
+      if ('focus' in firstErrorRef.current) {
+        firstErrorRef.current.focus();
+      }
+      firstErrorRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -540,28 +652,43 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
               <div>
                 <Label htmlFor="price">즉시판매가 *</Label>
                 <Input
+                  ref={priceRef}
                   id="price"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value.replace(/[^\d]/g, ''))}
+                  type="text"
+                  value={formatCurrency(formData.price)}
+                  onChange={(e) => handlePriceChange(e, 'price')}
+                  onBlur={() => handlePriceBlur('price')}
                   placeholder="0"
+                  className={errors.price ? 'border-red-300' : ''}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  가격은 천원 단위로 입력 가능합니다 (최대 1억원)
+                </p>
                 {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
               </div>
 
               <div>
                 <Label htmlFor="min_offer_price">최소 제안가</Label>
                 <Input
+                  ref={minOfferPriceRef}
                   id="min_offer_price"
-                  value={formData.min_offer_price}
-                  onChange={(e) => handleInputChange('min_offer_price', e.target.value.replace(/[^\d]/g, ''))}
+                  type="text"
+                  value={formatCurrency(formData.min_offer_price)}
+                  onChange={(e) => handlePriceChange(e, 'min_offer_price')}
+                  onBlur={() => handlePriceBlur('min_offer_price')}
                   placeholder="0"
                   disabled={hasOffers}
+                  className={errors.min_offer_price ? 'border-red-300' : ''}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  가격은 천원 단위로 입력 가능합니다 (최대 1억원, 즉시 판매가보다 낮게)
+                </p>
                 {hasOffers && (
                   <p className="text-amber-600 text-xs mt-1">
                     제안을 받은 후에는 최소 제안가를 수정할 수 없습니다
                   </p>
                 )}
+                {errors.min_offer_price && <p className="text-red-500 text-sm mt-1">{errors.min_offer_price}</p>}
               </div>
             </div>
           </div>

@@ -294,6 +294,27 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
     if (value) {
       const rounded = roundToThousand(value);
       setFormData(prev => ({ ...prev, [field]: rounded.toString() }));
+
+      // 실시간 가격 비교 검증
+      const price = field === 'price' ? rounded : parseInt(formData.price);
+      const minPrice = field === 'min_offer_price' ? rounded : parseInt(formData.min_offer_price);
+
+      if (price && minPrice && minPrice >= price) {
+        // 제안이 있을 때는 즉시판매가만 수정 가능하므로, 에러를 즉시판매가에 표시
+        if (hasOffers) {
+          setErrors(prev => ({ ...prev, price: '즉시판매가는 최소 제안가보다 높아야 합니다' }));
+        } else {
+          setErrors(prev => ({ ...prev, min_offer_price: '최소 제안가는 즉시 판매가보다 낮아야 합니다' }));
+        }
+      } else {
+        // 가격이 정상이면 에러 제거
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.price;
+          delete newErrors.min_offer_price;
+          return newErrors;
+        });
+      }
     }
   };
 
