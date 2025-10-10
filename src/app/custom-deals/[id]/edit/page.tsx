@@ -81,11 +81,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     allow_partial_sale: false,
     online_discount_type: 'link_only' as 'link_only' | 'code_only' | 'both',
     discount_url: '',
-    discount_valid_days: '',
+    discount_valid_days: '1',
     location: '',
     location_detail: '',
     phone_number: '',
-    offline_discount_valid_days: '7',
+    offline_discount_valid_days: '1',
   });
 
   // 기존 데이터 로드
@@ -144,11 +144,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         allow_partial_sale: data.allow_partial_sale || false,
         online_discount_type: data.online_discount_type || 'link_only',
         discount_url: data.discount_url || '',
-        discount_valid_days: data.discount_valid_days?.toString() || '',
+        discount_valid_days: data.discount_valid_days?.toString() || '1',
         location: data.location || '',
         location_detail: data.location_detail || '',
         phone_number: data.phone_number || '',
-        offline_discount_valid_days: data.discount_valid_days?.toString() || '7',
+        offline_discount_valid_days: data.discount_valid_days?.toString() || '1',
       });
 
       // 카테고리
@@ -218,8 +218,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     // 할인 정보 변경 체크 (항상 수정 가능)
     const discountInfoChanged =
       formData.discount_url !== (originalData.discount_url || '') ||
-      formData.discount_valid_days !== (originalData.discount_valid_days?.toString() || '') ||
-      formData.offline_discount_valid_days !== (originalData.discount_valid_days?.toString() || '7') ||
+      formData.discount_valid_days !== (originalData.discount_valid_days?.toString() || '1') ||
+      formData.offline_discount_valid_days !== (originalData.discount_valid_days?.toString() || '1') ||
       JSON.stringify(discountCodes) !== JSON.stringify(originalData.discount_codes || ['']);
 
     if (discountInfoChanged) {
@@ -913,24 +913,26 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 )}
 
                 <div>
-                  <Label>할인 유효기간 (선택)</Label>
+                  <Label>할인 유효기간 *</Label>
                   <Select
-                    value={formData.discount_valid_days || 'none'}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, discount_valid_days: value === 'none' ? '' : value }))}
+                    value={formData.discount_valid_days || '1'}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, discount_valid_days: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="선택 안함" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">선택 안함</SelectItem>
+                      <SelectItem value="1">1일</SelectItem>
                       <SelectItem value="3">3일</SelectItem>
                       <SelectItem value="7">7일</SelectItem>
                       <SelectItem value="14">14일</SelectItem>
                       <SelectItem value="30">30일</SelectItem>
                       <SelectItem value="60">60일</SelectItem>
-                      <SelectItem value="90">90일</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-sm text-slate-500 mt-1">
+                    공구 마감 후 자동으로 할인 유효기간이 시작됩니다
+                  </p>
                 </div>
               </>
             )}
@@ -987,23 +989,23 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div>
                   <Label>할인 유효기간 *</Label>
                   <Select
-                    value={formData.offline_discount_valid_days}
+                    value={formData.offline_discount_valid_days || '1'}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, offline_discount_valid_days: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="1">1일</SelectItem>
                       <SelectItem value="3">3일</SelectItem>
                       <SelectItem value="7">7일</SelectItem>
                       <SelectItem value="14">14일</SelectItem>
                       <SelectItem value="30">30일</SelectItem>
                       <SelectItem value="60">60일</SelectItem>
-                      <SelectItem value="90">90일</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-slate-500 mt-1">
-                    할인코드는 발급일로부터 선택하신 기간 동안 사용 가능합니다.
+                    공구 마감 후 자동으로 할인 유효기간이 시작됩니다
                   </p>
                 </div>
               </>

@@ -118,12 +118,9 @@ export default function ParticipantsManagePage() {
 
   const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
     try {
-      // 1단계: 스캔 데이터 확인
-      alert(`[1단계] QR 스캔 시작\n\n할인코드: ${data.discountCode}\n공구ID: ${data.groupbuyId}`);
-
       const token = localStorage.getItem('accessToken');
 
-      // 2단계: 할인코드 검증
+      // 할인코드 검증
       const verifyResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/verify_discount/`,
         {
@@ -139,41 +136,30 @@ export default function ParticipantsManagePage() {
         }
       );
 
-      alert(`[2단계] 검증 API 응답\n\n상태코드: ${verifyResponse.status}\n${verifyResponse.ok ? '성공' : '실패'}`);
-
       const verifyResult = await verifyResponse.json();
 
       if (!verifyResult.valid) {
-        alert(`[검증 실패]\n\n${verifyResult.error || '유효하지 않은 할인코드입니다'}`);
         toast.error(verifyResult.error || '유효하지 않은 할인코드입니다');
         return;
       }
 
-      alert(`[3단계] 검증 성공\n\n사용자: ${verifyResult.user_name}\n할인코드: ${data.discountCode}`);
-
-      // 4단계: 참여자 찾기
+      // 참여자 찾기
       const participant = participants.find(p => p.discount_code === data.discountCode);
 
       if (!participant) {
-        const codes = participants.map(p => p.discount_code).join(', ');
-        alert(`[참여자 찾기 실패]\n\n찾는 코드: ${data.discountCode}\n\n현재 참여자 코드들:\n${codes || '없음'}`);
         toast.error('참여자 정보를 찾을 수 없습니다');
         return;
       }
 
-      alert(`[4단계] 참여자 발견\n\nID: ${participant.id}\n이름: ${participant.user_name}\n현재 사용상태: ${participant.discount_used ? '사용완료' : '미사용'}`);
-
       // 이미 사용된 경우 체크
       if (participant.discount_used) {
-        alert(`[이미 사용됨]\n\n${verifyResult.user_name}님은 이미 사용 처리되었습니다`);
         toast.warning(`${verifyResult.user_name}님은 이미 사용 처리되었습니다`);
         setShowQRScanner(false);
         return;
       }
 
-      // 5단계: 사용 처리 API 호출
+      // 사용 처리 API 호출
       const toggleUrl = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/${participant.id}/toggle-used/`;
-      alert(`[5단계] 사용 처리 API 호출\n\nURL: ${toggleUrl}\n참여자ID: ${participant.id}`);
 
       const toggleResponse = await fetch(toggleUrl, {
         method: 'POST',
@@ -182,16 +168,11 @@ export default function ParticipantsManagePage() {
         }
       });
 
-      alert(`[6단계] 사용 처리 응답\n\n상태코드: ${toggleResponse.status}\n${toggleResponse.ok ? '성공' : '실패'}`);
-
       if (!toggleResponse.ok) {
-        const errorText = await toggleResponse.text();
-        alert(`[사용 처리 실패]\n\n상태: ${toggleResponse.status}\n응답: ${errorText.substring(0, 200)}`);
         throw new Error(`사용 처리 실패: ${toggleResponse.status}`);
       }
 
       const toggleResult = await toggleResponse.json();
-      alert(`[7단계] 사용 처리 완료\n\n${verifyResult.user_name}님\n할인코드 사용 처리 성공!`);
 
       // 성공
       toast.success(`✅ ${verifyResult.user_name}님 할인코드 사용 처리 완료!`);
@@ -199,9 +180,7 @@ export default function ParticipantsManagePage() {
 
       // 참여자 목록 리프레시
       await fetchData();
-      alert('[8단계] 전체 프로세스 완료\n\n참여자 목록이 새로고침되었습니다');
     } catch (error) {
-      alert(`[오류 발생]\n\n${error instanceof Error ? error.message : '알 수 없는 오류'}\n\n상세: ${JSON.stringify(error)}`);
       toast.error(`QR 인증에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };

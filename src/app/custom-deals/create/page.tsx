@@ -105,12 +105,12 @@ export default function CreateCustomDealPage() {
     // 온라인
     online_discount_type: 'link_only' as 'link_only' | 'code_only' | 'both',
     discount_url: '',
-    discount_valid_days: '',
+    discount_valid_days: '1',
     // 오프라인
     location: '',
     location_detail: '',
     phone_number: '',
-    offline_discount_valid_days: '7',
+    offline_discount_valid_days: '1',
   });
 
   // 최종 가격 계산 (단일상품만)
@@ -1394,21 +1394,23 @@ export default function CreateCustomDealPage() {
               )}
 
               <div>
-                <Label>할인 유효기간 (선택)</Label>
-                <Select value={formData.discount_valid_days || 'none'} onValueChange={(value) => handleInputChange('discount_valid_days', value === 'none' ? '' : value)}>
+                <Label>할인 유효기간 *</Label>
+                <Select value={formData.discount_valid_days || '1'} onValueChange={(value) => handleInputChange('discount_valid_days', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="선택 안함" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">선택 안함</SelectItem>
+                    <SelectItem value="1">1일</SelectItem>
                     <SelectItem value="3">3일</SelectItem>
                     <SelectItem value="7">7일</SelectItem>
                     <SelectItem value="14">14일</SelectItem>
                     <SelectItem value="30">30일</SelectItem>
                     <SelectItem value="60">60일</SelectItem>
-                    <SelectItem value="90">90일</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-sm text-slate-500 mt-1">
+                  공구 마감 후 자동으로 할인 유효기간이 시작됩니다
+                </p>
               </div>
 
               <div>
@@ -1565,21 +1567,21 @@ export default function CreateCustomDealPage() {
 
                 <div>
                   <Label>할인 유효기간 *</Label>
-                  <Select value={formData.offline_discount_valid_days} onValueChange={(value) => handleInputChange('offline_discount_valid_days', value)}>
+                  <Select value={formData.offline_discount_valid_days || '1'} onValueChange={(value) => handleInputChange('offline_discount_valid_days', value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="1">1일</SelectItem>
                       <SelectItem value="3">3일</SelectItem>
                       <SelectItem value="7">7일</SelectItem>
                       <SelectItem value="14">14일</SelectItem>
                       <SelectItem value="30">30일</SelectItem>
                       <SelectItem value="60">60일</SelectItem>
-                      <SelectItem value="90">90일</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-slate-500 mt-1">
-                    할인코드는 발급일로부터 선택하신 기간 동안 사용 가능합니다.
+                    공구 마감 후 자동으로 할인 유효기간이 시작됩니다
                   </p>
                 </div>
               </CardContent>
