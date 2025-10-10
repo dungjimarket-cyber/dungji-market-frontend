@@ -10,6 +10,7 @@ import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroup
 import WaitingSellerDecisionGroupBuys from '@/components/mypage/WaitingSellerDecisionGroupBuys';
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
 import CancelledGroupBuys from '@/components/mypage/CancelledGroupBuys';
+import MyCustomParticipations from '@/components/mypage/custom/MyCustomParticipations';
 import { ConsentNotification } from '@/components/notification/ConsentNotification';
 import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import {
@@ -18,7 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X, Smartphone } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X, Smartphone, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ export default function MyPageClient() {
   const [purchaseInProgressCount, setPurchaseInProgressCount] = useState(0);
   const [completedGroupBuysCount, setCompletedGroupBuysCount] = useState(0);
   const [cancelledGroupBuysCount, setCancelledGroupBuysCount] = useState(0);
+  const [customParticipationsCount, setCustomParticipationsCount] = useState(0);
 
 
   // 참여중인 공구 개수 가져오기
@@ -172,7 +174,7 @@ export default function MyPageClient() {
     // 취소된 공구 개수 가져오기
     const fetchCancelledGroupBuysCount = async () => {
       if (!isAuthenticated || !accessToken) return;
-      
+
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/cancelled_groupbuys/`, {
           method: 'GET',
@@ -182,7 +184,7 @@ export default function MyPageClient() {
           },
           cache: 'no-store'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           setCancelledGroupBuysCount(data.length);
@@ -192,7 +194,32 @@ export default function MyPageClient() {
         setCancelledGroupBuysCount(0);
       }
     };
-    
+
+    // 커스텀 공구 참여내역 개수 가져오기
+    const fetchCustomParticipationsCount = async () => {
+      if (!isAuthenticated || !accessToken) return;
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-participants/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          cache: 'no-store'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const participations = Array.isArray(data) ? data : data.results || [];
+          setCustomParticipationsCount(participations.length);
+        }
+      } catch (error) {
+        console.error('커스텀 공구 참여내역 개수 조회 오류:', error);
+        setCustomParticipationsCount(0);
+      }
+    };
+
     if (isAuthenticated && accessToken) {
       // 모든 API 호출을 병렬로 실행하여 로딩 시간 단축
       Promise.all([
@@ -201,7 +228,8 @@ export default function MyPageClient() {
         fetchWaitingSellerCount(),
         fetchCompletedGroupBuysCount(),
         fetchPurchaseInProgressCount(),
-        fetchCancelledGroupBuysCount()
+        fetchCancelledGroupBuysCount(),
+        fetchCustomParticipationsCount()
       ]).catch(error => {
         console.error('마이페이지 데이터 로딩 오류:', error);
       });
@@ -470,6 +498,33 @@ export default function MyPageClient() {
               </AccordionTrigger>
               <AccordionContent className="pt-4">
                 <CancelledGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 커스텀 특가 참여내역 */}
+            <AccordionItem value="custom-participations">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Sparkles className="w-4 h-4 mr-2 text-purple-500" />
+                    <span className="text-sm font-medium">커스텀 특가 참여내역</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {customParticipationsCount > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
+                        {customParticipationsCount}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {customParticipationsCount}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <MyCustomParticipations />
               </AccordionContent>
             </AccordionItem>
 
