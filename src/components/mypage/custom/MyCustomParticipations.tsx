@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 interface CustomParticipation {
   id: number;
-  custom_groupbuy: {
+  custom_groupbuy: number | {  // 백엔드 배포 타이밍 차이 대응: ID 또는 객체
     id: number;
     title: string;
     type: 'online' | 'offline';
@@ -90,8 +90,14 @@ export default function MyCustomParticipations() {
     }
   };
 
-  const handleCancelParticipation = async (participationId: number, groupbuyId: number) => {
+  const handleCancelParticipation = async (participationId: number, groupbuyId: number | undefined) => {
     if (!confirm('참여를 취소하시겠습니까?')) return;
+
+    // groupbuyId 검증
+    if (!groupbuyId) {
+      toast.error('공구 정보를 찾을 수 없습니다');
+      return;
+    }
 
     try {
       const token = localStorage.getItem('accessToken');
@@ -152,8 +158,11 @@ export default function MyCustomParticipations() {
     return <span className="text-red-600 font-medium">{minutes}분 남음</span>;
   };
 
-  const getStatusBadge = (participation: CustomParticipation) => {
-    const groupbuyStatus = participation.custom_groupbuy.status;
+  const getStatusBadge = (
+    participation: CustomParticipation,
+    groupbuy: { status: string; status_display: string }
+  ) => {
+    const groupbuyStatus = groupbuy.status;
 
     if (groupbuyStatus === 'completed' && participation.discount_code) {
       if (participation.discount_used) {
@@ -181,10 +190,13 @@ export default function MyCustomParticipations() {
     return <Badge variant="secondary">{participation.status_display}</Badge>;
   };
 
-  const canCancel = (participation: CustomParticipation) => {
+  const canCancel = (
+    participation: CustomParticipation,
+    groupbuy: { status: string }
+  ) => {
     return (
       participation.status === 'confirmed' &&
-      participation.custom_groupbuy.status !== 'completed' &&
+      groupbuy.status !== 'completed' &&
       !participation.discount_code &&
       !participation.discount_url
     );
@@ -262,7 +274,15 @@ export default function MyCustomParticipations() {
       ) : (
         <div className="space-y-3">
           {currentParticipations.map((participation) => {
-            const groupbuy = participation.custom_groupbuy;
+            // 백엔드 배포 타이밍 차이 대응: ID만 오거나 객체로 올 수 있음
+            const groupbuy = typeof participation.custom_groupbuy === 'number'
+              ? null
+              : participation.custom_groupbuy;
+
+            // groupbuy가 없으면 스킵 (데이터 불일치)
+            if (!groupbuy) {
+              return null;
+            }
 
             return (
               <Card key={participation.id} className="border-slate-200 hover:shadow-md transition-shadow">
@@ -291,7 +311,7 @@ export default function MyCustomParticipations() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1.5">
                             <Badge variant="outline" className="text-xs">{groupbuy.type_display}</Badge>
-                            {getStatusBadge(participation)}
+                            {getStatusBadge(participation, groupbuy)}
                           </div>
                           <Link href={`/custom-deals/${groupbuy.id}`}>
                             <h3 className="text-base font-bold text-slate-900 hover:text-blue-600 cursor-pointer truncate">
@@ -408,7 +428,7 @@ export default function MyCustomParticipations() {
                         >
                           상세보기
                         </Button>
-                        {canCancel(participation) && (
+                        {canCancel(participation, groupbuy) && (
                           <Button
                             size="sm"
                             variant="outline"
