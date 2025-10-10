@@ -17,6 +17,8 @@ interface QRScannerProps {
 export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }: QRScannerProps) {
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const mutationObserverRef = useRef<MutationObserver | null>(null);
 
   useEffect(() => {
     if (isOpen && !scannerRef.current) {
@@ -74,54 +76,71 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
 
           setIsScanning(true);
 
-          // 영어 텍스트를 한글로 변경
-          setTimeout(() => {
+          // 한글화 함수
+          const translateToKorean = () => {
             const qrReaderElement = document.getElementById('qr-reader');
-            if (qrReaderElement) {
-              // "Scanning" 텍스트 숨기기
-              const statusSpan = qrReaderElement.querySelector('#html5-qrcode-button-camera-permission');
-              if (statusSpan) {
-                const parent = statusSpan.parentElement;
-                if (parent) {
-                  parent.style.display = 'none';
-                }
-              }
+            if (!qrReaderElement) return;
 
-              // 파일 선택 버튼 한글화
-              const fileButton = qrReaderElement.querySelector('#html5-qrcode-button-file-selection') as HTMLElement;
-              if (fileButton) {
-                fileButton.textContent = '파일에서 선택';
-              }
-
-              // 카메라 시작/중지 버튼 한글화
-              const cameraStartButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-start') as HTMLElement;
-              if (cameraStartButton) {
-                cameraStartButton.textContent = '카메라 시작';
-              }
-
-              const cameraStopButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-stop') as HTMLElement;
-              if (cameraStopButton) {
-                cameraStopButton.textContent = '카메라 중지';
-              }
-
-              // "Select Camera" 텍스트 한글화
-              const selectTexts = qrReaderElement.querySelectorAll('span');
-              selectTexts.forEach(span => {
-                if (span.textContent?.includes('Select Camera')) {
-                  span.textContent = '카메라 선택';
-                }
-                if (span.textContent?.includes('Choose Image')) {
-                  span.textContent = '이미지 선택';
-                }
-                if (span.textContent?.includes('No cameras found')) {
-                  span.textContent = '카메라를 찾을 수 없습니다';
-                }
-                if (span.textContent?.includes('Permission denied')) {
-                  span.textContent = '카메라 권한이 거부되었습니다';
-                }
-              });
+            // 파일 선택 버튼 한글화
+            const fileButton = qrReaderElement.querySelector('#html5-qrcode-button-file-selection') as HTMLElement;
+            if (fileButton && !fileButton.textContent?.includes('파일')) {
+              fileButton.textContent = '파일에서 선택';
             }
-          }, 200);
+
+            // 카메라 시작/중지 버튼 한글화
+            const cameraStartButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-start') as HTMLElement;
+            if (cameraStartButton && !cameraStartButton.textContent?.includes('카메라')) {
+              cameraStartButton.textContent = '카메라 시작';
+            }
+
+            const cameraStopButton = qrReaderElement.querySelector('#html5-qrcode-button-camera-stop') as HTMLElement;
+            if (cameraStopButton && !cameraStopButton.textContent?.includes('중지')) {
+              cameraStopButton.textContent = '카메라 중지';
+            }
+
+            // 모든 span 텍스트 한글화
+            const selectTexts = qrReaderElement.querySelectorAll('span');
+            selectTexts.forEach(span => {
+              const text = span.textContent || '';
+
+              if (text.includes('Select Camera') && !text.includes('카메라')) {
+                span.textContent = '카메라 선택';
+              }
+              if (text.includes('Choose Image') && !text.includes('이미지')) {
+                span.textContent = '이미지 선택';
+              }
+              if (text.includes('No cameras found')) {
+                span.textContent = '카메라를 찾을 수 없습니다';
+              }
+              if (text.includes('Permission denied')) {
+                span.textContent = '카메라 권한이 거부되었습니다';
+                setPermissionDenied(true);
+              }
+              if (text.includes('Scanning')) {
+                span.textContent = '스캔 중...';
+              }
+              if (text.includes('Request Camera Permissions')) {
+                span.textContent = '카메라 권한을 요청하세요';
+              }
+            });
+          };
+
+          // 초기 한글화
+          setTimeout(translateToKorean, 200);
+
+          // MutationObserver로 DOM 변경 감지하여 계속 한글화
+          const qrReaderElement = document.getElementById('qr-reader');
+          if (qrReaderElement) {
+            mutationObserverRef.current = new MutationObserver(() => {
+              translateToKorean();
+            });
+
+            mutationObserverRef.current.observe(qrReaderElement, {
+              childList: true,
+              subtree: true,
+              characterData: true,
+            });
+          }
         } catch (error) {
           console.error('QR Scanner 초기화 실패:', error);
         }
@@ -136,6 +155,10 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
         scannerRef.current.clear().catch(console.error);
         scannerRef.current = null;
       }
+      if (mutationObserverRef.current) {
+        mutationObserverRef.current.disconnect();
+        mutationObserverRef.current = null;
+      }
     };
   }, [isOpen, groupbuyId, onScanSuccess]);
 
@@ -144,7 +167,12 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
       scannerRef.current.clear().catch(console.error);
       scannerRef.current = null;
     }
+    if (mutationObserverRef.current) {
+      mutationObserverRef.current.disconnect();
+      mutationObserverRef.current = null;
+    }
     setIsScanning(false);
+    setPermissionDenied(false);
     onClose();
   };
 
@@ -160,6 +188,23 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
 
         <div className="space-y-4">
           <div id="qr-reader" className="w-full rounded-lg overflow-hidden border-2 border-slate-200"></div>
+
+          {permissionDenied && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-sm font-semibold text-amber-900 mb-2">카메라 권한이 거부되었습니다</p>
+              <p className="text-xs text-amber-700 mb-3">
+                QR 스캔을 위해서는 카메라 권한이 필요합니다.
+              </p>
+              <div className="text-xs text-amber-800 space-y-1">
+                <p className="font-semibold">권한 허용 방법:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>주소창 왼쪽의 자물쇠 🔒 아이콘 클릭</li>
+                  <li>"카메라" 권한을 "허용"으로 변경</li>
+                  <li>페이지 새로고침 후 다시 시도</li>
+                </ul>
+              </div>
+            </div>
+          )}
 
           <div className="text-sm text-slate-600 text-center">
             <p>고객의 QR 코드를 카메라에 비춰주세요</p>
