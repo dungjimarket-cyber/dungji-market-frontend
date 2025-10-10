@@ -2538,14 +2538,7 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </>
             )}
 
-            {/* 3. 판매자 최종선택 대기중 */}
-            {isSellerFinalSelection && myParticipationFinalDecision === 'confirmed' && (
-              <div className="p-4 bg-yellow-50 rounded-lg text-center">
-                <p className="font-semibold text-yellow-800">판매자 최종선택 대기중</p>
-              </div>
-            )}
-
-            {/* 4. 거래중 및 판매자 최종선택 */}
+            {/* 3. 거래중 및 판매자 최종선택 */}
             {(isInProgress || isSellerFinalSelection) && myParticipationFinalDecision === 'confirmed' && (
               <>
                 <div className="p-4 bg-green-50 rounded-lg text-center mb-3">
