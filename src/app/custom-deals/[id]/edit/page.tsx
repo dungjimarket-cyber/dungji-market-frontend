@@ -176,11 +176,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         })));
       }
 
-      // 지역
+      // 지역 (code를 저장하여 backend에 code로 전송)
       if (data.regions && data.regions.length > 0) {
         setSelectedRegions(data.regions.map((r: any) => ({
-          province: r.province || r.full_name?.split(' ')[0] || '',
-          city: r.code || r.city || ''
+          province: r.full_name?.split(' ')[0] || r.name?.split(' ')[0] || '',
+          city: r.code || '' // code를 city 필드에 저장 (backend가 code로 검색)
         })));
       }
 
@@ -560,7 +560,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             submitFormData.append('phone_number', formData.phone_number);
           }
         } else {
-          submitFormData.append('region_codes', JSON.stringify(selectedRegions.map(r => r.city)));
+          // 오프라인: regions 필드로 전송 (backend가 regions를 기대함)
+          selectedRegions.forEach(region => {
+            submitFormData.append('regions', JSON.stringify({
+              province: region.province,
+              city: region.city
+            }));
+          });
           submitFormData.append('location', formData.location);
           if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
           submitFormData.append('phone_number', formData.phone_number);

@@ -389,7 +389,36 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
 
     if (!formData.brand.trim()) newErrors.brand = '브랜드를 입력해주세요';
     if (!formData.model_name.trim()) newErrors.model_name = '모델명을 입력해주세요';
-    if (!formData.price) newErrors.price = '가격을 입력해주세요';
+
+    // 가격 검증
+    if (!formData.price) {
+      newErrors.price = '즉시판매가를 입력해주세요';
+    } else {
+      const price = parseInt(formData.price);
+      if (price < 1000) {
+        newErrors.price = '최소 가격은 1,000원입니다';
+      } else if (price > 100000000) {
+        newErrors.price = '최대 판매 금액은 1억원입니다';
+      }
+    }
+
+    // 최소 제안가 검증
+    if (formData.min_offer_price) {
+      const minPrice = parseInt(formData.min_offer_price);
+      if (minPrice < 1000) {
+        newErrors.min_offer_price = '최소 가격은 1,000원입니다';
+      } else if (minPrice > 100000000) {
+        newErrors.min_offer_price = '최대 제안 금액은 1억원입니다';
+      } else if (formData.price && minPrice >= parseInt(formData.price)) {
+        // 제안이 있을 때는 즉시판매가만 수정 가능하므로, 에러를 즉시판매가에 표시
+        if (hasOffers) {
+          newErrors.price = '즉시판매가는 최소 제안가보다 높아야 합니다';
+        } else {
+          newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+        }
+      }
+    }
+
     if (!formData.description.trim()) newErrors.description = '상품 설명을 입력해주세요';
     if (selectedRegions.length === 0) newErrors.regions = '거래 지역을 선택해주세요';
     if (images.length === 0) newErrors.images = '이미지를 1장 이상 업로드해주세요';

@@ -546,8 +546,14 @@ function UsedPhoneEditClient({ phoneId }: { phoneId: string }) {
         newErrors.min_offer_price = '최소 가격은 1,000원입니다';
         if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
       } else if (formData.price && minPrice >= parseInt(formData.price)) {
-        newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
-        if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+        // 제안이 있을 때는 즉시판매가만 수정 가능하므로, 에러를 즉시판매가에 표시
+        if (hasOffers) {
+          newErrors.price = '즉시판매가는 최소 제안가보다 높아야 합니다';
+          if (!firstErrorRef) firstErrorRef = priceRef;
+        } else {
+          newErrors.min_offer_price = '최소 제안가는 즉시 판매가보다 낮아야 합니다';
+          if (!firstErrorRef) firstErrorRef = minOfferPriceRef;
+        }
       }
     }
 
