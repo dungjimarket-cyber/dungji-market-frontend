@@ -244,6 +244,56 @@ export default function CustomDealDetailPage() {
     toast.success('링크가 복사되었습니다');
   };
 
+  const handleEarlyClose = async () => {
+    if (!deal) return;
+
+    if (!confirm('공구를 조기 종료하시겠습니까?\n\n현재 참여 인원에게 할인코드가 즉시 발급됩니다.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        toast.error('로그인이 필요합니다');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/early_close/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 401) {
+        toast.error('로그인이 만료되었습니다');
+        localStorage.removeItem('accessToken');
+        router.push('/login');
+        return;
+      }
+
+      if (response.status === 403 || response.status === 400) {
+        const errorData = await response.json();
+        toast.error(errorData.error || '조기 종료할 수 없습니다');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('조기 종료 실패');
+      }
+
+      toast.success('공구가 조기 종료되었습니다');
+      fetchDeal();
+    } catch (error) {
+      console.error('조기 종료 실패:', error);
+      toast.error('조기 종료에 실패했습니다');
+    }
+  };
+
   const handleDelete = async () => {
     if (!deal) return;
 
@@ -278,6 +328,12 @@ export default function CustomDealDetailPage() {
 
       if (response.status === 403) {
         toast.error('삭제 권한이 없습니다');
+        return;
+      }
+
+      if (response.status === 400) {
+        const errorData = await response.json();
+        toast.error(errorData.error || '삭제할 수 없습니다');
         return;
       }
 
@@ -369,6 +425,17 @@ export default function CustomDealDetailPage() {
                   <Edit className="w-4 h-4" />
                   <span className="hidden sm:inline">수정</span>
                 </Button>
+                {deal.status === 'recruiting' && deal.current_participants > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEarlyClose}
+                    className="flex items-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="hidden sm:inline">조기종료</span>
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
