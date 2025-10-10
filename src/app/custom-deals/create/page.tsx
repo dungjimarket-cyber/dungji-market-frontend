@@ -1259,6 +1259,9 @@ export default function CreateCustomDealPage() {
                       {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
                     </div>
                   </div>
+                  <p className="text-xs text-slate-500 mt-2">
+                    💡 현재 시간 기준으로 1시간 이후부터 설정 가능합니다
+                  </p>
                 </>
                   )}
                 </>
