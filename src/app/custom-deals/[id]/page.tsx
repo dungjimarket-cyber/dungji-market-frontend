@@ -528,7 +528,8 @@ export default function CustomDealDetailPage() {
             {deal.status === 'recruiting' &&
              !deal.is_participated &&
              !isExpired &&
-             deal.current_participants < deal.target_participants && (
+             deal.current_participants < deal.target_participants &&
+             (!user || deal.seller !== parseInt(user.id)) && (
               <Button
                 size="lg"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold"
