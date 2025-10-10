@@ -317,6 +317,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       ...img,
       isMain: i === index,
     })));
+    setImagesModified(true); // 대표 이미지 변경도 수정으로 간주
   }, []);
 
   // 드래그 앤 드롭
