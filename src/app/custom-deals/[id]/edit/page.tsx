@@ -23,7 +23,6 @@ import LinkPreview from '@/components/custom/LinkPreview';
 interface ImagePreview {
   file: File | null;
   url: string;
-  isMain: boolean;
   isEmpty?: boolean;
   existingUrl?: string; // 기존 S3 URL
   id?: number; // 기존 이미지 ID
@@ -165,12 +164,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         setSelectedCategory(data.categories[0]);
       }
 
-      // 이미지
+      // 이미지 (첫 번째 이미지가 자동으로 대표 이미지)
       if (data.images && data.images.length > 0) {
-        setImages(data.images.map((img: any, idx: number) => ({
+        setImages(data.images.map((img: any) => ({
           file: null,
           url: img.image_url,
-          isMain: idx === 0,
           isEmpty: false,
           existingUrl: img.image_url,
           id: img.id // 이미지 ID 저장
@@ -244,7 +242,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         updated[targetIndex] = {
           file,
           url: URL.createObjectURL(file),
-          isMain: targetIndex === 0,
           isEmpty: false
           // existingUrl과 id는 의도적으로 포함하지 않음 (새 파일로 교체)
         };
@@ -270,7 +267,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           updated[insertIndex] = {
             file,
             url: URL.createObjectURL(file),
-            isMain: insertIndex === 0,
             isEmpty: false
           };
           insertIndex++;
@@ -300,23 +296,20 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         URL.revokeObjectURL(imageToRemove.url);
       }
 
-      if (index === 0) {
-        updated[index] = { file: null, url: '', isMain: true, isEmpty: true };
-      } else {
-        updated[index] = { file: null, url: '', isMain: false, isEmpty: true };
-      }
+      updated[index] = { file: null, url: '', isEmpty: true };
 
       return updated;
     });
     setImagesModified(true); // 이미지 수정됨 표시
   }, []);
 
-  // 대표 이미지 설정
+  // 대표 이미지 설정 (배열 순서 변경)
   const handleSetMainImage = useCallback((index: number) => {
-    setImages(prev => prev.map((img, i) => ({
-      ...img,
-      isMain: i === index,
-    })));
+    setImages(prev => {
+      const updated = [...prev];
+      const [mainImage] = updated.splice(index, 1);
+      return [mainImage, ...updated];
+    });
     setImagesModified(true); // 대표 이미지 변경도 수정으로 간주
   }, []);
 
@@ -413,15 +406,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       if (imagesModified) {
         const actualImages = images.filter(img => img && !img.isEmpty);
 
-        // 대표 이미지(isMain)를 맨 앞으로 정렬
-        const sortedImages = [...actualImages].sort((a, b) => {
-          if (a.isMain) return -1;
-          if (b.isMain) return 1;
-          return 0;
-        });
-
-        const existingImages = sortedImages.filter(img => img.existingUrl && !img.file && img.id);
-        const newImages = sortedImages.filter(img => img.file);
+        // 첫 번째 이미지가 대표 이미지 (정렬 불필요, 이미 순서대로 배열됨)
+        const existingImages = actualImages.filter(img => img.existingUrl && !img.file && img.id);
+        const newImages = actualImages.filter(img => img.file);
 
         // 기존 이미지 ID들 전송 (유지할 이미지) - 정렬된 순서대로
         existingImages.forEach((image) => {
@@ -624,7 +611,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-lg pointer-events-none" />
 
                           {/* 대표 이미지 표시 */}
-                          {image.isMain && (
+                          {index === 0 && (
                             <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs rounded font-medium z-10">대표</div>
                           )}
 
@@ -645,7 +632,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                                 onChange={(e) => handleImageUpload(e, index)}
                                 className="hidden"
                               />
-                              {!image.isMain && (
+                              {index !== 0 && (
                                 <button
                                   type="button"
                                   className="flex-1 bg-white/90 backdrop-blur text-slate-900 text-xs py-1 rounded hover:bg-white"

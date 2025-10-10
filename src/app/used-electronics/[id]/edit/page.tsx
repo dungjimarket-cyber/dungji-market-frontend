@@ -398,6 +398,11 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     return Object.keys(newErrors).length === 0;
   };
 
+  const isFieldEditable = (fieldName: string) => {
+    if (!hasOffers) return true;
+    return EDITABLE_AFTER_OFFERS.includes(fieldName);
+  };
+
   const isFieldLocked = (field: string) => {
     return hasOffers && !EDITABLE_AFTER_OFFERS.includes(field);
   };
@@ -558,43 +563,42 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
                     fill
                     className="object-cover"
                   />
-                  {!isFieldLocked('images') && (
-                    <>
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full z-10"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-
-                      {/* 대표 이미지 표시 및 설정 */}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                        {index === 0 ? (
-                          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-                            대표
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleSetMainImage(index)}
-                            className="bg-white text-gray-700 px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-50 hover:text-blue-600"
-                          >
-                            대표
-                          </button>
-                        )}
-                      </div>
-                    </>
+                  {isFieldEditable('images') && (
+                    <button
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full z-10"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
                   )}
+
+                  {/* 대표 이미지 표시 및 설정 */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                    {index === 0 ? (
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                        대표
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSetMainImage(index)}
+                        className="bg-white text-gray-700 px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        대표
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
 
-              {images.length < 10 && (
+              {images.length < 10 && isFieldEditable('images') && (
                 <button
+                  type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-gray-400"
+                  className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-gray-400 transition-colors"
                 >
                   <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-500">추가</span>
+                  <span className="text-xs text-gray-500">사진 추가</span>
                 </button>
               )}
             </div>
