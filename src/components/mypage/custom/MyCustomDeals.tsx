@@ -319,17 +319,27 @@ export default function MyCustomDeals() {
 
                 {/* 가격 */}
                 <div className="mb-4">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-sm text-slate-500 line-through">
-                      {deal.original_price.toLocaleString()}원
-                    </span>
-                    <span className="text-lg font-bold text-red-600">
-                      {deal.discount_rate}%
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {deal.final_price.toLocaleString()}원
-                  </div>
+                  {deal.original_price && deal.final_price ? (
+                    <>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm text-slate-500 line-through">
+                          {deal.original_price.toLocaleString()}원
+                        </span>
+                        <span className="text-lg font-bold text-red-600">
+                          {deal.discount_rate}%
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900">
+                        {typeof deal.final_price === 'object' && deal.final_price !== null
+                          ? ((deal.final_price as any).min || 0).toLocaleString()
+                          : deal.final_price.toLocaleString()}원
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xl font-bold text-blue-600">
+                      전품목 {deal.discount_rate}% 할인
+                    </div>
+                  )}
                 </div>
 
                 {/* 진행률 */}
