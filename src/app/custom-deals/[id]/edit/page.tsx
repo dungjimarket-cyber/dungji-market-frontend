@@ -215,6 +215,18 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       return;
     }
 
+    // 할인 정보 변경 체크 (항상 수정 가능)
+    const discountInfoChanged =
+      formData.discount_url !== (originalData.discount_url || '') ||
+      formData.discount_valid_days !== (originalData.discount_valid_days?.toString() || '') ||
+      formData.offline_discount_valid_days !== (originalData.discount_valid_days?.toString() || '7') ||
+      JSON.stringify(discountCodes) !== JSON.stringify(originalData.discount_codes || ['']);
+
+    if (discountInfoChanged) {
+      setHasChanges(true);
+      return;
+    }
+
     // 참여자가 없을 때만 다른 필드 체크
     if (!hasParticipants) {
       // 카테고리 변경
@@ -500,7 +512,23 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       submitFormData.append('description', formData.description);
       if (formData.usage_guide) submitFormData.append('usage_guide', formData.usage_guide);
 
-      // 참여자가 없을 때만 다른 필드 수정 가능 (단, type/target_participants/discount_codes는 제외)
+      // 할인 정보 (항상 수정 가능)
+      if (formData.type === 'online') {
+        if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
+          submitFormData.append('discount_url', formData.discount_url);
+        }
+        if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
+          submitFormData.append('discount_codes', JSON.stringify(discountCodes.filter(code => code.trim())));
+        }
+        if (formData.discount_valid_days) {
+          submitFormData.append('discount_valid_days', formData.discount_valid_days);
+        }
+      } else if (formData.type === 'offline') {
+        submitFormData.append('discount_codes', JSON.stringify(discountCodes.filter(code => code.trim())));
+        submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
+      }
+
+      // 참여자가 없을 때만 다른 필드 수정 가능 (단, type/target_participants는 제외)
       if (!hasParticipants) {
         // ❌ 수정 불가능 필드는 전송하지 않음: type, target_participants, discount_codes
         submitFormData.append('categories', JSON.stringify([selectedCategory]));
@@ -645,7 +673,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div>
                   <h3 className="font-medium text-amber-900 mb-1">수정 제한 안내</h3>
                   <p className="text-sm text-amber-800">
-                    참여자가 있는 공구는 제목, 상세설명, 이용안내만 수정 가능합니다
+                    참여자가 있는 공구는 제목, 상세설명, 이용안내, 할인 정보만 수정 가능합니다
                   </p>
                 </div>
               </div>
@@ -803,6 +831,183 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               />
               <p className="text-sm text-slate-500 mt-1 text-right">{formData.usage_guide.length}/1,000</p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* 할인 정보 (항상 수정 가능) */}
+        <Card className="mb-6 border-slate-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Ticket className="w-5 h-5" />
+              할인 정보
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {formData.type === 'online' && (
+              <>
+                {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
+                  <div className="space-y-3">
+                    <div>
+                      <Label>할인 링크 *</Label>
+                      <Input
+                        value={formData.discount_url}
+                        onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
+                        placeholder="https://example.com/discount"
+                      />
+                    </div>
+
+                    {/* 링크 미리보기 */}
+                    {formData.discount_url && formData.discount_url.startsWith('http') && (
+                      <LinkPreview url={formData.discount_url} />
+                    )}
+                  </div>
+                )}
+
+                {(formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') && (
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Ticket className="w-4 h-4" />
+                      할인 코드 *
+                    </Label>
+                    <div className="space-y-2 mt-2">
+                      {discountCodes.map((code, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={code}
+                            onChange={(e) => {
+                              const newCodes = [...discountCodes];
+                              newCodes[index] = e.target.value;
+                              setDiscountCodes(newCodes);
+                            }}
+                            placeholder={`코드 ${index + 1}`}
+                          />
+                          {discountCodes.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newCodes = discountCodes.filter((_, i) => i !== index);
+                                setDiscountCodes(newCodes);
+                              }}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {discountCodes.length < parseInt(formData.target_participants) && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDiscountCodes([...discountCodes, ''])}
+                          className="w-full"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          할인코드 추가
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <Label>할인 유효기간 (선택)</Label>
+                  <Select
+                    value={formData.discount_valid_days || 'none'}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, discount_valid_days: value === 'none' ? '' : value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="선택 안함" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">선택 안함</SelectItem>
+                      <SelectItem value="3">3일</SelectItem>
+                      <SelectItem value="7">7일</SelectItem>
+                      <SelectItem value="14">14일</SelectItem>
+                      <SelectItem value="30">30일</SelectItem>
+                      <SelectItem value="60">60일</SelectItem>
+                      <SelectItem value="90">90일</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {formData.type === 'offline' && (
+              <>
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4" />
+                    할인 코드 *
+                  </Label>
+                  <div className="space-y-2 mt-2">
+                    {discountCodes.map((code, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={code}
+                          onChange={(e) => {
+                            const newCodes = [...discountCodes];
+                            newCodes[index] = e.target.value;
+                            setDiscountCodes(newCodes);
+                          }}
+                          placeholder={`코드 ${index + 1}`}
+                        />
+                        {discountCodes.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newCodes = discountCodes.filter((_, i) => i !== index);
+                              setDiscountCodes(newCodes);
+                            }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {discountCodes.length < parseInt(formData.target_participants) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDiscountCodes([...discountCodes, ''])}
+                        className="w-full"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        할인코드 추가
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>할인 유효기간 *</Label>
+                  <Select
+                    value={formData.offline_discount_valid_days}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, offline_discount_valid_days: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">3일</SelectItem>
+                      <SelectItem value="7">7일</SelectItem>
+                      <SelectItem value="14">14일</SelectItem>
+                      <SelectItem value="30">30일</SelectItem>
+                      <SelectItem value="60">60일</SelectItem>
+                      <SelectItem value="90">90일</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-slate-500 mt-1">
+                    할인코드는 발급일로부터 선택하신 기간 동안 사용 가능합니다.
+                  </p>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -1004,84 +1209,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
             {/* 온라인 전용 필드 */}
             {formData.type === 'online' && (
-              <Card className="mb-6 border-slate-200 bg-slate-50">
+              <Card className="mb-6 border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <LinkIcon className="w-5 h-5" />
-                    할인 제공 방식
-                    <Badge variant="secondary" className="text-xs">수정불가</Badge>
+                    <Phone className="w-5 h-5" />
+                    온라인 공구 추가 정보
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-3 bg-white rounded-lg border border-slate-200">
-                    <p className="text-sm text-slate-600">
-                      {formData.online_discount_type === 'link_only' && '할인 링크만 제공'}
-                      {formData.online_discount_type === 'code_only' && '할인 코드만 제공'}
-                      {formData.online_discount_type === 'both' && '할인 링크 + 할인 코드 제공'}
-                    </p>
-                  </div>
-
-                  {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
-                    <div className="space-y-3">
-                      <div>
-                        <Label>할인 링크 *</Label>
-                        <Input
-                          value={formData.discount_url}
-                          onChange={(e) => handleInputChange('discount_url', e.target.value)}
-                          placeholder="https://example.com/discount"
-                        />
-                      </div>
-
-                      {/* 링크 미리보기 */}
-                      {formData.discount_url && formData.discount_url.startsWith('http') && (
-                        <LinkPreview url={formData.discount_url} />
-                      )}
-                    </div>
-                  )}
-
-                  {(formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') && (
-                    <div>
-                      <Label className="flex items-center gap-2">
-                        <Ticket className="w-4 h-4" />
-                        할인 코드 *
-                        <Badge variant="secondary" className="text-xs">수정불가</Badge>
-                      </Label>
-                      <div className="space-y-2 mt-2">
-                        {discountCodes.map((code, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={code}
-                              disabled
-                              placeholder={`코드 ${index + 1}`}
-                              className="opacity-60 bg-slate-50"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-sm text-slate-500 mt-2">
-                        할인코드는 등록 후 수정할 수 없습니다
-                      </p>
-                    </div>
-                  )}
-
-                  <div>
-                    <Label>할인 유효기간 (선택)</Label>
-                    <Select value={formData.discount_valid_days || 'none'} onValueChange={(value) => handleInputChange('discount_valid_days', value === 'none' ? '' : value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="선택 안함" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">선택 안함</SelectItem>
-                        <SelectItem value="3">3일</SelectItem>
-                        <SelectItem value="7">7일</SelectItem>
-                        <SelectItem value="14">14일</SelectItem>
-                        <SelectItem value="30">30일</SelectItem>
-                        <SelectItem value="60">60일</SelectItem>
-                        <SelectItem value="90">90일</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+                <CardContent>
                   <div>
                     <Label className="flex items-center gap-2">
                       <Phone className="w-4 h-4" />
@@ -1108,114 +1243,60 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
             {/* 오프라인 전용 필드 */}
             {formData.type === 'offline' && (
-              <>
-                <Card className="mb-6 border-slate-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      매장 정보
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label>매장 위치 *</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={formData.location}
-                          onChange={(e) => handleInputChange('location', e.target.value)}
-                          placeholder="주소 검색 버튼을 클릭하세요"
-                          maxLength={300}
-                        />
-                        <AddressSearch
-                          onComplete={(address) => handleInputChange('location', address)}
-                          buttonText="주소 검색"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>위치 상세 (선택)</Label>
-                      <Textarea
-                        value={formData.location_detail}
-                        onChange={(e) => handleInputChange('location_detail', e.target.value)}
-                        placeholder="건물명, 층수 등 추가 정보"
-                        rows={2}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
-                        연락처 *
-                      </Label>
+              <Card className="mb-6 border-slate-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    매장 정보
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>매장 위치 *</Label>
+                    <div className="flex gap-2">
                       <Input
-                        value={formData.phone_number}
-                        onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                        placeholder="010-1234-5678"
-                        maxLength={20}
+                        value={formData.location}
+                        onChange={(e) => handleInputChange('location', e.target.value)}
+                        placeholder="주소 검색 버튼을 클릭하세요"
+                        maxLength={300}
+                      />
+                      <AddressSearch
+                        onComplete={(address) => handleInputChange('location', address)}
+                        buttonText="주소 검색"
                       />
                     </div>
+                  </div>
 
-                    {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
-                      <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
-                        ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                  <div>
+                    <Label>위치 상세 (선택)</Label>
+                    <Textarea
+                      value={formData.location_detail}
+                      onChange={(e) => handleInputChange('location_detail', e.target.value)}
+                      placeholder="건물명, 층수 등 추가 정보"
+                      rows={2}
+                    />
+                  </div>
 
-                <Card className="mb-6 border-slate-200 bg-slate-50">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Ticket className="w-5 h-5" />
-                      할인 코드 및 유효기간
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label className="flex items-center gap-2">
-                        할인 코드 *
-                        <Badge variant="secondary" className="text-xs">수정불가</Badge>
-                      </Label>
-                      <div className="space-y-2 mt-2">
-                        {discountCodes.map((code, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={code}
-                              disabled
-                              placeholder={`코드 ${index + 1}`}
-                              className="opacity-60 bg-slate-100"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-sm text-slate-500 mt-2">
-                        할인코드는 등록 후 수정할 수 없습니다
-                      </p>
-                    </div>
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      연락처 *
+                    </Label>
+                    <Input
+                      value={formData.phone_number}
+                      onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                      placeholder="010-1234-5678"
+                      maxLength={20}
+                    />
+                  </div>
 
-                    <div>
-                      <Label>할인 유효기간 *</Label>
-                      <Select value={formData.offline_discount_valid_days} onValueChange={(value) => handleInputChange('offline_discount_valid_days', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="3">3일</SelectItem>
-                          <SelectItem value="7">7일</SelectItem>
-                          <SelectItem value="14">14일</SelectItem>
-                          <SelectItem value="30">30일</SelectItem>
-                          <SelectItem value="60">60일</SelectItem>
-                          <SelectItem value="90">90일</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-sm text-slate-500 mt-1">
-                        할인코드는 발급일로부터 선택하신 기간 동안 사용 가능합니다.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
+                  {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
+                    <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
+                      ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </>
         )}
