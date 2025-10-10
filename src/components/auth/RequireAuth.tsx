@@ -193,7 +193,7 @@ export default function RequireAuth({
     };
 
     checkAuth();
-  }, [session, status, router, redirectToLogin]);
+  }, [session, status, router, redirectToLogin, authContextAuthenticated]);
 
   // 로딩 중 표시
   if (isLoading) {
