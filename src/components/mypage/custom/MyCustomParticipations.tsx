@@ -410,6 +410,20 @@ export default function MyCustomParticipations() {
                             )}
                           </div>
 
+                          {/* QR 코드 (오프라인 + 미사용) */}
+                          {groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used && (
+                            <div className="mt-3 pt-3 border-t border-green-200">
+                              <p className="text-xs text-slate-600 mb-2 text-center">판매자에게 QR 코드를 보여주세요</p>
+                              <div className="flex justify-center">
+                                <img
+                                  src={`${process.env.NEXT_PUBLIC_API_URL}/custom-participants/${participation.id}/qr_code/`}
+                                  alt="할인 QR 코드"
+                                  className="w-40 h-40 border-2 border-slate-300 rounded"
+                                />
+                              </div>
+                            </div>
+                          )}
+
                           {participation.discount_used && (
                             <p className="text-xs text-slate-500 mt-1.5">
                               사용완료 • {new Date(participation.discount_used_at!).toLocaleDateString()}
