@@ -204,39 +204,39 @@ export default function ParticipantsManagePage() {
         )}
 
         {/* 통계 요약 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">전체 참여자</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{participants.length}명</p>
+                  <p className="text-xs text-slate-500">전체</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-0.5">{participants.length}</p>
                 </div>
-                <User className="w-10 h-10 text-blue-500" />
+                <User className="w-8 h-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">사용 완료</p>
-                  <p className="text-3xl font-bold text-green-600 mt-1">{usedCount}명</p>
+                  <p className="text-xs text-slate-500">사용완료</p>
+                  <p className="text-2xl font-bold text-green-600 mt-0.5">{usedCount}</p>
                 </div>
-                <CheckCircle className="w-10 h-10 text-green-500" />
+                <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">미사용</p>
-                  <p className="text-3xl font-bold text-orange-600 mt-1">{unusedCount}명</p>
+                  <p className="text-xs text-slate-500">미사용</p>
+                  <p className="text-2xl font-bold text-orange-600 mt-0.5">{unusedCount}</p>
                 </div>
-                <Clock className="w-10 h-10 text-orange-500" />
+                <Clock className="w-8 h-8 text-orange-500" />
               </div>
             </CardContent>
           </Card>
@@ -244,117 +244,110 @@ export default function ParticipantsManagePage() {
 
         {/* 참여자 목록 */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <User className="w-4 h-4" />
               참여자 목록
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {participants.length === 0 ? (
-              <div className="text-center py-12 text-slate-500">
+              <div className="text-center py-8 text-slate-500 text-sm">
                 참여자가 없습니다
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="divide-y divide-slate-100">
                 {participants.map((participant, index) => (
                   <div
                     key={participant.id}
-                    className="border border-slate-200 rounded-lg p-5 hover:bg-slate-50 transition-colors"
+                    className="p-3 hover:bg-slate-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      {/* 왼쪽: 참여자 정보 */}
-                      <div className="flex-1 space-y-3">
-                        {/* 번호 및 이름 */}
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" className="text-sm">
-                            #{index + 1}
-                          </Badge>
-                          <span className="font-semibold text-lg text-slate-900">
-                            {participant.user_name}
-                          </span>
-                          {participant.discount_used ? (
-                            <Badge className="bg-green-50 text-green-700 border-green-200">
-                              사용완료
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-orange-50 text-orange-700 border-orange-200">
-                              미사용
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* 참여 정보 */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div className="flex items-center gap-2 text-slate-600">
-                            <Calendar className="w-4 h-4" />
-                            <span>참여일: {new Date(participant.participated_at).toLocaleString()}</span>
-                          </div>
-                          {participant.discount_used && participant.discount_used_at && (
-                            <div className="flex items-center gap-2 text-green-600">
-                              <CheckCircle className="w-4 h-4" />
-                              <span>사용일: {new Date(participant.discount_used_at).toLocaleString()}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 할인코드/링크 */}
-                        {participant.discount_code && (
-                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2">
-                            <span className="text-sm text-slate-600 min-w-fit">할인코드:</span>
-                            <code className="flex-1 font-mono font-semibold text-blue-900">
-                              {participant.discount_code}
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
-                              className="h-7 px-2"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-
-                        {participant.discount_url && (
-                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2">
-                            <span className="text-sm text-slate-600 min-w-fit">할인링크:</span>
-                            <a
-                              href={participant.discount_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 text-sm text-blue-600 hover:underline truncate"
-                            >
-                              {participant.discount_url}
-                            </a>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
-                              className="h-7 px-2"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* 오른쪽: 사용 상태 토글 */}
-                      <div className="flex flex-col items-center gap-2 min-w-fit">
-                        <span className="text-xs text-slate-600 whitespace-nowrap">사용 상태</span>
-                        <Switch
-                          checked={participant.discount_used}
-                          onCheckedChange={() => handleToggleUsed(participant.id, participant.discount_used)}
-                          disabled={toggleLoading === participant.id}
-                          className="data-[state=checked]:bg-green-600"
-                        />
-                        <span className={`text-xs font-medium whitespace-nowrap ${
-                          participant.discount_used ? 'text-green-600' : 'text-orange-600'
-                        }`}>
-                          {participant.discount_used ? '사용됨' : '미사용'}
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      {/* 번호 및 이름 */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 font-mono w-6">#{index + 1}</span>
+                        <span className="font-semibold text-sm text-slate-900">
+                          {participant.user_name}
                         </span>
+                        {participant.discount_used ? (
+                          <Badge className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0">
+                            사용완료
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-1.5 py-0">
+                            미사용
+                          </Badge>
+                        )}
                       </div>
+
+                      {/* 사용 상태 토글 */}
+                      <Switch
+                        checked={participant.discount_used}
+                        onCheckedChange={() => handleToggleUsed(participant.id, participant.discount_used)}
+                        disabled={toggleLoading === participant.id}
+                        className="data-[state=checked]:bg-green-600"
+                      />
                     </div>
+
+                    {/* 참여 정보 */}
+                    <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(participant.participated_at).toLocaleDateString('ko', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                      {participant.discount_used && participant.discount_used_at && (
+                        <span className="flex items-center gap-1 text-green-600">
+                          <CheckCircle className="w-3 h-3" />
+                          사용: {new Date(participant.discount_used_at).toLocaleDateString('ko', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 할인코드/링크 */}
+                    {participant.discount_code && (
+                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
+                        <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
+                          {participant.discount_code}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {participant.discount_url && (
+                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
+                        <a
+                          href={participant.discount_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 text-xs text-blue-600 hover:underline truncate"
+                        >
+                          {participant.discount_url}
+                        </a>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

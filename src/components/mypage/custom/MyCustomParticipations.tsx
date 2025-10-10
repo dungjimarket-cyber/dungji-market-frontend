@@ -9,6 +9,86 @@ import { Button } from '@/components/ui/button';
 import { Users, Clock, Tag, MapPin, Eye, Heart, Calendar, AlertCircle, CheckCircle, XCircle, Copy, ExternalLink, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 
+// QR 코드 표시 컴포넌트 (fetch로 JWT 토큰 인증)
+function QRCodeDisplay({ participationId }: { participationId: number }) {
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchQRCode = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/${participationId}/qr_code/`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('QR 코드 로드 실패');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setQrImageUrl(url);
+      } catch (error) {
+        console.error('QR 코드 로드 실패:', error);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQRCode();
+
+    // cleanup: Blob URL 해제
+    return () => {
+      if (qrImageUrl) {
+        URL.revokeObjectURL(qrImageUrl);
+      }
+    };
+  }, [participationId]);
+
+  if (loading) {
+    return (
+      <div className="mt-3 pt-3 border-t border-green-200">
+        <p className="text-xs text-slate-600 mb-2 text-center">QR 코드 로딩 중...</p>
+        <div className="flex justify-center">
+          <div className="w-40 h-40 bg-slate-100 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !qrImageUrl) {
+    return (
+      <div className="mt-3 pt-3 border-t border-green-200">
+        <p className="text-xs text-red-600 mb-2 text-center">QR 코드를 불러올 수 없습니다</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-green-200">
+      <p className="text-xs text-slate-600 mb-2 text-center">판매자에게 QR 코드를 보여주세요</p>
+      <div className="flex justify-center">
+        <img
+          src={qrImageUrl}
+          alt="할인 QR 코드"
+          className="w-40 h-40 border-2 border-slate-300 rounded"
+        />
+      </div>
+    </div>
+  );
+}
+
 interface CustomParticipation {
   id: number;
   custom_groupbuy: number | {  // 백엔드 배포 타이밍 차이 대응: ID 또는 객체
@@ -411,45 +491,9 @@ export default function MyCustomParticipations() {
                           </div>
 
                           {/* QR 코드 (오프라인 + 미사용) */}
-                          {(() => {
-                            const shouldShowQR = groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used;
-
-                            // 디버깅 로그
-                            console.log('QR 조건 체크:', {
-                              participationId: participation.id,
-                              type: groupbuy.type,
-                              discount_code: participation.discount_code,
-                              discount_used: participation.discount_used,
-                              shouldShowQR
-                            });
-
-                            if (shouldShowQR) {
-                              const qrUrl = `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/${participation.id}/qr_code/`;
-                              console.log('QR URL:', qrUrl);
-
-                              return (
-                                <div className="mt-3 pt-3 border-t border-green-200">
-                                  <p className="text-xs text-slate-600 mb-2 text-center">판매자에게 QR 코드를 보여주세요</p>
-                                  <div className="flex justify-center">
-                                    <img
-                                      src={qrUrl}
-                                      alt="할인 QR 코드"
-                                      className="w-40 h-40 border-2 border-slate-300 rounded"
-                                      onError={(e) => {
-                                        console.error('QR 이미지 로드 실패:', qrUrl);
-                                        console.error('에러:', e);
-                                      }}
-                                      onLoad={() => {
-                                        console.log('QR 이미지 로드 성공:', qrUrl);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            }
-
-                            return null;
-                          })()}
+                          {groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used && (
+                            <QRCodeDisplay participationId={participation.id} />
+                          )}
 
                           {participation.discount_used && (
                             <p className="text-xs text-slate-500 mt-1.5">
