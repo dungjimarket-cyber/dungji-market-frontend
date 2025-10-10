@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import QRScanner from '@/components/custom/QRScanner';
 
 interface Participant {
   id: number;
@@ -40,6 +41,7 @@ export default function ParticipantsManagePage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggleLoading, setToggleLoading] = useState<number | null>(null);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -114,6 +116,41 @@ export default function ParticipantsManagePage() {
     toast.success(`${label}가 복사되었습니다`);
   };
 
+  const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/verify_discount/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            discount_code: data.discountCode,
+            groupbuy_id: data.groupbuyId
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.valid) {
+        toast.success(`할인코드 인증 완료: ${result.user_name}`);
+        setShowQRScanner(false);
+        // 참여자 목록 리프레시
+        fetchData();
+      } else {
+        toast.error(result.error || '유효하지 않은 할인코드입니다');
+      }
+    } catch (error) {
+      console.error('QR 인증 실패:', error);
+      toast.error('QR 인증에 실패했습니다');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
@@ -152,6 +189,20 @@ export default function ParticipantsManagePage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* QR 스캔 버튼 (오프라인 공구만) */}
+        {deal.type === 'offline' && (
+          <div className="mb-6">
+            <Button
+              onClick={() => setShowQRScanner(true)}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+            >
+              <QrCode className="w-5 h-5 mr-2" />
+              QR 코드 스캔
+            </Button>
+            <p className="text-sm text-slate-600 mt-2">고객의 QR 코드를 스캔하여 할인코드를 즉시 인증하세요</p>
+          </div>
+        )}
+
         {/* 통계 요약 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card>
@@ -311,6 +362,14 @@ export default function ParticipantsManagePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* QR 스캐너 모달 */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScanSuccess={handleQRScanSuccess}
+        groupbuyId={params.id as string}
+      />
     </div>
   );
 }
