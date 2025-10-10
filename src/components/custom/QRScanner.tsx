@@ -20,50 +20,65 @@ export default function QRScanner({ isOpen, onClose, onScanSuccess, groupbuyId }
 
   useEffect(() => {
     if (isOpen && !scannerRef.current) {
-      // QR 스캐너 초기화
-      scannerRef.current = new Html5QrcodeScanner(
-        "qr-reader",
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
-        },
-        false
-      );
-
-      scannerRef.current.render(
-        (decodedText) => {
-          // QR 데이터 파싱: "참여코드|할인코드|공구ID"
-          const parts = decodedText.split('|');
-
-          if (parts.length !== 3) {
-            toast.error('유효하지 않은 QR 코드입니다');
-            return;
-          }
-
-          const [participationCode, discountCode, scannedGroupbuyId] = parts;
-
-          // 공구 ID 검증
-          if (scannedGroupbuyId !== groupbuyId) {
-            toast.error('다른 공구의 QR 코드입니다');
-            return;
-          }
-
-          // 성공
-          onScanSuccess({ participationCode, discountCode, groupbuyId: scannedGroupbuyId });
-
-          // 스캐너 정지
-          if (scannerRef.current) {
-            scannerRef.current.clear();
-            scannerRef.current = null;
-          }
-        },
-        (error) => {
-          // 스캔 에러 (무시 - 계속 스캔)
+      // DOM이 렌더링될 때까지 약간 대기
+      const timer = setTimeout(() => {
+        const element = document.getElementById('qr-reader');
+        if (!element) {
+          console.error('QR reader element not found');
+          return;
         }
-      );
 
-      setIsScanning(true);
+        try {
+          // QR 스캐너 초기화
+          scannerRef.current = new Html5QrcodeScanner(
+            "qr-reader",
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+              aspectRatio: 1.0,
+            },
+            false
+          );
+
+          scannerRef.current.render(
+            (decodedText) => {
+              // QR 데이터 파싱: "참여코드|할인코드|공구ID"
+              const parts = decodedText.split('|');
+
+              if (parts.length !== 3) {
+                toast.error('유효하지 않은 QR 코드입니다');
+                return;
+              }
+
+              const [participationCode, discountCode, scannedGroupbuyId] = parts;
+
+              // 공구 ID 검증
+              if (scannedGroupbuyId !== groupbuyId) {
+                toast.error('다른 공구의 QR 코드입니다');
+                return;
+              }
+
+              // 성공
+              onScanSuccess({ participationCode, discountCode, groupbuyId: scannedGroupbuyId });
+
+              // 스캐너 정지
+              if (scannerRef.current) {
+                scannerRef.current.clear().catch(console.error);
+                scannerRef.current = null;
+              }
+            },
+            (error) => {
+              // 스캔 에러 (무시 - 계속 스캔)
+            }
+          );
+
+          setIsScanning(true);
+        } catch (error) {
+          console.error('QR Scanner 초기화 실패:', error);
+        }
+      }, 100); // 100ms 대기
+
+      return () => clearTimeout(timer);
     }
 
     return () => {

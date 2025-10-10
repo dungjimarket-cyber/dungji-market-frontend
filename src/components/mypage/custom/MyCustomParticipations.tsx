@@ -411,18 +411,45 @@ export default function MyCustomParticipations() {
                           </div>
 
                           {/* QR 코드 (오프라인 + 미사용) */}
-                          {groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used && (
-                            <div className="mt-3 pt-3 border-t border-green-200">
-                              <p className="text-xs text-slate-600 mb-2 text-center">판매자에게 QR 코드를 보여주세요</p>
-                              <div className="flex justify-center">
-                                <img
-                                  src={`${process.env.NEXT_PUBLIC_API_URL}/custom-participants/${participation.id}/qr_code/`}
-                                  alt="할인 QR 코드"
-                                  className="w-40 h-40 border-2 border-slate-300 rounded"
-                                />
-                              </div>
-                            </div>
-                          )}
+                          {(() => {
+                            const shouldShowQR = groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used;
+
+                            // 디버깅 로그
+                            console.log('QR 조건 체크:', {
+                              participationId: participation.id,
+                              type: groupbuy.type,
+                              discount_code: participation.discount_code,
+                              discount_used: participation.discount_used,
+                              shouldShowQR
+                            });
+
+                            if (shouldShowQR) {
+                              const qrUrl = `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/${participation.id}/qr_code/`;
+                              console.log('QR URL:', qrUrl);
+
+                              return (
+                                <div className="mt-3 pt-3 border-t border-green-200">
+                                  <p className="text-xs text-slate-600 mb-2 text-center">판매자에게 QR 코드를 보여주세요</p>
+                                  <div className="flex justify-center">
+                                    <img
+                                      src={qrUrl}
+                                      alt="할인 QR 코드"
+                                      className="w-40 h-40 border-2 border-slate-300 rounded"
+                                      onError={(e) => {
+                                        console.error('QR 이미지 로드 실패:', qrUrl);
+                                        console.error('에러:', e);
+                                      }}
+                                      onLoad={() => {
+                                        console.log('QR 이미지 로드 성공:', qrUrl);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return null;
+                          })()}
 
                           {participation.discount_used && (
                             <p className="text-xs text-slate-500 mt-1.5">
