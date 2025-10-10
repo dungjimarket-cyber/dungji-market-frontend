@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
+import AddressSearch from '@/components/address/AddressSearch';
 import RichTextEditor from '@/components/custom/RichTextEditor';
 import LinkPreview from '@/components/custom/LinkPreview';
 
@@ -1164,12 +1165,18 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
                     <div>
                       <Label>매장 위치 *</Label>
-                      <Input
-                        value={formData.location}
-                        onChange={(e) => handleInputChange('location', e.target.value)}
-                        placeholder="서울시 강남구 테헤란로 123"
-                        maxLength={300}
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={formData.location}
+                          onChange={(e) => handleInputChange('location', e.target.value)}
+                          placeholder="주소 검색 버튼을 클릭하세요"
+                          maxLength={300}
+                        />
+                        <AddressSearch
+                          onComplete={(address) => handleInputChange('location', address)}
+                          buttonText="주소 검색"
+                        />
+                      </div>
                     </div>
 
                     <div>

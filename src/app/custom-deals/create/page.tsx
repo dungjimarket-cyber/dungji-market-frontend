@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
+import AddressSearch from '@/components/address/AddressSearch';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
@@ -1457,17 +1458,23 @@ export default function CreateCustomDealPage() {
 
                 <div>
                   <Label>매장 위치 *</Label>
-                  <Input
-                    ref={locationRef}
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="서울시 강남구 테헤란로 123"
-                    className={errors.location ? 'border-red-300' : ''}
-                    maxLength={150}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      ref={locationRef}
+                      value={formData.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      placeholder="주소 검색 버튼을 클릭하세요"
+                      className={errors.location ? 'border-red-300' : ''}
+                      maxLength={150}
+                    />
+                    <AddressSearch
+                      onComplete={(address) => handleInputChange('location', address)}
+                      buttonText="주소 검색"
+                    />
+                  </div>
                   <div className="flex justify-between mt-1">
                     {errors.location && <p className="text-sm text-red-600">{errors.location}</p>}
-                    <p className="text-sm text-slate-500 ml-auto">{formData.location.length}/300</p>
+                    <p className="text-sm text-slate-500 ml-auto">{formData.location.length}/150</p>
                   </div>
                 </div>
 
