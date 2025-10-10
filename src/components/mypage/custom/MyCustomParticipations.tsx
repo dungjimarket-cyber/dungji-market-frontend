@@ -46,9 +46,12 @@ export default function MyCustomParticipations() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchParticipations();
+    setCurrentPage(1); // 필터 변경 시 첫 페이지로
   }, [filter]);
 
   // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
@@ -193,6 +196,12 @@ export default function MyCustomParticipations() {
     cancelled: participations.filter(p => p.status === 'cancelled').length,
   };
 
+  // 페이징 처리
+  const totalPages = Math.ceil(participations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentParticipations = participations.slice(startIndex, endIndex);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -251,17 +260,17 @@ export default function MyCustomParticipations() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {participations.map((participation) => {
+        <div className="space-y-3">
+          {currentParticipations.map((participation) => {
             const groupbuy = participation.custom_groupbuy;
 
             return (
-              <Card key={participation.id} className="border-slate-200">
-                <CardContent className="p-6">
-                  <div className="flex gap-6">
+              <Card key={participation.id} className="border-slate-200 hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex gap-4">
                     {/* 이미지 */}
                     <Link href={`/custom-deals/${groupbuy.id}`}>
-                      <div className="w-40 h-40 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 cursor-pointer">
+                      <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
                         {groupbuy.primary_image ? (
                           <img
                             src={groupbuy.primary_image}
@@ -270,46 +279,48 @@ export default function MyCustomParticipations() {
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full">
-                            <Tag className="w-12 h-12 text-slate-300" />
+                            <Tag className="w-8 h-8 text-slate-300" />
                           </div>
                         )}
                       </div>
                     </Link>
 
                     {/* 정보 */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline">{groupbuy.type_display}</Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Badge variant="outline" className="text-xs">{groupbuy.type_display}</Badge>
                             {getStatusBadge(participation)}
                           </div>
                           <Link href={`/custom-deals/${groupbuy.id}`}>
-                            <h3 className="text-xl font-bold text-slate-900 mb-1 hover:text-blue-600 cursor-pointer">
+                            <h3 className="text-base font-bold text-slate-900 hover:text-blue-600 cursor-pointer truncate">
                               {groupbuy.title}
                             </h3>
                           </Link>
-                          <p className="text-sm text-slate-600">판매자: {groupbuy.seller_name}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            판매자: {groupbuy.seller_name} • {new Date(participation.participated_at).toLocaleDateString()}
+                          </p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex-shrink-0">
                           {groupbuy.original_price && groupbuy.final_price ? (
                             <>
-                              <div className="flex items-baseline gap-2 mb-1">
-                                <span className="text-sm text-slate-500 line-through">
+                              <div className="flex items-baseline gap-1.5 justify-end">
+                                <span className="text-xs text-slate-400 line-through">
                                   {groupbuy.original_price.toLocaleString()}원
                                 </span>
-                                <span className="text-lg font-bold text-red-600">
+                                <span className="text-sm font-bold text-red-600">
                                   {groupbuy.discount_rate}%
                                 </span>
                               </div>
-                              <div className="text-2xl font-bold text-slate-900">
+                              <div className="text-lg font-bold text-slate-900 mt-0.5">
                                 {typeof groupbuy.final_price === 'object' && groupbuy.final_price !== null
                                   ? ((groupbuy.final_price as any).min || 0).toLocaleString()
                                   : groupbuy.final_price.toLocaleString()}원
                               </div>
                             </>
                           ) : (
-                            <div className="text-lg font-bold text-blue-600">
+                            <div className="text-sm font-bold text-blue-600">
                               전품목 {groupbuy.discount_rate}% 할인
                             </div>
                           )}
@@ -318,82 +329,70 @@ export default function MyCustomParticipations() {
 
                       {/* 위치 */}
                       {groupbuy.type === 'offline' && groupbuy.regions && groupbuy.regions.length > 0 && (
-                        <div className="flex items-center gap-1 text-sm text-slate-600 mb-3">
-                          <MapPin className="w-4 h-4" />
+                        <div className="flex items-center gap-1 text-xs text-slate-500 mb-2">
+                          <MapPin className="w-3 h-3" />
                           <span>{groupbuy.regions.map(r => r.full_name).join(', ')}</span>
                         </div>
                       )}
 
-                      {/* 참여 코드 */}
-                      <div className="bg-slate-50 rounded-lg p-3 mb-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-slate-500 mb-1">참여 코드</p>
-                            <p className="font-mono font-bold text-slate-900">
-                              {participation.participation_code}
-                            </p>
-                            <p className="text-xs text-slate-500 mt-1">
-                              참여일: {new Date(participation.participated_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => copyToClipboard(participation.participation_code, '참여 코드')}
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
+                      {/* 참여 코드 - 작게 */}
+                      <div className="bg-slate-50 rounded px-2 py-1.5 mb-2 inline-flex items-center gap-2">
+                        <span className="text-xs text-slate-500">참여코드:</span>
+                        <span className="font-mono text-xs font-semibold text-slate-700">
+                          {participation.participation_code}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(participation.participation_code, '참여 코드')}
+                          className="text-slate-400 hover:text-slate-600"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
                       </div>
 
                       {/* 할인 정보 */}
                       {(participation.discount_code || participation.discount_url) && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Ticket className="w-5 h-5 text-green-600" />
-                            <h4 className="font-bold text-green-900">할인 발급완료</h4>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Ticket className="w-4 h-4 text-green-600" />
+                            <h4 className="text-sm font-bold text-green-900">할인 발급완료</h4>
                             {participation.discount_valid_until && (
-                              <span className="text-sm ml-auto">
+                              <span className="text-xs ml-auto">
                                 {getValidUntilDisplay(participation.discount_valid_until)}
                               </span>
                             )}
                           </div>
 
-                          {participation.discount_code && (
-                            <div className="bg-white rounded p-3 mb-2">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-xs text-slate-600 mb-1">할인 코드</p>
-                                  <p className="font-mono font-bold text-lg text-slate-900">
-                                    {participation.discount_code}
-                                  </p>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {participation.discount_code && (
+                              <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
+                                <span className="font-mono text-sm font-bold text-slate-900 truncate">
+                                  {participation.discount_code}
+                                </span>
+                                <button
                                   onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
+                                  className="text-slate-400 hover:text-slate-600 flex-shrink-0"
                                 >
-                                  <Copy className="w-4 h-4" />
-                                </Button>
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {participation.discount_url && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full"
-                              onClick={() => window.open(participation.discount_url!, '_blank')}
-                            >
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              할인 링크로 이동
-                            </Button>
-                          )}
+                            {participation.discount_url && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={() => window.open(participation.discount_url!, '_blank')}
+                              >
+                                <ExternalLink className="w-3 h-3 mr-1" />
+                                링크 열기
+                              </Button>
+                            )}
+                          </div>
 
-                          {participation.discount_used && participation.discount_used_at && (
-                            <p className="text-xs text-slate-500 mt-2">
-                              사용일: {new Date(participation.discount_used_at).toLocaleString()}
+                          {participation.discount_used && (
+                            <p className="text-xs text-slate-500 mt-1.5">
+                              사용완료 • {new Date(participation.discount_used_at!).toLocaleDateString()}
                             </p>
                           )}
                         </div>
@@ -401,24 +400,25 @@ export default function MyCustomParticipations() {
 
                       {/* 액션 버튼 */}
                       <div className="flex gap-2">
-                        {canCancel(participation) && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 border-red-300 hover:bg-red-50"
-                            onClick={() => handleCancelParticipation(participation.id, groupbuy.id)}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            참여 취소
-                          </Button>
-                        )}
                         <Button
                           size="sm"
                           variant="outline"
+                          className="text-xs h-7 px-3"
                           onClick={() => router.push(`/custom-deals/${groupbuy.id}`)}
                         >
                           상세보기
                         </Button>
+                        {canCancel(participation) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
+                            onClick={() => handleCancelParticipation(participation.id, groupbuy.id)}
+                          >
+                            <XCircle className="w-3 h-3 mr-1" />
+                            참여 취소
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -426,6 +426,41 @@ export default function MyCustomParticipations() {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* 페이징 */}
+      {!loading && participations.length > itemsPerPage && (
+        <div className="flex justify-center items-center gap-2 mt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            이전
+          </Button>
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={currentPage === page ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCurrentPage(page)}
+                className={currentPage === page ? 'bg-blue-600' : ''}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+          >
+            다음
+          </Button>
         </div>
       )}
     </div>
