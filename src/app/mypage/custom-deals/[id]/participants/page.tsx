@@ -118,9 +118,13 @@ export default function ParticipantsManagePage() {
 
   const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
     try {
+      console.log('🔍 [QR 스캔] 시작:', data);
       const token = localStorage.getItem('accessToken');
 
       // 1단계: 할인코드 검증
+      console.log('🔍 [QR 스캔] 1단계: 할인코드 검증 시작');
+      toast.info('할인코드 검증 중...');
+
       const verifyResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/verify_discount/`,
         {
@@ -136,51 +140,74 @@ export default function ParticipantsManagePage() {
         }
       );
 
+      console.log('🔍 [QR 스캔] 검증 응답 상태:', verifyResponse.status);
       const verifyResult = await verifyResponse.json();
+      console.log('🔍 [QR 스캔] 검증 결과:', verifyResult);
 
       if (!verifyResult.valid) {
+        console.log('❌ [QR 스캔] 검증 실패:', verifyResult.error);
         toast.error(verifyResult.error || '유효하지 않은 할인코드입니다');
         return;
       }
 
+      console.log('✅ [QR 스캔] 검증 성공:', verifyResult.user_name);
+      toast.success('검증 완료! 사용 처리 중...');
+
       // 2단계: 자동으로 사용 처리
+      console.log('🔍 [QR 스캔] 2단계: 참여자 찾기');
       const participant = participants.find(p => p.discount_code === data.discountCode);
+
       if (!participant) {
+        console.log('❌ [QR 스캔] 참여자 찾기 실패. 할인코드:', data.discountCode);
+        console.log('현재 참여자 목록:', participants.map(p => ({ id: p.id, code: p.discount_code })));
         toast.error('참여자 정보를 찾을 수 없습니다');
         return;
       }
 
+      console.log('✅ [QR 스캔] 참여자 발견:', { id: participant.id, name: participant.user_name, used: participant.discount_used });
+
       // 이미 사용된 경우 체크
       if (participant.discount_used) {
+        console.log('⚠️ [QR 스캔] 이미 사용 처리됨');
         toast.warning(`${verifyResult.user_name}님은 이미 사용 처리되었습니다`);
         setShowQRScanner(false);
         return;
       }
 
       // 사용 처리 API 호출
-      const toggleResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/${participant.id}/toggle-used/`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+      console.log('🔍 [QR 스캔] 3단계: 사용 처리 API 호출');
+      const toggleUrl = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/${participant.id}/toggle-used/`;
+      console.log('API URL:', toggleUrl);
+
+      const toggleResponse = await fetch(toggleUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      );
+      });
+
+      console.log('🔍 [QR 스캔] 사용 처리 응답 상태:', toggleResponse.status);
 
       if (!toggleResponse.ok) {
-        throw new Error('사용 처리 실패');
+        const errorText = await toggleResponse.text();
+        console.log('❌ [QR 스캔] 사용 처리 실패. 응답:', errorText);
+        throw new Error(`사용 처리 실패: ${toggleResponse.status}`);
       }
+
+      const toggleResult = await toggleResponse.json();
+      console.log('✅ [QR 스캔] 사용 처리 성공:', toggleResult);
 
       // 성공
       toast.success(`✅ ${verifyResult.user_name}님 할인코드 사용 처리 완료!`);
       setShowQRScanner(false);
 
+      console.log('🔍 [QR 스캔] 참여자 목록 리프레시 시작');
       // 참여자 목록 리프레시
-      fetchData();
+      await fetchData();
+      console.log('✅ [QR 스캔] 전체 프로세스 완료');
     } catch (error) {
-      console.error('QR 인증 실패:', error);
-      toast.error('QR 인증에 실패했습니다');
+      console.error('❌ [QR 인증 실패]:', error);
+      toast.error(`QR 인증에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 
