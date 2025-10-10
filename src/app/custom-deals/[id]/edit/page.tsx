@@ -15,7 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
-import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import AddressSearch from '@/components/address/AddressSearch';
 import RichTextEditor from '@/components/custom/RichTextEditor';
 import LinkPreview from '@/components/custom/LinkPreview';
@@ -27,12 +26,6 @@ interface ImagePreview {
   isEmpty?: boolean;
   existingUrl?: string; // 기존 S3 URL
   id?: number; // 기존 이미지 ID
-}
-
-// 선택된 지역 타입
-interface SelectedRegion {
-  province: string;
-  city: string;
 }
 
 // 카테고리 타입
@@ -63,9 +56,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
   // 카테고리 목록
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-
-  // 지역 선택 (오프라인용)
-  const [selectedRegions, setSelectedRegions] = useState<SelectedRegion[]>([]);
 
   // 할인코드 배열
   const [discountCodes, setDiscountCodes] = useState<string[]>(['']);
@@ -177,14 +167,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         })));
       }
 
-      // 지역 (code를 저장하여 backend에 code로 전송)
-      if (data.regions && data.regions.length > 0) {
-        setSelectedRegions(data.regions.map((r: any) => ({
-          province: r.full_name?.split(' ')[0] || r.name?.split(' ')[0] || '',
-          city: r.code || '' // code를 city 필드에 저장 (backend가 code로 검색)
-        })));
-      }
-
       // 할인코드
       if (data.discount_codes && data.discount_codes.length > 0) {
         setDiscountCodes(data.discount_codes);
@@ -281,16 +263,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           setHasChanges(true);
           return;
         }
-
-        // 지역 변경 체크
-        const originalRegionCodes = originalData.regions?.map((r: any) => r.code).sort() || [];
-        const currentRegionCodes = selectedRegions.map(r => r.city).sort();
-        const regionsChanged = JSON.stringify(originalRegionCodes) !== JSON.stringify(currentRegionCodes);
-
-        if (regionsChanged) {
-          setHasChanges(true);
-          return;
-        }
       }
     }
 
@@ -301,7 +273,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     imagesModified,
     formData,
     selectedCategory,
-    selectedRegions,
     discountCodes,
     hasParticipants
   ]);
@@ -561,13 +532,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             submitFormData.append('phone_number', formData.phone_number);
           }
         } else {
-          // 오프라인: regions 필드로 전송 (backend가 regions를 기대함)
-          selectedRegions.forEach(region => {
-            submitFormData.append('regions', JSON.stringify({
-              province: region.province,
-              city: region.city
-            }));
-          });
           submitFormData.append('location', formData.location);
           if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
           submitFormData.append('phone_number', formData.phone_number);
@@ -1149,20 +1113,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="w-5 h-5" />
-                      지역 및 매장 정보
+                      매장 정보
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <Label>지역 선택 *</Label>
-                      <p className="text-sm text-slate-500 mb-2">최대 3개까지 선택 가능합니다</p>
-                      <MultiRegionDropdown
-                        selectedRegions={selectedRegions}
-                        onSelectionChange={setSelectedRegions}
-                        maxSelections={3}
-                      />
-                    </div>
-
                     <div>
                       <Label>매장 위치 *</Label>
                       <div className="flex gap-2">

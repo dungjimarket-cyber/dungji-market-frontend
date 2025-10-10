@@ -21,7 +21,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
-import MultiRegionDropdown from '@/components/address/MultiRegionDropdown';
 import AddressSearch from '@/components/address/AddressSearch';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
@@ -34,12 +33,6 @@ interface ImagePreview {
   url: string;
   isMain: boolean;
   isEmpty?: boolean;
-}
-
-// 선택된 지역 타입
-interface SelectedRegion {
-  province: string;
-  city: string;
 }
 
 // 카테고리 타입
@@ -67,7 +60,6 @@ export default function CreateCustomDealPage() {
   const targetParticipantsRef = useRef<HTMLInputElement>(null);
   const discountUrlRef = useRef<HTMLInputElement>(null);
   const discountCodesRef = useRef<HTMLDivElement>(null);
-  const regionsRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLInputElement>(null);
   const phoneNumberRef = useRef<HTMLInputElement>(null);
 
@@ -81,9 +73,6 @@ export default function CreateCustomDealPage() {
   // 카테고리 목록
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-
-  // 지역 선택 (오프라인용)
-  const [selectedRegions, setSelectedRegions] = useState<SelectedRegion[]>([]);
 
   // 할인코드 배열
   const [discountCodes, setDiscountCodes] = useState<string[]>(['']);
@@ -525,10 +514,6 @@ export default function CreateCustomDealPage() {
 
     // 오프라인 공구
     if (formData.type === 'offline') {
-      if (selectedRegions.length === 0) {
-        newErrors.regions = '지역을 1개 이상 선택해주세요';
-        if (!firstErrorRef) firstErrorRef = regionsRef;
-      }
       if (!formData.location.trim()) {
         newErrors.location = '매장 위치를 입력해주세요';
         if (!firstErrorRef) firstErrorRef = locationRef;
@@ -661,13 +646,6 @@ export default function CreateCustomDealPage() {
           submitFormData.append('phone_number', formData.phone_number);
         }
       } else {
-        // 지역 정보 (중고거래와 동일한 방식)
-        const regionStrings = selectedRegions.map(r => `${r.province} ${r.city}`);
-        selectedRegions.forEach((region) => {
-          submitFormData.append('regions', `${region.province} ${region.city}`);
-        });
-        // Serializer 유효성 검사를 위해 region_codes도 전송
-        submitFormData.append('region_codes', JSON.stringify(regionStrings));
         submitFormData.append('location', formData.location);
         if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
         submitFormData.append('phone_number', formData.phone_number);
@@ -1442,20 +1420,10 @@ export default function CreateCustomDealPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
-                  지역 및 매장 정보
+                  매장 정보
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label>지역 선택 * {errors.regions && <span className="text-red-600 text-sm ml-2">{errors.regions}</span>}</Label>
-                  <p className="text-sm text-slate-500 mb-2">최대 3개까지 선택 가능합니다</p>
-                  <MultiRegionDropdown
-                    selectedRegions={selectedRegions}
-                    onSelectionChange={setSelectedRegions}
-                    maxSelections={3}
-                  />
-                </div>
-
                 <div>
                   <Label>매장 위치 *</Label>
                   <div className="flex gap-2">
