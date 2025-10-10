@@ -19,6 +19,7 @@ interface Participant {
   discount_url: string | null;
   discount_used: boolean;
   discount_used_at: string | null;
+  discount_valid_until: string | null;
   status: string;
   status_display: string;
 }
@@ -32,6 +33,7 @@ interface CustomDeal {
   status_display: string;
   target_participants: number;
   current_participants: number;
+  online_discount_type?: 'link_only' | 'code_only' | 'both';
 }
 
 export default function ParticipantsManagePage() {
@@ -114,6 +116,41 @@ export default function ParticipantsManagePage() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label}가 복사되었습니다`);
+  };
+
+  const getValidityDisplay = (validUntil: string | null, hasCode: boolean) => {
+    if (!validUntil) return null;
+
+    const now = new Date();
+    const expire = new Date(validUntil);
+    const diff = expire.getTime() - now.getTime();
+
+    // 만료됨
+    if (diff <= 0) {
+      return { label: hasCode ? '유효기간' : '판매기간', time: '만료됨', color: 'text-red-600' };
+    }
+
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    let timeText = '';
+    if (minutes < 60) {
+      // 1시간 미만: 분 단위
+      timeText = `${minutes}분 남음`;
+    } else if (hours < 24) {
+      // 1시간~24시간: 시간 단위
+      timeText = `${hours}시간 남음`;
+    } else {
+      // 1일 이상: 일 단위
+      timeText = `${days}일 남음`;
+    }
+
+    return {
+      label: hasCode ? '유효기간' : '판매기간',
+      time: timeText,
+      color: days < 1 ? 'text-orange-600' : 'text-slate-600'
+    };
   };
 
   const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
@@ -324,7 +361,7 @@ export default function ParticipantsManagePage() {
                     </div>
 
                     {/* 참여 정보 */}
-                    <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 mb-2 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(participant.participated_at).toLocaleDateString('ko', {
@@ -343,6 +380,18 @@ export default function ParticipantsManagePage() {
                           })}
                         </span>
                       )}
+                      {(() => {
+                        const validity = getValidityDisplay(participant.discount_valid_until, !!participant.discount_code);
+                        if (validity) {
+                          return (
+                            <span className={`flex items-center gap-1 ${validity.color}`}>
+                              <Clock className="w-3 h-3" />
+                              {validity.label}: {validity.time}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     {/* 할인코드/링크 */}

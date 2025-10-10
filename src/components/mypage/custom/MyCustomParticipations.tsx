@@ -103,6 +103,7 @@ interface CustomParticipation {
     primary_image: string | null;
     status: string;
     status_display: string;
+    online_discount_type?: 'link_only' | 'code_only' | 'both';
     regions?: Array<{
       code: string;
       name: string;
@@ -209,33 +210,48 @@ export default function MyCustomParticipations() {
     toast.success(`${label}가 복사되었습니다`);
   };
 
-  const getValidUntilDisplay = (validUntil: string | null) => {
+  const getValidityDisplay = (
+    validUntil: string | null,
+    groupbuyType: 'online' | 'offline',
+    onlineDiscountType?: 'link_only' | 'code_only' | 'both',
+    hasCode?: boolean
+  ) => {
     if (!validUntil) return null;
 
     const endDate = new Date(validUntil);
     const diff = endDate.getTime() - currentTime.getTime();
 
+    // 라벨 결정: 오프라인은 항상 "유효기간", 온라인은 link_only일 때만 "판매기간"
+    const isLinkOnly = groupbuyType === 'online' && onlineDiscountType === 'link_only';
+    const label = isLinkOnly ? '판매기간' : '유효기간';
+
     // 만료됨
     if (diff <= 0) {
-      return <span className="text-red-600 font-medium">유효기간 만료</span>;
+      return { label, time: '만료됨', color: 'text-red-600' };
     }
 
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    // 1일 이상
-    if (days > 0) {
-      return <span className="text-slate-600">{days}일 남음</span>;
+    let timeText = '';
+    let color = 'text-slate-600';
+
+    if (minutes < 60) {
+      // 1시간 미만: 분 단위
+      timeText = `${minutes}분 남음`;
+      color = 'text-red-600';
+    } else if (hours < 24) {
+      // 1시간~24시간: 시간 단위
+      timeText = `${hours}시간 남음`;
+      color = 'text-orange-600';
+    } else {
+      // 1일 이상: 일 단위
+      timeText = `${days}일 남음`;
+      color = days < 1 ? 'text-orange-600' : 'text-slate-600';
     }
 
-    // 1시간 이상 ~ 1일 미만
-    if (hours > 0) {
-      return <span className="text-orange-600 font-medium">{hours}시간 남음</span>;
-    }
-
-    // 1시간 미만
-    return <span className="text-red-600 font-medium">{minutes}분 남음</span>;
+    return { label, time: timeText, color };
   };
 
   const getStatusBadge = (
@@ -455,11 +471,22 @@ export default function MyCustomParticipations() {
                           <div className="flex items-center gap-2 mb-2">
                             <Ticket className="w-4 h-4 text-green-600" />
                             <h4 className="text-sm font-bold text-green-900">할인 발급완료</h4>
-                            {participation.discount_valid_until && (
-                              <span className="text-xs ml-auto">
-                                {getValidUntilDisplay(participation.discount_valid_until)}
-                              </span>
-                            )}
+                            {(() => {
+                              const validity = getValidityDisplay(
+                                participation.discount_valid_until,
+                                groupbuy.type,
+                                groupbuy.online_discount_type,
+                                !!participation.discount_code
+                              );
+                              if (validity) {
+                                return (
+                                  <span className={`text-xs ml-auto font-medium ${validity.color}`}>
+                                    {validity.label}: {validity.time}
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
 
                           <div className="flex items-center gap-2 flex-wrap">

@@ -913,7 +913,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 )}
 
                 <div>
-                  <Label>할인 유효기간 *</Label>
+                  <Label>{formData.online_discount_type === 'link_only' ? '할인 판매기간' : '할인 유효기간'} *</Label>
                   <Select
                     value={formData.discount_valid_days || '1'}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, discount_valid_days: value }))}
@@ -931,7 +931,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-slate-500 mt-1">
-                    공구 마감 후 자동으로 할인 유효기간이 시작됩니다
+                    {formData.online_discount_type === 'link_only'
+                      ? '공구 마감 후 자동으로 판매기간이 시작됩니다'
+                      : '공구 마감 후 자동으로 할인코드 유효기간이 시작됩니다'}
                   </p>
                 </div>
               </>
