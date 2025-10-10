@@ -20,9 +20,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **백엔드 환경변수**: Vercel 대시보드 → 백엔드 프로젝트 → Settings → Environment Variables
 - **파일 대신 환경변수 사용**: Firebase 키, DB 설정 등 모두 환경변수로
 
-### 배포 후 적용
-- Git push → 자동 배포 (Vercel)
-- 환경변수 변경 시 → 수동 재배포 필요 (Vercel 대시보드에서 Redeploy)
+### 배포 시스템 (GitHub Push 자동화)
+
+#### 프론트엔드 배포
+- **Git push → Vercel 자동 배포** (설정 완료)
+- 환경변수 변경 시 → Vercel 대시보드에서 수동 재배포
+
+#### 백엔드 배포
+- **Git push → 자동 배포 시스템 작동** (GitHub Actions/Webhook 설정 완료)
+- ❌ **절대 EC2 서버 재시작 언급 금지**
+  - 사용자가 직접 관리하는 자동화 시스템 존재
+  - Claude는 코드 푸시까지만 담당
+  - 서버 관리는 사용자 영역
+
+#### 배포 완료 멘트
+✅ "백엔드 변경사항이 푸시되었습니다. 자동 배포 시스템이 적용합니다."
+❌ "EC2 서버에서 재시작해주세요" ← 절대 사용 금지
 
 ## Project Overview
 Dungji Market (둥지마켓) is a Next.js-based group purchasing platform for telecommunications and internet services in Korea. Users can create and participate in group purchases to get better deals on mobile plans, internet services, and electronics.
