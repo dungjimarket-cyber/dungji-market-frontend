@@ -254,7 +254,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
 
   // 대표 이미지 설정 (배열 순서 변경)
   const handleSetMainImage = useCallback((index: number) => {
-    if (isFieldLocked('images')) {
+    if (hasOffers && !EDITABLE_AFTER_OFFERS.includes('images')) {
       toast({
         title: '수정 불가',
         description: LOCKED_FIELDS_MESSAGE,
@@ -270,7 +270,7 @@ function UsedElectronicsEditClient({ electronicsId }: { electronicsId: string })
     });
     setIsModified(true);
     setImagesModified(true);
-  }, [isFieldLocked, toast]);
+  }, [hasOffers, toast]);
 
   // 폼 제출
   const handleSubmit = async () => {
