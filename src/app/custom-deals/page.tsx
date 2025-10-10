@@ -52,6 +52,7 @@ export default function CustomDealsPage() {
   const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showClosedDeals, setShowClosedDeals] = useState(true); // 마감된 공구 표시 여부
 
   useEffect(() => {
     fetchCategories();
@@ -229,6 +230,18 @@ export default function CustomDealsPage() {
                 </option>
               ))}
             </select>
+
+            {/* Status Filter */}
+            <button
+              onClick={() => setShowClosedDeals(!showClosedDeals)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                !showClosedDeals
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              {showClosedDeals ? '진행중만 보기' : '전체 보기'}
+            </button>
           </div>
         </div>
       </div>
@@ -248,7 +261,11 @@ export default function CustomDealsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {deals.map((deal) => (
+            {deals
+              .filter((deal) => showClosedDeals || deal.status === 'recruiting')
+              .map((deal) => {
+                const isClosed = deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired';
+                return (
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden">
                   {/* Image */}
@@ -257,17 +274,32 @@ export default function CustomDealsPage() {
                       <img
                         src={deal.primary_image}
                         alt={deal.title}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${isClosed ? 'opacity-60' : ''}`}
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <Tag className="w-12 h-12 text-slate-300" />
                       </div>
                     )}
+
+                    {/* 마감 오버레이 */}
+                    {isClosed && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-white font-bold text-3xl mb-1 drop-shadow-lg">마감</div>
+                          <div className="text-white text-xs bg-black/30 px-3 py-1 rounded-full">
+                            {deal.status_display}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Status Badge */}
-                    <div className="absolute top-2 right-2">
-                      {getStatusBadge(deal)}
-                    </div>
+                    {!isClosed && (
+                      <div className="absolute top-2 right-2">
+                        {getStatusBadge(deal)}
+                      </div>
+                    )}
                     {/* Type Badge */}
                     <div className="absolute top-2 left-2">
                       <Badge className="bg-white/90 text-slate-700 border-0 whitespace-nowrap text-xs">
@@ -353,7 +385,8 @@ export default function CustomDealsPage() {
                   </CardContent>
                 </Card>
               </Link>
-            ))}
+                );
+              })}
           </div>
         )}
       </div>

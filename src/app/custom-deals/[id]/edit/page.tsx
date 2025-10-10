@@ -1155,6 +1155,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         maxLength={20}
                       />
                     </div>
+
+                    {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
+                      <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
+                        ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 

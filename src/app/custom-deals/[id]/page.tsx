@@ -62,6 +62,11 @@ interface CustomDeal {
   created_at: string;
 }
 
+interface CategoryOption {
+  value: string;
+  label: string;
+}
+
 export default function CustomDealDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -70,6 +75,7 @@ export default function CustomDealDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
 
   const {
     checkProfile,
@@ -79,10 +85,24 @@ export default function CustomDealDetailPage() {
   } = useCustomProfileCheck();
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     if (params.id) {
       fetchDeal();
     }
   }, [params.id]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom/categories/`);
+      const data = await response.json();
+      setCategories(data.categories);
+    } catch (error) {
+      console.error('카테고리 로드 실패:', error);
+    }
+  };
 
   const fetchDeal = async () => {
     try {
@@ -398,6 +418,13 @@ export default function CustomDealDetailPage() {
 
   const sortedImages = [...deal.images].sort((a, b) => a.order_index - b.order_index);
   const progress = (deal.current_participants / deal.target_participants) * 100;
+  const isClosed = deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired';
+
+  // 카테고리 영어 → 한글 변환
+  const getCategoryLabel = (value: string) => {
+    const category = categories.find(cat => cat.value === value);
+    return category ? category.label : value;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -414,7 +441,7 @@ export default function CustomDealDetailPage() {
             <span>목록</span>
           </Button>
           <div className="flex items-center gap-2">
-            {user && deal.seller === parseInt(user.id) && (
+            {user && deal.seller === parseInt(user.id) && !isClosed && (
               <>
                 <Button
                   variant="outline"
@@ -463,17 +490,41 @@ export default function CustomDealDetailPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 마감 배너 */}
+        {isClosed && (
+          <div className="mb-6 bg-gradient-to-r from-slate-700 to-slate-600 rounded-lg p-6 text-center border-2 border-slate-400 shadow-lg">
+            <div className="flex items-center justify-center gap-3">
+              <AlertCircle className="w-8 h-8 text-white flex-shrink-0" />
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1">마감된 공구입니다</h2>
+                <p className="text-slate-200 text-sm">
+                  {deal.status === 'completed' && '목표 인원이 달성되어 조기 종료되었습니다'}
+                  {deal.status === 'cancelled' && '판매자에 의해 취소되었습니다'}
+                  {deal.status === 'expired' && '모집 기간이 종료되었습니다'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Images */}
           <div>
             {/* Main Image */}
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4">
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative">
               {sortedImages.length > 0 ? (
-                <img
-                  src={sortedImages[selectedImage].image_url}
-                  alt={deal.title}
-                  className="w-full aspect-square object-cover"
-                />
+                <>
+                  <img
+                    src={sortedImages[selectedImage].image_url}
+                    alt={deal.title}
+                    className={`w-full aspect-square object-cover ${isClosed ? 'opacity-50' : ''}`}
+                  />
+                  {isClosed && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <div className="text-white font-bold text-5xl drop-shadow-lg">마감</div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="w-full aspect-square bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                   <Tag className="w-24 h-24 text-slate-300" />
@@ -738,7 +789,7 @@ export default function CustomDealDetailPage() {
                 <div className="flex flex-wrap gap-1.5">
                   {deal.categories.map((category) => (
                     <Badge key={category} variant="secondary" className="text-xs">
-                      {category}
+                      {getCategoryLabel(category)}
                     </Badge>
                   ))}
                 </div>

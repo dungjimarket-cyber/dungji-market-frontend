@@ -1534,9 +1534,11 @@ export default function CreateCustomDealPage() {
                       </Button>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-500 mt-2">
-                    ⚠️ 배달 주문 시 사용 불가. 방문 포장 또는 매장 식사만 가능합니다.
-                  </p>
+                  {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
+                    <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
+                      ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
+                    </p>
+                  )}
                 </div>
 
                 <div>
