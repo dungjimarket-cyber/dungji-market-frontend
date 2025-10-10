@@ -292,17 +292,27 @@ export default function MyCustomParticipations() {
                           <p className="text-sm text-slate-600">판매자: {groupbuy.seller_name}</p>
                         </div>
                         <div className="text-right">
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-sm text-slate-500 line-through">
-                              {groupbuy.original_price.toLocaleString()}원
-                            </span>
-                            <span className="text-lg font-bold text-red-600">
-                              {groupbuy.discount_rate}%
-                            </span>
-                          </div>
-                          <div className="text-2xl font-bold text-slate-900">
-                            {groupbuy.final_price.toLocaleString()}원
-                          </div>
+                          {groupbuy.original_price && groupbuy.final_price ? (
+                            <>
+                              <div className="flex items-baseline gap-2 mb-1">
+                                <span className="text-sm text-slate-500 line-through">
+                                  {groupbuy.original_price.toLocaleString()}원
+                                </span>
+                                <span className="text-lg font-bold text-red-600">
+                                  {groupbuy.discount_rate}%
+                                </span>
+                              </div>
+                              <div className="text-2xl font-bold text-slate-900">
+                                {typeof groupbuy.final_price === 'object' && groupbuy.final_price !== null
+                                  ? ((groupbuy.final_price as any).min || 0).toLocaleString()
+                                  : groupbuy.final_price.toLocaleString()}원
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-lg font-bold text-blue-600">
+                              전품목 {groupbuy.discount_rate}% 할인
+                            </div>
+                          )}
                         </div>
                       </div>
 
