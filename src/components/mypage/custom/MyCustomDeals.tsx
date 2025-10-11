@@ -377,7 +377,7 @@ export default function MyCustomDeals() {
                 </div>
 
                 {/* Price - 고정 높이 */}
-                <div className="mb-3 h-14">
+                <div className="mb-2 h-14">
                   {deal.original_price && deal.final_price ? (
                     <>
                       <div className="flex items-baseline gap-1.5">
@@ -402,10 +402,19 @@ export default function MyCustomDeals() {
                 </div>
 
                 {/* Progress or Validity - 고정 높이 */}
-                <div className="mb-3">
+                <div className="mb-2">
                   {deal.status === 'completed' && deal.discount_valid_until ? (
-                    // 마감된 경우: 유효기간 + 참여자 인원
+                    // 마감된 경우: 참여자 인원 (위) + 유효기간/판매기간 (아래)
                     <>
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
+                          <Users className="w-3 h-3 flex-shrink-0" />
+                          참여자
+                        </span>
+                        <span className="font-semibold text-slate-900">
+                          {deal.current_participants}명
+                        </span>
+                      </div>
                       {(() => {
                         const validity = getValidityDisplay(
                           deal.discount_valid_until,
@@ -414,30 +423,19 @@ export default function MyCustomDeals() {
                         );
                         if (validity) {
                           return (
-                            <>
-                              <div className="flex items-center justify-between text-sm mb-1.5">
-                                <span className="text-slate-600">{validity.label}</span>
-                                <span className={`font-semibold ${validity.color}`}>
-                                  {validity.time}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
-                                  <Users className="w-3 h-3 flex-shrink-0" />
-                                  참여자
-                                </span>
-                                <span className="font-semibold text-slate-900">
-                                  {deal.current_participants}명
-                                </span>
-                              </div>
-                            </>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-600">{validity.label}</span>
+                              <span className={`font-semibold ${validity.color}`}>
+                                {validity.time}
+                              </span>
+                            </div>
                           );
                         }
                         return null;
                       })()}
                     </>
                   ) : (
-                    // 모집 중: 기존 인원/시간 표시
+                    // 모집 중: 기존 인원/시간 + 프로그레스 바
                     <>
                       <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
@@ -465,7 +463,7 @@ export default function MyCustomDeals() {
                 </div>
 
                 {/* Stats - 고정 높이 */}
-                <div className="flex items-center gap-3 text-xs text-slate-400 mb-3 pt-2 border-t border-slate-100 h-8">
+                <div className="flex items-center gap-3 text-xs text-slate-400 mb-2 pt-2 border-t border-slate-100 h-8">
                   <span className="flex items-center gap-0.5 whitespace-nowrap">
                     <Eye className="w-3 h-3 flex-shrink-0" />
                     {deal.view_count}
