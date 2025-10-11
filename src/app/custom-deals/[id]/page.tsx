@@ -704,32 +704,37 @@ export default function CustomDealDetailPage() {
             </div>
 
             {/* Participate Button */}
+            {/* 참여 완료 상태 - 항상 비활성 버튼으로 표시 */}
+            {deal.is_participated && (!user || deal.seller !== parseInt(user.id)) && (
+              <Button
+                size="lg"
+                className="w-full font-semibold py-6 bg-slate-100 text-slate-600 cursor-not-allowed hover:bg-slate-100"
+                disabled
+              >
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  참여완료
+                </span>
+              </Button>
+            )}
+
+            {/* 참여 가능 상태 - 모집 중이고 참여하지 않은 경우 */}
             {deal.status === 'recruiting' &&
+             !deal.is_participated &&
              !isExpired &&
              deal.current_participants < deal.target_participants &&
              (!user || deal.seller !== parseInt(user.id)) && (
               <Button
                 size="lg"
-                className={`w-full font-semibold py-6 ${
-                  deal.is_participated
-                    ? 'bg-slate-100 text-slate-600 cursor-not-allowed hover:bg-slate-100'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-                onClick={deal.is_participated ? undefined : handleParticipate}
-                disabled={deal.is_participated}
+                className="w-full font-semibold py-6 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={handleParticipate}
               >
-                {deal.is_participated ? (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    참여완료
-                  </span>
-                ) : (
-                  '참여하기'
-                )}
+                참여하기
               </Button>
             )}
 
-            {deal.status === 'completed' && !deal.is_participated && (
+            {/* 마감된 공구 - 참여하지 않은 경우 */}
+            {deal.status === 'completed' && !deal.is_participated && (!user || deal.seller !== parseInt(user.id)) && (
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-2.5">
                 <AlertCircle className="w-5 h-5 text-slate-600 flex-shrink-0" />
                 <div>
