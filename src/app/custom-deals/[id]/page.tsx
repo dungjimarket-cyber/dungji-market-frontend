@@ -566,7 +566,7 @@ export default function CustomDealDetailPage() {
                 className="flex items-center gap-1.5 bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
               >
                 <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">내 공구 관리</span>
+                <span className="hidden sm:inline">커공 관리</span>
               </Button>
             )}
             {user && deal.seller === parseInt(user.id) && !isClosed && (

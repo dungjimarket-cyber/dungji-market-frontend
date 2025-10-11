@@ -37,7 +37,7 @@ export default function MyCustomDealsPage() {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-lg font-bold text-slate-900">내 커스텀 공구</h1>
+            <h1 className="text-lg font-bold text-slate-900">커공 관리</h1>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

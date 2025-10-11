@@ -212,7 +212,7 @@ export default function CustomDealsPage() {
                 variant="outline"
                 onClick={() => router.push('/custom-deals/my')}
               >
-                내 공구 관리
+                커공 관리
               </Button>
               <Button
                 size="sm"
