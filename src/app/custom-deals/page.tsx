@@ -204,7 +204,7 @@ export default function CustomDealsPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 mb-1">커스텀 공구</h1>
-              <p className="text-sm text-slate-600">원하는 만큼 모여서, 함께 할인받아요</p>
+              <p className="text-sm text-slate-600">특별한 공동구매 혜택</p>
             </div>
             <div className="flex gap-2">
               <Button
