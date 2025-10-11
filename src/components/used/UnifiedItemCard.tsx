@@ -35,16 +35,6 @@ const PHONE_CONDITION_LABELS: Record<string, string> = {
   'C': 'C급'
 };
 
-// 배터리 상태 라벨
-const BATTERY_STATUS_LABELS: Record<string, string> = {
-  'under_70': '70% 미만',
-  '70_80': '70-80%',
-  '80_85': '80-85%',
-  '85_90': '85-90%',
-  'over_90': '90% 이상',
-  'replaced': '교체됨'
-};
-
 const UnifiedItemCard = memo(function UnifiedItemCard({
   item,
   priority = false,
@@ -260,13 +250,6 @@ const UnifiedItemCard = memo(function UnifiedItemCard({
             </>
           )}
         </div>
-
-        {/* 배터리 상태 (휴대폰만) */}
-        {isPhoneItem(item) && (item as any).battery_status && (
-          <div className="mt-1 text-xs text-gray-600">
-            배터리 {BATTERY_STATUS_LABELS[(item as any).battery_status]}
-          </div>
-        )}
 
         {/* 위치 정보 - 여러 지역 표시 */}
         <div className="mt-2 text-xs text-gray-500">
