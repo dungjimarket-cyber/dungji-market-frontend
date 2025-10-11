@@ -398,7 +398,7 @@ export default function ParticipantsManagePage() {
                           // 유효기간 만료 시 미사용 상태에서는 사용처리 불가
                           (!participant.discount_used && (() => {
                             const validity = getValidityDisplay(participant.discount_valid_until);
-                            return validity && validity.expired;
+                            return validity ? validity.expired : false;
                           })())
                         }
                         className="data-[state=checked]:bg-green-600"
