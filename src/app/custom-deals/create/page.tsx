@@ -18,6 +18,15 @@ import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -85,6 +94,10 @@ export default function CreateCustomDealPage() {
 
   // 모집기간 설정 여부
   const [useDeadline, setUseDeadline] = useState(false);
+
+  // 중복 등록 모달 상태
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicateDialogMessage, setDuplicateDialogMessage] = useState('');
 
   // 폼 데이터
   const [formData, setFormData] = useState({
@@ -172,8 +185,10 @@ export default function CreateCustomDealPage() {
           );
 
           if (hasActiveDeals) {
-            toast.error('이미 진행 중인 공구가 있습니다. 기존 공구가 마감된 후 등록할 수 있습니다.');
-            router.push('/custom-deals/my');
+            setDuplicateDialogMessage(
+              '현재 모집중인 공구가 있습니다.\n\n기존 공구가 마감된 후에 새로운 공구를 등록할 수 있습니다.\n내 공구 목록에서 현재 진행중인 공구를 확인해보세요.'
+            );
+            setShowDuplicateDialog(true);
           }
         }
       } catch (error) {
@@ -1665,6 +1680,32 @@ export default function CreateCustomDealPage() {
           router.push('/mypage');
         }}
       />
+
+      {/* Duplicate Active Deal Dialog */}
+      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-lg">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
+              진행중인 공구가 있습니다
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left whitespace-pre-line text-slate-700">
+              {duplicateDialogMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setShowDuplicateDialog(false);
+                router.push('/custom-deals/my');
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              내 공구 보러가기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
