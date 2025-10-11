@@ -327,7 +327,7 @@ export default function MyCustomParticipations() {
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('all')}
-          className={filter === 'all' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'all' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           전체 ({filterCounts.all})
         </Button>
@@ -335,7 +335,7 @@ export default function MyCustomParticipations() {
           variant={filter === 'confirmed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('confirmed')}
-          className={filter === 'confirmed' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'confirmed' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           참여중 ({filterCounts.confirmed})
         </Button>
@@ -343,7 +343,7 @@ export default function MyCustomParticipations() {
           variant={filter === 'cancelled' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('cancelled')}
-          className={filter === 'cancelled' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'cancelled' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           취소됨 ({filterCounts.cancelled})
         </Button>
@@ -596,7 +596,7 @@ export default function MyCustomParticipations() {
                 variant={currentPage === page ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setCurrentPage(page)}
-                className={currentPage === page ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+                className={currentPage === page ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
               >
                 {page}
               </Button>

@@ -246,7 +246,7 @@ export default function MyCustomDeals() {
       <div className="flex items-center justify-between mb-6">
         <Button
           onClick={() => router.push('/custom-deals/create')}
-          className="bg-gray-900 hover:bg-gray-800"
+          className="bg-green-600 hover:bg-green-700 text-white"
         >
           공구 등록
         </Button>
@@ -258,7 +258,7 @@ export default function MyCustomDeals() {
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('all')}
-          className={filter === 'all' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'all' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           전체 ({filterCounts.all})
         </Button>
@@ -266,7 +266,7 @@ export default function MyCustomDeals() {
           variant={filter === 'recruiting' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('recruiting')}
-          className={filter === 'recruiting' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'recruiting' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           모집중 ({filterCounts.recruiting})
         </Button>
@@ -274,7 +274,7 @@ export default function MyCustomDeals() {
           variant={filter === 'pending_seller' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('pending_seller')}
-          className={filter === 'pending_seller' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'pending_seller' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           결정대기 ({filterCounts.pending_seller})
         </Button>
@@ -282,7 +282,7 @@ export default function MyCustomDeals() {
           variant={filter === 'completed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('completed')}
-          className={filter === 'completed' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'completed' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           마감 ({filterCounts.completed})
         </Button>
@@ -290,7 +290,7 @@ export default function MyCustomDeals() {
           variant={filter === 'cancelled' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('cancelled')}
-          className={filter === 'cancelled' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'cancelled' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           취소 ({filterCounts.cancelled})
         </Button>
@@ -298,7 +298,7 @@ export default function MyCustomDeals() {
           variant={filter === 'expired' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('expired')}
-          className={filter === 'expired' ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'text-slate-900'}
+          className={filter === 'expired' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900'}
         >
           만료 ({filterCounts.expired})
         </Button>
