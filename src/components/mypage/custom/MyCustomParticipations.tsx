@@ -268,7 +268,7 @@ export default function MyCustomParticipations() {
     }
 
     if (groupbuyStatus === 'recruiting') {
-      return <Badge className="bg-blue-50 text-blue-600 border-blue-200">모집중</Badge>;
+      return <Badge className="bg-gray-50 text-gray-700 border-gray-200">모집중</Badge>;
     }
 
     if (groupbuyStatus === 'pending_seller') {
@@ -327,7 +327,7 @@ export default function MyCustomParticipations() {
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('all')}
-          className={filter === 'all' ? 'bg-blue-600' : ''}
+          className={filter === 'all' ? 'bg-gray-900' : ''}
         >
           전체 ({filterCounts.all})
         </Button>
@@ -335,7 +335,7 @@ export default function MyCustomParticipations() {
           variant={filter === 'confirmed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('confirmed')}
-          className={filter === 'confirmed' ? 'bg-blue-600' : ''}
+          className={filter === 'confirmed' ? 'bg-gray-900' : ''}
         >
           참여중 ({filterCounts.confirmed})
         </Button>
@@ -343,7 +343,7 @@ export default function MyCustomParticipations() {
           variant={filter === 'cancelled' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('cancelled')}
-          className={filter === 'cancelled' ? 'bg-blue-600' : ''}
+          className={filter === 'cancelled' ? 'bg-gray-900' : ''}
         >
           취소됨 ({filterCounts.cancelled})
         </Button>
@@ -352,7 +352,7 @@ export default function MyCustomParticipations() {
       {/* 목록 */}
       {loading ? (
         <div className="text-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-slate-600">로딩 중...</p>
         </div>
       ) : participations.length === 0 ? (
@@ -436,7 +436,7 @@ export default function MyCustomParticipations() {
                               </div>
                             </>
                           ) : (
-                            <div className="text-sm font-bold text-blue-600">
+                            <div className="text-sm font-bold text-gray-900">
                               전품목 {groupbuy.discount_rate}% 할인
                             </div>
                           )}
@@ -596,7 +596,7 @@ export default function MyCustomParticipations() {
                 variant={currentPage === page ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setCurrentPage(page)}
-                className={currentPage === page ? 'bg-blue-600' : ''}
+                className={currentPage === page ? 'bg-gray-900' : ''}
               >
                 {page}
               </Button>

@@ -218,7 +218,7 @@ export default function MyCustomDeals() {
       if (progress >= 80) {
         return <Badge className="bg-orange-50 text-orange-600 border-orange-200 whitespace-nowrap">마감 임박</Badge>;
       }
-      return <Badge className="bg-blue-50 text-blue-600 border-blue-200 whitespace-nowrap">모집중</Badge>;
+      return <Badge className="bg-gray-50 text-gray-700 border-gray-200 whitespace-nowrap">모집중</Badge>;
     }
     if (deal.status === 'pending_seller') {
       return <Badge className="bg-yellow-50 text-yellow-600 border-yellow-200 whitespace-nowrap">결정 대기</Badge>;
@@ -246,7 +246,7 @@ export default function MyCustomDeals() {
       <div className="flex items-center justify-between mb-6">
         <Button
           onClick={() => router.push('/custom-deals/create')}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-gray-900 hover:bg-gray-800"
         >
           공구 등록
         </Button>
@@ -258,7 +258,7 @@ export default function MyCustomDeals() {
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('all')}
-          className={filter === 'all' ? 'bg-blue-600' : ''}
+          className={filter === 'all' ? 'bg-gray-900' : ''}
         >
           전체 ({filterCounts.all})
         </Button>
@@ -266,7 +266,7 @@ export default function MyCustomDeals() {
           variant={filter === 'recruiting' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('recruiting')}
-          className={filter === 'recruiting' ? 'bg-blue-600' : ''}
+          className={filter === 'recruiting' ? 'bg-gray-900' : ''}
         >
           모집중 ({filterCounts.recruiting})
         </Button>
@@ -274,7 +274,7 @@ export default function MyCustomDeals() {
           variant={filter === 'pending_seller' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('pending_seller')}
-          className={filter === 'pending_seller' ? 'bg-blue-600' : ''}
+          className={filter === 'pending_seller' ? 'bg-gray-900' : ''}
         >
           결정대기 ({filterCounts.pending_seller})
         </Button>
@@ -282,7 +282,7 @@ export default function MyCustomDeals() {
           variant={filter === 'completed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('completed')}
-          className={filter === 'completed' ? 'bg-blue-600' : ''}
+          className={filter === 'completed' ? 'bg-gray-900' : ''}
         >
           마감 ({filterCounts.completed})
         </Button>
@@ -290,7 +290,7 @@ export default function MyCustomDeals() {
           variant={filter === 'cancelled' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('cancelled')}
-          className={filter === 'cancelled' ? 'bg-blue-600' : ''}
+          className={filter === 'cancelled' ? 'bg-gray-900' : ''}
         >
           취소 ({filterCounts.cancelled})
         </Button>
@@ -298,7 +298,7 @@ export default function MyCustomDeals() {
           variant={filter === 'expired' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('expired')}
-          className={filter === 'expired' ? 'bg-blue-600' : ''}
+          className={filter === 'expired' ? 'bg-gray-900' : ''}
         >
           만료 ({filterCounts.expired})
         </Button>
@@ -307,7 +307,7 @@ export default function MyCustomDeals() {
       {/* 목록 */}
       {loading ? (
         <div className="text-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-slate-600">로딩 중...</p>
         </div>
       ) : deals.length === 0 ? (
@@ -390,7 +390,7 @@ export default function MyCustomDeals() {
                       </div>
                     </>
                   ) : (
-                    <div className="text-base font-bold text-blue-600">
+                    <div className="text-base font-bold text-gray-900">
                       전품목 {deal.discount_rate}% 할인
                     </div>
                   )}
@@ -440,7 +440,7 @@ export default function MyCustomDeals() {
                       </div>
                       <div className="w-full bg-slate-200 rounded-full h-1.5">
                         <div
-                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                          className="bg-gray-900 h-1.5 rounded-full transition-all duration-300"
                           style={{
                             width: `${Math.min(
                               (deal.current_participants / deal.target_participants) * 100,
@@ -488,7 +488,7 @@ export default function MyCustomDeals() {
                     <div className="flex gap-1">
                       <Button
                         size="sm"
-                        className="flex-1 text-xs h-7 bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+                        className="flex-1 text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white whitespace-nowrap"
                         onClick={(e) => {
                           e.preventDefault();
                           handleConfirmSale(deal.id);
