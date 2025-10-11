@@ -26,7 +26,7 @@ interface Notice {
 }
 
 interface NoticeSectionProps {
-  pageType?: 'main' | 'groupbuy' | 'used';
+  pageType?: 'main' | 'groupbuy' | 'used' | 'custom';
   compact?: boolean;  // 간소화된 버전 여부
 }
 
@@ -57,6 +57,7 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
       // pageType에 따라 다른 엔드포인트 호출
       const endpoint = pageType === 'groupbuy' ? 'groupbuy' :
                        pageType === 'used' ? 'used' :
+                       pageType === 'custom' ? 'custom' :
                        'main';
 
       console.log(`Fetching ${pageType} notices from:`, `${process.env.NEXT_PUBLIC_API_URL}/notices/${endpoint}/`);
@@ -169,6 +170,7 @@ export default function NoticeSection({ pageType = 'main', compact = false }: No
               <h2 className={`${compact ? 'text-base' : 'text-lg'} font-semibold`}>
                 {pageType === 'groupbuy' ? '공구·견적 공지사항' :
                  pageType === 'used' ? '중고거래 공지사항' :
+                 pageType === 'custom' ? '커스텀 공구 공지사항' :
                  '공지사항'}
               </h2>
             </div>

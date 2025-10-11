@@ -7,6 +7,7 @@ import { Search, Plus, Heart, Users, Clock, MapPin, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import NoticeSection from '@/components/home/NoticeSection';
 
 interface CustomDeal {
   id: number;
@@ -316,6 +317,9 @@ export default function CustomDealsPage() {
           </div>
         </div>
       </div>
+
+      {/* Notice Section */}
+      <NoticeSection pageType="custom" compact />
 
       {/* Deals Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
