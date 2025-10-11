@@ -477,7 +477,7 @@ export default function CustomDealDetailPage() {
       }
 
       toast.success('끌올이 완료되었습니다');
-      checkBumpStatus(); // 상태 다시 확인
+      router.push('/custom-deals'); // 목록으로 이동
     } catch (error) {
       console.error('끌올 실패:', error);
       toast.error('끌올에 실패했습니다');
