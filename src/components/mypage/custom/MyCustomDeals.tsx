@@ -359,13 +359,13 @@ export default function MyCustomDeals() {
               <CardContent className="p-3 flex flex-col flex-1">
                 <Link href={`/custom-deals/${deal.id}`}>
                   {/* Title - 고정 높이 (2줄) */}
-                  <h3 className="font-bold text-sm text-slate-900 mb-2 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
+                  <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
                     {deal.title}
                   </h3>
                 </Link>
 
                 {/* Location - 고정 높이 */}
-                <div className="h-5 mb-2">
+                <div className="h-5 mb-1">
                   {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
                     <div className="flex items-center gap-1 text-xs text-slate-500">
                       <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -404,7 +404,7 @@ export default function MyCustomDeals() {
                 {/* Progress or Validity - 고정 높이 */}
                 <div className="mb-3">
                   {deal.status === 'completed' && deal.discount_valid_until ? (
-                    // 마감된 경우: 유효기간 표시
+                    // 마감된 경우: 유효기간 + 참여자 인원
                     <>
                       {(() => {
                         const validity = getValidityDisplay(
@@ -414,12 +414,23 @@ export default function MyCustomDeals() {
                         );
                         if (validity) {
                           return (
-                            <div className="flex items-center justify-between text-sm py-1">
-                              <span className="text-slate-600">{validity.label}</span>
-                              <span className={`font-semibold ${validity.color}`}>
-                                {validity.time}
-                              </span>
-                            </div>
+                            <>
+                              <div className="flex items-center justify-between text-sm mb-1.5">
+                                <span className="text-slate-600">{validity.label}</span>
+                                <span className={`font-semibold ${validity.color}`}>
+                                  {validity.time}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
+                                  <Users className="w-3 h-3 flex-shrink-0" />
+                                  참여자
+                                </span>
+                                <span className="font-semibold text-slate-900">
+                                  {deal.current_participants}명
+                                </span>
+                              </div>
+                            </>
                           );
                         }
                         return null;

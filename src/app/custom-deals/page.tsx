@@ -310,12 +310,12 @@ export default function CustomDealsPage() {
 
                   <CardContent className="p-4 flex flex-col flex-1">
                     {/* Title - 고정 높이 (2줄) */}
-                    <h3 className="font-bold text-base text-slate-900 mb-1.5 line-clamp-2 h-12">
+                    <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2 h-12">
                       {deal.title}
                     </h3>
 
                     {/* Location (offline only) - 고정 높이 */}
-                    <div className="h-5 mb-2">
+                    <div className="h-5 mb-1">
                       {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
                         <div className="flex items-center gap-1 text-xs text-slate-600">
                           <MapPin className="w-3 h-3 flex-shrink-0" />
