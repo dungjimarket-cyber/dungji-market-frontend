@@ -1022,17 +1022,17 @@ export default function CustomDealDetailPage() {
       {user && deal.seller === parseInt(user.id) && !isClosed && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-20 pb-safe">
           <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="flex items-center gap-2">
               {/* 끌올 버튼 */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleBump}
                 disabled={!bumpStatus?.can_bump}
-                className="flex flex-col items-center gap-1 h-auto py-2 text-xs"
+                className="flex items-center gap-1.5"
               >
                 <TrendingUp className="w-4 h-4" />
-                <span>끌올</span>
+                끌올
               </Button>
 
               {/* 수정 버튼 */}
@@ -1040,10 +1040,10 @@ export default function CustomDealDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
-                className="flex flex-col items-center gap-1 h-auto py-2 text-xs"
+                className="flex items-center gap-1.5"
               >
                 <Edit className="w-4 h-4" />
-                <span>수정</span>
+                수정
               </Button>
 
               {/* 조기종료 버튼 */}
@@ -1051,10 +1051,10 @@ export default function CustomDealDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleEarlyClose}
-                className="flex flex-col items-center gap-1 h-auto py-2 text-xs text-orange-600 border-orange-300 hover:bg-orange-50"
+                className="flex items-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
               >
                 <AlertCircle className="w-4 h-4" />
-                <span>조기종료</span>
+                조기종료
               </Button>
 
               {/* 삭제 버튼 */}
@@ -1062,10 +1062,10 @@ export default function CustomDealDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleDelete}
-                className="flex flex-col items-center gap-1 h-auto py-2 text-xs text-red-600 border-red-300 hover:bg-red-50"
+                className="flex items-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>삭제</span>
+                삭제
               </Button>
             </div>
 
