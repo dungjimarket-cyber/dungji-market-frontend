@@ -143,6 +143,47 @@ export default function CreateCustomDealPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
+  // 진행 중인 공구 체크
+  useEffect(() => {
+    const checkActiveDeals = async () => {
+      if (!isAuthenticated || authLoading) return;
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&status=recruiting`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        // 모집중 또는 판매자 확정 대기 상태의 공구가 있는지 확인
+        if (data.results && data.results.length > 0) {
+          const hasActiveDeals = data.results.some(
+            (deal: any) => deal.status === 'recruiting' || deal.status === 'pending_seller'
+          );
+
+          if (hasActiveDeals) {
+            toast.error('이미 진행 중인 공구가 있습니다. 기존 공구가 마감된 후 등록할 수 있습니다.');
+            router.push('/custom-deals/my');
+          }
+        }
+      } catch (error) {
+        console.error('활성 공구 체크 실패:', error);
+      }
+    };
+
+    checkActiveDeals();
+  }, [isAuthenticated, authLoading, router]);
+
   // 이미지 업로드 핸들러 (중고거래 로직 복사)
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
     const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
