@@ -483,7 +483,7 @@ export default function MyCustomParticipations() {
                             <div className="flex items-center gap-2 mb-2">
                               <Ticket className={`w-4 h-4 ${isExpired ? 'text-red-600' : 'text-green-600'}`} />
                               <h4 className={`text-sm font-bold ${isExpired ? 'text-red-900' : 'text-green-900'}`}>
-                                {isExpired ? '할인 유효기간 만료' : '할인 발급완료'}
+                                {isExpired ? '할인 유효기간 만료' : '할인코드 발급 완료'}
                               </h4>
                               {validity && (
                                 <span className={`text-xs ml-auto font-medium ${validity.color}`}>
