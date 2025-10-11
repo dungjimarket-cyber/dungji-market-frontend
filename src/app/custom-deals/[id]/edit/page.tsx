@@ -666,13 +666,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 py-8">
         {/* 참여자 있을 때 안내 */}
         {hasParticipants && (
-          <Card className="mb-6 border-amber-200 bg-amber-50">
+          <Card className="mb-6 border-gray-300 bg-white">
             <CardContent className="pt-6">
               <div className="flex gap-3">
-                <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <Lock className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-amber-900 mb-1">수정 제한 안내</h3>
-                  <p className="text-sm text-amber-800">
+                  <h3 className="font-medium text-gray-900 mb-1">수정 제한 안내</h3>
+                  <p className="text-sm text-gray-700">
                     참여자가 있는 공구는 제목, 상세설명, 이용안내, 할인 정보만 수정 가능합니다
                   </p>
                 </div>
@@ -1295,7 +1295,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   </div>
 
                   {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
-                    <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
+                    <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-gray-300 mt-2">
                       ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
                     </p>
                   )}

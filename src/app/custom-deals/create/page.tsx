@@ -1617,7 +1617,7 @@ export default function CreateCustomDealPage() {
                     </div>
                   </div>
                   {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
-                    <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
+                    <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-gray-300 mt-2">
                       ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
                     </p>
                   )}
@@ -1686,7 +1686,7 @@ export default function CreateCustomDealPage() {
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-lg">
-              <AlertCircle className="w-5 h-5 text-amber-600" />
+              <AlertCircle className="w-5 h-5 text-gray-600" />
               진행중인 공구가 있습니다
             </AlertDialogTitle>
             <AlertDialogDescription className="text-left whitespace-pre-line text-slate-700">
@@ -1699,7 +1699,7 @@ export default function CreateCustomDealPage() {
                 setShowDuplicateDialog(false);
                 router.push('/custom-deals/my');
               }}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-gray-900 hover:bg-gray-800 text-white"
             >
               내 공구 보러가기
             </AlertDialogAction>
