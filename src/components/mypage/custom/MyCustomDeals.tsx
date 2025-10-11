@@ -34,6 +34,8 @@ interface CustomDeal {
   view_count: number;
   favorite_count: number;
   created_at: string;
+  discount_valid_until?: string;
+  online_discount_type?: 'link_only' | 'code_only' | 'both';
 }
 
 export default function MyCustomDeals() {
@@ -41,10 +43,20 @@ export default function MyCustomDeals() {
   const [deals, setDeals] = useState<CustomDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     fetchDeals();
   }, [filter]);
+
+  // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchDeals = async () => {
     try {
@@ -157,6 +169,49 @@ export default function MyCustomDeals() {
 
     if (days > 0) return `${days}일 남음`;
     return `${hours}시간 남음`;
+  };
+
+  const getValidityDisplay = (
+    validUntil: string | null,
+    type: 'online' | 'offline',
+    onlineDiscountType?: 'link_only' | 'code_only' | 'both'
+  ) => {
+    if (!validUntil) return null;
+
+    const endDate = new Date(validUntil);
+    const diff = endDate.getTime() - currentTime.getTime();
+
+    // 라벨 결정: 오프라인은 항상 "유효기간", 온라인은 link_only일 때만 "판매기간"
+    const isLinkOnly = type === 'online' && onlineDiscountType === 'link_only';
+    const label = isLinkOnly ? '판매기간' : '유효기간';
+
+    // 만료됨
+    if (diff <= 0) {
+      return { label, time: '만료됨', color: 'text-red-600', expired: true };
+    }
+
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    let timeText = '';
+    let color = 'text-slate-600';
+
+    if (minutes < 60) {
+      // 1시간 미만: 분 단위
+      timeText = `${minutes}분 남음`;
+      color = 'text-red-600';
+    } else if (hours < 24) {
+      // 1시간~24시간: 시간 단위
+      timeText = `${hours}시간 남음`;
+      color = 'text-orange-600';
+    } else {
+      // 1일 이상: 일 단위
+      timeText = `${days}일 남음`;
+      color = days < 1 ? 'text-orange-600' : 'text-slate-600';
+    }
+
+    return { label, time: timeText, color, expired: false };
   };
 
   const getStatusBadge = (deal: CustomDeal) => {
@@ -346,29 +401,56 @@ export default function MyCustomDeals() {
                   )}
                 </div>
 
-                {/* Progress - 고정 높이 */}
+                {/* Progress or Validity - 고정 높이 */}
                 <div className="mb-3">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
-                      <Users className="w-3 h-3 flex-shrink-0" />
-                      {deal.current_participants}/{deal.target_participants}
-                    </span>
-                    <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
-                      <Clock className="w-3 h-3 flex-shrink-0" />
-                      {getRemainingTime(deal.expired_at)}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5">
-                    <div
-                      className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(
-                          (deal.current_participants / deal.target_participants) * 100,
-                          100
-                        )}%`,
-                      }}
-                    />
-                  </div>
+                  {deal.status === 'completed' && deal.discount_valid_until ? (
+                    // 마감된 경우: 유효기간 표시
+                    <>
+                      {(() => {
+                        const validity = getValidityDisplay(
+                          deal.discount_valid_until,
+                          deal.type,
+                          deal.online_discount_type
+                        );
+                        if (validity) {
+                          return (
+                            <div className="flex items-center justify-between text-sm py-1">
+                              <span className="text-slate-600">{validity.label}</span>
+                              <span className={`font-semibold ${validity.color}`}>
+                                {validity.time}
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </>
+                  ) : (
+                    // 모집 중: 기존 인원/시간 표시
+                    <>
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
+                          <Users className="w-3 h-3 flex-shrink-0" />
+                          {deal.current_participants}/{deal.target_participants}
+                        </span>
+                        <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                          <Clock className="w-3 h-3 flex-shrink-0" />
+                          {getRemainingTime(deal.expired_at)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-1.5">
+                        <div
+                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min(
+                              (deal.current_participants / deal.target_participants) * 100,
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Stats - 고정 높이 */}

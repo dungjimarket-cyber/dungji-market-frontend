@@ -34,6 +34,7 @@ interface CustomDeal {
   target_participants: number;
   current_participants: number;
   online_discount_type?: 'link_only' | 'code_only' | 'both';
+  discount_valid_until?: string;
 }
 
 export default function ParticipantsManagePage() {
@@ -127,7 +128,7 @@ export default function ParticipantsManagePage() {
 
     // 만료됨
     if (diff <= 0) {
-      return { label: hasCode ? '유효기간' : '판매기간', time: '만료됨', color: 'text-red-600' };
+      return { label: hasCode ? '유효기간' : '판매기간', time: '만료됨', color: 'text-red-600', expired: true };
     }
 
     const minutes = Math.floor(diff / (1000 * 60));
@@ -149,7 +150,8 @@ export default function ParticipantsManagePage() {
     return {
       label: hasCode ? '유효기간' : '판매기간',
       time: timeText,
-      color: days < 1 ? 'text-orange-600' : 'text-slate-600'
+      color: days < 1 ? 'text-orange-600' : 'text-slate-600',
+      expired: false
     };
   };
 
@@ -275,7 +277,7 @@ export default function ParticipantsManagePage() {
         )}
 
         {/* 통계 요약 */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -311,6 +313,36 @@ export default function ParticipantsManagePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* 유효기간/판매기간 카드 */}
+          {deal.discount_valid_until && (
+            <Card>
+              <CardContent className="p-4">
+                {(() => {
+                  const validity = getValidityDisplay(
+                    deal.discount_valid_until,
+                    deal.online_discount_type === 'link_only'
+                  );
+                  if (validity) {
+                    return (
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-slate-500">{validity.label}</p>
+                          <p className={`text-2xl font-bold mt-0.5 ${validity.color}`}>
+                            {validity.time}
+                          </p>
+                        </div>
+                        <Clock className={`w-8 h-8 ${
+                          validity.expired ? 'text-red-500' : 'text-blue-500'
+                        }`} />
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* 참여자 목록 */}

@@ -403,7 +403,7 @@ export default function MyCustomParticipations() {
 
                     {/* 정보 */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-start justify-between gap-3 mb-1.5">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1.5">
                             <Badge variant="outline" className="text-xs">{groupbuy.type_display}</Badge>
@@ -445,14 +445,14 @@ export default function MyCustomParticipations() {
 
                       {/* 위치 */}
                       {groupbuy.type === 'offline' && groupbuy.regions && groupbuy.regions.length > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500 mb-2">
+                        <div className="flex items-center gap-1 text-xs text-slate-500 mb-1.5">
                           <MapPin className="w-3 h-3" />
                           <span>{groupbuy.regions.map(r => r.full_name).join(', ')}</span>
                         </div>
                       )}
 
                       {/* 참여 코드 - 작게 */}
-                      <div className="bg-slate-50 rounded px-2 py-1.5 mb-2 inline-flex items-center gap-2">
+                      <div className="bg-slate-50 rounded px-2 py-1.5 mb-1.5 inline-flex items-center gap-2">
                         <span className="text-xs text-slate-500">참여코드:</span>
                         <span className="font-mono text-xs font-semibold text-slate-700">
                           {participation.participation_code}
