@@ -107,7 +107,17 @@ export default function CustomDealDetailPage() {
   const fetchDeal = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/`);
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = {};
+
+      // 로그인한 경우 토큰 추가 (is_participated, is_favorited 체크용)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/`, {
+        headers
+      });
 
       if (response.status === 404) {
         toast.error('존재하지 않는 공구입니다');
