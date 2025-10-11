@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp } from 'lucide-react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -76,6 +76,11 @@ export default function CustomDealDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [bumpStatus, setBumpStatus] = useState<{
+    can_bump: boolean;
+    reason?: string;
+    next_bump_available_at?: string;
+  } | null>(null);
 
   const {
     checkProfile,
@@ -93,6 +98,13 @@ export default function CustomDealDetailPage() {
       fetchDeal();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    // 본인 공구일 때만 끌올 상태 체크
+    if (deal && user && deal.seller === parseInt(user.id) && deal.status === 'recruiting') {
+      checkBumpStatus();
+    }
+  }, [deal, user]);
 
   const fetchCategories = async () => {
     try {
@@ -393,6 +405,85 @@ export default function CustomDealDetailPage() {
     }
   };
 
+  const checkBumpStatus = async () => {
+    if (!deal) return;
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/bump/status/`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setBumpStatus(data);
+      }
+    } catch (error) {
+      console.error('끌올 상태 조회 실패:', error);
+    }
+  };
+
+  const handleBump = async () => {
+    if (!deal) return;
+
+    if (!bumpStatus?.can_bump) {
+      toast.error(bumpStatus?.reason || '끌올할 수 없습니다');
+      return;
+    }
+
+    if (!confirm('끌올하시겠습니까?\n\n끌올하면 24시간 후 다시 사용할 수 있습니다.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('로그인이 필요합니다');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/bump/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 401) {
+        toast.error('로그인이 만료되었습니다');
+        localStorage.removeItem('accessToken');
+        router.push('/login');
+        return;
+      }
+
+      if (response.status === 400) {
+        const errorData = await response.json();
+        toast.error(errorData.error || '끌올에 실패했습니다');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('끌올 실패');
+      }
+
+      toast.success('끌올이 완료되었습니다');
+      checkBumpStatus(); // 상태 다시 확인
+    } catch (error) {
+      console.error('끌올 실패:', error);
+      toast.error('끌올에 실패했습니다');
+    }
+  };
+
   const getRemainingTime = (expiredAt: string) => {
     const now = new Date();
     const expire = new Date(expiredAt);
@@ -478,6 +569,23 @@ export default function CustomDealDetailPage() {
             )}
             {user && deal.seller === parseInt(user.id) && !isClosed && (
               <>
+                {deal.status === 'recruiting' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBump}
+                    disabled={!bumpStatus?.can_bump}
+                    className={`flex items-center gap-1.5 ${
+                      bumpStatus?.can_bump
+                        ? 'text-purple-600 border-purple-300 hover:bg-purple-50'
+                        : 'text-slate-400 border-slate-300 cursor-not-allowed'
+                    }`}
+                    title={bumpStatus?.reason || '끌올하기'}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="hidden sm:inline">끌올</span>
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
