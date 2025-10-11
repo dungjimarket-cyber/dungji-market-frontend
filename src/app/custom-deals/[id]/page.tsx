@@ -695,27 +695,13 @@ export default function CustomDealDetailPage() {
             </Card>
 
             {/* Stats */}
-            <Card className="border-slate-200">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-slate-900 mb-2 text-sm">통계</h3>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">조회수</span>
-                    <span className="font-medium text-slate-900">{deal.view_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">찜</span>
-                    <span className="font-medium text-slate-900">{deal.favorite_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">등록일</span>
-                    <span className="font-medium text-slate-900">
-                      {new Date(deal.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="text-xs text-slate-500 flex items-center gap-3">
+              <span>조회 {deal.view_count}</span>
+              <span>•</span>
+              <span>찜 {deal.favorite_count}</span>
+              <span>•</span>
+              <span>{new Date(deal.created_at).toLocaleDateString()}</span>
+            </div>
 
             {/* Participate Button */}
             {deal.status === 'recruiting' &&
