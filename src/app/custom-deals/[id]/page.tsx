@@ -705,27 +705,28 @@ export default function CustomDealDetailPage() {
 
             {/* Participate Button */}
             {deal.status === 'recruiting' &&
-             !deal.is_participated &&
              !isExpired &&
              deal.current_participants < deal.target_participants &&
              (!user || deal.seller !== parseInt(user.id)) && (
               <Button
                 size="lg"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6"
-                onClick={handleParticipate}
+                className={`w-full font-semibold py-6 ${
+                  deal.is_participated
+                    ? 'bg-slate-100 text-slate-600 cursor-not-allowed hover:bg-slate-100'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+                onClick={deal.is_participated ? undefined : handleParticipate}
+                disabled={deal.is_participated}
               >
-                참여하기
+                {deal.is_participated ? (
+                  <span className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    참여완료
+                  </span>
+                ) : (
+                  '참여하기'
+                )}
               </Button>
-            )}
-
-            {deal.is_participated && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2.5">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-green-900 text-sm">참여 완료</p>
-                  <p className="text-xs text-green-700">공구 정보를 기다려주세요</p>
-                </div>
-              </div>
             )}
 
             {deal.status === 'completed' && !deal.is_participated && (
