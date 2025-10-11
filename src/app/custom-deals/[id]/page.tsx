@@ -455,37 +455,50 @@ export default function CustomDealDetailPage() {
             <span>목록</span>
           </Button>
           <div className="flex items-center gap-2">
-            {user && deal.seller === parseInt(user.id) && !isClosed && (
+            {user && deal.seller === parseInt(user.id) && (
               <>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
-                  className="flex items-center gap-1.5"
+                  onClick={() => router.push('/custom-deals/my')}
+                  className="flex items-center gap-1.5 bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
                 >
-                  <Edit className="w-4 h-4" />
-                  <span className="hidden sm:inline">수정</span>
+                  <Users className="w-4 h-4" />
+                  <span className="hidden sm:inline">내 공구 관리</span>
                 </Button>
-                {deal.status === 'recruiting' && deal.current_participants > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEarlyClose}
-                    className="flex items-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="hidden sm:inline">조기종료</span>
-                  </Button>
+                {!isClosed && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
+                      className="flex items-center gap-1.5"
+                    >
+                      <Edit className="w-4 h-4" />
+                      <span className="hidden sm:inline">수정</span>
+                    </Button>
+                    {deal.status === 'recruiting' && deal.current_participants > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEarlyClose}
+                        className="flex items-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="hidden sm:inline">조기종료</span>
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDelete}
+                      className="flex items-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="hidden sm:inline">삭제</span>
+                    </Button>
+                  </>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDelete}
-                  className="flex items-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">삭제</span>
-                </Button>
               </>
             )}
             <Button variant="outline" size="sm" onClick={handleShare}>
