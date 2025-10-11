@@ -444,7 +444,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
   const handleInputChange = (field: string, value: any) => {
     // 참여자가 있을 때는 제목, 설명, 이용안내만 수정 가능
     if (hasParticipants && !['title', 'description', 'usage_guide'].includes(field)) {
-      toast.error('참여자가 있는 공구는 제목, 상세설명, 이용안내만 수정 가능합니다');
+      toast.error('참여자가 있는 공구는 제목, 상품설명, 이용안내만 수정 가능합니다');
       return;
     }
 
@@ -673,7 +673,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div>
                   <h3 className="font-medium text-gray-900 mb-1">수정 제한 안내</h3>
                   <p className="text-sm text-gray-700">
-                    참여자가 있는 공구는 제목, 상세설명, 이용안내, 할인 정보만 수정 가능합니다
+                    참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인 정보만 수정 가능합니다
                   </p>
                 </div>
               </div>
@@ -811,7 +811,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             </div>
 
             <div>
-              <Label>상세 설명 *</Label>
+              <Label>상품 설명 *</Label>
               <RichTextEditor
                 content={formData.description}
                 onChange={(content) => handleInputChange('description', content)}

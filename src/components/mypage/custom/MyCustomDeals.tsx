@@ -171,19 +171,14 @@ export default function MyCustomDeals() {
     return `${hours}시간 남음`;
   };
 
-  const getValidityDisplay = (
-    validUntil: string | null,
-    type: 'online' | 'offline',
-    onlineDiscountType?: 'link_only' | 'code_only' | 'both'
-  ) => {
+  const getValidityDisplay = (validUntil: string | null) => {
     if (!validUntil) return null;
 
     const endDate = new Date(validUntil);
     const diff = endDate.getTime() - currentTime.getTime();
 
-    // 라벨 결정: 오프라인은 항상 "유효기간", 온라인은 link_only일 때만 "판매기간"
-    const isLinkOnly = type === 'online' && onlineDiscountType === 'link_only';
-    const label = isLinkOnly ? '판매기간' : '유효기간';
+    // 라벨: 모든 경우에 "할인 유효기간" 사용
+    const label = '할인 유효기간';
 
     // 만료됨
     if (diff <= 0) {
@@ -416,11 +411,7 @@ export default function MyCustomDeals() {
                         </span>
                       </div>
                       {(() => {
-                        const validity = getValidityDisplay(
-                          deal.discount_valid_until,
-                          deal.type,
-                          deal.online_discount_type
-                        );
+                        const validity = getValidityDisplay(deal.discount_valid_until);
                         if (validity) {
                           return (
                             <div className="flex items-center justify-between text-xs">

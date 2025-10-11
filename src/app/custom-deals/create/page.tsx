@@ -981,7 +981,7 @@ export default function CreateCustomDealPage() {
 
             {/* 설명 */}
             <div>
-              <Label>상세 설명 *</Label>
+              <Label>상품 설명 *</Label>
               <RichTextEditor
                 content={formData.description}
                 onChange={(content) => handleInputChange('description', content)}

@@ -82,7 +82,16 @@ export default function ParticipantsManagePage() {
     }
   };
 
-  const handleToggleUsed = async (participantId: number, currentUsed: boolean) => {
+  const handleToggleUsed = async (participantId: number, currentUsed: boolean, validUntil: string | null) => {
+    // 유효기간 만료 체크
+    if (validUntil) {
+      const validity = getValidityDisplay(validUntil);
+      if (validity && validity.expired && !currentUsed) {
+        toast.error('할인 유효기간이 만료되어 사용 처리할 수 없습니다');
+        return;
+      }
+    }
+
     try {
       setToggleLoading(participantId);
       const token = localStorage.getItem('accessToken');
@@ -119,7 +128,7 @@ export default function ParticipantsManagePage() {
     toast.success(`${label}가 복사되었습니다`);
   };
 
-  const getValidityDisplay = (validUntil: string | null, hasCode: boolean) => {
+  const getValidityDisplay = (validUntil: string | null) => {
     if (!validUntil) return null;
 
     const now = new Date();
@@ -128,7 +137,7 @@ export default function ParticipantsManagePage() {
 
     // 만료됨
     if (diff <= 0) {
-      return { label: hasCode ? '유효기간' : '판매기간', time: '만료됨', color: 'text-red-600', expired: true };
+      return { label: '할인 유효기간', time: '만료됨', color: 'text-red-600', expired: true };
     }
 
     const minutes = Math.floor(diff / (1000 * 60));
@@ -148,7 +157,7 @@ export default function ParticipantsManagePage() {
     }
 
     return {
-      label: hasCode ? '유효기간' : '판매기간',
+      label: '할인 유효기간',
       time: timeText,
       color: days < 1 ? 'text-orange-600' : 'text-slate-600',
       expired: false
@@ -314,15 +323,12 @@ export default function ParticipantsManagePage() {
             </CardContent>
           </Card>
 
-          {/* 유효기간/판매기간 카드 */}
+          {/* 할인 유효기간 카드 */}
           {deal.discount_valid_until && (
             <Card>
               <CardContent className="p-4">
                 {(() => {
-                  const validity = getValidityDisplay(
-                    deal.discount_valid_until,
-                    deal.online_discount_type === 'link_only'
-                  );
+                  const validity = getValidityDisplay(deal.discount_valid_until);
                   if (validity) {
                     return (
                       <div className="flex items-center justify-between">
@@ -345,12 +351,12 @@ export default function ParticipantsManagePage() {
           )}
         </div>
 
-        {/* 참여자 목록 */}
+        {/* 구매자 목록 */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <User className="w-4 h-4" />
-              참여자 목록
+              구매자 목록 (판매자: 본인)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -386,8 +392,15 @@ export default function ParticipantsManagePage() {
                       {/* 사용 상태 토글 */}
                       <Switch
                         checked={participant.discount_used}
-                        onCheckedChange={() => handleToggleUsed(participant.id, participant.discount_used)}
-                        disabled={toggleLoading === participant.id}
+                        onCheckedChange={() => handleToggleUsed(participant.id, participant.discount_used, participant.discount_valid_until)}
+                        disabled={
+                          toggleLoading === participant.id ||
+                          // 유효기간 만료 시 미사용 상태에서는 사용처리 불가
+                          (!participant.discount_used && (() => {
+                            const validity = getValidityDisplay(participant.discount_valid_until);
+                            return validity && validity.expired;
+                          })())
+                        }
                         className="data-[state=checked]:bg-green-600"
                       />
                     </div>
@@ -413,7 +426,7 @@ export default function ParticipantsManagePage() {
                         </span>
                       )}
                       {(() => {
-                        const validity = getValidityDisplay(participant.discount_valid_until, !!participant.discount_code);
+                        const validity = getValidityDisplay(participant.discount_valid_until);
                         if (validity) {
                           return (
                             <span className={`flex items-center gap-1 ${validity.color}`}>
@@ -426,43 +439,64 @@ export default function ParticipantsManagePage() {
                       })()}
                     </div>
 
-                    {/* 할인코드/링크 */}
-                    {participant.discount_code && (
-                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
-                        <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
-                          {participant.discount_code}
-                        </code>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
-                          className="h-6 w-6 p-0"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
+                    {/* 할인코드/링크 또는 만료 메시지 */}
+                    {(() => {
+                      const validity = getValidityDisplay(participant.discount_valid_until);
+                      const isExpired = validity && validity.expired;
 
-                    {participant.discount_url && (
-                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
-                        <a
-                          href={participant.discount_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 text-xs text-blue-600 hover:underline truncate"
-                        >
-                          {participant.discount_url}
-                        </a>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
-                          className="h-6 w-6 p-0"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
+                      // 유효기간 만료된 경우
+                      if (isExpired) {
+                        return (
+                          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded px-2 py-1.5">
+                            <span className="flex-1 text-xs font-semibold text-red-700">
+                              ⏰ 할인 유효기간 만료
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      // 유효기간 내: 할인코드/링크 표시
+                      return (
+                        <>
+                          {participant.discount_code && (
+                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
+                              <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
+                                {participant.discount_code}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
+
+                          {participant.discount_url && (
+                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
+                              <a
+                                href={participant.discount_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 text-xs text-blue-600 hover:underline truncate"
+                              >
+                                {participant.discount_url}
+                              </a>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>

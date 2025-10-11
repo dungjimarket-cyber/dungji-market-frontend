@@ -221,9 +221,8 @@ export default function MyCustomParticipations() {
     const endDate = new Date(validUntil);
     const diff = endDate.getTime() - currentTime.getTime();
 
-    // 라벨 결정: 오프라인은 항상 "유효기간", 온라인은 link_only일 때만 "판매기간"
-    const isLinkOnly = groupbuyType === 'online' && onlineDiscountType === 'link_only';
-    const label = isLinkOnly ? '판매기간' : '유효기간';
+    // 라벨: 모든 경우에 "할인 유효기간" 사용
+    const label = '할인 유효기간';
 
     // 만료됨
     if (diff <= 0) {
@@ -466,69 +465,86 @@ export default function MyCustomParticipations() {
                       </div>
 
                       {/* 할인 정보 */}
-                      {(participation.discount_code || participation.discount_url) && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Ticket className="w-4 h-4 text-green-600" />
-                            <h4 className="text-sm font-bold text-green-900">할인 발급완료</h4>
-                            {(() => {
-                              const validity = getValidityDisplay(
-                                participation.discount_valid_until,
-                                groupbuy.type,
-                                groupbuy.online_discount_type,
-                                !!participation.discount_code
-                              );
-                              if (validity) {
-                                return (
-                                  <span className={`text-xs ml-auto font-medium ${validity.color}`}>
-                                    {validity.label}: {validity.time}
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
+                      {(participation.discount_code || participation.discount_url) && (() => {
+                        const validity = getValidityDisplay(
+                          participation.discount_valid_until,
+                          groupbuy.type,
+                          groupbuy.online_discount_type,
+                          !!participation.discount_code
+                        );
+                        const isExpired = validity && validity.expired;
 
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {participation.discount_code && (
-                              <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
-                                <span className="font-mono text-sm font-bold text-slate-900 truncate">
-                                  {participation.discount_code}
+                        return (
+                          <div className={`border rounded-lg p-3 mb-2 ${
+                            isExpired
+                              ? 'bg-red-50 border-red-200'
+                              : 'bg-green-50 border-green-200'
+                          }`}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Ticket className={`w-4 h-4 ${isExpired ? 'text-red-600' : 'text-green-600'}`} />
+                              <h4 className={`text-sm font-bold ${isExpired ? 'text-red-900' : 'text-green-900'}`}>
+                                {isExpired ? '할인 유효기간 만료' : '할인 발급완료'}
+                              </h4>
+                              {validity && (
+                                <span className={`text-xs ml-auto font-medium ${validity.color}`}>
+                                  {validity.label}: {validity.time}
                                 </span>
-                                <button
-                                  onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
-                                  className="text-slate-400 hover:text-slate-600 flex-shrink-0"
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            )}
+                              )}
+                            </div>
 
-                            {participation.discount_url && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs h-7"
-                                onClick={() => window.open(participation.discount_url!, '_blank')}
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1" />
-                                링크 열기
-                              </Button>
+                            {/* 유효기간 만료 시 메시지만 표시 */}
+                            {isExpired ? (
+                              <div className="bg-white rounded px-3 py-2">
+                                <p className="text-xs text-red-700 font-medium">
+                                  ⏰ 할인 사용 기간이 종료되었습니다
+                                </p>
+                              </div>
+                            ) : (
+                              <>
+                                {/* 유효기간 내: 할인코드/링크 표시 */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {participation.discount_code && (
+                                    <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
+                                      <span className="font-mono text-sm font-bold text-slate-900 truncate">
+                                        {participation.discount_code}
+                                      </span>
+                                      <button
+                                        onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
+                                        className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                                      >
+                                        <Copy className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  {participation.discount_url && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-xs h-7"
+                                      onClick={() => window.open(participation.discount_url!, '_blank')}
+                                    >
+                                      <ExternalLink className="w-3 h-3 mr-1" />
+                                      링크 열기
+                                    </Button>
+                                  )}
+                                </div>
+
+                                {/* QR 코드 (오프라인 + 미사용) */}
+                                {groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used && (
+                                  <QRCodeDisplay participationId={participation.id} />
+                                )}
+
+                                {participation.discount_used && (
+                                  <p className="text-xs text-slate-500 mt-1.5">
+                                    사용완료 • {new Date(participation.discount_used_at!).toLocaleDateString()}
+                                  </p>
+                                )}
+                              </>
                             )}
                           </div>
-
-                          {/* QR 코드 (오프라인 + 미사용) */}
-                          {groupbuy.type === 'offline' && participation.discount_code && !participation.discount_used && (
-                            <QRCodeDisplay participationId={participation.id} />
-                          )}
-
-                          {participation.discount_used && (
-                            <p className="text-xs text-slate-500 mt-1.5">
-                              사용완료 • {new Date(participation.discount_used_at!).toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {/* 액션 버튼 */}
                       <div className="flex gap-2">
