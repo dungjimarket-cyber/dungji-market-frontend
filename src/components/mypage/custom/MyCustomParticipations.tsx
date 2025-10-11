@@ -226,7 +226,7 @@ export default function MyCustomParticipations() {
 
     // 만료됨
     if (diff <= 0) {
-      return { label, time: '만료됨', color: 'text-red-600' };
+      return { label, time: '만료됨', color: 'text-red-600', expired: true };
     }
 
     const minutes = Math.floor(diff / (1000 * 60));
@@ -250,7 +250,7 @@ export default function MyCustomParticipations() {
       color = days < 1 ? 'text-orange-600' : 'text-slate-600';
     }
 
-    return { label, time: timeText, color };
+    return { label, time: timeText, color, expired: false };
   };
 
   const getStatusBadge = (
