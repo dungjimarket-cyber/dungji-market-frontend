@@ -156,48 +156,46 @@ export default function CreateCustomDealPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // 진행 중인 공구 체크
-  useEffect(() => {
-    const checkActiveDeals = async () => {
-      if (!isAuthenticated || authLoading) return;
+  // 진행 중인 공구 체크 함수 (등록 시 호출)
+  const checkActiveDeals = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return true;
 
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (!token) return;
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&status=recruiting`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        // 모집중 또는 판매자 확정 대기 상태의 공구가 있는지 확인
-        if (data.results && data.results.length > 0) {
-          const hasActiveDeals = data.results.some(
-            (deal: any) => deal.status === 'recruiting' || deal.status === 'pending_seller'
-          );
-
-          if (hasActiveDeals) {
-            setDuplicateDialogMessage(
-              '현재 모집중인 공구가 있습니다.\n\n기존 공구가 마감된 후에 새로운 공구를 등록할 수 있습니다.\n내 공구 목록에서 현재 진행중인 공구를 확인해보세요.'
-            );
-            setShowDuplicateDialog(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&status=recruiting`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
           }
         }
-      } catch (error) {
-        console.error('활성 공구 체크 실패:', error);
-      }
-    };
+      );
 
-    checkActiveDeals();
-  }, [isAuthenticated, authLoading, router]);
+      if (!response.ok) return true;
+
+      const data = await response.json();
+
+      // 모집중 또는 판매자 확정 대기 상태의 공구가 있는지 확인
+      if (data.results && data.results.length > 0) {
+        const hasActiveDeals = data.results.some(
+          (deal: any) => deal.status === 'recruiting' || deal.status === 'pending_seller'
+        );
+
+        if (hasActiveDeals) {
+          setDuplicateDialogMessage(
+            '현재 모집중인 공구가 있습니다.\n\n기존 공구가 마감된 후에 새로운 공구를 등록할 수 있습니다.'
+          );
+          setShowDuplicateDialog(true);
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error('활성 공구 체크 실패:', error);
+      return true; // 에러 시 등록 진행
+    }
+  };
 
   // 이미지 업로드 핸들러 (중고거래 로직 복사)
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
@@ -623,12 +621,19 @@ export default function CreateCustomDealPage() {
 
     if (loading) return;
 
-    // 개인회원의 오프라인 공구 등록 방지
+    // 1. 진행 중인 공구 체크 (가장 먼저)
+    const canProceed = await checkActiveDeals();
+    if (!canProceed) {
+      return;
+    }
+
+    // 2. 개인회원의 오프라인 공구 등록 방지
     if (formData.type === 'offline' && !isBusinessUser) {
       toast.error('오프라인판매는 사업자 회원만 등록할 수 있습니다');
       return;
     }
 
+    // 3. 프로필 체크
     const requiresBusiness = formData.type === 'offline';
     const isProfileComplete = await checkProfile(requiresBusiness);
     if (!isProfileComplete) {
@@ -636,6 +641,7 @@ export default function CreateCustomDealPage() {
       return;
     }
 
+    // 4. 폼 유효성 검증
     if (!validateForm()) {
       const firstErrorField = Object.keys(errors)[0];
       toast.error(errors[firstErrorField] || '입력 내용을 확인해주세요');
@@ -1683,13 +1689,13 @@ export default function CreateCustomDealPage() {
 
       {/* Duplicate Active Deal Dialog */}
       <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-sm bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-lg">
+            <AlertDialogTitle className="flex items-center gap-2 text-base">
               <AlertCircle className="w-5 h-5 text-gray-600" />
               진행중인 공구가 있습니다
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-left whitespace-pre-line text-slate-700">
+            <AlertDialogDescription className="text-left whitespace-pre-line text-gray-700 text-sm">
               {duplicateDialogMessage}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1699,7 +1705,7 @@ export default function CreateCustomDealPage() {
                 setShowDuplicateDialog(false);
                 router.push('/custom-deals/my');
               }}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white w-full"
             >
               내 공구 보러가기
             </AlertDialogAction>

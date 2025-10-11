@@ -55,12 +55,13 @@ export default function CustomDealsPage() {
   const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [locationQuery, setLocationQuery] = useState(''); // 지역 검색
   const [showClosedDeals, setShowClosedDeals] = useState(true); // 마감된 공구 표시 여부
 
   useEffect(() => {
     fetchCategories();
     fetchDeals();
-  }, [selectedType, selectedCategory]);
+  }, [selectedType, selectedCategory, locationQuery]);
 
   // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
   useEffect(() => {
@@ -97,6 +98,10 @@ export default function CustomDealsPage() {
 
       if (searchQuery) {
         params.append('search', searchQuery);
+      }
+
+      if (locationQuery) {
+        params.append('location', locationQuery);
       }
 
       if (params.toString()) {
@@ -185,7 +190,7 @@ export default function CustomDealsPage() {
       if (progress >= 80) {
         return <Badge className="bg-orange-50 text-orange-600 border-orange-200 whitespace-nowrap">마감 임박</Badge>;
       }
-      return <Badge className="bg-blue-50 text-blue-600 border-blue-200 whitespace-nowrap">모집중</Badge>;
+      return <Badge className="bg-gray-50 text-gray-700 border-gray-200 whitespace-nowrap">모집중</Badge>;
     }
     return <Badge variant="secondary" className="whitespace-nowrap">{deal.status_display}</Badge>;
   };
@@ -211,7 +216,7 @@ export default function CustomDealsPage() {
               <Button
                 size="sm"
                 onClick={() => router.push('/custom-deals/create')}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-gray-900 hover:bg-gray-800 text-white"
               >
                 <Plus className="w-4 h-4 mr-1.5" />
                 공구 등록
@@ -228,7 +233,7 @@ export default function CustomDealsPage() {
                 placeholder="찾고 계신 공구를 검색해보세요"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
             </div>
             <Button type="submit" size="sm" variant="outline">
@@ -244,7 +249,7 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'all'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-gray-900 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
                 }`}
               >
@@ -254,7 +259,7 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('online')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'online'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-gray-900 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
                 }`}
               >
@@ -264,7 +269,7 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('offline')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'offline'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-gray-900 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
                 }`}
               >
@@ -276,7 +281,7 @@ export default function CustomDealsPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               <option value="all">모든 카테고리</option>
               {categories.map((cat) => (
@@ -286,12 +291,23 @@ export default function CustomDealsPage() {
               ))}
             </select>
 
+            {/* Location Filter (오프라인 공구용) */}
+            {selectedType !== 'online' && (
+              <input
+                type="text"
+                placeholder="지역 검색"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              />
+            )}
+
             {/* Status Filter */}
             <button
               onClick={() => setShowClosedDeals(!showClosedDeals)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 !showClosedDeals
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-gray-900 text-white'
                   : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
               }`}
             >
@@ -305,7 +321,7 @@ export default function CustomDealsPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
             <p className="mt-4 text-slate-600">로딩 중...</p>
           </div>
         ) : deals.length === 0 ? (
@@ -398,7 +414,7 @@ export default function CustomDealsPage() {
                           </div>
                         </>
                       ) : (
-                        <div className="text-lg font-bold text-blue-600">
+                        <div className="text-lg font-bold text-gray-900">
                           전품목 {deal.discount_rate}% 할인
                         </div>
                       )}
@@ -452,7 +468,7 @@ export default function CustomDealsPage() {
                           </div>
                           <div className="w-full bg-slate-200 rounded-full h-1.5">
                             <div
-                              className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                              className="bg-gray-900 h-1.5 rounded-full transition-all duration-300"
                               style={{
                                 width: `${Math.min(
                                   (deal.current_participants / deal.target_participants) * 100,
