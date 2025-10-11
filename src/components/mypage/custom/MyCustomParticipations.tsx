@@ -263,7 +263,8 @@ export default function MyCustomParticipations() {
       if (participation.discount_used) {
         return <Badge className="bg-gray-50 text-gray-600 border-gray-200">사용완료</Badge>;
       }
-      return <Badge className="bg-green-50 text-green-600 border-green-200">할인발급</Badge>;
+      // 할인발급 뱃지 제거 - 할인코드 정보는 아래에 별도로 표시됨
+      return null;
     }
 
     if (groupbuyStatus === 'recruiting') {
