@@ -355,6 +355,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     address_region: profileData.address_region,
                     business_number: profileData.business_number, // 사업자등록번호 추가
                     business_address: profileData.business_address,
+                    is_business_verified: profileData.is_business_verified, // 사업자 인증 여부 추가
                     representative_name: profileData.representative_name, // 대표자명 추가
                     penalty_info: profileData.penalty_info, // 패널티 정보 추가
                     penaltyInfo: profileData.penalty_info // camelCase 버전도 추가 (동일한 데이터)
@@ -377,6 +378,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     address_region: profileData.address_region,
                     business_number: profileData.business_number, // 사업자등록번호 추가
                     business_address: profileData.business_address,
+                    is_business_verified: profileData.is_business_verified, // 사업자 인증 여부 추가
                     representative_name: profileData.representative_name, // 대표자명 추가
                     penalty_info: profileData.penalty_info, // 패널티 정보 추가
                     penaltyInfo: profileData.penalty_info // camelCase 버전도 추가
@@ -712,6 +714,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 address_region: profileData.address_region,
                 business_number: profileData.business_number, // 사업자등록번호 추가
                 business_address: profileData.business_address,
+                is_business_verified: profileData.is_business_verified, // 사업자 인증 여부 추가
                 representative_name: profileData.representative_name, // 대표자명 추가
                 sns_type: profileData.sns_type,
                 provider: profileData.sns_type,
