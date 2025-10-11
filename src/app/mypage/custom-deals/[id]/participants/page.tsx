@@ -304,9 +304,9 @@ export default function ParticipantsManagePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500">사용완료</p>
-                  <p className="text-2xl font-bold text-green-600 mt-0.5">{usedCount}</p>
+                  <p className="text-2xl font-bold text-gray-600 mt-0.5">{usedCount}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-green-500" />
+                <CheckCircle className="w-8 h-8 text-gray-500" />
               </div>
             </CardContent>
           </Card>
@@ -379,7 +379,7 @@ export default function ParticipantsManagePage() {
                           {participant.user_name}
                         </span>
                         {participant.discount_used ? (
-                          <Badge className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0">
+                          <Badge className="bg-gray-50 text-gray-700 border-gray-200 text-xs px-1.5 py-0">
                             사용완료
                           </Badge>
                         ) : (
@@ -401,7 +401,7 @@ export default function ParticipantsManagePage() {
                             return validity ? validity.expired : false;
                           })())
                         }
-                        className="data-[state=checked]:bg-green-600"
+                        className="data-[state=checked]:bg-gray-600"
                       />
                     </div>
 
@@ -417,7 +417,7 @@ export default function ParticipantsManagePage() {
                         })}
                       </span>
                       {participant.discount_used && participant.discount_used_at && (
-                        <span className="flex items-center gap-1 text-green-600">
+                        <span className="flex items-center gap-1 text-gray-600">
                           <CheckCircle className="w-3 h-3" />
                           사용: {new Date(participant.discount_used_at).toLocaleDateString('ko', {
                             month: 'short',

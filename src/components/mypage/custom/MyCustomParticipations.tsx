@@ -58,7 +58,7 @@ function QRCodeDisplay({ participationId }: { participationId: number }) {
 
   if (loading) {
     return (
-      <div className="mt-3 pt-3 border-t border-green-200">
+      <div className="mt-3 pt-3 border-t border-slate-200">
         <p className="text-xs text-slate-600 mb-2 text-center">QR 코드 로딩 중...</p>
         <div className="flex justify-center">
           <div className="w-40 h-40 bg-slate-100 rounded animate-pulse" />
@@ -69,14 +69,14 @@ function QRCodeDisplay({ participationId }: { participationId: number }) {
 
   if (error || !qrImageUrl) {
     return (
-      <div className="mt-3 pt-3 border-t border-green-200">
+      <div className="mt-3 pt-3 border-t border-slate-200">
         <p className="text-xs text-red-600 mb-2 text-center">QR 코드를 불러올 수 없습니다</p>
       </div>
     );
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-green-200">
+    <div className="mt-3 pt-3 border-t border-slate-200">
       <p className="text-xs text-slate-600 mb-2 text-center">판매자에게 QR 코드를 보여주세요</p>
       <div className="flex justify-center">
         <img
@@ -479,11 +479,11 @@ export default function MyCustomParticipations() {
                           <div className={`border rounded-lg p-3 mb-2 ${
                             isExpired
                               ? 'bg-red-50 border-red-200'
-                              : 'bg-green-50 border-green-200'
+                              : 'bg-white border-slate-200'
                           }`}>
                             <div className="flex items-center gap-2 mb-2">
-                              <Ticket className={`w-4 h-4 ${isExpired ? 'text-red-600' : 'text-green-600'}`} />
-                              <h4 className={`text-sm font-bold ${isExpired ? 'text-red-900' : 'text-green-900'}`}>
+                              <Ticket className={`w-4 h-4 ${isExpired ? 'text-red-600' : 'text-slate-600'}`} />
+                              <h4 className={`text-sm font-bold ${isExpired ? 'text-red-900' : 'text-slate-900'}`}>
                                 {isExpired ? '할인 유효기간 만료' : '할인코드 발급 완료'}
                               </h4>
                               {validity && (
