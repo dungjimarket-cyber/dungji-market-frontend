@@ -1,16 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MyCustomDeals from '@/components/mypage/custom/MyCustomDeals';
 import MyCustomParticipations from '@/components/mypage/custom/MyCustomParticipations';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export default function MyCustomDealsPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('registered');
+
+  // 페이지 진입 시 인증 체크
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast.error('로그인이 필요합니다');
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
