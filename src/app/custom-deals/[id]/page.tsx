@@ -855,6 +855,62 @@ export default function CustomDealDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* 판매자 관리 버튼 (본인 공구, 모집중) */}
+            {user && deal.seller === parseInt(user.id) && !isClosed && (
+              <div className="bg-white border border-slate-200 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">공구 관리</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBump}
+                    disabled={!bumpStatus?.can_bump}
+                    className="flex items-center justify-center gap-1.5"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    끌올
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
+                    className="flex items-center justify-center gap-1.5"
+                  >
+                    <Edit className="w-4 h-4" />
+                    수정
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEarlyClose}
+                    className="flex items-center justify-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    조기종료
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDelete}
+                    className="flex items-center justify-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    삭제
+                  </Button>
+                </div>
+                {bumpStatus && !bumpStatus.can_bump && bumpStatus.next_bump_available_at && (
+                  <p className="text-xs text-slate-500 text-center mt-2">
+                    끌올 가능: {new Date(bumpStatus.next_bump_available_at).toLocaleString('ko-KR', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1017,72 +1073,6 @@ export default function CustomDealDetailPage() {
           router.push('/mypage');
         }}
       />
-
-      {/* Fixed Bottom Management Button Bar (Seller Only) */}
-      {user && deal.seller === parseInt(user.id) && !isClosed && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-20 pb-safe">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center gap-2">
-              {/* 끌올 버튼 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBump}
-                disabled={!bumpStatus?.can_bump}
-                className="flex items-center gap-1.5"
-              >
-                <TrendingUp className="w-4 h-4" />
-                끌올
-              </Button>
-
-              {/* 수정 버튼 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
-                className="flex items-center gap-1.5"
-              >
-                <Edit className="w-4 h-4" />
-                수정
-              </Button>
-
-              {/* 조기종료 버튼 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleEarlyClose}
-                className="flex items-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
-              >
-                <AlertCircle className="w-4 h-4" />
-                조기종료
-              </Button>
-
-              {/* 삭제 버튼 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDelete}
-                className="flex items-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                삭제
-              </Button>
-            </div>
-
-            {/* 끌올 사용 가능 시간 안내 */}
-            {bumpStatus && !bumpStatus.can_bump && bumpStatus.next_bump_available_at && (
-              <p className="text-xs text-slate-500 text-center mt-2">
-                끌올 가능: {new Date(bumpStatus.next_bump_available_at).toLocaleString('ko-KR', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
