@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -75,6 +75,8 @@ export default function CustomDealDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
+  const [showImageLightbox, setShowImageLightbox] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -654,16 +656,58 @@ export default function CustomDealDetailPage() {
           {/* Left Column - Images */}
           <div>
             {/* Main Image */}
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative">
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative group">
               {sortedImages.length > 0 ? (
                 <>
-                  <img
-                    src={sortedImages[selectedImage].image_url}
-                    alt={deal.title}
-                    className={`w-full aspect-square object-cover ${isClosed ? 'opacity-50' : ''}`}
-                  />
+                  <button
+                    onClick={() => {
+                      setLightboxImageIndex(selectedImage);
+                      setShowImageLightbox(true);
+                    }}
+                    className="w-full cursor-zoom-in"
+                  >
+                    <img
+                      src={sortedImages[selectedImage].image_url}
+                      alt={deal.title}
+                      className={`w-full aspect-square object-cover ${isClosed ? 'opacity-50' : ''}`}
+                    />
+                  </button>
+
+                  {/* 확대 버튼 */}
+                  <button
+                    onClick={() => {
+                      setLightboxImageIndex(selectedImage);
+                      setShowImageLightbox(true);
+                    }}
+                    className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ZoomIn className="w-5 h-5" />
+                  </button>
+
+                  {/* 좌우 네비게이션 (이미지 2개 이상일 때) */}
+                  {sortedImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setSelectedImage((prev) =>
+                          prev === 0 ? sortedImages.length - 1 : prev - 1
+                        )}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <ChevronLeft className="w-6 h-6 text-slate-800" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedImage((prev) =>
+                          prev === sortedImages.length - 1 ? 0 : prev + 1
+                        )}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <ChevronRight className="w-6 h-6 text-slate-800" />
+                      </button>
+                    </>
+                  )}
+
                   {isClosed && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
                       <div className="text-white font-bold text-5xl drop-shadow-lg">마감</div>
                     </div>
                   )}
@@ -965,6 +1009,53 @@ export default function CustomDealDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Image Lightbox */}
+      {showImageLightbox && sortedImages.length > 0 && (
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60] p-4">
+          <button
+            onClick={() => setShowImageLightbox(false)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img
+              src={sortedImages[lightboxImageIndex].image_url}
+              alt={`${deal.title} ${lightboxImageIndex + 1}`}
+              className="object-contain max-w-full max-h-full"
+            />
+
+            {/* 라이트박스 네비게이션 */}
+            {sortedImages.length > 1 && (
+              <>
+                <button
+                  onClick={() => setLightboxImageIndex((prev) =>
+                    prev === 0 ? sortedImages.length - 1 : prev - 1
+                  )}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors"
+                >
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </button>
+                <button
+                  onClick={() => setLightboxImageIndex((prev) =>
+                    prev === sortedImages.length - 1 ? 0 : prev + 1
+                  )}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors"
+                >
+                  <ChevronRight className="w-6 h-6 text-white" />
+                </button>
+
+                {/* 이미지 카운터 */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+                  {lightboxImageIndex + 1} / {sortedImages.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Profile Check Modal */}
       <ProfileCheckModal
