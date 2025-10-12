@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Plus, Heart, Users, Clock, MapPin, Tag } from 'lucide-react';
+import { Search, Plus, Heart, Users, Clock, MapPin, Tag, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';

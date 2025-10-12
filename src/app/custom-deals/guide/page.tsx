@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Users, ShoppingCart, AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
 
 interface Section {
   id: string;
   title: string;
-  icon: JSX.Element;
-  content: JSX.Element;
+  icon: React.ReactElement;
+  content: React.ReactElement;
 }
 
 export default function CustomDealsGuidePage() {
