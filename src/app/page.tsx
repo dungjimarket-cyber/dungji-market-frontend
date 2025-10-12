@@ -221,21 +221,19 @@ function HomeContent() {
             <span className="text-xs sm:text-base">중고거래</span>
           </Link>
           
-          <Link 
+          <Link
             href="/events"
             className="btn-animated bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이벤트</span>
           </Link>
-          
-          <a
-            href="https://doongji-market-1vi5n3i.gamma.site/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-animated btn-soft whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
+
+          <Link
+            href="/custom-deals"
+            className="btn-animated bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
-            <span className="text-xs sm:text-base">이용가이드</span>
-          </a>
+            <span className="text-xs sm:text-base">커스텀공구</span>
+          </Link>
         </div>
       </section>
 

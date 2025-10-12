@@ -78,12 +78,12 @@ export default function DesktopNavbar() {
           </Link>
           
           <div className="flex space-x-8">
+            <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900">
+              커스텀 공구
+            </Link>
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
               같이 견적받기
             </Link>
-            {/* <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900">
-              커스텀 특가
-            </Link> */}
             <Link href="/used" className="text-gray-600 hover:text-gray-900">
               중고거래
             </Link>
