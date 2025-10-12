@@ -250,8 +250,8 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'all'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                    ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
+                    : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
                 }`}
               >
                 전체
@@ -260,8 +260,8 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('online')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'online'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                    ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
+                    : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
                 }`}
               >
                 온라인
@@ -270,8 +270,8 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('offline')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'offline'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                    ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
+                    : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
                 }`}
               >
                 오프라인
@@ -308,8 +308,8 @@ export default function CustomDealsPage() {
               onClick={() => setShowClosedDeals(!showClosedDeals)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 !showClosedDeals
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                  ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
+                  : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
               }`}
             >
               {showClosedDeals ? '진행중만 보기' : '전체 보기'}
