@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import NoticeSection from '@/components/home/NoticeSection';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
+import { checkCustomActivePenalty, CustomPenalty } from '@/lib/api/custom/penaltyApi';
 
 interface CustomDeal {
   id: number;
@@ -58,6 +60,10 @@ export default function CustomDealsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState(''); // 지역 검색
   const [showClosedDeals, setShowClosedDeals] = useState(true); // 마감된 공구 표시 여부
+
+  // 패널티 모달 상태
+  const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -123,6 +129,24 @@ export default function CustomDealsPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchDeals();
+  };
+
+  const handleCreateDeal = async () => {
+    // 패널티 체크
+    try {
+      const response = await checkCustomActivePenalty();
+      if (response.has_active_penalty && response.penalty) {
+        // 패널티가 있으면 모달 표시
+        setPenaltyInfo(response.penalty);
+        setShowPenaltyModal(true);
+        return;
+      }
+    } catch (error) {
+      console.error('패널티 체크 실패:', error);
+    }
+
+    // 패널티가 없으면 페이지 이동
+    router.push('/custom-deals/create');
   };
 
   const getRemainingTime = (expiredAt: string) => {
@@ -216,7 +240,7 @@ export default function CustomDealsPage() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => router.push('/custom-deals/create')}
+                onClick={handleCreateDeal}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Plus className="w-4 h-4 mr-1.5" />
@@ -503,6 +527,14 @@ export default function CustomDealsPage() {
           </div>
         )}
       </div>
+
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={penaltyInfo}
+        userRole="buyer"
+      />
     </div>
   );
 }
