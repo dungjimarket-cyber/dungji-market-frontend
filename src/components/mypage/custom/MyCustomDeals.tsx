@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, Clock, Tag, MapPin, Eye, Heart, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import PenaltyAlert from '@/components/penalty/PenaltyAlert';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
+import { checkCustomActivePenalty, CustomPenalty } from '@/lib/api/custom/penaltyApi';
 
 interface CustomDeal {
   id: number;
@@ -44,9 +47,12 @@ export default function MyCustomDeals() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
   useEffect(() => {
     fetchDeals();
+    fetchPenaltyStatus();
   }, [filter]);
 
   // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
@@ -83,6 +89,37 @@ export default function MyCustomDeals() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchPenaltyStatus = async () => {
+    try {
+      const response = await checkCustomActivePenalty();
+      if (response.has_active_penalty && response.penalty) {
+        setPenaltyInfo(response.penalty);
+      } else {
+        setPenaltyInfo(null);
+      }
+    } catch (error) {
+      console.error('패널티 상태 조회 실패:', error);
+    }
+  };
+
+  const handleCreateDeal = async () => {
+    // 패널티 체크
+    try {
+      const response = await checkCustomActivePenalty();
+      if (response.has_active_penalty && response.penalty) {
+        // 패널티가 있으면 모달 표시
+        setPenaltyInfo(response.penalty);
+        setShowPenaltyModal(true);
+        return;
+      }
+    } catch (error) {
+      console.error('패널티 체크 실패:', error);
+    }
+
+    // 패널티가 없으면 페이지 이동
+    router.push('/custom-deals/create');
   };
 
   const handleEarlyClose = async (dealId: number) => {
@@ -246,7 +283,7 @@ export default function MyCustomDeals() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2">
           <Button
-            onClick={() => router.push('/custom-deals/create')}
+            onClick={handleCreateDeal}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             공구 등록
@@ -261,6 +298,26 @@ export default function MyCustomDeals() {
           </Button>
         </div>
       </div>
+
+      {/* 패널티 알림 */}
+      {penaltyInfo && (
+        <PenaltyAlert
+          penaltyInfo={penaltyInfo}
+          userRole="buyer"
+        />
+      )}
+
+      {/* 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={penaltyInfo ? {
+          ...penaltyInfo,
+          reason: penaltyInfo.reason,
+          count: penaltyInfo.count
+        } : null}
+        userRole="buyer"
+      />
 
       {/* 필터 */}
       <div className="flex flex-wrap gap-2 mb-6">
