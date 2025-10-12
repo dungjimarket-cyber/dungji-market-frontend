@@ -22,6 +22,7 @@ interface Notice {
   show_in_main?: boolean;
   show_in_groupbuy?: boolean;
   show_in_used?: boolean;
+  show_in_custom?: boolean;
 }
 
 export default function NoticesPage() {
@@ -65,6 +66,8 @@ export default function NoticesPage() {
     switch (activeTab) {
       case 'groupbuy':
         return allNotices.filter(notice => notice.show_in_groupbuy);
+      case 'custom':
+        return allNotices.filter(notice => notice.show_in_custom);
       case 'used':
         return allNotices.filter(notice => notice.show_in_used);
       case 'all':
@@ -115,9 +118,10 @@ export default function NoticesPage() {
 
       {/* 탭 네비게이션 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="all">전체</TabsTrigger>
           <TabsTrigger value="groupbuy">공구·견적</TabsTrigger>
+          <TabsTrigger value="custom">커스텀공구</TabsTrigger>
           <TabsTrigger value="used">중고거래</TabsTrigger>
         </TabsList>
 
@@ -140,6 +144,7 @@ export default function NoticesPage() {
               <CardContent className="py-8">
                 <p className="text-center text-gray-500">
                   {activeTab === 'groupbuy' ? '공구·견적 공지사항이 없습니다.' :
+                   activeTab === 'custom' ? '커스텀공구 공지사항이 없습니다.' :
                    activeTab === 'used' ? '중고거래 공지사항이 없습니다.' :
                    '공지사항이 없습니다.'}
                 </p>
