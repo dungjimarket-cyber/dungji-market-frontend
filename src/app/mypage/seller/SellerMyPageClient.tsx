@@ -133,6 +133,9 @@ export default function SellerMyPageClient() {
         setSellerCategory(profile.sellerCategory || null);
       } catch (error) {
         console.error('판매자 프로필 조회 오류:', error);
+      } finally {
+        // 판매유형 조회 후 페이지 로딩 해제
+        setPageLoading(false);
       }
     };
 
@@ -211,12 +214,12 @@ export default function SellerMyPageClient() {
     fetchBuyerCounts();
   }, [isAuthenticated, accessToken, sellerCategory]);
 
-  // 각 카테고리별 데이터 개수 가져오기 (판매활동)
+  // 각 카테고리별 데이터 개수 가져오기 (판매활동 - 통신/렌탈만)
   useEffect(() => {
     const fetchCounts = async () => {
       if (!isAuthenticated || !accessToken || !sellerCategory) return;
       if (sellerCategory !== 'telecom' && sellerCategory !== 'rental') return;
-      
+
       try {
         // 중요한 항목(판매확정/포기)만 먼저 로드
         const fetchPendingSeller = async () => {
@@ -232,11 +235,10 @@ export default function SellerMyPageClient() {
           }
           return 0;
         };
-        
+
         // 먼저 중요한 데이터 로드
-        const pendingCount = await fetchPendingSeller();
-        setPageLoading(false); // 중요한 데이터 로드 후 즉시 페이지 표시
-        
+        await fetchPendingSeller();
+
         // 나머지는 비동기로 로드 (페이지 표시를 막지 않음)
         const loadRemainingCounts = async () => {
           const responses = await Promise.allSettled([
@@ -253,9 +255,9 @@ export default function SellerMyPageClient() {
               headers: { 'Authorization': `Bearer ${accessToken}` }
             })
           ]);
-          
+
           const [waitingBuyer, trading, completed, cancelled] = responses;
-          
+
           if (waitingBuyer.status === 'fulfilled' && waitingBuyer.value.ok) {
             const data = await waitingBuyer.value.json();
             setCounts(prev => ({ ...prev, waitingBuyer: data.length }));
@@ -273,17 +275,15 @@ export default function SellerMyPageClient() {
             setCounts(prev => ({ ...prev, cancelled: data.length }));
           }
         };
-        
+
         loadRemainingCounts();
       } catch (error) {
         console.error('판매자 마이페이지 데이터 로딩 오류:', error);
-      } finally {
-        setPageLoading(false);
       }
     };
-    
+
     fetchCounts();
-  }, [isAuthenticated, accessToken]);
+  }, [isAuthenticated, accessToken, sellerCategory]);
   
   // 판매자 권한 확인
   useEffect(() => {

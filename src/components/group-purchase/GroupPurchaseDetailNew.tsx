@@ -288,8 +288,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isCompleted = groupBuyData.status === 'completed';
   const isFinalSelection = isBuyerFinalSelection || isSellerFinalSelection || isSellerConfirmation;
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
-  const isSeller = user?.role === 'seller';
-  
+
+  // 판매유형 기반 권한: 통신/렌탈 판매자만 견적 제안 가능
+  const isSeller = user?.role === 'seller' &&
+    (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental');
+
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
   const isInternetCategory = groupBuy.product_details?.category_name === '인터넷' || groupBuy.product_details?.category_name === '인터넷+TV';
   const isSupportBidType = isTelecom || isInternetCategory;
