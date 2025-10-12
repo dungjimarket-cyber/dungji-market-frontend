@@ -528,12 +528,12 @@ export default function CreateCustomDealPage() {
         if (!firstErrorRef) firstErrorRef = productNameRef;
       }
       if (!formData.original_price) {
-        newErrors.original_price = '정가를 입력해주세요';
+        newErrors.original_price = '정상가를 입력해주세요';
         if (!firstErrorRef) firstErrorRef = originalPriceRef;
       }
       const originalPrice = parseInt(formData.original_price.replace(/,/g, ''));
       if (originalPrice > 100000000) {
-        newErrors.original_price = '정가는 최대 1억원까지 입력 가능합니다';
+        newErrors.original_price = '정상가는 최대 1억원까지 입력 가능합니다';
         if (!firstErrorRef) firstErrorRef = originalPriceRef;
       }
     }
@@ -1110,7 +1110,7 @@ export default function CreateCustomDealPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>정가 *</Label>
+                    <Label>정상가(판매중인 가격) *</Label>
                     <Input
                       ref={originalPriceRef}
                       value={formData.original_price}
