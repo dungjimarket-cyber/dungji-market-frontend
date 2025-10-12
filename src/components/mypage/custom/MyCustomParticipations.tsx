@@ -548,7 +548,7 @@ export default function MyCustomParticipations() {
                       })()}
 
                       {/* 액션 버튼 */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           size="sm"
                           variant="outline"
@@ -566,6 +566,17 @@ export default function MyCustomParticipations() {
                           >
                             <XCircle className="w-3 h-3 mr-1" />
                             참여 취소
+                          </Button>
+                        )}
+                        {groupbuy.status === 'completed' && participation.status === 'confirmed' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
+                            onClick={() => router.push(`/custom-noshow-report/create?groupbuy=${groupbuy.id}`)}
+                          >
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            노쇼 신고
                           </Button>
                         )}
                       </div>
