@@ -425,18 +425,6 @@ export default function ParticipantsManagePage() {
                           })}
                         </span>
                       )}
-                      {(() => {
-                        const validity = getValidityDisplay(participant.discount_valid_until);
-                        if (validity) {
-                          return (
-                            <span className={`flex items-center gap-1 ${validity.color}`}>
-                              <Clock className="w-3 h-3" />
-                              {validity.label}: {validity.time}
-                            </span>
-                          );
-                        }
-                        return null;
-                      })()}
                     </div>
 
                     {/* 할인코드/링크 또는 만료 메시지 */}
