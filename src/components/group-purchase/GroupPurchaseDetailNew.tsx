@@ -191,7 +191,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const [winningBidInfo, setWinningBidInfo] = useState<any>(null);
   const [groupBuyData, setGroupBuyData] = useState(groupBuy);
   const [sellerProfile, setSellerProfile] = useState<any>(null);
-  
+  const [isLoadingSellerProfile, setIsLoadingSellerProfile] = useState(false);
+
   // 구매자 확정률 모달 상태
   const [showBuyerConfirmationModal, setShowBuyerConfirmationModal] = useState(false);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
@@ -210,8 +211,12 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   // 판매자 프로필 가져오기
   useEffect(() => {
     const fetchSellerProfile = async () => {
-      if (!accessToken || !isAuthenticated || user?.role !== 'seller') return;
-      
+      if (!accessToken || !isAuthenticated || user?.role !== 'seller') {
+        setIsLoadingSellerProfile(false);
+        return;
+      }
+
+      setIsLoadingSellerProfile(true);
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/seller-profile/`, {
           headers: {
@@ -224,9 +229,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
         }
       } catch (error) {
         console.error('판매자 프로필 조회 오류:', error);
+      } finally {
+        setIsLoadingSellerProfile(false);
       }
     };
-    
+
     fetchSellerProfile();
   }, [accessToken, isAuthenticated, user]);
 
@@ -289,8 +296,11 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
   const isFinalSelection = isBuyerFinalSelection || isSellerFinalSelection || isSellerConfirmation;
   const isCreator = user && (parseInt(user.id) === groupBuy.creator.id || parseInt(user.id) === groupBuy.host_id);
 
-  // 판매유형 기반 권한: 통신/렌탈 판매자만 견적 제안 가능
-  const isSeller = user?.role === 'seller' &&
+  // 판매회원 여부 (견적이용권 조회 등에 사용)
+  const isSeller = user?.role === 'seller';
+
+  // 판매유형 기반 견적 제안 권한: 통신/렌탈 판매자만 견적 제안 가능
+  const canBid = isSeller &&
     (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental');
 
   const isTelecom = groupBuy.product_details?.category_name === '휴대폰' || groupBuy.product_details?.category_detail_type === 'telecom';
@@ -2125,6 +2135,14 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       </div>
                     )}
                   </div>
+                ) : user?.role === 'seller' && isLoadingSellerProfile ? (
+                  // 판매자 프로필 로딩 중
+                  <div className="p-6 bg-gray-50 rounded-lg text-center">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                    </div>
+                  </div>
                 ) : user?.role === 'seller' && !sellerProfile?.sellerCategory &&
                    groupBuyData.status === 'recruiting' &&
                    !isEnded ? (
@@ -2145,10 +2163,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       판매유형 설정하러 가기
                     </Button>
                   </div>
-                ) : isSeller && !isFinalSelection &&
+                ) : canBid && !isFinalSelection &&
                  groupBuyData.status === 'recruiting' &&
                  !isEnded ? (
-                  // 판매자용 인터페이스 (통신/렌탈)
+                  // 판매자용 인터페이스 (통신/렌탈 판매자만)
                   <div className="space-y-4">
                     {/* 견적 제안 현황 */}
                     {(topBids.length > 0 || myBidRank) && (
@@ -2699,10 +2717,10 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
           </div>
-        ) : isSeller && !isFinalSelection && 
-         groupBuyData.status === 'recruiting' && 
+        ) : canBid && !isFinalSelection &&
+         groupBuyData.status === 'recruiting' &&
          !isEnded ? (
-          // 판매자용 인터페이스
+          // 판매자용 인터페이스 (통신/렌탈 판매자만)
           <div className="space-y-4">
             {groupBuyData.status === 'recruiting' && !hasBid ? (
               // v3.0: 모집과 입찰 동시 진행
@@ -3059,10 +3077,9 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
       <AlertDialog open={showNoBidTokenDialog} onOpenChange={setShowNoBidTokenDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>견적이용권 부족</AlertDialogTitle>
+            <AlertDialogTitle>견적이용권이 없습니다</AlertDialogTitle>
             <AlertDialogDescription>
-              입찰하려면 견적이용권이 필요합니다. 
-              견적이용권을 구매하시겠습니까?
+              견적이용권이 없습니다. 구매하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
