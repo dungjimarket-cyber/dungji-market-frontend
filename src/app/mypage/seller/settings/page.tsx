@@ -97,6 +97,10 @@ export default function SellerSettings() {
   const [isEditingRepresentativeName, setIsEditingRepresentativeName] = useState(false);
   const [isEditingSellerCategory, setIsEditingSellerCategory] = useState(false);
 
+  // 판매유형 모달 상태
+  const [showSellerCategoryWarningModal, setShowSellerCategoryWarningModal] = useState(false);
+  const [showSellerCategoryLockedModal, setShowSellerCategoryLockedModal] = useState(false);
+
   // 푸시 알림 설정
   const [pushNotificationSettings, setPushNotificationSettings] = useState({
     trade_notifications: true,
@@ -645,6 +649,17 @@ export default function SellerSettings() {
   };
 
   const saveSellerCategory = async () => {
+    // 최초 저장인 경우 확인 모달 표시
+    if (!profile?.sellerCategory) {
+      setShowSellerCategoryWarningModal(true);
+      return;
+    }
+
+    // 실제 저장 로직 (모달에서 확인 후 호출됨)
+    await performSellerCategorySave();
+  };
+
+  const performSellerCategorySave = async () => {
     setSaving(true);
     try {
       const result = await updateSellerProfile({
@@ -654,11 +669,12 @@ export default function SellerSettings() {
       if (result) {
         toast({
           title: '저장 완료',
-          description: '판매유형이 변경되었습니다.'
+          description: '판매유형이 설정되었습니다.'
         });
         const updatedData = await getSellerProfile();
         setProfile(updatedData);
         setIsEditingSellerCategory(false);
+        setShowSellerCategoryWarningModal(false);
       }
     } catch (error) {
       console.error('판매유형 저장 오류:', error);
@@ -1296,7 +1312,7 @@ export default function SellerSettings() {
                           <Button
                             type="button"
                             size="sm"
-                            onClick={() => setIsEditingSellerCategory(true)}
+                            onClick={() => setShowSellerCategoryLockedModal(true)}
                             variant="outline"
                             className="text-gray-500 mt-2"
                           >
@@ -1506,8 +1522,11 @@ export default function SellerSettings() {
                 </div>
 
 
-                {/* 비대면 판매 인증 섹션 - 승인된 경우 완료 메시지만 표시 */}
-                {(remoteSalesStatus?.status === 'approved' || profile?.remoteSalesVerified || profile?.remoteSalesStatus === 'approved') ? (
+                {/* 비대면 판매 인증 섹션 - 통신/렌탈 판매유형만 표시 */}
+                {(formData.sellerCategory === 'telecom' || formData.sellerCategory === 'rental') && (
+                  <>
+                  {/* 승인된 경우 완료 메시지만 표시 */}
+                  {(remoteSalesStatus?.status === 'approved' || profile?.remoteSalesVerified || profile?.remoteSalesStatus === 'approved') ? (
                   <div className="space-y-2">
                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-sm font-medium text-green-800">✅ 비대면 판매 인증 완료</p>
@@ -1966,6 +1985,8 @@ export default function SellerSettings() {
                       </div>
                     )}
                   </div>
+                  )}
+                  </>
                 )}
               </CardContent>
             </div>
@@ -2140,6 +2161,82 @@ export default function SellerSettings() {
                   확인
                 </Button>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* 판매유형 최초 설정 확인 모달 */}
+          <Dialog open={showSellerCategoryWarningModal} onOpenChange={setShowSellerCategoryWarningModal}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <div className="flex justify-center mb-3">
+                  <AlertCircle className="h-12 w-12 text-amber-500" />
+                </div>
+                <DialogTitle className="text-center text-lg">판매유형 설정 확인</DialogTitle>
+                <DialogDescription className="text-center text-sm space-y-2">
+                  <p className="font-medium text-gray-900">
+                    판매유형은 한 번 설정하면 변경할 수 없습니다.
+                  </p>
+                  <p className="text-gray-600">
+                    변경이 필요한 경우 고객센터에 문의하거나<br/>
+                    탈퇴 후 재가입해주세요.
+                  </p>
+                  <p className="text-amber-600 font-medium mt-3">
+                    정말 이 판매유형으로 설정하시겠습니까?
+                  </p>
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex gap-2 sm:gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowSellerCategoryWarningModal(false);
+                    setFormData(prev => ({ ...prev, sellerCategory: profile?.sellerCategory || '' }));
+                  }}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+                <Button
+                  type="button"
+                  onClick={performSellerCategorySave}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  확인
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* 판매유형 변경 불가 안내 모달 */}
+          <Dialog open={showSellerCategoryLockedModal} onOpenChange={setShowSellerCategoryLockedModal}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <div className="flex justify-center mb-3">
+                  <AlertCircle className="h-12 w-12 text-red-500" />
+                </div>
+                <DialogTitle className="text-center text-lg">판매유형 변경 불가</DialogTitle>
+                <DialogDescription className="text-center text-sm space-y-2">
+                  <p className="font-medium text-gray-900">
+                    판매유형은 변경할 수 없습니다.
+                  </p>
+                  <p className="text-gray-600 mt-3">
+                    판매유형 변경이 필요한 경우<br/>
+                    고객센터에 문의하거나 탈퇴 후 재가입해주세요.
+                  </p>
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  onClick={() => setShowSellerCategoryLockedModal(false)}
+                  className="w-full"
+                >
+                  확인
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
     </div>

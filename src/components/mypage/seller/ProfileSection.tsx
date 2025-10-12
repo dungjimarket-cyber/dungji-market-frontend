@@ -101,50 +101,52 @@ export default function ProfileSection() {
         </CardContent>
       </Card>
 
-      {/* 견적이용권 정보 카드 */}
-      <Card className="mb-6">
-        <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="w-full sm:w-auto">
-              <h3 className="text-base sm:text-lg font-semibold mb-1">남은 견적이용권</h3>
-              <div className="flex items-center gap-2 mb-1">
-                <Ticket className="h-4 w-4 text-blue-500" />
-                <p className="text-xl sm:text-2xl font-bold">
-                  {bidTokens?.unlimited_subscription
-                    ? '무제한'
-                    : `${bidTokens?.single_tokens || 0}개`}
-                </p>
-              </div>
-              
-              {bidTokens?.unlimited_subscription ? (
-                <>
-                  <p className="text-xs sm:text-sm text-blue-600">
-                    무제한 구독권 사용중
-                    {bidTokens.unlimited_expires_at && (
-                      <span className="block sm:inline">
-                        ({new Date(bidTokens.unlimited_expires_at).toLocaleDateString()} 만료)
-                      </span>
-                    )}
+      {/* 견적이용권 정보 카드 - 통신/렌탈 판매자만 표시 */}
+      {(sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental') && (
+        <Card className="mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="w-full sm:w-auto">
+                <h3 className="text-base sm:text-lg font-semibold mb-1">남은 견적이용권</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <Ticket className="h-4 w-4 text-blue-500" />
+                  <p className="text-xl sm:text-2xl font-bold">
+                    {bidTokens?.unlimited_subscription
+                      ? '무제한'
+                      : `${bidTokens?.single_tokens || 0}개`}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
-                    *무제한 구독권 이용시 보유한 견적이용권은 소진되지 않습니다
-                  </p>
-                </>
-              ) : bidTokens && bidTokens.single_tokens > 0 && (
-                <p className="text-xs sm:text-sm text-green-600">
-                  단품 견적이용권 {bidTokens.single_tokens}개 (유효기간: 무기한)
-                </p>
-              )}
-            </div>
+                </div>
 
-            <Link href="/mypage/seller/bid-tokens" className="w-full sm:w-auto">
-              <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
-                견적이용권(공구전용)
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+                {bidTokens?.unlimited_subscription ? (
+                  <>
+                    <p className="text-xs sm:text-sm text-blue-600">
+                      무제한 구독권 사용중
+                      {bidTokens.unlimited_expires_at && (
+                        <span className="block sm:inline">
+                          ({new Date(bidTokens.unlimited_expires_at).toLocaleDateString()} 만료)
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                      *무제한 구독권 이용시 보유한 견적이용권은 소진되지 않습니다
+                    </p>
+                  </>
+                ) : bidTokens && bidTokens.single_tokens > 0 && (
+                  <p className="text-xs sm:text-sm text-green-600">
+                    단품 견적이용권 {bidTokens.single_tokens}개 (유효기간: 무기한)
+                  </p>
+                )}
+              </div>
+
+              <Link href="/mypage/seller/bid-tokens" className="w-full sm:w-auto">
+                <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
+                  견적이용권(공구전용)
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }

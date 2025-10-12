@@ -1505,39 +1505,43 @@ function RegisterPageContent() {
                       <p className="text-xs text-gray-500 mt-1">사업자등록증에 기재된 대표자명과 동일하게 입력해주세요</p>
                     </div>
 
-                    {/* 비대면 판매가능 영업소 인증 */}
-                    <div className="flex items-start">
-                      <input
-                        id="is_remote_sales"
-                        name="is_remote_sales"
-                        type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                        checked={formData.is_remote_sales}
-                        onChange={handleChange}
-                      />
-                      <label htmlFor="is_remote_sales" className="ml-2">
-                        <span className="text-sm font-medium text-gray-700">비대면 판매가능 영업소 인증</span>
-                        <p className="text-xs text-gray-500">체크 시 별도 인증 절차를 통해 비대면 판매자 권한이 부여됩니다.</p>
-                      </label>
-                    </div>
+                    {/* 비대면 판매가능 영업소 인증 (통신/렌탈만) */}
+                    {(formData.seller_category === 'telecom' || formData.seller_category === 'rental') && (
+                      <>
+                        <div className="flex items-start">
+                          <input
+                            id="is_remote_sales"
+                            name="is_remote_sales"
+                            type="checkbox"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                            checked={formData.is_remote_sales}
+                            onChange={handleChange}
+                          />
+                          <label htmlFor="is_remote_sales" className="ml-2">
+                            <span className="text-sm font-medium text-gray-700">비대면 판매가능 영업소 인증</span>
+                            <p className="text-xs text-gray-500">체크 시 별도 인증 절차를 통해 비대면 판매자 권한이 부여됩니다.</p>
+                          </label>
+                        </div>
 
-                    {/* 사업자등록증 업로드 (비대면 인증 체크시) */}
-                    {formData.is_remote_sales && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          사업자등록증 업로드
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*,.pdf"
-                          onChange={handleFileChange}
-                          className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          ※ JPG/PNG 형식의 파일만 업로드 가능 (최대 2MB)<br/>
-                          ※ 인증절차를 위한 서류 확인이 필요합니다.
-                        </p>
-                      </div>
+                        {/* 사업자등록증 업로드 (비대면 인증 체크시) */}
+                        {formData.is_remote_sales && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              사업자등록증 업로드
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*,.pdf"
+                              onChange={handleFileChange}
+                              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              ※ JPG/PNG 형식의 파일만 업로드 가능 (최대 2MB)<br/>
+                              ※ 인증절차를 위한 서류 확인이 필요합니다.
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

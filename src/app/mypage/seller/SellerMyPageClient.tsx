@@ -10,15 +10,24 @@ import TradingGroupBuys from '@/components/mypage/seller/TradingGroupBuys';
 import CompletedSales from '@/components/mypage/seller/CompletedSales';
 import CancelledGroupBuys from '@/components/mypage/seller/CancelledGroupBuys';
 import PenaltyAlert from '@/components/penalty/PenaltyAlert';
+// 구매활동용 컴포넌트 import
+import ParticipatingGroupBuys from '@/components/mypage/ParticipatingGroupBuys';
+import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroupBuys';
+import WaitingSellerDecisionGroupBuys from '@/components/mypage/WaitingSellerDecisionGroupBuys';
+import PurchaseConfirmedGroupBuys from '@/components/mypage/PurchaseConfirmedGroupBuys';
+import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
+import MyCustomParticipations from '@/components/mypage/custom/MyCustomParticipations';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone, ShoppingBag, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { getSellerProfile } from '@/lib/api/sellerService';
 
 /**
  * 판매자 마이페이지 클라이언트 컴포넌트
@@ -34,14 +43,26 @@ export default function SellerMyPageClient() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, accessToken } = useAuth();
   const [pageLoading, setPageLoading] = useState(true);
-  
-  // 각 섹션의 데이터 카운트 상태 관리
+  const [sellerCategory, setSellerCategory] = useState<string | null>(null);
+
+  // 각 섹션의 데이터 카운트 상태 관리 (판매활동)
   const [counts, setCounts] = useState({
     waitingBuyer: 0,
     pendingSeller: 0,
     trading: 0,
     completed: 0,
     cancelled: 0
+  });
+
+  // 구매활동 카운트 상태 관리
+  const [buyerCounts, setBuyerCounts] = useState({
+    participating: 0,
+    pendingSelection: 0,
+    waitingSeller: 0,
+    purchaseInProgress: 0,
+    completedGroupBuys: 0,
+    cancelledGroupBuys: 0,
+    customParticipations: 0
   });
 
   
@@ -102,10 +123,99 @@ export default function SellerMyPageClient() {
     }
   };
 
-  // 각 카테고리별 데이터 개수 가져오기
+  // 판매유형 가져오기
+  useEffect(() => {
+    const fetchSellerProfile = async () => {
+      if (!isAuthenticated || !accessToken) return;
+
+      try {
+        const profile = await getSellerProfile();
+        setSellerCategory(profile.sellerCategory || null);
+      } catch (error) {
+        console.error('판매자 프로필 조회 오류:', error);
+      }
+    };
+
+    fetchSellerProfile();
+  }, [isAuthenticated, accessToken]);
+
+  // 구매활동 카운트 가져오기 (일반/전자제품 판매자용)
+  useEffect(() => {
+    const fetchBuyerCounts = async () => {
+      if (!isAuthenticated || !accessToken || !sellerCategory) return;
+      if (sellerCategory !== 'general' && sellerCategory !== 'electronics') return;
+
+      try {
+        const responses = await Promise.allSettled([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/joined_groupbuys/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/pending_selection/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/waiting_seller_decision/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/purchase_confirmed/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/purchase_completed/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/cancelled_groupbuys/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-participants/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+          })
+        ]);
+
+        const newCounts = { ...buyerCounts };
+
+        if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
+          const data = await responses[0].value.json();
+          newCounts.participating = data.length;
+        }
+        if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
+          const data = await responses[1].value.json();
+          newCounts.pendingSelection = data.filter((item: any) => item.my_final_decision !== 'cancelled').length;
+        }
+        if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
+          const data = await responses[2].value.json();
+          newCounts.waitingSeller = data.length;
+        }
+        if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
+          const data = await responses[3].value.json();
+          newCounts.purchaseInProgress = data.length;
+        }
+        if (responses[4].status === 'fulfilled' && responses[4].value.ok) {
+          const data = await responses[4].value.json();
+          newCounts.completedGroupBuys = data.length;
+        }
+        if (responses[5].status === 'fulfilled' && responses[5].value.ok) {
+          const data = await responses[5].value.json();
+          newCounts.cancelledGroupBuys = data.length;
+        }
+        if (responses[6].status === 'fulfilled' && responses[6].value.ok) {
+          const data = await responses[6].value.json();
+          const participations = Array.isArray(data) ? data : data.results || [];
+          newCounts.customParticipations = participations.length;
+        }
+
+        setBuyerCounts(newCounts);
+      } catch (error) {
+        console.error('구매활동 카운트 조회 오류:', error);
+      }
+    };
+
+    fetchBuyerCounts();
+  }, [isAuthenticated, accessToken, sellerCategory]);
+
+  // 각 카테고리별 데이터 개수 가져오기 (판매활동)
   useEffect(() => {
     const fetchCounts = async () => {
-      if (!isAuthenticated || !accessToken) return;
+      if (!isAuthenticated || !accessToken || !sellerCategory) return;
+      if (sellerCategory !== 'telecom' && sellerCategory !== 'rental') return;
       
       try {
         // 중요한 항목(판매확정/포기)만 먼저 로드
@@ -240,25 +350,47 @@ export default function SellerMyPageClient() {
 
       {/* 프로필 섹션 */}
       <ProfileSection />
-      
+
       {/* 패널티 알림 표시 */}
       <PenaltyAlert penaltyInfo={user?.penalty_info || user?.penaltyInfo} userRole="seller" />
-      
-      {/* 판매 활동 섹션 */}
-      <div className="mt-8 space-y-4">
-        <h2 className="text-xl font-semibold mb-4">판매 활동</h2>
-        
-        {/* 견적내역보기 버튼 - 판매활동 바로 아래로 이동 */}
-        <button
-          onClick={() => router.push('/mypage/seller/bids')}
-          className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group mb-4"
-        >
-          <Gavel className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
-          <span>견적내역 전체보기</span>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-        </button>
-        
-        <Accordion 
+
+      {/* 판매유형 미설정 안내 */}
+      {!sellerCategory && (
+        <Card className="mt-8 border-2 border-amber-200 bg-amber-50">
+          <div className="p-6 text-center space-y-4">
+            <AlertCircle className="w-12 h-12 text-amber-600 mx-auto" />
+            <h3 className="text-lg font-semibold text-amber-900">판매유형을 설정해주세요</h3>
+            <p className="text-sm text-amber-800">
+              마이페이지를 이용하시려면 먼저 판매유형을 설정해야 합니다.<br/>
+              설정 페이지에서 판매하시는 상품/서비스 유형을 선택해주세요.
+            </p>
+            <Button
+              onClick={() => router.push('/mypage/seller/settings')}
+              className="mt-4"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              설정 페이지로 이동
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* 통신/렌탈 - 판매 활동 섹션 */}
+      {(sellerCategory === 'telecom' || sellerCategory === 'rental') && (
+        <div className="mt-8 space-y-4">
+          <h2 className="text-xl font-semibold mb-4">판매 활동</h2>
+
+          {/* 견적내역보기 버튼 */}
+          <button
+            onClick={() => router.push('/mypage/seller/bids')}
+            className="flex items-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-blue-600 transition-colors group mb-4"
+          >
+            <Gavel className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+            <span>견적내역 전체보기</span>
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+          </button>
+
+          <Accordion 
           type="single" 
           collapsible 
           className="w-full"
@@ -404,9 +536,207 @@ export default function SellerMyPageClient() {
             노쇼관리
           </Button>
         </div>
-      </div>
+        </div>
+      )}
 
+      {/* 일반/전자제품 - 구매 활동 섹션 */}
+      {(sellerCategory === 'general' || sellerCategory === 'electronics') && (
+        <div className="mt-8 space-y-4">
+          <h2 className="text-xl font-semibold mb-4">구매 활동</h2>
 
+          <Accordion type="single" collapsible className="w-full">
+            {/* 참여중인 공구 */}
+            <AccordionItem value="participating">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Package className="w-4 h-4 mr-2 text-blue-500" />
+                    <span className="text-sm font-medium">참여중인 공구</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {buyerCounts.participating > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-blue-500 text-white text-sm font-semibold rounded-full">
+                        {buyerCounts.participating}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {buyerCounts.participating}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-blue-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <ParticipatingGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 구매확정/포기 선택하기 */}
+            <AccordionItem value="pending">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <ShoppingBag className="w-4 h-4 mr-2 text-amber-500" />
+                    <span className="text-sm font-medium">구매확정/포기 선택하기</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {buyerCounts.pendingSelection > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-amber-500 text-white text-sm font-semibold rounded-full">
+                        {buyerCounts.pendingSelection}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {buyerCounts.pendingSelection}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-amber-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <PendingSelectionGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 판매자 최종선택 대기중 */}
+            <AccordionItem value="waiting-seller">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-2 text-purple-500" />
+                    <span className="text-sm font-medium">판매자 최종선택 대기중</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {buyerCounts.waitingSeller > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
+                        {buyerCounts.waitingSeller}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {buyerCounts.waitingSeller}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <WaitingSellerDecisionGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 거래중 */}
+            <AccordionItem value="purchase-confirmed">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                    <span className="text-sm font-medium">거래중</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {buyerCounts.purchaseInProgress > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-green-500 text-white text-sm font-semibold rounded-full">
+                        {buyerCounts.purchaseInProgress}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {buyerCounts.purchaseInProgress}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-green-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <PurchaseConfirmedGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 거래종료 */}
+            <AccordionItem value="purchase-completed">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-gray-500" />
+                    <span className="text-sm font-medium">거래종료</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                      {buyerCounts.completedGroupBuys}
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <CompletedGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 취소된 공구 */}
+            <AccordionItem value="cancelled">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <XCircle className="w-4 h-4 mr-2 text-red-500" />
+                    <span className="text-sm font-medium">취소된 공구</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-600 text-sm rounded-full">
+                      {buyerCounts.cancelledGroupBuys}
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-red-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <CompletedGroupBuys />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 커스텀 특가 참여내역 */}
+            <AccordionItem value="custom-participations">
+              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <Sparkles className="w-4 h-4 mr-2 text-purple-500" />
+                    <span className="text-sm font-medium">커스텀 특가 참여내역</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {buyerCounts.customParticipations > 0 ? (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
+                        {buyerCounts.customParticipations}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
+                        {buyerCounts.customParticipations}
+                      </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500" />
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <MyCustomParticipations />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          {/* 노쇼 관리 통합 버튼 */}
+          <div className="mt-6 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/mypage/noshow-management')}
+              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+            >
+              <AlertTriangle className="w-3 h-3" />
+              노쇼관리
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
