@@ -221,14 +221,14 @@ export default function CustomDealsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
+        <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-1">커스텀 공구</h1>
-              <p className="text-sm text-slate-600">특별한 공동구매 혜택</p>
+              <h1 className="text-xl font-bold text-gray-900">커스텀 공구</h1>
+              <p className="text-xs text-gray-600 mt-0.5">특별한 공동구매 혜택</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -249,16 +249,17 @@ export default function CustomDealsPage() {
             </div>
           </div>
         </div>
+
+        {/* Notice Section */}
+        <NoticeSection pageType="custom" compact />
       </div>
 
-      {/* Notice Section */}
-      <NoticeSection pageType="custom" compact />
-
-      {/* Search & Filters */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      {/* Main Content */}
+      <div className="pb-20">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto bg-white min-h-screen">
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+          <div className="px-4 pt-3">
+            <form onSubmit={handleSearch} className="flex gap-2 mb-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -269,21 +270,22 @@ export default function CustomDealsPage() {
                 className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
             </div>
-            <Button type="submit" size="sm" variant="outline">
-              검색
-            </Button>
-          </form>
+              <Button type="submit" size="sm" variant="outline">
+                검색
+              </Button>
+            </form>
+          </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-2">
-            {/* Type Filter */}
-            <div className="flex gap-2">
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-2">
+              {/* Type Filter */}
               <button
                 onClick={() => setSelectedType('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'all'
-                    ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
-                    : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 전체
@@ -292,8 +294,8 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('online')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'online'
-                    ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
-                    : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 온라인
@@ -302,69 +304,67 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('offline')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'offline'
-                    ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
-                    : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 오프라인
               </button>
+
+              {/* Category Filter */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                <option value="all">모든 카테고리</option>
+                {categories.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+
+              {/* Location Filter (오프라인 공구용) */}
+              {selectedType !== 'online' && (
+                <input
+                  type="text"
+                  placeholder="지역 검색"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              )}
+
+              {/* Status Filter */}
+              <button
+                onClick={() => setShowClosedDeals(!showClosedDeals)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  !showClosedDeals
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {showClosedDeals ? '진행중만 보기' : '전체 보기'}
+              </button>
             </div>
-
-            {/* Category Filter */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              <option value="all">모든 카테고리</option>
-              {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
-
-            {/* Location Filter (오프라인 공구용) */}
-            {selectedType !== 'online' && (
-              <input
-                type="text"
-                placeholder="지역 검색"
-                value={locationQuery}
-                onChange={(e) => setLocationQuery(e.target.value)}
-                className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              />
-            )}
-
-            {/* Status Filter */}
-            <button
-              onClick={() => setShowClosedDeals(!showClosedDeals)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                !showClosedDeals
-                  ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300'
-                  : 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50'
-              }`}
-            >
-              {showClosedDeals ? '진행중만 보기' : '전체 보기'}
-            </button>
           </div>
-        </div>
-      </div>
 
-      {/* Deals Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-slate-600">로딩 중...</p>
-          </div>
-        ) : deals.length === 0 ? (
-          <div className="text-center py-20">
-            <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-lg text-slate-600 mb-2">진행 중인 공구가 없습니다</p>
-            <p className="text-sm text-slate-500">첫 번째 공구를 등록해보세요!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Deals Grid */}
+          <div className="px-4 py-6">
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+                <p className="mt-4 text-gray-600">로딩 중...</p>
+              </div>
+            ) : deals.length === 0 ? (
+              <div className="text-center py-20">
+                <Tag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-lg text-gray-600 mb-2">진행 중인 공구가 없습니다</p>
+                <p className="text-sm text-gray-500">첫 번째 공구를 등록해보세요!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {deals
               .filter((deal) => showClosedDeals || deal.status === 'recruiting')
               .map((deal) => {
@@ -529,8 +529,10 @@ export default function CustomDealsPage() {
               </Link>
                 );
               })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* 패널티 모달 */}
