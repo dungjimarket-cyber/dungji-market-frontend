@@ -1951,8 +1951,15 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               
               {/* PC에서만 표시되는 버튼 및 견적 영역 */}
               <div className="hidden lg:block mt-6 border-t pt-4 space-y-4">
-                {/* 일반회원 버튼 구성 */}
-                {!isSeller && isParticipant ? (
+                {/* 로딩 중일 때 스켈레톤 표시 (깜빡임 방지) */}
+                {isParticipantLoading || (user?.role === 'seller' && isLoadingSellerProfile) ? (
+                  <div className="p-6 bg-gray-50 rounded-lg text-center">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                    </div>
+                  </div>
+                ) : !isSeller && isParticipant ? (
                   // 참여한 일반회원
                   <div className="space-y-3">
                     {/* 참여중인 공구 */}
@@ -2506,8 +2513,16 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
 
       {/* 하단 버튼 영역 - 모바일에서만 표시 */}
       <div className="lg:hidden px-4 py-2">
-        {/* 일반회원 버튼 구성 */}
-        {!isSeller && isParticipant ? (
+        {/* 로딩 중일 때 스켈레톤 표시 (깜빡임 방지) */}
+        {isParticipantLoading || (user?.role === 'seller' && isLoadingSellerProfile) ? (
+          <div className="p-6 bg-gray-50 rounded-lg text-center">
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+            </div>
+          </div>
+        ) : !isSeller && isParticipant ? (
+          /* 일반회원 버튼 구성 */
           // 참여한 일반회원
           <div className="space-y-3">
             {/* 1. 참여중인 공구 (recruiting, bidding 상태) */}
@@ -2917,7 +2932,8 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
               </div>
             )}
           </>
-        )}
+        )
+      }
 
         {/* 구분선 - 모바일에서만 표시 */}
         <div className="lg:hidden">
