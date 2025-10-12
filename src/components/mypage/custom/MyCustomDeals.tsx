@@ -244,12 +244,22 @@ export default function MyCustomDeals() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <Button
-          onClick={() => router.push('/custom-deals/create')}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          공구 등록
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => router.push('/custom-deals/create')}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            공구 등록
+          </Button>
+          <Button
+            onClick={() => router.push('/mypage/custom-deals/noshow-management')}
+            variant="outline"
+            className="text-red-600 border-red-300 hover:bg-red-50"
+          >
+            <AlertCircle className="w-4 h-4 mr-1" />
+            노쇼 관리
+          </Button>
+        </div>
       </div>
 
       {/* 필터 */}
