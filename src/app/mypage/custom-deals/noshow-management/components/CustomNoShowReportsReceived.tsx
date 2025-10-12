@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertCircle } from 'lucide-react';
+import { Calendar, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -22,10 +22,39 @@ export default function CustomNoShowReportsReceived() {
   const { accessToken } = useAuth();
   const [reports, setReports] = useState<NoShowReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [expandedReports, setExpandedReports] = useState<Set<number>>(new Set());
+
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchReports();
   }, []);
+
+  // 무한 스크롤 observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loadingMore, nextUrl]);
 
   const fetchReports = async () => {
     try {
@@ -41,7 +70,16 @@ export default function CustomNoShowReportsReceived() {
 
       if (response.ok) {
         const data = await response.json();
-        setReports(Array.isArray(data) ? data : data.results || []);
+        if (data.results) {
+          // Paginated response
+          setReports(data.results);
+          setNextUrl(data.next);
+          setHasMore(!!data.next);
+        } else {
+          // Non-paginated response
+          setReports(Array.isArray(data) ? data : []);
+          setHasMore(false);
+        }
       } else {
         throw new Error('Failed to fetch');
       }
@@ -51,6 +89,44 @@ export default function CustomNoShowReportsReceived() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadMore = async () => {
+    if (!nextUrl || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      const response = await fetch(nextUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.results) {
+          setReports(prev => [...prev, ...data.results]);
+          setNextUrl(data.next);
+          setHasMore(!!data.next);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading more reports:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const toggleExpand = (reportId: number) => {
+    setExpandedReports(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(reportId)) {
+        newSet.delete(reportId);
+      } else {
+        newSet.add(reportId);
+      }
+      return newSet;
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -66,6 +142,14 @@ export default function CustomNoShowReportsReceived() {
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   if (loading) {
@@ -87,42 +171,85 @@ export default function CustomNoShowReportsReceived() {
   }
 
   return (
-    <div className="space-y-3">
-      {reports.map((report) => (
-        <Card key={report.id} className="border-slate-200">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  {getStatusBadge(report.status)}
-                  <span className="text-xs text-slate-500">
-                    {report.report_type === 'buyer_noshow' ? '구매자 노쇼' : '판매자 노쇼'}
-                  </span>
+    <>
+      <div className="space-y-3">
+        {reports.map((report) => {
+          const isExpanded = expandedReports.has(report.id);
+
+          return (
+            <Card key={report.id} className="border-slate-200">
+              <CardContent className="p-4">
+                <div
+                  className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -m-4 p-4 rounded-lg transition-colors"
+                  onClick={() => toggleExpand(report.id)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {getStatusBadge(report.status)}
+                      <span className="text-xs text-slate-500">
+                        {formatDate(report.created_at)}
+                      </span>
+                    </div>
+                    <h4 className="font-medium text-slate-900 truncate">
+                      {report.custom_groupbuy_title}
+                    </h4>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {report.report_type === 'buyer_noshow' ? '구매자 노쇼' : '판매자 노쇼'}
+                    </p>
+                  </div>
+                  <div className="ml-2 flex-shrink-0">
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                    )}
+                  </div>
                 </div>
-                <h4 className="font-semibold text-slate-900 mb-1">
-                  {report.custom_groupbuy_title}
-                </h4>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Calendar className="w-4 h-4" />
-                  <span>신고일: {new Date(report.created_at).toLocaleDateString('ko-KR')}</span>
-                </div>
-                {report.processed_at && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600 mt-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>처리일: {new Date(report.processed_at).toLocaleDateString('ko-KR')}</span>
+
+                {/* 상세 정보 - 펼쳤을 때만 표시 */}
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-slate-200 space-y-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {report.processed_at && (
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <Calendar className="w-4 h-4" />
+                        <span>처리일: {formatDate(report.processed_at)}</span>
+                      </div>
+                    )}
+
+                    {report.admin_comment && (
+                      <div className="mt-2 p-3 bg-slate-50 rounded-lg text-sm text-slate-700">
+                        <p className="font-semibold mb-1">관리자 코멘트:</p>
+                        <p className="whitespace-pre-wrap">{report.admin_comment}</p>
+                      </div>
+                    )}
                   </div>
                 )}
-                {report.admin_comment && (
-                  <div className="mt-2 p-2 bg-slate-50 rounded text-sm text-slate-700">
-                    <p className="font-semibold mb-1">관리자 코멘트:</p>
-                    <p>{report.admin_comment}</p>
-                  </div>
-                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+
+        {/* 무한 스크롤 트리거 */}
+        {hasMore && (
+          <div ref={observerTarget} className="py-4 text-center">
+            {loadingMore && (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                <span className="text-sm text-gray-600">더 불러오는 중...</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 더 이상 없음 표시 */}
+      {!hasMore && reports.length > 0 && (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500">모든 신고 내역을 불러왔습니다</p>
+        </div>
+      )}
+    </>
   );
 }

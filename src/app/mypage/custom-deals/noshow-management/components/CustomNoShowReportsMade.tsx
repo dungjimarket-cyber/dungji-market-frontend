@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
-import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare, Trash2, Edit, X } from 'lucide-react';
+import { AlertCircle, FileText, Clock, CheckCircle, XCircle, MessageSquare, Trash2, Edit, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -63,6 +63,10 @@ export default function CustomNoShowReportsMade() {
   const router = useRouter();
   const [reports, setReports] = useState<CustomNoShowReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [expandedReports, setExpandedReports] = useState<Set<number>>(new Set());
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [selectedReport, setSelectedReport] = useState<CustomNoShowReport | null>(null);
@@ -73,11 +77,36 @@ export default function CustomNoShowReportsMade() {
     evidence_files: [null, null, null] as (File | null)[],
   });
 
+  const observerTarget = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (accessToken) {
       fetchReports();
     }
   }, [accessToken]);
+
+  // 무한 스크롤 observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loadingMore, nextUrl]);
 
   const fetchReports = async () => {
     try {
@@ -92,7 +121,16 @@ export default function CustomNoShowReportsMade() {
 
       if (response.ok) {
         const data = await response.json();
-        setReports(Array.isArray(data) ? data : data.results || []);
+        if (data.results) {
+          // Paginated response
+          setReports(data.results);
+          setNextUrl(data.next);
+          setHasMore(!!data.next);
+        } else {
+          // Non-paginated response
+          setReports(Array.isArray(data) ? data : []);
+          setHasMore(false);
+        }
       } else {
         console.error('Failed to fetch reports:', response.status);
       }
@@ -102,6 +140,44 @@ export default function CustomNoShowReportsMade() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadMore = async () => {
+    if (!nextUrl || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      const response = await fetch(nextUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.results) {
+          setReports(prev => [...prev, ...data.results]);
+          setNextUrl(data.next);
+          setHasMore(!!data.next);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading more reports:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const toggleExpand = (reportId: number) => {
+    setExpandedReports(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(reportId)) {
+        newSet.delete(reportId);
+      } else {
+        newSet.add(reportId);
+      }
+      return newSet;
+    });
   };
 
   const handleCancelReport = async () => {
@@ -308,128 +384,178 @@ export default function CustomNoShowReportsMade() {
 
   return (
     <>
-      <div className="space-y-4">
-        {reports.map((report) => (
-          <Card key={report.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{report.custom_groupbuy_title}</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    신고 대상: {report.reported_user_nickname || report.reported_user_name}
-                    {report.reported_user_phone && ` (${report.reported_user_phone})`}
-                  </p>
-                  <div className="text-xs text-gray-500 mt-2 space-y-1">
-                    <p>신고일: {formatDate(report.created_at)}</p>
-                    {report.processed_at && (
-                      <p>처리일: {formatDate(report.processed_at)}</p>
+      <div className="space-y-3">
+        {reports.map((report) => {
+          const isExpanded = expandedReports.has(report.id);
+
+          return (
+            <Card key={report.id} className="border-slate-200">
+              {/* 간략 정보 - 항상 표시 */}
+              <CardContent className="p-4">
+                <div
+                  className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -m-4 p-4 rounded-lg transition-colors"
+                  onClick={() => toggleExpand(report.id)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {getStatusBadge(report.status, report.is_cancelled)}
+                      <span className="text-xs text-slate-500">
+                        {formatDate(report.created_at)}
+                      </span>
+                    </div>
+                    <h4 className="font-medium text-slate-900 truncate">
+                      {report.custom_groupbuy_title}
+                    </h4>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {report.reported_user_nickname || report.reported_user_name}
+                    </p>
+                  </div>
+                  <div className="ml-2 flex-shrink-0">
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
                     )}
                   </div>
                 </div>
-                {getStatusBadge(report.status, report.is_cancelled)}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-700">신고 유형</p>
-                  <p className="text-sm">
-                    {report.report_type === 'buyer_noshow' ? '구매자 노쇼' : '판매자 노쇼'}
-                  </p>
-                </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-700">신고 내용</p>
-                  <p className="text-sm whitespace-pre-wrap">{report.content}</p>
-                </div>
-
-                {/* 증빙 파일들 표시 */}
-                {(report.evidence_image || report.evidence_image_2 || report.evidence_image_3) && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">증빙 자료</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[report.evidence_image, report.evidence_image_2, report.evidence_image_3].map((file, index) => {
-                        if (!file) return null;
-                        const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
-
-                        return (
-                          <div key={index} className="border rounded-lg overflow-hidden">
-                            {isImage ? (
-                              <a href={file} target="_blank" rel="noopener noreferrer" className="block">
-                                <img
-                                  src={file}
-                                  alt={`증빙 자료 ${index + 1}`}
-                                  className="w-full h-24 object-cover hover:opacity-90 transition-opacity cursor-pointer"
-                                />
-                                <p className="text-xs text-center py-1 bg-gray-50">클릭하여 확대</p>
-                              </a>
-                            ) : (
-                              <a href={file} target="_blank" rel="noopener noreferrer"
-                                className="flex flex-col items-center justify-center h-24 hover:bg-gray-50 transition-colors">
-                                <FileText className="w-8 h-8 text-gray-400" />
-                                <p className="text-xs text-gray-600 mt-1">파일 {index + 1}</p>
-                              </a>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* 관리자 코멘트 */}
-                {report.admin_comment && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <MessageSquare className="w-4 h-4 text-yellow-600 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-yellow-800">관리자 답변</p>
-                        <p className="text-sm text-yellow-700 mt-1 whitespace-pre-wrap">
-                          {report.admin_comment}
+                {/* 상세 정보 - 펼쳤을 때만 표시 */}
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-slate-200 space-y-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        신고 대상: {report.reported_user_nickname || report.reported_user_name}
+                        {report.reported_user_phone && ` (${report.reported_user_phone})`}
+                      </p>
+                      {report.processed_at && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          처리일: {formatDate(report.processed_at)}
                         </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">신고 유형</p>
+                      <p className="text-sm">
+                        {report.report_type === 'buyer_noshow' ? '구매자 노쇼' : '판매자 노쇼'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">신고 내용</p>
+                      <p className="text-sm whitespace-pre-wrap">{report.content}</p>
+                    </div>
+
+                    {/* 증빙 파일들 표시 */}
+                    {(report.evidence_image || report.evidence_image_2 || report.evidence_image_3) && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">증빙 자료</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[report.evidence_image, report.evidence_image_2, report.evidence_image_3].map((file, index) => {
+                            if (!file) return null;
+                            const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(file);
+
+                            return (
+                              <div key={index} className="border rounded-lg overflow-hidden">
+                                {isImage ? (
+                                  <a href={file} target="_blank" rel="noopener noreferrer" className="block">
+                                    <img
+                                      src={file}
+                                      alt={`증빙 자료 ${index + 1}`}
+                                      className="w-full h-24 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                                    />
+                                    <p className="text-xs text-center py-1 bg-gray-50">클릭하여 확대</p>
+                                  </a>
+                                ) : (
+                                  <a href={file} target="_blank" rel="noopener noreferrer"
+                                    className="flex flex-col items-center justify-center h-24 hover:bg-gray-50 transition-colors">
+                                    <FileText className="w-8 h-8 text-gray-400" />
+                                    <p className="text-xs text-gray-600 mt-1">파일 {index + 1}</p>
+                                  </a>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 관리자 코멘트 */}
+                    {report.admin_comment && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <MessageSquare className="w-4 h-4 text-yellow-600 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-yellow-800">관리자 답변</p>
+                            <p className="text-sm text-yellow-700 mt-1 whitespace-pre-wrap">
+                              {report.admin_comment}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <div className="flex items-center gap-2">
+                        {(report.edit_count ?? 0) > 0 && (
+                          <Badge variant="secondary" className="text-xs">수정완료</Badge>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {report.status === 'pending' && (
+                          <>
+                            {(!report.edit_count || report.edit_count < 1) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openEditDialog(report)}
+                                className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
+                              >
+                                <Edit className="w-3 h-3" />
+                                수정
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openCancelDialog(report)}
+                              className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              신고 취소
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          );
+        })}
 
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <div className="flex items-center gap-2">
-                    {(report.edit_count ?? 0) > 0 && (
-                      <Badge variant="secondary" className="text-xs">수정완료</Badge>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {report.status === 'pending' && (
-                      <>
-                        {(!report.edit_count || report.edit_count < 1) && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openEditDialog(report)}
-                            className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
-                          >
-                            <Edit className="w-3 h-3" />
-                            수정
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openCancelDialog(report)}
-                          className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 text-xs px-3 py-1.5"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          신고 취소
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
+        {/* 무한 스크롤 트리거 */}
+        {hasMore && (
+          <div ref={observerTarget} className="py-4 text-center">
+            {loadingMore && (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                <span className="text-sm text-gray-600">더 불러오는 중...</span>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            )}
+          </div>
+        )}
       </div>
+
+      {/* 더 이상 없음 표시 */}
+      {!hasMore && reports.length > 0 && (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500">모든 신고 내역을 불러왔습니다</p>
+        </div>
+      )}
 
       {/* 신고 취소 다이얼로그 */}
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
