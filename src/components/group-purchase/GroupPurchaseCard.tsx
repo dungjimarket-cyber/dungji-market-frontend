@@ -269,30 +269,17 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
   // 간소화된 버튼 텍스트 (4개로 통합)
   const getButtonText = () => {
     const status = groupBuy.status;
-    
+
     // 비로그인
     if (!isAuthenticated) {
       return '공구 둘러보기';
     }
-    
-    // 일반회원
-    if (user?.role === 'buyer' || !user?.role) {
-      if (status === 'recruiting') {
-        return isParticipant ? '참여 완료' : '같이 견적받기';
-      }
-      if (status === 'final_selection_buyers' || 
-          status === 'final_selection_seller' || 
-          status === 'in_progress') {
-        return '진행상황 확인';
-      }
-      if (status === 'completed') {
-        return '공구 완료';
-      }
-      if (status === 'cancelled') {
-        return '공구 취소';
-      }
+
+    // 판매유형 미설정 판매자 - 둘러보기만 가능
+    if (user?.role === 'seller' && !sellerProfile?.sellerCategory) {
+      return '공구 둘러보기';
     }
-    
+
     // 판매회원 (통신/렌탈만 견적 제안 가능)
     if (user?.role === 'seller' &&
         (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental')) {
@@ -311,30 +298,49 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
         return '공구 취소';
       }
     }
-    
+
+    // 일반회원 및 일반/전자제품 판매자 (구매자로 참여)
+    if (status === 'recruiting') {
+      return isParticipant ? '참여 완료' : '같이 견적받기';
+    }
+    if (status === 'final_selection_buyers' ||
+        status === 'final_selection_seller' ||
+        status === 'in_progress') {
+      return '진행상황 확인';
+    }
+    if (status === 'completed') {
+      return '공구 완료';
+    }
+    if (status === 'cancelled') {
+      return '공구 취소';
+    }
+
     return '확인';
   };
 
   // 간소화된 버튼 스타일
   const getButtonStyle = () => {
     const status = groupBuy.status;
-    
+
     if (status === 'completed' || status === 'cancelled') {
       return 'bg-gray-500 text-white hover:bg-gray-600';
     }
-    
+
     if (status === 'recruiting') {
-      if (user?.role === 'buyer' && isParticipant) {
-        return 'bg-dungji-secondary text-white hover:bg-dungji-secondary-dark';
-      }
+      // 통신/렌탈 판매자 - 견적 제안
       if (user?.role === 'seller' &&
           (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental') &&
           hasBid) {
         return 'bg-dungji-primary-dark text-white hover:bg-dungji-primary-darker';
       }
+      // 일반회원 및 일반/전자제품 판매자 - 참여 완료
+      if (isParticipant) {
+        return 'bg-dungji-secondary text-white hover:bg-dungji-secondary-dark';
+      }
+      // 기본 - 참여하기/견적 제안하기
       return 'bg-dungji-primary text-white hover:bg-dungji-primary-dark';
     }
-    
+
     // 진행상황 확인 버튼
     return 'bg-dungji-secondary-dark text-white hover:bg-dungji-secondary-darker';
   };
@@ -384,15 +390,7 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
               
               // 모집중
               if (status === 'recruiting') {
-                // 참여/입찰 상태 표시
-                if (user?.role === 'buyer' && isParticipant) {
-                  return (
-                    <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>참여완료</span>
-                    </div>
-                  );
-                }
+                // 통신/렌탈 판매자 - 견적 제안 완료
                 if (user?.role === 'seller' &&
                     (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental') &&
                     hasBid) {
@@ -403,6 +401,16 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                     </div>
                   );
                 }
+                // 일반회원 및 일반/전자제품 판매자 - 참여 완료
+                if (isParticipant) {
+                  return (
+                    <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>참여완료</span>
+                    </div>
+                  );
+                }
+                // 모집중
                 return (
                   <div className="flex items-center gap-1 bg-dungji-secondary text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                     <Users className="w-4 h-4" />
