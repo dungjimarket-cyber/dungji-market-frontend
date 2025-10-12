@@ -26,6 +26,7 @@ export interface SellerProfile {
   businessNumber?: string;
   businessVerified?: boolean; // 사업자등록번호 인증 여부
   representativeName?: string; // 대표자명 필드 추가
+  sellerCategory?: string; // 판매유형 필드 추가
   isRemoteSales?: boolean;
   remoteSalesCertification?: string | null;
   remoteSalesVerified?: boolean;

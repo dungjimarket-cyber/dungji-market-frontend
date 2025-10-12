@@ -136,6 +136,7 @@ export const updateSellerProfile = async (data: {
   business_number?: string;
   business_reg_number?: string;
   representative_name?: string;  // 대표자명 필드 추가
+  seller_category?: string;  // 판매유형 필드 추가
   is_remote_sales?: boolean;
   is_remote_sales_enabled?: boolean;
   notification_enabled?: boolean;
@@ -153,6 +154,7 @@ export const updateSellerProfile = async (data: {
     if (data.phone !== undefined) apiData.phone = data.phone;
     if (data.email !== undefined) apiData.email = data.email;
     if (data.representative_name !== undefined) apiData.representative_name = data.representative_name;
+    if (data.seller_category !== undefined) apiData.seller_category = data.seller_category;
     if (data.profile_image !== undefined) apiData.profile_image = data.profile_image;
     if (data.address_region_id !== undefined) apiData.address_region_id = data.address_region_id;
     if (data.notification_enabled !== undefined) apiData.notification_enabled = data.notification_enabled;

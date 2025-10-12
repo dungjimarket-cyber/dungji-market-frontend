@@ -66,6 +66,7 @@ export default function SellerSettings() {
     addressProvince: '',
     addressCity: '',
     addressDetail: '', // 상세주소 필드 추가
+    sellerCategory: '', // 판매유형 필드 추가
     businessNumber1: '',
     businessNumber2: '',
     businessNumber3: '',
@@ -94,6 +95,7 @@ export default function SellerSettings() {
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingRepresentativeName, setIsEditingRepresentativeName] = useState(false);
+  const [isEditingSellerCategory, setIsEditingSellerCategory] = useState(false);
 
   // 푸시 알림 설정
   const [pushNotificationSettings, setPushNotificationSettings] = useState({
@@ -218,6 +220,7 @@ export default function SellerSettings() {
           addressProvince: '',
           addressCity: '',
           addressDetail: data.address || '', // 백엔드는 address 필드를 상세주소로 사용
+          sellerCategory: data.sellerCategory || '', // 판매유형 설정
           businessNumber1: businessNum1,
           businessNumber2: businessNum2,
           businessNumber3: businessNum3,
@@ -620,7 +623,7 @@ export default function SellerSettings() {
       const result = await updateSellerProfile({
         representative_name: formData.representativeName
       });
-      
+
       if (result) {
         toast({
           title: '저장 완료',
@@ -635,6 +638,34 @@ export default function SellerSettings() {
         variant: 'destructive',
         title: '저장 실패',
         description: '대표자명 저장 중 오류가 발생했습니다.'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveSellerCategory = async () => {
+    setSaving(true);
+    try {
+      const result = await updateSellerProfile({
+        seller_category: formData.sellerCategory
+      });
+
+      if (result) {
+        toast({
+          title: '저장 완료',
+          description: '판매유형이 변경되었습니다.'
+        });
+        const updatedData = await getSellerProfile();
+        setProfile(updatedData);
+        setIsEditingSellerCategory(false);
+      }
+    } catch (error) {
+      console.error('판매유형 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '저장 실패',
+        description: '판매유형 저장 중 오류가 발생했습니다.'
       });
     } finally {
       setSaving(false);
@@ -1242,7 +1273,79 @@ export default function SellerSettings() {
                 {/* 사업자 정보 섹션 - 대표자명과 사업자등록번호를 그룹화 */}
                 <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
                   <h3 className="text-sm font-semibold">사업자 정보</h3>
-                  
+
+                  {/* 판매유형 필드 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="sellerCategory">
+                      판매유형
+                    </Label>
+                    <div className="flex gap-2 items-start">
+                      {!isEditingSellerCategory && profile?.sellerCategory ? (
+                        <>
+                          <Input
+                            value={
+                              profile.sellerCategory === 'general' ? '일반사업자(온·오프라인 도소매,요식업 등)' :
+                              profile.sellerCategory === 'telecom' ? '통신상품판매(휴대폰,인터넷,TV개통 등)' :
+                              profile.sellerCategory === 'rental' ? '렌탈서비스판매(정수기,비데,매트리스 등)' :
+                              profile.sellerCategory === 'electronics' ? '가전제품판매(냉장고,세탁기,컴퓨터 등)' :
+                              profile.sellerCategory
+                            }
+                            disabled
+                            className="flex-1 bg-gray-50"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => setIsEditingSellerCategory(true)}
+                            variant="outline"
+                            className="text-gray-500 mt-2"
+                          >
+                            수정
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <select
+                            id="sellerCategory"
+                            name="sellerCategory"
+                            value={formData.sellerCategory}
+                            onChange={(e) => setFormData(prev => ({ ...prev, sellerCategory: e.target.value }))}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                          >
+                            <option value="">판매 유형을 선택해주세요</option>
+                            <option value="general">일반사업자(온·오프라인 도소매,요식업 등)</option>
+                            <option value="telecom">통신상품판매(휴대폰,인터넷,TV개통 등)</option>
+                            <option value="rental">렌탈서비스판매(정수기,비데,매트리스 등)</option>
+                            <option value="electronics">가전제품판매(냉장고,세탁기,컴퓨터 등)</option>
+                          </select>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={saveSellerCategory}
+                            disabled={saving || !formData.sellerCategory}
+                          >
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            저장
+                          </Button>
+                          {isEditingSellerCategory && profile?.sellerCategory && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                setIsEditingSellerCategory(false);
+                                setFormData(prev => ({ ...prev, sellerCategory: profile.sellerCategory || '' }));
+                              }}
+                              variant="ghost"
+                            >
+                              취소
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">판매하시는 상품/서비스 유형을 선택해주세요</p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="representativeName">
                       사업자등록증상 대표자명
