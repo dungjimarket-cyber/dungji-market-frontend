@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MyCustomDeals from '@/components/mypage/custom/MyCustomDeals';
 import MyCustomParticipations from '@/components/mypage/custom/MyCustomParticipations';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -28,16 +28,27 @@ export default function MyCustomDealsPage() {
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/custom-deals')}
+                className="p-1.5"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-lg font-bold text-slate-900">커공 관리</h1>
+            </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              onClick={() => router.push('/custom-deals')}
-              className="p-1.5"
+              onClick={() => router.push('/mypage/custom-deals/noshow-management')}
+              className="flex items-center text-red-600 border-red-300 hover:bg-red-50"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <AlertTriangle className="w-4 h-4 mr-1" />
+              노쇼
             </Button>
-            <h1 className="text-lg font-bold text-slate-900">커공 관리</h1>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
