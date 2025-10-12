@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -272,18 +272,33 @@ export default function ParticipantsManagePage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* QR 스캔 버튼 (오프라인 공구만) */}
-        {deal.type === 'offline' && (
-          <div className="mb-6">
+        <div className="flex flex-wrap gap-3 mb-6">
+          {deal.type === 'offline' && (
+            <div className="flex-1 min-w-[200px]">
+              <Button
+                onClick={() => setShowQRScanner(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <QrCode className="w-5 h-5 mr-2" />
+                QR 코드 스캔
+              </Button>
+              <p className="text-sm text-slate-600 mt-2">구매자의 QR코드를 스캔하면 즉시 인증 및 사용처리 됩니다</p>
+            </div>
+          )}
+
+          {/* 노쇼 신고 버튼 */}
+          <div className={deal.type === 'offline' ? 'flex-1 min-w-[200px]' : 'w-full'}>
             <Button
-              onClick={() => setShowQRScanner(true)}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+              onClick={() => router.push(`/custom-noshow-report/create?groupbuy=${params.id}`)}
+              variant="outline"
+              className="w-full text-red-600 border-red-300 hover:bg-red-50"
             >
-              <QrCode className="w-5 h-5 mr-2" />
-              QR 코드 스캔
+              <AlertCircle className="w-5 h-5 mr-2" />
+              노쇼 신고하기
             </Button>
-            <p className="text-sm text-slate-600 mt-2">구매자의 QR코드를 스캔하면 즉시 인증 및 사용처리 됩니다</p>
+            <p className="text-sm text-slate-600 mt-2">거래가 이루어지지 않은 참여자를 선택하여 신고하세요</p>
           </div>
-        )}
+        </div>
 
         {/* 통계 요약 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

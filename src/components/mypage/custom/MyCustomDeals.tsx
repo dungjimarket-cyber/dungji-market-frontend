@@ -580,14 +580,25 @@ export default function MyCustomDeals() {
                   )}
 
                   {deal.status === 'completed' && deal.current_participants > 0 && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full text-xs h-7 whitespace-nowrap"
-                      onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
-                    >
-                      참여자 관리
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-xs h-7 whitespace-nowrap"
+                        onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
+                      >
+                        참여자 관리
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-xs h-7 text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
+                        onClick={() => router.push(`/custom-noshow-report/create?groupbuy=${deal.id}`)}
+                      >
+                        <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                        노쇼 신고
+                      </Button>
+                    </>
                   )}
 
                   <Button
