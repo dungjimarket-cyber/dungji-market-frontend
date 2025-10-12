@@ -217,7 +217,7 @@ export default function CustomDealsPage() {
               <Button
                 size="sm"
                 onClick={() => router.push('/custom-deals/create')}
-                className="bg-gray-900 hover:bg-gray-800 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Plus className="w-4 h-4 mr-1.5" />
                 공구 등록
