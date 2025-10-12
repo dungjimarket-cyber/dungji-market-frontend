@@ -317,7 +317,7 @@ export default function MyCustomDeals() {
   };
 
   return (
-    <div className="relative">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2">
           <Button
@@ -335,17 +335,6 @@ export default function MyCustomDeals() {
           </Button>
         </div>
       </div>
-
-      {/* 노쇼 관리 - 우측 하단 고정 */}
-      <Button
-        onClick={() => router.push('/mypage/custom-deals/noshow-management')}
-        size="sm"
-        variant="outline"
-        className="fixed bottom-6 right-6 z-50 text-red-600 border-red-300 hover:bg-red-50 shadow-lg text-xs px-3 py-2"
-      >
-        <AlertCircle className="w-3 h-3 mr-1" />
-        노쇼 관리
-      </Button>
 
       {/* 패널티 알림 */}
       {penaltyInfo && (
@@ -681,6 +670,20 @@ export default function MyCustomDeals() {
             ) : (
               '더 보기'
             )}
+          </Button>
+        </div>
+      )}
+
+      {/* 노쇼 관리 - 페이지 하단 */}
+      {!loading && (
+        <div className="flex justify-center mt-8 pt-8 border-t border-slate-200">
+          <Button
+            onClick={() => router.push('/mypage/custom-deals/noshow-management')}
+            variant="outline"
+            className="text-red-600 border-red-300 hover:bg-red-50"
+          >
+            <AlertCircle className="w-4 h-4 mr-2" />
+            노쇼 관리
           </Button>
         </div>
       )}
