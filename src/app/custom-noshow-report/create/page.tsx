@@ -462,18 +462,18 @@ function CustomNoShowReportContent() {
                   <>
                     <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
                       {participants.map((participant) => {
-                        const userId = participant.user?.id || participant.user_id;
+                        // backend는 user를 ID(integer)로 반환, user_name은 별도 필드
+                        const userId = participant.user_id || participant.user;
 
                         if (!userId) {
                           console.warn('User ID not found for participant:', participant);
                           return null;
                         }
 
-                        const displayName = participant.user?.nickname || participant.user?.username ||
-                                          participant.nickname || participant.username ||
+                        const displayName = participant.user_name ||
+                                          participant.username ||
                                           `참여자 ${userId}`;
-                        const phoneNumber = participant.user?.phone || participant.user?.phone_number ||
-                                          participant.phone || participant.phone_number || '연락처 없음';
+                        const phoneNumber = participant.phone_number || participant.phone || '연락처 없음';
 
                         return (
                           <div key={userId} className="flex items-center space-x-3 p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow">
