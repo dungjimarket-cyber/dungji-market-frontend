@@ -225,7 +225,7 @@ export default function CustomDealsPage() {
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 mb-1">커스텀 공구</h1>
               <p className="text-sm text-slate-600">특별한 공동구매 혜택</p>
@@ -248,7 +248,15 @@ export default function CustomDealsPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Notice Section */}
+      <NoticeSection pageType="custom" compact />
+
+      {/* Search & Filters */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="flex gap-2 mb-4">
             <div className="flex-1 relative">
@@ -341,9 +349,6 @@ export default function CustomDealsPage() {
           </div>
         </div>
       </div>
-
-      {/* Notice Section */}
-      <NoticeSection pageType="custom" compact />
 
       {/* Deals Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
