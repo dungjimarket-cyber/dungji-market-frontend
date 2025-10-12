@@ -45,10 +45,13 @@ export default function MyCustomDeals() {
   const router = useRouter();
   const [deals, setDeals] = useState<CustomDeal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     fetchDeals();
@@ -64,11 +67,15 @@ export default function MyCustomDeals() {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchDeals = async () => {
+  const fetchDeals = async (reset = true) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+        setDeals([]);
+      }
+
       const token = localStorage.getItem('accessToken');
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me`;
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&limit=20`;
 
       if (filter !== 'all') {
         url += `&status=${filter}`;
@@ -82,12 +89,43 @@ export default function MyCustomDeals() {
 
       if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
-      setDeals(Array.isArray(data) ? data : data.results || []);
+
+      const newDeals = Array.isArray(data) ? data : data.results || [];
+      setDeals(newDeals);
+      setNextUrl(data.next || null);
+      setHasMore(!!data.next);
     } catch (error) {
       console.error('로드 실패:', error);
       toast.error('공구 목록을 불러오는데 실패했습니다');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (!nextUrl || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(nextUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+
+      const newDeals = Array.isArray(data) ? data : data.results || [];
+      setDeals(prev => [...prev, ...newDeals]);
+      setNextUrl(data.next || null);
+      setHasMore(!!data.next);
+    } catch (error) {
+      console.error('추가 로드 실패:', error);
+      toast.error('공구 목록을 불러오는데 실패했습니다');
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -279,7 +317,7 @@ export default function MyCustomDeals() {
   };
 
   return (
-    <div>
+    <div className="relative">
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2">
           <Button
@@ -289,15 +327,25 @@ export default function MyCustomDeals() {
             공구 등록
           </Button>
           <Button
-            onClick={() => router.push('/mypage/custom-deals/noshow-management')}
+            onClick={() => router.push('/custom-deals')}
             variant="outline"
-            className="text-red-600 border-red-300 hover:bg-red-50"
+            className="text-slate-700 border-slate-300 hover:bg-slate-50"
           >
-            <AlertCircle className="w-4 h-4 mr-1" />
-            노쇼 관리
+            공구 목록
           </Button>
         </div>
       </div>
+
+      {/* 노쇼 관리 - 우측 하단 고정 */}
+      <Button
+        onClick={() => router.push('/mypage/custom-deals/noshow-management')}
+        size="sm"
+        variant="outline"
+        className="fixed bottom-6 right-6 z-50 text-red-600 border-red-300 hover:bg-red-50 shadow-lg text-xs px-3 py-2"
+      >
+        <AlertCircle className="w-3 h-3 mr-1" />
+        노쇼 관리
+      </Button>
 
       {/* 패널티 알림 */}
       {penaltyInfo && (
@@ -613,6 +661,27 @@ export default function MyCustomDeals() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* 더 보기 버튼 */}
+      {!loading && hasMore && deals.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-8"
+          >
+            {loadingMore ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
+                로딩 중...
+              </>
+            ) : (
+              '더 보기'
+            )}
+          </Button>
         </div>
       )}
     </div>
