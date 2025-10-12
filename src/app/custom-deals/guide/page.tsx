@@ -42,7 +42,7 @@ export default function CustomDealsGuidePage() {
             <ul className="space-y-1 text-sm text-gray-700">
               <li>• 실제 매장 방문하여 할인받는 방식</li>
               <li>• 특정 지역에서만 이용 가능</li>
-              <li>• QR 코드를 매장에서 스캔하여 할인 적용</li>
+              <li>• QR 코드를 매장에서 스캔하여 할인 제공 (할인코드 직접확인 가능)</li>
             </ul>
           </div>
         </div>
@@ -224,35 +224,6 @@ export default function CustomDealsGuidePage() {
             <p className="text-xs text-red-700">
               충분한 증거 자료를 준비하고 정확한 사실만 신고해주세요.
             </p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'tips',
-      title: '이용 꿀팁',
-      icon: <CheckCircle2 className="w-5 h-5" />,
-      content: (
-        <div className="space-y-6">
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-3">구매자를 위한 팁</h4>
-            <div className="space-y-2 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-700">✨ 판매자 정보를 먼저 확인하세요</p>
-              <p className="text-sm text-gray-700">✨ 마감 임박 (80% 이상) 공구는 빠르게 결정하세요</p>
-              <p className="text-sm text-gray-700">✨ 상세 정보를 꼼꼼히 읽어보세요</p>
-              <p className="text-sm text-gray-700">✨ 할인 발급 즉시 사용하세요 (유효기간 주의!)</p>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-3">판매자를 위한 팁</h4>
-            <div className="space-y-2 bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-700">✨ 명확한 상품명을 작성하세요</p>
-              <p className="text-sm text-gray-700">✨ 합리적인 목표 인원을 설정하세요</p>
-              <p className="text-sm text-gray-700">✨ 2~7일의 충분한 모집 기간을 제공하세요</p>
-              <p className="text-sm text-gray-700">✨ 고품질 상품 이미지를 사용하세요</p>
-              <p className="text-sm text-gray-700">✨ 적절한 할인 유효기간을 설정하세요 (최소 7일 권장)</p>
-            </div>
           </div>
         </div>
       )
