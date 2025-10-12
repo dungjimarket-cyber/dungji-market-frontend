@@ -57,15 +57,8 @@ export default function CustomNoShowManagementPage() {
 
         if (data.length === 0) {
           setShowNoTransactionsModal(true);
-        } else if (data.length === 1) {
-          // 1건만 있으면 바로 신고 페이지로 이동
-          let url = `/custom-noshow-report/create?groupbuy=${data[0].id}`;
-          if (data[0].seller_id) {
-            url += `&seller_id=${data[0].seller_id}`;
-          }
-          router.push(url);
         } else {
-          // 2-3건이면 선택 모달 표시
+          // 1건 이상이면 선택 모달 표시 (사용자가 확인하고 선택)
           setRecentDeals(data);
           setShowNoShowModal(true);
         }
