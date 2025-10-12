@@ -768,17 +768,20 @@ function NoShowReportContent() {
                       {participants.map((participant) => {
                         // participant.id는 participation ID이므로 user.id를 사용해야 함
                         const userId = participant.user?.id || participant.user_id;
-                        
+
                         if (!userId) {
                           console.warn('User ID not found for participant:', participant);
                           return null;
                         }
-                        
-                        const displayName = participant.user?.nickname || participant.user?.username || 
-                                          participant.nickname || participant.username || 
-                                          `참여자 ${userId}`;
+
+                        // nickname이 비어있거나 username과 같으면 "회원{id}" 표시
+                        const nickname = participant.user?.nickname || participant.nickname || '';
+                        const username = participant.user?.username || participant.username || '';
+                        const displayName = (nickname && nickname !== username)
+                          ? nickname
+                          : `회원${userId}`;
                         // buyers 엔드포인트는 'phone', participants_detail은 'phone_number' 사용
-                        const phoneNumber = participant.user?.phone || participant.user?.phone_number || 
+                        const phoneNumber = participant.user?.phone || participant.user?.phone_number ||
                                           participant.phone || participant.phone_number || '연락처 없음';
                         
                         return (
