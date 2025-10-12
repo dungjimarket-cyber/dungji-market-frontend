@@ -70,6 +70,7 @@ const getCarrierDisplay = (carrier: string, categoryName?: string) => {
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { SimplifiedGroupBuyButton } from '@/components/groupbuy/SimplifiedGroupBuyButton';
+import { getSellerProfile } from '@/lib/api/sellerService';
 
 interface GroupBuy {
   id: number;
@@ -149,6 +150,7 @@ interface GroupPurchaseCardProps {
 export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = false, priority = false, isCompletedTab = false }: GroupPurchaseCardProps) {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
+  const [sellerProfile, setSellerProfile] = useState<any>(null);
   const isHot = groupBuy.current_participants >= groupBuy.max_participants * 0.8;
   // NEW 배지: created_at 기준 24시간 이내
   const isNew = groupBuy.created_at ? parseKSTDate(groupBuy.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) : false;
@@ -235,6 +237,22 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
     return () => clearInterval(timerInterval);
   }, [groupBuy.end_time, totalDuration]);
 
+  // 판매자 프로필 가져오기
+  useEffect(() => {
+    const fetchSellerProfile = async () => {
+      if (user?.role === 'seller') {
+        try {
+          const profile = await getSellerProfile();
+          setSellerProfile(profile);
+        } catch (error) {
+          console.error('판매자 프로필 조회 오류:', error);
+        }
+      }
+    };
+
+    fetchSellerProfile();
+  }, [user?.role]);
+
   const getStatusColor = () => {
     if (isCompleted) return 'text-gray-500';
     if (isUrgent) return 'text-red-500';
@@ -275,13 +293,14 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       }
     }
     
-    // 판매회원
-    if (user?.role === 'seller') {
+    // 판매회원 (통신/렌탈만 견적 제안 가능)
+    if (user?.role === 'seller' &&
+        (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental')) {
       if (status === 'recruiting') {
         return hasBid ? '견적 수정하기' : '견적 제안하기';
       }
-      if (status === 'final_selection_buyers' || 
-          status === 'final_selection_seller' || 
+      if (status === 'final_selection_buyers' ||
+          status === 'final_selection_seller' ||
           status === 'in_progress') {
         return '진행상황 확인';
       }
@@ -308,7 +327,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
       if (user?.role === 'buyer' && isParticipant) {
         return 'bg-dungji-secondary text-white hover:bg-dungji-secondary-dark';
       }
-      if (user?.role === 'seller' && hasBid) {
+      if (user?.role === 'seller' &&
+          (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental') &&
+          hasBid) {
         return 'bg-dungji-primary-dark text-white hover:bg-dungji-primary-darker';
       }
       return 'bg-dungji-primary text-white hover:bg-dungji-primary-dark';
@@ -372,7 +393,9 @@ export function GroupPurchaseCard({ groupBuy, isParticipant = false, hasBid = fa
                     </div>
                   );
                 }
-                if (user?.role === 'seller' && hasBid) {
+                if (user?.role === 'seller' &&
+                    (sellerProfile?.sellerCategory === 'telecom' || sellerProfile?.sellerCategory === 'rental') &&
+                    hasBid) {
                   return (
                     <div className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
                       <CheckCircle className="w-4 h-4" />

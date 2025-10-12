@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { getSellerBids } from '@/lib/api/bidService';
+import { getSellerProfile } from '@/lib/api/sellerService';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 import NoticeSection from '@/components/home/NoticeSection';
 
@@ -601,7 +602,7 @@ function GroupPurchasesPageContent() {
    */
   const fetchUserParticipationsAndBids = useCallback(async () => {
     if (!accessToken) return;
-    
+
     try {
       // 일반 회원: 참여한 공구 목록 가져오기
       if (user?.role !== 'seller') {
@@ -611,7 +612,7 @@ function GroupPurchasesPageContent() {
             'Content-Type': 'application/json'
           }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           // 참여한 공구 ID 목록 추출
@@ -619,14 +620,18 @@ function GroupPurchasesPageContent() {
           setUserParticipations(participationIds);
         }
       }
-      
-      // 판매 회원: 입찰한 공구 목록 가져오기
+
+      // 판매 회원 (통신/렌탈만): 입찰한 공구 목록 가져오기
       if (user?.role === 'seller') {
         try {
-          const bids = await getSellerBids();
-          // 입찰한 공구 ID 목록 추출
-          const bidGroupBuyIds = bids.map(bid => bid.groupbuy);
-          setUserBids(bidGroupBuyIds);
+          const sellerProfile = await getSellerProfile();
+          // 통신/렌탈 판매자만 입찰 목록 조회
+          if (sellerProfile.sellerCategory === 'telecom' || sellerProfile.sellerCategory === 'rental') {
+            const bids = await getSellerBids();
+            // 입찰한 공구 ID 목록 추출
+            const bidGroupBuyIds = bids.map(bid => bid.groupbuy);
+            setUserBids(bidGroupBuyIds);
+          }
         } catch (error) {
           console.error('입찰 목록 조회 오류:', error);
         }

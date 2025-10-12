@@ -16,14 +16,13 @@ import PendingSelectionGroupBuys from '@/components/mypage/PendingSelectionGroup
 import WaitingSellerDecisionGroupBuys from '@/components/mypage/WaitingSellerDecisionGroupBuys';
 import PurchaseConfirmedGroupBuys from '@/components/mypage/PurchaseConfirmedGroupBuys';
 import CompletedGroupBuys from '@/components/mypage/CompletedGroupBuys';
-import MyCustomParticipations from '@/components/mypage/custom/MyCustomParticipations';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone, ShoppingBag, Sparkles } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -61,8 +60,7 @@ export default function SellerMyPageClient() {
     waitingSeller: 0,
     purchaseInProgress: 0,
     completedGroupBuys: 0,
-    cancelledGroupBuys: 0,
-    customParticipations: 0
+    cancelledGroupBuys: 0
   });
 
   
@@ -167,9 +165,6 @@ export default function SellerMyPageClient() {
           }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/cancelled_groupbuys/`, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
-          }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-participants/`, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
           })
         ]);
 
@@ -198,11 +193,6 @@ export default function SellerMyPageClient() {
         if (responses[5].status === 'fulfilled' && responses[5].value.ok) {
           const data = await responses[5].value.json();
           newCounts.cancelledGroupBuys = data.length;
-        }
-        if (responses[6].status === 'fulfilled' && responses[6].value.ok) {
-          const data = await responses[6].value.json();
-          const participations = Array.isArray(data) ? data : data.results || [];
-          newCounts.customParticipations = participations.length;
         }
 
         setBuyerCounts(newCounts);
@@ -692,33 +682,6 @@ export default function SellerMyPageClient() {
               </AccordionTrigger>
               <AccordionContent className="pt-4">
                 <CompletedGroupBuys />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* 커스텀 특가 참여내역 */}
-            <AccordionItem value="custom-participations">
-              <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center">
-                    <Sparkles className="w-4 h-4 mr-2 text-purple-500" />
-                    <span className="text-sm font-medium">커스텀 특가 참여내역</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {buyerCounts.customParticipations > 0 ? (
-                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-purple-500 text-white text-sm font-semibold rounded-full">
-                        {buyerCounts.customParticipations}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-200 text-gray-500 text-sm rounded-full">
-                        {buyerCounts.customParticipations}
-                      </span>
-                    )}
-                    <ChevronRight className="h-4 w-4 shrink-0 text-purple-500" />
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pt-4">
-                <MyCustomParticipations />
               </AccordionContent>
             </AccordionItem>
           </Accordion>

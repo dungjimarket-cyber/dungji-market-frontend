@@ -1297,28 +1297,17 @@ export default function SellerSettings() {
                     </Label>
                     <div className="flex gap-2 items-start">
                       {!isEditingSellerCategory && profile?.sellerCategory ? (
-                        <>
-                          <Input
-                            value={
-                              profile.sellerCategory === 'general' ? '일반사업자(온·오프라인 도소매,요식업 등)' :
-                              profile.sellerCategory === 'telecom' ? '통신상품판매(휴대폰,인터넷,TV개통 등)' :
-                              profile.sellerCategory === 'rental' ? '렌탈서비스판매(정수기,비데,매트리스 등)' :
-                              profile.sellerCategory === 'electronics' ? '가전제품판매(냉장고,세탁기,컴퓨터 등)' :
-                              profile.sellerCategory
-                            }
-                            disabled
-                            className="flex-1 bg-gray-50"
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => setShowSellerCategoryLockedModal(true)}
-                            variant="outline"
-                            className="text-gray-500 mt-2"
-                          >
-                            수정
-                          </Button>
-                        </>
+                        <Input
+                          value={
+                            profile.sellerCategory === 'general' ? '일반사업자(온·오프라인 도소매,요식업 등)' :
+                            profile.sellerCategory === 'telecom' ? '통신상품판매(휴대폰,인터넷,TV개통 등)' :
+                            profile.sellerCategory === 'rental' ? '렌탈서비스판매(정수기,비데,매트리스 등)' :
+                            profile.sellerCategory === 'electronics' ? '가전제품판매(냉장고,세탁기,컴퓨터 등)' :
+                            profile.sellerCategory
+                          }
+                          disabled
+                          className="flex-1 bg-gray-50"
+                        />
                       ) : (
                         <>
                           <select
