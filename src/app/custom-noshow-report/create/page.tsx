@@ -470,9 +470,8 @@ function CustomNoShowReportContent() {
                           return null;
                         }
 
-                        const displayName = participant.user_name ||
-                                          participant.username ||
-                                          `참여자 ${userId}`;
+                        // user_name은 백엔드에서 이미 "회원{id}" 형식으로 처리됨
+                        const displayName = participant.user_name || `참여자 ${userId}`;
                         const phoneNumber = participant.phone_number || participant.phone || '연락처 없음';
 
                         return (

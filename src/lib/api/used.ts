@@ -112,18 +112,11 @@ export const buyerAPI = {
   },
 
   // 찜 추가/제거
-  toggleFavorite: async (phoneId: number) => {
-    try {
-      const response = await api.post(`/phones/${phoneId}/favorite/`);
-      return { added: true, ...response.data };
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        // 이미 찜한 경우 제거
-        const response = await api.delete(`/phones/${phoneId}/favorite/`);
-        return { added: false, ...response.data };
-      }
-      throw error;
-    }
+  toggleFavorite: async (phoneId: number, isFavorited?: boolean) => {
+    // isFavorited가 제공되면 명확한 메서드 사용, 아니면 POST 시도
+    const method = isFavorited ? 'delete' : 'post';
+    const response = await api[method](`/phones/${phoneId}/favorite/`);
+    return response.data;
   },
 
   // 가격 제안하기

@@ -71,9 +71,11 @@ export default function FavoritesTab() {
   const handleRemoveFavorite = async (item: FavoriteItem) => {
     try {
       if (item.itemType === 'phone') {
-        await buyerAPI.toggleFavorite(item.item.id);
+        // 찜 목록에서는 이미 찜한 상태이므로 true 전달 (DELETE 메서드 사용)
+        await buyerAPI.toggleFavorite(item.item.id, true);
       } else {
-        await electronicsApi.toggleFavorite(item.item.id);
+        // 찜 목록에서는 이미 찜한 상태이므로 true 전달 (DELETE 메서드 사용)
+        await electronicsApi.toggleFavorite(item.item.id, true);
       }
       // 찜 해제 후 목록 새로고침
       fetchFavorites();
