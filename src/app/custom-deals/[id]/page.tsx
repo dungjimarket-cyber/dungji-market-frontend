@@ -904,15 +904,17 @@ export default function CustomDealDetailPage() {
                     <Edit className="w-4 h-4" />
                     수정
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEarlyClose}
-                    className="flex items-center justify-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
-                  >
-                    <AlertCircle className="w-4 h-4" />
-                    조기종료
-                  </Button>
+                  {deal.current_participants >= 1 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEarlyClose}
+                      className="flex items-center justify-center gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      조기종료
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"

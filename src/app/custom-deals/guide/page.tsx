@@ -28,6 +28,10 @@ export default function CustomDealsGuidePage() {
             <span className="font-semibold text-gray-900">커스텀 공구</span>는 판매자가 일정 인원 이상 모이면 특별 할인을 제공하는 공동구매 시스템입니다.
           </p>
 
+          <p className="text-sm text-gray-600 bg-green-50 p-3 rounded-lg border border-green-200">
+            💡 판매수수료 없이 직접 결제받기 때문에 누구나 부담없이 이용 가능합니다. (운영비용 0원)
+          </p>
+
           <div className="bg-blue-50 p-4 rounded-lg">
             <h4 className="font-semibold text-gray-900 mb-2">온라인 공구</h4>
             <ul className="space-y-1 text-sm text-gray-700">
@@ -233,10 +237,10 @@ export default function CustomDealsGuidePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-12">
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-6">
         <div className="max-w-4xl mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">커스텀 공구 이용가이드</h1>
-          <p className="text-blue-100 text-lg">특별한 공동구매 혜택, 함께 만들어가요!</p>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">커스텀 공구 이용가이드</h1>
+          <p className="text-blue-100 text-base">특별한 공동구매 혜택, 함께 만들어가요!</p>
         </div>
       </div>
 
