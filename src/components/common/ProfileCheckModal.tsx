@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { AlertCircle, User, Phone, MapPin, Building } from 'lucide-react';
+import { AlertCircle, User, Phone, MapPin, Building, Briefcase } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -53,8 +53,12 @@ export default function ProfileCheckModal({
         return <Phone className="h-4 w-4" />;
       case '활동지역':
         return <MapPin className="h-4 w-4" />;
+      case '판매유형':
+        return <Briefcase className="h-4 w-4" />;
       case '사업자등록번호':
         return <Building className="h-4 w-4" />;
+      case '대표자명':
+        return <User className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
     }

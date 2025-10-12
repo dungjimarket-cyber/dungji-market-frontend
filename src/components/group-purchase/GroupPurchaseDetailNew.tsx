@@ -2125,10 +2125,30 @@ export function GroupPurchaseDetailNew({ groupBuy }: GroupPurchaseDetailProps) {
                       </div>
                     )}
                   </div>
+                ) : user?.role === 'seller' && !sellerProfile?.sellerCategory &&
+                   groupBuyData.status === 'recruiting' &&
+                   !isEnded ? (
+                  // 판매유형 미설정 판매자 안내
+                  <div className="p-6 bg-amber-50 border-2 border-amber-200 rounded-lg text-center">
+                    <AlertCircle className="w-12 h-12 text-amber-600 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-amber-900 mb-2">
+                      판매유형을 선택해주세요
+                    </h3>
+                    <p className="text-sm text-amber-800 mb-4">
+                      공구 견적 제안 및 참여를 위해서는<br />
+                      먼저 판매유형을 설정해야 합니다.
+                    </p>
+                    <Button
+                      onClick={() => router.push('/mypage/seller/settings')}
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      판매유형 설정하러 가기
+                    </Button>
+                  </div>
                 ) : isSeller && !isFinalSelection &&
                  groupBuyData.status === 'recruiting' &&
                  !isEnded ? (
-                  // 판매자용 인터페이스
+                  // 판매자용 인터페이스 (통신/렌탈)
                   <div className="space-y-4">
                     {/* 견적 제안 현황 */}
                     {(topBids.length > 0 || myBidRank) && (

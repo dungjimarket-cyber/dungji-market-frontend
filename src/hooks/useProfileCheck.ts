@@ -31,11 +31,15 @@ function checkMissingFields(profileData: any): string[] {
   
   // 판매자만 추가 필수 필드 체크
   if (profileData.role === 'seller' || profileData.user_type === '판매') {
-    
+
+    if (!profileData.seller_category && !profileData.sellerCategory) {
+      missing.push('판매유형');
+    }
+
     if (!profileData.business_number) {
       missing.push('사업자등록번호');
     }
-    
+
     if (!profileData.representative_name) {
       missing.push('대표자명');
     }
