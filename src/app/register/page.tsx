@@ -1425,6 +1425,7 @@ function RegisterPageContent() {
                         <option value="telecom">통신상품판매(휴대폰,인터넷,TV개통 등)</option>
                         <option value="rental">렌탈서비스판매(정수기,비데,매트리스 등)</option>
                         <option value="electronics">가전제품판매(냉장고,세탁기,컴퓨터 등)</option>
+                        <option value="general">온/오프라인 도소매,요식업 등</option>
                       </select>
                       <p className="text-xs text-gray-500 mt-1">주요 판매 상품 유형을 선택해주세요</p>
                     </div>

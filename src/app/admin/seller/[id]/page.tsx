@@ -21,6 +21,8 @@ function getSellerCategoryLabel(category?: string) {
       return '렌탈서비스판매(정수기,비데,매트리스 등)';
     case 'electronics':
       return '가전제품판매(냉장고,세탁기,컴퓨터 등)';
+    case 'general':
+      return '온/오프라인 도소매,요식업 등';
     default:
       return category || '정보 없음';
   }

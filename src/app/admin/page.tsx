@@ -28,6 +28,8 @@ function getSellerCategoryLabel(category: string) {
       return '렌탈서비스판매';
     case 'electronics':
       return '가전제품판매';
+    case 'general':
+      return '온/오프라인 도소매,요식업';
     default:
       return category || '정보 없음';
   }

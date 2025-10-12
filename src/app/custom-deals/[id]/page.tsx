@@ -836,13 +836,37 @@ export default function CustomDealDetailPage() {
              !isExpired &&
              deal.current_participants < deal.target_participants &&
              (!user || deal.seller !== parseInt(user.id)) && (
-              <Button
-                size="lg"
-                className="w-full font-semibold py-6 bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={handleParticipate}
-              >
-                참여하기
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full font-semibold py-6 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed"
+                  onClick={handleParticipate}
+                  disabled={user?.penalty_info?.is_active || user?.penaltyInfo?.isActive}
+                >
+                  참여하기
+                </Button>
+
+                {/* 패널티 안내 메시지 */}
+                {user && (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-900 mb-1">
+                          패널티로 인해 공구 참여가 제한됩니다
+                        </p>
+                        <p className="text-xs text-red-700">
+                          남은 시간: {user?.penalty_info?.remaining_text || user?.penaltyInfo?.remainingText ||
+                            `${user?.penalty_info?.remaining_hours || user?.penaltyInfo?.remainingHours || 0}시간 ${user?.penalty_info?.remaining_minutes || user?.penaltyInfo?.remainingMinutes || 0}분`}
+                        </p>
+                        <p className="text-xs text-red-600 mt-1">
+                          사유: {user?.penalty_info?.reason || user?.penaltyInfo?.reason || '패널티 적용 중'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* 마감된 공구 - 참여하지 않은 경우 */}
