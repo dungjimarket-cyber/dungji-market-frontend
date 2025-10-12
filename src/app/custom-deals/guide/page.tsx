@@ -238,14 +238,14 @@ export default function CustomDealsGuidePage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-6">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">커스텀 공구 이용가이드</h1>
           <p className="text-blue-100 text-base">특별한 공동구매 혜택, 함께 만들어가요!</p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 py-8 pb-24">
         <div className="space-y-4">
           {sections.map((section) => (
             <div key={section.id} className="border border-gray-200 rounded-lg overflow-hidden">
