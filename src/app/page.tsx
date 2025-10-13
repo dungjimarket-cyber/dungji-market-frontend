@@ -205,8 +205,15 @@ function HomeContent() {
         />
       </section>
       
-      <section className="mb-12">       
+      <section className="mb-12">
         <div className="grid grid-cols-2 sm:flex sm:flex-row justify-center items-center gap-2 mb-8 mt-4">
+          <Link
+            href="/custom-deals"
+            className="btn-animated bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
+          >
+            <span className="text-xs sm:text-base">커스텀공구</span>
+          </Link>
+
           <Link
             href="/group-purchases"
             className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
@@ -220,19 +227,12 @@ function HomeContent() {
           >
             <span className="text-xs sm:text-base">중고거래</span>
           </Link>
-          
+
           <Link
             href="/events"
             className="btn-animated bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">이벤트</span>
-          </Link>
-
-          <Link
-            href="/custom-deals"
-            className="btn-animated bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
-          >
-            <span className="text-xs sm:text-base">커스텀공구</span>
           </Link>
         </div>
       </section>
