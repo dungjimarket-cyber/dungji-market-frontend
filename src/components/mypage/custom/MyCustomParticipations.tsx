@@ -308,7 +308,10 @@ export default function MyCustomParticipations() {
     : participations;
 
   const filterCounts = {
-    all: participations.length,
+    all: participations.filter(p => {
+      const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+      return groupbuy && groupbuy.status === 'recruiting'; // 활성화중인 것만 (recruiting)
+    }).length,
     confirmed: participations.filter(p => p.status === 'confirmed').length,
     completed: participations.filter(p => {
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;

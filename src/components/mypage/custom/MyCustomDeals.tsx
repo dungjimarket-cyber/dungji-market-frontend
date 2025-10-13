@@ -314,7 +314,7 @@ export default function MyCustomDeals() {
     : deals;
 
   const filterCounts = {
-    all: deals.length,
+    all: deals.filter(d => d.status === 'recruiting').length, // 활성화중인 것만 (recruiting)
     recruiting: deals.filter(d => d.status === 'recruiting').length,
     completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
   };
