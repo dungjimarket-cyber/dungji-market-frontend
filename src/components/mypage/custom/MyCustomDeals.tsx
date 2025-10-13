@@ -77,7 +77,8 @@ export default function MyCustomDeals() {
       const token = localStorage.getItem('accessToken');
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&limit=20`;
 
-      if (filter !== 'all') {
+      // completed 필터는 전체를 가져와서 프론트에서 필터링 (pending_seller 포함)
+      if (filter !== 'all' && filter !== 'completed') {
         url += `&status=${filter}`;
       }
 
@@ -307,13 +308,15 @@ export default function MyCustomDeals() {
     return <Badge variant="secondary">{deal.status_display}</Badge>;
   };
 
+  // 표시할 deals 필터링 (completed 필터는 pending_seller도 포함)
+  const displayDeals = filter === 'completed'
+    ? deals.filter(d => d.status === 'completed' || d.status === 'pending_seller')
+    : deals;
+
   const filterCounts = {
     all: deals.length,
     recruiting: deals.filter(d => d.status === 'recruiting').length,
-    pending_seller: deals.filter(d => d.status === 'pending_seller').length,
-    completed: deals.filter(d => d.status === 'completed').length,
-    cancelled: deals.filter(d => d.status === 'cancelled').length,
-    expired: deals.filter(d => d.status === 'expired').length,
+    completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
   };
 
   return (
@@ -375,36 +378,12 @@ export default function MyCustomDeals() {
           모집중 ({filterCounts.recruiting})
         </Button>
         <Button
-          variant={filter === 'pending_seller' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('pending_seller')}
-          className={filter === 'pending_seller' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
-        >
-          결정대기 ({filterCounts.pending_seller})
-        </Button>
-        <Button
           variant={filter === 'completed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('completed')}
           className={filter === 'completed' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
         >
           마감 ({filterCounts.completed})
-        </Button>
-        <Button
-          variant={filter === 'cancelled' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('cancelled')}
-          className={filter === 'cancelled' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
-        >
-          취소 ({filterCounts.cancelled})
-        </Button>
-        <Button
-          variant={filter === 'expired' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('expired')}
-          className={filter === 'expired' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
-        >
-          만료 ({filterCounts.expired})
         </Button>
       </div>
 
@@ -414,7 +393,7 @@ export default function MyCustomDeals() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-slate-600">로딩 중...</p>
         </div>
-      ) : deals.length === 0 ? (
+      ) : displayDeals.length === 0 ? (
         <div className="text-center py-20">
           <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <p className="text-lg text-slate-600 mb-2">등록한 공구가 없습니다</p>
@@ -428,7 +407,7 @@ export default function MyCustomDeals() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {deals.map((deal) => (
+          {displayDeals.map((deal) => (
             <Card key={deal.id} className="border-slate-200 overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
               <Link href={`/custom-deals/${deal.id}`}>
                 {/* Image - 고정 높이 */}
@@ -643,7 +622,7 @@ export default function MyCustomDeals() {
       )}
 
       {/* 더 보기 버튼 */}
-      {!loading && hasMore && deals.length > 0 && (
+      {!loading && hasMore && displayDeals.length > 0 && (
         <div className="flex justify-center mt-8">
           <Button
             variant="outline"

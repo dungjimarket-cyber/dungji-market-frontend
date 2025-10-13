@@ -150,7 +150,8 @@ export default function MyCustomParticipations() {
       const token = localStorage.getItem('accessToken');
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/`;
 
-      if (filter !== 'all') {
+      // completed 필터는 전체를 가져와서 프론트에서 필터링 (공구 status 기준)
+      if (filter !== 'all' && filter !== 'completed') {
         url += `?status=${filter}`;
       }
 
@@ -298,17 +299,28 @@ export default function MyCustomParticipations() {
     );
   };
 
+  // 표시할 participations 필터링 (completed 필터는 공구 status가 completed 또는 pending_seller)
+  const displayParticipations = filter === 'completed'
+    ? participations.filter(p => {
+        const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+        return groupbuy && (groupbuy.status === 'completed' || groupbuy.status === 'pending_seller');
+      })
+    : participations;
+
   const filterCounts = {
     all: participations.length,
     confirmed: participations.filter(p => p.status === 'confirmed').length,
-    cancelled: participations.filter(p => p.status === 'cancelled').length,
+    completed: participations.filter(p => {
+      const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+      return groupbuy && (groupbuy.status === 'completed' || groupbuy.status === 'pending_seller');
+    }).length,
   };
 
   // 페이징 처리
-  const totalPages = Math.ceil(participations.length / itemsPerPage);
+  const totalPages = Math.ceil(displayParticipations.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentParticipations = participations.slice(startIndex, endIndex);
+  const currentParticipations = displayParticipations.slice(startIndex, endIndex);
 
   return (
     <div>
@@ -340,12 +352,12 @@ export default function MyCustomParticipations() {
           참여중 ({filterCounts.confirmed})
         </Button>
         <Button
-          variant={filter === 'cancelled' ? 'default' : 'outline'}
+          variant={filter === 'completed' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => setFilter('cancelled')}
-          className={filter === 'cancelled' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
+          onClick={() => setFilter('completed')}
+          className={filter === 'completed' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
         >
-          취소됨 ({filterCounts.cancelled})
+          마감 ({filterCounts.completed})
         </Button>
       </div>
 
@@ -355,7 +367,7 @@ export default function MyCustomParticipations() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-slate-600">로딩 중...</p>
         </div>
-      ) : participations.length === 0 ? (
+      ) : displayParticipations.length === 0 ? (
         <div className="text-center py-20">
           <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <p className="text-lg text-slate-600 mb-2">참여한 공구가 없습니다</p>
@@ -579,7 +591,7 @@ export default function MyCustomParticipations() {
       )}
 
       {/* 페이징 */}
-      {!loading && participations.length > itemsPerPage && (
+      {!loading && displayParticipations.length > itemsPerPage && (
         <div className="flex justify-center items-center gap-2 mt-6">
           <Button
             variant="outline"
