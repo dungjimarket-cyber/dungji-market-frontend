@@ -34,19 +34,20 @@ export default function MobileNavbar() {
     clearCache
   } = useProfileCheck();
 
+  // 판매자 프로필 조회 함수
+  const fetchSellerProfile = async () => {
+    if (user?.role === 'seller' || user?.user_type === '판매') {
+      try {
+        const profile = await getSellerProfile();
+        setSellerProfile(profile);
+      } catch (error) {
+        console.error('판매자 프로필 조회 오류:', error);
+      }
+    }
+  };
+
   // 판매자 프로필 조회
   useEffect(() => {
-    const fetchSellerProfile = async () => {
-      if (user?.role === 'seller' || user?.user_type === '판매') {
-        try {
-          const profile = await getSellerProfile();
-          setSellerProfile(profile);
-        } catch (error) {
-          console.error('판매자 프로필 조회 오류:', error);
-        }
-      }
-    };
-
     fetchSellerProfile();
   }, [user?.role, user?.user_type]);
   
@@ -257,8 +258,14 @@ export default function MobileNavbar() {
         isOpen={showSellerProfileModal}
         onClose={() => setShowSellerProfileModal(false)}
         missingFields={sellerMissingFields}
-        onUpdateProfile={() => {
+        onUpdateProfile={async () => {
           setShowSellerProfileModal(false);
+          // 설정 완료 후 돌아올 때 프로필 갱신
+          const handleFocus = () => {
+            fetchSellerProfile();
+            window.removeEventListener('focus', handleFocus);
+          };
+          window.addEventListener('focus', handleFocus);
           router.push('/mypage/seller/settings');
         }}
       />

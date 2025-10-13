@@ -28,20 +28,21 @@ export default function DashboardClient() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
+  // 판매자 프로필 조회 함수
+  const fetchSellerProfile = async () => {
+    if (isSeller) {
+      try {
+        const profile = await getSellerProfile();
+        setSellerProfile(profile);
+      } catch (error) {
+        console.error('판매자 프로필 조회 오류:', error);
+      }
+    }
+  };
+
   // 판매자인 경우 프로필 가져오기
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (isSeller) {
-        try {
-          const profile = await getSellerProfile();
-          setSellerProfile(profile);
-        } catch (error) {
-          console.error('판매자 프로필 조회 오류:', error);
-        }
-      }
-    };
-
-    fetchProfile();
+    fetchSellerProfile();
   }, [isSeller]);
 
   // 서비스 카드 클릭 핸들러
@@ -64,7 +65,7 @@ export default function DashboardClient() {
       setShowProfileModal(true);
       return;
     }
-    router.push('/mypage/seller/groupbuy');
+    router.push('/mypage/seller/bids');
   };
 
   const services = [
@@ -248,8 +249,15 @@ export default function DashboardClient() {
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         missingFields={missingFields}
-        onUpdateProfile={() => {
+        onUpdateProfile={async () => {
           setShowProfileModal(false);
+          // 설정 페이지로 이동하기 전에 새 탭으로 열거나,
+          // 설정 완료 후 돌아올 때를 대비해 window focus 이벤트로 프로필 갱신
+          const handleFocus = () => {
+            fetchSellerProfile();
+            window.removeEventListener('focus', handleFocus);
+          };
+          window.addEventListener('focus', handleFocus);
           router.push('/mypage/seller/settings');
         }}
       />
