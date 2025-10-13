@@ -51,23 +51,23 @@ export default function DashboardClient() {
   ];
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-0 bg-white min-h-screen">
+    <div className="container mx-auto px-3 pt-3 pb-0 bg-white">
       {/* 프로필 섹션 */}
-      <Card className="mb-4 border-2 border-gray-200">
-        <CardContent className="py-6">
-          <div className="flex gap-6 items-center">
+      <Card className="mb-2.5 border-2 border-gray-200">
+        <CardContent className="py-3">
+          <div className="flex gap-4 items-center">
             {/* 둥지마켓 메인 이미지 */}
             <div className="flex-shrink-0">
               <Image
                 src="/logos/dungji_logo.jpg"
                 alt="둥지마켓"
-                width={60}
-                height={60}
+                width={50}
+                height={50}
                 className="rounded-lg object-contain"
               />
             </div>
             {/* 사용자 정보 */}
-            <div className="flex-1 flex flex-col justify-center space-y-3">
+            <div className="flex-1 flex flex-col justify-center space-y-2">
               <div>
                 <p className="text-xs text-gray-500">닉네임</p>
                 <p className="text-sm font-medium">{user?.nickname || user?.username || '설정 필요'}</p>
@@ -94,7 +94,7 @@ export default function DashboardClient() {
       </Card>
 
       {/* 서비스 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-2.5">
         {services.map((service) => {
           const Icon = service.icon;
 
@@ -151,46 +151,48 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      {/* 빠른 메뉴 - 주석처리 */}
-      {/* <Card className="border-gray-200">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">빠른 메뉴</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* 빠른 메뉴 */}
+      <Card className="border-gray-200 mt-2.5">
+        <CardContent className="p-4">
+          <h3 className="text-sm font-bold text-gray-900 mb-3">빠른 메뉴</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-4"
-              onClick={() => router.push('/mypage/settings')}
+              className="h-auto flex-col gap-1.5 py-3"
+              onClick={() => router.push('/custom-deals/create')}
             >
-              <User className="w-5 h-5 text-gray-600" />
-              <span className="text-sm">프로필 관리</span>
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span className="text-xs">커공 등록하기</span>
             </Button>
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-4"
-              onClick={() => router.push('/mypage/noshow-management')}
+              className="h-auto flex-col gap-1.5 py-3"
+              onClick={() => router.push('/group-purchases/create')}
             >
-              <Sparkles className="w-5 h-5 text-gray-600" />
-              <span className="text-sm">노쇼관리</span>
+              <ShoppingCart className="w-4 h-4 text-blue-600" />
+              <span className="text-xs">견적요청</span>
             </Button>
+            {isSeller && (
+              <Button
+                variant="outline"
+                className="h-auto flex-col gap-1.5 py-3"
+                onClick={() => router.push('/mypage/seller/groupbuy')}
+              >
+                <User className="w-4 h-4 text-green-600" />
+                <span className="text-xs">견적내역</span>
+              </Button>
+            )}
             <Button
               variant="outline"
-              className="h-auto flex-col gap-2 py-4"
-              onClick={() => router.push('/custom-deals/my')}
+              className="h-auto flex-col gap-1.5 py-3"
+              onClick={() => router.push('/used/create')}
             >
-              <Sparkles className="w-5 h-5 text-purple-600" />
-              <span className="text-sm">커공관리</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-2 py-4"
-              onClick={() => router.push('/used/mypage')}
-            >
-              <Smartphone className="w-5 h-5 text-blue-600" />
-              <span className="text-sm">중고거래 내역</span>
+              <Smartphone className="w-4 h-4 text-orange-600" />
+              <span className="text-xs">중고 판매하기</span>
             </Button>
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
     </div>
   );
 }
