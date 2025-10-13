@@ -222,7 +222,7 @@ function LoginForm() {
               <div className="space-y-0.5 leading-tight">
                 <div><strong>개인회원:</strong></div>
                 <div className="pl-2 space-y-0.5">
-                  <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 참여</span></div>
+                  <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 개설·참여</span></div>
                   <div className="whitespace-nowrap">2. 공구 견적 요청</div>
                   <div className="whitespace-nowrap">3. <strong>중고거래</strong></div>
                 </div>
@@ -233,7 +233,7 @@ function LoginForm() {
               <div className="space-y-0.5 leading-tight">
                 <div><strong>사업자회원:</strong></div>
                 <div className="pl-2 space-y-0.5">
-                  <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 개설</span></div>
+                  <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 개설·참여</span></div>
                   <div className="whitespace-nowrap">2. 통신·렌탈 판매활동</div>
                   <div className="whitespace-nowrap">3. <strong>중고거래</strong></div>
                 </div>
