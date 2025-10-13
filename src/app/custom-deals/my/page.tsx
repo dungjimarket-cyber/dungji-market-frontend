@@ -29,26 +29,27 @@ export default function MyCustomDealsPage() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-900">커공 관리 내역</h1>
+            <div className="flex gap-2">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => router.push('/custom-deals')}
-                className="p-1.5"
+                className="flex items-center"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                커스텀공구
               </Button>
-              <h1 className="text-lg font-bold text-slate-900">커공 관리</h1>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/mypage/custom-deals/noshow-management')}
+                className="flex items-center text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <AlertTriangle className="w-4 h-4 mr-1" />
+                노쇼
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/mypage/custom-deals/noshow-management')}
-              className="flex items-center text-red-600 border-red-300 hover:bg-red-50"
-            >
-              <AlertTriangle className="w-4 h-4 mr-1" />
-              노쇼
-            </Button>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

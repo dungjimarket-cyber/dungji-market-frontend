@@ -287,25 +287,16 @@ export default function MyPageClient() {
     <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
       {/* 헤더 영역 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-lg font-bold">마이페이지</h1>
+        <h1 className="text-lg font-bold">견적 서비스 내역</h1>
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push('/custom-deals/my')}
-            className="flex items-center text-purple-600 border-purple-300 hover:bg-purple-50"
+            onClick={() => router.push('/group-purchases')}
+            className="flex items-center"
           >
-            <Sparkles className="w-4 h-4 mr-1" />
-            커공관리
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/used/mypage')}
-            className="flex items-center text-blue-600 border-blue-300 hover:bg-blue-50"
-          >
-            <Smartphone className="w-4 h-4 mr-1" />
-            중고거래 내역
+            <ShoppingBag className="w-4 h-4 mr-1" />
+            같이 견적받기
           </Button>
           <Button
             variant="outline"

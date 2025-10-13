@@ -2,12 +2,12 @@
 
 import { useState, useEffect, Suspense, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { MainHeader } from '@/components/navigation/MainHeader';
 import { GroupPurchaseCard } from '@/components/group-purchase/GroupPurchaseCard';
 import { CategoryTabFilters } from '@/components/filters/CategoryTabFilters';
 import { GroupBuyFilters } from '@/components/filters/GroupBuyFilters';
 import { UnifiedSearchBar } from '@/components/filters/UnifiedSearchBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { getSellerBids } from '@/lib/api/bidService';
@@ -785,7 +785,34 @@ function GroupPurchasesPageContent() {
     <div className="min-h-screen bg-gray-50">
       {/* PC에서 상단 영역 너비 제한 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-        <MainHeader title="같이 견적받기" />
+        {/* Header */}
+        <div className="bg-white px-4 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">같이 견적받기</h1>
+              <p className="text-xs text-gray-600 mt-0.5">통신상품 공동구매</p>
+            </div>
+            <div className="flex gap-2">
+              {user?.role === 'seller' ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push('/mypage/seller/groupbuy')}
+                >
+                  견적 서비스 내역
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push('/mypage/groupbuy')}
+                >
+                  견적 서비스 내역
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* 공구·견적 페이지 공지사항 */}
         <NoticeSection pageType="groupbuy" compact={true} />
@@ -991,7 +1018,9 @@ export default function GroupPurchasesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50">
-        <MainHeader title="같이 견적받기" />
+        <div className="bg-white px-4 py-4 border-b border-gray-200">
+          <h1 className="text-xl font-bold text-gray-900">같이 견적받기</h1>
+        </div>
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>

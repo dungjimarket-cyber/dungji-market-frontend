@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +14,9 @@ import {
   Settings,
   User
 } from 'lucide-react';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import { getSellerProfile } from '@/lib/api/sellerService';
+import { SellerProfile } from '@/types/seller';
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -20,10 +24,53 @@ export default function DashboardClient() {
 
   const isSeller = user?.role === 'seller';
 
+  const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  // 판매자인 경우 프로필 가져오기
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (isSeller) {
+        try {
+          const profile = await getSellerProfile();
+          setSellerProfile(profile);
+        } catch (error) {
+          console.error('판매자 프로필 조회 오류:', error);
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [isSeller]);
+
+  // 서비스 카드 클릭 핸들러
+  const handleServiceClick = (serviceId: string, path: string) => {
+    // 판매자가 견적 서비스 클릭 시 판매유형 체크
+    if (isSeller && serviceId === 'groupbuy') {
+      if (!sellerProfile?.sellerCategory) {
+        setMissingFields(['판매유형']);
+        setShowProfileModal(true);
+        return;
+      }
+    }
+    router.push(path);
+  };
+
+  // 빠른메뉴 견적내역 버튼 클릭 핸들러
+  const handleQuickMenuBidHistory = () => {
+    if (!sellerProfile?.sellerCategory) {
+      setMissingFields(['판매유형']);
+      setShowProfileModal(true);
+      return;
+    }
+    router.push('/mypage/seller/groupbuy');
+  };
+
   const services = [
     {
       id: 'custom',
-      title: '커스텀 공구 내역',
+      title: '커공 특가',
       description: '특별 할인 공동구매',
       icon: Sparkles,
       color: 'bg-purple-50 border-purple-200',
@@ -102,7 +149,7 @@ export default function DashboardClient() {
             <Card
               key={service.id}
               className={`${service.color} border hover:shadow-md transition-all cursor-pointer`}
-              onClick={() => router.push(service.path)}
+              onClick={() => handleServiceClick(service.id, service.path)}
             >
               <CardContent className="p-3">
                 <div className="flex items-center gap-2.5 mb-2">
@@ -125,7 +172,7 @@ export default function DashboardClient() {
                   className="w-full justify-between hover:bg-white/80 text-xs py-1.5 h-auto"
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(service.path);
+                    handleServiceClick(service.id, service.path);
                   }}
                 >
                   자세히 보기
@@ -141,41 +188,41 @@ export default function DashboardClient() {
       <Card className="border-gray-200 mb-2.5">
         <CardContent className="p-4">
           <h3 className="text-sm font-bold text-gray-900 mb-3">빠른 메뉴</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              className="h-auto flex-col gap-1.5 py-3"
+              className="h-auto flex items-center gap-1.5 px-3 py-2"
               onClick={() => router.push('/custom-deals/create')}
             >
-              <Sparkles className="w-4 h-4 text-purple-600" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
               <span className="text-xs">커공 등록하기</span>
             </Button>
             {!isSeller && (
               <Button
                 variant="outline"
-                className="h-auto flex-col gap-1.5 py-3"
+                className="h-auto flex items-center gap-1.5 px-3 py-2"
                 onClick={() => router.push('/group-purchases/create')}
               >
-                <ShoppingCart className="w-4 h-4 text-blue-600" />
+                <ShoppingCart className="w-3.5 h-3.5 text-blue-600" />
                 <span className="text-xs">견적요청</span>
               </Button>
             )}
             {isSeller && (
               <Button
                 variant="outline"
-                className="h-auto flex-col gap-1.5 py-3"
-                onClick={() => router.push('/mypage/seller/groupbuy')}
+                className="h-auto flex items-center gap-1.5 px-3 py-2"
+                onClick={handleQuickMenuBidHistory}
               >
-                <User className="w-4 h-4 text-green-600" />
+                <User className="w-3.5 h-3.5 text-green-600" />
                 <span className="text-xs">견적내역</span>
               </Button>
             )}
             <Button
               variant="outline"
-              className="h-auto flex-col gap-1.5 py-3"
+              className="h-auto flex items-center gap-1.5 px-3 py-2"
               onClick={() => router.push('/used/create')}
             >
-              <Smartphone className="w-4 h-4 text-orange-600" />
+              <Smartphone className="w-3.5 h-3.5 text-orange-600" />
               <span className="text-xs">중고 판매하기</span>
             </Button>
           </div>
@@ -195,6 +242,17 @@ export default function DashboardClient() {
           />
         </div>
       </div>
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+        onUpdateProfile={() => {
+          setShowProfileModal(false);
+          router.push('/mypage/seller/settings');
+        }}
+      />
     </div>
   );
 }
