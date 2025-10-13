@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
+import { getSellerProfile } from '@/lib/api/sellerService';
+import { SellerProfile } from '@/types/seller';
 
 /**
  * 모바일용 하단 네비게이션 바 컴포넌트
@@ -19,54 +21,78 @@ export default function MobileNavbar() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSeller, setIsSeller] = useState(false);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
-  
+  const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
+  const [showSellerProfileModal, setShowSellerProfileModal] = useState(false);
+  const [sellerMissingFields, setSellerMissingFields] = useState<string[]>([]);
+
   // 프로필 체크 Hook 사용
-  const { 
-    checkProfile, 
-    showProfileModal, 
-    setShowProfileModal, 
+  const {
+    checkProfile,
+    showProfileModal,
+    setShowProfileModal,
     missingFields,
-    clearCache 
+    clearCache
   } = useProfileCheck();
+
+  // 판매자 프로필 조회
+  useEffect(() => {
+    const fetchSellerProfile = async () => {
+      if (user?.role === 'seller' || user?.user_type === '판매') {
+        try {
+          const profile = await getSellerProfile();
+          setSellerProfile(profile);
+        } catch (error) {
+          console.error('판매자 프로필 조회 오류:', error);
+        }
+      }
+    };
+
+    fetchSellerProfile();
+  }, [user?.role, user?.user_type]);
   
   // 견적요청 버튼 클릭 핸들러
   const handleCreateClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault(); // 기본 링크 동작 방지
-    
+
     // 로그인 확인
     if (!isAuthenticated) {
       router.push('/login?callbackUrl=/group-purchases/create');
       return;
     }
-    
+
     // 패널티 체크
     console.log('🔴 MobileNavbar - 견적요청 클릭');
     console.log('🔴 User:', user);
     console.log('🔴 Penalty info:', user?.penalty_info);
     console.log('🔴 Is active:', user?.penalty_info?.is_active);
-    
+
     if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
       console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
       setShowPenaltyModal(true);
       return;
     }
-    
-    // 판매자인 경우 견적 내역 페이지로 이동
+
+    // 판매자인 경우 판매유형 체크 후 견적 내역 페이지로 이동
     if (isSeller) {
+      if (!sellerProfile?.sellerCategory) {
+        setSellerMissingFields(['판매유형']);
+        setShowSellerProfileModal(true);
+        return;
+      }
       router.push('/mypage/seller/bids');
       return;
     }
-    
+
     // 프로필 완성도 체크
     console.log('[MobileNavbar] 공구 등록 클릭, 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
-    
+
     if (!isProfileComplete) {
       console.log('[MobileNavbar] 프로필 미완성, 모달 표시');
       setShowProfileModal(true);
       return;
     }
-    
+
     // 프로필이 완성된 경우에만 페이지 이동
     console.log('[MobileNavbar] 프로필 완성, 공구 등록 페이지로 이동');
     router.push('/group-purchases/create');
@@ -197,7 +223,7 @@ export default function MobileNavbar() {
         userRole="buyer"
       />
       
-      {/* 프로필 체크 모달 */}
+      {/* 프로필 체크 모달 (구매자용) */}
       <ProfileCheckModal
         isOpen={showProfileModal}
         onClose={() => {
@@ -209,20 +235,31 @@ export default function MobileNavbar() {
         onUpdateProfile={() => {
           // 프로필 업데이트 페이지로 이동
           clearCache();
-          
+
           // 사용자 역할 확인
           const isSeller = user?.role === 'seller' || user?.user_type === '판매';
           const redirectPath = isSeller ? '/mypage/seller/settings' : '/mypage/settings';
-          
+
           console.log('[MobileNavbar] 프로필 업데이트 이동:', {
             user_role: user?.role,
             user_type: user?.user_type,
             isSeller,
             redirectPath
           });
-          
+
           setShowProfileModal(false);  // 모달 닫기
           router.push(redirectPath);
+        }}
+      />
+
+      {/* 프로필 체크 모달 (판매자용 - 판매유형) */}
+      <ProfileCheckModal
+        isOpen={showSellerProfileModal}
+        onClose={() => setShowSellerProfileModal(false)}
+        missingFields={sellerMissingFields}
+        onUpdateProfile={() => {
+          setShowSellerProfileModal(false);
+          router.push('/mypage/seller/settings');
         }}
       />
     </nav>
