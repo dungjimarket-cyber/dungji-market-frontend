@@ -17,21 +17,6 @@ import {
   Bell
 } from 'lucide-react';
 
-interface ServiceStats {
-  groupbuy: {
-    participating: number;
-    hosting: number;
-  };
-  custom: {
-    recruiting: number;
-    participating: number;
-  };
-  used: {
-    selling: number;
-    buying: number;
-  };
-}
-
 interface NotificationCounts {
   groupbuy: number;
   custom: number;
@@ -41,11 +26,6 @@ interface NotificationCounts {
 export default function DashboardClient() {
   const router = useRouter();
   const { user } = useAuth();
-  const [stats, setStats] = useState<ServiceStats>({
-    groupbuy: { participating: 0, hosting: 0 },
-    custom: { recruiting: 0, participating: 0 },
-    used: { selling: 0, buying: 0 }
-  });
   const [notifications, setNotifications] = useState<NotificationCounts>({
     groupbuy: 0,
     custom: 0,
@@ -56,76 +36,16 @@ export default function DashboardClient() {
   const isSeller = user?.role === 'seller';
 
   useEffect(() => {
-    fetchStats();
     fetchNotifications();
   }, []);
-
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-
-      const headers = { 'Authorization': `Bearer ${token}` };
-
-      // 병렬로 API 호출
-      const [groupbuyRes, customSellerRes, customBuyerRes, usedRes] = await Promise.all([
-        // 공구견적 참여
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/participating/`, { headers }).catch(() => null),
-        // 커스텀 공구 (판매자)
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&status=recruiting`, { headers }).catch(() => null),
-        // 커스텀 공구 (구매자)
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-participants/?status=confirmed`, { headers }).catch(() => null),
-        // 중고거래
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/used-phones/?status=selling`, { headers }).catch(() => null)
-      ]);
-
-      const newStats: ServiceStats = {
-        groupbuy: { participating: 0, hosting: 0 },
-        custom: { recruiting: 0, participating: 0 },
-        used: { selling: 0, buying: 0 }
-      };
-
-      // 공구견적 참여
-      if (groupbuyRes?.ok) {
-        const data = await groupbuyRes.json();
-        newStats.groupbuy.participating = data.results?.length || 0;
-      }
-
-      // 커스텀 공구 판매
-      if (customSellerRes?.ok) {
-        const data = await customSellerRes.json();
-        newStats.custom.recruiting = data.results?.length || 0;
-      }
-
-      // 커스텀 공구 참여
-      if (customBuyerRes?.ok) {
-        const data = await customBuyerRes.json();
-        // 모집중인 공구만 카운트
-        const recruitingCount = data.results?.filter((p: any) => {
-          const groupbuy = typeof p.custom_groupbuy === 'object' ? p.custom_groupbuy : null;
-          return groupbuy && groupbuy.status === 'recruiting';
-        }).length || 0;
-        newStats.custom.participating = recruitingCount;
-      }
-
-      // 중고거래
-      if (usedRes?.ok) {
-        const data = await usedRes.json();
-        newStats.used.selling = data.results?.length || 0;
-      }
-
-      setStats(newStats);
-    } catch (error) {
-      console.error('통계 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -165,45 +85,37 @@ export default function DashboardClient() {
       }
     } catch (error) {
       console.error('알림 로드 실패:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const services = [
     {
-      id: 'groupbuy',
-      title: '공구견적',
-      description: '통신상품 공동구매 서비스',
-      icon: ShoppingCart,
-      color: 'bg-blue-50 border-blue-200',
-      iconColor: 'text-blue-600',
-      stats: [
-        { label: '참여중', count: stats.groupbuy.participating },
-      ],
-      path: isSeller ? '/mypage/seller/groupbuy' : '/mypage/groupbuy'
-    },
-    {
       id: 'custom',
-      title: '커스텀 공구',
+      title: '커스텀 공구 내역',
       description: '특별 할인 공동구매',
       icon: Sparkles,
       color: 'bg-purple-50 border-purple-200',
       iconColor: 'text-purple-600',
-      stats: [
-        { label: '모집중', count: stats.custom.recruiting },
-        { label: '참여중', count: stats.custom.participating },
-      ],
       path: '/custom-deals/my'
     },
     {
+      id: 'groupbuy',
+      title: '견적 서비스 내역',
+      description: '통신상품 공동구매 서비스',
+      icon: ShoppingCart,
+      color: 'bg-blue-50 border-blue-200',
+      iconColor: 'text-blue-600',
+      path: isSeller ? '/mypage/seller/groupbuy' : '/mypage/groupbuy'
+    },
+    {
       id: 'used',
-      title: '중고거래',
+      title: '중고거래 내역',
       description: '지역기반 직거래',
       icon: Smartphone,
       color: 'bg-green-50 border-green-200',
       iconColor: 'text-green-600',
-      stats: [
-        { label: '판매중', count: stats.used.selling },
-      ],
       path: '/used/mypage'
     }
   ];
@@ -255,7 +167,6 @@ export default function DashboardClient() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
         {services.map((service) => {
           const Icon = service.icon;
-          const totalCount = service.stats.reduce((sum, stat) => sum + stat.count, 0);
           const notificationCount = notifications[service.id as keyof NotificationCounts];
 
           return (
@@ -264,51 +175,59 @@ export default function DashboardClient() {
               className={`${service.color} border hover:shadow-md transition-all cursor-pointer relative`}
               onClick={() => router.push(service.path)}
             >
-              <CardContent className="p-4">
-                {/* 알림 배지 */}
-                {notificationCount > 0 && (
-                  <div className="absolute -top-1.5 -right-1.5 z-10">
-                    <Badge className="bg-red-500 text-white flex items-center gap-1 px-1.5 py-0.5 text-xs">
-                      <Bell className="w-2.5 h-2.5" />
-                      {notificationCount}
-                    </Badge>
-                  </div>
-                )}
+              <CardContent className="p-3">
+                {/* 알림 배지 - 항상 표시 */}
+                <div className="absolute -top-1.5 -right-1.5 z-10">
+                  <Badge className={`${notificationCount > 0 ? 'bg-red-500' : 'bg-gray-400'} text-white flex items-center gap-1 px-1.5 py-0.5 text-xs`}>
+                    <Bell className="w-2.5 h-2.5" />
+                    {notificationCount}
+                  </Badge>
+                </div>
 
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg bg-white shadow-sm`}>
-                    <Icon className={`w-5 h-5 ${service.iconColor}`} />
+                <div className="flex items-center gap-2.5 mb-2">
+                  <div className={`p-1.5 rounded-lg bg-white shadow-sm`}>
+                    <Icon className={`w-4 h-4 ${service.iconColor}`} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-base font-bold text-gray-900">
+                    <h3 className="text-sm font-bold text-gray-900">
                       {service.title}
                     </h3>
                     <p className="text-xs text-gray-500">
                       {service.description}
                     </p>
                   </div>
-                  {totalCount > 0 && (
-                    <Badge className={`${service.iconColor} bg-white text-xs px-2`}>
-                      {totalCount}
-                    </Badge>
-                  )}
                 </div>
 
-                {/* 통계 */}
-                {service.stats.length > 0 && (
-                  <div className="flex gap-3 py-2 border-t border-gray-200">
-                    {service.stats.map((stat) => (
-                      <div key={stat.label} className="flex-1">
-                        <p className="text-xs text-gray-500">{stat.label}</p>
-                        <p className="text-lg font-bold text-gray-900">{stat.count}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* 자세히 보기 버튼 */}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between hover:bg-white/80 text-xs py-1.5 h-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(service.path);
+                  }}
+                >
+                  자세히 보기
+                  <ChevronRight className="w-3 h-3" />
+                </Button>
               </CardContent>
             </Card>
           );
         })}
+      </div>
+
+      {/* 하단 배너 */}
+      <div className="mb-6">
+        <div className="relative w-full rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+          <Image
+            src="https://dungjimarket.s3.ap-northeast-2.amazonaws.com/banners/4e9bc98db30c4100878e3f669820130d_20250924083943.png"
+            alt="둥지마켓 배너"
+            width={1200}
+            height={300}
+            className="w-full h-auto object-cover"
+            priority
+          />
+        </div>
       </div>
 
       {/* 빠른 메뉴 - 주석처리 */}

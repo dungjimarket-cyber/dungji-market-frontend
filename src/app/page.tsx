@@ -218,7 +218,7 @@ function HomeContent() {
             href="/group-purchases"
             className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
-            <span className="text-xs sm:text-base">같이 견적받기</span>
+            <span className="text-xs sm:text-base">지원금 견적서비스</span>
           </Link>
 
           <Link
