@@ -675,7 +675,7 @@ export default function UsedPhonesPage() {
               <Button
                 size="sm"
                 onClick={handleCreateClick}
-                className="px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                 <span>판매하기</span>
@@ -685,7 +685,7 @@ export default function UsedPhonesPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm"
+                    className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
                   >
                     <User className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                     <span className="hidden sm:inline">중고거래내역</span>

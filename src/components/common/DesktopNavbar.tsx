@@ -120,25 +120,16 @@ export default function DesktopNavbar() {
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
               같이 견적받기
             </Link>
-            <Link href="/used" className="text-gray-600 hover:text-gray-900">
-              중고거래
-            </Link>
-            <Link href="/events" className="text-gray-600 hover:text-gray-900">
-              이벤트
-            </Link>
-            
+
             {/* 비로그인 시 */}
             {!isAuthenticated && (
               <>
                 <Link href="/register" className="text-gray-600 hover:text-gray-900">
                   견적요청
                 </Link>
-                <Link href="/register" className="text-gray-600 hover:text-gray-900">
-                  회원가입
-                </Link>
               </>
             )}
-            
+
             {/* 구매회원(buyer) 로그인 시 */}
             {isAuthenticated && (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type)) && (
               <>
@@ -149,12 +140,9 @@ export default function DesktopNavbar() {
                 >
                   견적요청
                 </Link>
-                <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
-                  마이페이지
-                </Link>
               </>
             )}
-            
+
             {/* 판매회원 로그인 시 */}
             {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
               <>
@@ -165,10 +153,28 @@ export default function DesktopNavbar() {
                 >
                   견적 내역
                 </Link>
-                <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
-                  마이페이지
-                </Link>
               </>
+            )}
+
+            <Link href="/used" className="text-gray-600 hover:text-gray-900">
+              중고거래
+            </Link>
+            <Link href="/events" className="text-gray-600 hover:text-gray-900">
+              이벤트
+            </Link>
+
+            {/* 비로그인 시 - 회원가입 */}
+            {!isAuthenticated && (
+              <Link href="/register" className="text-gray-600 hover:text-gray-900">
+                회원가입
+              </Link>
+            )}
+
+            {/* 로그인 시 - 마이페이지 */}
+            {isAuthenticated && (
+              <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
+                마이페이지
+              </Link>
             )}
           </div>
 

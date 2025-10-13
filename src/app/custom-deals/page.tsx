@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Plus, Heart, Users, Clock, MapPin, Tag, Info } from 'lucide-react';
+import { Search, Plus, Heart, Users, Clock, MapPin, Tag, Info, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -242,9 +242,11 @@ export default function CustomDealsPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="hidden md:flex"
+                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm"
                 >
-                  이용가이드
+                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                  <span className="hidden sm:inline">이용가이드</span>
+                  <span className="sm:hidden">가이드</span>
                 </Button>
               </Link>
               <Button
