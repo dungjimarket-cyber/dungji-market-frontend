@@ -69,6 +69,7 @@ export default function CustomDealsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState(''); // 지역 검색
   const [showClosedDeals, setShowClosedDeals] = useState(true); // 마감된 공구 표시 여부
+  const [sortType, setSortType] = useState<'latest' | 'popular'>('latest'); // 정렬 방식
 
   // 패널티 모달 상태
   const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
@@ -349,6 +350,16 @@ export default function CustomDealsPage() {
                 오프라인
               </button>
 
+              {/* Sort Type Filter */}
+              <select
+                value={sortType}
+                onChange={(e) => setSortType(e.target.value as 'latest' | 'popular')}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                <option value="latest">최신순</option>
+                <option value="popular">인기순</option>
+              </select>
+
               {/* Category Filter */}
               <select
                 value={selectedCategory}
@@ -404,9 +415,31 @@ export default function CustomDealsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {deals
-              .filter((deal) => showClosedDeals || deal.status === 'recruiting')
+              .filter((deal) => {
+                // 취소된 공구는 항상 제외
+                if (deal.status === 'cancelled') return false;
+                // showClosedDeals에 따라 마감된 공구 표시 여부 결정
+                return showClosedDeals || deal.status === 'recruiting';
+              })
+              .sort((a, b) => {
+                // 1차 정렬: 마감된 공구(completed, expired)를 뒤로
+                const aIsClosed = a.status === 'completed' || a.status === 'expired';
+                const bIsClosed = b.status === 'completed' || b.status === 'expired';
+
+                if (aIsClosed && !bIsClosed) return 1;  // a가 마감이면 뒤로
+                if (!aIsClosed && bIsClosed) return -1; // b가 마감이면 뒤로
+
+                // 2차 정렬: 인기순이면 참여율로 정렬 (마감 제외)
+                if (sortType === 'popular' && !aIsClosed && !bIsClosed) {
+                  const aRate = (a.current_participants / a.target_participants) * 100;
+                  const bRate = (b.current_participants / b.target_participants) * 100;
+                  return bRate - aRate; // 참여율 높은 순
+                }
+
+                return 0; // 최신순이거나 같은 상태면 순서 유지
+              })
               .map((deal) => {
-                const isClosed = deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired';
+                const isClosed = deal.status === 'completed' || deal.status === 'expired';
                 return (
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden flex flex-col">
