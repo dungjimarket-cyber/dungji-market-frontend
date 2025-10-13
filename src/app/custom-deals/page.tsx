@@ -22,6 +22,12 @@ interface CustomDeal {
     name: string;
     full_name: string;
   }>;
+  pricing_type?: 'single_product' | 'all_products';
+  products?: Array<{
+    name: string;
+    original_price: number;
+    discount_rate: number;
+  }>;
   product_name: string | null;
   original_price: number;
   discount_rate: number;
@@ -396,7 +402,7 @@ export default function CustomDealsPage() {
                       <img
                         src={deal.primary_image}
                         alt={deal.title}
-                        className={`w-full h-full object-cover ${isClosed ? 'opacity-60' : ''}`}
+                        className={`w-full h-full object-contain ${isClosed ? 'opacity-60' : ''}`}
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
@@ -452,7 +458,13 @@ export default function CustomDealsPage() {
                     <div className="mb-2 h-16">
                       {deal.original_price && deal.final_price ? (
                         <>
-                          {deal.product_name && (
+                          {/* products 배열 우선, 없으면 product_name 폴백 */}
+                          {deal.products && deal.products.length > 0 && deal.products[0].name && (
+                            <div className="text-xs text-slate-600 mb-1 line-clamp-1">
+                              {deal.products[0].name}
+                            </div>
+                          )}
+                          {!deal.products && deal.product_name && (
                             <div className="text-xs text-slate-600 mb-1 line-clamp-1">
                               {deal.product_name}
                             </div>
