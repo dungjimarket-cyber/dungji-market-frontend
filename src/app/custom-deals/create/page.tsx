@@ -1201,7 +1201,7 @@ export default function CreateCustomDealPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 9 }, (_, i) => i + 2).map(num => (
+                  {Array.from({ length: 19 }, (_, i) => i + 2).map(num => (
                     <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
                   ))}
                 </SelectContent>
