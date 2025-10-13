@@ -985,7 +985,7 @@ export default function CreateCustomDealPage() {
               <RichTextEditor
                 content={formData.description}
                 onChange={(content) => handleInputChange('description', content)}
-                placeholder="공구 상품에 대한 자세한 설명을 입력하세요"
+                placeholder="공구 상품에 대한 자세한 설명을 자유롭게 입력해주세요.&#10;기존 판매하시던 상품 URL도 입력 가능합니다."
                 maxLength={3000}
               />
               {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
