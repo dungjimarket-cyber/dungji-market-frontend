@@ -22,6 +22,7 @@ interface CustomDeal {
     name: string;
     full_name: string;
   }>;
+  product_name: string | null;
   original_price: number;
   discount_rate: number;
   final_price: number;
@@ -451,6 +452,11 @@ export default function CustomDealsPage() {
                     <div className="mb-2 h-16">
                       {deal.original_price && deal.final_price ? (
                         <>
+                          {deal.product_name && (
+                            <div className="text-xs text-slate-600 mb-1 line-clamp-1">
+                              {deal.product_name}
+                            </div>
+                          )}
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-xs text-slate-500 line-through">
                               {deal.original_price.toLocaleString()}원
@@ -464,7 +470,7 @@ export default function CustomDealsPage() {
                           </div>
                         </>
                       ) : (
-                        <div className="text-lg font-bold text-gray-900">
+                        <div className="text-lg font-bold text-blue-600">
                           전품목 {deal.discount_rate}% 할인
                         </div>
                       )}

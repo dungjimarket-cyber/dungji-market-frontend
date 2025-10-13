@@ -163,7 +163,7 @@ export default function MobileNavbar() {
           <FaExchangeAlt className="text-lg mb-1" />
           <span className="text-[10px]">중고거래</span>
         </Link>
-        {/* 커스텀 공구 버튼 */}
+        {/* 커공 특가 버튼 */}
         <Link href="/custom-deals" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
           <FaStore className="text-lg mb-1" />
           <span className="text-[10px]">커공</span>

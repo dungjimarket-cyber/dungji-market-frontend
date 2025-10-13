@@ -501,13 +501,13 @@ export default function MyPageClient() {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 커스텀 특가 참여내역 */}
+            {/* 커스텀 공구 내역 */}
             <AccordionItem value="custom-participations">
               <AccordionTrigger className="py-2 bg-gray-50 px-2 rounded-lg hover:bg-gray-100 group transition-all mt-2">
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     <Sparkles className="w-4 h-4 mr-2 text-purple-500" />
-                    <span className="text-sm font-medium">커스텀 특가 참여내역</span>
+                    <span className="text-sm font-medium">커스텀 공구 내역</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {customParticipationsCount > 0 ? (

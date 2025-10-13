@@ -24,6 +24,7 @@ interface CustomDeal {
     name: string;
     full_name: string;
   }>;
+  product_name: string | null;
   original_price: number;
   discount_rate: number;
   final_price: number;
@@ -734,6 +735,11 @@ export default function CustomDealDetailPage() {
               <CardContent className="p-5">
                 {deal.original_price && deal.final_price ? (
                   <>
+                    {deal.product_name && (
+                      <div className="text-sm text-slate-700 mb-2 font-medium">
+                        {deal.product_name}
+                      </div>
+                    )}
                     <div className="flex items-baseline gap-2 mb-1">
                       <span className="text-sm text-slate-500 line-through">
                         {deal.original_price.toLocaleString()}원
