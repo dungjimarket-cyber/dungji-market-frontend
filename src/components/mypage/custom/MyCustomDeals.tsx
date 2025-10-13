@@ -24,6 +24,7 @@ interface CustomDeal {
     name: string;
     full_name: string;
   }>;
+  location?: string; // 오프라인 매장 주소
   original_price: number;
   discount_rate: number;
   final_price: number;
@@ -447,24 +448,24 @@ export default function MyCustomDeals() {
               </Link>
 
               <CardContent className="p-3 flex flex-col flex-1">
+                {/* Location (offline only) - 제목 위에 표시 */}
+                <div className="h-5 mb-1">
+                  {deal.type === 'offline' && deal.location && (
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">
+                        {deal.location}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
                 <Link href={`/custom-deals/${deal.id}`}>
                   {/* Title - 고정 높이 (2줄) */}
                   <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
                     {deal.title}
                   </h3>
                 </Link>
-
-                {/* Location - 고정 높이 */}
-                <div className="h-5 mb-1">
-                  {deal.type === 'offline' && deal.regions && deal.regions.length > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="line-clamp-1">
-                        {deal.regions.map(r => r.name).join(', ')}
-                      </span>
-                    </div>
-                  )}
-                </div>
 
                 {/* Price - 고정 높이 */}
                 <div className="mb-2 h-14">
