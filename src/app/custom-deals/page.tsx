@@ -227,7 +227,7 @@ export default function CustomDealsPage() {
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">커스텀 공구</h1>
+              <h1 className="text-xl font-bold text-gray-900">커공 특가</h1>
               <p className="text-xs text-gray-600 mt-0.5">특별한 공동구매 혜택</p>
             </div>
             <div className="flex gap-2">

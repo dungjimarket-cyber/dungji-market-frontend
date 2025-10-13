@@ -1001,6 +1001,15 @@ export default function CustomDealDetailPage() {
                     </div>
                   )}
                 </div>
+
+                {/* 이용 안내 */}
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                    <p className="text-xs text-slate-600">
+                      포장 및 매장 이용시 사용 가능 (배달 사용 불가)
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
