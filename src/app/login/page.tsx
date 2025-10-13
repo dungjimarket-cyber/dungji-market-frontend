@@ -215,15 +215,29 @@ function LoginForm() {
 
         {/* 둥지마켓 이용안내 */}
         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">둥지마켓 이용안내</h4>
-          <div className="space-y-2 text-sm text-blue-800">
+          <h4 className="font-medium text-blue-900 mb-3">둥지마켓 이용안내</h4>
+          <div className="space-y-2.5 text-xs sm:text-sm text-blue-800">
             <div className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
-              <span><strong>개인회원:</strong> 공구 견적 요청, <strong>중고거래</strong></span>
+              <span className="text-blue-600 mt-0.5 flex-shrink-0">•</span>
+              <div className="space-y-0.5 leading-tight">
+                <div><strong>개인회원:</strong></div>
+                <div className="pl-2 space-y-0.5">
+                  <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 참여</span></div>
+                  <div className="whitespace-nowrap">2. 공구 견적 요청</div>
+                  <div className="whitespace-nowrap">3. <strong>중고거래</strong></div>
+                </div>
+              </div>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
-              <span><strong>사업자회원:</strong> 통신·렌탈 판매활동, <strong>중고거래</strong></span>
+              <span className="text-blue-600 mt-0.5 flex-shrink-0">•</span>
+              <div className="space-y-0.5 leading-tight">
+                <div><strong>사업자회원:</strong></div>
+                <div className="pl-2 space-y-0.5">
+                  <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 개설</span></div>
+                  <div className="whitespace-nowrap">2. 통신·렌탈 판매활동</div>
+                  <div className="whitespace-nowrap">3. <strong>중고거래</strong></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

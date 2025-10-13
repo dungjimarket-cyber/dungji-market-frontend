@@ -862,14 +862,15 @@ function RegisterPageContent() {
                     setMemberType('buyer');
                     setFormData(prev => ({ ...prev, role: 'buyer' }));
                   }}
-                  className="group relative p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-blue-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
+                  className="group relative p-6 sm:p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-blue-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
                 >
-                  <div className="font-bold text-lg mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
+                  <div className="font-bold text-base sm:text-lg mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
                     개인회원
                   </div>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div className="whitespace-nowrap">견적요청, 공구참여</div>
-                    <div className="font-bold">중고거래</div>
+                  <div className="text-[10px] sm:text-xs text-gray-600 space-y-1.5 leading-tight">
+                    <div className="whitespace-nowrap font-semibold text-blue-600">커스텀 공구 참여</div>
+                    <div className="whitespace-nowrap">견적요청·공구참여</div>
+                    <div className="whitespace-nowrap font-bold">중고거래</div>
                   </div>
                 </button>
 
@@ -879,14 +880,15 @@ function RegisterPageContent() {
                     setMemberType('seller');
                     setFormData(prev => ({ ...prev, role: 'seller' }));
                   }}
-                  className="group relative p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-orange-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
+                  className="group relative p-6 sm:p-8 border-2 rounded-2xl text-center transition-all hover:shadow-xl border-gray-200 hover:border-orange-400 bg-gradient-to-br from-white to-gray-50 hover:scale-105"
                 >
-                  <div className="font-bold text-lg mb-3 text-sky-500 group-hover:text-sky-600 transition-colors">
+                  <div className="font-bold text-base sm:text-lg mb-3 text-sky-500 group-hover:text-sky-600 transition-colors">
                     사업자회원
                   </div>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div className="whitespace-nowrap">통신·렌탈 판매활동</div>
-                    <div className="font-bold">중고거래</div>
+                  <div className="text-[10px] sm:text-xs text-gray-600 space-y-1.5 leading-tight">
+                    <div className="whitespace-nowrap font-semibold text-orange-600">커스텀 공구 개설</div>
+                    <div className="whitespace-nowrap">통신·렌탈 판매</div>
+                    <div className="whitespace-nowrap font-bold">중고거래</div>
                   </div>
                 </button>
               </div>
