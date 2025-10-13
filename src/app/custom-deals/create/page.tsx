@@ -148,16 +148,8 @@ export default function CreateCustomDealPage() {
     fetchCategories();
   }, []);
 
-  // 페이지 진입 시 인증 체크 (로딩 완료 후에만)
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      toast.error('로그인이 필요합니다');
-      router.push('/login');
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  // 진행 중인 공구 체크 함수 (등록 시 호출)
-  const checkActiveDeals = async () => {
+  // 진행 중인 공구 체크 함수
+  const checkActiveDeals = useCallback(async () => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return true;
@@ -196,7 +188,26 @@ export default function CreateCustomDealPage() {
       console.error('활성 공구 체크 실패:', error);
       return true; // 에러 시 등록 진행
     }
-  };
+  }, []);
+
+  // 페이지 진입 시 인증 체크 (로딩 완료 후에만)
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast.error('로그인이 필요합니다');
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  // 페이지 진입 시 진행 중인 공구 체크
+  useEffect(() => {
+    const checkOnPageLoad = async () => {
+      // 인증 완료 후에만 체크
+      if (!authLoading && isAuthenticated) {
+        await checkActiveDeals();
+      }
+    };
+    checkOnPageLoad();
+  }, [authLoading, isAuthenticated, checkActiveDeals]);
 
   // 이미지 업로드 핸들러 (중고거래 로직 복사)
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
