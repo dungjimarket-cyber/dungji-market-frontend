@@ -817,8 +817,8 @@ export default function CreateCustomDealPage() {
                 <p className="text-sm text-slate-700 mb-1">
                   오프라인판매는 사업자 회원만 등록 가능합니다
                 </p>
-                <p className="text-sm text-slate-600">
-                  등록 불가: 할부/약정 상품, 금융상품, 학원/강의, 방문 서비스, 청소년 유해상품
+                <p className="text-sm font-bold text-slate-900">
+                  등록 불가: 할부/약정 상품, 금융상품, 사행성, 방문 서비스, 청소년 유해상품
                 </p>
               </div>
             </div>
