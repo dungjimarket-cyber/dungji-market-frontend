@@ -450,6 +450,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     }
 
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    // 목표인원 변경 시 할인코드 초기화
+    if (field === 'target_participants') {
+      setDiscountCodes(['']);
+      toast.info('목표인원이 변경되어 할인코드가 초기화되었습니다');
+    }
+
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -1116,18 +1123,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                             )}
                           </div>
                         ))}
-                        {discountCodes.length < parseInt(formData.target_participants) && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDiscountCodes([...discountCodes, ''])}
-                            className="w-full"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            할인코드 추가
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDiscountCodes([...discountCodes, ''])}
+                          disabled={discountCodes.length >= parseInt(formData.target_participants)}
+                          className="w-full"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          할인코드 추가
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -1303,18 +1309,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                             )}
                           </div>
                         ))}
-                        {discountCodes.length < parseInt(formData.target_participants) && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDiscountCodes([...discountCodes, ''])}
-                            className="w-full"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            할인코드 추가
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDiscountCodes([...discountCodes, ''])}
+                          disabled={discountCodes.length >= parseInt(formData.target_participants)}
+                          className="w-full"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          할인코드 추가
+                        </Button>
                       </div>
                       {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
                         <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-gray-300 mt-2">
@@ -1443,18 +1448,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           )}
                         </div>
                       ))}
-                      {discountCodes.length < parseInt(formData.target_participants) && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDiscountCodes([...discountCodes, ''])}
-                          className="w-full"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          할인코드 추가
-                        </Button>
-                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDiscountCodes([...discountCodes, ''])}
+                        disabled={discountCodes.length >= parseInt(formData.target_participants)}
+                        className="w-full"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        할인코드 추가
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -1547,18 +1551,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         )}
                       </div>
                     ))}
-                    {discountCodes.length < parseInt(formData.target_participants) && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDiscountCodes([...discountCodes, ''])}
-                        className="w-full"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        할인코드 추가
-                      </Button>
-                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDiscountCodes([...discountCodes, ''])}
+                      disabled={discountCodes.length >= parseInt(formData.target_participants)}
+                      className="w-full"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      할인코드 추가
+                    </Button>
                   </div>
                   {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
                     <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-gray-300 mt-2">

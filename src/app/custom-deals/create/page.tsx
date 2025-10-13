@@ -441,6 +441,13 @@ export default function CreateCustomDealPage() {
   // 폼 입력 핸들러
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    // 목표인원 변경 시 할인코드 초기화
+    if (field === 'target_participants') {
+      setDiscountCodes(['']);
+      toast.info('목표인원이 변경되어 할인코드가 초기화되었습니다');
+    }
+
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -1447,6 +1454,7 @@ export default function CreateCustomDealPage() {
                         variant="outline"
                         size="sm"
                         onClick={addDiscountCode}
+                        disabled={discountCodes.length >= parseInt(formData.target_participants)}
                         className="flex-1"
                       >
                         <Plus className="w-4 h-4 mr-2" />
@@ -1646,6 +1654,7 @@ export default function CreateCustomDealPage() {
                         variant="outline"
                         size="sm"
                         onClick={addDiscountCode}
+                        disabled={discountCodes.length >= parseInt(formData.target_participants)}
                         className="flex-1"
                       >
                         <Plus className="w-4 h-4 mr-2" />
