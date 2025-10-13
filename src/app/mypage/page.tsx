@@ -1,17 +1,16 @@
 'use client';
 
-import MyPageClient from './MyPageClient';
+import DashboardClient from './DashboardClient';
 import RequireAuth from '@/components/auth/RequireAuth';
 
 /**
- * 마이페이지 컴포넌트
- * 사용자 프로필 및 참여 중인 공구 등을 보여줍니다.
- * 클라이언트 컴포넌트로 변경하고 RequireAuth를 적용하여 로그인 상태를 유지합니다.
+ * 마이페이지 통합 대시보드
+ * 공구견적, 커스텀 공구, 중고거래 요약 정보 제공
  */
 export default function MyPage() {
   return (
     <RequireAuth>
-      <MyPageClient />
+      <DashboardClient />
     </RequireAuth>
   );
 }
