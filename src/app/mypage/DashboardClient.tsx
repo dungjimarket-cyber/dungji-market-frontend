@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,8 @@ import {
   Smartphone,
   ChevronRight,
   Settings,
-  User
+  User,
+  Bell
 } from 'lucide-react';
 
 interface ServiceStats {
@@ -30,6 +32,12 @@ interface ServiceStats {
   };
 }
 
+interface NotificationCounts {
+  groupbuy: number;
+  custom: number;
+  used: number;
+}
+
 export default function DashboardClient() {
   const router = useRouter();
   const { user } = useAuth();
@@ -38,12 +46,18 @@ export default function DashboardClient() {
     custom: { recruiting: 0, participating: 0 },
     used: { selling: 0, buying: 0 }
   });
+  const [notifications, setNotifications] = useState<NotificationCounts>({
+    groupbuy: 0,
+    custom: 0,
+    used: 0
+  });
   const [loading, setLoading] = useState(true);
 
   const isSeller = user?.role === 'seller';
 
   useEffect(() => {
     fetchStats();
+    fetchNotifications();
   }, []);
 
   const fetchStats = async () => {
@@ -108,6 +122,52 @@ export default function DashboardClient() {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const headers = { 'Authorization': `Bearer ${token}` };
+
+      // 읽지 않은 알림 조회
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/?is_read=false`,
+        { headers }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const unreadNotifications = data.results || [];
+
+        // 서비스별 알림 분류
+        const counts = {
+          groupbuy: 0,
+          custom: 0,
+          used: 0
+        };
+
+        const customTypes = ['custom_completed', 'custom_code_issued', 'custom_closing_soon'];
+        const usedTypes = ['offer_received', 'offer_accepted', 'trade_cancelled', 'trade_completed'];
+
+        unreadNotifications.forEach((notification: any) => {
+          const type = notification.notification_type;
+
+          if (customTypes.includes(type)) {
+            counts.custom++;
+          } else if (usedTypes.includes(type)) {
+            counts.used++;
+          } else {
+            counts.groupbuy++;
+          }
+        });
+
+        setNotifications(counts);
+      }
+    } catch (error) {
+      console.error('알림 로드 실패:', error);
+    }
+  };
+
   const services = [
     {
       id: 'groupbuy',
@@ -149,88 +209,110 @@ export default function DashboardClient() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">마이페이지</h1>
-          <p className="text-sm text-gray-600">
-            {user?.nickname || user?.username}님, 안녕하세요!
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push('/mypage/settings')}
-          className="flex items-center gap-2"
-        >
-          <Settings className="w-4 h-4" />
-          설정
-        </Button>
-      </div>
+    <div className="container mx-auto px-4 py-6 bg-white min-h-screen">
+      {/* 프로필 섹션 */}
+      <Card className="mb-6 border-2 border-gray-200">
+        <CardContent className="py-6">
+          <div className="flex gap-6 items-center">
+            {/* 둥지마켓 메인 이미지 */}
+            <div className="flex-shrink-0">
+              <Image
+                src="/logos/dungji_logo.jpg"
+                alt="둥지마켓"
+                width={60}
+                height={60}
+                className="rounded-lg object-contain"
+              />
+            </div>
+            {/* 사용자 정보 */}
+            <div className="flex-1 flex flex-col justify-center space-y-3">
+              <div>
+                <p className="text-xs text-gray-500">닉네임</p>
+                <p className="text-sm font-medium">{user?.nickname || user?.username || '설정 필요'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">주요활동지역</p>
+                <p className="text-sm font-medium">
+                  {user?.address_region?.full_name || '설정 필요'}
+                </p>
+              </div>
+            </div>
+            {/* 설정 버튼 */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/mypage/settings')}
+              className="flex items-center gap-1.5"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span className="text-xs">설정</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 서비스 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
         {services.map((service) => {
           const Icon = service.icon;
           const totalCount = service.stats.reduce((sum, stat) => sum + stat.count, 0);
+          const notificationCount = notifications[service.id as keyof NotificationCounts];
 
           return (
             <Card
               key={service.id}
-              className={`${service.color} border-2 hover:shadow-lg transition-all cursor-pointer`}
+              className={`${service.color} border hover:shadow-md transition-all cursor-pointer relative`}
               onClick={() => router.push(service.path)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-lg bg-white shadow-sm`}>
-                    <Icon className={`w-6 h-6 ${service.iconColor}`} />
+              <CardContent className="p-4">
+                {/* 알림 배지 */}
+                {notificationCount > 0 && (
+                  <div className="absolute -top-1.5 -right-1.5 z-10">
+                    <Badge className="bg-red-500 text-white flex items-center gap-1 px-1.5 py-0.5 text-xs">
+                      <Bell className="w-2.5 h-2.5" />
+                      {notificationCount}
+                    </Badge>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2 rounded-lg bg-white shadow-sm`}>
+                    <Icon className={`w-5 h-5 ${service.iconColor}`} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-base font-bold text-gray-900">
+                      {service.title}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {service.description}
+                    </p>
                   </div>
                   {totalCount > 0 && (
-                    <Badge className={`${service.iconColor} bg-white`}>
-                      {totalCount}건
+                    <Badge className={`${service.iconColor} bg-white text-xs px-2`}>
+                      {totalCount}
                     </Badge>
                   )}
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-1">
-                  {service.title}
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  {service.description}
-                </p>
-
                 {/* 통계 */}
                 {service.stats.length > 0 && (
-                  <div className="flex gap-4 mb-4">
+                  <div className="flex gap-3 py-2 border-t border-gray-200">
                     {service.stats.map((stat) => (
-                      <div key={stat.label}>
+                      <div key={stat.label} className="flex-1">
                         <p className="text-xs text-gray-500">{stat.label}</p>
-                        <p className="text-xl font-bold text-gray-900">{stat.count}</p>
+                        <p className="text-lg font-bold text-gray-900">{stat.count}</p>
                       </div>
                     ))}
                   </div>
                 )}
-
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between hover:bg-white/80"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(service.path);
-                  }}
-                >
-                  자세히 보기
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* 빠른 메뉴 */}
-      <Card className="border-gray-200">
+      {/* 빠른 메뉴 - 주석처리 */}
+      {/* <Card className="border-gray-200">
         <CardContent className="p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">빠른 메뉴</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -268,7 +350,7 @@ export default function DashboardClient() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {loading && (
         <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
