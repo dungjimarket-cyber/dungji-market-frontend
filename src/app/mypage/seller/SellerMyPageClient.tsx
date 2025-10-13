@@ -22,7 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone, ShoppingBag } from 'lucide-react';
+import { Loader2, Gavel, Clock, Package, CheckCircle2, XCircle, Users, ChevronRight, AlertCircle, MessageSquare, AlertTriangle, Settings, Smartphone, ShoppingBag, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -317,6 +317,15 @@ export default function SellerMyPageClient() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold">마이페이지</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/custom-deals/my')}
+            className="flex items-center"
+          >
+            <Sparkles className="w-4 h-4 mr-1" />
+            커공관리
+          </Button>
           <Button
             variant="outline"
             size="sm"

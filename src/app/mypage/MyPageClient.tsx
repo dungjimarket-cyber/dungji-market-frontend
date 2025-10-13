@@ -292,6 +292,15 @@ export default function MyPageClient() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => router.push('/custom-deals/my')}
+            className="flex items-center"
+          >
+            <Sparkles className="w-4 h-4 mr-1" />
+            커공관리
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => router.push('/used/mypage')}
             className="flex items-center"
           >
@@ -530,17 +539,8 @@ export default function MyPageClient() {
 
           </Accordion>
 
-          {/* 노쇼 관리 및 커공 관리 버튼 */}
-          <div className="mt-6 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/custom-deals/my')}
-              className="flex items-center gap-1 text-purple-600 border-purple-300 hover:bg-purple-50 text-xs px-3 py-1.5"
-            >
-              <Sparkles className="w-3 h-3" />
-              커공관리
-            </Button>
+          {/* 노쇼 관리 버튼 */}
+          <div className="mt-6 flex justify-end">
             <Button
               variant="outline"
               size="sm"
