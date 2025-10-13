@@ -1127,7 +1127,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         <Input
                           type="number"
                           value={formData.discount_rate}
-                          onChange={(e) => handleInputChange('discount_rate', e.target.value)}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            if (value <= 99) {
+                              handleInputChange('discount_rate', e.target.value);
+                            }
+                          }}
                           placeholder="0"
                           min="0"
                           max="99"
@@ -1162,7 +1167,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     <Input
                       type="number"
                       value={formData.discount_rate}
-                      onChange={(e) => handleInputChange('discount_rate', e.target.value)}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        if (value <= 99) {
+                          handleInputChange('discount_rate', e.target.value);
+                        }
+                      }}
                       placeholder="0"
                       min="0"
                       max="99"
