@@ -237,21 +237,21 @@ export default function CustomDealsGuidePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-6">
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4">
+        <div className="max-w-4xl mx-auto px-4">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">커스텀 공구 이용가이드</h1>
           <p className="text-blue-100 text-base">특별한 공동구매 혜택, 함께 만들어가요!</p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4 py-8 pb-24">
-        <div className="space-y-4">
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
+        <div className="space-y-3">
           {sections.map((section) => (
             <div key={section.id} className="border border-gray-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="text-blue-600">{section.icon}</div>
@@ -265,8 +265,8 @@ export default function CustomDealsGuidePage() {
               </button>
 
               {openSection === section.id && (
-                <div className="p-5 pt-0 bg-gray-50">
-                  <div className="bg-white p-5 rounded-lg">
+                <div className="p-4 pt-0 bg-gray-50">
+                  <div className="bg-white p-4 rounded-lg">
                     {section.content}
                   </div>
                 </div>
@@ -276,7 +276,7 @@ export default function CustomDealsGuidePage() {
         </div>
 
         {/* Footer Message */}
-        <div className="mt-12 bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-lg border border-indigo-200">
+        <div className="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
           <p className="text-center text-gray-700 font-medium">
             모두가 함께 지키면 더 좋은 할인 혜택을 누릴 수 있습니다! 🙌
           </p>
