@@ -1,94 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCart,
   Sparkles,
   Smartphone,
   ChevronRight,
   Settings,
-  User,
-  Bell
+  User
 } from 'lucide-react';
-
-interface NotificationCounts {
-  groupbuy: number;
-  custom: number;
-  used: number;
-}
 
 export default function DashboardClient() {
   const router = useRouter();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<NotificationCounts>({
-    groupbuy: 0,
-    custom: 0,
-    used: 0
-  });
-  const [loading, setLoading] = useState(true);
 
   const isSeller = user?.role === 'seller';
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      const headers = { 'Authorization': `Bearer ${token}` };
-
-      // 읽지 않은 알림 조회
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/notifications/?is_read=false`,
-        { headers }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const unreadNotifications = data.results || [];
-
-        // 서비스별 알림 분류
-        const counts = {
-          groupbuy: 0,
-          custom: 0,
-          used: 0
-        };
-
-        const customTypes = ['custom_completed', 'custom_code_issued', 'custom_closing_soon'];
-        const usedTypes = ['offer_received', 'offer_accepted', 'trade_cancelled', 'trade_completed'];
-
-        unreadNotifications.forEach((notification: any) => {
-          const type = notification.notification_type;
-
-          if (customTypes.includes(type)) {
-            counts.custom++;
-          } else if (usedTypes.includes(type)) {
-            counts.used++;
-          } else {
-            counts.groupbuy++;
-          }
-        });
-
-        setNotifications(counts);
-      }
-    } catch (error) {
-      console.error('알림 로드 실패:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const services = [
     {
@@ -121,9 +51,9 @@ export default function DashboardClient() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 bg-white min-h-screen">
+    <div className="container mx-auto px-4 pt-6 pb-0 bg-white min-h-screen">
       {/* 프로필 섹션 */}
-      <Card className="mb-6 border-2 border-gray-200">
+      <Card className="mb-4 border-2 border-gray-200">
         <CardContent className="py-6">
           <div className="flex gap-6 items-center">
             {/* 둥지마켓 메인 이미지 */}
@@ -164,26 +94,17 @@ export default function DashboardClient() {
       </Card>
 
       {/* 서비스 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {services.map((service) => {
           const Icon = service.icon;
-          const notificationCount = notifications[service.id as keyof NotificationCounts];
 
           return (
             <Card
               key={service.id}
-              className={`${service.color} border hover:shadow-md transition-all cursor-pointer relative`}
+              className={`${service.color} border hover:shadow-md transition-all cursor-pointer`}
               onClick={() => router.push(service.path)}
             >
               <CardContent className="p-3">
-                {/* 알림 배지 - 항상 표시 */}
-                <div className="absolute -top-1.5 -right-1.5 z-10">
-                  <Badge className={`${notificationCount > 0 ? 'bg-red-500' : 'bg-gray-400'} text-white flex items-center gap-1 px-1.5 py-0.5 text-xs`}>
-                    <Bell className="w-2.5 h-2.5" />
-                    {notificationCount}
-                  </Badge>
-                </div>
-
                 <div className="flex items-center gap-2.5 mb-2">
                   <div className={`p-1.5 rounded-lg bg-white shadow-sm`}>
                     <Icon className={`w-4 h-4 ${service.iconColor}`} />
@@ -217,8 +138,8 @@ export default function DashboardClient() {
       </div>
 
       {/* 하단 배너 */}
-      <div className="mb-6">
-        <div className="relative w-full rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <div className="mb-0 flex justify-center">
+        <div className="relative w-full md:w-[70%] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
           <Image
             src="https://dungjimarket.s3.ap-northeast-2.amazonaws.com/banners/4e9bc98db30c4100878e3f669820130d_20250924083943.png"
             alt="둥지마켓 배너"
@@ -270,14 +191,6 @@ export default function DashboardClient() {
           </div>
         </CardContent>
       </Card> */}
-
-      {loading && (
-        <div className="fixed inset-0 bg-black/10 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <p className="text-gray-600">통계 로딩 중...</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
