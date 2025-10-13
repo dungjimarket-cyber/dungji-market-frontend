@@ -141,7 +141,7 @@ export default function DashboardClient() {
       <Card className="border-gray-200 mb-2.5">
         <CardContent className="p-4">
           <h3 className="text-sm font-bold text-gray-900 mb-3">빠른 메뉴</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <Button
               variant="outline"
               className="h-auto flex-col gap-1.5 py-3"
