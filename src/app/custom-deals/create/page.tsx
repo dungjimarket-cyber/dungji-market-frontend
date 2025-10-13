@@ -162,8 +162,9 @@ export default function CreateCustomDealPage() {
       const token = localStorage.getItem('accessToken');
       if (!token) return true;
 
+      // status 필터 제거 - 모든 상태를 가져와서 프론트에서 필터링
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&status=recruiting`,
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -183,7 +184,7 @@ export default function CreateCustomDealPage() {
 
         if (hasActiveDeals) {
           setDuplicateDialogMessage(
-            '현재 모집중인 공구가 있습니다.\n\n기존 공구가 마감된 후에 새로운 공구를 등록할 수 있습니다.'
+            '현재 진행중인 공구가 있습니다.\n\n기존 공구가 마감된 후에 새로운 공구를 등록할 수 있습니다.'
           );
           setShowDuplicateDialog(true);
           return false;
