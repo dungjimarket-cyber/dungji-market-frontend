@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { checkCustomActivePenalty, CustomPenalty } from '@/lib/api/custom/penaltyApi';
+import { checkActiveCustomDeals } from '@/lib/api/custom/duplicateCheck';
 
 interface CustomDeal {
   id: number;
@@ -144,11 +145,10 @@ export default function MyCustomDeals() {
   };
 
   const handleCreateDeal = async () => {
-    // 패널티 체크
+    // 1. 패널티 체크
     try {
       const response = await checkCustomActivePenalty();
       if (response.has_active_penalty && response.penalty) {
-        // 패널티가 있으면 모달 표시
         setPenaltyInfo(response.penalty);
         setShowPenaltyModal(true);
         return;
@@ -157,7 +157,18 @@ export default function MyCustomDeals() {
       console.error('패널티 체크 실패:', error);
     }
 
-    // 패널티가 없으면 페이지 이동
+    // 2. 중복 등록 체크
+    try {
+      const duplicateCheck = await checkActiveCustomDeals();
+      if (duplicateCheck.hasActiveDeal) {
+        alert(duplicateCheck.message);
+        return;
+      }
+    } catch (error) {
+      console.error('중복 체크 실패:', error);
+    }
+
+    // 모든 체크 통과 시 페이지 이동
     router.push('/custom-deals/create');
   };
 

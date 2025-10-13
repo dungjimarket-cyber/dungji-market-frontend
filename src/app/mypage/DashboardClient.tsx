@@ -17,6 +17,7 @@ import {
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
+import { checkActiveCustomDeals } from '@/lib/api/custom/duplicateCheck';
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -66,6 +67,23 @@ export default function DashboardClient() {
       return;
     }
     router.push('/mypage/seller/bids');
+  };
+
+  // 빠른메뉴 공구 등록 버튼 클릭 핸들러
+  const handleQuickMenuCreateDeal = async () => {
+    // 중복 등록 체크
+    try {
+      const duplicateCheck = await checkActiveCustomDeals();
+      if (duplicateCheck.hasActiveDeal) {
+        alert(duplicateCheck.message);
+        return;
+      }
+    } catch (error) {
+      console.error('중복 체크 실패:', error);
+    }
+
+    // 체크 통과 시 페이지 이동
+    router.push('/custom-deals/create');
   };
 
   const services = [
@@ -193,7 +211,7 @@ export default function DashboardClient() {
             <Button
               variant="outline"
               className="h-auto flex items-center gap-1.5 px-3 py-2"
-              onClick={() => router.push('/custom-deals/create')}
+              onClick={handleQuickMenuCreateDeal}
             >
               <Sparkles className="w-3.5 h-3.5 text-purple-600" />
               <span className="text-xs">공구 등록</span>
