@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Clock, Tag, MapPin, Eye, Heart, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Clock, Tag, MapPin, Eye, Heart, Calendar, AlertCircle, CheckCircle, XCircle, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
@@ -325,8 +325,9 @@ export default function MyCustomDeals() {
         <div className="flex gap-2">
           <Button
             onClick={handleCreateDeal}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
           >
+            <Plus className="w-4 h-4" />
             공구 등록
           </Button>
           <Button

@@ -196,7 +196,7 @@ export default function DashboardClient() {
               onClick={() => router.push('/custom-deals/create')}
             >
               <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              <span className="text-xs">커공 등록하기</span>
+              <span className="text-xs">공구 등록</span>
             </Button>
             {!isSeller && (
               <Button
