@@ -419,17 +419,17 @@ export default function MyCustomDeals() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {displayDeals.map((deal) => (
             <Card key={deal.id} className="border-slate-200 overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
               <Link href={`/custom-deals/${deal.id}`}>
                 {/* Image - 고정 높이 */}
-                <div className="relative h-36 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group flex-shrink-0">
+                <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group flex-shrink-0">
                   {deal.primary_image ? (
                     <img
                       src={deal.primary_image}
                       alt={deal.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
