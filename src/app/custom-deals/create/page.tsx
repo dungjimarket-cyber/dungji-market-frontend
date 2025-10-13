@@ -442,10 +442,15 @@ export default function CreateCustomDealPage() {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
-    // 목표인원 변경 시 할인코드 초기화
+    // 목표인원 변경 시 할인코드 조정
     if (field === 'target_participants') {
-      setDiscountCodes(['']);
-      toast.info('목표인원이 변경되어 할인코드가 초기화되었습니다');
+      const newCount = parseInt(value);
+      if (newCount < discountCodes.length) {
+        // 인원을 줄이면 코드도 줄임
+        setDiscountCodes(discountCodes.slice(0, newCount));
+        toast.info(`목표인원이 ${newCount}명으로 줄어 할인코드가 ${newCount}개로 조정되었습니다`);
+      }
+      // 인원을 늘리면 기존 코드는 유지 (사용자가 필요시 추가)
     }
 
     if (errors[field]) {
