@@ -137,22 +137,8 @@ export default function DashboardClient() {
         })}
       </div>
 
-      {/* 하단 배너 */}
-      <div className="mb-0 flex justify-center">
-        <div className="relative w-full md:w-[70%] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-          <Image
-            src="https://dungjimarket.s3.ap-northeast-2.amazonaws.com/banners/4e9bc98db30c4100878e3f669820130d_20250924083943.png"
-            alt="둥지마켓 배너"
-            width={1200}
-            height={300}
-            className="w-full h-auto object-cover"
-            priority
-          />
-        </div>
-      </div>
-
       {/* 빠른 메뉴 */}
-      <Card className="border-gray-200 mt-2.5">
+      <Card className="border-gray-200 mb-2.5">
         <CardContent className="p-4">
           <h3 className="text-sm font-bold text-gray-900 mb-3">빠른 메뉴</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -164,14 +150,16 @@ export default function DashboardClient() {
               <Sparkles className="w-4 h-4 text-purple-600" />
               <span className="text-xs">커공 등록하기</span>
             </Button>
-            <Button
-              variant="outline"
-              className="h-auto flex-col gap-1.5 py-3"
-              onClick={() => router.push('/group-purchases/create')}
-            >
-              <ShoppingCart className="w-4 h-4 text-blue-600" />
-              <span className="text-xs">견적요청</span>
-            </Button>
+            {!isSeller && (
+              <Button
+                variant="outline"
+                className="h-auto flex-col gap-1.5 py-3"
+                onClick={() => router.push('/group-purchases/create')}
+              >
+                <ShoppingCart className="w-4 h-4 text-blue-600" />
+                <span className="text-xs">견적요청</span>
+              </Button>
+            )}
             {isSeller && (
               <Button
                 variant="outline"
@@ -193,6 +181,20 @@ export default function DashboardClient() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 하단 배너 */}
+      <div className="mb-0 flex justify-center">
+        <div className="relative w-full md:w-[70%] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+          <Image
+            src="https://dungjimarket.s3.ap-northeast-2.amazonaws.com/banners/4e9bc98db30c4100878e3f669820130d_20250924083943.png"
+            alt="둥지마켓 배너"
+            width={1200}
+            height={300}
+            className="w-full h-auto object-cover"
+            priority
+          />
+        </div>
+      </div>
     </div>
   );
 }
