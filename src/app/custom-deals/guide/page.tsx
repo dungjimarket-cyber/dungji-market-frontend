@@ -29,7 +29,7 @@ export default function CustomDealsGuidePage() {
           </p>
 
           <p className="text-sm text-gray-600 bg-green-50 p-3 rounded-lg border border-green-200">
-            💡 판매수수료 없이 직접 결제받기 때문에 누구나 부담없이 이용 가능합니다. (운영비용 0원)
+            💡 판매수수료 없이 직접 결제받기 때문에 누구나 부담없이 이용 가능합니다. (무료 서비스)
           </p>
 
           <div className="bg-blue-50 p-4 rounded-lg">
