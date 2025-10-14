@@ -1026,8 +1026,8 @@ export default function CustomDealDetailPage() {
             </Card>
           )}
 
-          {/* Online - 할인 정보 (할인 링크만) */}
-          {deal.type === 'online' && deal.discount_url && (
+          {/* Online - 할인 정보 (공구 완료 후 참여자만 표시) */}
+          {deal.type === 'online' && deal.discount_url && deal.status === 'completed' && deal.is_participated && (
             <Card className="border-slate-200">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
