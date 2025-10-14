@@ -1395,6 +1395,13 @@ export default function CreateCustomDealPage() {
                 </div>
               </RadioGroup>
 
+              <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  💡 공구마감 후 고객에게 발송되는 정보입니다<br />
+                  스마트스토어는 관리자에서 생성 가능합니다
+                </p>
+              </div>
+
               {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                 <div className="space-y-3">
                   <div>
