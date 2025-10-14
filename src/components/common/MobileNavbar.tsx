@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
-import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaExchangeAlt, FaEdit, FaList } from 'react-icons/fa';
+import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaExchangeAlt, FaList } from 'react-icons/fa';
+import { FileText, ClipboardList } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
@@ -142,12 +143,12 @@ export default function MobileNavbar() {
         >
           {isSeller ? (
             <>
-              <FaStore className="text-lg mb-1" />
+              <ClipboardList className="w-5 h-5 mb-1" />
               <span className="text-[10px]">견적내역</span>
             </>
           ) : (
             <>
-              <FaEdit className="text-lg mb-1" />
+              <FileText className="w-5 h-5 mb-1" />
               <span className="text-[10px]">견적요청</span>
             </>
           )}

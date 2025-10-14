@@ -62,13 +62,19 @@ export default function MyCustomDealsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 내가 만든 공구 */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900 px-2">내가 만든 공구</h2>
+            <h2 className="text-base font-semibold text-slate-900 px-2 flex items-center gap-2">
+              <span className="text-slate-400">•</span>
+              내가 만든 공구
+            </h2>
             <MyCustomDeals />
           </div>
 
           {/* 참여한 공구 */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900 px-2">참여한 공구</h2>
+            <h2 className="text-base font-semibold text-slate-900 px-2 flex items-center gap-2">
+              <span className="text-slate-400">•</span>
+              참여한 공구
+            </h2>
             <MyCustomParticipations />
           </div>
         </div>
