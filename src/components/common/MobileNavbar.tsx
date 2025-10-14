@@ -125,51 +125,56 @@ export default function MobileNavbar() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 pb-safe">
-      <div className="flex justify-around items-center h-20 pb-2 w-full px-1">
-        <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
+      <div className="flex justify-around items-center h-20 pb-2 w-full px-0.5">
+        {/* 1. 홈 */}
+        <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
           <FaHome className="text-lg mb-1" />
           <span className="text-[10px]">홈</span>
         </Link>
-        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
-          <FaSearch className="text-lg mb-1" />
-          <span className="text-[10px]">진행중</span>
-        </Link>
-        {/* 가운데 버튼 - 본인 역할에 맞게 버튼 변경 */}
+
+        {/* 2. 견적요청/견적내역 - 본인 역할에 맞게 버튼 변경 */}
         <Link
           href={isAuthenticated ?
             (isSeller ? "/mypage/seller/bids" : "/group-purchases/create")
             : "/login"}
-          className="flex flex-col items-center justify-center w-1/6 py-2"
+          className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2"
           onClick={handleCreateClick}
         >
           {isSeller ? (
             <>
-              <button className="bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md mb-1">
-                <FaStore className="text-lg" />
-              </button>
-              <span className="text-[10px] mt-0.5">견적</span>
+              <FaStore className="text-lg mb-1" />
+              <span className="text-[10px]">견적내역</span>
             </>
           ) : (
             <>
-              <button className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md mb-1">
-                <span className="text-xl">+</span>
-              </button>
-              <span className="text-[10px] mt-1">견적요청</span>
+              <span className="text-xl mb-1">+</span>
+              <span className="text-[10px]">견적요청</span>
             </>
           )}
         </Link>
-        {/* 중고거래 버튼 */}
-        <Link href="/used" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
+
+        {/* 3. 견적목록 */}
+        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
+          <FaSearch className="text-lg mb-1" />
+          <span className="text-[10px]">견적목록</span>
+        </Link>
+
+        {/* 4. 커공 (큰 버튼) */}
+        <Link href="/custom-deals" className="flex flex-col items-center justify-center flex-1 py-2">
+          <button className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg mb-1 transform hover:scale-105 transition-transform">
+            <FaStore className="text-xl" />
+          </button>
+          <span className="text-[10px] font-semibold text-green-600">커공</span>
+        </Link>
+
+        {/* 5. 중고거래 */}
+        <Link href="/used" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
           <FaExchangeAlt className="text-lg mb-1" />
           <span className="text-[10px]">중고거래</span>
         </Link>
-        {/* 커공 특가 버튼 */}
-        <Link href="/custom-deals" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2">
-          <FaStore className="text-lg mb-1" />
-          <span className="text-[10px]">커공</span>
-        </Link>
-        {/* 알림 버튼 - 로그인한 경우에만 활성화 */}
-        <div className="w-1/6">
+
+        {/* 6. 알림 - 로그인한 경우에만 활성화 */}
+        <div className="flex-1">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center text-gray-400 w-full py-2">
               <div className="relative">
@@ -192,15 +197,17 @@ export default function MobileNavbar() {
             </Link>
           )}
         </div>
+
+        {/* 7. MY */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center text-gray-600 w-1/6 py-2">
+          <div className="flex flex-col items-center justify-center text-gray-600 flex-1 py-2">
             <FaUser className="text-lg mb-1 animate-pulse" />
             <span className="text-[10px]">...</span>
           </div>
         ) : isAuthenticated ? (
           <Link
             href={isSeller ? "/mypage/seller" : "/mypage"}
-            className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2"
+            className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2"
           >
             <FaUser className="text-lg mb-1" />
             <span className="text-[10px]">MY</span>
@@ -208,7 +215,7 @@ export default function MobileNavbar() {
         ) : (
           <Link
             href="/login"
-            className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 w-1/6 py-2"
+            className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2"
           >
             <FaSignInAlt className="text-lg mb-1" />
             <span className="text-[10px]">로그인</span>

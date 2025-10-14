@@ -1398,7 +1398,9 @@ export default function CreateCustomDealPage() {
               <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <p className="text-xs text-slate-600 leading-relaxed">
                   💡 공구마감 후 고객에게 발송되는 정보입니다<br />
-                  스마트스토어는 관리자에서 생성 가능합니다
+                  스마트스토어는 관리자에서 할인코드 생성이 가능합니다.<br />
+                  할인 링크는 공구 마감후 공개될수 있도록 비공개 처리 부탁드립니다.<br />
+                  할인코드 용도: 온라인 구매시 할인코드 입력, 현장 결제시 상호 확인
                 </p>
               </div>
 
