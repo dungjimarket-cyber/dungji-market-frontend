@@ -766,13 +766,18 @@ export default function CustomDealDetailPage() {
                         {deal.product_name}
                       </div>
                     )}
-                    <div className="flex items-baseline gap-2 mb-1">
+                    <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                       <span className="text-sm text-slate-500 line-through">
                         {deal.original_price.toLocaleString()}원
                       </span>
-                      <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
-                        {deal.discount_rate}%
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
+                          {deal.discount_rate}%
+                        </Badge>
+                        <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
+                          커공특가
+                        </span>
+                      </div>
                     </div>
                     <div className="text-3xl font-bold text-slate-900">
                       {typeof deal.final_price === 'object' && deal.final_price !== null
@@ -782,8 +787,13 @@ export default function CustomDealDetailPage() {
                   </>
                 ) : (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">
-                      전품목 {deal.discount_rate}% 할인
+                    <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
+                      <span className="text-2xl font-bold text-blue-600">
+                        전품목 {deal.discount_rate}% 할인
+                      </span>
+                      <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
+                        커공특가
+                      </span>
                     </div>
                     <p className="text-xs text-slate-600">매장에서 직접 할인 받으세요</p>
                   </div>

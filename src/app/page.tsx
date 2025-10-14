@@ -288,7 +288,7 @@ function HomeContent() {
                           {/* 가격 정보 */}
                           {deal.original_price && deal.final_price ? (
                             <div className="mb-2">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-baseline gap-2 flex-wrap">
                                 <span className="text-red-600 font-bold text-lg">
                                   {typeof deal.final_price === 'object' && deal.final_price !== null
                                     ? ((deal.final_price as any).min || 0).toLocaleString()
@@ -298,10 +298,27 @@ function HomeContent() {
                                   {deal.original_price.toLocaleString()}원
                                 </span>
                               </div>
+                              {deal.discount_rate && (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className="text-sm font-bold text-red-600">
+                                    {deal.discount_rate}%
+                                  </span>
+                                  <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                    커공특가
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           ) : (
-                            <div className="text-green-600 font-bold mb-2">
-                              전품목 {deal.discount_rate}% 할인
+                            <div className="mb-2">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-lg font-bold text-green-600">
+                                  전품목 {deal.discount_rate}% 할인
+                                </span>
+                                <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                  커공특가
+                                </span>
+                              </div>
                             </div>
                           )}
 
