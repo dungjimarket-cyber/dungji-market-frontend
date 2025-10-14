@@ -1035,14 +1035,14 @@ export default function CustomDealDetailPage() {
             <Card className="border-slate-200">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => window.open(deal.discount_url!, '_blank')}
+                <a
+                  href={deal.discount_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50 transition-colors"
                 >
                   할인 링크로 이동
-                </Button>
+                </a>
               </CardContent>
             </Card>
           )}
