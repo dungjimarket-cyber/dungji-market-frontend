@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
-import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaExchangeAlt } from 'react-icons/fa';
+import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaExchangeAlt, FaEdit, FaList } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
@@ -147,7 +147,7 @@ export default function MobileNavbar() {
             </>
           ) : (
             <>
-              <span className="text-xl mb-1">+</span>
+              <FaEdit className="text-lg mb-1" />
               <span className="text-[10px]">견적요청</span>
             </>
           )}
@@ -155,7 +155,7 @@ export default function MobileNavbar() {
 
         {/* 3. 견적목록 */}
         <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
-          <FaSearch className="text-lg mb-1" />
+          <FaList className="text-lg mb-1" />
           <span className="text-[10px]">견적목록</span>
         </Link>
 
