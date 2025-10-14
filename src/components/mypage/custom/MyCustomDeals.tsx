@@ -334,22 +334,13 @@ export default function MyCustomDeals() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="flex gap-2">
-          <Button
-            onClick={handleCreateDeal}
-            className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            공구 등록
-          </Button>
-          <Button
-            onClick={() => router.push('/custom-deals')}
-            variant="outline"
-            className="text-slate-700 border-slate-300 hover:bg-slate-50"
-          >
-            공구 목록
-          </Button>
-        </div>
+        <Button
+          onClick={handleCreateDeal}
+          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
+        >
+          <Plus className="w-4 h-4" />
+          공구 등록
+        </Button>
       </div>
 
       {/* 패널티 알림 */}
@@ -407,16 +398,9 @@ export default function MyCustomDeals() {
           <p className="mt-4 text-slate-600">로딩 중...</p>
         </div>
       ) : displayDeals.length === 0 ? (
-        <div className="text-center py-20">
-          <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <p className="text-lg text-slate-600 mb-2">등록한 공구가 없습니다</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/custom-deals/create')}
-            className="mt-4"
-          >
-            첫 공구 등록하기
-          </Button>
+        <div className="text-center py-8">
+          <Tag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <p className="text-sm text-slate-600">등록한 공구가 없습니다</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

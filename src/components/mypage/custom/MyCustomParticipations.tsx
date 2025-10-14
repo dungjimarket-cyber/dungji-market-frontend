@@ -327,15 +327,6 @@ export default function MyCustomParticipations() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          variant="outline"
-          onClick={() => router.push('/custom-deals')}
-        >
-          공구 둘러보기
-        </Button>
-      </div>
-
       {/* 필터 */}
       <div className="flex flex-wrap gap-2 mb-6">
         <Button
@@ -371,16 +362,9 @@ export default function MyCustomParticipations() {
           <p className="mt-4 text-slate-600">로딩 중...</p>
         </div>
       ) : displayParticipations.length === 0 ? (
-        <div className="text-center py-20">
-          <Tag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <p className="text-lg text-slate-600 mb-2">참여한 공구가 없습니다</p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/custom-deals')}
-            className="mt-4"
-          >
-            공구 둘러보기
-          </Button>
+        <div className="text-center py-8">
+          <Tag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <p className="text-sm text-slate-600">참여한 공구가 없습니다</p>
         </div>
       ) : (
         <div className="space-y-3">
