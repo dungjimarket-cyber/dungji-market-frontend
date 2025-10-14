@@ -250,12 +250,12 @@ function HomeContent() {
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* 커공특가 섹션 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-green-600">커공특가</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-green-600">커공특가</h2>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
                 {[...Array(2)].map((_, i) => (
-                  <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
+                  <div key={i} className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>
                 ))}
               </div>
             ) : customDeals.length === 0 ? (
@@ -263,57 +263,57 @@ function HomeContent() {
                 <p className="text-gray-500">진행 중인 커공특가가 없습니다.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-5">
                 {customDeals.map((deal) => (
                   <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
-                    <div className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-md transition-all cursor-pointer">
-                      <div className="flex gap-4">
+                    <div className="border-2 border-gray-200 rounded-xl p-5 hover:border-green-500 hover:shadow-lg transition-all cursor-pointer">
+                      <div className="flex gap-5">
                         {/* 이미지 */}
                         {deal.primary_image ? (
                           <img
                             src={deal.primary_image}
                             alt={deal.title}
-                            className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                            className="w-32 h-32 sm:w-36 sm:h-36 object-cover rounded-xl flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span className="text-gray-400 text-xs">이미지 없음</span>
+                          <div className="w-32 h-32 sm:w-36 sm:h-36 bg-gray-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span className="text-gray-400 text-sm">이미지 없음</span>
                           </div>
                         )}
 
                         {/* 정보 */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 mb-1 truncate">{deal.title}</h3>
+                          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">{deal.title}</h3>
 
                           {/* 가격 정보 */}
                           {deal.original_price && deal.final_price ? (
-                            <div className="mb-2">
-                              <div className="flex items-baseline gap-1.5 flex-wrap">
-                                <span className="text-xs text-slate-500 line-through">
+                            <div className="mb-3">
+                              <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                                <span className="text-sm text-slate-500 line-through">
                                   {deal.original_price.toLocaleString()}원
                                 </span>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-base font-bold text-red-600">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl font-bold text-red-600">
                                     {deal.discount_rate}%
                                   </span>
-                                  <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                  <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
                                     커공특가
                                   </span>
                                 </div>
                               </div>
-                              <div className="text-xl font-bold text-slate-900">
+                              <div className="text-2xl sm:text-3xl font-bold text-slate-900">
                                 {typeof deal.final_price === 'object' && deal.final_price !== null
                                   ? ((deal.final_price as any).min || 0).toLocaleString()
                                   : deal.final_price.toLocaleString()}원
                               </div>
                             </div>
                           ) : (
-                            <div className="mb-2">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-lg font-bold text-blue-600">
+                            <div className="mb-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xl font-bold text-blue-600">
                                   전품목 {deal.discount_rate}% 할인
                                 </span>
-                                <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
                                   커공특가
                                 </span>
                               </div>
@@ -321,10 +321,10 @@ function HomeContent() {
                           )}
 
                           {/* 참여 현황 */}
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span>{deal.current_participants}/{deal.target_participants}명</span>
+                          <div className="flex items-center gap-2 text-base text-gray-600">
+                            <span className="font-medium">{deal.current_participants}/{deal.target_participants}명</span>
                             <span>•</span>
-                            <span className="text-xs">
+                            <span className="text-sm">
                               {deal.type === 'offline' ? '오프라인매장' : '온라인'}
                             </span>
                           </div>
@@ -335,8 +335,8 @@ function HomeContent() {
                 ))}
               </div>
             )}
-            <div className="text-center mt-4">
-              <Link href="/custom-deals" className="text-green-600 hover:underline text-sm">
+            <div className="text-center mt-6">
+              <Link href="/custom-deals" className="text-green-600 hover:underline text-base font-medium">
                 더 많은 커공특가 보기 →
               </Link>
             </div>

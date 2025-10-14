@@ -1206,6 +1206,11 @@ export default function CreateCustomDealPage() {
                 )}
               </div>
             )}
+
+            {/* 가격 입력 안내 */}
+            <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
+              💡 공구 전용 할인가로 입력해주세요
+            </div>
           </CardContent>
         </Card>
 
