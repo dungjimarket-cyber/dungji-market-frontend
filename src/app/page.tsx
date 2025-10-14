@@ -156,7 +156,6 @@ function HomeContent() {
             : (newData.results || []);
 
           // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
-          console.log('커공특가 데이터:', customDealsItems.slice(0, 2));
           setCustomDeals(customDealsItems.slice(0, 2));
           setNewGroupBuys(newItems.slice(0, 2));
         }
@@ -270,9 +269,9 @@ function HomeContent() {
                     <div className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-md transition-all cursor-pointer">
                       <div className="flex gap-4">
                         {/* 이미지 */}
-                        {deal.images && deal.images.length > 0 ? (
+                        {deal.primary_image ? (
                           <img
-                            src={deal.images[0].image_url}
+                            src={deal.primary_image}
                             alt={deal.title}
                             className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
                           />

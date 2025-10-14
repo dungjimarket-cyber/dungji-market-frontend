@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
@@ -555,16 +555,10 @@ export default function CustomDealDetailPage() {
   };
 
   // 상품 설명의 모든 링크를 리다이렉트 페이지를 거치도록 변환
-  const convertedDescription = useMemo(() => {
-    if (!deal?.description) return '';
-    return convertLinksToRedirect(deal.description);
-  }, [deal?.description]);
+  const convertedDescription = deal?.description ? convertLinksToRedirect(deal.description) : '';
 
   // 할인 링크도 리다이렉트 페이지를 거치도록 변환
-  const redirectDiscountUrl = useMemo(() => {
-    if (!deal?.discount_url) return null;
-    return getRedirectUrl(deal.discount_url);
-  }, [deal?.discount_url]);
+  const redirectDiscountUrl = deal?.discount_url ? getRedirectUrl(deal.discount_url) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
