@@ -972,7 +972,7 @@ export default function CustomDealDetailPage() {
 
           {/* Usage Guide */}
           {deal.usage_guide && (
-            <Card className="border-slate-200">
+            <Card id="usage-guide-section" className="border-slate-200 scroll-mt-4">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">이용 안내</h2>
                 <div className="prose prose-slate prose-sm max-w-none">
@@ -1020,14 +1020,22 @@ export default function CustomDealDetailPage() {
                   )}
                 </div>
 
-                {/* 이용 안내 */}
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    <p className="text-xs text-slate-600">
-                      오프라인 매장의 경우
-                    </p>
+                {/* 이용 안내 버튼 */}
+                {deal.usage_guide && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        const usageGuideSection = document.getElementById('usage-guide-section');
+                        usageGuideSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                    >
+                      이용 안내 보기
+                    </Button>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           )}

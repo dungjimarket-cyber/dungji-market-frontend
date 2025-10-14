@@ -279,14 +279,6 @@ export default function CustomDealsPage() {
               </Button>
             </div>
           </div>
-
-          {/* 모바일용 이용가이드 링크 */}
-          <div className="md:hidden mt-2 pt-2 border-t border-gray-100">
-            <Link href="/custom-deals/guide" className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              <Info className="w-3 h-3" />
-              <span>처음이신가요? 이용가이드 보기</span>
-            </Link>
-          </div>
         </div>
 
         {/* Notice Section */}
