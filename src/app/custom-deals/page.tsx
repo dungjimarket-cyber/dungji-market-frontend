@@ -237,6 +237,15 @@ export default function CustomDealsPage() {
       }
       return <Badge className="bg-gray-50 text-gray-700 border-gray-200 whitespace-nowrap">모집중</Badge>;
     }
+    if (deal.status === 'pending_seller') {
+      return <Badge className="bg-yellow-50 text-yellow-600 border-yellow-200 whitespace-nowrap">판매자 결정 대기</Badge>;
+    }
+    if (deal.status === 'cancelled') {
+      return <Badge className="bg-gray-50 text-gray-600 border-gray-200 whitespace-nowrap">취소됨</Badge>;
+    }
+    if (deal.status === 'expired') {
+      return <Badge className="bg-gray-50 text-gray-600 border-gray-200 whitespace-nowrap">기간만료</Badge>;
+    }
     return <Badge variant="secondary" className="whitespace-nowrap">{deal.status_display}</Badge>;
   };
 

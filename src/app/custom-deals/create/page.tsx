@@ -1403,9 +1403,9 @@ export default function CreateCustomDealPage() {
               <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <p className="text-xs text-slate-600 leading-relaxed">
                   💡 공구마감 후 고객에게 발송되는 정보입니다<br />
-                  • 스마트스토어는 관리자에서 할인코드 생성이 가능합니다.<br />
+                  • 스마트스토어 할인링크 등 개별 쿠폰링크도 입력 가능합니다<br />
                   • 할인 링크는 공구 마감후 공개될수 있도록 비공개 처리 부탁드립니다.<br />
-                  • 할인코드 용도: 온라인 구매시 할인코드 입력, 현장 결제시 상호 확인
+                  • 할인코드 용도: 온라인 구매시 코드 또는 링크 사용, 현장 결제시 상호 확인
                 </p>
               </div>
 
@@ -1444,7 +1444,7 @@ export default function CreateCustomDealPage() {
                 <div>
                   <Label className="flex items-center gap-2">
                     <Ticket className="w-4 h-4" />
-                    할인 코드 * {errors.discount_codes && <span className="text-red-600 text-sm">{errors.discount_codes}</span>}
+                    할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm">{errors.discount_codes}</span>}
                   </Label>
                   <div className="space-y-2 mt-2">
                     {discountCodes.map((code, index) => (
@@ -1452,8 +1452,8 @@ export default function CreateCustomDealPage() {
                         <Input
                           value={code}
                           onChange={(e) => updateDiscountCode(index, e.target.value)}
-                          placeholder={`코드 ${index + 1}`}
-                          maxLength={100}
+                          placeholder={`코드 또는 링크 ${index + 1}`}
+                          maxLength={500}
                         />
                         {discountCodes.length > 1 && (
                           <Button
@@ -1645,15 +1645,15 @@ export default function CreateCustomDealPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>할인 코드 * {errors.discount_codes && <span className="text-red-600 text-sm ml-2">{errors.discount_codes}</span>}</Label>
+                  <Label>할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm ml-2">{errors.discount_codes}</span>}</Label>
                   <div className="space-y-2 mt-2">
                     {discountCodes.map((code, index) => (
                       <div key={index} className="flex gap-2">
                         <Input
                           value={code}
                           onChange={(e) => updateDiscountCode(index, e.target.value)}
-                          placeholder={`코드 ${index + 1}`}
-                          maxLength={100}
+                          placeholder={`코드 또는 링크 ${index + 1}`}
+                          maxLength={500}
                         />
                         {discountCodes.length > 1 && (
                           <Button
