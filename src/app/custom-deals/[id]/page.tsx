@@ -714,7 +714,7 @@ export default function CustomDealDetailPage() {
             <div className="bg-white rounded-lg border border-slate-200 p-5">
               <div className="flex items-center gap-2 mb-2">
                 <Badge className="bg-slate-100 text-slate-700 border-0 text-xs">
-                  {deal.type_display}
+                  {deal.type === 'offline' ? '오프라인매장' : '온라인'}
                 </Badge>
                 {getStatusBadge()}
               </div>
