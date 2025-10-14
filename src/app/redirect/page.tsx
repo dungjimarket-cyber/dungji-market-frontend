@@ -78,10 +78,10 @@ function RedirectContent() {
       <div className="max-w-sm w-full text-center">
         {/* 카운트다운 */}
         <div className="mb-4">
-          <div className="text-6xl font-bold text-blue-600 mb-2">
+          <div className="text-3xl font-medium text-gray-400 mb-2">
             {countdown}
           </div>
-          <p className="text-gray-600 text-sm">외부 링크로 이동 중...</p>
+          <p className="text-gray-500 text-sm">외부 링크로 이동 중...</p>
         </div>
 
         {/* 바로 이동 버튼 */}
@@ -89,7 +89,7 @@ function RedirectContent() {
           onClick={() => {
             if (url) window.location.href = url;
           }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+          className="w-full bg-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-lg transition-colors font-medium"
         >
           바로 이동
         </button>
@@ -97,7 +97,7 @@ function RedirectContent() {
         {/* 취소 링크 */}
         <button
           onClick={() => router.back()}
-          className="mt-3 text-gray-500 hover:text-gray-700 text-sm"
+          className="mt-3 text-gray-400 hover:text-gray-600 text-sm"
         >
           취소
         </button>
