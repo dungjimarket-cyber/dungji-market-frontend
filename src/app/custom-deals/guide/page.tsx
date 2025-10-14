@@ -183,10 +183,28 @@ export default function CustomDealsGuidePage() {
               <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">2</span>
               참여자 모집
             </h4>
-            <div className="ml-7 bg-amber-50 p-3 rounded-lg">
-              <p className="text-xs text-gray-700">
-                <span className="font-semibold">조기 종료:</span> 1명 이상 모이면 언제든 조기 종료 가능
-              </p>
+            <div className="ml-7 space-y-2">
+              <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-lg">
+                <p className="text-xs font-semibold text-slate-900 mb-1">⏰ 모집 기간 설정</p>
+                <p className="text-xs text-slate-700">
+                  공구 등록 시 자동 마감(1~7일) 또는 직접 마감 시간 설정 가능
+                </p>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg">
+                <p className="text-xs font-semibold text-amber-900 mb-1">⚡ 조기 종료</p>
+                <p className="text-xs text-amber-800">
+                  1명 이상 모이면 언제든 조기 종료 가능
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg">
+                <p className="text-xs font-semibold text-blue-900 mb-1">⏱️ 마감 후 판매 결정</p>
+                <p className="text-xs text-blue-800">
+                  모집 마감 후 24시간 이내에 판매 확정/취소 결정<br />
+                  (목표 인원 미달 시 부분 판매 여부 선택 가능)
+                </p>
+              </div>
             </div>
           </div>
 
