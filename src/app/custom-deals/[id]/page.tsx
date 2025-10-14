@@ -968,7 +968,11 @@ export default function CustomDealDetailPage() {
             <CardContent className="p-5">
               <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
               <div className="prose prose-slate prose-sm max-w-none">
-                <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: deal.description }} />
+                <div
+                  className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
+                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                  dangerouslySetInnerHTML={{ __html: deal.description }}
+                />
               </div>
             </CardContent>
           </Card>
