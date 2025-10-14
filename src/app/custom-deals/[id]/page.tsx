@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import { convertLinksToRedirect, getRedirectUrl } from '@/lib/utils/linkRedirect';
 
 interface CustomDeal {
   id: number;
@@ -553,6 +554,16 @@ export default function CustomDealDetailPage() {
     return category ? category.label : value;
   };
 
+  // 상품 설명의 모든 링크를 리다이렉트 페이지를 거치도록 변환
+  const convertedDescription = useMemo(() => {
+    return convertLinksToRedirect(deal.description);
+  }, [deal.description]);
+
+  // 할인 링크도 리다이렉트 페이지를 거치도록 변환
+  const redirectDiscountUrl = useMemo(() => {
+    return deal.discount_url ? getRedirectUrl(deal.discount_url) : null;
+  }, [deal.discount_url]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
@@ -971,7 +982,7 @@ export default function CustomDealDetailPage() {
                 <div
                   className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
                   style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-                  dangerouslySetInnerHTML={{ __html: deal.description }}
+                  dangerouslySetInnerHTML={{ __html: convertedDescription }}
                 />
               </div>
             </CardContent>
@@ -1031,14 +1042,12 @@ export default function CustomDealDetailPage() {
           )}
 
           {/* Online - 할인 정보 (공구 완료 후 참여자만 표시) */}
-          {deal.type === 'online' && deal.discount_url && deal.status === 'completed' && deal.is_participated && (
+          {deal.type === 'online' && redirectDiscountUrl && deal.status === 'completed' && deal.is_participated && (
             <Card className="border-slate-200">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
                 <a
-                  href={deal.discount_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={redirectDiscountUrl}
                   className="w-full inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50 transition-colors"
                 >
                   할인 링크로 이동

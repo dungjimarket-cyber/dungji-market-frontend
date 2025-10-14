@@ -67,7 +67,7 @@ function HomeContent() {
   const { isAuthenticated, user, accessToken } = useAuth();
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
-  const [popularGroupBuys, setPopularGroupBuys] = useState<GroupBuy[]>([]);
+  const [customDeals, setCustomDeals] = useState<any[]>([]);
   const [newGroupBuys, setNewGroupBuys] = useState<GroupBuy[]>([]);
   const [loading, setLoading] = useState(true);
   const [userParticipations, setUserParticipations] = useState<number[]>([]);
@@ -129,34 +129,34 @@ function HomeContent() {
   useEffect(() => {
     setMounted(true);
     
-    // 추천 공구와 새로운 공구 데이터 가져오기
+    // 커공특가와 견적받기 데이터 가져오기
     const fetchGroupBuys = async () => {
       try {
-        const [popularResponse, newResponse] = await Promise.all([
-          // 추천순: recruiting,bidding 상태만, 참여자 많은 순으로 정렬
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?status=recruiting,bidding&ordering=-current_participants&limit=10`, {
+        const [customDealsResponse, newResponse] = await Promise.all([
+          // 커공특가: 모집중인 커스텀 공구, 참여자 많은 순으로 정렬
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-current_participants&limit=10`, {
             next: { revalidate: 60 } // 1분 캐시
           }),
-          // 최신순: recruiting,bidding 상태만, 시작시간 최신순으로 정렬
+          // 견적받기: recruiting,bidding 상태만, 시작시간 최신순으로 정렬
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/groupbuys/?status=recruiting,bidding&ordering=-start_time&limit=10`, {
             next: { revalidate: 60 } // 1분 캐시
           })
         ]);
-        
-        if (popularResponse.ok && newResponse.ok) {
-          const popularData = await popularResponse.json();
+
+        if (customDealsResponse.ok && newResponse.ok) {
+          const customDealsData = await customDealsResponse.json();
           const newData = await newResponse.json();
-          
+
           // 페이징 응답 형식과 배열 형식 모두 지원
-          const popularItems = Array.isArray(popularData) 
-            ? popularData 
-            : (popularData.results || []);
-          const newItems = Array.isArray(newData) 
-            ? newData 
+          const customDealsItems = Array.isArray(customDealsData)
+            ? customDealsData
+            : (customDealsData.results || []);
+          const newItems = Array.isArray(newData)
+            ? newData
             : (newData.results || []);
-          
+
           // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
-          setPopularGroupBuys(popularItems.slice(0, 2));
+          setCustomDeals(customDealsItems.slice(0, 2));
           setNewGroupBuys(newItems.slice(0, 2));
         }
       } catch (error) {
@@ -248,8 +248,9 @@ function HomeContent() {
       </section> */}
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* 커공특가 섹션 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4">추천 공동구매</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-green-600">커공특가</h2>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
@@ -257,33 +258,79 @@ function HomeContent() {
                   <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
                 ))}
               </div>
-            ) : popularGroupBuys.length === 0 ? (
+            ) : customDeals.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">추천 공동구매가 없습니다.</p>
+                <p className="text-gray-500">진행 중인 커공특가가 없습니다.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {popularGroupBuys.map((groupBuy, index) => (
-                  <GroupPurchaseCard 
-                    key={groupBuy.id} 
-                    groupBuy={groupBuy}
-                    isParticipant={userParticipations.includes(groupBuy.id)}
-                    hasBid={userBids.includes(groupBuy.id)}
-                    priority={index < 2}
-                  />
+                {customDeals.map((deal) => (
+                  <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
+                    <div className="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-md transition-all cursor-pointer">
+                      <div className="flex gap-4">
+                        {/* 이미지 */}
+                        {deal.images && deal.images.length > 0 ? (
+                          <img
+                            src={deal.images[0].image_url}
+                            alt={deal.title}
+                            className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-gray-400 text-xs">이미지 없음</span>
+                          </div>
+                        )}
+
+                        {/* 정보 */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 mb-1 truncate">{deal.title}</h3>
+
+                          {/* 가격 정보 */}
+                          {deal.original_price && deal.final_price ? (
+                            <div className="mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-red-600 font-bold text-lg">
+                                  {typeof deal.final_price === 'object' && deal.final_price !== null
+                                    ? ((deal.final_price as any).min || 0).toLocaleString()
+                                    : deal.final_price.toLocaleString()}원
+                                </span>
+                                <span className="text-xs text-gray-500 line-through">
+                                  {deal.original_price.toLocaleString()}원
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-green-600 font-bold mb-2">
+                              전품목 {deal.discount_rate}% 할인
+                            </div>
+                          )}
+
+                          {/* 참여 현황 */}
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span>{deal.current_participants}/{deal.target_participants}명</span>
+                            <span>•</span>
+                            <span className="text-xs">
+                              {deal.type === 'offline' ? '오프라인매장' : '온라인'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             )}
             <div className="text-center mt-4">
-              <Link href="/group-purchases?sort=popular" className="text-blue-600 hover:underline text-sm">
-                더 많은 추천 공구 보기 →
+              <Link href="/custom-deals" className="text-green-600 hover:underline text-sm">
+                더 많은 커공특가 보기 →
               </Link>
             </div>
           </div>
         </div>
 
+        {/* 견적받기 섹션 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4">새로운 공동구매</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-blue-600">견적받기</h2>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
@@ -293,13 +340,13 @@ function HomeContent() {
               </div>
             ) : newGroupBuys.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">새로운 공동구매가 없습니다.</p>
+                <p className="text-gray-500">견적 요청 가능한 상품이 없습니다.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {newGroupBuys.map((groupBuy) => (
-                  <GroupPurchaseCard 
-                    key={groupBuy.id} 
+                  <GroupPurchaseCard
+                    key={groupBuy.id}
                     groupBuy={groupBuy}
                     isParticipant={userParticipations.includes(groupBuy.id)}
                     hasBid={userBids.includes(groupBuy.id)}
@@ -308,8 +355,8 @@ function HomeContent() {
               </div>
             )}
             <div className="text-center mt-4">
-              <Link href="/group-purchases?sort=newest" className="text-blue-600 hover:underline text-sm">
-                더 많은 새로운 공구 보기 →
+              <Link href="/group-purchases" className="text-blue-600 hover:underline text-sm">
+                더 많은 견적 상품 보기 →
               </Link>
             </div>
           </div>
