@@ -209,6 +209,14 @@ export default function CustomDealDetailPage() {
   const handleParticipate = async () => {
     if (!deal) return;
 
+    // 로그인 체크
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      toast.error('로그인이 필요합니다');
+      router.push('/login');
+      return;
+    }
+
     if (deal.is_participated) {
       toast.info('이미 참여하신 공구입니다');
       return;
@@ -251,11 +259,6 @@ export default function CustomDealDetailPage() {
 
     try {
       const token = localStorage.getItem('accessToken');
-
-      if (!token) {
-        toast.error('로그인이 필요합니다');
-        return;
-      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/participate/`,
