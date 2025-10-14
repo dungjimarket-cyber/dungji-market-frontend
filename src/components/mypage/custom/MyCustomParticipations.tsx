@@ -325,6 +325,11 @@ export default function MyCustomParticipations() {
   const endIndex = startIndex + itemsPerPage;
   const currentParticipations = displayParticipations.slice(startIndex, endIndex);
 
+  // 데이터가 없으면 영역 자체를 숨김
+  if (!loading && participations.length === 0) {
+    return null;
+  }
+
   return (
     <div>
       {/* 필터 */}

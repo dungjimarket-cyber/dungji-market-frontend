@@ -6,12 +6,11 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Clock, Tag, MapPin, Eye, Heart, Calendar, AlertCircle, CheckCircle, XCircle, Plus } from 'lucide-react';
+import { Users, Clock, Tag, MapPin, Eye, Heart, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import PenaltyAlert from '@/components/penalty/PenaltyAlert';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { checkCustomActivePenalty, CustomPenalty } from '@/lib/api/custom/penaltyApi';
-import { checkActiveCustomDeals } from '@/lib/api/custom/duplicateCheck';
 
 interface CustomDeal {
   id: number;
@@ -143,34 +142,6 @@ export default function MyCustomDeals() {
     } catch (error) {
       console.error('패널티 상태 조회 실패:', error);
     }
-  };
-
-  const handleCreateDeal = async () => {
-    // 1. 패널티 체크
-    try {
-      const response = await checkCustomActivePenalty();
-      if (response.has_active_penalty && response.penalty) {
-        setPenaltyInfo(response.penalty);
-        setShowPenaltyModal(true);
-        return;
-      }
-    } catch (error) {
-      console.error('패널티 체크 실패:', error);
-    }
-
-    // 2. 중복 등록 체크
-    try {
-      const duplicateCheck = await checkActiveCustomDeals();
-      if (duplicateCheck.hasActiveDeal) {
-        alert(duplicateCheck.message);
-        return;
-      }
-    } catch (error) {
-      console.error('중복 체크 실패:', error);
-    }
-
-    // 모든 체크 통과 시 페이지 이동
-    router.push('/custom-deals/create');
   };
 
   const handleEarlyClose = async (dealId: number) => {
@@ -331,18 +302,13 @@ export default function MyCustomDeals() {
     completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
   };
 
+  // 데이터가 없으면 영역 자체를 숨김
+  if (!loading && deals.length === 0) {
+    return null;
+  }
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          onClick={handleCreateDeal}
-          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4" />
-          공구 등록
-        </Button>
-      </div>
-
       {/* 패널티 알림 */}
       {penaltyInfo && (
         <PenaltyAlert
