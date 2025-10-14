@@ -28,6 +28,33 @@ export default function CustomDealsGuidePage() {
             <span className="font-semibold text-gray-900">커스텀 공구</span>는 판매자가 일정 인원 이상 모이면 특별 할인을 제공하는 공동구매 시스템입니다.
           </p>
 
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3.5 rounded-lg border-2 border-blue-200">
+            <h4 className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-1.5">
+              <Users className="w-4 h-4" />
+              선착순 인원 모집 방식
+            </h4>
+            <div className="space-y-2">
+              <div className="bg-white p-2.5 rounded-md">
+                <p className="text-xs text-gray-800 font-medium mb-1">🎯 목표 인원이 모이면 할인 혜택 제공</p>
+                <p className="text-xs text-gray-600">
+                  예: 10명 모집 공구 → 10명이 모두 참여하면 → 전원 할인 혜택 받음
+                </p>
+              </div>
+              <div className="bg-white p-2.5 rounded-md">
+                <p className="text-xs text-gray-800 font-medium mb-1">⚡ 선착순 마감</p>
+                <p className="text-xs text-gray-600">
+                  정해진 인원만 참여 가능하니 서둘러 참여하세요!
+                </p>
+              </div>
+              <div className="bg-white p-2.5 rounded-md">
+                <p className="text-xs text-gray-800 font-medium mb-1">✅ 모집 기간 내 달성 시</p>
+                <p className="text-xs text-gray-600">
+                  판매자 확정 → 자동으로 할인코드/QR 발급 → 즉시 사용 가능
+                </p>
+              </div>
+            </div>
+          </div>
+
           <p className="text-xs text-gray-600 bg-green-50 p-2.5 rounded-lg border border-green-200">
             💡 판매수수료 없이 직접 결제받기 때문에 누구나 부담없이 이용 가능합니다. (무료 서비스)
           </p>
@@ -75,10 +102,19 @@ export default function CustomDealsGuidePage() {
               <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">2</span>
               공구 참여하기
             </h4>
-            <div className="ml-7 space-y-1 text-xs text-gray-700">
-              <p>• 할인 정보와 모집 현황 확인</p>
-              <p>• 로그인 후 '참여하기' 버튼 클릭</p>
-              <p>• 참여 즉시 확정 (할인 발급 전까지 취소 가능)</p>
+            <div className="ml-7 space-y-2">
+              <div className="space-y-1 text-xs text-gray-700">
+                <p>• 할인 정보와 모집 현황 확인</p>
+                <p>• 로그인 후 '참여하기' 버튼 클릭</p>
+                <p>• 참여 즉시 확정 (할인 발급 전까지 취소 가능)</p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg">
+                <p className="text-xs font-semibold text-amber-900 mb-1">⚡ 선착순 마감 주의!</p>
+                <p className="text-xs text-amber-800">
+                  정해진 인원이 다 차면 더 이상 참여할 수 없으니<br />
+                  마음에 드는 공구는 빠르게 참여하세요!
+                </p>
+              </div>
             </div>
           </div>
 
@@ -109,11 +145,36 @@ export default function CustomDealsGuidePage() {
               <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">1</span>
               공구 등록하기
             </h4>
-            <div className="ml-7 space-y-1 text-xs text-gray-700">
-              <p>• 공구 타입 선택 (온라인/오프라인)</p>
-              <p>• 상품명과 카테고리 입력</p>
-              <p>• 가격 설정 (정가 → 할인가)</p>
-              <p>• 목표 인원과 모집 기간 설정</p>
+            <div className="ml-7 space-y-2">
+              <div className="space-y-1 text-xs text-gray-700">
+                <p>• 공구 타입 선택 (온라인/오프라인)</p>
+                <p>• 상품명과 카테고리 입력</p>
+                <p>• 가격 설정 (정가 → 공구 전용 할인가)</p>
+                <p>• 목표 인원과 모집 기간 설정</p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-blue-900 mb-2">📌 온라인 공구 등록 시</p>
+                <div className="space-y-1.5 text-xs text-blue-800">
+                  <p>• <span className="font-semibold">공구 전용 비공개 링크</span> 준비 (쇼핑몰 할인 링크)</p>
+                  <p>• 또는 <span className="font-semibold">할인코드</span> 미리 생성 (스마트스토어 등)</p>
+                  <p className="text-[11px] text-blue-700 bg-blue-100 p-1.5 rounded mt-1">
+                    💡 공구 마감 후 공개되므로 미리 비공개 처리해주세요
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-green-900 mb-2">🏪 오프라인 공구 등록 시</p>
+                <div className="space-y-1.5 text-xs text-green-800">
+                  <p>• 할인코드는 <span className="font-semibold">시스템이 자동 생성</span>합니다</p>
+                  <p>• 직접 코드를 만들 필요 없이 목표 인원만 설정하면 OK</p>
+                  <p>• 공구 마감 후 참여자에게 QR 코드 자동 발급</p>
+                  <p className="text-[11px] text-green-700 bg-green-100 p-1.5 rounded mt-1">
+                    💡 매장에서 QR 스캔 또는 코드 확인 후 할인 적용
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -132,12 +193,21 @@ export default function CustomDealsGuidePage() {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">3</span>
-              판매 확정
+              판매 확정 및 할인 제공
             </h4>
-            <div className="ml-7 space-y-1 text-xs text-gray-700">
-              <p>• 목표 인원 달성 시 판매 확정/취소 선택</p>
-              <p>• 판매 확정 시 할인 정보 입력</p>
-              <p>• 모든 참여자에게 자동으로 할인코드 발급</p>
+            <div className="ml-7 space-y-2">
+              <div className="space-y-1 text-xs text-gray-700">
+                <p>• 목표 인원 달성 시 판매 확정/취소 선택</p>
+                <p>• 판매 확정 시 할인 정보 입력</p>
+                <p>• 모든 참여자에게 자동으로 할인코드 발급</p>
+              </div>
+              <div className="bg-green-50 border border-green-300 p-2.5 rounded-lg">
+                <p className="text-xs font-semibold text-green-900 mb-1">✅ 인원 달성 시 혜택 제공</p>
+                <p className="text-xs text-green-800">
+                  설정한 목표 인원이 모두 모이면<br />
+                  판매 확정 후 참여자 전원에게 할인 혜택을 제공합니다
+                </p>
+              </div>
             </div>
           </div>
         </div>
