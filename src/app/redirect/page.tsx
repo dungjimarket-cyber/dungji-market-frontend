@@ -74,58 +74,33 @@ function RedirectContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
-        <div className="text-center">
-          {/* 아이콘 */}
-          <div className="mb-6">
-            <ExternalLink className="w-16 h-16 text-blue-600 mx-auto animate-bounce" />
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="max-w-sm w-full text-center">
+        {/* 카운트다운 */}
+        <div className="mb-4">
+          <div className="text-6xl font-bold text-blue-600 mb-2">
+            {countdown}
           </div>
-
-          {/* 제목 */}
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            외부 사이트로 이동 중
-          </h1>
-
-          {/* 카운트다운 */}
-          <div className="mb-6">
-            <div className="text-5xl font-bold text-blue-600 mb-2">
-              {countdown}
-            </div>
-            <p className="text-gray-600">초 후 자동으로 이동합니다</p>
-          </div>
-
-          {/* 목적지 URL */}
-          {url && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-xs text-gray-500 mb-1">이동할 주소</p>
-              <p className="text-sm text-gray-700 break-all">{url}</p>
-            </div>
-          )}
-
-          {/* 버튼들 */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => router.back()}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors"
-            >
-              취소
-            </button>
-            <button
-              onClick={() => {
-                if (url) window.location.href = url;
-              }}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              바로 이동
-            </button>
-          </div>
-
-          {/* 안내 메시지 */}
-          <p className="text-xs text-gray-500 mt-4">
-            외부 사이트로 연결됩니다. 링크의 안전성을 확인해주세요.
-          </p>
+          <p className="text-gray-600 text-sm">외부 링크로 이동 중...</p>
         </div>
+
+        {/* 바로 이동 버튼 */}
+        <button
+          onClick={() => {
+            if (url) window.location.href = url;
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+        >
+          바로 이동
+        </button>
+
+        {/* 취소 링크 */}
+        <button
+          onClick={() => router.back()}
+          className="mt-3 text-gray-500 hover:text-gray-700 text-sm"
+        >
+          취소
+        </button>
       </div>
     </div>
   );
