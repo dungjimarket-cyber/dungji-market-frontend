@@ -556,13 +556,15 @@ export default function CustomDealDetailPage() {
 
   // 상품 설명의 모든 링크를 리다이렉트 페이지를 거치도록 변환
   const convertedDescription = useMemo(() => {
+    if (!deal) return '';
     return convertLinksToRedirect(deal.description);
-  }, [deal.description]);
+  }, [deal]);
 
   // 할인 링크도 리다이렉트 페이지를 거치도록 변환
   const redirectDiscountUrl = useMemo(() => {
-    return deal.discount_url ? getRedirectUrl(deal.discount_url) : null;
-  }, [deal.discount_url]);
+    if (!deal || !deal.discount_url) return null;
+    return getRedirectUrl(deal.discount_url);
+  }, [deal]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">

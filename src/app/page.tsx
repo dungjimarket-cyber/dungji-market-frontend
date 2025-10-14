@@ -156,6 +156,7 @@ function HomeContent() {
             : (newData.results || []);
 
           // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
+          console.log('커공특가 데이터:', customDealsItems.slice(0, 2));
           setCustomDeals(customDealsItems.slice(0, 2));
           setNewGroupBuys(newItems.slice(0, 2));
         }
@@ -289,7 +290,7 @@ function HomeContent() {
                           {deal.original_price && deal.final_price ? (
                             <div className="mb-2">
                               <div className="flex items-baseline gap-2 flex-wrap">
-                                <span className="text-red-600 font-bold text-lg">
+                                <span className="text-blue-600 font-bold text-lg">
                                   {typeof deal.final_price === 'object' && deal.final_price !== null
                                     ? ((deal.final_price as any).min || 0).toLocaleString()
                                     : deal.final_price.toLocaleString()}원
@@ -300,7 +301,7 @@ function HomeContent() {
                               </div>
                               {deal.discount_rate && (
                                 <div className="flex items-center gap-1 mt-1">
-                                  <span className="text-sm font-bold text-red-600">
+                                  <span className="text-sm font-bold text-blue-600">
                                     {deal.discount_rate}%
                                   </span>
                                   <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
@@ -312,7 +313,7 @@ function HomeContent() {
                           ) : (
                             <div className="mb-2">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-lg font-bold text-green-600">
+                                <span className="text-lg font-bold text-blue-600">
                                   전품목 {deal.discount_rate}% 할인
                                 </span>
                                 <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
