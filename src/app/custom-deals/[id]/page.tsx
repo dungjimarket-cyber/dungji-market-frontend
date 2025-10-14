@@ -1022,23 +1022,6 @@ export default function CustomDealDetailPage() {
                     </div>
                   )}
                 </div>
-
-                {/* 이용 안내 버튼 */}
-                {deal.usage_guide && (
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        const usageGuideSection = document.getElementById('usage-guide-section');
-                        usageGuideSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}
-                    >
-                      이용 안내 보기
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}
