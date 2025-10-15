@@ -89,6 +89,13 @@ export default function CustomDealsGuidePage() {
               <li>• QR 코드를 매장에서 스캔하여 할인 제공 (할인코드 직접확인 가능)</li>
             </ul>
           </div>
+
+          <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">쿠폰전용</h4>
+            <p className="text-xs text-gray-700">
+              • 구매과정없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
+            </p>
+          </div>
         </div>
       )
     },

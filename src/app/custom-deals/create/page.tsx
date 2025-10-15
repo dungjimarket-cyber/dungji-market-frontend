@@ -1286,7 +1286,7 @@ export default function CreateCustomDealPage() {
             {/* 쿠폰전용 안내 */}
             {formData.pricing_type === 'coupon_only' && (
               <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                💡 쿠폰전용: 가격 정보 없이 할인코드/링크만 제공합니다
+                💡 쿠폰전용은 구매과정없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
               </div>
             )}
           </CardContent>
