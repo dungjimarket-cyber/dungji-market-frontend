@@ -298,14 +298,9 @@ function HomeContent() {
                                 <span className="text-sm text-slate-500 line-through">
                                   {deal.original_price.toLocaleString()}원
                                 </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xl font-bold text-red-600">
-                                    {deal.discount_rate}%
-                                  </span>
-                                  <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                                    커공특가
-                                  </span>
-                                </div>
+                                <span className="text-xl font-bold text-red-600">
+                                  {deal.discount_rate}%
+                                </span>
                               </div>
                               <div className="text-xl sm:text-2xl font-bold text-slate-900">
                                 {typeof deal.final_price === 'object' && deal.final_price !== null
@@ -315,14 +310,9 @@ function HomeContent() {
                             </div>
                           ) : (
                             <div className="mb-3">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xl font-bold text-blue-600">
-                                  전품목 {deal.discount_rate}% 할인
-                                </span>
-                                <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                                  커공특가
-                                </span>
-                              </div>
+                              <span className="text-xl font-bold text-blue-600">
+                                전품목 {deal.discount_rate}% 할인
+                              </span>
                             </div>
                           )}
 
