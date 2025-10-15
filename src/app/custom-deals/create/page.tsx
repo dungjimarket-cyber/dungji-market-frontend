@@ -730,6 +730,24 @@ export default function CreateCustomDealPage() {
       // 가격 정보
       const validCodes = discountCodes.filter(c => c.trim());
 
+      // 중복 코드 체크 (온라인/오프라인에서 코드를 사용하는 경우)
+      const needsCodeValidation = (
+        (formData.type === 'online' && (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both')) ||
+        formData.type === 'offline'
+      );
+
+      if (needsCodeValidation && validCodes.length > 0) {
+        const uniqueCodes = new Set(validCodes);
+        if (uniqueCodes.size !== validCodes.length) {
+          setDuplicateDialogMessage(
+            '중복된 할인코드가 있습니다.\n\n모든 참여자에게 동일한 코드를 제공하려면 \'할인 링크\' 필드를 사용해주세요.'
+          );
+          setShowDuplicateDialog(true);
+          setLoading(false);
+          return;
+        }
+      }
+
       if (formData.pricing_type === 'single_product') {
         submitFormData.append('products', JSON.stringify([{
           name: formData.product_name,
