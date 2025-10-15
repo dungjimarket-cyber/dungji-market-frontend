@@ -34,16 +34,16 @@ export async function checkActiveCustomDeals(): Promise<DuplicateCheckResult> {
 
     const data = await response.json();
 
-    // 모집중 또는 판매자 확정 대기 상태의 공구가 있는지 확인
+    // 모집중 또는 판매자 확정 대기 상태의 공구 개수 확인 (최대 5개)
     if (data.results && data.results.length > 0) {
-      const hasActiveDeals = data.results.some(
+      const activeDealCount = data.results.filter(
         (deal: any) => deal.status === 'recruiting' || deal.status === 'pending_seller'
-      );
+      ).length;
 
-      if (hasActiveDeals) {
+      if (activeDealCount >= 5) {
         return {
           hasActiveDeal: true,
-          message: '현재 진행중인 공구가 있습니다.\n\n기존 공구가 마감된 후에 새로운 공구를 등록할 수 있습니다.'
+          message: `최대 5개의 공구까지 동시 진행 가능합니다.\n\n현재 ${activeDealCount}개의 공구가 진행 중입니다.`
         };
       }
     }
