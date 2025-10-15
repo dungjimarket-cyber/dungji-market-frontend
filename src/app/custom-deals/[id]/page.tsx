@@ -244,7 +244,7 @@ export default function CustomDealDetailPage() {
     let confirmMessage = `${deal.title}\n\n`;
 
     if (deal.pricing_type === 'coupon_only') {
-      confirmMessage += `${deal.discount_rate}% 할인 쿠폰\n\n`;
+      confirmMessage += `쿠폰전용\n\n`;
     } else if (deal.original_price && deal.final_price) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
@@ -763,7 +763,7 @@ export default function CustomDealDetailPage() {
                 {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 mb-1">
-                      {deal.discount_rate}% 할인 쿠폰
+                      선착순 쿠폰증정
                     </div>
                     <p className="text-xs text-slate-600">인원 마감 시 쿠폰이 발급됩니다</p>
                   </div>

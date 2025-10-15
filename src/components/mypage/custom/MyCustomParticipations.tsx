@@ -270,7 +270,7 @@ export default function MyCustomParticipations() {
     }
 
     if (groupbuyStatus === 'recruiting') {
-      return <Badge className="bg-gray-50 text-gray-700 border-gray-200">모집중</Badge>;
+      return <Badge className="bg-blue-50 text-blue-600 border-blue-200">참여완료</Badge>;
     }
 
     if (groupbuyStatus === 'pending_seller') {
