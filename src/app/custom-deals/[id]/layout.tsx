@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${id}/`,
       {
-        cache: 'no-store', // 항상 최신 데이터 가져오기
+        next: { revalidate: 300 } // 5분마다 갱신 (검색엔진 크롤링 고려)
       }
     );
 
@@ -46,14 +46,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ?.replace(/<[^>]*>/g, '')
       .substring(0, 150) || '둥지마켓 커스텀 공구';
 
-    const title = `${deal.title} - ${priceText} | 둥지마켓`;
+    const title = `${deal.title} - ${priceText} | 둥지마켓 커공특가`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.dungjimarket.com';
+    const canonicalUrl = `${baseUrl}/custom-deals/${id}`;
 
     return {
       title,
       description,
+      keywords: `${deal.title}, 커공특가, 공동구매, 할인, ${deal.type === 'offline' ? '오프라인매장' : '온라인쇼핑'}, 둥지마켓`,
       openGraph: {
         title,
         description,
+        url: canonicalUrl,
         images: imageUrl ? [
           {
             url: imageUrl,
@@ -64,12 +68,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ] : [],
         type: 'website',
         siteName: '둥지마켓',
+        locale: 'ko_KR',
       },
       twitter: {
         card: 'summary_large_image',
         title,
         description,
         images: imageUrl ? [imageUrl] : [],
+      },
+      alternates: {
+        canonical: canonicalUrl,
+      },
+      robots: {
+        index: deal.status === 'recruiting', // 모집중일 때만 인덱싱
+        follow: true,
       },
     };
   } catch (error) {

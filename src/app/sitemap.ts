@@ -1,13 +1,18 @@
 import { MetadataRoute } from 'next';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.dungjimarket.com';
-  
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.dungjimarket.com/api';
+
   // 정적 페이지들
   const staticPages = [
     '',
     '/about',
     '/group-purchases',
+    '/custom-deals',
+    '/custom-deals/guide',
+    '/used',
+    '/used/guide',
     '/events',
     '/register',
     '/login',
@@ -26,9 +31,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  // 동적 페이지들 (공구 상세 페이지 등)
-  // 실제로는 API에서 가져와야 하지만, 간단한 예시
-  const dynamicUrls: MetadataRoute.Sitemap = [];
-  
-  return [...staticUrls, ...dynamicUrls];
+  // 커공특가 상품들 (모집중인 상품만)
+  let customDealUrls: MetadataRoute.Sitemap = [];
+  try {
+    const response = await fetch(`${apiUrl}/custom-groupbuys/?status=recruiting&limit=100`, {
+      next: { revalidate: 3600 } // 1시간 캐시
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const deals = Array.isArray(data) ? data : (data.results || []);
+
+      customDealUrls = deals.map((deal: any) => ({
+        url: `${baseUrl}/custom-deals/${deal.id}`,
+        lastModified: new Date(deal.updated_at || deal.created_at),
+        changeFrequency: 'daily' as const,
+        priority: 0.9,
+      }));
+    }
+  } catch (error) {
+    console.error('커공특가 sitemap 생성 실패:', error);
+  }
+
+  return [...staticUrls, ...customDealUrls];
 }
