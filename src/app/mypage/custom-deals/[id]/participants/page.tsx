@@ -13,6 +13,7 @@ import QRScanner from '@/components/custom/QRScanner';
 interface Participant {
   id: number;
   user_name: string;
+  phone_number: string | null;
   participated_at: string;
   participation_code: string;
   discount_code: string | null;
@@ -422,6 +423,11 @@ export default function ParticipantsManagePage() {
 
                     {/* 참여 정보 */}
                     <div className="flex items-center gap-3 text-xs text-slate-500 mb-2 flex-wrap">
+                      {participant.phone_number && (
+                        <span className="flex items-center gap-1 font-medium text-slate-700">
+                          📞 {participant.phone_number}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(participant.participated_at).toLocaleDateString('ko', {
