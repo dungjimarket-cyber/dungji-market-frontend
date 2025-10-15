@@ -510,9 +510,10 @@ export default function MyCustomParticipations() {
                               </div>
                             ) : (
                               <>
-                                {/* 유효기간 내: 할인코드/링크 표시 */}
+                                {/* 유효기간 내: online_discount_type에 따라 할인코드/링크 표시 */}
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  {participation.discount_code && (
+                                  {/* 오프라인: 항상 할인코드 표시 */}
+                                  {groupbuy.type === 'offline' && participation.discount_code && (
                                     <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
                                       <span className="font-mono text-sm font-bold text-slate-900 truncate">
                                         {participation.discount_code}
@@ -526,16 +527,37 @@ export default function MyCustomParticipations() {
                                     </div>
                                   )}
 
-                                  {participation.discount_url && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-xs h-7"
-                                      onClick={() => window.open(participation.discount_url!, '_blank')}
-                                    >
-                                      <ExternalLink className="w-3 h-3 mr-1" />
-                                      링크 열기
-                                    </Button>
+                                  {/* 온라인: online_discount_type에 따라 표시 */}
+                                  {groupbuy.type === 'online' && (
+                                    <>
+                                      {/* 할인링크 (link_only 또는 both) */}
+                                      {(groupbuy.online_discount_type === 'link_only' || groupbuy.online_discount_type === 'both') && participation.discount_url && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-xs h-7"
+                                          onClick={() => window.open(participation.discount_url!, '_blank')}
+                                        >
+                                          <ExternalLink className="w-3 h-3 mr-1" />
+                                          링크 열기
+                                        </Button>
+                                      )}
+
+                                      {/* 할인코드 (code_only 또는 both) */}
+                                      {(groupbuy.online_discount_type === 'code_only' || groupbuy.online_discount_type === 'both') && participation.discount_code && (
+                                        <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
+                                          <span className="font-mono text-sm font-bold text-slate-900 truncate">
+                                            {participation.discount_code}
+                                          </span>
+                                          <button
+                                            onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
+                                            className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                                          >
+                                            <Copy className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </>
                                   )}
                                 </div>
 

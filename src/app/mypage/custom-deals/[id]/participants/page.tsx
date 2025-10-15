@@ -464,10 +464,11 @@ export default function ParticipantsManagePage() {
                         );
                       }
 
-                      // 유효기간 내: 할인코드/링크 표시
+                      // 유효기간 내: online_discount_type에 따라 할인코드/링크 표시
                       return (
                         <>
-                          {participant.discount_code && (
+                          {/* 오프라인: 항상 할인코드 표시 */}
+                          {deal.type === 'offline' && participant.discount_code && (
                             <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
                               <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
                                 {participant.discount_code}
@@ -483,25 +484,48 @@ export default function ParticipantsManagePage() {
                             </div>
                           )}
 
-                          {participant.discount_url && (
-                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
-                              <a
-                                href={participant.discount_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 text-xs text-blue-600 hover:underline truncate"
-                              >
-                                {participant.discount_url}
-                              </a>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                            </div>
+                          {/* 온라인: online_discount_type에 따라 표시 */}
+                          {deal.type === 'online' && (
+                            <>
+                              {/* 할인링크 (link_only 또는 both) */}
+                              {(deal.online_discount_type === 'link_only' || deal.online_discount_type === 'both') && participant.discount_url && (
+                                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
+                                  <a
+                                    href={participant.discount_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 text-xs text-blue-600 hover:underline truncate"
+                                  >
+                                    {participant.discount_url}
+                                  </a>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              )}
+
+                              {/* 할인코드 (code_only 또는 both) */}
+                              {(deal.online_discount_type === 'code_only' || deal.online_discount_type === 'both') && participant.discount_code && (
+                                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
+                                  <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
+                                    {participant.discount_code}
+                                  </code>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </>
                           )}
                         </>
                       );
