@@ -441,6 +441,23 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     }
   };
 
+  // 할인코드 변경 (중복 체크 포함)
+  const updateDiscountCode = (index: number, value: string) => {
+    setDiscountCodes(prev => {
+      const updated = [...prev];
+      updated[index] = value;
+
+      // 중복 체크 (빈 값 제외)
+      const validCodes = updated.filter(c => c.trim());
+      const uniqueCodes = new Set(validCodes);
+      if (validCodes.length > 0 && uniqueCodes.size !== validCodes.length) {
+        toast.error('중복된 할인코드가 있습니다. 모든 참여자에게 동일한 코드를 제공하시려면 링크 입력창을 이용해주세요.');
+      }
+
+      return updated;
+    });
+  };
+
   // 폼 입력 핸들러
   const handleInputChange = (field: string, value: any) => {
     // 참여자가 있을 때는 제목, 설명, 이용안내만 수정 가능 (할인정보는 별도 처리)
@@ -939,7 +956,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         value={formData.product_name}
                         onChange={(e) => handleInputChange('product_name', e.target.value)}
                         placeholder="예: 둥지마켓 사과 1박스"
+                        maxLength={100}
                       />
+                      <p className="text-sm text-slate-500 mt-1 text-right">{formData.product_name.length}/100</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -1065,7 +1084,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="link_only" id="edit-link_only" />
-                      <Label htmlFor="edit-link_only" className="font-normal cursor-pointer">링크만</Label>
+                      <Label htmlFor="edit-link_only" className="font-normal cursor-pointer">
+                        링크만 <span className="text-xs text-slate-500">(모든 참여자에게 발송되는 비공개 링크 또는 참여방법(사인,신호 등))</span>
+                      </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="code_only" id="edit-code_only" />
@@ -1089,13 +1110,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                     <div className="space-y-3">
                       <div>
-                        <Label>할인 링크 *</Label>
+                        <Label>할인링크/참여방법 *</Label>
                         <Input
                           value={formData.discount_url}
                           onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
-                          placeholder="https://example.com/discount"
+                          placeholder="공구전용 비공개 url 또는 비공개 참여방식(신호,사인 등)을 입력해주세요"
                           maxLength={500}
                         />
+                        <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
                       </div>
 
                       {/* 링크 미리보기 */}
@@ -1114,16 +1136,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <div className="space-y-2 mt-2">
                         {discountCodes.map((code, index) => (
                           <div key={index} className="flex gap-2">
-                            <Input
-                              value={code}
-                              onChange={(e) => {
-                                const newCodes = [...discountCodes];
-                                newCodes[index] = e.target.value;
-                                setDiscountCodes(newCodes);
-                              }}
-                              placeholder={`코드 또는 링크 ${index + 1}`}
-                              maxLength={500}
-                            />
+                            <div className="flex-1">
+                              <Input
+                                value={code}
+                                onChange={(e) => updateDiscountCode(index, e.target.value)}
+                                placeholder={`코드 또는 링크 ${index + 1}`}
+                                maxLength={500}
+                              />
+                              <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
+                            </div>
                             {discountCodes.length > 1 && (
                               <Button
                                 type="button"
@@ -1222,7 +1243,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       maxLength={20}
                     />
                     <p className="text-xs text-slate-500 mt-1">
-                      문의가 필요한 경우 입력해주세요
+                      문의가 필요한 경우 입력해주세요 ({formData.phone_number.length}/20)
                     </p>
                   </div>
                 </CardContent>
@@ -1254,6 +1275,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           buttonText="주소 검색"
                         />
                       </div>
+                      <p className="text-sm text-slate-500 mt-1 text-right">{formData.location.length}/150</p>
                     </div>
 
                     <div>
@@ -1265,6 +1287,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         rows={2}
                         maxLength={500}
                       />
+                      <p className="text-sm text-slate-500 mt-1 text-right">{formData.location_detail.length}/500</p>
                     </div>
 
                     <div>
@@ -1283,6 +1306,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         placeholder="010-1234-5678"
                         maxLength={20}
                       />
+                      <p className="text-sm text-slate-500 mt-1 text-right">{formData.phone_number.length}/20</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1309,16 +1333,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <div className="space-y-2 mt-2">
                         {discountCodes.map((code, index) => (
                           <div key={index} className="flex gap-2">
-                            <Input
-                              value={code}
-                              onChange={(e) => {
-                                const newCodes = [...discountCodes];
-                                newCodes[index] = e.target.value;
-                                setDiscountCodes(newCodes);
-                              }}
-                              placeholder={`코드 또는 링크 ${index + 1}`}
-                              maxLength={500}
-                            />
+                            <div className="flex-1">
+                              <Input
+                                value={code}
+                                onChange={(e) => updateDiscountCode(index, e.target.value)}
+                                placeholder={`코드 또는 링크 ${index + 1}`}
+                                maxLength={500}
+                              />
+                              <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
+                            </div>
                             {discountCodes.length > 1 && (
                               <Button
                                 type="button"
@@ -1423,13 +1446,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                   <div className="space-y-3">
                     <div>
-                      <Label>할인 링크 *</Label>
+                      <Label>할인링크/참여방법 *</Label>
                       <Input
                         value={formData.discount_url}
                         onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
-                        placeholder="https://example.com/discount"
-                        maxLength={200}
+                        placeholder="공구전용 비공개 url 또는 비공개 참여방식(신호,사인 등)을 입력해주세요"
+                        maxLength={500}
                       />
+                      <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
                     </div>
 
                     {/* 링크 미리보기 */}
@@ -1448,16 +1472,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     <div className="space-y-2 mt-2">
                       {discountCodes.map((code, index) => (
                         <div key={index} className="flex gap-2">
-                          <Input
-                            value={code}
-                            onChange={(e) => {
-                              const newCodes = [...discountCodes];
-                              newCodes[index] = e.target.value;
-                              setDiscountCodes(newCodes);
-                            }}
-                            placeholder={`코드 ${index + 1}`}
-                            maxLength={100}
-                          />
+                          <div className="flex-1">
+                            <Input
+                              value={code}
+                              onChange={(e) => updateDiscountCode(index, e.target.value)}
+                              placeholder={`코드 ${index + 1}`}
+                              maxLength={500}
+                            />
+                            <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
+                          </div>
                           {discountCodes.length > 1 && (
                             <Button
                               type="button"
@@ -1560,16 +1583,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   <div className="space-y-2 mt-2">
                     {discountCodes.map((code, index) => (
                       <div key={index} className="flex gap-2">
-                        <Input
-                          value={code}
-                          onChange={(e) => {
-                            const newCodes = [...discountCodes];
-                            newCodes[index] = e.target.value;
-                            setDiscountCodes(newCodes);
-                          }}
-                          placeholder={`코드 ${index + 1}`}
-                          maxLength={100}
-                        />
+                        <div className="flex-1">
+                          <Input
+                            value={code}
+                            onChange={(e) => updateDiscountCode(index, e.target.value)}
+                            placeholder={`코드 ${index + 1}`}
+                            maxLength={500}
+                          />
+                          <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
+                        </div>
                         {discountCodes.length > 1 && (
                           <Button
                             type="button"
