@@ -893,6 +893,24 @@ export default function CustomDealDetailPage() {
                   참여하기
                 </Button>
 
+                {/* 할인 제공 안내 */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs text-green-900 font-medium mb-1">
+                        ✨ 인원 마감 시 혜택 제공
+                      </p>
+                      <p className="text-xs text-green-700">
+                        {deal.type === 'online'
+                          ? '할인코드 또는 비공개 할인링크가 자동 발급됩니다'
+                          : 'QR 코드 또는 할인코드가 자동 발급됩니다'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* 패널티 안내 메시지 */}
                 {user && (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
