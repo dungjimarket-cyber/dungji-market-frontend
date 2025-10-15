@@ -1418,12 +1418,41 @@ export default function CreateCustomDealPage() {
               </RadioGroup>
 
               <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  💡 공구마감 후 고객에게 발송되는 정보입니다<br />
-                  • 스마트스토어 할인링크 등 개별 쿠폰링크도 입력 가능합니다<br />
-                  • 할인 링크는 공구 마감후 공개될수 있도록 비공개 처리 부탁드립니다.<br />
-                  • 할인코드 용도: 온라인 구매시 코드 또는 링크 사용
+                <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                  💡 공구마감 후 참여자에게 제공됩니다
                 </p>
+
+                <div className="space-y-3">
+                  {/* 스마트스토어 안내 */}
+                  <div className="bg-white p-3 rounded border border-slate-200">
+                    <p className="text-xs font-semibold text-slate-700 mb-2">【 스마트스토어 판매자 】</p>
+                    <p className="text-xs text-slate-600 mb-2">
+                      아래 이미지와 같이 설정 후 상품링크를 복사하여 입력해주세요
+                    </p>
+                    <Image
+                      src="/images/스마트스토어비공개세팅방법.png"
+                      alt="스마트스토어 비공개 설정 방법"
+                      width={300}
+                      height={150}
+                      className="rounded border border-slate-200 mb-2"
+                    />
+                    <p className="text-xs text-slate-600">
+                      ① 상품복사 → ② 공구가격 수정 → ③ 전시중지+네이버쇼핑 해제 → ④ 링크복사
+                    </p>
+                  </div>
+
+                  {/* 기타 쇼핑몰 안내 */}
+                  <div className="bg-white p-3 rounded border border-slate-200">
+                    <p className="text-xs font-semibold text-slate-700 mb-1">【 기타 쇼핑몰 (쿠팡/11번가 등) 】</p>
+                    <p className="text-xs text-slate-600">
+                      • 할인코드 입력 (참여인원 수만큼)
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-orange-600 font-medium">
+                    ※ 공구 진행 중 일반 고객 노출 방지 필수
+                  </p>
+                </div>
               </div>
 
               {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
