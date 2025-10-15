@@ -432,19 +432,25 @@ export default function CreateCustomDealPage() {
     }
   };
 
-  // 할인코드 변경 (중복 체크 포함)
+  // 할인코드 변경 (중복 입력 차단)
   const updateDiscountCode = (index: number, value: string) => {
+    // 입력하려는 값이 다른 코드와 중복되는지 확인
+    const trimmedValue = value.trim();
+    if (trimmedValue) {
+      const isDuplicate = discountCodes.some((code, i) =>
+        i !== index && code.trim() === trimmedValue
+      );
+
+      if (isDuplicate) {
+        toast.error('중복된 할인코드는 입력할 수 없습니다. 모든 참여자에게 동일한 코드를 제공하시려면 링크 입력창을 이용해주세요.');
+        return; // 중복이면 업데이트하지 않음
+      }
+    }
+
+    // 중복이 아니면 업데이트
     setDiscountCodes(prev => {
       const updated = [...prev];
       updated[index] = value;
-
-      // 중복 체크 (빈 값 제외)
-      const validCodes = updated.filter(c => c.trim());
-      const uniqueCodes = new Set(validCodes);
-      if (validCodes.length > 0 && uniqueCodes.size !== validCodes.length) {
-        toast.error('중복된 할인코드가 있습니다. 모든 참여자에게 동일한 코드를 제공하시려면 링크 입력창을 이용해주세요.');
-      }
-
       return updated;
     });
   };
@@ -1466,12 +1472,12 @@ export default function CreateCustomDealPage() {
               {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                 <div className="space-y-3">
                   <div>
-                    <Label>할인링크/참여방법 *</Label>
+                    <Label>할인링크/참여방법안내 *</Label>
                     <Input
                       ref={discountUrlRef}
                       value={formData.discount_url}
                       onChange={(e) => handleInputChange('discount_url', e.target.value)}
-                      placeholder="공구전용 비공개 url 또는 비공개 참여방식(신호,사인 등)을 입력해주세요"
+                      placeholder="공구전용 비공개 링크 또는 참여방식을 입력해주세요"
                       className={errors.discount_url ? 'border-red-300' : ''}
                       maxLength={500}
                     />

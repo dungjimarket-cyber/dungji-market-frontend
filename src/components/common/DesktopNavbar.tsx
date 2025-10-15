@@ -110,21 +110,21 @@ export default function DesktopNavbar() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <Image src="/logos/dungji_logo.jpg" alt="둥지마켓" width={40} height={40} className="rounded-lg" />
-            <span className="text-xl font-bold">둥지마켓</span>
+            <span className="text-xl font-bold font-black-han-sans">둥지마켓</span>
           </Link>
-          
+
           <div className="flex space-x-8">
-            <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900">
+            <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               커공 특가
             </Link>
-            <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900">
+            <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               같이 견적받기
             </Link>
 
             {/* 비로그인 시 */}
             {!isAuthenticated && (
               <>
-                <Link href="/register" className="text-gray-600 hover:text-gray-900">
+                <Link href="/register" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
                   견적요청
                 </Link>
               </>
@@ -135,7 +135,7 @@ export default function DesktopNavbar() {
               <>
                 <Link
                   href="/group-purchases/create"
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-gray-600 hover:text-gray-900 font-black-han-sans"
                   onClick={handleCreateClick}
                 >
                   견적요청
@@ -148,7 +148,7 @@ export default function DesktopNavbar() {
               <>
                 <Link
                   href="/mypage/seller/bids"
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-gray-600 hover:text-gray-900 font-black-han-sans"
                   onClick={handleBidsClick}
                 >
                   견적 내역
@@ -156,23 +156,23 @@ export default function DesktopNavbar() {
               </>
             )}
 
-            <Link href="/used" className="text-gray-600 hover:text-gray-900">
+            <Link href="/used" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               중고거래
             </Link>
-            <Link href="/events" className="text-gray-600 hover:text-gray-900">
+            <Link href="/events" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               이벤트
             </Link>
 
             {/* 비로그인 시 - 회원가입 */}
             {!isAuthenticated && (
-              <Link href="/register" className="text-gray-600 hover:text-gray-900">
+              <Link href="/register" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
                 회원가입
               </Link>
             )}
 
             {/* 로그인 시 - 마이페이지 */}
             {isAuthenticated && (
-              <Link href="/mypage" className="text-gray-600 hover:text-gray-900">
+              <Link href="/mypage" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
                 마이페이지
               </Link>
             )}

@@ -1110,11 +1110,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                     <div className="space-y-3">
                       <div>
-                        <Label>할인링크/참여방법 *</Label>
+                        <Label>할인링크/참여방법안내 *</Label>
                         <Input
                           value={formData.discount_url}
                           onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
-                          placeholder="공구전용 비공개 url 또는 비공개 참여방식(신호,사인 등)을 입력해주세요"
+                          placeholder="공구전용 비공개 링크 또는 참여방식을 입력해주세요"
                           maxLength={500}
                         />
                         <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
@@ -1446,11 +1446,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                   <div className="space-y-3">
                     <div>
-                      <Label>할인링크/참여방법 *</Label>
+                      <Label>할인링크/참여방법안내 *</Label>
                       <Input
                         value={formData.discount_url}
                         onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
-                        placeholder="공구전용 비공개 url 또는 비공개 참여방식(신호,사인 등)을 입력해주세요"
+                        placeholder="공구전용 비공개 링크 또는 참여방식을 입력해주세요"
                         maxLength={500}
                       />
                       <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>

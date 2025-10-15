@@ -33,7 +33,7 @@ const MobileNotificationButton: React.FC = () => {
         unreadCount={unreadCount}
         onUnreadCountChange={setUnreadCount}
       />
-      <span className="text-[10px]">알림</span>
+      <span className="text-[10px] font-black-han-sans">알림</span>
 
       {showNotifications && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowNotifications(false)}>

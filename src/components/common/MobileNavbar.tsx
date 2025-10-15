@@ -130,7 +130,7 @@ export default function MobileNavbar() {
         {/* 1. 홈 */}
         <Link href="/" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
           <FaHome className="text-lg mb-1" />
-          <span className="text-[10px]">홈</span>
+          <span className="text-[10px] font-black-han-sans">홈</span>
         </Link>
 
         {/* 2. 견적요청/견적내역 - 본인 역할에 맞게 버튼 변경 */}
@@ -144,12 +144,12 @@ export default function MobileNavbar() {
           {isSeller ? (
             <>
               <ClipboardList className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">견적내역</span>
+              <span className="text-[10px] font-black-han-sans">견적내역</span>
             </>
           ) : (
             <>
               <FileText className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">견적요청</span>
+              <span className="text-[10px] font-black-han-sans">견적요청</span>
             </>
           )}
         </Link>
@@ -157,7 +157,7 @@ export default function MobileNavbar() {
         {/* 3. 견적목록 */}
         <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
           <FaList className="text-lg mb-1" />
-          <span className="text-[10px]">견적목록</span>
+          <span className="text-[10px] font-black-han-sans">견적목록</span>
         </Link>
 
         {/* 4. 커공 (큰 버튼) */}
@@ -165,13 +165,13 @@ export default function MobileNavbar() {
           <button className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg mb-1 transform hover:scale-105 transition-transform">
             <FaStore className="text-xl" />
           </button>
-          <span className="text-[10px] font-semibold text-green-600">커공</span>
+          <span className="text-[10px] font-semibold text-green-600 font-black-han-sans">커공</span>
         </Link>
 
         {/* 5. 중고거래 */}
         <Link href="/used" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
           <FaExchangeAlt className="text-lg mb-1" />
-          <span className="text-[10px]">중고거래</span>
+          <span className="text-[10px] font-black-han-sans">중고거래</span>
         </Link>
 
         {/* 6. 알림 - 로그인한 경우에만 활성화 */}
@@ -183,7 +183,7 @@ export default function MobileNavbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
               </div>
-              <span className="text-[10px]">알림</span>
+              <span className="text-[10px] font-black-han-sans">알림</span>
             </div>
           ) : isAuthenticated ? (
             <MobileNotificationButton />
@@ -194,7 +194,7 @@ export default function MobileNavbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
               </div>
-              <span className="text-[10px]">알림</span>
+              <span className="text-[10px] font-black-han-sans">알림</span>
             </Link>
           )}
         </div>
@@ -203,7 +203,7 @@ export default function MobileNavbar() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center text-gray-600 flex-1 py-2">
             <FaUser className="text-lg mb-1 animate-pulse" />
-            <span className="text-[10px]">...</span>
+            <span className="text-[10px] font-black-han-sans">...</span>
           </div>
         ) : isAuthenticated ? (
           <Link
@@ -211,7 +211,7 @@ export default function MobileNavbar() {
             className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2"
           >
             <FaUser className="text-lg mb-1" />
-            <span className="text-[10px]">MY</span>
+            <span className="text-[10px] font-black-han-sans">MY</span>
           </Link>
         ) : (
           <Link
@@ -219,7 +219,7 @@ export default function MobileNavbar() {
             className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2"
           >
             <FaSignInAlt className="text-lg mb-1" />
-            <span className="text-[10px]">로그인</span>
+            <span className="text-[10px] font-black-han-sans">로그인</span>
           </Link>
         )}
       </div>
