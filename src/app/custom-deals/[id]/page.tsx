@@ -990,13 +990,13 @@ export default function CustomDealDetailPage() {
         {/* Description & Details */}
         <div className="mt-6 space-y-4">
           {/* Description */}
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 max-w-4xl mx-auto">
             <CardContent className="p-5">
               <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
               <div className="prose prose-slate prose-sm max-w-none">
                 <div
-                  className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
-                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                  className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere whitespace-pre-wrap"
+                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
                   dangerouslySetInnerHTML={{ __html: convertedDescription }}
                 />
               </div>
@@ -1005,7 +1005,7 @@ export default function CustomDealDetailPage() {
 
           {/* Usage Guide */}
           {deal.usage_guide && (
-            <Card id="usage-guide-section" className="border-slate-200 scroll-mt-4">
+            <Card id="usage-guide-section" className="border-slate-200 scroll-mt-4 max-w-4xl mx-auto">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">이용 안내</h2>
                 <div className="prose prose-slate prose-sm max-w-none">
@@ -1017,7 +1017,7 @@ export default function CustomDealDetailPage() {
 
           {/* Offline - 매장 정보 */}
           {deal.type === 'offline' && (
-            <Card className="border-slate-200">
+            <Card className="border-slate-200 max-w-4xl mx-auto">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">매장 정보</h2>
                 <div className="space-y-2.5">
@@ -1058,7 +1058,7 @@ export default function CustomDealDetailPage() {
 
           {/* Online - 할인 정보 (공구 완료 후 참여자만 표시) */}
           {deal.type === 'online' && redirectDiscountUrl && deal.status === 'completed' && deal.is_participated && (
-            <Card className="border-slate-200">
+            <Card className="border-slate-200 max-w-4xl mx-auto">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">할인 정보</h2>
                 <a
@@ -1073,7 +1073,7 @@ export default function CustomDealDetailPage() {
 
           {/* Online - 상품 문의 (전화번호, 있을 때만) */}
           {deal.type === 'online' && deal.phone_number && (
-            <Card className="border-slate-200">
+            <Card className="border-slate-200 max-w-4xl mx-auto">
               <CardContent className="p-5">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">상품 문의</h2>
                 <div className="flex items-center gap-2.5 text-sm">
