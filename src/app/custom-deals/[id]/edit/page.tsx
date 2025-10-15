@@ -1296,9 +1296,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
                       <p className="text-xs text-slate-600 leading-relaxed">
                         💡 오프라인 매장 할인코드 활용 방법<br />
-                        • QR코드 생성하여 매장 내 제시 또는 스캔<br />
-                        • 참여자 휴대폰 화면에 코드 표시 후 직원 확인<br />
-                        • 현장 결제 시 코드 또는 참여자 정보 상호 확인<br />
+                        • 참여자가 할인코드를 매장에서 제시 (휴대폰 화면)<br />
+                        • 마감 후 관리페이지 QR코드 스캔 기능 사용 또는 할인코드 수동 확인<br />
                         • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
                       </p>
                     </div>
@@ -1545,9 +1544,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
                   <p className="text-xs text-slate-600 leading-relaxed">
                     💡 오프라인 매장 할인코드 활용 방법<br />
-                    • QR코드 생성하여 매장 내 제시 또는 스캔<br />
-                    • 참여자 휴대폰 화면에 코드 표시 후 직원 확인<br />
-                    • 현장 결제 시 코드 또는 참여자 정보 상호 확인<br />
+                    • 참여자가 할인코드를 매장에서 제시 (휴대폰 화면)<br />
+                    • 마감 후 관리페이지 QR코드 스캔 기능 사용 또는 할인코드 수동 확인<br />
                     • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
                   </p>
                 </div>
