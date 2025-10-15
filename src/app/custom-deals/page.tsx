@@ -9,8 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import NoticeSection from '@/components/home/NoticeSection';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
-import { checkCustomActivePenalty, CustomPenalty } from '@/lib/api/custom/penaltyApi';
-import { checkActiveCustomDeals } from '@/lib/api/custom/duplicateCheck';
+import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import { CustomPenalty } from '@/lib/api/custom/penaltyApi';
+import { checkCanCreateCustomDeal } from '@/lib/api/custom/createDealCheck';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CustomDeal {
   id: number;
@@ -58,6 +60,7 @@ interface CategoryOption {
 
 export default function CustomDealsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [deals, setDeals] = useState<CustomDeal[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +77,10 @@ export default function CustomDealsPage() {
   // 패널티 모달 상태
   const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+
+  // 프로필 체크 모달 상태
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -142,27 +149,28 @@ export default function CustomDealsPage() {
   };
 
   const handleCreateDeal = async () => {
-    // 1. 패널티 체크
-    try {
-      const response = await checkCustomActivePenalty();
-      if (response.has_active_penalty && response.penalty) {
-        setPenaltyInfo(response.penalty);
+    const result = await checkCanCreateCustomDeal(user);
+
+    if (!result.canProceed) {
+      // 패널티가 있는 경우
+      if (result.penaltyInfo) {
+        setPenaltyInfo(result.penaltyInfo);
         setShowPenaltyModal(true);
         return;
       }
-    } catch (error) {
-      console.error('패널티 체크 실패:', error);
-    }
 
-    // 2. 중복 등록 체크
-    try {
-      const duplicateCheck = await checkActiveCustomDeals();
-      if (duplicateCheck.hasActiveDeal) {
-        alert(duplicateCheck.message);
+      // 중복 등록인 경우
+      if (result.duplicateMessage) {
+        alert(result.duplicateMessage);
         return;
       }
-    } catch (error) {
-      console.error('중복 체크 실패:', error);
+
+      // 프로필 정보 부족한 경우
+      if (result.missingFields) {
+        setMissingFields(result.missingFields);
+        setShowProfileModal(true);
+        return;
+      }
     }
 
     // 모든 체크 통과 시 페이지 이동
@@ -634,6 +642,17 @@ export default function CustomDealsPage() {
         onClose={() => setShowPenaltyModal(false)}
         penaltyInfo={penaltyInfo}
         userRole="buyer"
+      />
+
+      {/* 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        missingFields={missingFields}
+        onUpdateProfile={() => {
+          setShowProfileModal(false);
+          router.push('/mypage');
+        }}
       />
     </div>
   );

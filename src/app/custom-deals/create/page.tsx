@@ -33,8 +33,11 @@ import Image from 'next/image';
 import AddressSearch from '@/components/address/AddressSearch';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
 import RichTextEditor from '@/components/custom/RichTextEditor';
+import { CustomPenalty } from '@/lib/api/custom/penaltyApi';
+import { checkCanCreateCustomDeal } from '@/lib/api/custom/createDealCheck';
 
 // 이미지 미리보기 타입
 interface ImagePreview {
@@ -98,6 +101,10 @@ export default function CreateCustomDealPage() {
   // 중복 등록 모달 상태
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [duplicateDialogMessage, setDuplicateDialogMessage] = useState('');
+
+  // 패널티 모달 상태
+  const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
   // 폼 데이터
   const [formData, setFormData] = useState({
@@ -645,10 +652,29 @@ export default function CreateCustomDealPage() {
 
     if (loading) return;
 
-    // 1. 진행 중인 공구 체크 (가장 먼저)
-    const canProceed = await checkActiveDeals();
-    if (!canProceed) {
-      return;
+    // 1. 패널티, 중복, 프로필 체크 (통합)
+    const result = await checkCanCreateCustomDeal(user);
+
+    if (!result.canProceed) {
+      // 패널티가 있는 경우
+      if (result.penaltyInfo) {
+        setPenaltyInfo(result.penaltyInfo);
+        setShowPenaltyModal(true);
+        return;
+      }
+
+      // 중복 등록인 경우
+      if (result.duplicateMessage) {
+        setDuplicateDialogMessage(result.duplicateMessage);
+        setShowDuplicateDialog(true);
+        return;
+      }
+
+      // 프로필 정보 부족한 경우
+      if (result.missingFields) {
+        setShowProfileModal(true);
+        return;
+      }
     }
 
     // 2. 개인회원의 오프라인 공구 등록 방지
@@ -657,15 +683,7 @@ export default function CreateCustomDealPage() {
       return;
     }
 
-    // 3. 프로필 체크
-    const requiresBusiness = formData.type === 'offline';
-    const isProfileComplete = await checkProfile(requiresBusiness);
-    if (!isProfileComplete) {
-      setShowProfileModal(true);
-      return;
-    }
-
-    // 4. 폼 유효성 검증
+    // 3. 폼 유효성 검증
     if (!validateForm()) {
       const firstErrorField = Object.keys(errors)[0];
       toast.error(errors[firstErrorField] || '입력 내용을 확인해주세요');
@@ -1815,6 +1833,14 @@ export default function CreateCustomDealPage() {
           setShowProfileModal(false);
           router.push('/mypage');
         }}
+      />
+
+      {/* Penalty Modal */}
+      <PenaltyModal
+        isOpen={showPenaltyModal}
+        onClose={() => setShowPenaltyModal(false)}
+        penaltyInfo={penaltyInfo}
+        userRole="buyer"
       />
 
       {/* Duplicate Active Deal Dialog */}

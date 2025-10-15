@@ -15,9 +15,11 @@ import {
   User
 } from 'lucide-react';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
-import { checkActiveCustomDeals } from '@/lib/api/custom/duplicateCheck';
+import { CustomPenalty } from '@/lib/api/custom/penaltyApi';
+import { checkCanCreateCustomDeal } from '@/lib/api/custom/createDealCheck';
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -28,6 +30,12 @@ export default function DashboardClient() {
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  // 커공 등록용 패널티/프로필 모달 상태
+  const [customPenaltyInfo, setCustomPenaltyInfo] = useState<CustomPenalty | null>(null);
+  const [showCustomPenaltyModal, setShowCustomPenaltyModal] = useState(false);
+  const [showCustomProfileModal, setShowCustomProfileModal] = useState(false);
+  const [customMissingFields, setCustomMissingFields] = useState<string[]>([]);
 
   // 판매자 프로필 조회 함수
   const fetchSellerProfile = async () => {
@@ -71,18 +79,31 @@ export default function DashboardClient() {
 
   // 빠른메뉴 공구 등록 버튼 클릭 핸들러
   const handleQuickMenuCreateDeal = async () => {
-    // 중복 등록 체크
-    try {
-      const duplicateCheck = await checkActiveCustomDeals();
-      if (duplicateCheck.hasActiveDeal) {
-        alert(duplicateCheck.message);
+    const result = await checkCanCreateCustomDeal(user);
+
+    if (!result.canProceed) {
+      // 패널티가 있는 경우
+      if (result.penaltyInfo) {
+        setCustomPenaltyInfo(result.penaltyInfo);
+        setShowCustomPenaltyModal(true);
         return;
       }
-    } catch (error) {
-      console.error('중복 체크 실패:', error);
+
+      // 중복 등록인 경우
+      if (result.duplicateMessage) {
+        alert(result.duplicateMessage);
+        return;
+      }
+
+      // 프로필 정보 부족한 경우
+      if (result.missingFields) {
+        setCustomMissingFields(result.missingFields);
+        setShowCustomProfileModal(true);
+        return;
+      }
     }
 
-    // 체크 통과 시 페이지 이동
+    // 모든 체크 통과 시 페이지 이동
     router.push('/custom-deals/create');
   };
 
@@ -277,6 +298,25 @@ export default function DashboardClient() {
           };
           window.addEventListener('focus', handleFocus);
           router.push('/mypage/seller/settings');
+        }}
+      />
+
+      {/* 커공 등록용 패널티 모달 */}
+      <PenaltyModal
+        isOpen={showCustomPenaltyModal}
+        onClose={() => setShowCustomPenaltyModal(false)}
+        penaltyInfo={customPenaltyInfo}
+        userRole="buyer"
+      />
+
+      {/* 커공 등록용 프로필 체크 모달 */}
+      <ProfileCheckModal
+        isOpen={showCustomProfileModal}
+        onClose={() => setShowCustomProfileModal(false)}
+        missingFields={customMissingFields}
+        onUpdateProfile={() => {
+          setShowCustomProfileModal(false);
+          router.push('/mypage');
         }}
       />
     </div>
