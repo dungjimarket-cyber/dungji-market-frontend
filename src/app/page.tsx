@@ -250,7 +250,14 @@ function HomeContent() {
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* 커공특가 섹션 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-green-600">커공특가</h2>
+          <div className="mb-6 flex items-center gap-3 flex-wrap">
+            <span className="inline-flex items-center px-4 py-2 rounded-full text-xl sm:text-2xl font-bold text-white bg-gradient-to-r from-green-600 to-emerald-600 shadow-md">
+              커공특가
+            </span>
+            <span className="text-sm sm:text-base text-gray-600 font-medium">
+              차원이 다른 할인 혜택!
+            </span>
+          </div>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
