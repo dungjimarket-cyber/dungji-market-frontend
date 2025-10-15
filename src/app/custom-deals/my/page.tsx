@@ -99,15 +99,6 @@ export default function MyCustomDealsPage() {
       {/* Content - 가로 배치 */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 내가 만든 공구 */}
-          <div className="space-y-4">
-            <h2 className="text-base font-semibold text-slate-900 px-2 flex items-center gap-2">
-              <span className="text-slate-400">•</span>
-              내가 만든 공구
-            </h2>
-            <MyCustomDeals />
-          </div>
-
           {/* 참여한 공구 */}
           <div className="space-y-4">
             <h2 className="text-base font-semibold text-slate-900 px-2 flex items-center gap-2">
@@ -115,6 +106,15 @@ export default function MyCustomDealsPage() {
               참여한 공구
             </h2>
             <MyCustomParticipations />
+          </div>
+
+          {/* 내가 만든 공구 */}
+          <div className="space-y-4">
+            <h2 className="text-base font-semibold text-slate-900 px-2 flex items-center gap-2">
+              <span className="text-slate-400">•</span>
+              내가 만든 공구
+            </h2>
+            <MyCustomDeals />
           </div>
         </div>
       </div>

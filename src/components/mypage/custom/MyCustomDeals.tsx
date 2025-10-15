@@ -302,9 +302,13 @@ export default function MyCustomDeals() {
     completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
   };
 
-  // 데이터가 없으면 영역 자체를 숨김
+  // 데이터가 없으면 간단한 메시지만 표시
   if (!loading && deals.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-slate-600">내역이 없습니다.</p>
+      </div>
+    );
   }
 
   return (

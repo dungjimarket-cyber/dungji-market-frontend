@@ -325,9 +325,13 @@ export default function MyCustomParticipations() {
   const endIndex = startIndex + itemsPerPage;
   const currentParticipations = displayParticipations.slice(startIndex, endIndex);
 
-  // 데이터가 없으면 영역 자체를 숨김
+  // 데이터가 없으면 간단한 메시지만 표시
   if (!loading && participations.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-slate-600">내역이 없습니다.</p>
+      </div>
+    );
   }
 
   return (
