@@ -15,6 +15,13 @@ import { SearchBar } from '@/components/search/SearchBar';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 import NoticeSection from '@/components/home/NoticeSection';
 import { PopupManager } from '@/components/popup/PopupDisplay';
+import { Black_Han_Sans } from 'next/font/google';
+
+const blackHanSans = Black_Han_Sans({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 const BannerCarousel = dynamic(() => import('@/components/banner/BannerCarousel'), {
   loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
@@ -250,9 +257,9 @@ function HomeContent() {
         {/* 커공특가 섹션 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="mb-6 flex items-center gap-3 flex-wrap">
-            <span className="inline-flex items-center px-4 py-2 rounded-full text-xl sm:text-2xl font-bold text-white bg-gradient-to-r from-green-600 to-emerald-600 shadow-md">
+            <h2 className={`${blackHanSans.className} text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600`}>
               커공특가
-            </span>
+            </h2>
             <span className="text-sm sm:text-base text-gray-600 font-medium">
               차원이 다른 선착순 할인 혜택!
             </span>
@@ -298,9 +305,14 @@ function HomeContent() {
                                 <span className="text-sm text-slate-500 line-through">
                                   {deal.original_price.toLocaleString()}원
                                 </span>
-                                <span className="text-xl font-bold text-red-600">
-                                  {deal.discount_rate}%
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl font-bold text-red-600">
+                                    {deal.discount_rate}%
+                                  </span>
+                                  <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
+                                    커공특가
+                                  </span>
+                                </div>
                               </div>
                               <div className="text-xl sm:text-2xl font-bold text-slate-900">
                                 {typeof deal.final_price === 'object' && deal.final_price !== null
@@ -310,9 +322,14 @@ function HomeContent() {
                             </div>
                           ) : (
                             <div className="mb-3">
-                              <span className="text-xl font-bold text-blue-600">
-                                전품목 {deal.discount_rate}% 할인
-                              </span>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xl font-bold text-blue-600">
+                                  전품목 {deal.discount_rate}% 할인
+                                </span>
+                                <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
+                                  커공특가
+                                </span>
+                              </div>
                             </div>
                           )}
 
@@ -341,7 +358,7 @@ function HomeContent() {
 
         {/* 견적받기 섹션 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-blue-600">견적받기</h2>
+          <h2 className={`${blackHanSans.className} text-3xl sm:text-4xl mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-500`}>견적받기</h2>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
