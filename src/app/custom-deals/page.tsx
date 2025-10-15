@@ -634,6 +634,13 @@ export default function CustomDealsPage() {
               </div>
             )}
           </div>
+
+          {/* 하단 태그라인 */}
+          <div className="px-4 pb-6 text-center">
+            <p className="text-sm sm:text-base text-gray-600 font-medium">
+              차원이 다른 선착순 할인 혜택!
+            </p>
+          </div>
         </div>
       </div>
 
