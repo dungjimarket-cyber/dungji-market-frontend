@@ -414,7 +414,16 @@ export default function SellerSettings() {
       if (response.ok) {
         setHasReferral(true);
         setReferrerName(data.referrer_name || '');
-        setShowReferralSuccessModal(true);
+        // 통신/렌탈 사업자만 견적이용권 지급 모달 표시
+        if (profile?.sellerCategory === 'telecom' || profile?.sellerCategory === 'rental') {
+          setShowReferralSuccessModal(true);
+        } else {
+          // 일반/가전 사업자는 간단한 토스트 메시지만
+          toast({
+            title: '추천인 등록 완료',
+            description: '추천인이 등록되었습니다.'
+          });
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -1981,7 +1990,8 @@ export default function SellerSettings() {
             </div>
           </Card>
 
-          {/* 추천인 코드 입력 카드 */}
+          {/* 추천인 코드 입력 카드 - 통신/렌탈 사업자만 표시 */}
+          {(formData.sellerCategory === 'telecom' || formData.sellerCategory === 'rental') && (
           <Card className="mt-6">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
@@ -2043,6 +2053,7 @@ export default function SellerSettings() {
               )}
             </CardContent>
           </Card>
+          )}
 
           {/* 푸시 알림 설정 - 임시 비활성화 */}
           {/* <Card className="mt-6">

@@ -1548,8 +1548,8 @@ function RegisterPageContent() {
                   </div>
                 )}
 
-                {/* 추천인 코드 (판매자 아이디 가입만) - 유효성 검증 API 완료 후 활성화 예정 */}
-                {/* {formData.role === 'seller' && signupType === 'email' && (
+                {/* 추천인 코드 (통신/렌탈 사업자만) */}
+                {formData.role === 'seller' && signupType === 'email' && (formData.seller_category === 'telecom' || formData.seller_category === 'rental') && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium text-gray-900">둥지파트너스 추천인 코드</h3>
                     
@@ -1602,7 +1602,7 @@ function RegisterPageContent() {
                       </p>
                     </div>
                   </div>
-                )} */}
+                )}
 
                 {/* 약관 동의 */}
                 <div id="terms-section" className="space-y-3 pt-4 border-t">
