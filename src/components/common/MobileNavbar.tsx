@@ -63,13 +63,7 @@ export default function MobileNavbar() {
     }
 
     // 패널티 체크
-    console.log('🔴 MobileNavbar - 견적요청 클릭');
-    console.log('🔴 User:', user);
-    console.log('🔴 Penalty info:', user?.penalty_info);
-    console.log('🔴 Is active:', user?.penalty_info?.is_active);
-
     if (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive) {
-      console.log('🔴 패널티 활성 상태 감지! 패널티 모달 표시');
       setShowPenaltyModal(true);
       return;
     }
@@ -86,33 +80,19 @@ export default function MobileNavbar() {
     }
 
     // 프로필 완성도 체크
-    console.log('[MobileNavbar] 공구 등록 클릭, 프로필 체크 시작');
     const isProfileComplete = await checkProfile();
 
     if (!isProfileComplete) {
-      console.log('[MobileNavbar] 프로필 미완성, 모달 표시');
       setShowProfileModal(true);
       return;
     }
 
     // 프로필이 완성된 경우에만 페이지 이동
-    console.log('[MobileNavbar] 프로필 완성, 공구 등록 페이지로 이동');
     router.push('/group-purchases/create');
   };
   
   // 사용자 역할 확인
   useEffect(() => {
-    console.log('[MobileNavbar] Auth 상태 체크:', {
-      isLoading,
-      isAuthenticated,
-      hasUser: !!user,
-      userRole: user?.role,
-      userType: user?.user_type,
-      hasAccessToken: !!accessToken,
-      localStorage_token: typeof window !== 'undefined' ? !!localStorage.getItem('dungji_auth_token') : null,
-      localStorage_user: typeof window !== 'undefined' ? !!localStorage.getItem('user') : null
-    });
-
     // Auth context의 user 객체에서 직접 확인
     if (user) {
       const isSellerUser = user.role === 'seller' || user.user_type === '판매';
@@ -238,7 +218,6 @@ export default function MobileNavbar() {
         onClose={() => {
           // 모달을 닫으면 현재 페이지에 머물기
           setShowProfileModal(false);
-          console.log('[MobileNavbar] 프로필 모달 취소, 현재 페이지 유지');
         }}
         missingFields={missingFields}
         onUpdateProfile={() => {
@@ -248,13 +227,6 @@ export default function MobileNavbar() {
           // 사용자 역할 확인
           const isSeller = user?.role === 'seller' || user?.user_type === '판매';
           const redirectPath = isSeller ? '/mypage/seller/settings' : '/mypage/settings';
-
-          console.log('[MobileNavbar] 프로필 업데이트 이동:', {
-            user_role: user?.role,
-            user_type: user?.user_type,
-            isSeller,
-            redirectPath
-          });
 
           setShowProfileModal(false);  // 모달 닫기
           router.push(redirectPath);
