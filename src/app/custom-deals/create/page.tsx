@@ -1545,7 +1545,7 @@ export default function CreateCustomDealPage() {
                           value={code}
                           onChange={(e) => updateDiscountCode(index, e.target.value)}
                           placeholder={`코드 또는 링크 ${index + 1}`}
-                          maxLength={50}
+                          maxLength={500}
                         />
                         {discountCodes.length > 1 && (
                           <Button
@@ -1759,7 +1759,7 @@ export default function CreateCustomDealPage() {
                           value={code}
                           onChange={(e) => updateDiscountCode(index, e.target.value)}
                           placeholder={`코드 또는 링크 ${index + 1}`}
-                          maxLength={50}
+                          maxLength={500}
                         />
                         {discountCodes.length > 1 && (
                           <Button
