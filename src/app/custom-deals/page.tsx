@@ -26,7 +26,7 @@ interface CustomDeal {
     name: string;
     full_name: string;
   }>;
-  pricing_type?: 'single_product' | 'all_products';
+  pricing_type?: 'single_product' | 'all_products' | 'coupon_only';
   products?: Array<{
     name: string;
     original_price: number;
@@ -543,6 +543,15 @@ export default function CustomDealsPage() {
                             {deal.final_price.toLocaleString()}원
                           </div>
                         </>
+                      ) : deal.pricing_type === 'coupon_only' ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-lg font-bold text-blue-600">
+                            선착순 쿠폰 증정
+                          </span>
+                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                            이벤트
+                          </span>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-lg font-bold text-blue-600">
