@@ -432,11 +432,19 @@ export default function CreateCustomDealPage() {
     }
   };
 
-  // 할인코드 변경
+  // 할인코드 변경 (중복 체크 포함)
   const updateDiscountCode = (index: number, value: string) => {
     setDiscountCodes(prev => {
       const updated = [...prev];
       updated[index] = value;
+
+      // 중복 체크 (빈 값 제외)
+      const validCodes = updated.filter(c => c.trim());
+      const uniqueCodes = new Set(validCodes);
+      if (validCodes.length > 0 && uniqueCodes.size !== validCodes.length) {
+        toast.error('중복된 할인코드가 있습니다. 모든 참여자에게 동일한 코드를 제공하시려면 링크 입력창을 이용해주세요.');
+      }
+
       return updated;
     });
   };
@@ -578,7 +586,7 @@ export default function CreateCustomDealPage() {
     if (formData.type === 'online') {
       if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
         if (!formData.discount_url.trim()) {
-          newErrors.discount_url = '할인 링크를 입력해주세요';
+          newErrors.discount_url = '할인링크/참여방법을 입력해주세요';
           if (!firstErrorRef) firstErrorRef = discountUrlRef;
         }
       }
@@ -729,24 +737,6 @@ export default function CreateCustomDealPage() {
 
       // 가격 정보
       const validCodes = discountCodes.filter(c => c.trim());
-
-      // 중복 코드 체크 (온라인/오프라인에서 코드를 사용하는 경우)
-      const needsCodeValidation = (
-        (formData.type === 'online' && (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both')) ||
-        formData.type === 'offline'
-      );
-
-      if (needsCodeValidation && validCodes.length > 0) {
-        const uniqueCodes = new Set(validCodes);
-        if (uniqueCodes.size !== validCodes.length) {
-          setDuplicateDialogMessage(
-            '중복된 할인코드가 있습니다.\n\n모든 참여자에게 동일한 코드를 제공하려면 \'할인 링크\' 필드를 사용해주세요.'
-          );
-          setShowDuplicateDialog(true);
-          setLoading(false);
-          return;
-        }
-      }
 
       if (formData.pricing_type === 'single_product') {
         submitFormData.append('products', JSON.stringify([{
@@ -1421,7 +1411,9 @@ export default function CreateCustomDealPage() {
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="link_only" id="link_only" />
-                  <Label htmlFor="link_only" className="font-normal cursor-pointer">링크만</Label>
+                  <Label htmlFor="link_only" className="font-normal cursor-pointer">
+                    링크만 <span className="text-xs text-slate-500">(모든 참여자에게 발송되는 비공개 링크 또는 참여방법(사인,신호 등))</span>
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="code_only" id="code_only" />
@@ -1474,12 +1466,12 @@ export default function CreateCustomDealPage() {
               {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                 <div className="space-y-3">
                   <div>
-                    <Label>할인 링크 *</Label>
+                    <Label>할인링크/참여방법 *</Label>
                     <Input
                       ref={discountUrlRef}
                       value={formData.discount_url}
                       onChange={(e) => handleInputChange('discount_url', e.target.value)}
-                      placeholder="https://example.com/discount"
+                      placeholder="공구전용 비공개 url 또는 비공개 참여방식(신호,사인 등)을 입력해주세요"
                       className={errors.discount_url ? 'border-red-300' : ''}
                       maxLength={500}
                     />
