@@ -72,7 +72,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     description: '',
     usage_guide: '',
     type: 'online' as 'online' | 'offline',
-    pricing_type: 'single_product' as 'single_product' | 'all_products',
+    pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only',
     product_name: '',
     original_price: '',
     discount_rate: '',
@@ -603,8 +603,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         submitFormData.append('pricing_type', formData.pricing_type);
         submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
-        // 가격 정보
-        if (formData.pricing_type === 'single_product') {
+        // 가격 정보 - coupon_only는 가격 정보 불필요
+        if (formData.pricing_type === 'coupon_only') {
+          // 쿠폰전용: 가격 정보 전송하지 않음
+        } else if (formData.pricing_type === 'single_product') {
           submitFormData.append('products', JSON.stringify([{
             name: formData.product_name,
             original_price: parseInt(formData.original_price.replace(/,/g, '')),
@@ -978,11 +980,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <RadioGroupItem value="all_products" id="edit-all" />
                       <Label htmlFor="edit-all" className="cursor-pointer">전품목 할인</Label>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="coupon_only" id="edit-coupon" />
+                      <Label htmlFor="edit-coupon" className="cursor-pointer">쿠폰전용</Label>
+                    </div>
                   </RadioGroup>
                   <p className="text-xs text-slate-500 mt-1">
                     {formData.pricing_type === 'single_product'
                       ? '특정 상품 1개에 대한 할인입니다'
-                      : '업체의 모든 상품에 적용되는 할인입니다'}
+                      : formData.pricing_type === 'all_products'
+                      ? '업체의 모든 상품에 적용되는 할인입니다'
+                      : '가격 정보 없이 할인코드/링크만 제공합니다'}
                   </p>
                 </div>
 
@@ -1062,6 +1070,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       min="0"
                       max="99"
                     />
+                  </div>
+                )}
+
+                {/* 쿠폰전용 안내 */}
+                {formData.pricing_type === 'coupon_only' && (
+                  <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    💡 쿠폰전용: 가격 정보 없이 할인코드/링크만 제공합니다
                   </div>
                 )}
               </CardContent>

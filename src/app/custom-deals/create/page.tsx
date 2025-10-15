@@ -111,7 +111,7 @@ export default function CreateCustomDealPage() {
     description: '',
     usage_guide: '',
     type: 'online' as 'online' | 'offline',
-    pricing_type: 'single_product' as 'single_product' | 'all_products',
+    pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only',
     product_name: '',
     original_price: '',
     discount_rate: '',
@@ -568,30 +568,32 @@ export default function CreateCustomDealPage() {
       if (!firstErrorRef) firstErrorRef = imageRefDiv;
     }
 
-    // 가격
-    if (formData.pricing_type === 'single_product') {
-      if (!formData.product_name.trim()) {
-        newErrors.product_name = '상품명을 입력해주세요';
-        if (!firstErrorRef) firstErrorRef = productNameRef;
+    // 가격 - coupon_only는 가격 정보 불필요
+    if (formData.pricing_type !== 'coupon_only') {
+      if (formData.pricing_type === 'single_product') {
+        if (!formData.product_name.trim()) {
+          newErrors.product_name = '상품명을 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = productNameRef;
+        }
+        if (!formData.original_price) {
+          newErrors.original_price = '정상가를 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = originalPriceRef;
+        }
+        const originalPrice = parseInt(formData.original_price.replace(/,/g, ''));
+        if (originalPrice > 100000000) {
+          newErrors.original_price = '정상가는 최대 1억원까지 입력 가능합니다';
+          if (!firstErrorRef) firstErrorRef = originalPriceRef;
+        }
       }
-      if (!formData.original_price) {
-        newErrors.original_price = '정상가를 입력해주세요';
-        if (!firstErrorRef) firstErrorRef = originalPriceRef;
+      if (!formData.discount_rate) {
+        newErrors.discount_rate = '할인율을 입력해주세요';
+        if (!firstErrorRef) firstErrorRef = discountRateRef;
       }
-      const originalPrice = parseInt(formData.original_price.replace(/,/g, ''));
-      if (originalPrice > 100000000) {
-        newErrors.original_price = '정상가는 최대 1억원까지 입력 가능합니다';
-        if (!firstErrorRef) firstErrorRef = originalPriceRef;
+      const discountRate = parseInt(formData.discount_rate);
+      if (discountRate < 0 || discountRate > 99) {
+        newErrors.discount_rate = '할인율은 0~99% 사이여야 합니다';
+        if (!firstErrorRef) firstErrorRef = discountRateRef;
       }
-    }
-    if (!formData.discount_rate) {
-      newErrors.discount_rate = '할인율을 입력해주세요';
-      if (!firstErrorRef) firstErrorRef = discountRateRef;
-    }
-    const discountRate = parseInt(formData.discount_rate);
-    if (discountRate < 0 || discountRate > 99) {
-      newErrors.discount_rate = '할인율은 0~99% 사이여야 합니다';
-      if (!firstErrorRef) firstErrorRef = discountRateRef;
     }
 
     // 온라인 공구
@@ -773,10 +775,12 @@ export default function CreateCustomDealPage() {
       submitFormData.append('expired_at', calculateDeadline());
       submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
-      // 가격 정보
+      // 가격 정보 - coupon_only는 가격 정보 불필요
       const validCodes = discountCodes.filter(c => c.trim());
 
-      if (formData.pricing_type === 'single_product') {
+      if (formData.pricing_type === 'coupon_only') {
+        // 쿠폰전용: 가격 정보 전송하지 않음
+      } else if (formData.pricing_type === 'single_product') {
         submitFormData.append('products', JSON.stringify([{
           name: formData.product_name,
           original_price: parseInt(formData.original_price.replace(/,/g, '')),
@@ -1175,6 +1179,10 @@ export default function CreateCustomDealPage() {
                   <RadioGroupItem value="all_products" id="all" />
                   <Label htmlFor="all" className="cursor-pointer">전품목 할인</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="coupon_only" id="coupon" />
+                  <Label htmlFor="coupon" className="cursor-pointer">쿠폰전용</Label>
+                </div>
               </RadioGroup>
             </div>
 
@@ -1269,9 +1277,18 @@ export default function CreateCustomDealPage() {
             )}
 
             {/* 가격 입력 안내 */}
-            <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-              💡 공구 전용 할인가로 입력해주세요
-            </div>
+            {formData.pricing_type !== 'coupon_only' && (
+              <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                💡 공구 전용 할인가로 입력해주세요
+              </div>
+            )}
+
+            {/* 쿠폰전용 안내 */}
+            {formData.pricing_type === 'coupon_only' && (
+              <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                💡 쿠폰전용: 가격 정보 없이 할인코드/링크만 제공합니다
+              </div>
+            )}
           </CardContent>
         </Card>
 
