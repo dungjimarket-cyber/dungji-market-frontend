@@ -1019,17 +1019,15 @@ export default function CreateCustomDealPage() {
             </div>
 
             {/* 설명 */}
-            <div className="-mx-5">
-              <div className="px-5">
-                <Label>상품 설명 *</Label>
-              </div>
+            <div>
+              <Label>상품 설명 *</Label>
               <RichTextEditor
                 content={formData.description}
                 onChange={(content) => handleInputChange('description', content)}
                 placeholder="판매중인 상품 url, 매장정보, 상품정보 등 자유롭게 입력해주세요"
                 maxLength={3000}
               />
-              {errors.description && <div className="px-5"><p className="text-sm text-red-600 mt-1">{errors.description}</p></div>}
+              {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
             </div>
 
             {/* 이용 안내 */}

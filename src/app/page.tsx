@@ -132,9 +132,13 @@ function HomeContent() {
     // 커공특가와 견적받기 데이터 가져오기
     const fetchGroupBuys = async () => {
       try {
-        const [customDealsResponse, newResponse] = await Promise.all([
-          // 커공특가: 모집중인 커스텀 공구, 참여자 많은 순으로 정렬
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-current_participants&limit=10`, {
+        const [latestDealsResponse, popularDealsResponse, newResponse] = await Promise.all([
+          // 커공특가 최신순 2개
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-created_at&limit=2`, {
+            next: { revalidate: 60 } // 1분 캐시
+          }),
+          // 커공특가 인기순 2개
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-current_participants&limit=2`, {
             next: { revalidate: 60 } // 1분 캐시
           }),
           // 견적받기: recruiting,bidding 상태만, 시작시간 최신순으로 정렬
@@ -143,20 +147,28 @@ function HomeContent() {
           })
         ]);
 
-        if (customDealsResponse.ok && newResponse.ok) {
-          const customDealsData = await customDealsResponse.json();
+        if (latestDealsResponse.ok && popularDealsResponse.ok && newResponse.ok) {
+          const latestDealsData = await latestDealsResponse.json();
+          const popularDealsData = await popularDealsResponse.json();
           const newData = await newResponse.json();
 
           // 페이징 응답 형식과 배열 형식 모두 지원
-          const customDealsItems = Array.isArray(customDealsData)
-            ? customDealsData
-            : (customDealsData.results || []);
+          const latestDealsItems = Array.isArray(latestDealsData)
+            ? latestDealsData
+            : (latestDealsData.results || []);
+          const popularDealsItems = Array.isArray(popularDealsData)
+            ? popularDealsData
+            : (popularDealsData.results || []);
           const newItems = Array.isArray(newData)
             ? newData
             : (newData.results || []);
 
-          // 프론트엔드 필터링 제거 - 백엔드에서 이미 필터링됨
-          setCustomDeals(customDealsItems.slice(0, 2));
+          // 최신순 2개 + 인기순 2개 합치기 (중복 제거)
+          const latestIds = new Set(latestDealsItems.map((deal: any) => deal.id));
+          const popularFiltered = popularDealsItems.filter((deal: any) => !latestIds.has(deal.id));
+          const combinedDeals = [...latestDealsItems, ...popularFiltered].slice(0, 4);
+
+          setCustomDeals(combinedDeals);
           setNewGroupBuys(newItems.slice(0, 2));
         }
       } catch (error) {
@@ -261,7 +273,7 @@ function HomeContent() {
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
-                {[...Array(2)].map((_, i) => (
+                {[...Array(4)].map((_, i) => (
                   <div key={i} className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>
                 ))}
               </div>
