@@ -255,7 +255,7 @@ function HomeContent() {
               커공특가
             </span>
             <span className="text-sm sm:text-base text-gray-600 font-medium">
-              차원이 다른 할인 혜택!
+              차원이 다른 선착순 할인 혜택!
             </span>
           </div>
           <div className="space-y-4">
