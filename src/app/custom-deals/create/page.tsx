@@ -1612,9 +1612,7 @@ export default function CreateCustomDealPage() {
                 )}
 
                 <p className="text-sm text-slate-500 mt-1">
-                  {formData.online_discount_type === 'link_only'
-                    ? '공구 마감 후 자동으로 판매기간이 시작됩니다'
-                    : '공구 마감 후 자동으로 할인코드 유효기간이 시작됩니다'}
+                  공구 마감 후부터 유효기간 적용
                 </p>
               </div>
 
@@ -1833,7 +1831,7 @@ export default function CreateCustomDealPage() {
                   )}
 
                   <p className="text-sm text-slate-500 mt-1">
-                    공구 마감 후 자동으로 할인 유효기간이 시작됩니다
+                    공구 마감 후부터 유효기간 적용
                   </p>
                 </div>
               </CardContent>
