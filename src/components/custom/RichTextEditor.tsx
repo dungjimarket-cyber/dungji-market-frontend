@@ -56,8 +56,7 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-h-[400px] text-slate-700 text-sm leading-relaxed [&_p]:mb-3 [&_p]:mt-0 [&_ul]:mb-3 [&_ol]:mb-3 [&_h1]:mb-3 [&_h2]:mb-3 [&_h3]:mb-3 break-words',
-        style: 'word-break: break-word; overflow-wrap: anywhere;',
+        class: 'focus:outline-none min-h-[400px]',
       },
     },
   });
@@ -256,7 +255,10 @@ export default function RichTextEditor({
       </div>
 
       {/* 에디터 */}
-      <div className="p-5">
+      <div
+        className="p-5 text-slate-700 text-sm leading-relaxed [&_.ProseMirror>p]:mb-3 [&_.ProseMirror>p]:mt-0 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
+        style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+      >
         <EditorContent editor={editor} />
       </div>
     </div>
