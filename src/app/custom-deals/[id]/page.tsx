@@ -865,16 +865,28 @@ export default function CustomDealDetailPage() {
             {/* Participate Button */}
             {/* 참여 완료 상태 - 항상 비활성 버튼으로 표시 */}
             {deal.is_participated && (!user || deal.seller !== parseInt(user.id)) && (
-              <Button
-                size="lg"
-                className="w-full font-semibold py-6 bg-slate-100 text-slate-600 cursor-not-allowed hover:bg-slate-100"
-                disabled
-              >
-                <span className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  참여완료
-                </span>
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full font-semibold py-6 bg-slate-100 text-slate-600 cursor-not-allowed hover:bg-slate-100"
+                  disabled
+                >
+                  <span className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    참여완료
+                  </span>
+                </Button>
+
+                {/* 할인 제공 안내 */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-gray-700 font-medium">
+                      인원 마감시 할인정보(링크or코드)가 발송됩니다
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* 참여 가능 상태 - 모집 중이고 참여하지 않은 경우 */}
