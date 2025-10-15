@@ -488,11 +488,7 @@ export default function MyCustomParticipations() {
                                   : groupbuy.final_price.toLocaleString()}원
                               </div>
                             </>
-                          ) : (
-                            <div className="text-sm font-bold text-gray-900">
-                              전품목 {groupbuy.discount_rate}% 할인
-                            </div>
-                          )}
+                          ) : null}
                         </div>
                       </div>
 
@@ -503,25 +499,6 @@ export default function MyCustomParticipations() {
                           <span>{groupbuy.regions.map(r => r.full_name).join(', ')}</span>
                         </div>
                       )}
-
-                      {/* 참여 코드 - 작게 (쿠폰전용이면 쿠폰코드로 표시) */}
-                      <div className="bg-slate-50 rounded px-2 py-1.5 mb-1.5 inline-flex items-center gap-2">
-                        <span className="text-xs text-slate-500">
-                          {groupbuy.pricing_type === 'coupon_only' ? '쿠폰코드:' : '참여코드:'}
-                        </span>
-                        <span className="font-mono text-xs font-semibold text-slate-700">
-                          {participation.participation_code}
-                        </span>
-                        <button
-                          onClick={() => copyToClipboard(
-                            participation.participation_code,
-                            groupbuy.pricing_type === 'coupon_only' ? '쿠폰 코드' : '참여 코드'
-                          )}
-                          className="text-slate-400 hover:text-slate-600"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                      </div>
 
                       {/* 할인 정보 */}
                       {(participation.discount_code || participation.discount_url) && (() => {

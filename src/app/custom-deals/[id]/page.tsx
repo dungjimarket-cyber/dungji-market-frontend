@@ -244,7 +244,7 @@ export default function CustomDealDetailPage() {
     let confirmMessage = `${deal.title}\n\n`;
 
     if (deal.pricing_type === 'coupon_only') {
-      confirmMessage += '선착순 쿠폰 증정\n\n';
+      confirmMessage += `${deal.discount_rate}% 할인 쿠폰\n\n`;
     } else if (deal.original_price && deal.final_price) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
@@ -762,15 +762,10 @@ export default function CustomDealDetailPage() {
               <CardContent className="p-5">
                 {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
-                      <span className="text-2xl font-bold text-blue-600">
-                        선착순 쿠폰 증정
-                      </span>
-                      <span className="text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                        이벤트
-                      </span>
+                    <div className="text-2xl font-bold text-blue-600 mb-1">
+                      {deal.discount_rate}% 할인 쿠폰
                     </div>
-                    <p className="text-xs text-slate-600">쿠폰 받고 할인 혜택을 누리세요</p>
+                    <p className="text-xs text-slate-600">인원 마감 시 쿠폰이 발급됩니다</p>
                   </div>
                 ) : deal.original_price && deal.final_price ? (
                   <>

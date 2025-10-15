@@ -24,6 +24,7 @@ interface CustomDeal {
     full_name: string;
   }>;
   location?: string; // 오프라인 매장 주소
+  pricing_type?: 'single_product' | 'all_products' | 'coupon_only';
   original_price: number;
   discount_rate: number;
   final_price: number;
@@ -384,254 +385,209 @@ export default function MyCustomDeals() {
           <p className="text-sm text-slate-600">등록한 공구가 없습니다</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-3">
           {displayDeals.map((deal) => {
             const isCancelled = deal.status === 'cancelled' || deal.status === 'expired';
 
             return (
-            <Card key={deal.id} className="border-slate-200 overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
-              {isCancelled ? (
-                // 취소된 항목: 링크 없이, 회색 오버레이
-                <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0">
-                  {deal.primary_image ? (
-                    <img
-                      src={deal.primary_image}
-                      alt={deal.title}
-                      className="w-full h-full object-contain opacity-40"
-                    />
+            <Card key={deal.id} className="border-slate-200 hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex gap-4">
+                  {/* 이미지 */}
+                  {isCancelled ? (
+                    // 취소된 항목: 링크 없이, 회색처리
+                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 relative">
+                      {deal.primary_image ? (
+                        <img
+                          src={deal.primary_image}
+                          alt={deal.title}
+                          className="w-full h-full object-cover opacity-40"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full opacity-40">
+                          <Tag className="w-8 h-8 text-slate-300" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-slate-500/20" />
+                    </div>
                   ) : (
-                    <div className="flex items-center justify-center h-full opacity-40">
-                      <Tag className="w-12 h-12 text-slate-300" />
-                    </div>
+                    // 정상 항목: 링크 있음
+                    <Link href={`/custom-deals/${deal.id}`}>
+                      <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
+                        {deal.primary_image ? (
+                          <img
+                            src={deal.primary_image}
+                            alt={deal.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <Tag className="w-8 h-8 text-slate-300" />
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   )}
-                  {/* 회색 오버레이 */}
-                  <div className="absolute inset-0 bg-slate-500/20" />
-                  <div className="absolute top-2 right-2">
-                    {getStatusBadge(deal)}
-                  </div>
-                  <div className="absolute top-2 left-2">
-                    <Badge className="bg-white/90 text-slate-700 border-0 text-xs px-2 py-0.5 whitespace-nowrap">
-                      {deal.type_display}
-                    </Badge>
-                  </div>
-                </div>
-              ) : (
-                // 정상 항목: 링크 있음
-                <Link href={`/custom-deals/${deal.id}`}>
-                  <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group flex-shrink-0">
-                    {deal.primary_image ? (
-                      <img
-                        src={deal.primary_image}
-                        alt={deal.title}
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <Tag className="w-12 h-12 text-slate-300" />
-                      </div>
-                    )}
-                    <div className="absolute top-2 right-2">
-                      {getStatusBadge(deal)}
-                    </div>
-                    <div className="absolute top-2 left-2">
-                      <Badge className="bg-white/90 text-slate-700 border-0 text-xs px-2 py-0.5 whitespace-nowrap">
-                        {deal.type_display}
-                      </Badge>
-                    </div>
-                  </div>
-                </Link>
-              )}
 
-              <CardContent className="p-3 flex flex-col flex-1">
-                {/* Location (offline only) - 제목 위에 표시 */}
-                <div className="h-5 mb-1">
-                  {deal.type === 'offline' && deal.location && (
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">
-                        {deal.location}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {isCancelled ? (
-                  // 취소된 항목: 링크 없음
-                  <h3 className="font-bold text-sm text-slate-600 mb-1 line-clamp-2 leading-tight h-10">
-                    {deal.title}
-                  </h3>
-                ) : (
-                  // 정상 항목: 링크 있음
-                  <Link href={`/custom-deals/${deal.id}`}>
-                    <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
-                      {deal.title}
-                    </h3>
-                  </Link>
-                )}
-
-                {/* Price - 고정 높이 */}
-                <div className="mb-2 h-14">
-                  {deal.original_price && deal.final_price ? (
-                    <>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-xs text-slate-400 line-through">
-                          {deal.original_price.toLocaleString()}원
-                        </span>
-                        <span className="text-sm font-bold text-red-600">
-                          {deal.discount_rate}%
-                        </span>
+                  {/* 정보 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-1.5">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Badge variant="outline" className="text-xs">{deal.type_display}</Badge>
+                          {getStatusBadge(deal)}
+                        </div>
+                        {isCancelled ? (
+                          // 취소된 항목: 링크 없음
+                          <h3 className="text-base font-bold text-slate-600 truncate">
+                            {deal.title}
+                          </h3>
+                        ) : (
+                          // 정상 항목: 링크 있음
+                          <Link href={`/custom-deals/${deal.id}`}>
+                            <h3 className="text-base font-bold text-slate-900 hover:text-blue-600 cursor-pointer truncate">
+                              {deal.title}
+                            </h3>
+                          </Link>
+                        )}
+                        {/* Location (offline only) */}
+                        {deal.type === 'offline' && deal.location && (
+                          <p className="text-xs text-slate-500 mt-0.5 truncate">
+                            {deal.location}
+                          </p>
+                        )}
                       </div>
-                      <div className="text-lg font-bold text-slate-900">
-                        {typeof deal.final_price === 'object' && deal.final_price !== null
-                          ? ((deal.final_price as any).min || 0).toLocaleString()
-                          : deal.final_price.toLocaleString()}원
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-base font-bold text-gray-900">
-                      전품목 {deal.discount_rate}% 할인
-                    </div>
-                  )}
-                </div>
-
-                {/* Progress or Validity - 고정 높이 */}
-                <div className="mb-2">
-                  {deal.status === 'completed' && deal.discount_valid_until ? (
-                    // 마감된 경우: 참여자 인원 (위) + 유효기간/판매기간 (아래)
-                    <>
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
-                          <Users className="w-3 h-3 flex-shrink-0" />
-                          참여자
-                        </span>
-                        <span className="font-semibold text-slate-900">
-                          {deal.current_participants}명
-                        </span>
-                      </div>
-                      {(() => {
-                        const validity = getValidityDisplay(deal.discount_valid_until);
-                        if (validity) {
-                          return (
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-slate-600">{validity.label}</span>
-                              <span className={`font-semibold ${validity.color}`}>
-                                {validity.time}
+                      <div className="text-right flex-shrink-0">
+                        {deal.original_price && deal.final_price ? (
+                          <>
+                            <div className="flex items-baseline gap-1.5 justify-end">
+                              <span className="text-xs text-slate-400 line-through">
+                                {deal.original_price.toLocaleString()}원
+                              </span>
+                              <span className="text-sm font-bold text-red-600">
+                                {deal.discount_rate}%
                               </span>
                             </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </>
-                  ) : (
-                    // 모집 중: 기존 인원/시간 + 프로그레스 바
-                    <>
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
-                          <Users className="w-3 h-3 flex-shrink-0" />
-                          {deal.current_participants}/{deal.target_participants}
-                        </span>
-                        <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
-                          <Clock className="w-3 h-3 flex-shrink-0" />
-                          {getRemainingTime(deal.expired_at)}
-                        </span>
+                            <div className="text-lg font-bold text-slate-900 mt-0.5">
+                              {typeof deal.final_price === 'object' && deal.final_price !== null
+                                ? ((deal.final_price as any).min || 0).toLocaleString()
+                                : deal.final_price.toLocaleString()}원
+                            </div>
+                          </>
+                        ) : null}
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-1.5">
-                        <div
-                          className="bg-gray-900 h-1.5 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${Math.min(
-                              (deal.current_participants / deal.target_participants) * 100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
+                    </div>
 
-                {/* Stats - 고정 높이 */}
-                <div className="flex items-center gap-3 text-xs text-slate-400 mb-2 pt-2 border-t border-slate-100 h-8">
-                  <span className="flex items-center gap-0.5 whitespace-nowrap">
-                    <Eye className="w-3 h-3 flex-shrink-0" />
-                    {deal.view_count}
-                  </span>
-                  <span className="flex items-center gap-0.5 whitespace-nowrap">
-                    <Heart className="w-3 h-3 flex-shrink-0" />
-                    {deal.favorite_count}
-                  </span>
-                  <span className="flex items-center gap-0.5 text-slate-400 truncate">
-                    {new Date(deal.created_at).toLocaleDateString('ko', { month: 'short', day: 'numeric' })}
-                  </span>
-                </div>
+                    {/* Progress or Validity */}
+                    <div className="mb-2">
+                      {deal.status === 'completed' && deal.discount_valid_until ? (
+                        // 마감된 경우: 참여자 + 유효기간
+                        <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-1 text-slate-600">
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="font-semibold text-slate-900">
+                              {deal.current_participants}명 참여
+                            </span>
+                          </div>
+                          {(() => {
+                            const validity = getValidityDisplay(deal.discount_valid_until);
+                            if (validity) {
+                              return (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3 flex-shrink-0 text-slate-600" />
+                                  <span className={`font-medium ${validity.color}`}>
+                                    {validity.time}
+                                  </span>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      ) : (
+                        // 모집 중: 인원/시간
+                        <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-1 text-slate-600">
+                            <Users className="w-3 h-3 flex-shrink-0" />
+                            <span className="font-semibold text-slate-900">
+                              {deal.current_participants}/{deal.target_participants}명
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-slate-500">
+                            <Clock className="w-3 h-3 flex-shrink-0" />
+                            <span className="font-medium">
+                              {getRemainingTime(deal.expired_at)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Action Buttons - 하단 고정 */}
-                {!isCancelled && (
-                  <div className="flex flex-col gap-1 mt-auto">
-                    {deal.status === 'recruiting' && deal.current_participants >= 1 && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs h-7 text-orange-600 border-orange-300 hover:bg-orange-50 whitespace-nowrap"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleEarlyClose(deal.id);
-                        }}
-                      >
-                        조기종료
-                      </Button>
-                    )}
-
-                    {deal.status === 'pending_seller' && (
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          className="flex-1 text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white whitespace-nowrap"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleConfirmSale(deal.id);
-                          }}
-                        >
-                          <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                          확정
-                        </Button>
+                    {/* Action Buttons */}
+                    {!isCancelled && (
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-xs h-7 text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleCancelSale(deal.id);
-                          }}
+                          className="text-xs h-7 px-3"
+                          onClick={() => router.push(`/custom-deals/${deal.id}`)}
                         >
-                          <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                          취소
+                          상세보기
                         </Button>
+                        {deal.status === 'recruiting' && deal.current_participants >= 1 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-3 text-orange-600 border-orange-300 hover:bg-orange-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEarlyClose(deal.id);
+                            }}
+                          >
+                            조기종료
+                          </Button>
+                        )}
+                        {deal.status === 'completed' && deal.current_participants > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-3"
+                            onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
+                          >
+                            참여자 관리
+                          </Button>
+                        )}
+                        {deal.status === 'pending_seller' && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="text-xs h-7 px-3 bg-gray-900 hover:bg-gray-800 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleConfirmSale(deal.id);
+                              }}
+                            >
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              확정
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleCancelSale(deal.id);
+                              }}
+                            >
+                              <XCircle className="w-3 h-3 mr-1" />
+                              취소
+                            </Button>
+                          </>
+                        )}
                       </div>
                     )}
-
-                    {deal.status === 'completed' && deal.current_participants > 0 && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs h-7 whitespace-nowrap"
-                        onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
-                      >
-                        참여자 관리
-                      </Button>
-                    )}
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full text-xs h-7 whitespace-nowrap"
-                      onClick={() => router.push(`/custom-deals/${deal.id}`)}
-                    >
-                      상세보기
-                    </Button>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
             );
