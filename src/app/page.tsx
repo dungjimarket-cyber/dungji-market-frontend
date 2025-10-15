@@ -163,10 +163,8 @@ function HomeContent() {
             ? newData
             : (newData.results || []);
 
-          // 최신순 2개 + 인기순 2개 합치기 (중복 제거)
-          const latestIds = new Set(latestDealsItems.map((deal: any) => deal.id));
-          const popularFiltered = popularDealsItems.filter((deal: any) => !latestIds.has(deal.id));
-          const combinedDeals = [...latestDealsItems, ...popularFiltered].slice(0, 4);
+          // 최신순 2개 + 인기순 2개 합치기 (중복 허용)
+          const combinedDeals = [...latestDealsItems, ...popularDealsItems];
 
           setCustomDeals(combinedDeals);
           setNewGroupBuys(newItems.slice(0, 2));
