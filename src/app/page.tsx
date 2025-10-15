@@ -132,13 +132,9 @@ function HomeContent() {
     // 커공특가와 견적받기 데이터 가져오기
     const fetchGroupBuys = async () => {
       try {
-        const [latestDealsResponse, popularDealsResponse, newResponse] = await Promise.all([
-          // 커공특가 최신순 2개
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-created_at&limit=2`, {
-            next: { revalidate: 60 } // 1분 캐시
-          }),
-          // 커공특가 인기순 2개
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-current_participants&limit=2`, {
+        const [customDealsResponse, newResponse] = await Promise.all([
+          // 커공특가: 최신순 4개
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-created_at&limit=4`, {
             next: { revalidate: 60 } // 1분 캐시
           }),
           // 견적받기: recruiting,bidding 상태만, 시작시간 최신순으로 정렬
@@ -147,26 +143,19 @@ function HomeContent() {
           })
         ]);
 
-        if (latestDealsResponse.ok && popularDealsResponse.ok && newResponse.ok) {
-          const latestDealsData = await latestDealsResponse.json();
-          const popularDealsData = await popularDealsResponse.json();
+        if (customDealsResponse.ok && newResponse.ok) {
+          const customDealsData = await customDealsResponse.json();
           const newData = await newResponse.json();
 
           // 페이징 응답 형식과 배열 형식 모두 지원
-          const latestDealsItems = Array.isArray(latestDealsData)
-            ? latestDealsData
-            : (latestDealsData.results || []);
-          const popularDealsItems = Array.isArray(popularDealsData)
-            ? popularDealsData
-            : (popularDealsData.results || []);
+          const customDealsItems = Array.isArray(customDealsData)
+            ? customDealsData
+            : (customDealsData.results || []);
           const newItems = Array.isArray(newData)
             ? newData
             : (newData.results || []);
 
-          // 최신순 2개 + 인기순 2개 합치기 (중복 허용)
-          const combinedDeals = [...latestDealsItems, ...popularDealsItems];
-
-          setCustomDeals(combinedDeals);
+          setCustomDeals(customDealsItems);
           setNewGroupBuys(newItems.slice(0, 2));
         }
       } catch (error) {
