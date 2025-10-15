@@ -1000,7 +1000,7 @@ export default function CreateCustomDealPage() {
           <CardHeader>
             <CardTitle>기본 정보</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-5">
             {/* 제목 */}
             <div>
               <Label>제목 *</Label>

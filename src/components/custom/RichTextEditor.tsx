@@ -56,7 +56,7 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-h-[400px] p-4 text-slate-700 text-sm leading-relaxed [&_p]:mb-3 [&_p]:mt-0 [&_ul]:mb-3 [&_ol]:mb-3 [&_h1]:mb-3 [&_h2]:mb-3 [&_h3]:mb-3 break-words',
+        class: 'focus:outline-none min-h-[400px] text-slate-700 text-sm leading-relaxed [&_p]:mb-3 [&_p]:mt-0 [&_ul]:mb-3 [&_ol]:mb-3 [&_h1]:mb-3 [&_h2]:mb-3 [&_h3]:mb-3 break-words',
         style: 'word-break: break-word; overflow-wrap: anywhere;',
       },
     },
@@ -256,7 +256,9 @@ export default function RichTextEditor({
       </div>
 
       {/* 에디터 */}
-      <EditorContent editor={editor} />
+      <div className="p-5">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
