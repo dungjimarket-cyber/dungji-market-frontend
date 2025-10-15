@@ -1,15 +1,18 @@
 import { Metadata } from 'next';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   children: React.ReactNode;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
+    // Next.js 15: params is now a Promise
+    const { id } = await params;
+
     // API에서 공구 정보 가져오기
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/`,
+      `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${id}/`,
       {
         cache: 'no-store', // 항상 최신 데이터 가져오기
       }
