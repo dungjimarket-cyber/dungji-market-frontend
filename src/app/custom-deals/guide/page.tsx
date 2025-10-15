@@ -62,12 +62,12 @@ export default function CustomDealsGuidePage() {
 
           <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
             <h4 className="text-sm font-semibold text-gray-900 mb-2">다양한 카테고리 제공</h4>
-            <div className="relative w-full max-w-2xl mx-auto">
+            <div className="relative w-full max-w-xl mx-auto">
               <Image
                 src="/images/custom-category.jpg"
                 alt="커스텀 공구 카테고리"
-                width={600}
-                height={200}
+                width={300}
+                height={100}
                 className="rounded-lg w-full h-auto"
               />
             </div>
