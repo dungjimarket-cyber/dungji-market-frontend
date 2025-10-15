@@ -1551,8 +1551,6 @@ function RegisterPageContent() {
                 {/* 추천인 코드 (통신/렌탈 사업자만) */}
                 {formData.role === 'seller' && signupType === 'email' && (formData.seller_category === 'telecom' || formData.seller_category === 'rental') && (
                   <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-lg font-medium text-gray-900">둥지파트너스 추천인 코드</h3>
-                    
                     <div>
                       <label htmlFor="referral_code" className="block text-sm font-medium text-gray-700 mb-1">
                         추천인 코드 <span className="text-gray-500">(선택)</span>
