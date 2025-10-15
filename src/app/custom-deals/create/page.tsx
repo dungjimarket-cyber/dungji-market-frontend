@@ -31,7 +31,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import AddressSearch from '@/components/address/AddressSearch';
-import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { compressImageInBrowser } from '@/lib/api/used/browser-image-utils';
@@ -78,12 +77,9 @@ export default function CreateCustomDealPage() {
   const locationRef = useRef<HTMLInputElement>(null);
   const phoneNumberRef = useRef<HTMLInputElement>(null);
 
-  const {
-    checkProfile,
-    missingFields,
-    showProfileModal,
-    setShowProfileModal,
-  } = useCustomProfileCheck();
+  // 프로필 모달 상태 (연락처만 체크)
+  const [profileMissingFields, setProfileMissingFields] = useState<string[]>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // 카테고리 목록
   const [categories, setCategories] = useState<Category[]>([]);
@@ -672,6 +668,7 @@ export default function CreateCustomDealPage() {
 
       // 프로필 정보 부족한 경우
       if (result.missingFields) {
+        setProfileMissingFields(result.missingFields);
         setShowProfileModal(true);
         return;
       }
@@ -1828,7 +1825,7 @@ export default function CreateCustomDealPage() {
       <ProfileCheckModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
-        missingFields={missingFields}
+        missingFields={profileMissingFields}
         onUpdateProfile={() => {
           setShowProfileModal(false);
           router.push('/mypage');
