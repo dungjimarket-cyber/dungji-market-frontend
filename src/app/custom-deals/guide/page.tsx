@@ -64,7 +64,7 @@ export default function CustomDealsGuidePage() {
             <h4 className="text-sm font-semibold text-gray-900 mb-2">다양한 카테고리 제공</h4>
             <div className="relative w-full max-w-2xl mx-auto">
               <Image
-                src="/custom-category.jpg"
+                src="/images/custom-category.jpg"
                 alt="커스텀 공구 카테고리"
                 width={600}
                 height={200}
