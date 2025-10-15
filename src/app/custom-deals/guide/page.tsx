@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { ChevronDown, ChevronUp, Users, ShoppingCart, AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
 
 interface Section {
@@ -25,7 +26,7 @@ export default function CustomDealsGuidePage() {
       content: (
         <div className="space-y-3">
           <p className="text-sm text-gray-700 leading-relaxed">
-            <span className="font-semibold text-gray-900">커스텀 공구</span>는 판매자가 일정 인원 이상 모이면 특별 할인을 제공하는 공동구매 시스템입니다.
+            <span className="font-semibold text-gray-900">커스텀 공구</span>는 온/오프라인 판매자라면 누구나 등록하고 판매하실 수 있도록 수수료없이 운영하는 둥지마켓만의 특별한 공동구매 서비스입니다.
           </p>
 
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3.5 rounded-lg border-2 border-blue-200">
@@ -58,6 +59,19 @@ export default function CustomDealsGuidePage() {
           <p className="text-xs text-gray-600 bg-green-50 p-2.5 rounded-lg border border-green-200">
             💡 판매수수료 없이 직접 결제받기 때문에 누구나 부담없이 이용 가능합니다. (무료 서비스)
           </p>
+
+          <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">다양한 카테고리 제공</h4>
+            <div className="relative w-full max-w-2xl mx-auto">
+              <Image
+                src="/custom-category.jpg"
+                alt="커스텀 공구 카테고리"
+                width={600}
+                height={200}
+                className="rounded-lg w-full h-auto"
+              />
+            </div>
+          </div>
 
           <div className="bg-blue-50 p-3 rounded-lg">
             <h4 className="text-sm font-semibold text-gray-900 mb-1.5">온라인 공구</h4>
