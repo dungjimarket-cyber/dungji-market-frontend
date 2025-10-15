@@ -882,7 +882,7 @@ export default function CustomDealDetailPage() {
                   <div className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 font-medium">
-                      인원 마감시 할인정보(링크or코드)가 발송됩니다
+                      인원 마감시 비공개 할인링크 또는 코드가 발송됩니다
                     </p>
                   </div>
                 </div>
@@ -910,7 +910,7 @@ export default function CustomDealDetailPage() {
                   <div className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 font-medium">
-                      인원 마감시 할인정보(링크or코드)가 발송됩니다
+                      인원 마감시 비공개 할인링크 또는 코드가 발송됩니다
                     </p>
                   </div>
                 </div>
