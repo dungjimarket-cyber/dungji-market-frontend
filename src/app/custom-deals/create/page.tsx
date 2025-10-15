@@ -1419,7 +1419,7 @@ export default function CreateCustomDealPage() {
                       onChange={(e) => handleInputChange('discount_url', e.target.value)}
                       placeholder="https://example.com/discount"
                       className={errors.discount_url ? 'border-red-300' : ''}
-                      maxLength={200}
+                      maxLength={500}
                     />
                     {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
                   </div>

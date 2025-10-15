@@ -1092,7 +1092,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           value={formData.discount_url}
                           onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
                           placeholder="https://example.com/discount"
-                          maxLength={200}
+                          maxLength={500}
                         />
                       </div>
 
