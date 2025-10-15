@@ -1080,7 +1080,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       💡 공구마감 후 고객에게 발송되는 정보입니다<br />
                       • 스마트스토어 할인링크 등 개별 쿠폰링크도 입력 가능합니다<br />
                       • 할인 링크는 공구 마감후 공개될수 있도록 비공개 처리 부탁드립니다.<br />
-                      • 할인코드 용도: 온라인 구매시 코드 또는 링크 사용, 현장 결제시 상호 확인
+                      • 할인코드 용도: 온라인 구매시 코드 또는 링크 사용
                     </p>
                   </div>
 
@@ -1293,6 +1293,16 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        💡 오프라인 매장 할인코드 활용 방법<br />
+                        • QR코드 생성하여 매장 내 제시 또는 스캔<br />
+                        • 참여자 휴대폰 화면에 코드 표시 후 직원 확인<br />
+                        • 현장 결제 시 코드 또는 참여자 정보 상호 확인<br />
+                        • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
+                      </p>
+                    </div>
+
                     <div>
                       <Label>할인 코드 또는 링크 *</Label>
                       <div className="space-y-2 mt-2">
@@ -1532,6 +1542,16 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
             {formData.type === 'offline' && (
               <>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    💡 오프라인 매장 할인코드 활용 방법<br />
+                    • QR코드 생성하여 매장 내 제시 또는 스캔<br />
+                    • 참여자 휴대폰 화면에 코드 표시 후 직원 확인<br />
+                    • 현장 결제 시 코드 또는 참여자 정보 상호 확인<br />
+                    • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
+                  </p>
+                </div>
+
                 <div>
                   <Label className="flex items-center gap-2">
                     <Ticket className="w-4 h-4" />
