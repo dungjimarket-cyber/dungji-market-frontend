@@ -723,13 +723,39 @@ export default function CreateCustomDealPage() {
 
       const submitFormData = new FormData();
 
-      // 이미지 파일 추가 (원본 파일, 백엔드에서 압축 처리)
+      // 이미지 압축 및 추가 (중고폰 방식과 동일)
+      toast('이미지 처리 중...', { description: '이미지를 압축하고 있습니다. 잠시만 기다려주세요.' });
+
       let appendedCount = 0;
-      for (const img of actualImages) {
+      for (let i = 0; i < actualImages.length; i++) {
+        const img = actualImages[i];
+
         if (img.file) {
-          console.log('[DEBUG] Appending image:', img.file.name, img.file.size);
-          submitFormData.append('images', img.file);
-          appendedCount++;
+          try {
+            // 이미지 압축 (85% 품질, 최대 1200x1200, webp 변환)
+            const compressedBlob = await compressImageInBrowser(img.file, {
+              maxWidth: 1200,
+              maxHeight: 1200,
+              quality: 0.85,
+              format: 'webp'
+            });
+
+            // Blob을 File로 변환
+            const compressedFile = new File(
+              [compressedBlob],
+              `image_${i}.webp`,
+              { type: 'image/webp' }
+            );
+
+            console.log('[DEBUG] Compressed:', img.file.name, img.file.size, '->', compressedFile.size);
+            submitFormData.append('images', compressedFile);
+            appendedCount++;
+          } catch (error) {
+            console.error(`[DEBUG] Failed to compress image ${i + 1}:`, error);
+            // 압축 실패 시 원본 사용
+            submitFormData.append('images', img.file);
+            appendedCount++;
+          }
         } else {
           console.warn('[DEBUG] Image without file:', img);
         }

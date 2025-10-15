@@ -540,10 +540,36 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
         // 새로 추가된 이미지만 업로드 (압축 적용)
         if (newImages.length > 0) {
-          // 이미지 압축 로직은 생략 (백엔드에서 처리)
-          for (const image of newImages) {
+          toast('이미지 처리 중...', { description: '이미지를 압축하고 있습니다.' });
+
+          for (let i = 0; i < newImages.length; i++) {
+            const image = newImages[i];
+
             if (image.file) {
-              submitFormData.append('new_images', image.file);
+              try {
+                // 이미지 압축 (85% 품질, 최대 1200x1200, webp 변환)
+                const compressImageInBrowser = (await import('@/lib/api/used/browser-image-utils')).compressImageInBrowser;
+                const compressedBlob = await compressImageInBrowser(image.file, {
+                  maxWidth: 1200,
+                  maxHeight: 1200,
+                  quality: 0.85,
+                  format: 'webp'
+                });
+
+                // Blob을 File로 변환
+                const compressedFile = new File(
+                  [compressedBlob],
+                  `image_${i}.webp`,
+                  { type: 'image/webp' }
+                );
+
+                console.log('[EDIT] Compressed:', image.file.name, image.file.size, '->', compressedFile.size);
+                submitFormData.append('new_images', compressedFile);
+              } catch (error) {
+                console.error(`[EDIT] Failed to compress image ${i + 1}:`, error);
+                // 압축 실패 시 원본 사용
+                submitFormData.append('new_images', image.file);
+              }
             }
           }
         }
