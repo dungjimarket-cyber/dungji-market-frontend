@@ -60,6 +60,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
   // 할인코드 배열
   const [discountCodes, setDiscountCodes] = useState<string[]>(['']);
 
+  // 중복 코드 에러
+  const [duplicateCodeError, setDuplicateCodeError] = useState<string | null>(null);
+
   // 에러 상태
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -441,19 +444,28 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     }
   };
 
-  // 할인코드 변경 (중복 체크 포함)
+  // 할인코드 변경 (중복 입력 차단)
   const updateDiscountCode = (index: number, value: string) => {
+    // 입력하려는 값이 다른 코드와 중복되는지 확인
+    const trimmedValue = value.trim();
+    if (trimmedValue) {
+      const isDuplicate = discountCodes.some((code, i) =>
+        i !== index && code.trim() === trimmedValue
+      );
+
+      if (isDuplicate) {
+        setDuplicateCodeError('중복된 할인코드는 입력할 수 없습니다. 모든 참여자에게 동일한 코드를 제공하시려면 링크 입력창을 이용해주세요.');
+        // 3초 후 에러 메시지 자동 제거
+        setTimeout(() => setDuplicateCodeError(null), 3000);
+        return; // 중복이면 업데이트하지 않음
+      }
+    }
+
+    // 중복이 아니면 에러 제거 및 업데이트
+    setDuplicateCodeError(null);
     setDiscountCodes(prev => {
       const updated = [...prev];
       updated[index] = value;
-
-      // 중복 체크 (빈 값 제외)
-      const validCodes = updated.filter(c => c.trim());
-      const uniqueCodes = new Set(validCodes);
-      if (validCodes.length > 0 && uniqueCodes.size !== validCodes.length) {
-        toast.error('중복된 할인코드가 있습니다. 모든 참여자에게 동일한 코드를 제공하시려면 링크 입력창을 이용해주세요.');
-      }
-
       return updated;
     });
   };
@@ -1085,7 +1097,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="link_only" id="edit-link_only" />
                       <Label htmlFor="edit-link_only" className="font-normal cursor-pointer">
-                        링크만 <span className="text-xs text-slate-500">(모든 참여자에게 발송되는 비공개 링크 또는 참여방법(사인,신호 등))</span>
+                        링크만 <span className="text-xs text-slate-500">•모든 참여자에게 발송되는 비공개 링크 또는 참여방법</span>
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -1172,6 +1184,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           할인코드 추가
                         </Button>
                       </div>
+
+                      {/* 중복 코드 에러 메시지 */}
+                      {duplicateCodeError && (
+                        <p className="text-sm text-red-600 mt-2 animate-pulse">
+                          {duplicateCodeError}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -1369,6 +1388,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           할인코드 추가
                         </Button>
                       </div>
+
+                      {/* 중복 코드 에러 메시지 */}
+                      {duplicateCodeError && (
+                        <p className="text-sm text-red-600 mt-2 animate-pulse">
+                          {duplicateCodeError}
+                        </p>
+                      )}
+
                       {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
                         <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-gray-300 mt-2">
                           ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
@@ -1508,6 +1535,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         할인코드 추가
                       </Button>
                     </div>
+
+                    {/* 중복 코드 에러 메시지 */}
+                    {duplicateCodeError && (
+                      <p className="text-sm text-red-600 mt-2 animate-pulse">
+                        {duplicateCodeError}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -1619,6 +1653,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       할인코드 추가
                     </Button>
                   </div>
+
+                  {/* 중복 코드 에러 메시지 */}
+                  {duplicateCodeError && (
+                    <p className="text-sm text-red-600 mt-2 animate-pulse">
+                      {duplicateCodeError}
+                    </p>
+                  )}
+
                   {(selectedCategory === 'food' || selectedCategory === 'cafe') && (
                     <p className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-gray-300 mt-2">
                       ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
