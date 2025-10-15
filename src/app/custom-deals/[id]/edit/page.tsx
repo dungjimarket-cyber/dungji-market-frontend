@@ -1179,7 +1179,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                                 value={code}
                                 onChange={(e) => updateDiscountCode(index, e.target.value)}
                                 placeholder={`코드 또는 링크 ${index + 1}`}
-                                maxLength={500}
+                                maxLength={50}
                               />
                               <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
                             </div>
@@ -1381,7 +1381,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                                 value={code}
                                 onChange={(e) => updateDiscountCode(index, e.target.value)}
                                 placeholder={`코드 또는 링크 ${index + 1}`}
-                                maxLength={500}
+                                maxLength={50}
                               />
                               <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
                             </div>
@@ -1528,7 +1528,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                               value={code}
                               onChange={(e) => updateDiscountCode(index, e.target.value)}
                               placeholder={`코드 ${index + 1}`}
-                              maxLength={500}
+                              maxLength={50}
                             />
                             <p className="text-xs text-slate-400 mt-1 text-right">{code.length}/500</p>
                           </div>
