@@ -297,10 +297,12 @@ export default function MyCustomDeals() {
     ? deals.filter(d => d.status === 'completed' || d.status === 'pending_seller')
     : filter === 'cancelled'
     ? deals.filter(d => d.status === 'cancelled' || d.status === 'expired')
-    : deals; // 'all' 또는 'recruiting'
+    : filter === 'recruiting'
+    ? deals.filter(d => d.status === 'recruiting')
+    : deals.filter(d => d.status !== 'cancelled' && d.status !== 'expired'); // 'all': 취소/만료 제외
 
   const filterCounts = {
-    all: deals.length, // 실제 전체 개수
+    all: deals.filter(d => d.status !== 'cancelled' && d.status !== 'expired').length, // 취소/만료 제외
     recruiting: deals.filter(d => d.status === 'recruiting').length,
     completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
     cancelled: deals.filter(d => d.status === 'cancelled' || d.status === 'expired').length,

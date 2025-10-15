@@ -311,11 +311,25 @@ export default function MyCustomParticipations() {
         const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
         return (groupbuy && groupbuy.status === 'cancelled') || p.status === 'cancelled';
       })
-    : participations; // 'all' 또는 'confirmed'
+    : filter === 'confirmed'
+    ? participations.filter(p => {
+        const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+        return p.status === 'confirmed' && groupbuy && groupbuy.status !== 'cancelled';
+      })
+    : participations.filter(p => { // 'all': 취소건 제외
+        const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+        return p.status !== 'cancelled' && (!groupbuy || groupbuy.status !== 'cancelled');
+      });
 
   const filterCounts = {
-    all: participations.length, // 실제 전체 개수
-    confirmed: participations.filter(p => p.status === 'confirmed').length,
+    all: participations.filter(p => { // 취소건 제외
+      const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+      return p.status !== 'cancelled' && (!groupbuy || groupbuy.status !== 'cancelled');
+    }).length,
+    confirmed: participations.filter(p => {
+      const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+      return p.status === 'confirmed' && groupbuy && groupbuy.status !== 'cancelled';
+    }).length,
     completed: participations.filter(p => {
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
       return groupbuy && (groupbuy.status === 'completed' || groupbuy.status === 'pending_seller');
