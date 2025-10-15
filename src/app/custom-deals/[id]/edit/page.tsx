@@ -823,8 +823,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               <p className="text-sm text-slate-500 mt-1 text-right">{formData.title.length}/50</p>
             </div>
 
-            <div>
-              <Label>상품 설명 *</Label>
+            <div className="-mx-5">
+              <div className="px-5">
+                <Label>상품 설명 *</Label>
+              </div>
               <RichTextEditor
                 content={formData.description}
                 onChange={(content) => handleInputChange('description', content)}
