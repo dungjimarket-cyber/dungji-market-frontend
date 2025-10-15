@@ -1521,7 +1521,10 @@ export default function CreateCustomDealPage() {
               {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                 <div className="space-y-3">
                   <div>
-                    <Label>할인링크/참여방법안내 *</Label>
+                    <Label className="flex items-baseline gap-2">
+                      할인링크/참여방법안내 *
+                      <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 카톡채널에 발급받은 할인코드를 제출해주세요)</span>
+                    </Label>
                     <Input
                       ref={discountUrlRef}
                       value={formData.discount_url}

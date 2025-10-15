@@ -78,8 +78,8 @@ export default function MyCustomDeals() {
       const token = localStorage.getItem('accessToken');
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?seller=me&limit=20`;
 
-      // completed 필터는 전체를 가져와서 프론트에서 필터링 (pending_seller 포함)
-      if (filter !== 'all' && filter !== 'completed') {
+      // completed, cancelled 필터는 전체를 가져와서 프론트에서 필터링
+      if (filter !== 'all' && filter !== 'completed' && filter !== 'cancelled') {
         url += `&status=${filter}`;
       }
 
@@ -291,15 +291,18 @@ export default function MyCustomDeals() {
     return <Badge variant="secondary">{deal.status_display}</Badge>;
   };
 
-  // 표시할 deals 필터링 (completed 필터는 pending_seller도 포함)
+  // 표시할 deals 필터링
   const displayDeals = filter === 'completed'
     ? deals.filter(d => d.status === 'completed' || d.status === 'pending_seller')
-    : deals;
+    : filter === 'cancelled'
+    ? deals.filter(d => d.status === 'cancelled' || d.status === 'expired')
+    : deals; // 'all' 또는 'recruiting'
 
   const filterCounts = {
-    all: deals.filter(d => d.status === 'recruiting').length, // 활성화중인 것만 (recruiting)
+    all: deals.length, // 실제 전체 개수
     recruiting: deals.filter(d => d.status === 'recruiting').length,
     completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
+    cancelled: deals.filter(d => d.status === 'cancelled' || d.status === 'expired').length,
   };
 
   // 데이터가 없으면 간단한 메시지만 표시
@@ -359,6 +362,14 @@ export default function MyCustomDeals() {
         >
           마감 ({filterCounts.completed})
         </Button>
+        <Button
+          variant={filter === 'cancelled' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilter('cancelled')}
+          className={filter === 'cancelled' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
+        >
+          취소됨 ({filterCounts.cancelled})
+        </Button>
       </div>
 
       {/* 목록 */}
@@ -374,22 +385,27 @@ export default function MyCustomDeals() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {displayDeals.map((deal) => (
+          {displayDeals.map((deal) => {
+            const isCancelled = deal.status === 'cancelled' || deal.status === 'expired';
+
+            return (
             <Card key={deal.id} className="border-slate-200 overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
-              <Link href={`/custom-deals/${deal.id}`}>
-                {/* Image - 고정 높이 */}
-                <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group flex-shrink-0">
+              {isCancelled ? (
+                // 취소된 항목: 링크 없이, 회색 오버레이
+                <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0">
                   {deal.primary_image ? (
                     <img
                       src={deal.primary_image}
                       alt={deal.title}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                      className="w-full h-full object-contain opacity-40"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex items-center justify-center h-full opacity-40">
                       <Tag className="w-12 h-12 text-slate-300" />
                     </div>
                   )}
+                  {/* 회색 오버레이 */}
+                  <div className="absolute inset-0 bg-slate-500/20" />
                   <div className="absolute top-2 right-2">
                     {getStatusBadge(deal)}
                   </div>
@@ -399,7 +415,32 @@ export default function MyCustomDeals() {
                     </Badge>
                   </div>
                 </div>
-              </Link>
+              ) : (
+                // 정상 항목: 링크 있음
+                <Link href={`/custom-deals/${deal.id}`}>
+                  <div className="relative h-44 bg-gradient-to-br from-slate-100 to-slate-200 cursor-pointer group flex-shrink-0">
+                    {deal.primary_image ? (
+                      <img
+                        src={deal.primary_image}
+                        alt={deal.title}
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Tag className="w-12 h-12 text-slate-300" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      {getStatusBadge(deal)}
+                    </div>
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-white/90 text-slate-700 border-0 text-xs px-2 py-0.5 whitespace-nowrap">
+                        {deal.type_display}
+                      </Badge>
+                    </div>
+                  </div>
+                </Link>
+              )}
 
               <CardContent className="p-3 flex flex-col flex-1">
                 {/* Location (offline only) - 제목 위에 표시 */}
@@ -414,12 +455,19 @@ export default function MyCustomDeals() {
                   )}
                 </div>
 
-                <Link href={`/custom-deals/${deal.id}`}>
-                  {/* Title - 고정 높이 (2줄) */}
-                  <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
+                {isCancelled ? (
+                  // 취소된 항목: 링크 없음
+                  <h3 className="font-bold text-sm text-slate-600 mb-1 line-clamp-2 leading-tight h-10">
                     {deal.title}
                   </h3>
-                </Link>
+                ) : (
+                  // 정상 항목: 링크 있음
+                  <Link href={`/custom-deals/${deal.id}`}>
+                    <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 leading-tight h-10">
+                      {deal.title}
+                    </h3>
+                  </Link>
+                )}
 
                 {/* Price - 고정 높이 */}
                 <div className="mb-2 h-14">
@@ -519,72 +567,75 @@ export default function MyCustomDeals() {
                 </div>
 
                 {/* Action Buttons - 하단 고정 */}
-                <div className="flex flex-col gap-1 mt-auto">
-                  {deal.status === 'recruiting' && deal.current_participants >= 1 && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full text-xs h-7 text-orange-600 border-orange-300 hover:bg-orange-50 whitespace-nowrap"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleEarlyClose(deal.id);
-                      }}
-                    >
-                      조기종료
-                    </Button>
-                  )}
-
-                  {deal.status === 'pending_seller' && (
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        className="flex-1 text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white whitespace-nowrap"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleConfirmSale(deal.id);
-                        }}
-                      >
-                        <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                        확정
-                      </Button>
+                {!isCancelled && (
+                  <div className="flex flex-col gap-1 mt-auto">
+                    {deal.status === 'recruiting' && deal.current_participants >= 1 && (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 text-xs h-7 text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
+                        className="w-full text-xs h-7 text-orange-600 border-orange-300 hover:bg-orange-50 whitespace-nowrap"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleCancelSale(deal.id);
+                          handleEarlyClose(deal.id);
                         }}
                       >
-                        <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                        취소
+                        조기종료
                       </Button>
-                    </div>
-                  )}
+                    )}
 
-                  {deal.status === 'completed' && deal.current_participants > 0 && (
+                    {deal.status === 'pending_seller' && (
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          className="flex-1 text-xs h-7 bg-gray-900 hover:bg-gray-800 text-white whitespace-nowrap"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleConfirmSale(deal.id);
+                          }}
+                        >
+                          <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                          확정
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs h-7 text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleCancelSale(deal.id);
+                          }}
+                        >
+                          <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                          취소
+                        </Button>
+                      </div>
+                    )}
+
+                    {deal.status === 'completed' && deal.current_participants > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-xs h-7 whitespace-nowrap"
+                        onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
+                      >
+                        참여자 관리
+                      </Button>
+                    )}
+
                     <Button
                       size="sm"
                       variant="outline"
                       className="w-full text-xs h-7 whitespace-nowrap"
-                      onClick={() => router.push(`/mypage/custom-deals/${deal.id}/participants`)}
+                      onClick={() => router.push(`/custom-deals/${deal.id}`)}
                     >
-                      참여자 관리
+                      상세보기
                     </Button>
-                  )}
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full text-xs h-7 whitespace-nowrap"
-                    onClick={() => router.push(`/custom-deals/${deal.id}`)}
-                  >
-                    상세보기
-                  </Button>
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 

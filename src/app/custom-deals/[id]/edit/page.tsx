@@ -1163,7 +1163,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                     <div className="space-y-3">
                       <div>
-                        <Label>할인링크/참여방법안내 *</Label>
+                        <Label className="flex items-baseline gap-2">
+                          할인링크/참여방법안내 *
+                          <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 카톡채널에 발급받은 할인코드를 제출해주세요)</span>
+                        </Label>
                         <Input
                           value={formData.discount_url}
                           onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
@@ -1512,7 +1515,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 {(formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') && (
                   <div className="space-y-3">
                     <div>
-                      <Label>할인링크/참여방법안내 *</Label>
+                      <Label className="flex items-baseline gap-2">
+                        할인링크/참여방법안내 *
+                        <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 카톡채널에 발급받은 할인코드를 제출해주세요)</span>
+                      </Label>
                       <Input
                         value={formData.discount_url}
                         onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}

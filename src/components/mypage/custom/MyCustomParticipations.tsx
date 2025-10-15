@@ -97,6 +97,7 @@ interface CustomParticipation {
     type: 'online' | 'offline';
     type_display: string;
     seller_name: string;
+    pricing_type?: 'single_product' | 'all_products' | 'coupon_only';
     original_price: number;
     discount_rate: number;
     final_price: number;
@@ -150,8 +151,8 @@ export default function MyCustomParticipations() {
       const token = localStorage.getItem('accessToken');
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-participants/`;
 
-      // completed 필터는 전체를 가져와서 프론트에서 필터링 (공구 status 기준)
-      if (filter !== 'all' && filter !== 'completed') {
+      // completed, cancelled 필터는 전체를 가져와서 프론트에서 필터링
+      if (filter !== 'all' && filter !== 'completed' && filter !== 'cancelled') {
         url += `?status=${filter}`;
       }
 
@@ -299,23 +300,29 @@ export default function MyCustomParticipations() {
     );
   };
 
-  // 표시할 participations 필터링 (completed 필터는 공구 status가 completed 또는 pending_seller)
+  // 표시할 participations 필터링
   const displayParticipations = filter === 'completed'
     ? participations.filter(p => {
         const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
         return groupbuy && (groupbuy.status === 'completed' || groupbuy.status === 'pending_seller');
       })
-    : participations;
+    : filter === 'cancelled'
+    ? participations.filter(p => {
+        const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+        return (groupbuy && groupbuy.status === 'cancelled') || p.status === 'cancelled';
+      })
+    : participations; // 'all' 또는 'confirmed'
 
   const filterCounts = {
-    all: participations.filter(p => {
-      const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-      return groupbuy && groupbuy.status === 'recruiting'; // 활성화중인 것만 (recruiting)
-    }).length,
+    all: participations.length, // 실제 전체 개수
     confirmed: participations.filter(p => p.status === 'confirmed').length,
     completed: participations.filter(p => {
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
       return groupbuy && (groupbuy.status === 'completed' || groupbuy.status === 'pending_seller');
+    }).length,
+    cancelled: participations.filter(p => {
+      const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
+      return (groupbuy && groupbuy.status === 'cancelled') || p.status === 'cancelled';
     }).length,
   };
 
@@ -362,6 +369,14 @@ export default function MyCustomParticipations() {
         >
           마감 ({filterCounts.completed})
         </Button>
+        <Button
+          variant={filter === 'cancelled' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilter('cancelled')}
+          className={filter === 'cancelled' ? 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-300' : 'text-slate-900 border-slate-300'}
+        >
+          취소됨 ({filterCounts.cancelled})
+        </Button>
       </div>
 
       {/* 목록 */}
@@ -388,26 +403,48 @@ export default function MyCustomParticipations() {
               return null;
             }
 
+            // 취소된 항목 체크
+            const isCancelled = groupbuy.status === 'cancelled' || participation.status === 'cancelled';
+
             return (
               <Card key={participation.id} className="border-slate-200 hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     {/* 이미지 */}
-                    <Link href={`/custom-deals/${groupbuy.id}`}>
-                      <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
+                    {isCancelled ? (
+                      // 취소된 항목: 링크 없이, 회색처리
+                      <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 relative">
                         {groupbuy.primary_image ? (
                           <img
                             src={groupbuy.primary_image}
                             alt={groupbuy.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover opacity-40"
                           />
                         ) : (
-                          <div className="flex items-center justify-center h-full">
+                          <div className="flex items-center justify-center h-full opacity-40">
                             <Tag className="w-8 h-8 text-slate-300" />
                           </div>
                         )}
+                        <div className="absolute inset-0 bg-slate-500/20" />
                       </div>
-                    </Link>
+                    ) : (
+                      // 정상 항목: 링크 있음
+                      <Link href={`/custom-deals/${groupbuy.id}`}>
+                        <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
+                          {groupbuy.primary_image ? (
+                            <img
+                              src={groupbuy.primary_image}
+                              alt={groupbuy.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <Tag className="w-8 h-8 text-slate-300" />
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    )}
 
                     {/* 정보 */}
                     <div className="flex-1 min-w-0">
@@ -417,11 +454,19 @@ export default function MyCustomParticipations() {
                             <Badge variant="outline" className="text-xs">{groupbuy.type_display}</Badge>
                             {getStatusBadge(participation, groupbuy)}
                           </div>
-                          <Link href={`/custom-deals/${groupbuy.id}`}>
-                            <h3 className="text-base font-bold text-slate-900 hover:text-blue-600 cursor-pointer truncate">
+                          {isCancelled ? (
+                            // 취소된 항목: 링크 없음
+                            <h3 className="text-base font-bold text-slate-600 truncate">
                               {groupbuy.title}
                             </h3>
-                          </Link>
+                          ) : (
+                            // 정상 항목: 링크 있음
+                            <Link href={`/custom-deals/${groupbuy.id}`}>
+                              <h3 className="text-base font-bold text-slate-900 hover:text-blue-600 cursor-pointer truncate">
+                                {groupbuy.title}
+                              </h3>
+                            </Link>
+                          )}
                           <p className="text-xs text-slate-500 mt-0.5">
                             판매자: {groupbuy.seller_name} • {new Date(participation.participated_at).toLocaleDateString()}
                           </p>
@@ -459,14 +504,19 @@ export default function MyCustomParticipations() {
                         </div>
                       )}
 
-                      {/* 참여 코드 - 작게 */}
+                      {/* 참여 코드 - 작게 (쿠폰전용이면 쿠폰코드로 표시) */}
                       <div className="bg-slate-50 rounded px-2 py-1.5 mb-1.5 inline-flex items-center gap-2">
-                        <span className="text-xs text-slate-500">참여코드:</span>
+                        <span className="text-xs text-slate-500">
+                          {groupbuy.pricing_type === 'coupon_only' ? '쿠폰코드:' : '참여코드:'}
+                        </span>
                         <span className="font-mono text-xs font-semibold text-slate-700">
                           {participation.participation_code}
                         </span>
                         <button
-                          onClick={() => copyToClipboard(participation.participation_code, '참여 코드')}
+                          onClick={() => copyToClipboard(
+                            participation.participation_code,
+                            groupbuy.pricing_type === 'coupon_only' ? '쿠폰 코드' : '참여 코드'
+                          )}
                           className="text-slate-400 hover:text-slate-600"
                         >
                           <Copy className="w-3 h-3" />
@@ -492,7 +542,12 @@ export default function MyCustomParticipations() {
                             <div className="flex items-center gap-2 mb-2">
                               <Ticket className={`w-4 h-4 ${isExpired ? 'text-red-600' : 'text-slate-600'}`} />
                               <h4 className={`text-sm font-bold ${isExpired ? 'text-red-900' : 'text-slate-900'}`}>
-                                {isExpired ? '할인 유효기간 만료' : '할인코드 발급 완료'}
+                                {isExpired
+                                  ? '할인 유효기간 만료'
+                                  : groupbuy.pricing_type === 'coupon_only'
+                                    ? '쿠폰코드 발급 완료'
+                                    : '할인코드 발급 완료'
+                                }
                               </h4>
                               {validity && (
                                 <span className={`text-xs ml-auto font-medium ${validity.color}`}>
@@ -514,15 +569,15 @@ export default function MyCustomParticipations() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {/* 오프라인: 항상 할인코드 표시 */}
                                   {groupbuy.type === 'offline' && participation.discount_code && (
-                                    <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
-                                      <span className="font-mono text-sm font-bold text-slate-900 truncate">
+                                    <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
+                                      <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
                                         {participation.discount_code}
                                       </span>
                                       <button
-                                        onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
-                                        className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                                        onClick={() => copyToClipboard(participation.discount_code!, groupbuy.pricing_type === 'coupon_only' ? '쿠폰 코드' : '할인 코드')}
+                                        className="text-slate-400 hover:text-slate-600 flex-shrink-0 mt-0.5"
                                       >
-                                        <Copy className="w-3.5 h-3.5" />
+                                        <Copy className="w-4 h-4" />
                                       </button>
                                     </div>
                                   )}
@@ -532,28 +587,42 @@ export default function MyCustomParticipations() {
                                     <>
                                       {/* 할인링크 (link_only 또는 both) */}
                                       {(groupbuy.online_discount_type === 'link_only' || groupbuy.online_discount_type === 'both') && participation.discount_url && (
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="text-xs h-7"
-                                          onClick={() => window.open(participation.discount_url!, '_blank')}
-                                        >
-                                          <ExternalLink className="w-3 h-3 mr-1" />
-                                          링크 열기
-                                        </Button>
+                                        <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-slate-900 break-all">
+                                              {participation.discount_url}
+                                            </p>
+                                          </div>
+                                          <div className="flex gap-1 flex-shrink-0 mt-0.5">
+                                            <button
+                                              onClick={() => window.open(participation.discount_url!, '_blank')}
+                                              className="text-blue-500 hover:text-blue-700 flex-shrink-0"
+                                              title="링크 열기"
+                                            >
+                                              <ExternalLink className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                              onClick={() => copyToClipboard(participation.discount_url!, groupbuy.pricing_type === 'coupon_only' ? '쿠폰 링크' : '할인 링크')}
+                                              className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                                              title="복사"
+                                            >
+                                              <Copy className="w-4 h-4" />
+                                            </button>
+                                          </div>
+                                        </div>
                                       )}
 
                                       {/* 할인코드 (code_only 또는 both) */}
                                       {(groupbuy.online_discount_type === 'code_only' || groupbuy.online_discount_type === 'both') && participation.discount_code && (
-                                        <div className="flex items-center gap-2 bg-white rounded px-3 py-1.5 flex-1 min-w-0">
-                                          <span className="font-mono text-sm font-bold text-slate-900 truncate">
+                                        <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full mt-2">
+                                          <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
                                             {participation.discount_code}
                                           </span>
                                           <button
-                                            onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
-                                            className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                                            onClick={() => copyToClipboard(participation.discount_code!, groupbuy.pricing_type === 'coupon_only' ? '쿠폰 코드' : '할인 코드')}
+                                            className="text-slate-400 hover:text-slate-600 flex-shrink-0 mt-0.5"
                                           >
-                                            <Copy className="w-3.5 h-3.5" />
+                                            <Copy className="w-4 h-4" />
                                           </button>
                                         </div>
                                       )}
@@ -578,27 +647,29 @@ export default function MyCustomParticipations() {
                       })()}
 
                       {/* 액션 버튼 */}
-                      <div className="flex gap-2 flex-wrap">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7 px-3"
-                          onClick={() => router.push(`/custom-deals/${groupbuy.id}`)}
-                        >
-                          상세보기
-                        </Button>
-                        {canCancel(participation, groupbuy) && (
+                      {!isCancelled && (
+                        <div className="flex gap-2 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
-                            onClick={() => handleCancelParticipation(participation.id, groupbuy.id)}
+                            className="text-xs h-7 px-3"
+                            onClick={() => router.push(`/custom-deals/${groupbuy.id}`)}
                           >
-                            <XCircle className="w-3 h-3 mr-1" />
-                            참여 취소
+                            상세보기
                           </Button>
-                        )}
-                      </div>
+                          {canCancel(participation, groupbuy) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
+                              onClick={() => handleCancelParticipation(participation.id, groupbuy.id)}
+                            >
+                              <XCircle className="w-3 h-3 mr-1" />
+                              참여 취소
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>

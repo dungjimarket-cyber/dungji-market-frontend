@@ -36,6 +36,7 @@ interface CustomDeal {
   current_participants: number;
   online_discount_type?: 'link_only' | 'code_only' | 'both';
   discount_valid_until?: string;
+  pricing_type?: 'single_product' | 'all_products' | 'coupon_only';
 }
 
 export default function ParticipantsManagePage() {
@@ -469,17 +470,20 @@ export default function ParticipantsManagePage() {
                         <>
                           {/* 오프라인: 항상 할인코드 표시 */}
                           {deal.type === 'offline' && participant.discount_code && (
-                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
-                              <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
+                            <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-1">
+                              <code className="flex-1 font-mono text-sm font-semibold text-blue-900 break-all">
                                 {participant.discount_code}
                               </code>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
-                                className="h-6 w-6 p-0"
+                                onClick={() => copyToClipboard(
+                                  participant.discount_code!,
+                                  deal.pricing_type === 'coupon_only' ? '쿠폰코드' : '할인코드'
+                                )}
+                                className="h-7 w-7 p-0 flex-shrink-0"
                               >
-                                <Copy className="w-3 h-3" />
+                                <Copy className="w-4 h-4" />
                               </Button>
                             </div>
                           )}
@@ -489,39 +493,45 @@ export default function ParticipantsManagePage() {
                             <>
                               {/* 할인링크 (link_only 또는 both) */}
                               {(deal.online_discount_type === 'link_only' || deal.online_discount_type === 'both') && participant.discount_url && (
-                                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 mb-1">
+                                <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-1">
                                   <a
                                     href={participant.discount_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex-1 text-xs text-blue-600 hover:underline truncate"
+                                    className="flex-1 text-sm text-blue-600 hover:underline break-all"
                                   >
                                     {participant.discount_url}
                                   </a>
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    onClick={() => copyToClipboard(participant.discount_url!, '할인링크')}
-                                    className="h-6 w-6 p-0"
+                                    onClick={() => copyToClipboard(
+                                      participant.discount_url!,
+                                      deal.pricing_type === 'coupon_only' ? '쿠폰링크' : '할인링크'
+                                    )}
+                                    className="h-7 w-7 p-0 flex-shrink-0"
                                   >
-                                    <Copy className="w-3 h-3" />
+                                    <Copy className="w-4 h-4" />
                                   </Button>
                                 </div>
                               )}
 
                               {/* 할인코드 (code_only 또는 both) */}
                               {(deal.online_discount_type === 'code_only' || deal.online_discount_type === 'both') && participant.discount_code && (
-                                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
-                                  <code className="flex-1 font-mono text-xs font-semibold text-blue-900">
+                                <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2">
+                                  <code className="flex-1 font-mono text-sm font-semibold text-blue-900 break-all">
                                     {participant.discount_code}
                                   </code>
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    onClick={() => copyToClipboard(participant.discount_code!, '할인코드')}
-                                    className="h-6 w-6 p-0"
+                                    onClick={() => copyToClipboard(
+                                      participant.discount_code!,
+                                      deal.pricing_type === 'coupon_only' ? '쿠폰코드' : '할인코드'
+                                    )}
+                                    className="h-7 w-7 p-0 flex-shrink-0"
                                   >
-                                    <Copy className="w-3 h-3" />
+                                    <Copy className="w-4 h-4" />
                                   </Button>
                                 </div>
                               )}
