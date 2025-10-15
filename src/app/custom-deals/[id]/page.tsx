@@ -993,10 +993,12 @@ export default function CustomDealDetailPage() {
           <Card className="border-slate-200 max-w-4xl mx-auto">
             <CardContent className="p-5">
               <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
-              <div className="prose prose-slate prose-sm max-w-none">
+              <div
+                className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
+                style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+              >
                 <div
-                  className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere whitespace-pre-wrap"
-                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
+                  className="[&>p]:mb-3 [&>p]:mt-0 [&>ul]:mb-3 [&>ol]:mb-3 [&>h1]:mb-3 [&>h2]:mb-3 [&>h3]:mb-3"
                   dangerouslySetInnerHTML={{ __html: convertedDescription }}
                 />
               </div>
