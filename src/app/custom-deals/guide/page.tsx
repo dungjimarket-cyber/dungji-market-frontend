@@ -50,7 +50,7 @@ export default function CustomDealsGuidePage() {
               <div className="bg-white p-2.5 rounded-md">
                 <p className="text-xs text-gray-800 font-medium mb-1">✅ 모집 기간 내 달성 시</p>
                 <p className="text-xs text-gray-600">
-                  판매자 확정 → 자동으로 할인코드/QR 발급 → 즉시 사용 가능
+                  판매자 확정 → 자동으로 할인코드/비공개 링크/QR 발급 → 즉시 사용 가능
                 </p>
               </div>
             </div>
@@ -76,8 +76,7 @@ export default function CustomDealsGuidePage() {
           <div className="bg-blue-50 p-3 rounded-lg">
             <h4 className="text-sm font-semibold text-gray-900 mb-1.5">온라인 공구</h4>
             <ul className="space-y-0.5 text-xs text-gray-700">
-              <li>• 온라인 쇼핑몰 할인코드 또는 할인 링크 제공</li>
-              <li>• 전국 어디서나 참여 가능</li>
+              <li>• 온라인 쇼핑몰 할인코드 또는 비공개 할인링크 제공</li>
               <li>• 공구 마감 시 자동으로 할인코드/링크 발급</li>
             </ul>
           </div>
