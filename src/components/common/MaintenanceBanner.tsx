@@ -43,12 +43,13 @@ export default function MaintenanceBanner() {
 
   return (
     // 전체 화면 완전히 가리기 (배경 완전 차단)
-    <div className="fixed inset-0 bg-gray-900 z-[9999] flex items-center justify-center">
-      <div className="text-center text-white px-6">
-        <AlertTriangle className="w-20 h-20 mx-auto mb-6 text-yellow-400" />
-        <h2 className="text-3xl font-bold mb-4">서비스 점검 중입니다</h2>
-        <p className="text-xl mb-3">빠른 시일 내에 복구하겠습니다.</p>
-        <p className="text-gray-400 text-lg">불편을 드려 죄송합니다.</p>
+    <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center">
+      <div className="text-center px-6">
+        <AlertTriangle className="w-20 h-20 mx-auto mb-6 text-yellow-500" />
+        <h2 className="text-3xl font-bold mb-4 text-gray-900">서비스 점검 중입니다</h2>
+        <p className="text-xl mb-3 text-gray-700">빠른 시일 내에 복구하겠습니다.</p>
+        <p className="text-gray-600 text-lg mb-4">불편을 드려 죄송합니다.</p>
+        <p className="text-gray-500">예상 복구 시간: 1~2시간</p>
       </div>
     </div>
   );
