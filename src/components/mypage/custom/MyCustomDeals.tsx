@@ -462,15 +462,15 @@ export default function MyCustomDeals() {
                       <div className="text-right flex-shrink-0">
                         {deal.original_price && deal.final_price ? (
                           <>
-                            <div className="flex items-baseline gap-1.5 justify-end">
-                              <span className="text-xs text-slate-400 line-through">
+                            <div className="flex items-baseline gap-1 justify-end">
+                              <span className="text-[10px] text-slate-400 line-through">
                                 {deal.original_price.toLocaleString()}원
                               </span>
-                              <span className="text-sm font-bold text-red-600">
+                              <span className="text-xs font-bold text-red-600">
                                 {deal.discount_rate}%
                               </span>
                             </div>
-                            <div className="text-lg font-bold text-slate-900 mt-0.5">
+                            <div className="text-sm font-bold text-slate-900 mt-0.5">
                               {typeof deal.final_price === 'object' && deal.final_price !== null
                                 ? ((deal.final_price as any).min || 0).toLocaleString()
                                 : deal.final_price.toLocaleString()}원
