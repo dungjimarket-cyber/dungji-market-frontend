@@ -11,6 +11,7 @@ import { RoleUpdateNotice } from '@/components/auth/RoleUpdateNotice';
 import KakaoInAppBrowserHandler from '@/components/common/KakaoInAppBrowserHandler';
 import ServiceWorkerRegister from '@/components/common/ServiceWorkerRegister';
 import NotificationPermissionHandler from '@/components/notification/NotificationPermissionHandler';
+import MaintenanceBanner from '@/components/common/MaintenanceBanner';
 import Script from 'next/script';
 
 const inter = Inter({ 
@@ -147,6 +148,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <MaintenanceBanner />
         <ServiceWorkerRegister />
         <Providers>
           <KakaoInAppBrowserHandler />
