@@ -573,11 +573,11 @@ export default function MyCustomParticipations() {
                                     </div>
                                   )}
 
-                                  {/* 온라인: online_discount_type에 따라 표시 */}
+                                  {/* 온라인: 쿠폰전용 또는 online_discount_type에 따라 표시 */}
                                   {groupbuy.type === 'online' && (
                                     <>
-                                      {/* 할인링크 (link_only 또는 both) */}
-                                      {(groupbuy.online_discount_type === 'link_only' || groupbuy.online_discount_type === 'both') && participation.discount_url && (
+                                      {/* 쿠폰전용: discount_url이 있으면 무조건 표시 */}
+                                      {groupbuy.pricing_type === 'coupon_only' && participation.discount_url && (
                                         <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
                                           <div className="flex-1 min-w-0">
                                             <p className="text-sm font-bold text-slate-900 break-all">
@@ -593,7 +593,7 @@ export default function MyCustomParticipations() {
                                               <ExternalLink className="w-4 h-4" />
                                             </button>
                                             <button
-                                              onClick={() => copyToClipboard(participation.discount_url!, groupbuy.pricing_type === 'coupon_only' ? '쿠폰 링크' : '할인 링크')}
+                                              onClick={() => copyToClipboard(participation.discount_url!, '쿠폰 링크')}
                                               className="text-slate-400 hover:text-slate-600 flex-shrink-0"
                                               title="복사"
                                             >
@@ -603,19 +603,66 @@ export default function MyCustomParticipations() {
                                         </div>
                                       )}
 
-                                      {/* 할인코드 (code_only 또는 both) */}
-                                      {(groupbuy.online_discount_type === 'code_only' || groupbuy.online_discount_type === 'both') && participation.discount_code && (
+                                      {/* 쿠폰전용: discount_code가 있으면 무조건 표시 */}
+                                      {groupbuy.pricing_type === 'coupon_only' && participation.discount_code && (
                                         <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full mt-2">
                                           <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
                                             {participation.discount_code}
                                           </span>
                                           <button
-                                            onClick={() => copyToClipboard(participation.discount_code!, groupbuy.pricing_type === 'coupon_only' ? '쿠폰 코드' : '할인 코드')}
+                                            onClick={() => copyToClipboard(participation.discount_code!, '쿠폰 코드')}
                                             className="text-slate-400 hover:text-slate-600 flex-shrink-0 mt-0.5"
                                           >
                                             <Copy className="w-4 h-4" />
                                           </button>
                                         </div>
+                                      )}
+
+                                      {/* 일반 온라인 공구: online_discount_type에 따라 표시 */}
+                                      {groupbuy.pricing_type !== 'coupon_only' && (
+                                        <>
+                                          {/* 할인링크 (link_only 또는 both) */}
+                                          {(groupbuy.online_discount_type === 'link_only' || groupbuy.online_discount_type === 'both') && participation.discount_url && (
+                                            <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
+                                              <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold text-slate-900 break-all">
+                                                  {participation.discount_url}
+                                                </p>
+                                              </div>
+                                              <div className="flex gap-1 flex-shrink-0 mt-0.5">
+                                                <button
+                                                  onClick={() => window.open(participation.discount_url!, '_blank')}
+                                                  className="text-blue-500 hover:text-blue-700 flex-shrink-0"
+                                                  title="링크 열기"
+                                                >
+                                                  <ExternalLink className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                  onClick={() => copyToClipboard(participation.discount_url!, '할인 링크')}
+                                                  className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                                                  title="복사"
+                                                >
+                                                  <Copy className="w-4 h-4" />
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* 할인코드 (code_only 또는 both) */}
+                                          {(groupbuy.online_discount_type === 'code_only' || groupbuy.online_discount_type === 'both') && participation.discount_code && (
+                                            <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full mt-2">
+                                              <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
+                                                {participation.discount_code}
+                                              </span>
+                                              <button
+                                                onClick={() => copyToClipboard(participation.discount_code!, '할인 코드')}
+                                                className="text-slate-400 hover:text-slate-600 flex-shrink-0 mt-0.5"
+                                              >
+                                                <Copy className="w-4 h-4" />
+                                              </button>
+                                            </div>
+                                          )}
+                                        </>
                                       )}
                                     </>
                                   )}
