@@ -423,7 +423,8 @@ export default function MyCustomParticipations() {
             return (
               <Card key={participation.id} className="border-slate-200 hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
-                  <div className="flex gap-4">
+                  {/* 상단: 이미지 + 기본 정보 */}
+                  <div className="flex gap-4 mb-3">
                     {/* 이미지 */}
                     {isCancelled ? (
                       // 취소된 항목: 링크 없이, 회색처리
@@ -460,7 +461,7 @@ export default function MyCustomParticipations() {
                       </Link>
                     )}
 
-                    {/* 정보 */}
+                    {/* 기본 정보 */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3 mb-1.5">
                         <div className="flex-1 min-w-0">
@@ -508,14 +509,16 @@ export default function MyCustomParticipations() {
 
                       {/* 위치 */}
                       {groupbuy.type === 'offline' && groupbuy.regions && groupbuy.regions.length > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500 mb-1.5">
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
                           <MapPin className="w-3 h-3" />
                           <span>{groupbuy.regions.map(r => r.full_name).join(', ')}</span>
                         </div>
                       )}
+                    </div>
+                  </div>
 
-                      {/* 할인 정보 */}
-                      {(participation.discount_code || participation.discount_url) && (() => {
+                  {/* 하단: 할인 정보 (전체 너비) */}
+                  {(participation.discount_code || participation.discount_url) && (() => {
                         const validity = getValidityDisplay(
                           participation.discount_valid_until,
                           groupbuy.type,
@@ -557,10 +560,10 @@ export default function MyCustomParticipations() {
                             ) : (
                               <>
                                 {/* 유효기간 내: online_discount_type에 따라 할인코드/링크 표시 */}
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="space-y-2">
                                   {/* 오프라인: 항상 할인코드 표시 */}
                                   {groupbuy.type === 'offline' && participation.discount_code && (
-                                    <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
+                                    <div className="flex items-start gap-2 bg-white rounded px-3 py-2 w-full">
                                       <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
                                         {participation.discount_code}
                                       </span>
@@ -578,7 +581,7 @@ export default function MyCustomParticipations() {
                                     <>
                                       {/* 쿠폰전용: discount_url이 있으면 무조건 표시 */}
                                       {groupbuy.pricing_type === 'coupon_only' && participation.discount_url && (
-                                        <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
+                                        <div className="flex items-start gap-2 bg-white rounded px-3 py-2 w-full">
                                           <div className="flex-1 min-w-0">
                                             <p className="text-sm font-bold text-slate-900 break-all">
                                               {participation.discount_url}
@@ -605,7 +608,7 @@ export default function MyCustomParticipations() {
 
                                       {/* 쿠폰전용: discount_code가 있으면 무조건 표시 */}
                                       {groupbuy.pricing_type === 'coupon_only' && participation.discount_code && (
-                                        <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full mt-2">
+                                        <div className="flex items-start gap-2 bg-white rounded px-3 py-2 w-full">
                                           <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
                                             {participation.discount_code}
                                           </span>
@@ -623,7 +626,7 @@ export default function MyCustomParticipations() {
                                         <>
                                           {/* 할인링크 (link_only 또는 both) */}
                                           {(groupbuy.online_discount_type === 'link_only' || groupbuy.online_discount_type === 'both') && participation.discount_url && (
-                                            <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full">
+                                            <div className="flex items-start gap-2 bg-white rounded px-3 py-2 w-full">
                                               <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-bold text-slate-900 break-all">
                                                   {participation.discount_url}
@@ -650,7 +653,7 @@ export default function MyCustomParticipations() {
 
                                           {/* 할인코드 (code_only 또는 both) */}
                                           {(groupbuy.online_discount_type === 'code_only' || groupbuy.online_discount_type === 'both') && participation.discount_code && (
-                                            <div className="flex items-start gap-2 bg-white rounded px-3 py-2 flex-1 min-w-0 w-full mt-2">
+                                            <div className="flex items-start gap-2 bg-white rounded px-3 py-2 w-full">
                                               <span className="font-mono text-sm font-bold text-slate-900 break-all flex-1">
                                                 {participation.discount_code}
                                               </span>
@@ -684,32 +687,30 @@ export default function MyCustomParticipations() {
                         );
                       })()}
 
-                      {/* 액션 버튼 */}
-                      {!isCancelled && (
-                        <div className="flex gap-2 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-3"
-                            onClick={() => router.push(`/custom-deals/${groupbuy.id}`)}
-                          >
-                            상세보기
-                          </Button>
-                          {canCancel(participation, groupbuy) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
-                              onClick={() => handleCancelParticipation(participation.id, groupbuy.id)}
-                            >
-                              <XCircle className="w-3 h-3 mr-1" />
-                              참여 취소
-                            </Button>
-                          )}
-                        </div>
+                  {/* 액션 버튼 */}
+                  {!isCancelled && (
+                    <div className="flex gap-2 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-7 px-3"
+                        onClick={() => router.push(`/custom-deals/${groupbuy.id}`)}
+                      >
+                        상세보기
+                      </Button>
+                      {canCancel(participation, groupbuy) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 px-3 text-red-600 border-red-300 hover:bg-red-50"
+                          onClick={() => handleCancelParticipation(participation.id, groupbuy.id)}
+                        >
+                          <XCircle className="w-3 h-3 mr-1" />
+                          참여 취소
+                        </Button>
                       )}
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             );
