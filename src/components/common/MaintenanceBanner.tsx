@@ -42,13 +42,26 @@ export default function MaintenanceBanner() {
   if (checking || !isServerDown) return null;
 
   return (
-    <div className="bg-yellow-500 text-white py-3 px-4 text-center z-50">
-      <div className="flex items-center justify-center gap-2">
-        <AlertTriangle className="w-5 h-5" />
-        <p className="font-medium">
-          서비스 점검 중입니다. 빠른 시일 내에 복구하겠습니다. 불편을 드려 죄송합니다.
-        </p>
+    <>
+      {/* 상단 배너 */}
+      <div className="bg-yellow-500 text-white py-3 px-4 text-center relative z-50">
+        <div className="flex items-center justify-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          <p className="font-medium">
+            서비스 점검 중입니다. 빠른 시일 내에 복구하겠습니다. 불편을 드려 죄송합니다.
+          </p>
+        </div>
       </div>
-    </div>
+
+      {/* 전체 페이지 오버레이 */}
+      <div className="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center">
+        <div className="text-center text-white px-6">
+          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
+          <h2 className="text-2xl font-bold mb-3">서비스 점검 중입니다</h2>
+          <p className="text-lg mb-2">빠른 시일 내에 복구하겠습니다.</p>
+          <p className="text-gray-300">불편을 드려 죄송합니다.</p>
+        </div>
+      </div>
+    </>
   );
 }
