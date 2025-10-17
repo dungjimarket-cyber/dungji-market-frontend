@@ -1,19 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { SERVER_DOWN_EVENT, SERVER_UP_EVENT } from '@/lib/api/axiosSetup';
 
 export default function MaintenanceBanner() {
   const [isServerDown, setIsServerDown] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     // 서버 다운 이벤트 리스너
     const handleServerDown = () => {
       console.warn('🔴 [MaintenanceBanner] 서버 다운 이벤트 감지');
       setIsServerDown(true);
-      setIsDismissed(false);
 
       // 서버 다운 감지 후 복구 체크 시작
       startHealthCheck();
@@ -69,27 +67,18 @@ export default function MaintenanceBanner() {
     };
   }, []);
 
-  // 서버 정상이거나 사용자가 닫은 경우 숨김
-  if (!isServerDown || isDismissed) return null;
+  // 서버 정상이면 숨김
+  if (!isServerDown) return null;
 
   return (
     // 전체 화면 오버레이 배너
     <div className="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg shadow-xl p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-yellow-600" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">서버 점검 중</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+            <AlertTriangle className="w-6 h-6 text-yellow-600" />
           </div>
-          <button
-            onClick={() => setIsDismissed(true)}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
-            aria-label="배너 닫기"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          <h2 className="text-xl font-bold text-gray-900">서버 점검 중</h2>
         </div>
 
         <div className="space-y-3">
