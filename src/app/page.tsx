@@ -299,7 +299,16 @@ function HomeContent() {
                           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">{deal.title}</h3>
 
                           {/* 가격 정보 */}
-                          {deal.original_price && deal.final_price ? (
+                          {deal.pricing_type === 'coupon_only' ? (
+                            // 쿠폰전용: 선착순 이벤트 뱃지만 표시
+                            <div className="mb-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 rounded-md whitespace-nowrap shadow-sm">
+                                  선착순 이벤트
+                                </span>
+                              </div>
+                            </div>
+                          ) : deal.original_price && deal.final_price ? (
                             <div className="mb-3">
                               <div className="flex items-baseline gap-2 flex-wrap mb-1">
                                 <span className="text-sm text-slate-500 line-through">
