@@ -358,15 +358,4 @@ html {
   }
 }
 
-/* Tiptap Editor Placeholder Styles */
-.ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-.ProseMirror .is-empty::before {
-  content: attr(data-placeholder);
-  color: #9ca3af;
-  pointer-events: none;
-}
+/* Tiptap Editor Styles */

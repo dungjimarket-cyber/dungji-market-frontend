@@ -5,7 +5,6 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
-import Placeholder from '@tiptap/extension-placeholder';
 import { FontSize } from '@/lib/tiptap/fontSize';
 import {
   Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon, Palette, Type
@@ -43,9 +42,6 @@ export default function RichTextEditor({
       TextStyle,
       Color,
       FontSize,
-      Placeholder.configure({
-        placeholder,
-      }),
     ],
     content,
     onUpdate: ({ editor }) => {
