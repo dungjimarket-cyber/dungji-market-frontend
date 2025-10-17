@@ -49,7 +49,7 @@ export default function MaintenanceBanner() {
         <h2 className="text-3xl font-bold mb-4 text-gray-900">서비스 점검 중입니다</h2>
         <p className="text-xl mb-3 text-gray-700">빠른 시일 내에 복구하겠습니다.</p>
         <p className="text-gray-600 text-lg mb-4">불편을 드려 죄송합니다.</p>
-        <p className="text-gray-700 font-medium">예상 복구 시간: 10월 17일 12시</p>
+        <p className="text-gray-700 font-medium">예상 복구 시간: 10월 17일 오후 1시</p>
         <p className="text-gray-500 text-sm mt-2">(조기 종료 가능)</p>
       </div>
     </div>
