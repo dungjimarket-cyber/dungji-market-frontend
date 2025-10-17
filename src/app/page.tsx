@@ -282,7 +282,7 @@ function HomeContent() {
                     <div className="border-2 border-gray-200 rounded-xl p-5 hover:border-green-500 hover:shadow-lg transition-all cursor-pointer">
                       <div className="flex flex-col gap-3">
                         {/* 상단: 이미지 + 할인정보 */}
-                        <div className="flex gap-3">
+                        <div className="flex gap-4">
                           {/* 이미지 */}
                           {deal.primary_image ? (
                             <img
