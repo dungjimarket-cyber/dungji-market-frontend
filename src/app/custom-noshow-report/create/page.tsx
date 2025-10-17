@@ -29,12 +29,12 @@ function CustomNoShowReportContent() {
   const [authChecked, setAuthChecked] = useState(false);
   const [existingReport, setExistingReport] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isGroupbuySeller, setIsGroupbuySeller] = useState(false); // 이 공구에서 내가 판매자인지
 
-  const isSeller = user?.role === 'seller' || user?.user_type === '판매';
   const isButtonDisabled = loading ||
                           !content.trim() ||
                           content.trim().length < 20 ||
-                          (isSeller && selectedBuyerIds.length === 0);
+                          (isGroupbuySeller && selectedBuyerIds.length === 0);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -64,11 +64,11 @@ function CustomNoShowReportContent() {
   }, [groupbuyId, user, accessToken]);
 
   useEffect(() => {
-    const isSeller = user?.role === 'seller' || user?.user_type === '판매';
-    if (isSeller && groupbuyId && accessToken && authChecked) {
+    // 공구 정보가 로드되고, 내가 이 공구의 판매자인 경우에만 참여자 목록 조회
+    if (isGroupbuySeller && groupbuyId && accessToken && authChecked) {
       fetchParticipants();
     }
-  }, [user, groupbuyId, accessToken, authChecked]);
+  }, [isGroupbuySeller, groupbuyId, accessToken, authChecked]);
 
   const fetchGroupbuyInfo = async () => {
     try {
@@ -83,9 +83,13 @@ function CustomNoShowReportContent() {
         setGroupbuyInfo(data);
         console.log('Custom groupbuy info fetched:', data);
 
-        // 구매자인 경우 판매자 ID 저장
-        const isBuyer = user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type);
-        if (isBuyer && data.seller) {
+        // 이 공구에서 내가 판매자인지 확인 (계정 role이 아닌 실제 공구의 판매자 여부)
+        const amISeller = data.seller === user?.id || String(data.seller) === String(user?.id);
+        setIsGroupbuySeller(amISeller);
+        console.log('Am I the seller of this groupbuy?', amISeller, 'groupbuy seller:', data.seller, 'my id:', user?.id);
+
+        // 내가 판매자가 아닌 경우(=참여자) 판매자 ID 저장
+        if (!amISeller && data.seller) {
           setSellerId(String(data.seller));
           console.log('Seller ID:', data.seller);
         }
@@ -118,7 +122,7 @@ function CustomNoShowReportContent() {
           setContent(myReport.content || '');
           setIsEditMode(true);
 
-          if ((user?.role === 'seller' || user?.user_type === '판매') && myReport.reported_user) {
+          if (isGroupbuySeller && myReport.reported_user) {
             const reportedUserId = typeof myReport.reported_user === 'object'
               ? myReport.reported_user.id
               : myReport.reported_user;
@@ -268,8 +272,8 @@ function CustomNoShowReportContent() {
     try {
       let reportType: 'buyer_noshow' | 'seller_noshow';
 
-      if (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && user?.user_type !== '판매')) {
-        // 구매자가 신고 → 판매자 노쇼
+      if (!isGroupbuySeller) {
+        // 내가 이 공구의 참여자 → 판매자 노쇼 신고
         reportType = 'seller_noshow';
 
         if (!sellerId) {
@@ -310,8 +314,8 @@ function CustomNoShowReportContent() {
           const errorData = await response.json();
           toast.error(errorData.error || '신고 접수에 실패했습니다.');
         }
-      } else if (user?.role === 'seller' || user?.user_type === '판매') {
-        // 판매자가 신고 → 구매자 노쇼
+      } else if (isGroupbuySeller) {
+        // 내가 이 공구의 판매자 → 구매자 노쇼 신고
         reportType = 'buyer_noshow';
         if (selectedBuyerIds.length === 0) {
           toast.error('신고할 구매자를 선택해주세요.');
@@ -443,8 +447,8 @@ function CustomNoShowReportContent() {
       <Card className="flex-1 mb-4">
         <CardContent className="p-4">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 판매자 정보 표시 (구매자가 신고 시) */}
-            {(user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && user?.user_type !== '판매')) && groupbuyInfo && (
+            {/* 판매자 정보 표시 (내가 참여자인 경우) */}
+            {!isGroupbuySeller && groupbuyInfo && (
               <div className="space-y-2">
                 <Label>신고 대상 판매자</Label>
                 <div className="border rounded-lg p-4 bg-gray-50">
@@ -466,8 +470,8 @@ function CustomNoShowReportContent() {
               </div>
             )}
 
-            {/* 구매자 선택 (판매자가 신고 시) */}
-            {(user?.role === 'seller' || user?.user_type === '판매') && (
+            {/* 구매자 선택 (내가 판매자인 경우) */}
+            {isGroupbuySeller && (
               <div className="space-y-2">
                 <Label>노쇼한 구매자 선택 (필수)</Label>
                 {participants.length > 0 ? (
