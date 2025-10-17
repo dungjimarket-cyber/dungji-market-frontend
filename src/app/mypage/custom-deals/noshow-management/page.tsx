@@ -42,6 +42,7 @@ export default function CustomNoShowManagementPage() {
     }
 
     try {
+      console.log('🔍 [노쇼신고] API 호출 시작');
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/recent_completed/?limit=3`,
         {
@@ -52,23 +53,40 @@ export default function CustomNoShowManagementPage() {
         }
       );
 
+      console.log('🔍 [노쇼신고] API 응답 상태:', response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('🔍 [노쇼신고] API 응답 데이터:', data);
+        console.log('🔍 [노쇼신고] 공구 개수:', data.length);
+
+        data.forEach((deal: any, index: number) => {
+          console.log(`🔍 [노쇼신고] 공구 ${index + 1}:`, {
+            id: deal.id,
+            title: deal.title,
+            type: deal.type,
+            status: deal.status,
+            completed_at: deal.completed_at,
+            days_ago: deal.days_ago
+          });
+        });
 
         if (data.length === 0) {
+          console.log('🔍 [노쇼신고] 공구 없음 - 모달 표시');
           setShowNoTransactionsModal(true);
         } else {
+          console.log('🔍 [노쇼신고] 공구 있음 - 선택 모달 표시');
           // 1건 이상이면 선택 모달 표시 (사용자가 확인하고 선택)
           setRecentDeals(data);
           setShowNoShowModal(true);
         }
       } else {
         const errorData = await response.json();
-        console.error('Error response:', errorData);
+        console.error('🔍 [노쇼신고] API 에러 응답:', errorData);
         toast.error('공구 목록을 불러오는데 실패했습니다.');
       }
     } catch (error) {
-      console.error('노쇼신고 공구 조회 오류:', error);
+      console.error('🔍 [노쇼신고] 예외 발생:', error);
       toast.error('오류가 발생했습니다.');
     }
   };
