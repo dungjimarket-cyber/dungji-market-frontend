@@ -24,6 +24,7 @@ interface RecentCustomDeal {
   current_participants?: number;
   seller_name?: string;
   seller_id?: number;
+  pricing_type?: string;
 }
 
 export default function CustomNoShowManagementPage() {
@@ -67,7 +68,8 @@ export default function CustomNoShowManagementPage() {
             type: deal.type,
             status: deal.status,
             completed_at: deal.completed_at,
-            days_ago: deal.days_ago
+            days_ago: deal.days_ago,
+            pricing_type: deal.pricing_type  // 추가
           });
         });
 
