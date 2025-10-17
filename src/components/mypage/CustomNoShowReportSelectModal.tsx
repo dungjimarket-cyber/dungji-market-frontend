@@ -23,6 +23,7 @@ interface RecentCustomDeal {
   current_participants?: number;
   seller_name?: string;
   seller_id?: number;
+  pricing_type?: string;
 }
 
 interface CustomNoShowReportSelectModalProps {
@@ -37,6 +38,9 @@ export function CustomNoShowReportSelectModal({
   deals
 }: CustomNoShowReportSelectModalProps) {
   const router = useRouter();
+
+  // 쿠폰전용 공구 필터링
+  const eligibleDeals = deals.filter(deal => deal.pricing_type !== 'coupon_only');
 
   const handleSelectDeal = (deal: RecentCustomDeal) => {
     let url = `/custom-noshow-report/create?groupbuy=${deal.id}`;
@@ -58,7 +62,13 @@ export function CustomNoShowReportSelectModal({
         </DialogHeader>
 
         <div className="space-y-3 mt-4">
-          {deals.map((deal) => (
+          {eligibleDeals.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>신고 가능한 공구가 없습니다.</p>
+              <p className="text-sm mt-2">쿠폰전용 공구는 노쇼 신고가 지원되지 않습니다.</p>
+            </div>
+          ) : (
+            eligibleDeals.map((deal) => (
             <Card
               key={deal.id}
               className="hover:shadow-md transition-shadow cursor-pointer"
@@ -121,7 +131,8 @@ export function CustomNoShowReportSelectModal({
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </DialogContent>
     </Dialog>
