@@ -280,9 +280,9 @@ function HomeContent() {
                 {customDeals.map((deal) => (
                   <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                     <div className="border-2 border-gray-200 rounded-xl p-5 hover:border-green-500 hover:shadow-lg transition-all cursor-pointer">
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-3 md:flex-row md:gap-4 md:items-center">
                         {/* 상단: 이미지 + 할인정보 */}
-                        <div className="flex gap-4">
+                        <div className="flex gap-6 md:gap-4">
                           {/* 이미지 */}
                           {deal.primary_image ? (
                             <img
@@ -341,7 +341,7 @@ function HomeContent() {
                         </div>
 
                         {/* 하단: 상품명 (2줄 말줄임) */}
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 line-clamp-2">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 line-clamp-2 md:flex-1 md:min-w-0">
                           {deal.title}
                         </h3>
 
