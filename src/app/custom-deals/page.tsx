@@ -68,7 +68,7 @@ export default function CustomDealsPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // 필터 상태
-  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline'>('all');
+  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline' | 'coupon_only'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState(''); // 지역 검색
@@ -113,7 +113,8 @@ export default function CustomDealsPage() {
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`;
       const params = new URLSearchParams();
 
-      if (selectedType !== 'all') {
+      // 쿠폰/이벤트 탭이 아닐 때만 type 파라미터 추가
+      if (selectedType !== 'all' && selectedType !== 'coupon_only') {
         params.append('type', selectedType);
       }
 
@@ -359,6 +360,16 @@ export default function CustomDealsPage() {
               >
                 오프라인
               </button>
+              <button
+                onClick={() => setSelectedType('coupon_only')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedType === 'coupon_only'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+                    : 'bg-white text-gray-700 border border-orange-300 hover:bg-orange-50'
+                }`}
+              >
+                쿠폰/이벤트
+              </button>
 
               {/* Sort Type Filter */}
               <select
@@ -384,8 +395,8 @@ export default function CustomDealsPage() {
                 ))}
               </select>
 
-              {/* Location Filter (오프라인 공구용) */}
-              {selectedType !== 'online' && (
+              {/* Location Filter (오프라인 공구용, 쿠폰/이벤트 탭에서는 숨김) */}
+              {selectedType !== 'online' && selectedType !== 'coupon_only' && (
                 <input
                   type="text"
                   placeholder="지역 검색"
@@ -428,6 +439,16 @@ export default function CustomDealsPage() {
               .filter((deal) => {
                 // 취소된 공구는 항상 제외
                 if (deal.status === 'cancelled') return false;
+
+                // 쿠폰/이벤트 탭: pricing_type이 coupon_only인 것만
+                if (selectedType === 'coupon_only') {
+                  if (deal.pricing_type !== 'coupon_only') return false;
+                  return showClosedDeals || deal.status === 'recruiting';
+                }
+
+                // 전체/온라인/오프라인 탭: coupon_only 제외
+                if (deal.pricing_type === 'coupon_only') return false;
+
                 // showClosedDeals에 따라 마감된 공구 표시 여부 결정
                 return showClosedDeals || deal.status === 'recruiting';
               })
