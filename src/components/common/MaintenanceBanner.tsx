@@ -73,23 +73,38 @@ export default function MaintenanceBanner() {
   if (!isServerDown || isDismissed) return null;
 
   return (
-    // 상단 고정 배너 (전체 화면 가리지 않음)
-    <div className="fixed top-0 left-0 right-0 bg-yellow-500 text-white px-4 py-3 shadow-lg z-50">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-          <div>
-            <p className="font-semibold">일시적인 서버 오류가 발생했습니다</p>
-            <p className="text-sm text-yellow-100">잠시 후 다시 시도해주세요. 자동으로 복구 중입니다.</p>
+    // 전체 화면 오버레이 배너
+    <div className="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg shadow-xl p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">서버 점검 중</h2>
+          </div>
+          <button
+            onClick={() => setIsDismissed(true)}
+            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            aria-label="배너 닫기"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-gray-700">
+            일시적인 서버 오류가 발생했습니다.
+          </p>
+          <p className="text-sm text-gray-500">
+            잠시 후 다시 시도해주세요. 시스템이 자동으로 복구 중입니다.
+          </p>
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-400">
+              💡 문제가 지속될 경우 페이지를 새로고침해주세요.
+            </p>
           </div>
         </div>
-        <button
-          onClick={() => setIsDismissed(true)}
-          className="p-1 hover:bg-yellow-600 rounded transition-colors"
-          aria-label="배너 닫기"
-        >
-          <X className="w-5 h-5" />
-        </button>
       </div>
     </div>
   );
