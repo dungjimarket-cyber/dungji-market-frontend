@@ -428,6 +428,18 @@ function CustomNoShowReportContent() {
         </div>
       )}
 
+      {/* 쿠폰전용 안내 */}
+      {groupbuyInfo?.pricing_type === 'coupon_only' && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-800">
+              <strong>쿠폰전용 공구는 노쇼 신고가 제공되지 않습니다.</strong>
+            </p>
+          </div>
+        </div>
+      )}
+
       <Card className="flex-1 mb-4">
         <CardContent className="p-4">
           <form onSubmit={handleSubmit} className="space-y-6">
