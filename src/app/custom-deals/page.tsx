@@ -446,8 +446,12 @@ export default function CustomDealsPage() {
                   return showClosedDeals || deal.status === 'recruiting';
                 }
 
-                // 전체/온라인/오프라인 탭: coupon_only 제외
-                if (deal.pricing_type === 'coupon_only') return false;
+                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only 제외
+                if (selectedType === 'online' || selectedType === 'offline') {
+                  if (deal.pricing_type === 'coupon_only') return false;
+                }
+
+                // 전체 탭: 모든 타입 표시 (쿠폰전용 포함)
 
                 // showClosedDeals에 따라 마감된 공구 표시 여부 결정
                 return showClosedDeals || deal.status === 'recruiting';
