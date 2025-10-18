@@ -532,7 +532,7 @@ export default function CustomDealsPage() {
                     </div>
 
                     {/* Title - 고정 높이 (2줄) */}
-                    <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2 h-12">
+                    <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2 h-12 whitespace-pre-line">
                       {deal.title}
                     </h3>
 
