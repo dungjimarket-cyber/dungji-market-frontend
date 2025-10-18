@@ -727,15 +727,15 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     <>
                       <button
                         onClick={handlePrevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white z-20"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 hover:scale-110 transition-transform"
                       >
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
                       <button
                         onClick={handleNextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white z-20"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 hover:scale-110 transition-transform"
                       >
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
 
                       {/* 이미지 인디케이터 */}
@@ -1967,20 +1967,20 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             {phone.images.length > 1 && (
               <>
                 <button
-                  onClick={() => setLightboxImageIndex((prev) => 
+                  onClick={() => setLightboxImageIndex((prev) =>
                     prev === 0 ? phone.images!.length - 1 : prev - 1
                   )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
-                  <ChevronLeft className="w-6 h-6 text-white" />
+                  <ChevronLeft className="w-10 h-10 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                 </button>
                 <button
-                  onClick={() => setLightboxImageIndex((prev) => 
+                  onClick={() => setLightboxImageIndex((prev) =>
                     prev === phone.images!.length - 1 ? 0 : prev + 1
                   )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
-                  <ChevronRight className="w-6 h-6 text-white" />
+                  <ChevronRight className="w-10 h-10 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                 </button>
                 
                 {/* 이미지 카운터 */}
