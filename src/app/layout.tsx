@@ -69,11 +69,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
   icons: {
     icon: [
-      { url: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/logos/dungji_logo.jpg', type: 'image/jpeg' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
+      { url: '/logos/dungji_logo.jpg', type: 'image/jpeg' },
       { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
     ],
@@ -115,8 +116,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="둥지마켓" />
-        <link rel="icon" href="/icons/icon-192x192.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="icon" href="/logos/dungji_logo.jpg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/logos/dungji_logo.jpg" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
       </head>
