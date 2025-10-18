@@ -287,13 +287,15 @@ export default function CustomDealDetailPage() {
   };
 
   const handleShare = async () => {
+    if (!deal) return;
+
     const url = window.location.href;
 
     let shareText = '';
 
-    if (deal?.pricing_type === 'coupon_only') {
+    if (deal.pricing_type === 'coupon_only') {
       shareText = `${deal.title} - 선착순 쿠폰증정`;
-    } else if (deal?.final_price) {
+    } else if (deal.final_price) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
         : deal.final_price.toLocaleString();
