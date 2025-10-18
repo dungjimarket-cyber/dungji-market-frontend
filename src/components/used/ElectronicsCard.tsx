@@ -162,7 +162,6 @@ const ElectronicsCard = memo(function ElectronicsCard({
                 <>
                   {/* 최소제안가를 먼저 크게 표시 */}
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xs text-blue-600 font-medium">가격제안</span>
                     <span className="text-lg font-bold text-blue-600">
                       {formatPrice(electronics.min_offer_price)}~
                     </span>

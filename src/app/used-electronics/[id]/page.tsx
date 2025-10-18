@@ -1962,21 +1962,21 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === 0 ? electronics.images!.length - 1 : prev - 1
                   )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
-                  <ChevronLeft className="w-6 h-6 text-white" />
+                  <ChevronLeft className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
                 </button>
                 <button
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === electronics.images!.length - 1 ? 0 : prev + 1
                   )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
-                  <ChevronRight className="w-6 h-6 text-white" />
+                  <ChevronRight className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
                 </button>
 
                 {/* 이미지 카운터 */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
                   {lightboxImageIndex + 1} / {electronics.images.length}
                 </div>
               </>
