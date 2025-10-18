@@ -669,7 +669,7 @@ export default function CustomDealDetailPage() {
                         onClick={() => setSelectedImage((prev) =>
                           prev === 0 ? sortedImages.length - 1 : prev - 1
                         )}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
                         <ChevronLeft className="w-6 h-6 text-slate-800" />
                       </button>
@@ -677,7 +677,7 @@ export default function CustomDealDetailPage() {
                         onClick={() => setSelectedImage((prev) =>
                           prev === sortedImages.length - 1 ? 0 : prev + 1
                         )}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
                         <ChevronRight className="w-6 h-6 text-slate-800" />
                       </button>
@@ -1148,7 +1148,7 @@ export default function CustomDealDetailPage() {
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === 0 ? sortedImages.length - 1 : prev - 1
                   )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6 text-white" />
                 </button>
@@ -1156,7 +1156,7 @@ export default function CustomDealDetailPage() {
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === sortedImages.length - 1 ? 0 : prev + 1
                   )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-3 hover:bg-white/30 transition-colors"
                 >
                   <ChevronRight className="w-6 h-6 text-white" />
                 </button>
