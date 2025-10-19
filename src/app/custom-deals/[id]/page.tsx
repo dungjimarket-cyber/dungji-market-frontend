@@ -332,7 +332,7 @@ export default function CustomDealDetailPage() {
   const handleEarlyClose = async () => {
     if (!deal) return;
 
-    if (!confirm('공구를 조기 종료하시겠습니까?\n\n현재 참여 인원에게 할인코드가 즉시 발급됩니다.')) {
+    if (!confirm('공구를 조기 종료하시겠습니까?\n\n현재 참여 인원에게 할인/쿠폰 정보가 즉시 발급됩니다.')) {
       return;
     }
 
