@@ -162,6 +162,9 @@ function SignInForm() {
           {selectedTab === 'buyer' && (
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-center mb-3">
+                <p className="text-sm font-medium text-gray-700">
+                  공동구매 개설·참여
+                </p>
                 <p className="text-xs text-gray-500 mt-1">
                   공구견적받기 / 중고거래 이용
                 </p>

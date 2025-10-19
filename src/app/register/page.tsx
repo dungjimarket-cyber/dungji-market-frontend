@@ -868,7 +868,7 @@ function RegisterPageContent() {
                     개인회원
                   </div>
                   <div className="text-[10px] sm:text-xs text-gray-600 space-y-1.5 leading-tight">
-                    <div className="whitespace-nowrap font-semibold text-blue-600">커스텀 공구 개설·참여</div>
+                    <div className="whitespace-nowrap font-semibold text-blue-600">공동구매 개설·참여</div>
                     <div className="whitespace-nowrap">견적요청·공구참여</div>
                     <div className="whitespace-nowrap font-bold">중고거래</div>
                   </div>
@@ -886,18 +886,11 @@ function RegisterPageContent() {
                     사업자회원
                   </div>
                   <div className="text-[10px] sm:text-xs text-gray-600 space-y-1.5 leading-tight">
-                    <div className="whitespace-nowrap font-semibold text-orange-600">커스텀 공구 개설·참여</div>
+                    <div className="whitespace-nowrap font-semibold text-orange-600">공동구매 개설·참여</div>
                     <div className="whitespace-nowrap">통신·렌탈 판매</div>
                     <div className="whitespace-nowrap font-bold">중고거래</div>
                   </div>
                 </button>
-              </div>
-
-              {/* 회원 선택 가이드 */}
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                <p className="text-sm text-gray-700 text-center leading-relaxed">
-                  중고거래는 모든 회원이 자유롭게 이용 가능합니다
-                </p>
               </div>
             </div>
           )}
