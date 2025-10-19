@@ -85,6 +85,9 @@ export default function CustomDealDetailPage() {
   const [isExpired, setIsExpired] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  // 터치 스와이프 상태
+  const [touchStartX, setTouchStartX] = useState<number>(0);
+  const [touchEndX, setTouchEndX] = useState<number>(0);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -526,6 +529,68 @@ export default function CustomDealDetailPage() {
     return `${minutes}분 남음`;
   };
 
+  // 터치 스와이프 핸들러 (메인 갤러리)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX || !deal) return;
+
+    const swipeDistance = touchStartX - touchEndX;
+    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
+    const imageCount = deal.images.length;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // 왼쪽으로 스와이프 = 다음 이미지
+        setSelectedImage((prev) =>
+          prev === imageCount - 1 ? 0 : prev + 1
+        );
+      } else {
+        // 오른쪽으로 스와이프 = 이전 이미지
+        setSelectedImage((prev) =>
+          prev === 0 ? imageCount - 1 : prev - 1
+        );
+      }
+    }
+
+    // 리셋
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
+  // 터치 스와이프 핸들러 (라이트박스)
+  const handleLightboxTouchEnd = () => {
+    if (!touchStartX || !touchEndX || !deal) return;
+
+    const swipeDistance = touchStartX - touchEndX;
+    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
+    const imageCount = deal.images.length;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // 왼쪽으로 스와이프 = 다음 이미지
+        setLightboxImageIndex((prev) =>
+          prev === imageCount - 1 ? 0 : prev + 1
+        );
+      } else {
+        // 오른쪽으로 스와이프 = 이전 이미지
+        setLightboxImageIndex((prev) =>
+          prev === 0 ? imageCount - 1 : prev - 1
+        );
+      }
+    }
+
+    // 리셋
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
   const getStatusBadge = () => {
     if (!deal) return null;
 
@@ -645,7 +710,12 @@ export default function CustomDealDetailPage() {
           {/* Left Column - Images */}
           <div>
             {/* Main Image */}
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative group">
+            <div
+              className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative group"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {sortedImages.length > 0 ? (
                 <>
                   <button
@@ -1145,7 +1215,12 @@ export default function CustomDealDetailPage() {
             <X className="w-8 h-8" />
           </button>
 
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div
+            className="relative w-full h-full flex items-center justify-center"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleLightboxTouchEnd}
+          >
             <img
               src={sortedImages[lightboxImageIndex].image_url}
               alt={`${deal.title} ${lightboxImageIndex + 1}`}

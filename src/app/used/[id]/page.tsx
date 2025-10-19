@@ -68,6 +68,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState<boolean | null>(null); // null로 초기화하여 로딩 상태 표시
+  // 터치 스와이프 상태
+  const [touchStartX, setTouchStartX] = useState<number>(0);
+  const [touchEndX, setTouchEndX] = useState<number>(0);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [displayAmount, setDisplayAmount] = useState('');
@@ -250,9 +253,65 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   };
 
   const handleNextImage = () => {
-    setCurrentImageIndex(prev => 
+    setCurrentImageIndex(prev =>
       prev < (phone?.images?.length || 1) - 1 ? prev + 1 : 0
     );
+  };
+
+  // 터치 스와이프 핸들러 (메인 갤러리)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+
+    const swipeDistance = touchStartX - touchEndX;
+    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // 왼쪽으로 스와이프 = 다음 이미지
+        handleNextImage();
+      } else {
+        // 오른쪽으로 스와이프 = 이전 이미지
+        handlePrevImage();
+      }
+    }
+
+    // 리셋
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
+  // 터치 스와이프 핸들러 (라이트박스)
+  const handleLightboxTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+
+    const swipeDistance = touchStartX - touchEndX;
+    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // 왼쪽으로 스와이프 = 다음 이미지
+        setLightboxImageIndex((prev) =>
+          prev === (phone?.images?.length || 1) - 1 ? 0 : prev + 1
+        );
+      } else {
+        // 오른쪽으로 스와이프 = 이전 이미지
+        setLightboxImageIndex((prev) =>
+          prev === 0 ? (phone?.images?.length || 1) - 1 : prev - 1
+        );
+      }
+    }
+
+    // 리셋
+    setTouchStartX(0);
+    setTouchEndX(0);
   };
 
   // 찜하기
@@ -696,7 +755,12 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           {/* 이미지 섹션 */}
           <div className="w-full">
             {/* 메인 이미지 */}
-            <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden group shadow-sm border border-gray-200">
+            <div
+              className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden group shadow-sm border border-gray-200"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
                 <>
                   <Image
@@ -1953,8 +2017,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           >
             <X className="w-8 h-8" />
           </button>
-          
-          <div className="relative w-full h-full flex items-center justify-center">
+
+          <div
+            className="relative w-full h-full flex items-center justify-center"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleLightboxTouchEnd}
+          >
             <Image
               src={phone.images[lightboxImageIndex]?.imageUrl || '/images/phone-placeholder.png'}
               alt={phone.model || '중고폰 이미지'}
