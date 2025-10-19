@@ -750,7 +750,7 @@ export default function CustomDealDetailPage() {
                         onClick={() => setSelectedImage((prev) =>
                           prev === 0 ? sortedImages.length - 1 : prev - 1
                         )}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
@@ -758,7 +758,7 @@ export default function CustomDealDetailPage() {
                         onClick={() => setSelectedImage((prev) =>
                           prev === sortedImages.length - 1 ? 0 : prev + 1
                         )}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
@@ -1234,7 +1234,7 @@ export default function CustomDealDetailPage() {
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === 0 ? sortedImages.length - 1 : prev - 1
                   )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
                   <ChevronLeft className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
                 </button>
@@ -1242,7 +1242,7 @@ export default function CustomDealDetailPage() {
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === sortedImages.length - 1 ? 0 : prev + 1
                   )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
                   <ChevronRight className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
                 </button>

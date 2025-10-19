@@ -737,13 +737,13 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 <>
                   <button
                     onClick={handlePrevImage}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full z-20 hover:bg-white"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full z-20 hover:bg-white"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={handleNextImage}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full z-20 hover:bg-white"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full z-20 hover:bg-white"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -2036,7 +2036,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === 0 ? electronics.images!.length - 1 : prev - 1
                   )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
                   <ChevronLeft className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
                 </button>
@@ -2044,7 +2044,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === electronics.images!.length - 1 ? 0 : prev + 1
                   )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
                 >
                   <ChevronRight className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
                 </button>
