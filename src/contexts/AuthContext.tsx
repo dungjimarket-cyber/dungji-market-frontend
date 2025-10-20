@@ -675,12 +675,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('dungji_refresh_token', refresh);  // tokenUtils에서 사용
         }
         
-        // 쿠키에도 토큰 저장 (서버 컴포넌트에서 인식하기 위함)
-        document.cookie = `accessToken=${access}; path=/; max-age=86400; SameSite=Lax`;
-        document.cookie = `dungji_auth_token=${access}; path=/; max-age=86400; SameSite=Lax`;
-        
+        // 쿠키에도 토큰 저장 (서버 컴포넌트에서 인식하기 위함) - 30일 보관
+        document.cookie = `accessToken=${access}; path=/; max-age=2592000; SameSite=Lax`;
+        document.cookie = `dungji_auth_token=${access}; path=/; max-age=2592000; SameSite=Lax`;
+
         if (refresh) {
-          document.cookie = `refreshToken=${refresh}; path=/; max-age=86400; SameSite=Lax`;
+          document.cookie = `refreshToken=${refresh}; path=/; max-age=2592000; SameSite=Lax`;
         }
       }
 
