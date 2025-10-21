@@ -12,7 +12,7 @@ function RedirectContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [url, setUrl] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -74,14 +74,13 @@ function RedirectContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="max-w-sm w-full text-center">
-        {/* 카운트다운 */}
-        <div className="mb-4">
-          <div className="text-3xl font-medium text-gray-400 mb-2">
-            {countdown}
-          </div>
-          <p className="text-gray-500 text-sm">외부 링크로 이동 중...</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
+      <div className="max-w-md w-full text-center">
+        {/* 로딩 스피너 */}
+        <div className="mb-6">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-700 text-lg font-medium mb-1">외부 사이트로 이동 중...</p>
+          <p className="text-gray-500 text-sm">잠시만 기다려주세요</p>
         </div>
 
         {/* 바로 이동 버튼 */}
@@ -89,15 +88,15 @@ function RedirectContent() {
           onClick={() => {
             if (url) window.location.href = url;
           }}
-          className="w-full bg-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium shadow-sm"
         >
-          바로 이동
+          바로 이동하기
         </button>
 
         {/* 취소 링크 */}
         <button
           onClick={() => router.back()}
-          className="mt-3 text-gray-400 hover:text-gray-600 text-sm"
+          className="mt-4 text-gray-500 hover:text-gray-700 text-sm transition-colors"
         >
           취소
         </button>
