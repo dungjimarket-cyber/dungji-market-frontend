@@ -676,15 +676,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         // 쿠키에도 토큰 저장 (서버 컴포넌트에서 인식하기 위함) - 30일 보관
-        // Secure 플래그 추가: HTTPS에서 모바일/PWA 쿠키 거부 방지
+        // PWA 환경 호환성: SameSite=None + Secure (PWA는 독립 컨텍스트로 Lax는 작동 안 함)
         const isProduction = window.location.protocol === 'https:';
-        const secureflag = isProduction ? '; Secure' : '';
+        const cookieFlags = isProduction
+          ? '; SameSite=None; Secure'
+          : '; SameSite=Lax';
 
-        document.cookie = `accessToken=${access}; path=/; max-age=2592000; SameSite=Lax${secureflag}`;
-        document.cookie = `dungji_auth_token=${access}; path=/; max-age=2592000; SameSite=Lax${secureflag}`;
+        document.cookie = `accessToken=${access}; path=/; max-age=2592000${cookieFlags}`;
+        document.cookie = `dungji_auth_token=${access}; path=/; max-age=2592000${cookieFlags}`;
 
         if (refresh) {
-          document.cookie = `refreshToken=${refresh}; path=/; max-age=2592000; SameSite=Lax${secureflag}`;
+          document.cookie = `refreshToken=${refresh}; path=/; max-age=2592000${cookieFlags}`;
         }
       }
 

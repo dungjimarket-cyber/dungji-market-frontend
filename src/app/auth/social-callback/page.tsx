@@ -270,10 +270,12 @@ function SocialCallbackContent() {
             window.dispatchEvent(new Event('storage'));
           }
           
-          // 쿠키에도 저장 (백업) - 30일 보관, Secure 플래그 추가
+          // 쿠키에도 저장 (백업) - 30일 보관, PWA 환경 호환성
           const isProduction = window.location.protocol === 'https:';
-          const secureFlag = isProduction ? '; Secure' : '';
-          document.cookie = `dungji_auth_token=${accessToken}; path=/; max-age=2592000; SameSite=Lax${secureFlag}`;
+          const cookieFlags = isProduction
+            ? '; SameSite=None; Secure'
+            : '; SameSite=Lax';
+          document.cookie = `dungji_auth_token=${accessToken}; path=/; max-age=2592000${cookieFlags}`;
         } catch (storageError) {
           console.error('리다이렉트 전 스토리지 작업 오류:', storageError);
           // 오류가 나도 리다이렉트는 계속 진행
