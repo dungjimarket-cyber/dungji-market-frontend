@@ -677,7 +677,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           submitFormData.append('products', JSON.stringify([{
             name: formData.product_name,
             original_price: parseInt(formData.original_price.replace(/,/g, '')),
-            discount_rate: parseInt(formData.discount_rate)
+            discount_rate: parseInt(formData.discount_rate),
+            final_price: parseInt(formData.final_price.replace(/,/g, ''))
           }]));
         } else {
           submitFormData.append('discount_rate', formData.discount_rate);

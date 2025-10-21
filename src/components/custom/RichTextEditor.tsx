@@ -289,7 +289,7 @@ export default function RichTextEditor({
 
       {/* 에디터 */}
       <div
-        className="px-3 pb-3 pt-3 text-slate-700 text-sm leading-relaxed [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror>*:first-child]:mt-0 [&_.ProseMirror>p]:mb-3 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
+        className="px-3 pb-3 pt-3 text-slate-700 text-sm leading-relaxed [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror>*:first-child]:mt-0 [&_.ProseMirror>p]:mb-3 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ul]:pl-0 [&_.ProseMirror>ul]:list-inside [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>ol]:pl-0 [&_.ProseMirror>ol]:list-inside [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
         style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
       >
         <EditorContent editor={editor} />
