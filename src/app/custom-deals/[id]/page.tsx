@@ -882,20 +882,33 @@ export default function CustomDealDetailPage() {
                     <p className="text-xs text-slate-600">매장에서 직접 할인 받으세요</p>
                   </div>
                 )}
+
+                {/* 안내 문구 */}
+                <div className="mt-3 pt-3 border-t border-slate-200">
+                  <p className="text-xs text-slate-500 text-center">
+                    인원 마감 기준 특가 (인원 미달시 판매가 취소될 수 있습니다)
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Progress */}
-            <Card className="border-slate-200">
+            {/* Progress - 눈에 띄는 디자인 */}
+            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-md">
               <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5 text-slate-700 text-sm">
-                    <Users className="w-4 h-4" />
-                    <span className="font-semibold">
-                      {deal.current_participants}명 / {deal.target_participants}명
-                    </span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-blue-600 rounded-full p-1.5">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 mb-0.5">현재 참여 인원</p>
+                      <span className="text-lg font-bold text-blue-600">
+                        {deal.current_participants}명
+                      </span>
+                      <span className="text-sm text-slate-600"> / {deal.target_participants}명</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                  <div className="flex items-center gap-1.5 text-slate-600 text-sm bg-white px-3 py-1.5 rounded-full border border-slate-200">
                     <Clock className="w-4 h-4" />
                     <CountdownTimer
                       endTime={deal.expired_at}
@@ -906,14 +919,20 @@ export default function CustomDealDetailPage() {
                     />
                   </div>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2.5">
+                <div className="w-full bg-slate-200 rounded-full h-3 shadow-inner">
                   <div
-                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      progress >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                      progress >= 80 ? 'bg-gradient-to-r from-orange-500 to-red-500' :
+                      'bg-gradient-to-r from-blue-500 to-blue-600'
+                    }`}
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-1.5">
+                <p className="text-sm font-semibold text-blue-600 mt-2">
                   {Math.round(progress)}% 달성
+                  {progress >= 100 && ' 🎉'}
+                  {progress >= 80 && progress < 100 && ' 🔥'}
                 </p>
               </CardContent>
             </Card>
@@ -1115,7 +1134,6 @@ export default function CustomDealDetailPage() {
           {/* Description */}
           <Card className="border-slate-200 max-w-4xl mx-auto">
             <CardContent className="p-5">
-              <h2 className="text-lg font-bold text-slate-900 mb-3">상품 설명</h2>
               <div
                 className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
                 style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}

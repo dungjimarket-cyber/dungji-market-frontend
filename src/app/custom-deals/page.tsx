@@ -623,21 +623,31 @@ export default function CustomDealsPage() {
                           })()}
                         </>
                       ) : (
-                        // 모집 중: 기존 인원/시간 + 프로그레스 바
+                        // 모집 중: 눈에 띄는 인원/시간 + 프로그레스 바
                         <>
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
-                              <Users className="w-3 h-3 flex-shrink-0" />
-                              {deal.current_participants}/{deal.target_participants}명
-                            </span>
+                          <div className="flex items-center justify-between text-xs mb-2">
+                            <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded-full">
+                              <div className="bg-blue-600 rounded-full p-0.5">
+                                <Users className="w-2.5 h-2.5 text-white flex-shrink-0" />
+                              </div>
+                              <span className="text-blue-600 font-semibold whitespace-nowrap">
+                                {deal.current_participants}/{deal.target_participants}명
+                              </span>
+                            </div>
                             <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
                               <Clock className="w-3 h-3 flex-shrink-0" />
                               {getRemainingTime(deal.expired_at)}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-200 rounded-full h-1.5">
+                          <div className="w-full bg-slate-200 rounded-full h-2 shadow-inner">
                             <div
-                              className="bg-gray-900 h-1.5 rounded-full transition-all duration-300"
+                              className={`h-2 rounded-full transition-all duration-300 ${
+                                (deal.current_participants / deal.target_participants) * 100 >= 100
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                                  : (deal.current_participants / deal.target_participants) * 100 >= 80
+                                  ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                  : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                              }`}
                               style={{
                                 width: `${Math.min(
                                   (deal.current_participants / deal.target_participants) * 100,
