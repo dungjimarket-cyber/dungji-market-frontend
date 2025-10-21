@@ -652,16 +652,16 @@ export default function CustomDealDetailPage() {
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/custom-deals')}
-            className="flex items-center gap-1.5 text-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>목록</span>
-          </Button>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/custom-deals')}
+              className="flex items-center gap-1.5 text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>목록</span>
+            </Button>
             {user && (
               <Button
                 variant="outline"
@@ -670,20 +670,9 @@ export default function CustomDealDetailPage() {
                 className="flex items-center gap-1.5 bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
               >
                 <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">커공 관리</span>
+                <span>관리내역</span>
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleFavorite}
-              className={deal.is_favorited ? 'text-red-600 border-red-200' : ''}
-            >
-              <Heart className={`w-4 h-4 ${deal.is_favorited ? 'fill-current' : ''}`} />
-            </Button>
           </div>
         </div>
       </div>
@@ -950,6 +939,28 @@ export default function CustomDealDetailPage() {
               <span>찜 {deal.favorite_count}</span>
               <span>•</span>
               <span>{new Date(deal.created_at).toLocaleDateString()}</span>
+            </div>
+
+            {/* 공유하기 & 찜하기 버튼 */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="flex-1 flex items-center justify-center gap-1.5"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>공유하기</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleFavorite}
+                className={`flex-1 flex items-center justify-center gap-1.5 ${deal.is_favorited ? 'text-red-600 border-red-200 bg-red-50' : ''}`}
+              >
+                <Heart className={`w-4 h-4 ${deal.is_favorited ? 'fill-current' : ''}`} />
+                <span>{deal.is_favorited ? '찜 해제' : '찜하기'}</span>
+              </Button>
             </div>
 
             {/* Participate Button */}
