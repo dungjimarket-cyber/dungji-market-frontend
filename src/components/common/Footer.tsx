@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -224,9 +225,9 @@ export default function Footer() {
             
             {/* SNS 링크 */}
             <div className="flex items-center gap-4 mb-4">
-              <a 
-                href="https://www.instagram.com/dungjimarket" 
-                target="_blank" 
+              <a
+                href="https://www.instagram.com/dungjimarket"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-gray-600 hover:text-pink-600 transition-colors duration-200"
                 title="둥지마켓 인스타그램"
@@ -236,10 +237,10 @@ export default function Footer() {
                 </svg>
                 <span className="ml-2 text-sm">인스타그램</span>
               </a>
-              
-              <a 
-                href="https://m.blog.naver.com/dungjimarket-1-" 
-                target="_blank" 
+
+              <a
+                href="https://m.blog.naver.com/dungjimarket-1-"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-gray-600 hover:text-green-600 transition-colors duration-200"
                 title="둥지마켓 블로그"
@@ -250,7 +251,32 @@ export default function Footer() {
                 <span className="ml-2 text-sm">블로그</span>
               </a>
             </div>
-            
+
+            {/* 협력사 */}
+            <div className="mb-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-500 mb-3">협력사</p>
+              <div className="flex items-center gap-4">
+                <a
+                  href="https://www.atube.co.kr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center group"
+                  title="에이튜브"
+                >
+                  <div className="relative h-12 w-auto grayscale group-hover:grayscale-0 transition-all duration-300">
+                    <Image
+                      src="/logos/에이튜브로고.jpg"
+                      alt="에이튜브"
+                      width={80}
+                      height={48}
+                      className="object-contain"
+                    />
+                  </div>
+                  <span className="text-[10px] text-gray-400 mt-1">음향기기 전문 기업</span>
+                </a>
+              </div>
+            </div>
+
             <div>
               <p className="text-xs text-gray-500">
                 © {new Date().getFullYear()} 둥지마켓. All rights reserved.
