@@ -76,6 +76,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     product_name: '',
     original_price: '',
     discount_rate: '',
+    final_price: '', // 공구특가 직접 입력
     target_participants: '2',
     deadline_type: 'auto' as 'auto' | 'manual',
     deadline_days: '3',
@@ -139,6 +140,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         product_name: data.products?.[0]?.name || data.product_name || '',
         original_price: data.products?.[0]?.original_price?.toLocaleString() || data.original_price?.toLocaleString() || '',
         discount_rate: (data.products?.[0]?.discount_rate || data.discount_rate || '').toString(),
+        final_price: (() => {
+          const original = data.products?.[0]?.original_price || data.original_price || 0;
+          const discount = data.products?.[0]?.discount_rate || data.discount_rate || 0;
+          if (original > 0 && discount > 0) {
+            return Math.floor(original * (100 - discount) / 100).toLocaleString();
+          }
+          return '';
+        })(),
         target_participants: data.target_participants?.toString() || '2',
         deadline_type: 'auto',
         deadline_days: '3',
@@ -507,6 +516,64 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     const numValue = parseInt(numbers);
     if (numValue > 100000000) return '100,000,000';
     return numValue.toLocaleString('ko-KR');
+  };
+
+  // 할인율 변경 시 공구특가 자동 계산
+  const handleDiscountRateChange = (rate: string) => {
+    if (formData.pricing_type !== 'single_product') {
+      handleInputChange('discount_rate', rate);
+      return;
+    }
+
+    const original = parseInt(formData.original_price.replace(/,/g, '')) || 0;
+    const discount = parseInt(rate) || 0;
+
+    if (original > 0 && discount >= 0 && discount <= 99) {
+      const calculated = Math.floor(original * (100 - discount) / 100);
+      setFormData(prev => ({
+        ...prev,
+        discount_rate: rate,
+        final_price: calculated.toLocaleString()
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        discount_rate: rate,
+        final_price: ''
+      }));
+    }
+  };
+
+  // 공구특가 변경 시 할인율 자동 계산
+  const handleFinalPriceChange = (price: string) => {
+    const original = parseInt(formData.original_price.replace(/,/g, '')) || 0;
+    const final = parseInt(price.replace(/,/g, '')) || 0;
+
+    if (original > 0 && final > 0) {
+      // 공구특가가 정상가를 초과하는지 체크
+      if (final > original) {
+        setErrors(prev => ({ ...prev, final_price: '공구특가는 정상가를 초과할 수 없습니다' }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.final_price;
+          return newErrors;
+        });
+      }
+
+      // 할인율 계산: (1 - 공구특가/정상가) * 100
+      const calculatedRate = Math.floor((1 - final / original) * 100);
+      setFormData(prev => ({
+        ...prev,
+        final_price: formatPrice(price),
+        discount_rate: Math.max(0, Math.min(99, calculatedRate)).toString()
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        final_price: formatPrice(price)
+      }));
+    }
   };
 
   // 수정 처리
@@ -1006,15 +1073,17 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       />
                       <p className="text-sm text-slate-500 mt-1 text-right">{formData.product_name.length}/100</p>
                     </div>
+                    <div>
+                      <Label>정가 *</Label>
+                      <Input
+                        value={formData.original_price}
+                        onChange={(e) => handleInputChange('original_price', formatPrice(e.target.value))}
+                        placeholder="0"
+                        className={errors.original_price ? 'border-red-300' : ''}
+                      />
+                      {errors.original_price && <p className="text-sm text-red-600 mt-1">{errors.original_price}</p>}
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>정가 *</Label>
-                        <Input
-                          value={formData.original_price}
-                          onChange={(e) => handleInputChange('original_price', formatPrice(e.target.value))}
-                          placeholder="0"
-                        />
-                      </div>
                       <div>
                         <Label>할인율 (%) *</Label>
                         <Input
@@ -1023,34 +1092,31 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           onChange={(e) => {
                             const value = parseInt(e.target.value) || 0;
                             if (value <= 99) {
-                              handleInputChange('discount_rate', e.target.value);
+                              handleDiscountRateChange(e.target.value);
                             }
                           }}
                           placeholder="0"
                           min="0"
                           max="99"
+                          onKeyDown={(e) => {
+                            if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
+                          }}
+                          className={errors.discount_rate ? 'border-red-300' : ''}
                         />
+                        {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
+                      </div>
+                      <div>
+                        <Label>공구특가 *</Label>
+                        <Input
+                          value={formData.final_price}
+                          onChange={(e) => handleFinalPriceChange(e.target.value)}
+                          placeholder="0"
+                          className={errors.final_price ? 'border-red-300' : ''}
+                        />
+                        {errors.final_price && <p className="text-sm text-red-600 mt-1">{errors.final_price}</p>}
+                        <p className="text-xs text-gray-500 mt-1">최대 1억원</p>
                       </div>
                     </div>
-                    {/* 최종 가격 표시 */}
-                    {formData.original_price && formData.discount_rate && (
-                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-600">최종 판매가</span>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-blue-600">
-                              {Math.floor(
-                                parseInt(formData.original_price.replace(/,/g, '')) *
-                                (100 - parseInt(formData.discount_rate || '0')) / 100
-                              ).toLocaleString()}원
-                            </p>
-                            <p className="text-xs text-slate-500 mt-1">
-                              ({formData.discount_rate}% 할인 적용)
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
 
