@@ -676,11 +676,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         // 쿠키에도 토큰 저장 (서버 컴포넌트에서 인식하기 위함) - 30일 보관
-        document.cookie = `accessToken=${access}; path=/; max-age=2592000; SameSite=Lax`;
-        document.cookie = `dungji_auth_token=${access}; path=/; max-age=2592000; SameSite=Lax`;
+        // Secure 플래그 추가: HTTPS에서 모바일/PWA 쿠키 거부 방지
+        const isProduction = window.location.protocol === 'https:';
+        const secureflag = isProduction ? '; Secure' : '';
+
+        document.cookie = `accessToken=${access}; path=/; max-age=2592000; SameSite=Lax${secureflag}`;
+        document.cookie = `dungji_auth_token=${access}; path=/; max-age=2592000; SameSite=Lax${secureflag}`;
 
         if (refresh) {
-          document.cookie = `refreshToken=${refresh}; path=/; max-age=2592000; SameSite=Lax`;
+          document.cookie = `refreshToken=${refresh}; path=/; max-age=2592000; SameSite=Lax${secureflag}`;
         }
       }
 
