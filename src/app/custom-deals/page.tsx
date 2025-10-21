@@ -264,17 +264,14 @@ export default function CustomDealsPage() {
       {/* Header */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         <div className="bg-white px-4 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">커공 특가</h1>
-                <p className="text-xs text-blue-600 font-medium mt-0.5">수수료 없는 진짜 공동구매 혜택!</p>
-              </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xl font-bold text-gray-900">커공특가</h1>
               <span
-                className="text-base font-black whitespace-nowrap"
+                className="text-sm font-black whitespace-nowrap"
                 style={{
                   transform: 'rotate(-8deg)',
-                  marginTop: '-8px',
+                  marginTop: '-4px',
                   background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -283,8 +280,9 @@ export default function CustomDealsPage() {
               >
                 모이면 할인!
               </span>
+              <p className="text-xs text-blue-600 font-medium ml-2">수수료 없는 진짜 공동구매 혜택!</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:ml-auto">
               <Link href="/custom-deals/guide">
                 <Button
                   size="sm"
