@@ -268,7 +268,7 @@ export default function CustomDealsPage() {
             <div className="flex items-center gap-2">
               <div>
                 <h1 className="text-xl font-bold text-gray-900">커공 특가</h1>
-                <p className="text-xs text-gray-600 mt-0.5">특별한 공동구매 혜택</p>
+                <p className="text-xs text-blue-600 font-medium mt-0.5">수수료 없는 진짜 공동구매 혜택!</p>
               </div>
               <span
                 className="text-base font-black whitespace-nowrap"
@@ -289,11 +289,9 @@ export default function CustomDealsPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm"
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs whitespace-nowrap"
                 >
-                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                  <span className="hidden sm:inline">이용가이드</span>
-                  <span className="sm:hidden">가이드</span>
+                  가이드
                 </Button>
               </Link>
               <Button
