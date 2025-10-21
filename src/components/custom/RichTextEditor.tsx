@@ -3,11 +3,13 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import TextAlign from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { FontSize } from '@/lib/tiptap/fontSize';
 import {
-  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon, Palette, Type
+  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon, Palette, Type,
+  AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -39,6 +41,9 @@ export default function RichTextEditor({
           class: 'text-blue-600 underline',
         },
       }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
       TextStyle,
       Color,
       FontSize,
@@ -52,7 +57,7 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-h-[400px]',
+        class: 'focus:outline-none min-h-[400px] pt-0',
       },
     },
   });
@@ -123,6 +128,38 @@ export default function RichTextEditor({
           className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <ListOrdered className="w-4 h-4" />
+        </Button>
+
+        <div className="w-px h-8 bg-slate-300 mx-1 sm:mx-0.5" />
+
+        <Button
+          type="button"
+          variant={editor.isActive({ textAlign: 'left' }) ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
+        >
+          <AlignLeft className="w-4 h-4" />
+        </Button>
+
+        <Button
+          type="button"
+          variant={editor.isActive({ textAlign: 'center' }) ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
+        >
+          <AlignCenter className="w-4 h-4" />
+        </Button>
+
+        <Button
+          type="button"
+          variant={editor.isActive({ textAlign: 'right' }) ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
+        >
+          <AlignRight className="w-4 h-4" />
         </Button>
 
         <div className="w-px h-8 bg-slate-300 mx-1 sm:mx-0.5" />
@@ -252,7 +289,7 @@ export default function RichTextEditor({
 
       {/* 에디터 */}
       <div
-        className="py-3 text-slate-700 text-sm leading-relaxed [&_.ProseMirror>p]:mb-3 [&_.ProseMirror>p]:mt-0 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
+        className="px-3 pb-3 pt-3 text-slate-700 text-sm leading-relaxed [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror>*:first-child]:mt-0 [&_.ProseMirror>p]:mb-3 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
         style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
       >
         <EditorContent editor={editor} />

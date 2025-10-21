@@ -1105,16 +1105,16 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         />
                         {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
                       </div>
-                      <div>
-                        <Label>공구특가 *</Label>
+                      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <Label className="text-blue-900">공구특가 *</Label>
                         <Input
                           value={formData.final_price}
                           onChange={(e) => handleFinalPriceChange(e.target.value)}
                           placeholder="0"
-                          className={errors.final_price ? 'border-red-300' : ''}
+                          className={`mt-1.5 bg-white ${errors.final_price ? 'border-red-300' : 'border-blue-300'}`}
                         />
                         {errors.final_price && <p className="text-sm text-red-600 mt-1">{errors.final_price}</p>}
-                        <p className="text-xs text-gray-500 mt-1">최대 1억원</p>
+                        <p className="text-xs text-blue-600 mt-1">최대 1억원</p>
                       </div>
                     </div>
                   </>
