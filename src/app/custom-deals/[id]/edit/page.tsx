@@ -1026,7 +1026,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         }
                       `}
                     >
-                      {cat.label}
+                      {cat.label === '건강/의료' ? '건강/헬스케어' : cat.label}
                     </button>
                   ))}
                 </div>

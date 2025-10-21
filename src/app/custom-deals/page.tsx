@@ -390,7 +390,7 @@ export default function CustomDealsPage() {
                 <option value="all">모든 카테고리</option>
                 {categories.map((cat) => (
                   <option key={cat.value} value={cat.value}>
-                    {cat.label}
+                    {cat.label === '건강/의료' ? '건강/헬스케어' : cat.label}
                   </option>
                 ))}
               </select>

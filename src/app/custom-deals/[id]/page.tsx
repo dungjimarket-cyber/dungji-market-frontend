@@ -638,7 +638,9 @@ export default function CustomDealDetailPage() {
   // 카테고리 영어 → 한글 변환
   const getCategoryLabel = (value: string) => {
     const category = categories.find(cat => cat.value === value);
-    return category ? category.label : value;
+    const label = category ? category.label : value;
+    // "건강/의료" → "건강/헬스케어"로 표시
+    return label === '건강/의료' ? '건강/헬스케어' : label;
   };
 
   // 상품 설명의 모든 링크를 리다이렉트 페이지를 거치도록 변환
