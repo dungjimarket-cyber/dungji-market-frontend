@@ -257,13 +257,13 @@ export default function Footer() {
               <p className="text-sm text-gray-500 mb-3">협력사</p>
               <div className="flex items-center gap-4">
                 <a
-                  href="https://www.atube.co.kr"
+                  href="https://smartstore.naver.com/atube"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex flex-col items-center group"
                   title="에이튜브"
                 >
-                  <div className="relative h-12 w-auto grayscale group-hover:grayscale-0 transition-all duration-300">
+                  <div className="relative h-12 w-auto transition-opacity duration-300 group-hover:opacity-80">
                     <Image
                       src="/logos/에이튜브로고.jpg"
                       alt="에이튜브"
