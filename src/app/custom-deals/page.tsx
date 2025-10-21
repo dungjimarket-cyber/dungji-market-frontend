@@ -265,9 +265,24 @@ export default function CustomDealsPage() {
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">커공 특가</h1>
-              <p className="text-xs text-gray-600 mt-0.5">특별한 공동구매 혜택</p>
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">커공 특가</h1>
+                <p className="text-xs text-gray-600 mt-0.5">특별한 공동구매 혜택</p>
+              </div>
+              <span
+                className="text-base font-black whitespace-nowrap"
+                style={{
+                  transform: 'rotate(-8deg)',
+                  marginTop: '-8px',
+                  background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                모이면 할인!
+              </span>
             </div>
             <div className="flex gap-2">
               <Link href="/custom-deals/guide">

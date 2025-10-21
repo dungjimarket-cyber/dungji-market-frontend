@@ -811,10 +811,14 @@ export default function CustomDealDetailPage() {
               <div className="flex items-start gap-2 mb-3 relative">
                 <h1 className="text-2xl font-bold text-slate-900 leading-tight flex-1">{deal.title}</h1>
                 <span
-                  className="text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1 rounded-full shadow-md whitespace-nowrap flex-shrink-0"
+                  className="text-lg font-black whitespace-nowrap flex-shrink-0"
                   style={{
                     transform: 'rotate(-8deg)',
-                    marginTop: '-4px'
+                    marginTop: '-4px',
+                    background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
                   }}
                 >
                   모이면 할인!
