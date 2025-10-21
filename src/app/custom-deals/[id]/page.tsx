@@ -808,7 +808,18 @@ export default function CustomDealDetailPage() {
                 </Badge>
                 {getStatusBadge()}
               </div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-3 leading-tight">{deal.title}</h1>
+              <div className="flex items-start gap-2 mb-3 relative">
+                <h1 className="text-2xl font-bold text-slate-900 leading-tight flex-1">{deal.title}</h1>
+                <span
+                  className="text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1 rounded-full shadow-md whitespace-nowrap flex-shrink-0"
+                  style={{
+                    transform: 'rotate(-8deg)',
+                    marginTop: '-4px'
+                  }}
+                >
+                  모이면 할인!
+                </span>
+              </div>
 
               <div className="space-y-1.5">
                 {/* Location (offline only) */}
