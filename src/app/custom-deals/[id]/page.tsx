@@ -833,14 +833,6 @@ export default function CustomDealDetailPage() {
                     <span>{deal.regions.map(r => r.full_name).join(', ')}</span>
                   </div>
                 )}
-
-                {/* Seller Info */}
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <span>{deal.seller_name}</span>
-                  {deal.is_business_verified && (
-                    <Badge variant="outline" className="text-[10px] py-0 px-1.5">사업자 인증</Badge>
-                  )}
-                </div>
               </div>
             </div>
 
