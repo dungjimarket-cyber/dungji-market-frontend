@@ -141,6 +141,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         original_price: data.products?.[0]?.original_price?.toLocaleString() || data.original_price?.toLocaleString() || '',
         discount_rate: (data.products?.[0]?.discount_rate || data.discount_rate || '').toString(),
         final_price: (() => {
+          // 저장된 final_price가 있으면 그 값 사용 (사용자가 직접 입력한 값)
+          const savedFinalPrice = data.products?.[0]?.final_price || data.final_price;
+          if (savedFinalPrice) {
+            return savedFinalPrice.toLocaleString();
+          }
+          // 없으면 계산 (하위 호환성)
           const original = data.products?.[0]?.original_price || data.original_price || 0;
           const discount = data.products?.[0]?.discount_rate || data.discount_rate || 0;
           if (original > 0 && discount > 0) {
