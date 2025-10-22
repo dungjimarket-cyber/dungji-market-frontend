@@ -417,8 +417,8 @@ export default function MyCustomParticipations() {
               return null;
             }
 
-            // 취소된 항목 체크
-            const isCancelled = groupbuy.status === 'cancelled' || participation.status === 'cancelled';
+            // 취소된 항목 체크 (expired 포함)
+            const isCancelled = groupbuy.status === 'cancelled' || groupbuy.status === 'expired' || participation.status === 'cancelled';
 
             return (
               <Card key={participation.id} className="border-slate-200 hover:shadow-md transition-shadow">
