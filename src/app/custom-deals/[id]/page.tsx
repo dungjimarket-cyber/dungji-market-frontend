@@ -1159,7 +1159,7 @@ export default function CustomDealDetailPage() {
                 style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
               >
                 <div
-                  className="[&>p]:mb-3 [&>p]:mt-0 [&>ul]:mb-3 [&>ol]:mb-3 [&>h1]:mb-3 [&>h2]:mb-3 [&>h3]:mb-3"
+                  className="[&>p]:mb-3 [&>p]:mt-0 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>ol]:mb-3 [&>ol]:pl-6 [&>ol]:list-decimal [&>h1]:mb-3 [&>h2]:mb-3 [&>h3]:mb-3"
                   dangerouslySetInnerHTML={{ __html: convertedDescription }}
                 />
               </div>
