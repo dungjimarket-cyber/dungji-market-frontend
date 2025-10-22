@@ -1211,7 +1211,8 @@ export default function CreateCustomDealPage() {
                   type="button"
                   onClick={() => handleCategorySelect(cat.value)}
                   className={`
-                    py-2 px-3 rounded-lg border-2 font-medium transition-all text-sm
+                    py-2 px-3 rounded-lg border-2 font-medium transition-all
+                    ${cat.label === '건강/의료' ? 'text-xs' : 'text-sm'}
                     ${selectedCategory === cat.value
                       ? 'border-blue-600 bg-blue-50 text-blue-700'
                       : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
