@@ -826,22 +826,10 @@ export default function CustomDealDetailPage() {
               <CardContent className="p-5">
                 {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
-                    <span
-                      className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
-                      style={{
-                        transform: 'rotate(-8deg)',
-                        background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
-                      }}
-                    >
-                      모이면 할인!
-                    </span>
                     <div className="text-2xl font-bold text-blue-600 mb-1">
                       선착순 쿠폰증정
                     </div>
-                    <p className="text-xs text-slate-600">인원 마감 시 쿠폰이 발급됩니다</p>
+                    <p className="text-xs text-slate-600">인원 마감시 쿠폰수령정보를 참여내역으로 전송해드립니다</p>
                   </div>
                 ) : deal.original_price && deal.final_price ? (
                   <>
@@ -913,12 +901,14 @@ export default function CustomDealDetailPage() {
                   </div>
                 )}
 
-                {/* 안내 문구 */}
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <p className="text-xs text-slate-500 text-center">
-                    인원 마감 기준 특가 (인원 미달시 판매가 취소될 수 있습니다)
-                  </p>
-                </div>
+                {/* 안내 문구 (쿠폰전용 제외) */}
+                {deal.pricing_type !== 'coupon_only' && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <p className="text-xs text-slate-500 text-center">
+                      인원 마감 기준 특가 (인원 미달시 판매가 취소될 수 있습니다)
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
