@@ -808,22 +808,7 @@ export default function CustomDealDetailPage() {
                 </Badge>
                 {getStatusBadge()}
               </div>
-              <div className="flex items-start gap-2 mb-3 relative">
-                <h1 className="text-2xl font-bold text-slate-900 leading-tight flex-1">{deal.title}</h1>
-                <span
-                  className="text-lg font-black whitespace-nowrap flex-shrink-0"
-                  style={{
-                    transform: 'rotate(-8deg)',
-                    marginTop: '-4px',
-                    background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}
-                >
-                  모이면 할인!
-                </span>
-              </div>
+              <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-3">{deal.title}</h1>
 
               <div className="space-y-1.5">
                 {/* Location (offline only) */}
@@ -841,6 +826,18 @@ export default function CustomDealDetailPage() {
               <CardContent className="p-5">
                 {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
+                    <span
+                      className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
+                      style={{
+                        transform: 'rotate(-8deg)',
+                        background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                      }}
+                    >
+                      모이면 할인!
+                    </span>
                     <div className="text-2xl font-bold text-blue-600 mb-1">
                       선착순 쿠폰증정
                     </div>
@@ -848,6 +845,18 @@ export default function CustomDealDetailPage() {
                   </div>
                 ) : deal.original_price && deal.final_price ? (
                   <>
+                    <span
+                      className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
+                      style={{
+                        transform: 'rotate(-8deg)',
+                        background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                      }}
+                    >
+                      모이면 할인!
+                    </span>
                     {/* products 배열 우선, 없으면 product_name 폴백 */}
                     {deal.products && deal.products.length > 0 && deal.products[0].name && (
                       <div className="text-sm text-slate-700 mb-2 font-medium">
@@ -877,9 +886,21 @@ export default function CustomDealDetailPage() {
                         ? ((deal.final_price as any).min || 0).toLocaleString()
                         : deal.final_price.toLocaleString()}원
                     </div>
-                  </>
+</>
                 ) : (
                   <div className="text-center">
+                    <span
+                      className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
+                      style={{
+                        transform: 'rotate(-8deg)',
+                        background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                      }}
+                    >
+                      모이면 할인!
+                    </span>
                     <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
                       <span className="text-2xl font-bold text-blue-600">
                         전품목 {deal.discount_rate}% 할인
