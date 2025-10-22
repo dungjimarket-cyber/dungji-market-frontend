@@ -1596,7 +1596,7 @@ export default function CreateCustomDealPage() {
                   <div>
                     <Label className="flex items-baseline gap-2">
                       할인링크/참여방법안내 *
-                      <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 카톡채널에 발급받은 할인코드를 제출해주세요)</span>
+                      <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 구독후 인증샷을 남겨주세요)</span>
                     </Label>
                     <Input
                       ref={discountUrlRef}
