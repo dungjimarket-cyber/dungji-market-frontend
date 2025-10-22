@@ -277,7 +277,7 @@ export default function MyCustomParticipations() {
       return <Badge className="bg-yellow-50 text-yellow-600 border-yellow-200">판매자 검토중</Badge>;
     }
 
-    if (groupbuyStatus === 'cancelled') {
+    if (groupbuyStatus === 'cancelled' || groupbuyStatus === 'expired') {
       return <Badge className="bg-red-50 text-red-600 border-red-200">취소됨</Badge>;
     }
 
@@ -309,26 +309,26 @@ export default function MyCustomParticipations() {
     : filter === 'cancelled'
     ? participations.filter(p => {
         const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-        return (groupbuy && groupbuy.status === 'cancelled') || p.status === 'cancelled';
+        return (groupbuy && (groupbuy.status === 'cancelled' || groupbuy.status === 'expired')) || p.status === 'cancelled';
       })
     : filter === 'confirmed'
     ? participations.filter(p => {
         const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-        return p.status === 'confirmed' && groupbuy && groupbuy.status !== 'cancelled';
+        return p.status === 'confirmed' && groupbuy && groupbuy.status !== 'cancelled' && groupbuy.status !== 'expired';
       })
     : participations.filter(p => { // 'all': 취소건 제외
         const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-        return p.status !== 'cancelled' && (!groupbuy || groupbuy.status !== 'cancelled');
+        return p.status !== 'cancelled' && (!groupbuy || (groupbuy.status !== 'cancelled' && groupbuy.status !== 'expired'));
       });
 
   const filterCounts = {
     all: participations.filter(p => { // 취소건 제외
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-      return p.status !== 'cancelled' && (!groupbuy || groupbuy.status !== 'cancelled');
+      return p.status !== 'cancelled' && (!groupbuy || (groupbuy.status !== 'cancelled' && groupbuy.status !== 'expired'));
     }).length,
     confirmed: participations.filter(p => {
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-      return p.status === 'confirmed' && groupbuy && groupbuy.status !== 'cancelled';
+      return p.status === 'confirmed' && groupbuy && groupbuy.status !== 'cancelled' && groupbuy.status !== 'expired';
     }).length,
     completed: participations.filter(p => {
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
@@ -336,7 +336,7 @@ export default function MyCustomParticipations() {
     }).length,
     cancelled: participations.filter(p => {
       const groupbuy = typeof p.custom_groupbuy === 'number' ? null : p.custom_groupbuy;
-      return (groupbuy && groupbuy.status === 'cancelled') || p.status === 'cancelled';
+      return (groupbuy && (groupbuy.status === 'cancelled' || groupbuy.status === 'expired')) || p.status === 'cancelled';
     }).length,
   };
 
