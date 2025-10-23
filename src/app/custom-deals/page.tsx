@@ -15,6 +15,7 @@ import { CustomPenalty } from '@/lib/api/custom/penaltyApi';
 import { checkCanCreateCustomDeal } from '@/lib/api/custom/createDealCheck';
 import { useAuth } from '@/contexts/AuthContext';
 import { CoupangSidebar } from '@/components/ads/CoupangSidebar';
+import { ShoppingSidebar } from '@/components/shopping/ShoppingSidebar';
 
 interface CustomDeal {
   id: number;
@@ -262,6 +263,7 @@ export default function CustomDealsPage() {
 
   return (
     <>
+      <ShoppingSidebar />
       <CoupangSidebar />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}

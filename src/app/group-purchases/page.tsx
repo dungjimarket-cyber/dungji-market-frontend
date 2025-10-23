@@ -15,6 +15,7 @@ import { getSellerProfile } from '@/lib/api/sellerService';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 import NoticeSection from '@/components/home/NoticeSection';
 import { CoupangSidebar } from '@/components/ads/CoupangSidebar';
+import { ShoppingSidebar } from '@/components/shopping/ShoppingSidebar';
 
 interface GroupBuy {
   id: number;
@@ -784,6 +785,7 @@ function GroupPurchasesPageContent() {
 
   return (
     <>
+      <ShoppingSidebar />
       <CoupangSidebar />
       <div className="min-h-screen bg-gray-50">
         {/* PC에서 상단 영역 너비 제한 */}
