@@ -61,7 +61,7 @@ export function ShoppingSidebar() {
   return (
     <aside
       className="hidden xl:block fixed top-24 z-10 w-[240px]"
-      style={{ left: 'calc(50% - 880px)' }}
+      style={{ left: 'calc(50% - 800px)' }}
     >
       <div className="bg-white rounded-lg shadow-md p-4">
         {/* 헤더 */}
