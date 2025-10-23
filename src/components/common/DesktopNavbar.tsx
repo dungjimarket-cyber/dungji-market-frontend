@@ -179,6 +179,22 @@ export default function DesktopNavbar() {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* 쿠팡 파트너스 광고 */}
+            <div className="flex flex-col items-center gap-0.5">
+              <iframe
+                src="https://coupa.ng/ckmbC6"
+                width="60"
+                height="120"
+                frameBorder="0"
+                scrolling="no"
+                referrerPolicy="unsafe-url"
+                className="border-0"
+              ></iframe>
+              <p className="text-[8px] text-gray-400 text-center leading-tight max-w-[60px]">
+                쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+              </p>
+            </div>
+
             {isAuthenticated && (
               <div className="relative">
                 <NotificationBell
@@ -192,12 +208,12 @@ export default function DesktopNavbar() {
                 {showNotifications && (
                   <>
                     {/* Click outside to close */}
-                    <div 
-                      className="fixed inset-0 z-40" 
+                    <div
+                      className="fixed inset-0 z-40"
                       onClick={() => setShowNotifications(false)}
                     />
-                    <NotificationDropdown 
-                      isOpen={showNotifications} 
+                    <NotificationDropdown
+                      isOpen={showNotifications}
                       onClose={() => setShowNotifications(false)}
                       onUnreadCountChange={setUnreadCount}
                     />
