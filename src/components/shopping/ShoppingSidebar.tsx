@@ -37,14 +37,16 @@ export function ShoppingSidebar() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/shopping/search/?query=${encodeURIComponent(query)}&display=5&sort=asc`
+        `${process.env.NEXT_PUBLIC_API_URL}/shopping/search/?query=${encodeURIComponent(query)}&display=20&sort=asc`
       );
 
       const data = await response.json();
 
       if (data.success) {
-        setItems(data.items || []);
-        if (data.items.length === 0) {
+        // 최대 5개만 표시
+        const limitedItems = (data.items || []).slice(0, 5);
+        setItems(limitedItems);
+        if (limitedItems.length === 0) {
           setError('검색 결과가 없습니다');
         }
       } else {
@@ -61,7 +63,7 @@ export function ShoppingSidebar() {
   return (
     <aside
       className="hidden xl:block fixed top-24 z-10 w-[240px]"
-      style={{ left: 'calc(50% - 800px)' }}
+      style={{ left: 'calc(50% - 850px)' }}
     >
       <div className="bg-white rounded-lg shadow-md p-4">
         {/* 헤더 */}
