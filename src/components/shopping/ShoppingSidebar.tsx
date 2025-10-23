@@ -37,7 +37,7 @@ export function ShoppingSidebar() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/shopping/search/?query=${encodeURIComponent(query)}&display=100&sort=asc`
+        `${process.env.NEXT_PUBLIC_API_URL}/shopping/search/?query=${encodeURIComponent(query)}&display=100&sort=sim`
       );
 
       const data = await response.json();
