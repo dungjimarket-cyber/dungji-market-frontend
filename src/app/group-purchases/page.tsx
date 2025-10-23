@@ -14,6 +14,7 @@ import { getSellerBids } from '@/lib/api/bidService';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 import NoticeSection from '@/components/home/NoticeSection';
+import { CoupangSidebar } from '@/components/ads/CoupangSidebar';
 
 interface GroupBuy {
   id: number;
@@ -783,8 +784,9 @@ function GroupPurchasesPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* PC에서 상단 영역 너비 제한 */}
-      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
+      <div className="max-w-[1400px] mx-auto px-4 relative">
+        {/* PC에서 상단 영역 너비 제한 */}
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -1005,6 +1007,14 @@ function GroupPurchasesPageContent() {
               </div>
             </div>
           </Tabs>
+        </div>
+        </div>
+
+        {/* 쿠팡 파트너스 사이드바 - 우측 빈 공간에 고정 */}
+        <div className="hidden xl:block absolute right-4 top-0">
+          <div className="sticky top-20">
+            <CoupangSidebar />
+          </div>
         </div>
       </div>
     </div>
