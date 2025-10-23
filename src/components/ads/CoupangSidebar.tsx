@@ -3,12 +3,16 @@
 /**
  * 쿠팡 파트너스 사이드바 광고
  * PC에서만 표시되는 우측 사이드바
- * fixed 포지셔닝으로 화면 우측에 고정
- * 2xl (1536px) 이상에서만 표시하여 메인 컨텐츠와 겹치지 않도록 함
+ * fixed 포지셔닝으로 메인 컨텐츠 오른쪽 빈 공간 중앙에 배치
+ * xl (1280px) 이상에서만 표시
+ * 위치: 화면 중앙(50%) + 메인 컨텐츠 절반(640px) + 여유 공간
  */
 export function CoupangSidebar() {
   return (
-    <aside className="hidden 2xl:block fixed right-8 top-24 z-10">
+    <aside
+      className="hidden xl:block fixed top-24 z-10"
+      style={{ left: 'calc(50% + 680px)' }}
+    >
       <div className="flex flex-col gap-4">
         {/* 쿠팡 파트너스 광고 */}
         <div className="flex flex-col items-center gap-2 bg-white rounded-lg shadow-sm p-3">
