@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import AuthButtons from '@/components/auth/AuthButtons';
@@ -11,6 +12,7 @@ import NotificationBell from '@/components/notification/NotificationBell';
 import NotificationDropdown from '@/components/notification/NotificationDropdown';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
+import { ShoppingSearchModal } from '@/components/shopping/ShoppingSearchModal';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 
@@ -26,6 +28,7 @@ export default function DesktopNavbar() {
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [showSellerProfileModal, setShowSellerProfileModal] = useState(false);
   const [sellerMissingFields, setSellerMissingFields] = useState<string[]>([]);
+  const [showShoppingModal, setShowShoppingModal] = useState(false);
 
   // 프로필 체크 Hook 사용
   const {
@@ -176,6 +179,15 @@ export default function DesktopNavbar() {
                 마이페이지
               </Link>
             )}
+
+            {/* 오픈마켓 검색 */}
+            <button
+              onClick={() => setShowShoppingModal(true)}
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-black-han-sans"
+            >
+              <Search className="w-4 h-4" />
+              <span>오픈마켓 검색</span>
+            </button>
           </div>
 
           <div className="flex items-center space-x-4 flex-shrink-0">
@@ -262,6 +274,12 @@ export default function DesktopNavbar() {
           window.addEventListener('focus', handleFocus);
           router.push('/mypage/seller/settings');
         }}
+      />
+
+      {/* 오픈마켓 검색 모달 */}
+      <ShoppingSearchModal
+        isOpen={showShoppingModal}
+        onClose={() => setShowShoppingModal(false)}
       />
     </nav>
   );
