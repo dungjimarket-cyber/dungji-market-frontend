@@ -72,7 +72,7 @@ export function ShoppingSidebar() {
             <h3 className="text-sm font-bold text-gray-900">최저가 검색</h3>
             <span className="text-[10px] font-bold text-blue-600">1~5위</span>
           </div>
-          <p className="text-[10px] text-gray-500">오픈마켓 실시간 가격비교</p>
+          <p className="text-[10px] text-gray-500">네이버 쇼핑 가격비교</p>
         </div>
 
         {/* 검색창 */}
