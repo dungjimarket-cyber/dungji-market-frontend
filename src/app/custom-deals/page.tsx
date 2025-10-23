@@ -261,10 +261,11 @@ export default function CustomDealsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[1400px] mx-auto px-4 relative">
-        {/* Main Content - 원래대로 중앙 정렬 유지 */}
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
+    <>
+      <CoupangSidebar />
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-1.5">
@@ -718,16 +719,7 @@ export default function CustomDealsPage() {
           router.push('/mypage');
         }}
       />
-        </div>
-        {/* Main Content 끝 */}
-
-        {/* 쿠팡 파트너스 사이드바 - 우측 빈 공간에 고정 */}
-        <div className="hidden xl:block absolute right-4 top-0">
-          <div className="sticky top-20">
-            <CoupangSidebar />
-          </div>
-        </div>
       </div>
-    </div>
+    </>
   );
 }

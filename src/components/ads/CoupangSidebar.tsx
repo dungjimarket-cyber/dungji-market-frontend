@@ -3,10 +3,11 @@
 /**
  * 쿠팡 파트너스 사이드바 광고
  * PC에서만 표시되는 우측 사이드바
+ * fixed 포지셔닝으로 화면 우측에 고정
  */
 export function CoupangSidebar() {
   return (
-    <aside className="hidden xl:block sticky top-20 w-[160px] flex-shrink-0">
+    <aside className="hidden xl:block fixed right-8 top-24 z-10">
       <div className="flex flex-col gap-4">
         {/* 쿠팡 파트너스 광고 */}
         <div className="flex flex-col items-center gap-2 bg-white rounded-lg shadow-sm p-3">

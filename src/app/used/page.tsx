@@ -649,11 +649,12 @@ export default function UsedPhonesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[1400px] mx-auto px-4 relative">
+    <>
+      <CoupangSidebar />
+      <div className="min-h-screen bg-gray-50">
         {/* 모든 콘텐츠를 동일한 너비로 제한 */}
-        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-          {/* 공지사항 */}
+      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
+        {/* 공지사항 */}
         <NoticeSection pageType="used" compact={true} />
 
         {/* 상단 버튼 영역 */}
@@ -1008,15 +1009,7 @@ export default function UsedPhonesPage() {
           router.push('/mypage?tab=sales');
         }}
       />
-        </div>
-
-        {/* 쿠팡 파트너스 사이드바 - 우측 빈 공간에 고정 */}
-        <div className="hidden xl:block absolute right-4 top-0">
-          <div className="sticky top-20">
-            <CoupangSidebar />
-          </div>
-        </div>
       </div>
-    </div>
+    </>
   );
 }
