@@ -107,13 +107,13 @@ export default function DesktopNavbar() {
   return (
     <nav className="hidden md:block bg-white shadow-lg">
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
             <Image src="/logos/dungji_logo.jpg" alt="둥지마켓" width={40} height={40} className="rounded-lg" />
             <span className="text-xl font-bold font-black-han-sans">둥지마켓</span>
           </Link>
 
-          <div className="flex space-x-8">
+          <div className="flex space-x-8 flex-1 justify-center">
             <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               커공 특가
             </Link>
@@ -178,23 +178,7 @@ export default function DesktopNavbar() {
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
-            {/* 쿠팡 파트너스 광고 */}
-            <div className="flex flex-col items-center gap-0.5">
-              <iframe
-                src="https://coupa.ng/ckmbC6"
-                width="60"
-                height="120"
-                frameBorder="0"
-                scrolling="no"
-                referrerPolicy="unsafe-url"
-                className="border-0"
-              ></iframe>
-              <p className="text-[8px] text-gray-400 text-center leading-tight max-w-[60px]">
-                쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
-              </p>
-            </div>
-
+          <div className="flex items-center space-x-4 flex-shrink-0">
             {isAuthenticated && (
               <div className="relative">
                 <NotificationBell
@@ -222,6 +206,22 @@ export default function DesktopNavbar() {
               </div>
             )}
             <AuthButtons isAuthenticated={isAuthenticated} />
+
+            {/* 쿠팡 파트너스 광고 - 우측 공간 활용 */}
+            <div className="flex flex-col items-center gap-0.5 ml-2">
+              <iframe
+                src="https://coupa.ng/ckmbC6"
+                width="100"
+                height="200"
+                frameBorder="0"
+                scrolling="no"
+                referrerPolicy="unsafe-url"
+                className="border-0"
+              ></iframe>
+              <p className="text-[8px] text-gray-400 text-center leading-tight max-w-[100px]">
+                쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+              </p>
+            </div>
           </div>
         </div>
       </div>
