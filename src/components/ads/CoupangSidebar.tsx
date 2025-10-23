@@ -30,7 +30,7 @@ export function CoupangSidebar() {
         {/* 쿠팡 파트너스 광고 2 */}
         <div className="flex flex-col items-center gap-2 bg-white rounded-lg shadow-sm p-2">
           <iframe
-            src="https://link.coupang.com/a/cYAy22"
+            src="https://coupa.ng/ckmUCR"
             width="120"
             height="240"
             frameBorder="0"
