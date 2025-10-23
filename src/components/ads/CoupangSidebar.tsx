@@ -27,7 +27,7 @@ export function CoupangSidebar() {
   return (
     <aside
       className="hidden xl:block fixed top-24 z-10 w-[240px]"
-      style={{ left: 'calc(50% + 850px)' }}
+      style={{ left: 'calc(50% + 670px)' }}
     >
       <div className="bg-white rounded-lg shadow-md p-4">
         {/* 헤더 */}
