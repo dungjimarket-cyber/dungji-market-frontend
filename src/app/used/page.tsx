@@ -653,7 +653,7 @@ export default function UsedPhonesPage() {
       <div className="max-w-[1400px] mx-auto px-4 relative">
         {/* 모든 콘텐츠를 동일한 너비로 제한 */}
         <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
-        {/* 공지사항 */}
+          {/* 공지사항 */}
         <NoticeSection pageType="used" compact={true} />
 
         {/* 상단 버튼 영역 */}
