@@ -34,7 +34,7 @@ export function MobileHeader() {
             className="border-0"
           ></iframe>
           <p className="text-[7px] text-gray-400 text-center leading-tight max-w-[50px]">
-            쿠팡 파트너스 활동
+            쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
           </p>
         </div>
       </div>
