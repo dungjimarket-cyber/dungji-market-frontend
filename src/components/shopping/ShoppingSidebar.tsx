@@ -68,7 +68,10 @@ export function ShoppingSidebar() {
       <div className="bg-white rounded-lg shadow-md p-4">
         {/* 헤더 */}
         <div className="mb-3">
-          <h3 className="text-sm font-bold text-gray-900 mb-1">최저가 검색</h3>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-sm font-bold text-gray-900">최저가 검색</h3>
+            <span className="text-[10px] font-bold text-blue-600">1~5위</span>
+          </div>
           <p className="text-[10px] text-gray-500">실시간 가격비교</p>
         </div>
 
