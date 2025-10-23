@@ -37,8 +37,6 @@ import { useUsedProfileCheck } from '@/hooks/useUsedProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import RegistrationLimitModal from '@/components/used/RegistrationLimitModal';
 import NoticeSection from '@/components/home/NoticeSection';
-import { CoupangSidebar } from '@/components/ads/CoupangSidebar';
-import { ShoppingSidebar } from '@/components/shopping/ShoppingSidebar';
 
 // 스켈레톤 로더 컴포넌트
 const SkeletonCard = () => (
@@ -650,10 +648,7 @@ export default function UsedPhonesPage() {
   };
 
   return (
-    <>
-      <ShoppingSidebar />
-      <CoupangSidebar />
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* 모든 콘텐츠를 동일한 너비로 제한 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto px-4">
         {/* 공지사항 */}
@@ -1011,7 +1006,6 @@ export default function UsedPhonesPage() {
           router.push('/mypage?tab=sales');
         }}
       />
-      </div>
-    </>
+    </div>
   );
 }

@@ -14,8 +14,6 @@ import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { CustomPenalty } from '@/lib/api/custom/penaltyApi';
 import { checkCanCreateCustomDeal } from '@/lib/api/custom/createDealCheck';
 import { useAuth } from '@/contexts/AuthContext';
-import { CoupangSidebar } from '@/components/ads/CoupangSidebar';
-import { ShoppingSidebar } from '@/components/shopping/ShoppingSidebar';
 
 interface CustomDeal {
   id: number;
@@ -262,10 +260,7 @@ export default function CustomDealsPage() {
   };
 
   return (
-    <>
-      <ShoppingSidebar />
-      <CoupangSidebar />
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         <div className="bg-white px-4 py-4 border-b border-gray-200">
@@ -721,7 +716,6 @@ export default function CustomDealsPage() {
           router.push('/mypage');
         }}
       />
-      </div>
-    </>
+    </div>
   );
 }

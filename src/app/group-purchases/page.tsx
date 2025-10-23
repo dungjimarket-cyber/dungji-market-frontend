@@ -14,8 +14,6 @@ import { getSellerBids } from '@/lib/api/bidService';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { ResponsiveAdSense } from '@/components/ads/GoogleAdSense';
 import NoticeSection from '@/components/home/NoticeSection';
-import { CoupangSidebar } from '@/components/ads/CoupangSidebar';
-import { ShoppingSidebar } from '@/components/shopping/ShoppingSidebar';
 
 interface GroupBuy {
   id: number;
@@ -784,10 +782,7 @@ function GroupPurchasesPageContent() {
   }, [accessToken, fetchUserParticipationsAndBids]);
 
   return (
-    <>
-      <ShoppingSidebar />
-      <CoupangSidebar />
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* PC에서 상단 영역 너비 제한 */}
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         {/* Header */}
@@ -1012,8 +1007,7 @@ function GroupPurchasesPageContent() {
           </Tabs>
         </div>
       </div>
-      </div>
-    </>
+    </div>
   );
 }
 
