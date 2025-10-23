@@ -13,35 +13,20 @@ export function CoupangSidebar() {
       className="hidden xl:block fixed top-24 z-10"
       style={{ left: 'calc(50% + 680px)' }}
     >
-      <div className="flex flex-col gap-3">
-        {/* 쿠팡 파트너스 광고 1 */}
-        <div className="flex flex-col items-center gap-2 bg-white rounded-lg shadow-sm p-2">
-          <iframe
-            src="https://coupa.ng/ckmbC6"
-            width="120"
-            height="240"
-            frameBorder="0"
-            scrolling="no"
-            referrerPolicy="unsafe-url"
-            className="border-0"
-          ></iframe>
-        </div>
-
-        {/* 쿠팡 파트너스 광고 2 */}
-        <div className="flex flex-col items-center gap-2 bg-white rounded-lg shadow-sm p-2">
-          <iframe
-            src="https://coupa.ng/ckmUCR"
-            width="120"
-            height="240"
-            frameBorder="0"
-            scrolling="no"
-            referrerPolicy="unsafe-url"
-            className="border-0"
-          ></iframe>
-        </div>
+      <div className="flex flex-col gap-2 bg-white rounded-lg shadow-sm p-2">
+        {/* 쿠팡 파트너스 광고 */}
+        <iframe
+          src="https://coupa.ng/ckmUCR"
+          width="120"
+          height="240"
+          frameBorder="0"
+          scrolling="no"
+          referrerPolicy="unsafe-url"
+          className="border-0"
+        ></iframe>
 
         {/* 공지 문구 */}
-        <p className="text-[9px] text-gray-400 text-center leading-tight px-2">
+        <p className="text-[9px] text-gray-400 text-center leading-tight">
           쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
         </p>
       </div>
