@@ -365,11 +365,11 @@ export default function CustomDealsPage() {
                 onClick={() => setSelectedType('offline')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'offline'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'bg-gray-900 text-white border-2 border-gray-900'
+                    : 'bg-white text-gray-700 border-2 border-green-500 hover:bg-green-50'
                 }`}
               >
-                오프라인
+                오프라인매장
               </button>
               <button
                 onClick={() => setSelectedType('coupon_only')}
