@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,23 +47,35 @@ export default function ParticipantsManagePage() {
   const [loading, setLoading] = useState(true);
   const [toggleLoading, setToggleLoading] = useState<number | null>(null);
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (params.id) {
       fetchData();
     }
-  }, [params.id]);
+  }, [params.id, page, searchQuery]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
 
+      // 참여자 목록 URL에 페이지네이션 및 검색 파라미터 추가
+      const participantsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/`);
+      participantsUrl.searchParams.set('page', page.toString());
+      if (searchQuery.trim()) {
+        participantsUrl.searchParams.set('search', searchQuery.trim());
+      }
+
       const [dealRes, participantsRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/`, {
+        fetch(participantsUrl.toString(), {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -74,7 +86,18 @@ export default function ParticipantsManagePage() {
       const participantsData = await participantsRes.json();
 
       setDeal(dealData);
-      setParticipants(participantsData);
+
+      // 페이지네이션 응답 처리
+      if (participantsData.results) {
+        setParticipants(participantsData.results);
+        setTotalCount(participantsData.count);
+        setTotalPages(Math.ceil(participantsData.count / 20));
+      } else {
+        // Fallback: 페이지네이션 없는 경우
+        setParticipants(participantsData);
+        setTotalCount(participantsData.length);
+        setTotalPages(1);
+      }
     } catch (error) {
       console.error('로드 실패:', error);
       toast.error('데이터를 불러오는데 실패했습니다');
@@ -193,23 +216,19 @@ export default function ParticipantsManagePage() {
         return;
       }
 
-      // 참여자 찾기
-      const participant = participants.find(p => p.discount_code === data.discountCode);
-
-      if (!participant) {
-        toast.error('참여자 정보를 찾을 수 없습니다');
-        return;
-      }
-
       // 이미 사용된 경우 체크
-      if (participant.discount_used) {
+      if (verifyResult.discount_used) {
         toast.warning(`${verifyResult.user_name}님은 이미 사용 처리되었습니다`);
         setShowQRScanner(false);
         return;
       }
 
+      // participant_id를 직접 사용 (배열 검색 불필요)
+      const participantId = verifyResult.participant_id;
+      const participantIndex = verifyResult.participant_index;
+
       // 사용 처리 API 호출
-      const toggleUrl = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/${participant.id}/toggle-used/`;
+      const toggleUrl = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/${participantId}/toggle-used/`;
 
       const toggleResponse = await fetch(toggleUrl, {
         method: 'POST',
@@ -222,14 +241,18 @@ export default function ParticipantsManagePage() {
         throw new Error(`사용 처리 실패: ${toggleResponse.status}`);
       }
 
-      const toggleResult = await toggleResponse.json();
-
       // 성공
       toast.success(`✅ ${verifyResult.user_name}님 할인코드 사용 처리 완료!`);
       setShowQRScanner(false);
 
-      // 참여자 목록 리프레시
-      await fetchData();
+      // 해당 참여자가 있는 페이지로 이동 (0-based index → page number)
+      const targetPage = Math.floor(participantIndex / 20) + 1;
+      if (targetPage !== page) {
+        setPage(targetPage);
+      } else {
+        // 이미 해당 페이지면 새로고침만
+        await fetchData();
+      }
     } catch (error) {
       toast.error(`QR 인증에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
@@ -275,52 +298,69 @@ export default function ParticipantsManagePage() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* QR 스캔 버튼 (오프라인 공구만) */}
         {deal.type === 'offline' && (
-          <div className="mb-6">
+          <div className="mb-4">
             <Button
               onClick={() => setShowQRScanner(true)}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-xs py-2"
             >
-              <QrCode className="w-5 h-5 mr-2" />
+              <QrCode className="w-4 h-4 mr-2" />
               QR 코드 스캔
             </Button>
-            <p className="text-sm text-slate-600 mt-2">구매자의 QR코드를 스캔하면 즉시 인증 및 사용처리 됩니다</p>
+            <p className="text-[10px] text-slate-600 mt-1">구매자의 QR코드를 스캔하면 즉시 인증 및 사용처리 됩니다</p>
           </div>
         )}
 
+        {/* 검색 입력 */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="닉네임 또는 연락처로 검색..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1); // 검색 시 첫 페이지로
+              }}
+              className="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
         {/* 통계 요약 */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">전체</p>
-                  <p className="text-2xl font-bold text-slate-900 mt-0.5">{participants.length}</p>
+                  <p className="text-[10px] text-slate-500">전체</p>
+                  <p className="text-lg font-bold text-slate-900 mt-0.5">{totalCount}</p>
                 </div>
-                <User className="w-8 h-8 text-blue-500" />
+                <User className="w-5 h-5 text-blue-500" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">사용완료</p>
-                  <p className="text-2xl font-bold text-gray-600 mt-0.5">{usedCount}</p>
+                  <p className="text-[10px] text-slate-500">사용완료</p>
+                  <p className="text-lg font-bold text-gray-600 mt-0.5">{usedCount}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-gray-500" />
+                <CheckCircle className="w-5 h-5 text-gray-500" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-slate-500">미사용</p>
-                  <p className="text-2xl font-bold text-orange-600 mt-0.5">{unusedCount}</p>
+                  <p className="text-[10px] text-slate-500">미사용</p>
+                  <p className="text-lg font-bold text-orange-600 mt-0.5">{unusedCount}</p>
                 </div>
-                <Clock className="w-8 h-8 text-orange-500" />
+                <Clock className="w-5 h-5 text-orange-500" />
               </div>
             </CardContent>
           </Card>
@@ -328,19 +368,19 @@ export default function ParticipantsManagePage() {
           {/* 할인 유효기간 카드 */}
           {deal.discount_valid_until && (
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2">
                 {(() => {
                   const validity = getValidityDisplay(deal.discount_valid_until);
                   if (validity) {
                     return (
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-slate-500">{validity.label}</p>
-                          <p className={`text-2xl font-bold mt-0.5 ${validity.color}`}>
+                          <p className="text-[10px] text-slate-500">{validity.label}</p>
+                          <p className={`text-lg font-bold mt-0.5 ${validity.color}`}>
                             {validity.time}
                           </p>
                         </div>
-                        <Clock className={`w-8 h-8 ${
+                        <Clock className={`w-5 h-5 ${
                           validity.expired ? 'text-red-500' : 'text-blue-500'
                         }`} />
                       </div>
@@ -355,37 +395,40 @@ export default function ParticipantsManagePage() {
 
         {/* 구매자 목록 */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <User className="w-4 h-4" />
-              구매자 목록 (판매자: 본인)
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <User className="w-3 h-3" />
+              구매자 목록 {searchQuery && `(검색결과: ${totalCount}명)`}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {participants.length === 0 ? (
-              <div className="text-center py-8 text-slate-500 text-sm">
-                참여자가 없습니다
+              <div className="text-center py-6 text-slate-500 text-xs">
+                {searchQuery ? '검색 결과가 없습니다' : '참여자가 없습니다'}
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {participants.map((participant, index) => (
+                {participants.map((participant, index) => {
+                  // 현재 페이지의 실제 인덱스 계산
+                  const actualIndex = (page - 1) * 20 + index + 1;
+                  return (
                   <div
                     key={participant.id}
                     className="p-3 hover:bg-slate-50 transition-colors"
                   >
-                    <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
                       {/* 번호 및 이름 */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 font-mono w-6">#{index + 1}</span>
-                        <span className="font-semibold text-sm text-slate-900">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-slate-400 font-mono w-6">#{actualIndex}</span>
+                        <span className="font-semibold text-xs text-slate-900">
                           {participant.user_name}
                         </span>
                         {participant.discount_used ? (
-                          <Badge className="bg-gray-50 text-gray-700 border-gray-200 text-xs px-1.5 py-0">
+                          <Badge className="bg-gray-50 text-gray-700 border-gray-200 text-[10px] px-1 py-0">
                             사용완료
                           </Badge>
                         ) : (
-                          <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-xs px-1.5 py-0">
+                          <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-[10px] px-1 py-0">
                             미사용
                           </Badge>
                         )}
@@ -564,7 +607,85 @@ export default function ParticipantsManagePage() {
                       );
                     })()}
                   </div>
-                ))}
+                );
+                })}
+              </div>
+            )}
+
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-1 py-3 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  className="px-2 py-1 text-xs h-7"
+                >
+                  <ChevronsLeft className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                  className="px-2 py-1 text-xs h-7"
+                >
+                  <ChevronLeft className="w-3 h-3" />
+                </Button>
+
+                {/* 페이지 번호들 */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={page === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(pageNum)}
+                        className={`px-2 py-1 text-xs h-7 min-w-[28px] ${
+                          page === pageNum ? 'bg-blue-600 text-white' : ''
+                        }`}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === totalPages}
+                  className="px-2 py-1 text-xs h-7"
+                >
+                  <ChevronRight className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  className="px-2 py-1 text-xs h-7"
+                >
+                  <ChevronsRight className="w-3 h-3" />
+                </Button>
+
+                <span className="text-[10px] text-slate-500 ml-2">
+                  {page} / {totalPages}
+                </span>
               </div>
             )}
           </CardContent>
