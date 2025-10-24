@@ -189,6 +189,36 @@ export default function ParticipantsManagePage() {
     };
   };
 
+  // 텍스트에서 URL을 찾아 링크로 변환하는 함수
+  const renderTextWithLinks = (text: string) => {
+    if (!text) return null;
+
+    // URL 패턴 (http:// 또는 https://로 시작)
+    const urlPattern = /(https?:\/\/[^\s<>"'\)]+)/g;
+    const parts = text.split(urlPattern);
+
+    return parts.map((part, index) => {
+      // URL인 경우 링크로 렌더링
+      if (part.match(urlPattern)) {
+        // 끝 문장부호 제거
+        const cleanUrl = part.replace(/[.,!?;:]+$/, '');
+        return (
+          <a
+            key={index}
+            href={cleanUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline break-all"
+          >
+            {cleanUrl}
+          </a>
+        );
+      }
+      // 일반 텍스트
+      return <span key={index}>{part}</span>;
+    });
+  };
+
   const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -522,14 +552,9 @@ export default function ParticipantsManagePage() {
                               {/* 쿠폰전용: discount_url이 있으면 무조건 표시 */}
                               {deal.pricing_type === 'coupon_only' && participant.discount_url && (
                                 <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-1">
-                                  <a
-                                    href={participant.discount_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 text-sm text-blue-600 hover:underline break-all"
-                                  >
-                                    {participant.discount_url}
-                                  </a>
+                                  <div className="flex-1 text-xs text-slate-700">
+                                    {renderTextWithLinks(participant.discount_url)}
+                                  </div>
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -564,14 +589,9 @@ export default function ParticipantsManagePage() {
                                   {/* 할인링크 (link_only 또는 both) */}
                                   {(deal.online_discount_type === 'link_only' || deal.online_discount_type === 'both') && participant.discount_url && (
                                     <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-1">
-                                      <a
-                                        href={participant.discount_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex-1 text-sm text-blue-600 hover:underline break-all"
-                                      >
-                                        {participant.discount_url}
-                                      </a>
+                                      <div className="flex-1 text-xs text-slate-700">
+                                        {renderTextWithLinks(participant.discount_url)}
+                                      </div>
                                       <Button
                                         size="sm"
                                         variant="ghost"
