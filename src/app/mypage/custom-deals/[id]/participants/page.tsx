@@ -50,14 +50,15 @@ export default function ParticipantsManagePage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // 입력 필드 값
+  const [searchTerm, setSearchTerm] = useState(''); // 실제 검색에 사용되는 값
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (params.id) {
       fetchData();
     }
-  }, [params.id, page, searchQuery]);
+  }, [params.id, page, searchTerm]); // searchTerm으로 변경
 
   const fetchData = async () => {
     try {
@@ -67,8 +68,8 @@ export default function ParticipantsManagePage() {
       // 참여자 목록 URL에 페이지네이션 및 검색 파라미터 추가
       const participantsUrl = new URL(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/`);
       participantsUrl.searchParams.set('page', page.toString());
-      if (searchQuery.trim()) {
-        participantsUrl.searchParams.set('search', searchQuery.trim());
+      if (searchTerm.trim()) {
+        participantsUrl.searchParams.set('search', searchTerm.trim());
       }
 
       const [dealRes, participantsRes] = await Promise.all([
@@ -219,6 +220,17 @@ export default function ParticipantsManagePage() {
     });
   };
 
+  const handleSearch = () => {
+    setSearchTerm(searchQuery);
+    setPage(1); // 검색 시 첫 페이지로
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -342,18 +354,24 @@ export default function ParticipantsManagePage() {
 
         {/* 검색 입력 */}
         <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="닉네임 또는 연락처로 검색..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1); // 검색 시 첫 페이지로
-              }}
-              className="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="닉네임 또는 연락처로 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <Button
+              onClick={handleSearch}
+              className="bg-blue-600 hover:bg-blue-700 text-xs px-4 py-2 whitespace-nowrap"
+            >
+              검색
+            </Button>
           </div>
         </div>
 
@@ -428,13 +446,13 @@ export default function ParticipantsManagePage() {
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="flex items-center gap-2 text-sm">
               <User className="w-3 h-3" />
-              구매자 목록 {searchQuery && `(검색결과: ${totalCount}명)`}
+              구매자 목록 {searchTerm && `(검색결과: ${totalCount}명)`}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {participants.length === 0 ? (
               <div className="text-center py-6 text-slate-500 text-xs">
-                {searchQuery ? '검색 결과가 없습니다' : '참여자가 없습니다'}
+                {searchTerm ? '검색 결과가 없습니다' : '참여자가 없습니다'}
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
