@@ -589,7 +589,16 @@ export default function CustomDealsPage() {
 
                     {/* Price - 고정 높이 */}
                     <div className="mb-2 h-16">
-                      {deal.original_price && deal.final_price ? (
+                      {deal.deal_type === 'time_based' ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-lg font-bold text-orange-600">
+                            기간특가
+                          </span>
+                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                            기간한정
+                          </span>
+                        </div>
+                      ) : deal.original_price && deal.final_price ? (
                         <>
                           {/* products 배열 우선, 없으면 product_name 폴백 */}
                           {deal.products && deal.products.length > 0 && deal.products[0].name && (
@@ -619,15 +628,6 @@ export default function CustomDealsPage() {
                             {deal.final_price.toLocaleString()}원
                           </div>
                         </>
-                      ) : deal.deal_type === 'time_based' ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-lg font-bold text-orange-600">
-                            기간특가
-                          </span>
-                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                            기간한정
-                          </span>
-                        </div>
                       ) : deal.pricing_type === 'coupon_only' ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-lg font-bold text-blue-600">
