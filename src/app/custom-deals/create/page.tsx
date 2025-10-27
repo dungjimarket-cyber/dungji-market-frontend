@@ -1319,25 +1319,13 @@ export default function CreateCustomDealPage() {
                   <RadioGroupItem value="all_products" id="all" />
                   <Label htmlFor="all" className="cursor-pointer">전품목 할인</Label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="coupon_only"
-                    id="coupon"
-                    disabled={formData.deal_type === 'time_based'}
-                  />
-                  <Label
-                    htmlFor="coupon"
-                    className={formData.deal_type === 'time_based' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                  >
-                    쿠폰전용
-                  </Label>
-                </div>
+                {formData.deal_type !== 'time_based' && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="coupon_only" id="coupon" />
+                    <Label htmlFor="coupon" className="cursor-pointer">쿠폰전용</Label>
+                  </div>
+                )}
               </RadioGroup>
-              {formData.deal_type === 'time_based' && (
-                <p className="text-xs text-orange-600 mt-2">
-                  ※ 기간특가는 쿠폰전용과 함께 사용할 수 없습니다
-                </p>
-              )}
             </div>
 
             {/* 단일상품: 상품명, 정가, 할인율 */}
