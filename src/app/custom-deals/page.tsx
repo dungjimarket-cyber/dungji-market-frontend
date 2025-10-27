@@ -152,7 +152,7 @@ export default function CustomDealsPage() {
       const dealsData = Array.isArray(data) ? data : data.results || [];
 
       // 디버깅: deal_type 필드 확인
-      console.log('📊 API Response Sample:', dealsData.slice(0, 3).map(d => ({
+      console.log('📊 API Response Sample:', dealsData.slice(0, 3).map((d: CustomDeal) => ({
         id: d.id,
         title: d.title,
         deal_type: d.deal_type,
