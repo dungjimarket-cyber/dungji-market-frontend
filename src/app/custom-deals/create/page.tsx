@@ -112,7 +112,7 @@ export default function CreateCustomDealPage() {
     usage_guide: '',
     deal_type: 'participant_based' as 'participant_based' | 'time_based', // 특가 유형
     type: 'online' as 'online' | 'offline',
-    pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only' | 'time_based',
+    pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only',
     product_name: '',
     original_price: '',
     discount_rate: '',
@@ -1283,21 +1283,31 @@ export default function CreateCustomDealPage() {
             <CardTitle>가격 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* 기간특가 체크박스 */}
+            <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
+              <div>
+                <p className="font-medium text-orange-900">기간특가로 등록</p>
+                <p className="text-sm text-orange-700">인원제한 없이 정해진 기간동안 제공되는 할인 혜택</p>
+              </div>
+              <Switch
+                checked={formData.deal_type === 'time_based'}
+                onCheckedChange={(checked) => {
+                  handleInputChange('deal_type', checked ? 'time_based' : 'participant_based');
+                  // 기간특가 활성화 시 쿠폰전용이면 단일상품으로 변경
+                  if (checked && formData.pricing_type === 'coupon_only') {
+                    handleInputChange('pricing_type', 'single_product');
+                  }
+                }}
+              />
+            </div>
+
             {/* 가격 유형 선택 */}
             <div>
               <Label>가격 유형 *</Label>
               <RadioGroup
-                value={formData.deal_type === 'time_based' ? 'time_based' : formData.pricing_type}
+                value={formData.pricing_type}
                 onValueChange={(value) => {
-                  // 기간특가 선택 시
-                  if (value === 'time_based') {
-                    handleInputChange('deal_type', 'time_based');
-                    handleInputChange('pricing_type', 'single_product'); // 가격 정보 입력 가능하게
-                  } else {
-                    // 일반 pricing_type 선택 시
-                    handleInputChange('deal_type', 'participant_based');
-                    handleInputChange('pricing_type', value);
-                  }
+                  handleInputChange('pricing_type', value);
                 }}
                 className="flex flex-wrap gap-4 mt-2"
               >
@@ -1310,17 +1320,22 @@ export default function CreateCustomDealPage() {
                   <Label htmlFor="all" className="cursor-pointer">전품목 할인</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="coupon_only" id="coupon" />
-                  <Label htmlFor="coupon" className="cursor-pointer">쿠폰전용</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="time_based" id="time_based" />
-                  <Label htmlFor="time_based" className="cursor-pointer text-orange-700">기간특가</Label>
+                  <RadioGroupItem
+                    value="coupon_only"
+                    id="coupon"
+                    disabled={formData.deal_type === 'time_based'}
+                  />
+                  <Label
+                    htmlFor="coupon"
+                    className={formData.deal_type === 'time_based' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                  >
+                    쿠폰전용
+                  </Label>
                 </div>
               </RadioGroup>
               {formData.deal_type === 'time_based' && (
-                <p className="text-xs text-gray-600 mt-2">
-                  💡 인원제한 없이 정해진 기간동안 제공되는 할인 혜택
+                <p className="text-xs text-orange-600 mt-2">
+                  ※ 기간특가는 쿠폰전용과 함께 사용할 수 없습니다
                 </p>
               )}
             </div>
