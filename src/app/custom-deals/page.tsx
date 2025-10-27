@@ -484,9 +484,10 @@ export default function CustomDealsPage() {
                   return showClosedDeals || deal.status === 'recruiting';
                 }
 
-                // 쿠폰/이벤트 탭: pricing_type이 coupon_only인 것만
+                // 쿠폰/이벤트 탭: pricing_type이 coupon_only이면서 time_based가 아닌 것만
                 if (selectedType === 'coupon_only') {
                   if (deal.pricing_type !== 'coupon_only') return false;
+                  if (deal.deal_type === 'time_based') return false; // 기간특가 제외
                   return showClosedDeals || deal.status === 'recruiting';
                 }
 
