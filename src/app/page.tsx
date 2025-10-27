@@ -311,8 +311,13 @@ function HomeContent() {
                                   <span className="text-lg sm:text-xl font-bold text-red-600">
                                     {deal.discount_rate}%
                                   </span>
-                                  <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                                    커공특가
+                                  {/* 기간특가 vs 커공특가 배지 구분 */}
+                                  <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                                    deal.deal_type === 'time_based'
+                                      ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                      : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                  }`}>
+                                    {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                                   </span>
                                 </div>
                                 <div className="text-xs text-slate-500 line-through mb-1">
@@ -330,8 +335,13 @@ function HomeContent() {
                                   <span className="text-lg font-bold text-blue-600">
                                     {deal.discount_rate}% 할인
                                   </span>
-                                  <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                                    커공특가
+                                  {/* 기간특가 vs 커공특가 배지 구분 */}
+                                  <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                                    deal.deal_type === 'time_based'
+                                      ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                      : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                  }`}>
+                                    {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                                   </span>
                                 </div>
                                 <div className="text-xs text-gray-600">전품목</div>
@@ -344,6 +354,27 @@ function HomeContent() {
                         <h3 className="text-base sm:text-lg font-bold text-gray-900 line-clamp-2 md:flex-1 md:min-w-0">
                           {deal.title}
                         </h3>
+
+                        {/* 기간특가: 판매기간 표시 */}
+                        {deal.deal_type === 'time_based' && deal.expired_at && (
+                          <div className="flex items-center gap-2 text-sm text-orange-600 mt-3">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-semibold">
+                              판매기간: {(() => {
+                                const now = new Date();
+                                const expire = new Date(deal.expired_at);
+                                const diff = expire.getTime() - now.getTime();
+                                if (diff <= 0) return '마감';
+                                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                if (days > 0) return `${days}일 남음`;
+                                return `${hours}시간 남음`;
+                              })()}
+                            </span>
+                          </div>
+                        )}
 
                         {/* 참여 현황 - 주석 처리 */}
                         {/* <div className="flex items-center gap-2 text-base text-gray-600">

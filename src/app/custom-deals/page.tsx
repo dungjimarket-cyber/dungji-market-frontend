@@ -694,7 +694,7 @@ export default function CustomDealsPage() {
                       {deal.deal_type === 'time_based' ? (
                         // 기간특가: 판매기간 표시 (인원 바 위치)
                         <>
-                          <div className="flex items-center justify-between text-xs mb-3">
+                          <div className="flex items-center justify-between text-xs mt-2 mb-3">
                             <span className="text-orange-700 font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
                               <Clock className="w-3 h-3 flex-shrink-0" />
                               판매기간
