@@ -149,7 +149,17 @@ export default function CustomDealsPage() {
 
       const response = await fetch(url);
       const data = await response.json();
-      setDeals(Array.isArray(data) ? data : data.results || []);
+      const dealsData = Array.isArray(data) ? data : data.results || [];
+
+      // 디버깅: deal_type 필드 확인
+      console.log('📊 API Response Sample:', dealsData.slice(0, 3).map(d => ({
+        id: d.id,
+        title: d.title,
+        deal_type: d.deal_type,
+        pricing_type: d.pricing_type
+      })));
+
+      setDeals(dealsData);
     } catch (error) {
       console.error('목록 로드 실패:', error);
       setDeals([]);
@@ -589,6 +599,7 @@ export default function CustomDealsPage() {
 
                     {/* Price - 고정 높이 */}
                     <div className="mb-2 h-16">
+                      {/* 기간특가 구분: deal_type이 명시적으로 'time_based'인 경우만 */}
                       {deal.deal_type === 'time_based' ? (
                         <div className="flex flex-col gap-1">
                           {deal.original_price && deal.final_price ? (
@@ -681,12 +692,12 @@ export default function CustomDealsPage() {
                     {/* Progress or Validity - 고정 높이 */}
                     <div className="mb-2">
                       {deal.deal_type === 'time_based' ? (
-                        // 기간특가: 등록기간 표시 (인원 바 위치)
+                        // 기간특가: 판매기간 표시 (인원 바 위치)
                         <>
-                          <div className="flex items-center justify-between text-xs mb-2">
+                          <div className="flex items-center justify-between text-xs mb-3">
                             <span className="text-orange-700 font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
                               <Clock className="w-3 h-3 flex-shrink-0" />
-                              등록기간
+                              판매기간
                             </span>
                             <span className="text-slate-500 font-semibold whitespace-nowrap">
                               {getRemainingTime(deal.expired_at)}
