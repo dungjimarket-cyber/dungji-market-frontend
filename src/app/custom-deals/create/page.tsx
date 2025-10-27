@@ -1463,6 +1463,21 @@ export default function CreateCustomDealPage() {
                   className={errors.discount_url ? 'border-red-300' : 'bg-white'}
                 />
                 {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
+
+                {/* 링크 테스트 버튼 */}
+                {formData.discount_url && formData.discount_url.startsWith('http') && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(formData.discount_url, '_blank', 'noopener,noreferrer')}
+                    className="flex items-center gap-2 mt-2"
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    링크 테스트
+                  </Button>
+                )}
+
                 <p className="text-xs text-gray-600 mt-2">
                   💡 쿠팡, 네이버쇼핑 등 할인이 적용된 상품 링크를 입력해주세요
                 </p>
