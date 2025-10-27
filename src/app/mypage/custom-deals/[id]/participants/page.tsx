@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Clock, Copy, Calendar, QrCode, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -231,6 +231,70 @@ export default function ParticipantsManagePage() {
     }
   };
 
+  const handleDownloadExcel = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      // 전체 참여자 데이터 가져오기 (페이지네이션 없이)
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${params.id}/participants/?page_size=10000`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to fetch all participants');
+
+      const data = await response.json();
+      const allParticipants = data.results || data;
+
+      // CSV 생성
+      const headers = ['번호', '닉네임', '연락처', '할인코드', '할인링크', '유효기간', '사용여부'];
+      const rows = allParticipants.map((p: Participant, index: number) => {
+        const validityText = p.discount_valid_until
+          ? new Date(p.discount_valid_until).toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : '-';
+
+        return [
+          index + 1,
+          p.user_name,
+          p.phone_number || '-',
+          p.discount_code || '-',
+          p.discount_url || '-',
+          validityText,
+          p.discount_used ? '사용완료' : '미사용'
+        ];
+      });
+
+      // CSV 문자열 생성 (UTF-8 BOM 추가로 한글 깨짐 방지)
+      const csvContent = '\uFEFF' + [headers, ...rows]
+        .map(row => row.map((cell: string | number) => `"${cell}"`).join(','))
+        .join('\n');
+
+      // Blob 생성 및 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `참여자목록_${deal?.title}_${new Date().toLocaleDateString('ko-KR')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('참여자 목록을 다운로드했습니다');
+    } catch (error) {
+      console.error('다운로드 실패:', error);
+      toast.error('다운로드에 실패했습니다');
+    }
+  };
+
   const handleQRScanSuccess = async (data: { participationCode: string; discountCode: string; groupbuyId: string }) => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -352,8 +416,8 @@ export default function ParticipantsManagePage() {
           </div>
         )}
 
-        {/* 검색 입력 */}
-        <div className="mb-4">
+        {/* 검색 입력 및 엑셀 다운로드 */}
+        <div className="mb-4 space-y-2">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -373,6 +437,16 @@ export default function ParticipantsManagePage() {
               검색
             </Button>
           </div>
+
+          {/* 엑셀 다운로드 버튼 */}
+          <Button
+            onClick={handleDownloadExcel}
+            variant="outline"
+            className="w-full text-xs py-2 border-green-300 text-green-700 hover:bg-green-50"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            참여자 목록 엑셀 다운로드 (전체 {totalCount}명)
+          </Button>
         </div>
 
         {/* 통계 요약 */}
