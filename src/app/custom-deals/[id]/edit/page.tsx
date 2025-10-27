@@ -1252,36 +1252,76 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             </Card>
             )}
 
-            {/* 모집 설정 */}
-            <Card className="mb-6 border-slate-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  모집 설정
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>목표 인원 *</Label>
-                  <Select
-                    value={formData.target_participants}
-                    onValueChange={(value) => handleInputChange('target_participants', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 19 }, (_, i) => i + 2).map(num => (
-                        <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+            {/* 모집 설정 (기간특가 제외) */}
+            {originalData?.deal_type !== 'time_based' && (
+              <Card className="mb-6 border-slate-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    모집 설정
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>목표 인원 *</Label>
+                    <Select
+                      value={formData.target_participants}
+                      onValueChange={(value) => handleInputChange('target_participants', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 19 }, (_, i) => i + 2).map(num => (
+                          <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* 온라인 전용 필드 - 할인 제공 방식 통합 */}
-            {formData.type === 'online' && (
+            {/* 기간특가 온라인 - 할인 링크만 */}
+            {formData.type === 'online' && originalData?.deal_type === 'time_based' && (
+              <Card className="mb-6 border-slate-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <LinkIcon className="w-5 h-5" />
+                    할인 링크 (선택사항)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="flex items-baseline gap-2">
+                      할인링크/참여방법안내
+                      <span className="text-xs text-slate-500 font-normal">(선택사항)</span>
+                    </Label>
+                    <Input
+                      value={formData.discount_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
+                      placeholder="할인 링크 또는 참여방식을 입력해주세요"
+                      maxLength={500}
+                    />
+                    <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
+                  </div>
+
+                  {/* 링크 미리보기 */}
+                  {formData.discount_url && formData.discount_url.startsWith('http') && (
+                    <LinkPreview url={formData.discount_url} />
+                  )}
+
+                  <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <p className="text-xs text-orange-800 leading-relaxed">
+                      💡 기간특가는 가격 정보만으로도 등록 가능하며, 할인 링크는 선택사항입니다.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 온라인 전용 필드 - 할인 제공 방식 통합 (기간특가 제외) */}
+            {formData.type === 'online' && originalData?.deal_type !== 'time_based' && (
               <Card className="mb-6 border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

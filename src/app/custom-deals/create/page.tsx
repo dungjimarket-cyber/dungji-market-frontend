@@ -539,6 +539,12 @@ export default function CreateCustomDealPage() {
 
   // 마감시간 계산
   const calculateDeadline = () => {
+    // 기간특가: deadline_date + deadline_time 사용
+    if (formData.deal_type === 'time_based') {
+      return `${formData.deadline_date}T${formData.deadline_time}:00`;
+    }
+
+    // 인원 모집 특가
     if (!useDeadline) {
       // 모집기간 설정 안함: 7일 후로 자동 설정
       const deadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -604,6 +610,14 @@ export default function CreateCustomDealPage() {
 
     // 기간특가 전용 검증
     if (formData.deal_type === 'time_based') {
+      // 등록 기간 필수
+      if (!formData.deadline_date) {
+        newErrors.deadline_date = '마감 날짜를 선택해주세요';
+      }
+      if (!formData.deadline_time) {
+        newErrors.deadline_time = '마감 시간을 선택해주세요';
+      }
+
       // 오프라인: 매장 위치 필수
       if (formData.type === 'offline') {
         if (!formData.location.trim()) {
@@ -1438,26 +1452,24 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 기간특가: 할인 링크 */}
+        {/* 기간특가: 할인 링크 (선택사항) */}
         {formData.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-700">
                 <LinkIcon className="w-5 h-5" />
-                할인 링크 *
+                할인 링크 (선택사항)
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div>
-                <Label>할인이 적용된 구매 링크</Label>
+                <Label>할인이 적용된 구매 링크 (선택사항)</Label>
                 <Input
-                  ref={discountUrlRef}
                   value={formData.discount_url}
                   onChange={(e) => handleInputChange('discount_url', e.target.value)}
                   placeholder="https://..."
-                  className={errors.discount_url ? 'border-red-300' : 'bg-white'}
+                  className="bg-white"
                 />
-                {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
 
                 {/* 링크 테스트 버튼 */}
                 {formData.discount_url && formData.discount_url.startsWith('http') && (
@@ -1474,9 +1486,52 @@ export default function CreateCustomDealPage() {
                 )}
 
                 <p className="text-xs text-gray-600 mt-2">
-                  💡 쿠팡, 네이버쇼핑 등 할인이 적용된 상품 링크를 입력해주세요
+                  💡 가격 정보만으로도 등록 가능하며, 할인 링크는 선택사항입니다
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 기간특가: 등록 기간 */}
+        {formData.deal_type === 'time_based' && (
+          <Card className="mb-6 border-orange-200 bg-orange-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-700">
+                <Clock className="w-5 h-5" />
+                등록 기간 *
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-orange-700">기간특가 진행 기간을 설정해주세요</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-700">마감 날짜 *</Label>
+                  <Input
+                    type="date"
+                    value={formData.deadline_date}
+                    onChange={(e) => handleInputChange('deadline_date', e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className={errors.deadline_date ? 'border-red-300 bg-white' : 'bg-white'}
+                  />
+                  {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-700">마감 시간 *</Label>
+                  <Input
+                    type="time"
+                    value={formData.deadline_time}
+                    onChange={(e) => handleInputChange('deadline_time', e.target.value)}
+                    className={errors.deadline_time ? 'border-red-300 bg-white' : 'bg-white'}
+                  />
+                  {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600">
+                💡 설정한 날짜/시간까지 기간특가가 진행됩니다
+              </p>
             </CardContent>
           </Card>
         )}
