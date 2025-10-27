@@ -595,7 +595,7 @@ export default function CustomDealsPage() {
                             기간특가
                           </span>
                           <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                            기간한정
+                            기간한정특가
                           </span>
                         </div>
                       ) : deal.original_price && deal.final_price ? (
