@@ -1075,12 +1075,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </CardContent>
             </Card>
 
-            {/* 가격 정보 */}
-            <Card className="mb-6 border-slate-200">
-              <CardHeader>
-                <CardTitle>가격 정보</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            {/* 가격 정보 - 기간특가와 쿠폰전용은 숨김 */}
+            {originalData?.deal_type !== 'time_based' && originalData?.pricing_type !== 'coupon_only' && (
+              <Card className="mb-6 border-slate-200">
+                <CardHeader>
+                  <CardTitle>가격 정보</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                 <div>
                   <Label>가격 유형 *</Label>
                   <RadioGroup
@@ -1196,6 +1197,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 )}
               </CardContent>
             </Card>
+            )}
 
             {/* 모집 설정 */}
             <Card className="mb-6 border-slate-200">
