@@ -1077,7 +1077,7 @@ export default function CustomDealDetailPage() {
                       <div className="flex items-start gap-2">
                         <CheckCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
                         <p className="text-xs text-orange-700 font-medium">
-                          기간 내 누구나 이용 가능한 할인입니다
+                          기간 내 바로 구매 가능한 특가 상품 입니다
                         </p>
                       </div>
                     </div>
