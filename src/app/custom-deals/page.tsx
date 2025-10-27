@@ -614,6 +614,15 @@ export default function CustomDealsPage() {
                             {deal.final_price.toLocaleString()}원
                           </div>
                         </>
+                      ) : deal.deal_type === 'time_based' ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-lg font-bold text-orange-600">
+                            기간특가
+                          </span>
+                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                            기간한정
+                          </span>
+                        </div>
                       ) : deal.pricing_type === 'coupon_only' ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-lg font-bold text-blue-600">
@@ -637,7 +646,39 @@ export default function CustomDealsPage() {
 
                     {/* Progress or Validity - 고정 높이 */}
                     <div className="mb-2">
-                      {deal.status === 'completed' && deal.discount_valid_until ? (
+                      {deal.deal_type === 'time_based' ? (
+                        // 기간특가: 유효기간만 표시 (인원 바 없음)
+                        <>
+                          {(() => {
+                            const validity = getValidityDisplay(
+                              deal.discount_valid_until || deal.expired_at,
+                              deal.type,
+                              deal.online_discount_type
+                            );
+                            if (validity) {
+                              return (
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-slate-600">{validity.label}</span>
+                                  <span className={`font-semibold ${validity.color}`}>
+                                    {validity.time}
+                                  </span>
+                                </div>
+                              );
+                            }
+                            return (
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-slate-600 flex items-center gap-1">
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
+                                  남은 시간
+                                </span>
+                                <span className="text-slate-500 font-semibold">
+                                  {getRemainingTime(deal.expired_at)}
+                                </span>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      ) : deal.status === 'completed' && deal.discount_valid_until ? (
                         // 마감된 경우: 참여자 인원 (위) + 유효기간/판매기간 (아래)
                         <>
                           <div className="flex items-center justify-between text-xs mb-1.5">

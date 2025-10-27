@@ -298,7 +298,9 @@ export default function CustomDealDetailPage() {
 
     let shareText = '';
 
-    if (deal.pricing_type === 'coupon_only') {
+    if (deal.deal_type === 'time_based') {
+      shareText = `${deal.title} - 기간특가`;
+    } else if (deal.pricing_type === 'coupon_only') {
       shareText = `${deal.title} - 선착순 쿠폰증정`;
     } else if (deal.final_price) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
@@ -605,9 +607,13 @@ export default function CustomDealDetailPage() {
     if (!deal) return null;
 
     if (deal.status === 'completed') {
-      return <Badge className="bg-red-50 text-red-600 border-red-200">선착순 마감</Badge>;
+      const badgeText = deal.deal_type === 'time_based' ? '마감' : '선착순 마감';
+      return <Badge className="bg-red-50 text-red-600 border-red-200">{badgeText}</Badge>;
     }
     if (deal.status === 'recruiting') {
+      if (deal.deal_type === 'time_based') {
+        return <Badge className="bg-orange-50 text-orange-600 border-orange-200">진행중</Badge>;
+      }
       const progress = (deal.current_participants / deal.target_participants) * 100;
       if (progress >= 80) {
         return <Badge className="bg-orange-50 text-orange-600 border-orange-200">마감 임박</Badge>;
@@ -834,7 +840,14 @@ export default function CustomDealDetailPage() {
             {/* Price */}
             <Card className="border-slate-200 bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="p-5">
-                {deal.pricing_type === 'coupon_only' ? (
+                {deal.deal_type === 'time_based' ? (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600 mb-1">
+                      기간 한정 특가
+                    </div>
+                    <p className="text-xs text-slate-600">재고 소진 시 조기 마감될 수 있습니다</p>
+                  </div>
+                ) : deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 mb-1">
                       선착순 쿠폰증정
