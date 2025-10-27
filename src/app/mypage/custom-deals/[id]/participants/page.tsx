@@ -276,11 +276,36 @@ export default function ParticipantsManagePage() {
       // 워크시트 생성
       const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-      // 열 너비 자동 조정
+      // 열 너비 자동 조정 (한글 고려)
+      const getTextWidth = (text: string) => {
+        let width = 0;
+        for (let i = 0; i < text.length; i++) {
+          const char = text.charAt(i);
+          // 한글, 한자, 일본어 등은 2배 너비
+          if (/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf\uac00-\ud7a3]/.test(char)) {
+            width += 2;
+          } else {
+            width += 1;
+          }
+        }
+        return width;
+      };
+
       const colWidths = headers.map((_, colIndex) => {
         const columnData = [headers[colIndex], ...rows.map((row: (string | number)[]) => String(row[colIndex] || ''))];
-        const maxLength = Math.max(...columnData.map(cell => String(cell).length));
-        return { wch: Math.min(maxLength + 2, 50) }; // 최대 50자로 제한
+        const maxWidth = Math.max(...columnData.map(cell => getTextWidth(String(cell))));
+
+        // 각 열마다 다른 최대값 설정
+        let maxLimit = 100; // 기본값
+        if (colIndex === 0) maxLimit = 10;  // 번호
+        if (colIndex === 1) maxLimit = 30;  // 닉네임
+        if (colIndex === 2) maxLimit = 25;  // 연락처
+        if (colIndex === 3) maxLimit = 50;  // 할인코드
+        if (colIndex === 4) maxLimit = 100; // 할인링크 (길 수 있음)
+        if (colIndex === 5) maxLimit = 30;  // 유효기간
+        if (colIndex === 6) maxLimit = 15;  // 사용여부
+
+        return { wch: Math.min(maxWidth + 2, maxLimit) };
       });
       ws['!cols'] = colWidths;
 

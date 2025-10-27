@@ -112,7 +112,7 @@ export default function CreateCustomDealPage() {
     usage_guide: '',
     deal_type: 'participant_based' as 'participant_based' | 'time_based', // 특가 유형
     type: 'online' as 'online' | 'offline',
-    pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only',
+    pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only' | 'time_based',
     product_name: '',
     original_price: '',
     discount_rate: '',
@@ -1221,39 +1221,6 @@ export default function CreateCustomDealPage() {
               </div>
             </div>
 
-            {/* 특가 유형 선택 */}
-            <div>
-              <Label>특가 유형 *</Label>
-              <RadioGroup
-                value={formData.deal_type}
-                onValueChange={(value) => handleInputChange('deal_type', value as 'participant_based' | 'time_based')}
-                className="flex flex-col gap-3 mt-2"
-              >
-                <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <RadioGroupItem value="participant_based" id="participant_based" className="mt-0.5" />
-                  <div className="flex-1">
-                    <Label htmlFor="participant_based" className="font-semibold cursor-pointer text-blue-700">
-                      인원 모집 특가 (기존 방식)
-                    </Label>
-                    <p className="text-xs text-gray-600 mt-1">
-                      목표 인원이 모이면 할인코드를 자동 발송하는 공동구매 방식
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <RadioGroupItem value="time_based" id="time_based" className="mt-0.5" />
-                  <div className="flex-1">
-                    <Label htmlFor="time_based" className="font-semibold cursor-pointer text-orange-700">
-                      기간특가 (정보 공유)
-                    </Label>
-                    <p className="text-xs text-gray-600 mt-1">
-                      기간 내 할인 링크를 공유하는 방식 (할인코드 발송 없음)
-                    </p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-
             {/* 타입 선택 (온라인/오프라인) */}
             <div>
               <Label>공구 유형 *</Label>
@@ -1326,8 +1293,16 @@ export default function CreateCustomDealPage() {
               <Label>가격 유형 *</Label>
               <RadioGroup
                 value={formData.pricing_type}
-                onValueChange={(value) => handleInputChange('pricing_type', value)}
-                className="flex gap-4 mt-2"
+                onValueChange={(value) => {
+                  handleInputChange('pricing_type', value);
+                  // pricing_type이 time_based면 deal_type도 time_based로 자동 설정
+                  if (value === 'time_based') {
+                    handleInputChange('deal_type', 'time_based');
+                  } else {
+                    handleInputChange('deal_type', 'participant_based');
+                  }
+                }}
+                className="flex flex-wrap gap-4 mt-2"
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="single_product" id="single" />
@@ -1341,7 +1316,16 @@ export default function CreateCustomDealPage() {
                   <RadioGroupItem value="coupon_only" id="coupon" />
                   <Label htmlFor="coupon" className="cursor-pointer">쿠폰전용</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="time_based" id="time_based" />
+                  <Label htmlFor="time_based" className="cursor-pointer text-orange-700">기간특가</Label>
+                </div>
               </RadioGroup>
+              {formData.pricing_type === 'time_based' && (
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 인원제한 없이 정해진 기간동안 제공되는 할인 혜택
+                </p>
+              )}
             </div>
 
             {/* 단일상품: 상품명, 정가, 할인율 */}
@@ -1439,7 +1423,7 @@ export default function CreateCustomDealPage() {
             )}
 
             {/* 가격 입력 안내 */}
-            {formData.pricing_type !== 'coupon_only' && (
+            {formData.pricing_type !== 'coupon_only' && formData.pricing_type !== 'time_based' && (
               <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
                 💡 공구 전용 할인가로 입력해주세요
               </div>
