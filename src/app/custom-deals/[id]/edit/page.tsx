@@ -1075,8 +1075,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </CardContent>
             </Card>
 
-            {/* 가격 정보 - 기간특가와 쿠폰전용은 숨김 */}
-            {originalData?.deal_type !== 'time_based' && originalData?.pricing_type !== 'coupon_only' && (
+            {/* 가격 정보 - 쿠폰전용만 숨김 */}
+            {originalData?.pricing_type !== 'coupon_only' && (
               <Card className="mb-6 border-slate-200">
                 <CardHeader>
                   <CardTitle>가격 정보</CardTitle>

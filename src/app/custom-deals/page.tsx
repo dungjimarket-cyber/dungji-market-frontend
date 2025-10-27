@@ -590,13 +590,25 @@ export default function CustomDealsPage() {
                     {/* Price - 고정 높이 */}
                     <div className="mb-2 h-16">
                       {deal.deal_type === 'time_based' ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex flex-col gap-1">
                           <span className="text-lg font-bold text-orange-600">
                             기간특가
                           </span>
-                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                            기간한정특가
-                          </span>
+                          {deal.original_price && deal.final_price && (
+                            <>
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-xs text-slate-500 line-through">
+                                  {deal.original_price.toLocaleString()}원
+                                </span>
+                                <span className="text-base font-bold text-red-600">
+                                  {deal.discount_rate}%
+                                </span>
+                              </div>
+                              <div className="text-xl font-bold text-slate-900">
+                                {deal.final_price.toLocaleString()}원
+                              </div>
+                            </>
+                          )}
                         </div>
                       ) : deal.original_price && deal.final_price ? (
                         <>

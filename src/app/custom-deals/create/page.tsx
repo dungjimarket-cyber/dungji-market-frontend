@@ -604,20 +604,14 @@ export default function CreateCustomDealPage() {
 
     // 기간특가 전용 검증
     if (formData.deal_type === 'time_based') {
-      // 온라인: 할인 링크 필수
-      if (formData.type === 'online') {
-        if (!formData.discount_url.trim()) {
-          newErrors.discount_url = '할인 링크를 입력해주세요';
-          if (!firstErrorRef) firstErrorRef = discountUrlRef;
-        }
-      }
       // 오프라인: 매장 위치 필수
-      else if (formData.type === 'offline') {
+      if (formData.type === 'offline') {
         if (!formData.location.trim()) {
           newErrors.location = '매장 위치를 입력해주세요';
           if (!firstErrorRef) firstErrorRef = locationRef;
         }
       }
+      // 온라인: 할인 링크는 선택사항 (가격 정보가 있으면 됨)
 
       // 에러가 있으면 포커스 이동 후 종료
       if (Object.keys(newErrors).length > 0) {
@@ -628,7 +622,7 @@ export default function CreateCustomDealPage() {
         }
         return false;
       }
-      return true;
+      // 기간특가도 가격 정보 검증 계속 진행
     }
 
     // 인원 모집 특가 전용 검증
@@ -1298,7 +1292,7 @@ export default function CreateCustomDealPage() {
                   // 기간특가 선택 시
                   if (value === 'time_based') {
                     handleInputChange('deal_type', 'time_based');
-                    handleInputChange('pricing_type', 'coupon_only'); // 백엔드는 coupon_only로 받음
+                    handleInputChange('pricing_type', 'single_product'); // 가격 정보 입력 가능하게
                   } else {
                     // 일반 pricing_type 선택 시
                     handleInputChange('deal_type', 'participant_based');
@@ -1426,14 +1420,14 @@ export default function CreateCustomDealPage() {
             )}
 
             {/* 가격 입력 안내 */}
-            {formData.pricing_type !== 'coupon_only' && formData.deal_type !== 'time_based' && (
+            {formData.pricing_type !== 'coupon_only' && (
               <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                💡 공구 전용 할인가로 입력해주세요
+                💡 {formData.deal_type === 'time_based' ? '기간특가 할인가로 입력해주세요' : '공구 전용 할인가로 입력해주세요'}
               </div>
             )}
 
             {/* 쿠폰전용 안내 */}
-            {formData.pricing_type === 'coupon_only' && formData.deal_type !== 'time_based' && (
+            {formData.pricing_type === 'coupon_only' && (
               <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
                 💡 쿠폰전용은 구매과정없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
               </div>
