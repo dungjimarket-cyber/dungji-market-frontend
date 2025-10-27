@@ -20,6 +20,8 @@ interface CustomDeal {
   title: string;
   type: 'online' | 'offline';
   type_display: string;
+  deal_type?: 'participant_based' | 'time_based';
+  deal_type_display?: string;
   categories: string[];
   regions?: Array<{
     code: string;
@@ -51,6 +53,13 @@ interface CustomDeal {
   created_at: string;
   discount_valid_until?: string;
   online_discount_type?: 'link_only' | 'code_only' | 'both';
+  discount_url?: string; // 기간특가 링크
+  description_link_previews?: Array<{
+    url: string;
+    title?: string;
+    image?: string;
+    description?: string;
+  }>;
   location?: string; // 오프라인 매장 주소
 }
 
@@ -68,6 +77,7 @@ export default function CustomDealsPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // 필터 상태
+  const [selectedDealType, setSelectedDealType] = useState<'all' | 'participant_based' | 'time_based'>('all'); // 특가 유형
   const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline' | 'coupon_only'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,7 +96,7 @@ export default function CustomDealsPage() {
   useEffect(() => {
     fetchCategories();
     fetchDeals();
-  }, [selectedType, selectedCategory, locationQuery]);
+  }, [selectedDealType, selectedType, selectedCategory, locationQuery]);
 
   // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
   useEffect(() => {
@@ -112,6 +122,11 @@ export default function CustomDealsPage() {
       setLoading(true);
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`;
       const params = new URLSearchParams();
+
+      // deal_type 필터 추가
+      if (selectedDealType !== 'all') {
+        params.append('deal_type', selectedDealType);
+      }
 
       // 쿠폰/이벤트 탭이 아닐 때만 type 파라미터 추가
       if (selectedType !== 'all' && selectedType !== 'coupon_only') {
@@ -337,8 +352,44 @@ export default function CustomDealsPage() {
             </form>
           </div>
 
+          {/* Deal Type Tabs (특가 유형) */}
+          <div className="px-4 pt-3 pb-2 border-b border-gray-200">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedDealType('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
+                  selectedDealType === 'all'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => setSelectedDealType('participant_based')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
+                  selectedDealType === 'participant_based'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 border border-blue-300 hover:bg-blue-50'
+                }`}
+              >
+                인원 모집 특가
+              </button>
+              <button
+                onClick={() => setSelectedDealType('time_based')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
+                  selectedDealType === 'time_based'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-white text-gray-700 border border-orange-300 hover:bg-orange-50'
+                }`}
+              >
+                기간특가
+              </button>
+            </div>
+          </div>
+
           {/* Filters */}
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-4 pt-3">
             <div className="flex flex-wrap gap-2">
               {/* Type Filter */}
               <button
@@ -521,11 +572,16 @@ export default function CustomDealsPage() {
                         {getStatusBadge(deal)}
                       </div>
                     )}
-                    {/* Type Badge */}
-                    <div className="absolute top-2 left-2">
+                    {/* Type & Deal Type Badges */}
+                    <div className="absolute top-2 left-2 flex gap-1">
                       <Badge className="bg-white/90 text-slate-700 border-0 whitespace-nowrap text-xs">
                         {deal.type_display}
                       </Badge>
+                      {deal.deal_type === 'time_based' && (
+                        <Badge className="bg-orange-500 text-white border-0 whitespace-nowrap text-xs">
+                          기간특가
+                        </Badge>
+                      )}
                     </div>
                   </div>
 

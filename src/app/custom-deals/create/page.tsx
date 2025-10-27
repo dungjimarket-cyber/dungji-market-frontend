@@ -110,6 +110,7 @@ export default function CreateCustomDealPage() {
     title: '',
     description: '',
     usage_guide: '',
+    deal_type: 'participant_based' as 'participant_based' | 'time_based', // 특가 유형
     type: 'online' as 'online' | 'offline',
     pricing_type: 'single_product' as 'single_product' | 'all_products' | 'coupon_only',
     product_name: '',
@@ -586,6 +587,51 @@ export default function CreateCustomDealPage() {
     }
     if (formData.usage_guide && formData.usage_guide.length > 1000) newErrors.usage_guide = '이용안내는 최대 1,000자까지 입력 가능합니다';
 
+    // 카테고리
+    if (!selectedCategory) {
+      newErrors.categories = '카테고리를 선택해주세요';
+      if (!firstErrorRef) firstErrorRef = categoryRef;
+    }
+
+    // 이미지
+    const actualImages = images.filter(img => img && !img.isEmpty);
+    if (actualImages.length === 0) {
+      newErrors.images = '최소 1장 이상의 이미지를 등록해주세요';
+      if (!firstErrorRef) firstErrorRef = imageRefDiv;
+    }
+
+    // 인원 모집 특가 vs 기간특가 공통/차이점
+
+    // 기간특가 전용 검증
+    if (formData.deal_type === 'time_based') {
+      // 온라인: 할인 링크 필수
+      if (formData.type === 'online') {
+        if (!formData.discount_url.trim()) {
+          newErrors.discount_url = '할인 링크를 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = discountUrlRef;
+        }
+      }
+      // 오프라인: 매장 위치 필수
+      else if (formData.type === 'offline') {
+        if (!formData.location.trim()) {
+          newErrors.location = '매장 위치를 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = locationRef;
+        }
+      }
+
+      // 에러가 있으면 포커스 이동 후 종료
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        if (firstErrorRef?.current) {
+          firstErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrorRef.current.focus?.();
+        }
+        return false;
+      }
+      return true;
+    }
+
+    // 인원 모집 특가 전용 검증
     // 마감시간 검증 (모집기간 설정 시에만)
     if (useDeadline && formData.deadline_type === 'manual') {
       if (!formData.deadline_date) newErrors.deadline_date = '마감 날짜를 선택해주세요';
@@ -604,19 +650,6 @@ export default function CreateCustomDealPage() {
           newErrors.deadline_date = '마감시간은 최대 7일 이내로 설정해주세요';
         }
       }
-    }
-
-    // 카테고리
-    if (!selectedCategory) {
-      newErrors.categories = '카테고리를 선택해주세요';
-      if (!firstErrorRef) firstErrorRef = categoryRef;
-    }
-
-    // 이미지
-    const actualImages = images.filter(img => img && !img.isEmpty);
-    if (actualImages.length === 0) {
-      newErrors.images = '최소 1장 이상의 이미지를 등록해주세요';
-      if (!firstErrorRef) firstErrorRef = imageRefDiv;
     }
 
     // 가격 - coupon_only는 가격 정보 불필요
@@ -835,15 +868,31 @@ export default function CreateCustomDealPage() {
       submitFormData.append('title', formData.title);
       submitFormData.append('description', formData.description);
       if (formData.usage_guide) submitFormData.append('usage_guide', formData.usage_guide);
+      submitFormData.append('deal_type', formData.deal_type);
       submitFormData.append('type', formData.type);
       submitFormData.append('categories', JSON.stringify([selectedCategory]));
-      submitFormData.append('pricing_type', formData.pricing_type);
-      submitFormData.append('target_participants', formData.target_participants);
       submitFormData.append('expired_at', calculateDeadline());
-      submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
-      // 가격 정보 - coupon_only는 가격 정보 불필요
-      const validCodes = discountCodes.filter(c => c.trim());
+      // 기간특가 vs 인원 모집 특가
+      if (formData.deal_type === 'time_based') {
+        // 기간특가: 할인 링크 + 가격 정보
+        if (formData.type === 'online' && formData.discount_url) {
+          submitFormData.append('discount_url', formData.discount_url);
+        }
+        // 오프라인: 매장 정보
+        if (formData.type === 'offline') {
+          submitFormData.append('location', formData.location);
+          if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
+          submitFormData.append('phone_number', formData.phone_number);
+        }
+      } else {
+        // 인원 모집 특가만: 목표 인원, 부분 판매
+        submitFormData.append('target_participants', formData.target_participants);
+        submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
+      }
+
+      // 가격 정보 (공통) - coupon_only는 가격 정보 불필요
+      submitFormData.append('pricing_type', formData.pricing_type);
 
       if (formData.pricing_type === 'coupon_only') {
         // 쿠폰전용: 가격 정보 전송하지 않음
@@ -858,27 +907,34 @@ export default function CreateCustomDealPage() {
         submitFormData.append('discount_rate', formData.discount_rate);
       }
 
-      // 온라인/오프라인 특화 정보
-      if (formData.type === 'online') {
-        submitFormData.append('online_discount_type', formData.online_discount_type);
-        if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
-          submitFormData.append('discount_url', formData.discount_url);
+      // 인원 모집 특가만: 할인 코드/링크 전송
+      if (formData.deal_type === 'participant_based') {
+        const validCodes = discountCodes.filter(c => c.trim());
+
+        // 온라인 특화 정보
+        if (formData.type === 'online') {
+          submitFormData.append('online_discount_type', formData.online_discount_type);
+          if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
+            submitFormData.append('discount_url', formData.discount_url);
+          }
+          if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
+            submitFormData.append('discount_codes', JSON.stringify(validCodes));
+          }
+          if (formData.discount_valid_days) {
+            submitFormData.append('discount_valid_days', formData.discount_valid_days);
+          }
+          if (formData.phone_number) {
+            submitFormData.append('phone_number', formData.phone_number);
+          }
         }
-        if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
+        // 오프라인 특화 정보
+        else {
+          submitFormData.append('location', formData.location);
+          if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
+          submitFormData.append('phone_number', formData.phone_number);
+          submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
           submitFormData.append('discount_codes', JSON.stringify(validCodes));
         }
-        if (formData.discount_valid_days) {
-          submitFormData.append('discount_valid_days', formData.discount_valid_days);
-        }
-        if (formData.phone_number) {
-          submitFormData.append('phone_number', formData.phone_number);
-        }
-      } else {
-        submitFormData.append('location', formData.location);
-        if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
-        submitFormData.append('phone_number', formData.phone_number);
-        submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
-        submitFormData.append('discount_codes', JSON.stringify(validCodes));
       }
 
       // 디버깅: 전송할 데이터 로그 출력
@@ -1165,7 +1221,40 @@ export default function CreateCustomDealPage() {
               </div>
             </div>
 
-            {/* 타입 선택 */}
+            {/* 특가 유형 선택 */}
+            <div>
+              <Label>특가 유형 *</Label>
+              <RadioGroup
+                value={formData.deal_type}
+                onValueChange={(value) => handleInputChange('deal_type', value as 'participant_based' | 'time_based')}
+                className="flex flex-col gap-3 mt-2"
+              >
+                <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <RadioGroupItem value="participant_based" id="participant_based" className="mt-0.5" />
+                  <div className="flex-1">
+                    <Label htmlFor="participant_based" className="font-semibold cursor-pointer text-blue-700">
+                      인원 모집 특가 (기존 방식)
+                    </Label>
+                    <p className="text-xs text-gray-600 mt-1">
+                      목표 인원이 모이면 할인코드를 자동 발송하는 공동구매 방식
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <RadioGroupItem value="time_based" id="time_based" className="mt-0.5" />
+                  <div className="flex-1">
+                    <Label htmlFor="time_based" className="font-semibold cursor-pointer text-orange-700">
+                      기간특가 (정보 공유)
+                    </Label>
+                    <p className="text-xs text-gray-600 mt-1">
+                      기간 내 할인 링크를 공유하는 방식 (할인코드 발송 없음)
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 타입 선택 (온라인/오프라인) */}
             <div>
               <Label>공구 유형 *</Label>
               <RadioGroup
@@ -1365,15 +1454,44 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 모집 설정 */}
-        <Card className="mb-6 border-slate-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              모집 설정
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        {/* 기간특가: 할인 링크 */}
+        {formData.deal_type === 'time_based' && (
+          <Card className="mb-6 border-orange-200 bg-orange-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-700">
+                <LinkIcon className="w-5 h-5" />
+                할인 링크 *
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <Label>할인이 적용된 구매 링크</Label>
+                <Input
+                  ref={discountUrlRef}
+                  value={formData.discount_url}
+                  onChange={(e) => handleInputChange('discount_url', e.target.value)}
+                  placeholder="https://..."
+                  className={errors.discount_url ? 'border-red-300' : 'bg-white'}
+                />
+                {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 쿠팡, 네이버쇼핑 등 할인이 적용된 상품 링크를 입력해주세요
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 인원 모집 특가: 모집 설정 */}
+        {formData.deal_type === 'participant_based' && (
+          <Card className="mb-6 border-slate-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                모집 설정
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
             <div>
               <Label>목표 인원 *</Label>
               <Select value={formData.target_participants} onValueChange={(value) => handleInputChange('target_participants', value)}>
@@ -1521,10 +1639,11 @@ export default function CreateCustomDealPage() {
               />
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        )}
 
-        {/* 온라인 전용 필드 */}
-        {formData.type === 'online' && (
+        {/* 인원 모집 특가: 온라인 전용 필드 */}
+        {formData.deal_type === 'participant_based' && formData.type === 'online' && (
           <Card className="mb-6 border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1826,22 +1945,24 @@ export default function CreateCustomDealPage() {
               </CardContent>
             </Card>
 
-            <Card className="mb-6 border-slate-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ticket className="w-5 h-5" />
-                  할인 코드 및 유효기간
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    💡 오프라인 매장 할인코드 활용 방법<br />
-                    • 참여자가 할인코드를 매장에서 제시 (휴대폰 화면)<br />
-                    • 마감 후 관리페이지 QR코드 스캔 기능 사용 또는 할인코드 수동 확인<br />
-                    • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
-                  </p>
-                </div>
+            {/* 인원 모집 특가: 할인 코드 */}
+            {formData.deal_type === 'participant_based' && (
+              <Card className="mb-6 border-slate-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Ticket className="w-5 h-5" />
+                    할인 코드 및 유효기간
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      💡 오프라인 매장 할인코드 활용 방법<br />
+                      • 참여자가 할인코드를 매장에서 제시 (휴대폰 화면)<br />
+                      • 마감 후 관리페이지 QR코드 스캔 기능 사용 또는 할인코드 수동 확인<br />
+                      • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
+                    </p>
+                  </div>
 
                 <div>
                   <Label>할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm ml-2">{errors.discount_codes}</span>}</Label>
@@ -1954,7 +2075,8 @@ export default function CreateCustomDealPage() {
                   </p>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            )}
           </>
         )}
 

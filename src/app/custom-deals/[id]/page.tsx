@@ -17,6 +17,8 @@ interface CustomDeal {
   id: number;
   title: string;
   description: string;
+  deal_type?: 'participant_based' | 'time_based';
+  deal_type_display?: string;
   type: 'online' | 'offline';
   type_display: string;
   categories: string[];
@@ -1029,8 +1031,75 @@ export default function CustomDealDetailPage() {
               </div>
             )}
 
-            {/* 참여 가능 상태 - 모집 중이고 참여하지 않은 경우 */}
-            {deal.status === 'recruiting' &&
+            {/* 기간특가: 할인 링크 또는 매장 정보 */}
+            {deal.deal_type === 'time_based' && !isExpired && (
+              <div className="space-y-3">
+                {/* 온라인: 할인 링크 버튼 */}
+                {deal.type === 'online' && deal.discount_url && (
+                  <>
+                    <a
+                      href={getRedirectUrl(deal.discount_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button
+                        size="lg"
+                        className="w-full font-semibold py-6 bg-orange-600 hover:bg-orange-700 text-white"
+                      >
+                        할인 링크로 이동
+                      </Button>
+                    </a>
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-orange-700 font-medium">
+                          기간 내 누구나 이용 가능한 할인입니다
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* 오프라인: 매장 정보 */}
+                {deal.type === 'offline' && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-orange-900 mb-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      매장 정보
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      {deal.location && (
+                        <div>
+                          <p className="text-gray-600 text-xs mb-1">주소</p>
+                          <p className="text-gray-900 font-medium">{deal.location}</p>
+                          {deal.location_detail && (
+                            <p className="text-gray-600 text-xs mt-0.5">{deal.location_detail}</p>
+                          )}
+                        </div>
+                      )}
+                      {deal.phone_number && (
+                        <div>
+                          <p className="text-gray-600 text-xs mb-1">연락처</p>
+                          <a href={`tel:${deal.phone_number}`} className="text-orange-600 font-medium hover:underline">
+                            {deal.phone_number}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-orange-200">
+                      <p className="text-xs text-orange-700">
+                        💡 매장 방문 시 이 페이지를 보여주세요
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 인원 모집 특가: 참여 가능 상태 - 모집 중이고 참여하지 않은 경우 */}
+            {deal.deal_type !== 'time_based' &&
+             deal.status === 'recruiting' &&
              !deal.is_participated &&
              !isExpired &&
              deal.current_participants < deal.target_participants &&
