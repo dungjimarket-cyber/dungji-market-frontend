@@ -1292,14 +1292,16 @@ export default function CreateCustomDealPage() {
             <div>
               <Label>가격 유형 *</Label>
               <RadioGroup
-                value={formData.pricing_type}
+                value={formData.deal_type === 'time_based' ? 'time_based' : formData.pricing_type}
                 onValueChange={(value) => {
-                  handleInputChange('pricing_type', value);
-                  // pricing_type이 time_based면 deal_type도 time_based로 자동 설정
+                  // 기간특가 선택 시
                   if (value === 'time_based') {
                     handleInputChange('deal_type', 'time_based');
+                    handleInputChange('pricing_type', 'coupon_only'); // 백엔드는 coupon_only로 받음
                   } else {
+                    // 일반 pricing_type 선택 시
                     handleInputChange('deal_type', 'participant_based');
+                    handleInputChange('pricing_type', value);
                   }
                 }}
                 className="flex flex-wrap gap-4 mt-2"
@@ -1321,7 +1323,7 @@ export default function CreateCustomDealPage() {
                   <Label htmlFor="time_based" className="cursor-pointer text-orange-700">기간특가</Label>
                 </div>
               </RadioGroup>
-              {formData.pricing_type === 'time_based' && (
+              {formData.deal_type === 'time_based' && (
                 <p className="text-xs text-gray-600 mt-2">
                   💡 인원제한 없이 정해진 기간동안 제공되는 할인 혜택
                 </p>
@@ -1423,14 +1425,14 @@ export default function CreateCustomDealPage() {
             )}
 
             {/* 가격 입력 안내 */}
-            {formData.pricing_type !== 'coupon_only' && formData.pricing_type !== 'time_based' && (
+            {formData.pricing_type !== 'coupon_only' && formData.deal_type !== 'time_based' && (
               <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
                 💡 공구 전용 할인가로 입력해주세요
               </div>
             )}
 
             {/* 쿠폰전용 안내 */}
-            {formData.pricing_type === 'coupon_only' && (
+            {formData.pricing_type === 'coupon_only' && formData.deal_type !== 'time_based' && (
               <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
                 💡 쿠폰전용은 구매과정없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
               </div>
