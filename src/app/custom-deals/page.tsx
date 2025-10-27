@@ -77,8 +77,7 @@ export default function CustomDealsPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // 필터 상태
-  const [selectedDealType, setSelectedDealType] = useState<'all' | 'participant_based' | 'time_based'>('all'); // 특가 유형
-  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline' | 'coupon_only'>('all');
+  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline' | 'coupon_only' | 'time_based'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState(''); // 지역 검색
@@ -96,7 +95,7 @@ export default function CustomDealsPage() {
   useEffect(() => {
     fetchCategories();
     fetchDeals();
-  }, [selectedDealType, selectedType, selectedCategory, locationQuery]);
+  }, [selectedType, selectedCategory, locationQuery]);
 
   // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
   useEffect(() => {
@@ -123,13 +122,12 @@ export default function CustomDealsPage() {
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`;
       const params = new URLSearchParams();
 
-      // deal_type 필터 추가
-      if (selectedDealType !== 'all') {
-        params.append('deal_type', selectedDealType);
+      // 기간특가 필터
+      if (selectedType === 'time_based') {
+        params.append('deal_type', 'time_based');
       }
-
-      // 쿠폰/이벤트 탭이 아닐 때만 type 파라미터 추가
-      if (selectedType !== 'all' && selectedType !== 'coupon_only') {
+      // 쿠폰/이벤트가 아닐 때만 type 파라미터 추가
+      else if (selectedType !== 'all' && selectedType !== 'coupon_only') {
         params.append('type', selectedType);
       }
 
@@ -352,42 +350,6 @@ export default function CustomDealsPage() {
             </form>
           </div>
 
-          {/* Deal Type Tabs (특가 유형) */}
-          <div className="px-4 pt-3 pb-2 border-b border-gray-200">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedDealType('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
-                  selectedDealType === 'all'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                전체
-              </button>
-              <button
-                onClick={() => setSelectedDealType('participant_based')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
-                  selectedDealType === 'participant_based'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-blue-300 hover:bg-blue-50'
-                }`}
-              >
-                인원 모집 특가
-              </button>
-              <button
-                onClick={() => setSelectedDealType('time_based')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
-                  selectedDealType === 'time_based'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-white text-gray-700 border border-orange-300 hover:bg-orange-50'
-                }`}
-              >
-                기간특가
-              </button>
-            </div>
-          </div>
-
           {/* Filters */}
           <div className="px-4 pb-4 pt-3">
             <div className="flex flex-wrap gap-2">
@@ -432,6 +394,16 @@ export default function CustomDealsPage() {
               >
                 쿠폰/이벤트
               </button>
+              <button
+                onClick={() => setSelectedType('time_based')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedType === 'time_based'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-white text-gray-700 border border-orange-300 hover:bg-orange-50'
+                }`}
+              >
+                기간특가
+              </button>
 
               {/* Sort Type Filter */}
               <select
@@ -457,8 +429,8 @@ export default function CustomDealsPage() {
                 ))}
               </select>
 
-              {/* Location Filter (오프라인 공구용, 쿠폰/이벤트 탭에서는 숨김) */}
-              {selectedType !== 'online' && selectedType !== 'coupon_only' && (
+              {/* Location Filter (오프라인 공구용, 쿠폰/이벤트/기간특가 탭에서는 숨김) */}
+              {selectedType !== 'online' && selectedType !== 'coupon_only' && selectedType !== 'time_based' && (
                 <input
                   type="text"
                   placeholder="지역 검색"
@@ -502,15 +474,22 @@ export default function CustomDealsPage() {
                 // 취소된 공구는 항상 제외
                 if (deal.status === 'cancelled') return false;
 
+                // 기간특가 탭: deal_type이 time_based인 것만
+                if (selectedType === 'time_based') {
+                  if (deal.deal_type !== 'time_based') return false;
+                  return showClosedDeals || deal.status === 'recruiting';
+                }
+
                 // 쿠폰/이벤트 탭: pricing_type이 coupon_only인 것만
                 if (selectedType === 'coupon_only') {
                   if (deal.pricing_type !== 'coupon_only') return false;
                   return showClosedDeals || deal.status === 'recruiting';
                 }
 
-                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only 제외
+                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only와 time_based 제외
                 if (selectedType === 'online' || selectedType === 'offline') {
                   if (deal.pricing_type === 'coupon_only') return false;
+                  if (deal.deal_type === 'time_based') return false;
                 }
 
                 // 전체 탭: 모든 타입 표시 (쿠폰전용 포함)
