@@ -885,9 +885,7 @@ export default function CreateCustomDealPage() {
           if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
           submitFormData.append('phone_number', formData.phone_number);
         }
-        // 더미 값 (백엔드 필드 검증용)
-        submitFormData.append('target_participants', '1');
-        submitFormData.append('allow_partial_sale', 'false');
+        // target_participants는 보내지 않음 (백엔드에서 null 허용)
       } else {
         // 인원 모집 특가만: 목표 인원, 부분 판매
         submitFormData.append('target_participants', formData.target_participants);

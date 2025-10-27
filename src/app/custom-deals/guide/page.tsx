@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronDown, ChevronUp, Users, ShoppingCart, AlertCircle, CheckCircle2, XCircle, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, ShoppingCart, AlertCircle, CheckCircle2, XCircle, Info, Clock, FileSpreadsheet, MessageCircle } from 'lucide-react';
 
 interface Section {
   id: string;
@@ -95,6 +95,33 @@ export default function CustomDealsGuidePage() {
             <p className="text-xs text-gray-700">
               • 구매과정없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
             </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 p-3.5 rounded-lg border-2 border-orange-200">
+            <h4 className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-1.5">
+              <Clock className="w-4 h-4" />
+              기간특가 방식 (NEW)
+            </h4>
+            <div className="space-y-2">
+              <div className="bg-white p-2.5 rounded-md">
+                <p className="text-xs text-gray-800 font-medium mb-1">🎯 인원 제한 없이 기간 내 누구나 이용</p>
+                <p className="text-xs text-gray-600">
+                  정해진 기간동안 인원 제한 없이 모든 고객에게 동일한 할인 혜택 제공
+                </p>
+              </div>
+              <div className="bg-white p-2.5 rounded-md">
+                <p className="text-xs text-gray-800 font-medium mb-1">⏰ 기간제 운영</p>
+                <p className="text-xs text-gray-600">
+                  타임 세일처럼 특정 기간에만 할인을 제공하고 싶을 때 활용
+                </p>
+              </div>
+              <div className="bg-white p-2.5 rounded-md">
+                <p className="text-xs text-gray-800 font-medium mb-1">✅ 즉시 이용 가능</p>
+                <p className="text-xs text-gray-600">
+                  참여 즉시 할인 링크 또는 코드를 확인하고 바로 사용 가능
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )
@@ -219,11 +246,19 @@ export default function CustomDealsGuidePage() {
               </div>
 
               <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg">
-                <p className="text-xs font-semibold text-blue-900 mb-1">⏱️ 마감 후 판매 결정</p>
-                <p className="text-xs text-blue-800">
-                  모집 마감 후 24시간 이내에 판매 확정/취소 결정<br />
-                  (목표 인원 미달 시 부분 판매 여부 선택 가능)
-                </p>
+                <p className="text-xs font-semibold text-blue-900 mb-1.5">⏱️ 24시간 판매 결정</p>
+                <div className="space-y-1.5 text-xs text-blue-800">
+                  <p>모집 마감 후 24시간 이내에 판매 확정/취소 결정</p>
+                  <div className="bg-blue-100 p-2 rounded">
+                    <p className="font-semibold mb-0.5">💡 부분 판매 허용 옵션</p>
+                    <p>공구 등록 시 "부분 판매 허용"을 활성화하면,<br/>
+                    목표 인원 미달 시에도 모인 인원만으로 판매 진행 가능</p>
+                  </div>
+                  <p className="text-[11px] text-blue-700 mt-1">
+                    • 인원 달성 실패 시: 부분 판매 또는 전체 취소 선택<br/>
+                    • 미결정 시: 자동으로 전체 취소 처리
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -247,6 +282,51 @@ export default function CustomDealsGuidePage() {
                 </p>
               </div>
             </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">4</span>
+              참여자 관리
+            </h4>
+            <div className="ml-7 space-y-2">
+              <div className="space-y-1 text-xs text-gray-700">
+                <p>• 마이페이지에서 참여자 목록 실시간 확인</p>
+                <p>• 할인코드 사용 여부 및 유효기간 관리</p>
+                <p>• 참여자별 연락처 및 할인 정보 조회</p>
+              </div>
+              <div className="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg">
+                <p className="text-xs font-semibold text-indigo-900 mb-1.5 flex items-center gap-1.5">
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  엑셀 다운로드 지원
+                </p>
+                <p className="text-xs text-indigo-800">
+                  참여자 관리 페이지에서 참여자 목록을 엑셀 파일로<br/>
+                  다운로드하여 오프라인에서도 쉽게 관리할 수 있습니다
+                </p>
+                <p className="text-[11px] text-indigo-700 bg-indigo-100 p-1.5 rounded mt-1.5">
+                  💡 포함 정보: 닉네임, 연락처, 할인코드, 할인링크, 유효기간, 사용여부
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-3.5 rounded-lg border-2 border-purple-200">
+            <h4 className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4" />
+              등록이 어려우신가요?
+            </h4>
+            <div className="bg-white p-2.5 rounded-md">
+              <p className="text-xs text-gray-800 leading-relaxed">
+                <span className="font-semibold">등록 대행 서비스</span>를 이용해보세요!<br/>
+                커스텀 공구 등록이 복잡하거나 도움이 필요하신 경우<br/>
+                <span className="font-semibold text-purple-700">둥지마켓 카카오톡 채널</span>로 문의주시면<br/>
+                담당자가 친절하게 등록을 도와드립니다 🙌
+              </p>
+            </div>
+            <p className="text-[11px] text-purple-700 mt-2 text-center">
+              📱 카카오톡 채널에서 "등록 대행 요청"을 남겨주세요
+            </p>
           </div>
         </div>
       )

@@ -127,6 +127,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
       console.log('[EDIT] 권한 확인 완료');
 
+      // 상태 체크 (완료/취소/만료된 공구는 수정 불가)
+      if (data.status === 'completed' || data.status === 'cancelled' || data.status === 'expired') {
+        const statusText = data.status === 'completed' ? '완료된' : data.status === 'cancelled' ? '취소된' : '만료된';
+        toast.error(`${statusText} 공구는 수정할 수 없습니다`);
+        router.push('/custom-deals/my');
+        return;
+      }
+
       setOriginalData(data);
       setHasParticipants(data.current_participants > 0);
 
@@ -241,6 +249,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       JSON.stringify(discountCodes) !== JSON.stringify(originalData.discount_codes || ['']);
 
     if (discountInfoChanged) {
+      setHasChanges(true);
+      return;
+    }
+
+    // 부분 판매 옵션 변경 체크 (항상 수정 가능)
+    if (formData.allow_partial_sale !== originalData.allow_partial_sale) {
       setHasChanges(true);
       return;
     }
@@ -487,9 +501,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
   // 폼 입력 핸들러
   const handleInputChange = (field: string, value: any) => {
-    // 참여자가 있을 때는 제목, 설명, 이용안내만 수정 가능 (할인정보는 별도 처리)
-    if (hasParticipants && !['title', 'description', 'usage_guide', 'discount_url', 'discount_valid_days', 'offline_discount_valid_days'].includes(field)) {
-      toast.error('참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인정보만 수정 가능합니다');
+    // 참여자가 있을 때는 제목, 설명, 이용안내, 할인정보, 부분 판매 옵션만 수정 가능
+    if (hasParticipants && !['title', 'description', 'usage_guide', 'discount_url', 'discount_valid_days', 'offline_discount_valid_days', 'allow_partial_sale'].includes(field)) {
+      toast.error('참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인정보, 부분 판매 옵션만 수정 가능합니다');
       return;
     }
 
@@ -669,12 +683,14 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
       }
 
+      // 부분 판매 옵션 (항상 수정 가능)
+      submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
+
       // 참여자가 없을 때만 다른 필드 수정 가능 (단, type/target_participants는 제외)
       if (!hasParticipants) {
         // ❌ 수정 불가능 필드는 전송하지 않음: type, target_participants, discount_codes
         submitFormData.append('categories', JSON.stringify([selectedCategory]));
         submitFormData.append('pricing_type', formData.pricing_type);
-        submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
         // 가격 정보 - coupon_only는 가격 정보 불필요
         if (formData.pricing_type === 'coupon_only') {
@@ -817,7 +833,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div>
                   <h3 className="font-medium text-gray-900 mb-1">수정 제한 안내</h3>
                   <p className="text-sm text-gray-700">
-                    참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인 정보만 수정 가능합니다
+                    참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인 정보, 부분 판매 옵션만 수정 가능합니다
                   </p>
                 </div>
               </div>
@@ -996,6 +1012,32 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 </div>
               </RadioGroup>
               <p className="text-xs text-slate-500 mt-1">공구 유형은 수정할 수 없습니다</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 부분 판매 허용 옵션 (항상 표시, 기간특가는 비활성화) */}
+        <Card className="mb-6 border-slate-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              판매 옵션
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+              <div className="flex-1">
+                <p className="font-medium text-slate-900">부분 판매 허용</p>
+                <p className="text-sm text-slate-500">인원 미달 시 24시간 내 판매 여부 선택 가능</p>
+                {originalData?.deal_type === 'time_based' && (
+                  <p className="text-xs text-orange-600 mt-1">기간특가는 부분 판매 옵션을 사용할 수 없습니다</p>
+                )}
+              </div>
+              <Switch
+                checked={formData.allow_partial_sale}
+                onCheckedChange={(checked) => handleInputChange('allow_partial_sale', checked)}
+                disabled={originalData?.deal_type === 'time_based'}
+              />
             </div>
           </CardContent>
         </Card>
@@ -1179,17 +1221,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-slate-900">부분 판매 허용</p>
-                    <p className="text-sm text-slate-500">인원 미달 시 24시간 내 판매 여부 선택 가능</p>
-                  </div>
-                  <Switch
-                    checked={formData.allow_partial_sale}
-                    onCheckedChange={(checked) => handleInputChange('allow_partial_sale', checked)}
-                  />
                 </div>
               </CardContent>
             </Card>

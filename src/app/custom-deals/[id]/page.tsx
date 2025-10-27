@@ -384,6 +384,14 @@ export default function CustomDealDetailPage() {
   const handleDelete = async () => {
     if (!deal) return;
 
+    // 완료/취소/만료된 공구는 삭제 불가
+    if (deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired') {
+      const statusText = deal.status === 'completed' ? '완료된' : deal.status === 'cancelled' ? '취소된' : '만료된';
+      toast.error(`${statusText} 공구는 삭제할 수 없습니다`);
+      router.push('/custom-deals/my');
+      return;
+    }
+
     if (!confirm('정말 삭제하시겠습니까?\n삭제된 공구는 복구할 수 없습니다.')) {
       return;
     }
@@ -1176,7 +1184,16 @@ export default function CustomDealDetailPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/custom-deals/${deal.id}/edit`)}
+                    onClick={() => {
+                      // 완료/취소/만료된 공구는 수정 불가
+                      if (deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired') {
+                        const statusText = deal.status === 'completed' ? '완료된' : deal.status === 'cancelled' ? '취소된' : '만료된';
+                        toast.error(`${statusText} 공구는 수정할 수 없습니다`);
+                        router.push('/custom-deals/my');
+                        return;
+                      }
+                      router.push(`/custom-deals/${deal.id}/edit`);
+                    }}
                     className="flex items-center justify-center gap-1.5"
                   >
                     <Edit className="w-4 h-4" />
