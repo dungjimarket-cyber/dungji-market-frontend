@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import QRScanner from '@/components/custom/QRScanner';
+import * as XLSX from 'xlsx';
 
 interface Participant {
   id: number;
@@ -248,7 +249,7 @@ export default function ParticipantsManagePage() {
       const data = await response.json();
       const allParticipants = data.results || data;
 
-      // CSV 생성
+      // 엑셀 데이터 생성
       const headers = ['번호', '닉네임', '연락처', '할인코드', '할인링크', '유효기간', '사용여부'];
       const rows = allParticipants.map((p: Participant, index: number) => {
         const validityText = p.discount_valid_until
@@ -264,7 +265,7 @@ export default function ParticipantsManagePage() {
         return [
           index + 1,
           p.user_name,
-          p.phone_number || '-',
+          p.phone_number || '-', // 연락처는 텍스트로 유지됨
           p.discount_code || '-',
           p.discount_url || '-',
           validityText,
@@ -272,21 +273,36 @@ export default function ParticipantsManagePage() {
         ];
       });
 
-      // CSV 문자열 생성 (UTF-8 BOM 추가로 한글 깨짐 방지)
-      const csvContent = '\uFEFF' + [headers, ...rows]
-        .map(row => row.map((cell: string | number) => `"${cell}"`).join(','))
-        .join('\n');
+      // 워크시트 생성
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-      // Blob 생성 및 다운로드
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `참여자목록_${deal?.title}_${new Date().toLocaleDateString('ko-KR')}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // 열 너비 자동 조정
+      const colWidths = headers.map((_, colIndex) => {
+        const columnData = [headers[colIndex], ...rows.map((row: (string | number)[]) => String(row[colIndex] || ''))];
+        const maxLength = Math.max(...columnData.map(cell => String(cell).length));
+        return { wch: Math.min(maxLength + 2, 50) }; // 최대 50자로 제한
+      });
+      ws['!cols'] = colWidths;
+
+      // 헤더 스타일 (굵게)
+      const headerRange = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+        if (!ws[cellAddress]) continue;
+        ws[cellAddress].s = {
+          font: { bold: true },
+          fill: { fgColor: { rgb: "CCCCCC" } },
+          alignment: { horizontal: "center", vertical: "center" }
+        };
+      }
+
+      // 워크북 생성
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '참여자목록');
+
+      // 파일 다운로드
+      const fileName = `참여자목록_${deal?.title}_${new Date().toLocaleDateString('ko-KR')}.xlsx`;
+      XLSX.writeFile(wb, fileName);
 
       toast.success('참여자 목록을 다운로드했습니다');
     } catch (error) {
