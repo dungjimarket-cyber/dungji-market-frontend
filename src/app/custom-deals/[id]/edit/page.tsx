@@ -163,10 +163,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           return '';
         })(),
         target_participants: data.target_participants?.toString() || '2',
-        deadline_type: 'auto',
+        deadline_type: 'manual',
         deadline_days: '3',
-        deadline_date: '',
-        deadline_time: '',
+        deadline_date: data.expired_at ? new Date(data.expired_at).toISOString().split('T')[0] : '',
+        deadline_time: data.expired_at ? new Date(data.expired_at).toTimeString().slice(0, 5) : '',
         allow_partial_sale: data.allow_partial_sale || false,
         online_discount_type: data.online_discount_type || 'link_only',
         discount_url: data.discount_url || '',
@@ -686,6 +686,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // 부분 판매 옵션 (항상 수정 가능)
       submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
+      // 기간특가: 등록 기간 수정 가능
+      if (originalData?.deal_type === 'time_based' && formData.deadline_date && formData.deadline_time) {
+        const deadlineDateTime = new Date(`${formData.deadline_date}T${formData.deadline_time}`);
+        submitFormData.append('expired_at', deadlineDateTime.toISOString());
+      }
+
       // 참여자가 없을 때만 다른 필드 수정 가능 (단, type/target_participants는 제외)
       if (!hasParticipants) {
         // ❌ 수정 불가능 필드는 전송하지 않음: type, target_participants, discount_codes
@@ -1041,6 +1047,53 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             </div>
           </CardContent>
         </Card>
+
+        {/* 등록기간 수정 (기간특가만) */}
+        {originalData?.deal_type === 'time_based' && (
+          <Card className="mb-6 border-orange-200 bg-orange-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-900">
+                <Clock className="w-5 h-5" />
+                등록 기간 수정
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-orange-100 border border-orange-200 p-3 rounded-lg">
+                <p className="text-sm text-orange-900 font-medium">
+                  기간특가는 등록 기간을 수정할 수 있습니다
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-700">마감 날짜 *</Label>
+                  <Input
+                    type="date"
+                    value={formData.deadline_date}
+                    onChange={(e) => handleInputChange('deadline_date', e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className={errors.deadline_date ? 'border-red-300' : ''}
+                  />
+                  {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-700">마감 시간 *</Label>
+                  <Input
+                    type="time"
+                    value={formData.deadline_time}
+                    onChange={(e) => handleInputChange('deadline_time', e.target.value)}
+                    className={errors.deadline_time ? 'border-red-300' : ''}
+                  />
+                  {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600">
+                💡 현재 시간 기준으로 1시간 이후부터 설정 가능합니다
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 참여자가 없을 때만 나머지 필드 표시 */}
         {!hasParticipants && (

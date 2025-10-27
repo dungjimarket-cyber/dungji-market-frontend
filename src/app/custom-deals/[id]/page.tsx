@@ -924,8 +924,8 @@ export default function CustomDealDetailPage() {
                   </div>
                 )}
 
-                {/* 안내 문구 (쿠폰전용 제외) */}
-                {deal.pricing_type !== 'coupon_only' && (
+                {/* 안내 문구 (쿠폰전용 제외, 기간특가 제외) */}
+                {deal.pricing_type !== 'coupon_only' && deal.deal_type !== 'time_based' && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
                     <p className="text-xs text-slate-500 text-center">
                       인원 마감 기준 특가 (인원 미달시 판매가 취소될 수 있습니다)
@@ -935,50 +935,52 @@ export default function CustomDealDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Progress - 눈에 띄는 디자인 */}
-            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-md">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-blue-600 rounded-full p-1.5">
-                      <Users className="w-5 h-5 text-white" />
+            {/* Progress - 눈에 띄는 디자인 (인원 모집 특가만) */}
+            {deal.deal_type !== 'time_based' && (
+              <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-md">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-blue-600 rounded-full p-1.5">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-600 mb-0.5">현재 참여 인원</p>
+                        <span className="text-lg font-bold text-blue-600">
+                          {deal.current_participants}명
+                        </span>
+                        <span className="text-sm text-slate-600"> / {deal.target_participants}명</span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-600 mb-0.5">현재 참여 인원</p>
-                      <span className="text-lg font-bold text-blue-600">
-                        {deal.current_participants}명
-                      </span>
-                      <span className="text-sm text-slate-600"> / {deal.target_participants}명</span>
+                    <div className="flex items-center gap-1.5 text-slate-600 text-sm bg-white px-3 py-1.5 rounded-full border border-slate-200">
+                      <Clock className="w-4 h-4" />
+                      <CountdownTimer
+                        endTime={deal.expired_at}
+                        onExpire={() => setIsExpired(true)}
+                        format="compact"
+                        showLabel={false}
+                        className="font-medium"
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 text-sm bg-white px-3 py-1.5 rounded-full border border-slate-200">
-                    <Clock className="w-4 h-4" />
-                    <CountdownTimer
-                      endTime={deal.expired_at}
-                      onExpire={() => setIsExpired(true)}
-                      format="compact"
-                      showLabel={false}
-                      className="font-medium"
+                  <div className="w-full bg-slate-200 rounded-full h-3 shadow-inner">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        progress >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                        progress >= 80 ? 'bg-gradient-to-r from-orange-500 to-red-500' :
+                        'bg-gradient-to-r from-blue-500 to-blue-600'
+                      }`}
+                      style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-3 shadow-inner">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-300 ${
-                      progress >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                      progress >= 80 ? 'bg-gradient-to-r from-orange-500 to-red-500' :
-                      'bg-gradient-to-r from-blue-500 to-blue-600'
-                    }`}
-                    style={{ width: `${Math.min(progress, 100)}%` }}
-                  />
-                </div>
-                <p className="text-sm font-semibold text-blue-600 mt-2">
-                  {Math.round(progress)}% 달성
-                  {progress >= 100 && ' 🎉'}
-                  {progress >= 80 && progress < 100 && ' 🔥'}
-                </p>
-              </CardContent>
-            </Card>
+                  <p className="text-sm font-semibold text-blue-600 mt-2">
+                    {Math.round(progress)}% 달성
+                    {progress >= 100 && ' 🎉'}
+                    {progress >= 80 && progress < 100 && ' 🔥'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Categories */}
             <Card className="border-slate-200">
