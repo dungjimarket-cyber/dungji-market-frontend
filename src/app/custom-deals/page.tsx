@@ -251,9 +251,13 @@ export default function CustomDealsPage() {
 
   const getStatusBadge = (deal: CustomDeal) => {
     if (deal.status === 'completed') {
-      return <Badge className="bg-red-50 text-red-600 border-red-200 whitespace-nowrap">선착순 마감</Badge>;
+      const badgeText = deal.deal_type === 'time_based' ? '마감' : '선착순 마감';
+      return <Badge className="bg-red-50 text-red-600 border-red-200 whitespace-nowrap">{badgeText}</Badge>;
     }
     if (deal.status === 'recruiting') {
+      if (deal.deal_type === 'time_based') {
+        return <Badge className="bg-orange-50 text-orange-600 border-orange-200 whitespace-nowrap">진행중</Badge>;
+      }
       const progress = (deal.current_participants / deal.target_participants) * 100;
       if (progress >= 80) {
         return <Badge className="bg-orange-50 text-orange-600 border-orange-200 whitespace-nowrap">마감 임박</Badge>;
@@ -558,7 +562,7 @@ export default function CustomDealsPage() {
                       </Badge>
                       {deal.deal_type === 'time_based' && (
                         <Badge className="bg-orange-500 text-white border-0 whitespace-nowrap text-xs">
-                          기간특가
+                          기간한정특가
                         </Badge>
                       )}
                     </div>
