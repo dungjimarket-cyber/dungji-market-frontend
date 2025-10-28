@@ -913,6 +913,10 @@ export default function CustomDealDetailPage() {
                         ? ((deal.final_price as any).min || 0).toLocaleString()
                         : deal.final_price.toLocaleString()}원
                     </div>
+                    {/* 오프라인 커공특가 안내 */}
+                    {deal.deal_type !== 'time_based' && deal.type === 'offline' && (
+                      <p className="text-xs text-slate-600 mt-2">매장 이용시 특별 할인 제공.</p>
+                    )}
 </>
                 ) : (
                   <div className="text-center">
@@ -946,8 +950,9 @@ export default function CustomDealDetailPage() {
                             {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                           </span>
                         </div>
-                        {deal.deal_type !== 'time_based' && (
-                          <p className="text-xs text-slate-600">매장에서 직접 할인 받으세요</p>
+                        {/* 오프라인 커공특가 안내 */}
+                        {deal.deal_type !== 'time_based' && deal.type === 'offline' && (
+                          <p className="text-xs text-slate-600">매장 이용시 특별 할인 제공.</p>
                         )}
                       </>
                     ) : (
