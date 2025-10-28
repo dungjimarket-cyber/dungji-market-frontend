@@ -618,14 +618,33 @@ export default function CreateCustomDealPage() {
         newErrors.deadline_time = '마감 시간을 선택해주세요';
       }
 
-      // 오프라인: 매장 위치 필수
+      // 온라인: 할인 링크 필수
+      if (formData.type === 'online') {
+        if (!formData.discount_url.trim()) {
+          newErrors.discount_url = '할인링크/참여방법을 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = discountUrlRef;
+        }
+      }
+
+      // 오프라인: 매장 위치 및 연락처 필수
       if (formData.type === 'offline') {
         if (!formData.location.trim()) {
           newErrors.location = '매장 위치를 입력해주세요';
           if (!firstErrorRef) firstErrorRef = locationRef;
         }
+        if (formData.location.length > 150) {
+          newErrors.location = '매장 위치는 최대 150자까지 입력 가능합니다';
+          if (!firstErrorRef) firstErrorRef = locationRef;
+        }
+        if (!formData.phone_number.trim()) {
+          newErrors.phone_number = '연락처를 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = phoneNumberRef;
+        }
+        if (formData.phone_number.length > 20) {
+          newErrors.phone_number = '연락처는 최대 20자까지 입력 가능합니다';
+          if (!firstErrorRef) firstErrorRef = phoneNumberRef;
+        }
       }
-      // 온라인: 할인 링크는 선택사항 (가격 정보가 있으면 됨)
 
       // 에러가 있으면 포커스 이동 후 종료
       if (Object.keys(newErrors).length > 0) {

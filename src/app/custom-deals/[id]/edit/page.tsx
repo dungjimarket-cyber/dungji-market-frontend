@@ -1150,10 +1150,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <RadioGroupItem value="all_products" id="edit-all" />
                       <Label htmlFor="edit-all" className="cursor-pointer">전품목 할인</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="coupon_only" id="edit-coupon" />
-                      <Label htmlFor="edit-coupon" className="cursor-pointer">쿠폰전용</Label>
-                    </div>
+                    {/* 기간특가에서는 쿠폰전용 숨김 */}
+                    {originalData?.deal_type !== 'time_based' && (
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="coupon_only" id="edit-coupon" />
+                        <Label htmlFor="edit-coupon" className="cursor-pointer">쿠폰전용</Label>
+                      </div>
+                    )}
                   </RadioGroup>
                   <p className="text-xs text-slate-500 mt-1">
                     {formData.pricing_type === 'single_product'
