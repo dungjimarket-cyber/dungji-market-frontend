@@ -615,19 +615,29 @@ export default function CustomDealsPage() {
                                   {deal.product_name}
                                 </div>
                               )}
-                              <div className="flex items-baseline gap-1.5 flex-wrap">
-                                <span className="text-xs text-slate-500 line-through">
-                                  {deal.original_price.toLocaleString()}원
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-base font-bold text-red-600">
-                                    {deal.discount_rate}%
-                                  </span>
+                              {deal.discount_rate > 0 ? (
+                                <>
+                                  <div className="flex items-baseline gap-1.5 flex-wrap">
+                                    <span className="text-xs text-slate-500 line-through">
+                                      {deal.original_price.toLocaleString()}원
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-base font-bold text-red-600">
+                                        {deal.discount_rate}%
+                                      </span>
+                                      <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                        기간특가
+                                      </span>
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex items-center justify-end mb-1">
                                   <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
                                     기간특가
                                   </span>
                                 </div>
-                              </div>
+                              )}
                               <div className="text-xl font-bold text-slate-900">
                                 {deal.final_price.toLocaleString()}원
                               </div>
@@ -651,19 +661,29 @@ export default function CustomDealsPage() {
                               {deal.product_name}
                             </div>
                           )}
-                          <div className="flex items-baseline gap-1.5 flex-wrap">
-                            <span className="text-xs text-slate-500 line-through">
-                              {deal.original_price.toLocaleString()}원
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-base font-bold text-red-600">
-                                {deal.discount_rate}%
-                              </span>
+                          {deal.discount_rate > 0 ? (
+                            <>
+                              <div className="flex items-baseline gap-1.5 flex-wrap">
+                                <span className="text-xs text-slate-500 line-through">
+                                  {deal.original_price.toLocaleString()}원
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-base font-bold text-red-600">
+                                    {deal.discount_rate}%
+                                  </span>
+                                  <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                    커공특가
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-center justify-end mb-1">
                               <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
                                 커공특가
                               </span>
                             </div>
-                          </div>
+                          )}
                           <div className="text-xl font-bold text-slate-900">
                             {deal.final_price.toLocaleString()}원
                           </div>
@@ -678,14 +698,22 @@ export default function CustomDealsPage() {
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-lg font-bold text-blue-600">
-                            전품목 {deal.discount_rate}% 할인
-                          </span>
-                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                            커공특가
-                          </span>
-                        </div>
+                        deal.discount_rate > 0 ? (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-lg font-bold text-blue-600">
+                              전품목 {deal.discount_rate}% 할인
+                            </span>
+                            <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                              커공특가
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end">
+                            <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                              커공특가
+                            </span>
+                          </div>
+                        )
                       )}
                     </div>
 

@@ -307,22 +307,37 @@ function HomeContent() {
                               </div>
                             ) : deal.original_price && deal.final_price ? (
                               <>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-lg sm:text-xl font-bold text-red-600">
-                                    {deal.discount_rate}%
-                                  </span>
-                                  {/* 기간특가 vs 커공특가 배지 구분 */}
-                                  <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
-                                    deal.deal_type === 'time_based'
-                                      ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                      : 'bg-gradient-to-r from-emerald-500 to-green-500'
-                                  }`}>
-                                    {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
-                                  </span>
-                                </div>
-                                <div className="text-xs text-slate-500 line-through mb-1">
-                                  {deal.original_price.toLocaleString()}원
-                                </div>
+                                {deal.discount_rate > 0 ? (
+                                  <>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-lg sm:text-xl font-bold text-red-600">
+                                        {deal.discount_rate}%
+                                      </span>
+                                      {/* 기간특가 vs 커공특가 배지 구분 */}
+                                      <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                                        deal.deal_type === 'time_based'
+                                          ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                          : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                      }`}>
+                                        {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-slate-500 line-through mb-1">
+                                      {deal.original_price.toLocaleString()}원
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="flex items-center justify-end mb-1">
+                                    {/* 할인율 0%: 배지만 오른쪽 정렬 */}
+                                    <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                                      deal.deal_type === 'time_based'
+                                        ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                        : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                    }`}>
+                                      {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                    </span>
+                                  </div>
+                                )}
                                 <div className="text-lg sm:text-xl font-bold text-slate-900">
                                   {typeof deal.final_price === 'object' && deal.final_price !== null
                                     ? ((deal.final_price as any).min || 0).toLocaleString()
@@ -331,19 +346,32 @@ function HomeContent() {
                               </>
                             ) : (
                               <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg font-bold text-blue-600">
-                                    {deal.discount_rate}% 할인
-                                  </span>
-                                  {/* 기간특가 vs 커공특가 배지 구분 */}
-                                  <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
-                                    deal.deal_type === 'time_based'
-                                      ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                      : 'bg-gradient-to-r from-emerald-500 to-green-500'
-                                  }`}>
-                                    {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
-                                  </span>
-                                </div>
+                                {deal.discount_rate > 0 ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg font-bold text-blue-600">
+                                      {deal.discount_rate}% 할인
+                                    </span>
+                                    {/* 기간특가 vs 커공특가 배지 구분 */}
+                                    <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                                      deal.deal_type === 'time_based'
+                                        ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                        : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                    }`}>
+                                      {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-end">
+                                    {/* 할인율 0%: 배지만 오른쪽 정렬 */}
+                                    <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                                      deal.deal_type === 'time_based'
+                                        ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                        : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                    }`}>
+                                      {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                    </span>
+                                  </div>
+                                )}
                                 <div className="text-xs text-gray-600">전품목</div>
                               </div>
                             )}
