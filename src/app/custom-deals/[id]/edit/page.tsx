@@ -1285,26 +1285,28 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </Card>
             )}
 
-            {/* 기간특가 온라인 - 할인 링크만 */}
-            {formData.type === 'online' && originalData?.deal_type === 'time_based' && (
-              <Card className="mb-6 border-slate-200">
+            {/* 기간특가 - 할인 링크 */}
+            {originalData?.deal_type === 'time_based' && (
+              <Card className="mb-6 border-orange-200 bg-orange-50/30">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
                     <LinkIcon className="w-5 h-5" />
-                    할인 링크 (선택사항)
+                    {formData.type === 'online' ? '할인 링크 *' : '이벤트/행사 안내 링크'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label className="flex items-baseline gap-2">
-                      할인링크/참여방법안내
-                      <span className="text-xs text-slate-500 font-normal">(선택사항)</span>
+                    <Label>
+                      {formData.type === 'online'
+                        ? '할인이 적용된 구매 링크 *'
+                        : '이벤트/행사 안내 링크 (선택사항)'}
                     </Label>
                     <Input
                       value={formData.discount_url}
                       onChange={(e) => setFormData(prev => ({ ...prev, discount_url: e.target.value }))}
-                      placeholder="할인 링크 또는 참여방식을 입력해주세요"
+                      placeholder="https://..."
                       maxLength={500}
+                      className="bg-white"
                     />
                     <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
                   </div>
@@ -1316,7 +1318,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
                   <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
                     <p className="text-xs text-orange-800 leading-relaxed">
-                      💡 기간특가는 가격 정보만으로도 등록 가능하며, 할인 링크는 선택사항입니다.
+                      💡 {formData.type === 'online'
+                        ? '행사 진행중인 판매링크를 입력해주세요'
+                        : '매장 행사 정보를 확인할 수 있는 링크를 입력해주세요 (선택사항)'}
                     </p>
                   </div>
                 </CardContent>

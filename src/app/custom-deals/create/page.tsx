@@ -1471,24 +1471,30 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 기간특가: 할인 링크 (선택사항) */}
+        {/* 기간특가: 할인 링크 */}
         {formData.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-700">
                 <LinkIcon className="w-5 h-5" />
-                할인 링크 (선택사항)
+                {formData.type === 'online' ? '할인 링크 *' : '이벤트/행사 안내 링크'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div>
-                <Label>할인이 적용된 구매 링크 (선택사항)</Label>
+                <Label>
+                  {formData.type === 'online'
+                    ? '할인이 적용된 구매 링크 *'
+                    : '이벤트/행사 안내 링크 (선택사항)'}
+                </Label>
                 <Input
                   value={formData.discount_url}
                   onChange={(e) => handleInputChange('discount_url', e.target.value)}
                   placeholder="https://..."
-                  className="bg-white"
+                  className={`bg-white ${errors.discount_url ? 'border-red-300' : ''}`}
+                  ref={discountUrlRef}
                 />
+                {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
 
                 {/* 링크 테스트 버튼 */}
                 {formData.discount_url && formData.discount_url.startsWith('http') && (
@@ -1505,7 +1511,9 @@ export default function CreateCustomDealPage() {
                 )}
 
                 <p className="text-xs text-gray-600 mt-2">
-                  💡 가격 정보만으로도 등록 가능하며, 할인 링크는 선택사항입니다
+                  💡 {formData.type === 'online'
+                    ? '행사 진행중인 판매링크를 입력해주세요'
+                    : '매장 행사 정보를 확인할 수 있는 링크를 입력해주세요 (선택사항)'}
                 </p>
               </div>
             </CardContent>

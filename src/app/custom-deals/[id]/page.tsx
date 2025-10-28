@@ -1103,8 +1103,8 @@ export default function CustomDealDetailPage() {
             {/* 기간특가: 할인 링크 또는 매장 정보 */}
             {deal.deal_type === 'time_based' && !isExpired && (
               <div className="space-y-3">
-                {/* 온라인: 할인 링크 버튼 */}
-                {deal.type === 'online' && deal.discount_url && (
+                {/* discount_url이 있을 때만 버튼 표시 */}
+                {deal.discount_url && (
                   <>
                     <a
                       href={getRedirectUrl(deal.discount_url)}
@@ -1116,17 +1116,19 @@ export default function CustomDealDetailPage() {
                         size="lg"
                         className="w-full font-semibold py-6 bg-orange-600 hover:bg-orange-700 text-white"
                       >
-                        할인 링크로 이동
+                        {deal.type === 'online' ? '할인 링크로 이동' : '이벤트/행사 안내 링크로 이동'}
                       </Button>
                     </a>
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-orange-700 font-medium">
-                          기간 내 바로 구매 가능한 특가 상품 입니다
-                        </p>
+                    {deal.type === 'online' && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-orange-700 font-medium">
+                            기간 내 바로 구매 가능한 특가 상품 입니다
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
 

@@ -118,7 +118,7 @@ export default function CustomDealsGuidePage() {
               <div className="bg-white p-2.5 rounded-md">
                 <p className="text-xs text-gray-800 font-medium mb-1">✅ 즉시 이용 가능</p>
                 <p className="text-xs text-gray-600">
-                  참여 즉시 할인 링크 또는 코드를 확인하고 바로 사용 가능
+                  할인링크로 이동해서 즉시 구매 가능
                 </p>
               </div>
             </div>
