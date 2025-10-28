@@ -840,14 +840,7 @@ export default function CustomDealDetailPage() {
             {/* Price */}
             <Card className="border-slate-200 bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="p-5">
-                {deal.deal_type === 'time_based' ? (
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600 mb-1">
-                      기간 한정 특가
-                    </div>
-                    <p className="text-xs text-slate-600">재고 소진 시 조기 마감될 수 있습니다</p>
-                  </div>
-                ) : deal.pricing_type === 'coupon_only' ? (
+                {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 mb-1">
                       선착순 쿠폰증정
@@ -856,18 +849,21 @@ export default function CustomDealDetailPage() {
                   </div>
                 ) : deal.original_price && deal.final_price ? (
                   <>
-                    <span
-                      className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
-                      style={{
-                        transform: 'rotate(-8deg)',
-                        background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text'
-                      }}
-                    >
-                      모이면 할인!
-                    </span>
+                    {/* 기간특가가 아닐 때만 "모이면 할인!" 표시 */}
+                    {deal.deal_type !== 'time_based' && (
+                      <span
+                        className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
+                        style={{
+                          transform: 'rotate(-8deg)',
+                          background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text'
+                        }}
+                      >
+                        모이면 할인!
+                      </span>
+                    )}
                     {/* products 배열 우선, 없으면 product_name 폴백 */}
                     {deal.products && deal.products.length > 0 && deal.products[0].name && (
                       <div className="text-sm text-slate-700 mb-2 font-medium">
@@ -889,16 +885,26 @@ export default function CustomDealDetailPage() {
                             <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
                               {deal.discount_rate}%
                             </Badge>
-                            <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                              커공특가
+                            {/* 기간특가 vs 커공특가 배지 구분 */}
+                            <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                              deal.deal_type === 'time_based'
+                                ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                            }`}>
+                              {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                             </span>
                           </div>
                         </div>
                       </>
                     ) : (
                       <div className="flex items-center justify-end mb-2">
-                        <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                          커공특가
+                        {/* 기간특가 vs 커공특가 배지 구분 */}
+                        <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                          deal.deal_type === 'time_based'
+                            ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                            : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                        }`}>
+                          {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                         </span>
                       </div>
                     )}
@@ -912,32 +918,47 @@ export default function CustomDealDetailPage() {
                   <div className="text-center">
                     {deal.discount_rate > 0 ? (
                       <>
-                        <span
-                          className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
-                          style={{
-                            transform: 'rotate(-8deg)',
-                            background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text'
-                          }}
-                        >
-                          모이면 할인!
-                        </span>
+                        {/* 기간특가가 아닐 때만 "모이면 할인!" 표시 */}
+                        {deal.deal_type !== 'time_based' && (
+                          <span
+                            className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
+                            style={{
+                              transform: 'rotate(-8deg)',
+                              background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              backgroundClip: 'text'
+                            }}
+                          >
+                            모이면 할인!
+                          </span>
+                        )}
                         <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
                           <span className="text-2xl font-bold text-blue-600">
                             전품목 {deal.discount_rate}% 할인
                           </span>
-                          <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                            커공특가
+                          {/* 기간특가 vs 커공특가 배지 구분 */}
+                          <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                            deal.deal_type === 'time_based'
+                              ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                              : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                          }`}>
+                            {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-600">매장에서 직접 할인 받으세요</p>
+                        {deal.deal_type !== 'time_based' && (
+                          <p className="text-xs text-slate-600">매장에서 직접 할인 받으세요</p>
+                        )}
                       </>
                     ) : (
                       <div className="flex items-center justify-end mb-2">
-                        <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-500 px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                          커공특가
+                        {/* 기간특가 vs 커공특가 배지 구분 */}
+                        <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
+                          deal.deal_type === 'time_based'
+                            ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                            : 'bg-gradient-to-r from-emerald-500 to-green-500'
+                        }`}>
+                          {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
                         </span>
                       </div>
                     )}
