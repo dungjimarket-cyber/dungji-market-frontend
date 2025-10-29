@@ -1135,9 +1135,11 @@ export default function CustomDealDetailPage() {
                         {deal.type === 'online' ? '할인 링크로 이동' : '이벤트/행사 안내 링크로 이동'}
                       </Button>
                     </a>
+                    {/* 클릭수 표시 - 데이터 축적 후 활성화 예정
                     <p className="text-sm text-gray-500 text-center mt-2">
                       {(deal.discount_url_clicks || 0).toLocaleString()}명이 링크를 방문했어요
                     </p>
+                    */}
                     {deal.type === 'online' && (
                       <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                         <div className="flex items-start gap-2">
@@ -1413,9 +1415,11 @@ export default function CustomDealDetailPage() {
                 >
                   할인 링크로 이동
                 </a>
+                {/* 클릭수 표시 - 데이터 축적 후 활성화 예정
                 <p className="text-sm text-gray-500 text-center mt-2">
                   {(deal.discount_url_clicks || 0).toLocaleString()}명이 링크를 방문했어요
                 </p>
+                */}
               </CardContent>
             </Card>
           )}
