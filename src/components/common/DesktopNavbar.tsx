@@ -121,7 +121,7 @@ export default function DesktopNavbar() {
               커공 특가
             </Link>
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
-              같이 견적받기
+              견적서비스
             </Link>
 
             {/* 비로그인 시 */}
