@@ -621,7 +621,7 @@ export default function CreateCustomDealPage() {
       // 온라인: 할인 링크 필수
       if (formData.type === 'online') {
         if (!formData.discount_url.trim()) {
-          newErrors.discount_url = '할인링크/참여방법을 입력해주세요';
+          newErrors.discount_url = '판매링크/참여방법을 입력해주세요';
           if (!firstErrorRef) firstErrorRef = discountUrlRef;
         }
       }
@@ -727,7 +727,7 @@ export default function CreateCustomDealPage() {
     if (formData.type === 'online') {
       if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
         if (!formData.discount_url.trim()) {
-          newErrors.discount_url = '할인링크/참여방법을 입력해주세요';
+          newErrors.discount_url = '판매링크/참여방법을 입력해주세요';
           if (!firstErrorRef) firstErrorRef = discountUrlRef;
         }
       }
@@ -1795,8 +1795,8 @@ export default function CreateCustomDealPage() {
                 <div className="space-y-3">
                   <div>
                     <Label className="flex items-baseline gap-2">
-                      할인링크/참여방법안내 *
-                      <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 구독후 인증샷을 남겨주세요)</span>
+                      판매링크/참여방법안내 *
+                      <span className="text-xs text-slate-500 font-normal">(판매링크 또는 참여방법(텍스트))</span>
                     </Label>
                     <Input
                       ref={discountUrlRef}
@@ -1807,6 +1807,7 @@ export default function CreateCustomDealPage() {
                       maxLength={500}
                     />
                     {errors.discount_url && <p className="text-sm text-red-600 mt-1">{errors.discount_url}</p>}
+                    <p className="text-xs text-slate-500">참여방법 예) 가게에서 둥지에서 왔어요 라고 말씀해주세요</p>
                   </div>
 
                   {/* 링크 테스트 버튼 */}

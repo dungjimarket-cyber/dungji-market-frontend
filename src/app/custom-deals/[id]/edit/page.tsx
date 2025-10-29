@@ -1370,8 +1370,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     <div className="space-y-3">
                       <div>
                         <Label className="flex items-baseline gap-2">
-                          할인링크/참여방법안내 *
-                          <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 카톡채널에 발급받은 할인코드를 제출해주세요)</span>
+                          판매링크/참여방법안내 *
+                          <span className="text-xs text-slate-500 font-normal">(판매링크 또는 참여방법(텍스트))</span>
                         </Label>
                         <Input
                           value={formData.discount_url}
@@ -1380,6 +1380,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           maxLength={500}
                         />
                         <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
+                        <p className="text-xs text-slate-500">참여방법 예) 가게에서 둥지에서 왔어요 라고 말씀해주세요</p>
                       </div>
 
                       {/* 링크 미리보기 */}
@@ -1722,8 +1723,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   <div className="space-y-3">
                     <div>
                       <Label className="flex items-baseline gap-2">
-                        할인링크/참여방법안내 *
-                        <span className="text-xs text-slate-500 font-normal">(예: 둥지마켓 카톡채널에 발급받은 할인코드를 제출해주세요)</span>
+                        판매링크/참여방법안내 *
+                        <span className="text-xs text-slate-500 font-normal">(판매링크 또는 참여방법(텍스트))</span>
                       </Label>
                       <Input
                         value={formData.discount_url}
@@ -1732,6 +1733,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         maxLength={500}
                       />
                       <p className="text-sm text-slate-500 mt-1 text-right">{formData.discount_url.length}/500</p>
+                      <p className="text-xs text-slate-500">참여방법 예) 가게에서 둥지에서 왔어요 라고 말씀해주세요</p>
                     </div>
 
                     {/* 링크 미리보기 */}
