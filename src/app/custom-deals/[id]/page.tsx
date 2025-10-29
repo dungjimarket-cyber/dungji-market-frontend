@@ -1111,6 +1111,16 @@ export default function CustomDealDetailPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block"
+                      onClick={async () => {
+                        // 클릭수 증가 API 호출
+                        try {
+                          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/track_click/`, {
+                            method: 'POST',
+                          });
+                        } catch (error) {
+                          console.error('클릭수 증가 실패:', error);
+                        }
+                      }}
                     >
                       <Button
                         size="lg"
