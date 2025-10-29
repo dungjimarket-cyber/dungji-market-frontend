@@ -84,6 +84,7 @@ function GroupPurchasesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [sellerCategory, setSellerCategory] = useState<string>('');
   
   // 순차 로딩 관련 상태
   const [initialLoading, setInitialLoading] = useState(true); // 초기 4개 로딩
@@ -625,6 +626,7 @@ function GroupPurchasesPageContent() {
       if (user?.role === 'seller') {
         try {
           const sellerProfile = await getSellerProfile();
+          setSellerCategory(sellerProfile.sellerCategory || '');
           // 통신/렌탈 판매자만 입찰 목록 조회
           if (sellerProfile.sellerCategory === 'telecom' || sellerProfile.sellerCategory === 'rental') {
             const bids = await getSellerBids();
@@ -794,22 +796,38 @@ function GroupPurchasesPageContent() {
             </div>
             <div className="flex gap-2">
               {user?.role === 'seller' ? (
+                // 통신/렌탈 판매자: 견적내역
+                (sellerCategory === 'telecom' || sellerCategory === 'rental') ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => router.push('/mypage/seller/bids')}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    견적내역
+                  </Button>
+                ) : (
+                  // 기타 판매자: 견적 서비스 내역
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => router.push('/mypage/seller/groupbuy')}
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    견적 서비스 내역
+                  </Button>
+                )
+              ) : user ? (
+                // 일반 사용자: 견적요청
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => router.push('/mypage/seller/groupbuy')}
+                  onClick={() => router.push('/group-purchases/create')}
+                  className="text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  견적 서비스 내역
+                  견적요청
                 </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => router.push('/mypage/groupbuy')}
-                >
-                  견적 서비스 내역
-                </Button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

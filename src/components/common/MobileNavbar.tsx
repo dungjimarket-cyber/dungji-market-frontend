@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import { FaSearch, FaHome, FaShoppingCart, FaUser, FaSignInAlt, FaChartBar, FaStore, FaExchangeAlt, FaList } from 'react-icons/fa';
-import { FileText, ClipboardList } from 'lucide-react';
+import { FileText, ClipboardList, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import MobileNotificationButton from '@/components/notification/MobileNotificationButton';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
+import { ShoppingSearchModal } from '@/components/shopping/ShoppingSearchModal';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
 
@@ -25,6 +26,7 @@ export default function MobileNavbar() {
   const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
   const [showSellerProfileModal, setShowSellerProfileModal] = useState(false);
   const [sellerMissingFields, setSellerMissingFields] = useState<string[]>([]);
+  const [showShoppingModal, setShowShoppingModal] = useState(false);
 
   // 프로필 체크 Hook 사용
   const {
@@ -113,26 +115,14 @@ export default function MobileNavbar() {
           <span className="text-[10px] font-black-han-sans">홈</span>
         </Link>
 
-        {/* 2. 견적요청/견적내역 - 본인 역할에 맞게 버튼 변경 */}
-        <Link
-          href={isAuthenticated ?
-            (isSeller ? "/mypage/seller/bids" : "/group-purchases/create")
-            : "/login"}
+        {/* 2. 오픈마켓 검색 */}
+        <button
+          onClick={() => setShowShoppingModal(true)}
           className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2"
-          onClick={handleCreateClick}
         >
-          {isSeller ? (
-            <>
-              <ClipboardList className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-black-han-sans">견적내역</span>
-            </>
-          ) : (
-            <>
-              <FileText className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-black-han-sans">견적요청</span>
-            </>
-          )}
-        </Link>
+          <Search className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-black-han-sans">오픈마켓</span>
+        </button>
 
         {/* 3. 견적목록 */}
         <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
@@ -248,6 +238,12 @@ export default function MobileNavbar() {
           window.addEventListener('focus', handleFocus);
           router.push('/mypage/seller/settings');
         }}
+      />
+
+      {/* 오픈마켓 검색 모달 */}
+      <ShoppingSearchModal
+        isOpen={showShoppingModal}
+        onClose={() => setShowShoppingModal(false)}
       />
     </nav>
   );
