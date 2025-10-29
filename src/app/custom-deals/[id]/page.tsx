@@ -1118,6 +1118,11 @@ export default function CustomDealDetailPage() {
                           await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/track_click/`, {
                             method: 'POST',
                           });
+                          // 실시간 UI 업데이트
+                          setDeal(prev => prev ? {
+                            ...prev,
+                            discount_url_clicks: (prev.discount_url_clicks || 0) + 1
+                          } : null);
                         } catch (error) {
                           console.error('클릭수 증가 실패:', error);
                         }
@@ -1396,6 +1401,11 @@ export default function CustomDealDetailPage() {
                       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/track_click/`, {
                         method: 'POST',
                       });
+                      // 실시간 UI 업데이트
+                      setDeal(prev => prev ? {
+                        ...prev,
+                        discount_url_clicks: (prev.discount_url_clicks || 0) + 1
+                      } : null);
                     } catch (error) {
                       console.error('클릭수 증가 실패:', error);
                     }
