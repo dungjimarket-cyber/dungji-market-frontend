@@ -61,6 +61,7 @@ interface CustomDeal {
   usage_guide: string | null;
   view_count: number;
   favorite_count: number;
+  discount_url_clicks: number;
   images: Array<{
     id: number;
     image_url: string;
@@ -1129,6 +1130,11 @@ export default function CustomDealDetailPage() {
                         {deal.type === 'online' ? '할인 링크로 이동' : '이벤트/행사 안내 링크로 이동'}
                       </Button>
                     </a>
+                    {deal.discount_url_clicks > 0 && (
+                      <p className="text-sm text-gray-500 text-center mt-2">
+                        {deal.discount_url_clicks.toLocaleString()}명이 링크를 방문했어요
+                      </p>
+                    )}
                     {deal.type === 'online' && (
                       <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                         <div className="flex items-start gap-2">
@@ -1386,9 +1392,24 @@ export default function CustomDealDetailPage() {
                 <a
                   href={redirectDiscountUrl}
                   className="w-full inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50 transition-colors"
+                  onClick={async () => {
+                    // 클릭수 증가 API 호출
+                    try {
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/track_click/`, {
+                        method: 'POST',
+                      });
+                    } catch (error) {
+                      console.error('클릭수 증가 실패:', error);
+                    }
+                  }}
                 >
                   할인 링크로 이동
                 </a>
+                {deal.discount_url_clicks > 0 && (
+                  <p className="text-sm text-gray-500 text-center mt-2">
+                    {deal.discount_url_clicks.toLocaleString()}명이 링크를 방문했어요
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
